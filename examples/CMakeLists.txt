@@ -1000,6 +1000,7 @@ add_impactx_test(spectrometer.py
     OFF  # no plot script yet
 )
 
+
 # Chicane with CSR ###########################################################
 #
 if(ImpactX_FFT)
@@ -1097,6 +1098,7 @@ add_impactx_test(linac-segment.py
     OFF  # no plot script yet
 )
 
+
 # Iteration of a linear one-turn map #########################################
 #
 # w/o space charge
@@ -1112,3 +1114,15 @@ add_impactx_test(linear-map.py
     examples/linear_map/analysis_map.py
     OFF  # no plot script yet
 )
+
+
+# PyTorch Surrogate: Staged LPA ##############################################
+#
+add_impactx_test(pytorch_surrogate_model
+    examples/pytorch_surrogate_model/run_ml_surrogate_15_stage.py
+      OFF  # ImpactX MPI-parallel
+    examples/pytorch_surrogate_model/analyze_ml_surrogate_15_stage.py
+    examples/pytorch_surrogate_model/visualize_ml_surrogate_15_stage.py
+)
+label_impactx_test(pytorch_surrogate_model slow)
+label_impactx_test(pytorch_surrogate_model.MPI slow)

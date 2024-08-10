@@ -198,6 +198,7 @@ class DistributionParameters:
                     with vuetify.VCol(cols=6):
                         vuetify.VCombobox(
                             label="Select Distribution",
+                            id="selected_distribution",
                             v_model=("selectedDistribution",),
                             items=("listOfDistributions",),
                             dense=True,
@@ -205,6 +206,7 @@ class DistributionParameters:
                     with vuetify.VCol(cols=6):
                         vuetify.VSelect(
                             v_model=("selectedDistributionType",),
+                            id="selected_distribution_type",
                             label="Type",
                             items=(["Twiss", "Quadratic Form"],),
                             dense=True,
@@ -221,6 +223,7 @@ class DistributionParameters:
                                 ):
                                     vuetify.VTextField(
                                         label=("parameter.parameter_name",),
+                                        id=("parameter.parameter_name",),
                                         v_model=("parameter.parameter_default_value",),
                                         suffix=("parameter.parameter_units",),
                                         change=(

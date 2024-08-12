@@ -40,6 +40,10 @@ jobs:
         .github/workflows/dependencies/gcc-openmpi.sh
         python3 -m pip install -U pybind11-stubgen pre-commit
 
+    - name: Dashboard Dependencies
+      run: |
+        python3 -m pip install -U trame trame-matplotlib trame-plotly trame-router trame-xterm trame-vuetify
+
     - name: Set Up Cache
       uses: actions/cache@v4
       with:

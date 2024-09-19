@@ -69,6 +69,17 @@ class ToolbarElements:
         )
 
     @staticmethod
+    def show_simulation_complete():
+        vuetify.VAlert(
+                "Simulation Complete",
+                v_model=("simulation_complete", False),
+                id="simulation_complete",
+                type="success",
+                dense=True,
+                classes="mt-4",
+            )
+
+    @staticmethod
     def dashboard_info():
         """
         Creates an alert box with dashboard information.
@@ -108,6 +119,7 @@ class Toolbars:
 
         (ToolbarElements.dashboard_info(),)
         (vuetify.VSpacer(),)
+        ToolbarElements.show_simulation_complete(),
         (ToolbarElements.run_simulation_button(),)
 
     @staticmethod

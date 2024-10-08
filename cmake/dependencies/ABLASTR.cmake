@@ -142,7 +142,7 @@ macro(find_ablastr)
         else()
             set(COMPONENT_WMPI NOMPI)
         endif()
-        find_package(openPMD 0.15.2 CONFIG REQUIRED COMPONENTS ${COMPONENT_WMPI})
+        find_package(openPMD 0.16.1 CONFIG REQUIRED COMPONENTS ${COMPONENT_WMPI})
         message(STATUS "openPMD-api: Found version '${openPMD_VERSION}'")
     endif()
 endmacro()
@@ -178,7 +178,7 @@ set(ImpactX_amrex_branch "f6d3d70cadfc03036f5fdc4f89b7fcb225792716"
 set(ImpactX_openpmd_repo "https://github.com/openPMD/openPMD-api.git"
     CACHE STRING
     "Repository URI to pull and build openPMD-api from if(ImpactX_openpmd_internal)")
-set(ImpactX_openpmd_branch "0.15.2"
+set(ImpactX_openpmd_branch "0.16.1"
     CACHE STRING
     "Repository branch for ImpactX_openPMD_repo if(ImpactX_openpmd_internal)")
 

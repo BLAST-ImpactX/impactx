@@ -12,7 +12,6 @@ jobs:
     runs-on: macos-latest
     if: github.event.pull_request.draft == false
     env:
-      CXXFLAGS: "-Werror -Wno-error=pass-failed"
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: TRUE
     steps:
     - uses: actions/checkout@v4
@@ -63,6 +62,8 @@ jobs:
         export CCACHE_MAXSIZE=100M
         export CCACHE_SLOPPINESS=time_macros
         ccache -z
+
+        export CXXFLAGS="-Werror -Wno-error=pass-failed"
 
         cmake -S . -B build            \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \

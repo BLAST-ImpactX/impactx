@@ -63,6 +63,9 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     param.default if param.default != param.empty else None, "float"
                 ),
+                "parameter_units": "m"
+                if "beta" in param.name or "emitt" in param.name
+                else "",
             }
             for param in sig.parameters.values()
         ]
@@ -82,6 +85,9 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
                 ),
+                "parameter_units": "m"
+                if "beta" in parameter[0] or "emitt" in parameter[0]
+                else "",
             }
             for parameter in selectedDistributionParameters
         ]
@@ -216,6 +222,7 @@ class DistributionParameters:
                                     vuetify.VTextField(
                                         label=("parameter.parameter_name",),
                                         v_model=("parameter.parameter_default_value",),
+                                        suffix=("parameter.parameter_units",),
                                         change=(
                                             ctrl.updateDistributionParameters,
                                             "[parameter.parameter_name, $event, parameter.parameter_type]",

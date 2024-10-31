@@ -6,12 +6,16 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+import inspect
+
+from distribution_input_helpers import twiss
 from trame.widgets import vuetify
 
 from impactx import distribution
 
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
+from .distributionFunctions import DistributionFunctions
 
 server, state, ctrl = setup_server()
 
@@ -27,12 +31,13 @@ state.listOfDistributionsAndParametersAndDefault = (
 )
 
 # -----------------------------------------------------------------------------
-# Default
+# Defaults
 # -----------------------------------------------------------------------------
 
 state.selectedDistribution = "Waterbag"
-state.selectedDistributionType = "Native"
+state.selectedDistributionType = "Twiss"
 state.selectedDistributionParameters = []
+state.distributionTypeDisabled = False
 
 # -----------------------------------------------------------------------------
 # Main Functions
@@ -43,27 +48,52 @@ def populate_distribution_parameters(selectedDistribution):
     """
     Populates distribution parameters based on the selected distribution.
     :param selectedDistribution (str): The name of the selected distribution
-        whos parameters need to be populated.
+    whose parameters need to be populated.
     """
 
-    selectedDistributionParameters = (
-        state.listOfDistributionsAndParametersAndDefault.get(selectedDistribution, [])
-    )
+    if state.selectedDistributionType == "Twiss":
+        sig = inspect.signature(twiss)
+        state.selectedDistributionParameters = [
+            {
+                "parameter_name": param.name,
+                "parameter_default_value": param.default
+                if param.default != param.empty
+                else None,
+                "parameter_type": "float",  # Hardcoding Twiss to 'float' type.
+                "parameter_error_message": generalFunctions.validate_against(
+                    param.default if param.default != param.empty else None, "float"
+                ),
+                "parameter_units": "m"
+                if "beta" in param.name or "emitt" in param.name
+                else "",
+            }
+            for param in sig.parameters.values()
+        ]
 
-    state.selectedDistributionParameters = [
-        {
-            "parameter_name": parameter[0],
-            "parameter_default_value": parameter[1],
-            "parameter_type": parameter[2],
-            "parameter_error_message": generalFunctions.validate_against(
-                parameter[1], parameter[2]
-            ),
-        }
-        for parameter in selectedDistributionParameters
-    ]
+    else:  # when type == 'Quadratic Form'
+        selectedDistributionParameters = (
+            state.listOfDistributionsAndParametersAndDefault.get(
+                selectedDistribution, []
+            )
+        )
 
-    generalFunctions.update_simulation_validation_status()
-    return selectedDistributionParameters
+        state.selectedDistributionParameters = [
+            {
+                "parameter_name": parameter[0],
+                "parameter_default_value": parameter[1],
+                "parameter_type": parameter[2],
+                "parameter_error_message": generalFunctions.validate_against(
+                    parameter[1], parameter[2]
+                ),
+                "parameter_units": "m"
+                if "beta" in parameter[0] or "emitt" in parameter[0]
+                else "",
+            }
+            for parameter in selectedDistributionParameters
+        ]
+
+        generalFunctions.update_simulation_validation_status()
+        return selectedDistributionParameters
 
 
 def update_distribution_parameters(
@@ -91,34 +121,21 @@ def update_distribution_parameters(
 # -----------------------------------------------------------------------------
 
 
-def parameter_input_checker():
-    """
-    Helper function to check if user input is valid.
-    :return: A dictionary with parameter names as keys and their validated values.
-    """
-
-    parameter_input = {}
-    for param in state.selectedDistributionParameters:
-        if param["parameter_error_message"] == []:
-            parameter_input[param["parameter_name"]] = float(
-                param["parameter_default_value"]
-            )
-        else:
-            parameter_input[param["parameter_name"]] = 0.0
-
-    return parameter_input
-
-
 def distribution_parameters():
     """
-    Writes user input for distribution parameters in suitable format for simulation code.
-    :return: An instance of the selected distribution class, initialized with user-provided parameters.
+    :return: An instance of the selected distribution class,
+    initialized with the appropriate parameters provided by the user.
     """
 
     distribution_name = state.selectedDistribution
-    parameters = parameter_input_checker()
+    parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
 
-    distr = getattr(distribution, distribution_name)(**parameters)
+    if state.selectedDistributionType == "Twiss":
+        twiss_params = twiss(**parameters)
+        distr = getattr(distribution, distribution_name)(**twiss_params)
+    else:
+        distr = getattr(distribution, distribution_name)(**parameters)
+
     return distr
 
 
@@ -129,6 +146,12 @@ def distribution_parameters():
 
 @state.change("selectedDistribution")
 def on_distribution_name_change(selectedDistribution, **kwargs):
+    if selectedDistribution == "Thermal":
+        state.selectedDistributionType = "Quadratic Form"
+        state.distributionTypeDisabled = True
+        state.dirty("selectedDistributionType")
+    else:
+        state.distributionTypeDisabled = False
     populate_distribution_parameters(selectedDistribution)
 
 
@@ -172,21 +195,20 @@ class DistributionParameters:
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow():
-                    with vuetify.VCol(cols=8):
+                    with vuetify.VCol(cols=6):
                         vuetify.VCombobox(
                             label="Select Distribution",
                             v_model=("selectedDistribution",),
                             items=("listOfDistributions",),
                             dense=True,
                         )
-                    with vuetify.VCol(cols=4):
+                    with vuetify.VCol(cols=6):
                         vuetify.VSelect(
                             v_model=("selectedDistributionType",),
                             label="Type",
-                            items=(["Native", "Twiss"],),
-                            # change=(ctrl.kin_energy_unit_change, "[$event]"),
+                            items=(["Twiss", "Quadratic Form"],),
                             dense=True,
-                            disabled=True,
+                            disabled=("distributionTypeDisabled",),
                         )
                 with vuetify.VRow(classes="my-2"):
                     for i in range(3):
@@ -200,6 +222,7 @@ class DistributionParameters:
                                     vuetify.VTextField(
                                         label=("parameter.parameter_name",),
                                         v_model=("parameter.parameter_default_value",),
+                                        suffix=("parameter.parameter_units",),
                                         change=(
                                             ctrl.updateDistributionParameters,
                                             "[parameter.parameter_name, $event, parameter.parameter_type]",

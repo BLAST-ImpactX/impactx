@@ -26,8 +26,7 @@ CONVERSION_FACTORS = {
 
 class InputFunctions:
     """
-    Helper functions for the
-    User-Input section for beam properties.
+    Helper functions for the beam properties.
     """
 
     @staticmethod

@@ -31,6 +31,7 @@ __all__ = [
     "Named",
     "NonlinearLens",
     "PRot",
+    "PlaneXYRot",
     "Programmable",
     "Quad",
     "RFCavity",
@@ -688,6 +689,7 @@ class KnownElementsList:
         | Marker
         | Multipole
         | NonlinearLens
+        | PlaneXYRot
         | Programmable
         | PRot
         | Quad
@@ -723,6 +725,7 @@ class KnownElementsList:
         | Marker
         | Multipole
         | NonlinearLens
+        | PlaneXYRot
         | Programmable
         | PRot
         | Quad
@@ -759,6 +762,7 @@ class KnownElementsList:
         | Marker
         | Multipole
         | NonlinearLens
+        | PlaneXYRot
         | Programmable
         | PRot
         | Quad
@@ -934,6 +938,36 @@ class PRot(Named, Thin):
         """
     @phi_out.setter
     def phi_out(self, arg1: float) -> None: ...
+
+class PlaneXYRot(Named, Thin, Alignment):
+    def __init__(
+        self,
+        angle: float,
+        dx: float = 0,
+        dy: float = 0,
+        rotation: float = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A rotation in the x-y plane.
+        """
+    def __repr__(self) -> str: ...
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: int = 0,
+        period: int = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @property
+    def angle(self) -> float:
+        """
+        Rotation angle (rad).
+        """
+    @angle.setter
+    def angle(self, arg1: float) -> None: ...
 
 class Programmable(Named):
     ds: float

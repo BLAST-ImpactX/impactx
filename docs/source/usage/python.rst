@@ -934,6 +934,16 @@ This module provides elements for the accelerator lattice.
    :param phi_out: angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
    :param name: an optional name for the element
 
+.. py:class:: impactx.elements.PlaneXYRot(angle,  dx=0, dy=0, rotation=0, name=None)
+
+   Map for a transverse rotation in the x-y plane (i.e., about the reference velocity vector).
+
+   :param angle: nominal angle of rotation in the x-y plane, in degrees
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.Aperture(xmax, ymax, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.

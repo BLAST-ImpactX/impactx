@@ -697,6 +697,7 @@ def push(
     | elements.Marker
     | elements.Multipole
     | elements.NonlinearLens
+    | elements.PlaneXYRot
     | elements.Programmable
     | elements.PRot
     | elements.Quad

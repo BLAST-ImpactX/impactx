@@ -1008,3 +1008,19 @@ add_impactx_test(aperture-periodic.py
     examples/aperture/analysis_aperture_periodic.py
     OFF  # no plot script yet
 )
+
+# Rotation in the transverse plane #########################################################
+#
+# w/o space charge
+add_impactx_test(rotation-xy
+    examples/rotation/input_rotation_xy.in
+    ON   # ImpactX MPI-parallel
+    examples/rotation/analysis_rotation_xy.py
+    OFF  # no plot script yet
+)
+add_impactx_test(rotation-xy.py
+    examples/rotation/run_rotation_xy.py
+    OFF  # ImpactX MPI-parallel
+    examples/rotation/analysis_rotation_xy.py
+    OFF  # no plot script yet
+)

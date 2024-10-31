@@ -378,6 +378,13 @@ Lattice Elements
             * ``<element_name>.phi_in`` (``float``, in degrees) angle of the reference particle with respect to the longitudinal (z) axis in the original frame
             * ``<element_name>.phi_out`` (``float``, in degrees) angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame
 
+        * ``plane_xyrotation`` for a rotation in the x-y plane (i.e., about the reference velocity vector). This requires these additional parameters:
+
+            * ``<element_name>.angle`` (``float``, in degrees) nominal angle of rotation
+            * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+            * ``<element_name>.dy`` (``float``, in meters) vertical translation error
+            * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
         * ``kicker`` for a thin transverse kicker. This requires these additional parameters:
 
             * ``<element_name>.xkick`` (``float``, dimensionless OR in T-m) the horizontal kick strength

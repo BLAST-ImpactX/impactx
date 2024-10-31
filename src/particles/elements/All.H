@@ -27,6 +27,7 @@
 #include "Multipole.H"
 #include "Empty.H"
 #include "NonlinearLens.H"
+#include "PlaneXYRot.H"
 #include "Programmable.H"
 #include "Quad.H"
 #include "RFCavity.H"
@@ -64,6 +65,7 @@ namespace impactx
         Marker,
         Multipole,
         NonlinearLens,
+        PlaneXYRot,
         Programmable,
         PRot,
         Quad,

@@ -894,6 +894,38 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_NonlinearLens);
 
+    py::class_<PlaneXYRot, elements::Named, elements::Thin, elements::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
+    py_PlaneXYRot
+        .def("__repr__",
+             [](PlaneXYRot const & plane_xyrot) {
+                 return element_name(
+                     plane_xyrot,
+                     std::make_pair("angle", plane_xyrot.m_phi)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                std::optional<std::string>
+             >(),
+             py::arg("angle"),
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             "A rotation in the x-y plane."
+        )
+        .def_property("angle",
+            [](PlaneXYRot & plane_xyrot) { return plane_xyrot.m_phi; },
+            [](PlaneXYRot & plane_xyrot, amrex::ParticleReal phi) { plane_xyrot.m_phi = phi; },
+            "Rotation angle (rad)."
+        )
+    ;
+    register_beamoptics_push(py_PlaneXYRot);
+
     py::class_<Programmable, elements::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",
              [](Programmable const & prg) {

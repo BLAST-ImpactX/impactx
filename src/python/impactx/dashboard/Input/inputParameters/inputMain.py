@@ -102,7 +102,7 @@ class InputParameters:
                             label="Space Charge",
                             v_model=("space_charge", False),
                             dense=True,
-                )
+                        )
                     with vuetify.VCol(cols=6, classes="py-0"):
                         vuetify.VCheckbox(
                             label="CSR",
@@ -136,7 +136,7 @@ class InputParameters:
                                 ctrl.on_input_change,
                                 "[$event, 'float','mass_MeV','mass_MeV_validation', ['positive']]",
                             ),
-                                    classes="mt-0",
+                            classes="mt-0",
                         )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=12, classes="py-0"):

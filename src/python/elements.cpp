@@ -1487,7 +1487,8 @@ void init_elements(py::module& m)
              [](LinearMap const & linearmap) {
                  return element_name(
                      linearmap,
-                     std::make_pair("R", linearmap.m_transport_map)
+                     std::make_pair("R11", linearmap.m_transport_map(1,1)),
+                     std::make_pair("R12", linearmap.m_transport_map(1,2))
                  );
              }
         )
@@ -1503,7 +1504,7 @@ void init_elements(py::module& m)
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
              py::arg("name") = py::none(),
-             R"(A user-provided linear map, represented as a 6x6 transport matrix.)"
+             "(A user-provided linear map, represented as a 6x6 transport matrix.)"
         )
         .def_property("R",
             [](LinearMap & linearmap) { return linearmap.m_transport_map; },

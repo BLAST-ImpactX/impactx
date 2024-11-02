@@ -7,6 +7,7 @@
 
 #include <particles/Push.H>
 #include <particles/elements/All.H>
+#include <particles/elements/mixin/lineartransport.H>
 #include <AMReX.H>
 
 #include <optional>
@@ -1480,7 +1481,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_TaperedPL);
 
-    py::class_<LinearMap, elements::Named, elements::Thin, elements::Alignment> py_LinearMap(me, "LinearMap");
+    py::class_<LinearMap, elements::Named, elements::Thin, elements::Alignment, elements::LinearTransport> py_LinearMap(me, "LinearMap");
     py_LinearMap
         .def("__repr__",
              [](LinearMap const & linearmap) {
@@ -1490,17 +1491,14 @@ void init_elements(py::module& m)
                  );
              }
         )
-        .def(py::init([](
-                elements::LinearTransport::Map6x6 R,
-                amrex::ParticleReal dx,
-                amrex::ParticleReal dy,
-                amrex::ParticleReal rotation_degree,
-                std::optional<std::string> name
-             )
-             {
-             }),
+        .def(py::init<
+                elements::LinearTransport::Map6x6,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                std::optional<std::string>
+             >(),
              py::arg("R"),
-             py::arg("unit") = "dimensionless",
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
@@ -1509,10 +1507,11 @@ void init_elements(py::module& m)
         )
         .def_property("R",
             [](LinearMap & linearmap) { return linearmap.m_transport_map; },
-            [](LinearMap & linearmap, LinearTransport::Map6x6 R) { linearmap.m_transport_map = linearmap; },
+            [](LinearMap & linearmap, elements::LinearTransport::Map6x6 R) { linearmap.m_transport_map = R; },
             "linear map as a 6x6 transport matrix"
         )
-
+     ;
+     register_beamoptics_push(py_LinearMap);
 
     // freestanding push function
     m.def("push", &Push,

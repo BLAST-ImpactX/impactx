@@ -41,8 +41,7 @@ namespace impactx
     )
     {
         // zero out the 6x6 matrix
-        CovarianceMatrix cv;
-cv.setVal(0.0);
+        CovarianceMatrix cv(0);
 
         // initialize from 2nd order beam moments
         std::visit([&](auto&& distribution) {

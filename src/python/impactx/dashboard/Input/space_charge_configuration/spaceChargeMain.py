@@ -228,7 +228,7 @@ class SpaceChargeConfiguration:
                 with vuetify.VCol(classes="pa-0"):
                     vuetify.VListItemSubtitle(
                         "Blocking Factor",
-                        classes="font-weight-bold black--text mt-1",
+                        classes="font-weight-bold black--text mt-2",
                     )
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
@@ -246,7 +246,7 @@ class SpaceChargeConfiguration:
                 with vuetify.VCol(classes="pa-0"):
                     vuetify.VListItemSubtitle(
                         "prob_relative",
-                        classes="font-weight-bold black--text mt-1",
+                        classes="font-weight-bold black--text mt-2",
                     )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(

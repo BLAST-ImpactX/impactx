@@ -108,7 +108,6 @@ class InputParameters:
                             label="CSR",
                             v_model=("csr", False),
                             dense=True,
-                            classes="mt-0",
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):
@@ -136,7 +135,6 @@ class InputParameters:
                                 ctrl.on_input_change,
                                 "[$event, 'float','mass_MeV','mass_MeV_validation', ['positive']]",
                             ),
-                            classes="mt-0",
                         )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=12, classes="py-0"):

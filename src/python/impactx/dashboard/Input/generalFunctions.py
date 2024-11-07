@@ -157,6 +157,31 @@ class generalFunctions:
         if state.csr_bins_error_message:
             error_details.append(f"CSR Bins: {state.csr_bins_error_message}")
 
+        # Check for errors in Space Charge parameters
+        if state.space_charge:
+            # n_cell parameters
+            for direction in ["x", "y", "z"]:
+                n_cell_error = getattr(state, f"error_message_n_cell_{direction}")
+                if n_cell_error:
+                    error_details.append(f"n_cell_{direction}: {n_cell_error}")
+
+            # Blocking factor parameters
+            for direction in ["x", "y", "z"]:
+                blocking_factor_error = getattr(
+                    state, f"error_message_blocking_factor_{direction}"
+                )
+                if blocking_factor_error:
+                    error_details.append(
+                        f"blocking_factor_{direction}: {blocking_factor_error}"
+                    )
+
+            # Prob Relative Fields
+            for index, field in enumerate(state.prob_relative_fields):
+                if field["error_message"]:
+                    error_details.append(
+                        f"prob_relative[{index}]: {field['error_message']}"
+                    )
+
         state.disableRunSimulationButton = bool(error_details)
 
     # -----------------------------------------------------------------------------

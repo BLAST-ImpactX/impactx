@@ -6,6 +6,25 @@ from ..generalFunctions import generalFunctions
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
+# Default State Variables
+# -----------------------------------------------------------------------------
+
+state.csr_bins = 150
+state.csr_bins_error_message = ""
+
+# -----------------------------------------------------------------------------
+#
+# -----------------------------------------------------------------------------
+
+
+@state.change("csr_bins")
+def on_csr_bins_change(csr_bins, **kwargs):
+    error_message = generalFunctions.validate_against(csr_bins, "int", ["positive"])
+    state.csr_bins_error_message = error_message
+    generalFunctions.update_simulation_validation_status()
+
+
+# -----------------------------------------------------------------------------
 # UI
 # -----------------------------------------------------------------------------
 
@@ -40,7 +59,8 @@ class csrConfiguration:
                     with vuetify.VCol(classes="py-0"):
                         vuetify.VTextField(
                             label="CSR Bins",
-                            v_model=("csr_bins", 150),
+                            v_model=("csr_bins",),
+                            error_messages=("csr_bins_error_message",),
                             type="number",
                             dense=True,
                         )

@@ -106,11 +106,11 @@ class generalFunctions:
         if errors == [] and additional_conditions:
             for condition in additional_conditions:
                 if condition == "non_zero" and value == 0:
-                    errors.append("Must be non-zero")
-                if condition == "positive" and value <= 0:
-                    errors.append("Must be positive")
-                if condition == "negative" and value >= 0:
-                    errors.append("Must be negative")
+                    errors.append("Must be non-zero.")
+                if condition == "positive" and value < 0:
+                    errors.append("Must be positive.")
+                if condition == "negative" and value > 0:
+                    errors.append("Must be negative.")
 
         return errors
 
@@ -152,6 +152,10 @@ class generalFunctions:
 
         if state.selectedLatticeList == []:
             error_details.append("LatticeListIsEmpty")
+
+        # Check for errors in CSR parameters
+        if state.csr_bins_error_message:
+            error_details.append(f"CSR Bins: {state.csr_bins_error_message}")
 
         state.disableRunSimulationButton = bool(error_details)
 

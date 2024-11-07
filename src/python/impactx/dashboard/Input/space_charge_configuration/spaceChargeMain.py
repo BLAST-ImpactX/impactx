@@ -62,39 +62,33 @@ def populate_prob_relative_fields(max_level):
     ]
 
 
-def update_state_values_and_errors(category, kwargs):
+def update_blocking_factor_and_n_cell(category, kwargs):
     directions = ["x", "y", "z"]
 
     for state_name, value in kwargs.items():
         if any(state_name == f"{category}_{dir}" for dir in directions):
             direction = state_name.split("_")[-1]
-            error_message_name = f"error_message_{category}_{direction}"
+            SpaceChargeFunctions.validate_n_cell_and_blocking_factor(direction)
 
-            # update error message for blocking_factor_{direction}
-            updated_blocking_factor_error_message = generalFunctions.validate_against(
-                value, "int"
-            )
-            updated_n_cell_error_message = SpaceChargeFunctions.validate_n_cell_field(
-                direction
+            n_cell_error = getattr(state, f"error_message_n_cell_{direction}")
+            blocking_factor_error = getattr(
+                state, f"error_message_blocking_factor_{direction}"
             )
 
-            # update error message for n_cell_{direction}
-            setattr(state, error_message_name, updated_blocking_factor_error_message)
-            setattr(
-                state, f"error_message_n_cell_{direction}", updated_n_cell_error_message
-            )
+            if not n_cell_error:
+                n_cell_value = getattr(state, f"n_cell_{direction}")
+                setattr(state, f"n_cell_{direction}", int(n_cell_value))
 
-            if not updated_blocking_factor_error_message:
-                setattr(state, state_name, int(value))  # convert to int if not an error
+            if not blocking_factor_error:
+                blocking_factor_value = getattr(state, f"blocking_factor_{direction}")
+                setattr(
+                    state, f"blocking_factor_{direction}", int(blocking_factor_value)
+                )
 
-    updated_attribute = [
-        getattr(state, f"{category}_{direction}", 0) for direction in directions
+    state.n_cell = [getattr(state, f"n_cell_{dir}", 0) for dir in directions]
+    state.blocking_factor = [
+        getattr(state, f"blocking_factor_{dir}", 0) for dir in directions
     ]
-
-    if category == "blocking_factor":
-        state.blocking_factor = updated_attribute
-    elif category == "n_cell":
-        state.n_cell = updated_attribute
 
 
 # -----------------------------------------------------------------------------
@@ -118,12 +112,12 @@ def on_max_level_change(max_level, **kwargs):
 
 @state.change("blocking_factor_x", "blocking_factor_y", "blocking_factor_z")
 def on_blocking_factor_change(**kwargs):
-    update_state_values_and_errors("blocking_factor", kwargs)
+    update_blocking_factor_and_n_cell("blocking_factor", kwargs)
 
 
 @state.change("n_cell_x", "n_cell_y", "n_cell_z")
 def on_n_cell_change(**kwargs):
-    update_state_values_and_errors("n_cell", kwargs)
+    update_blocking_factor_and_n_cell("n_cell", kwargs)
 
 
 @ctrl.add("update_prob_relative")

@@ -1,4 +1,5 @@
 from ...trame_setup import setup_server
+from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 
@@ -45,18 +46,31 @@ class SpaceChargeFunctions:
         return error_message
 
     @staticmethod
-    def validate_n_cell_field(direction):
+    def validate_n_cell_and_blocking_factor(direction):
         """
-        Validates that n_cell_value is a multiple of blocking_factor_value.
+        Validation function for n_cell and blocking_factor parameters.
         """
+        n_cell_value = getattr(state, f"n_cell_{direction}", None)
+        blocking_factor_value = getattr(state, f"blocking_factor_{direction}", None)
 
-        n_cell_value = int(getattr(state, f"n_cell_{direction}", 0))
-        blocking_factor_value = int(getattr(state, f"blocking_factor_{direction}", 0))
+        n_cell_errors = generalFunctions.validate_against(n_cell_value, "int")
+        blocking_factor_errors = generalFunctions.validate_against(
+            blocking_factor_value, "int", ["non_zero", "positive"]
+        )
 
-        if blocking_factor_value == 0:
-            return f"Blocking factor for {direction} cannot be zero."
+        setattr(state, f"error_message_n_cell_{direction}", "; ".join(n_cell_errors))
+        setattr(
+            state,
+            f"error_message_blocking_factor_{direction}",
+            "; ".join(blocking_factor_errors),
+        )
 
-        if n_cell_value % blocking_factor_value != 0:
-            return f"n_cell_value for {direction} is not a multiple of blocking_factor_value."
-
-        return ""
+        if not n_cell_errors and not blocking_factor_errors:
+            n_cell_value = int(n_cell_value)
+            blocking_factor_value = int(blocking_factor_value)
+            if n_cell_value % blocking_factor_value != 0:
+                setattr(
+                    state,
+                    f"error_message_n_cell_{direction}",
+                    "Must be a multiple of blocking factor.",
+                )

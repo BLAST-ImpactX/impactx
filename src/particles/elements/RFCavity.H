@@ -14,14 +14,15 @@
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
+#include "mixin/named.H"
 #include "mixin/thick.H"
 
 #include <ablastr/constant.H>
 
 #include <AMReX.H>
-#include <AMReX_Array.H>
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SmallMatrix.H>
 
 #include <array>
 #include <cmath>
@@ -102,11 +103,12 @@ namespace RFCavityData
 } // namespace RFCavityData
 
     struct RFCavity
-    : public elements::BeamOptic<RFCavity>,
+    : public elements::Named,
+      public elements::BeamOptic<RFCavity>,
       public elements::Thick,
       public elements::Alignment
     {
-        static constexpr auto name = "RFCavity";
+        static constexpr auto type = "RFCavity";
         using PType = ImpactXParticleContainer::ParticleType;
 
         /** An RF cavity
@@ -123,6 +125,7 @@ namespace RFCavityData
          * @param mapsteps number of integration steps per slice used for
          *        map and reference particle push in applied fields
          * @param nslice number of slices used for the application of space charge
+         * @param name a user defined and not necessarily unique name of the element
          */
         RFCavity (
             amrex::ParticleReal ds,
@@ -135,9 +138,11 @@ namespace RFCavityData
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
             int mapsteps = 1,
-            int nslice = 1
+            int nslice = 1,
+            std::optional<std::string> name = std::nullopt
         )
-          : Thick(ds, nslice),
+          : Named(name),
+            Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
             m_escale(escale), m_freq(freq), m_phase(phase), m_mapsteps(mapsteps)
         {
@@ -203,46 +208,26 @@ namespace RFCavityData
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
-
-            // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
-
             // get the linear map
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
 
             // symplectic linear map for the RF cavity is computed using the
             // Hamiltonian formalism as described in:
             // https://uspas.fnal.gov/materials/09UNM/ComputationalMethods.pdf.
             // R denotes the transfer matrix in the basis (x,px,y,py,t,pt),
             // so that, e.g., R(3,4) = dyf/dpyi.
+            amrex::SmallVector<amrex::ParticleReal, 6, 1> const v{x, px, y, py, t, pt};
 
             // push particles using the linear map
-            xout = R(1,1)*x + R(1,2)*px + R(1,3)*y
-                     + R(1,4)*py + R(1,5)*t + R(1,6)*pt;
-            pxout = R(2,1)*x + R(2,2)*px + R(2,3)*y
-                  + R(2,4)*py + R(2,5)*t + R(2,6)*pt;
-            yout = R(3,1)*x + R(3,2)*px + R(3,3)*y
-                     + R(3,4)*py + R(3,5)*t + R(3,6)*pt;
-            pyout = R(4,1)*x + R(4,2)*px + R(4,3)*y
-                  + R(4,4)*py + R(4,5)*t + R(4,6)*pt;
-            tout = R(5,1)*x + R(5,2)*px + R(5,3)*y
-                     + R(5,4)*py + R(5,5)*t + R(5,6)*pt;
-            ptout = R(6,1)*x + R(6,2)*px + R(6,3)*y
-                  + R(6,4)*py + R(6,5)*t + R(6,6)*pt;
+            auto const out = R * v;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
-            px = pxout;
-            py = pyout;
-            pt = ptout;
+            x  = out[1];
+            px = out[2];
+            y  = out[3];
+            py = out[4];
+            t  = out[5];
+            pt = out[6];
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -269,20 +254,13 @@ namespace RFCavityData
             amrex::ParticleReal const sedge = refpart.sedge;
 
             // initialize linear map (deviation) values
-            for (int i=1; i<7; i++) {
-               for (int j=1; j<7; j++) {
-                  if (i == j)
-                      refpart.map(i, j) = 1.0_prt;
-                  else
-                      refpart.map(i, j) = 0.0_prt;
-               }
-            }
+            refpart.map = decltype(refpart.map)::Identity();
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = sqrt(pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -298,7 +276,7 @@ namespace RFCavityData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = sqrt(pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -367,14 +345,22 @@ namespace RFCavityData
                efieldint = z*efield;
                for (int j=1; j < m_ncoef; ++j)
                {
-                 efield = efield + cos_data[j]*cos(j*2*pi*z/zlen) +
-                     sin_data[j]*sin(j*2*pi*z/zlen);
-                 efieldp = efieldp-j*2*pi*cos_data[j]*sin(j*2*pi*z/zlen)/zlen +
-                      j*2*pi*sin_data[j]*cos(j*2*pi*z/zlen)/zlen;
-                 efieldpp = efieldpp- pow(j*2*pi*cos_data[j]/zlen,2) *cos(j*2*pi*z/zlen) -
-                      pow(j*2*pi*sin_data[j]/zlen,2) *sin(j*2*pi*z/zlen);
-                 efieldint = efieldint + zlen*cos_data[j]*sin(j*2*pi*z/zlen)/(j*2*pi) -
-                      zlen*sin_data[j]*cos(j*2*pi*z/zlen)/(j*2*pi);
+                 efield = efield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
+                     sin_data[j] * std::sin(j*2*pi*z/zlen);
+                 efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
+                      j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
+                 efieldpp = efieldpp- std::pow(j*2*pi*cos_data[j]/zlen,2)  * std::cos(j*2*pi*z/zlen) -
+                     std::pow(j*2*pi*sin_data[j]/zlen,2)  * std::sin(j*2*pi*z/zlen);
+                 efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
+                      zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
+               }
+            }
+            else  // endpoint of the RF, outsize zlen
+            {
+               efieldint = std::copysign(z, z)*zmid*0.5_prt*cos_data[0];;
+               for (int j=1; j < m_ncoef; ++j)
+               {
+                 efieldint = efieldint - zlen*sin_data[j] * std::cos(j*pi)/(j*2*pi);
                }
             }
             return std::make_tuple(efield, efieldp, efieldint);
@@ -400,7 +386,7 @@ namespace RFCavityData
             amrex::ParticleReal const pt = refpart.pt;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/sqrt(1.0_prt - pow(pt, -2));
+                refpart.t = t + tau/std::sqrt(1.0_prt - std::pow(pt, -2));
                 refpart.pt = pt;
             }
             else {
@@ -409,11 +395,11 @@ namespace RFCavityData
             }
 
             // push the linear map equations
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/pow(betgam,3);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/pow(betgam,3);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/std::pow(betgam,3);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/std::pow(betgam,3);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -449,19 +435,19 @@ namespace RFCavityData
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const s = tau/refpart.beta_gamma();
-            amrex::ParticleReal const L = E0*ezp*sin(k*t+phi)/(2.0_prt*k);
+            amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2.0_prt*k);
 
             refpart.map(1,1) = (1.0_prt-s*L)*R(1,1) + s*R(2,1);
             refpart.map(1,2) = (1.0_prt-s*L)*R(1,2) + s*R(2,2);
-            refpart.map(2,1) = -s*pow(L,2)*R(1,1) + (1.0_prt+s*L)*R(2,1);
-            refpart.map(2,2) = -s*pow(L,2)*R(1,2) + (1.0_prt+s*L)*R(2,2);
+            refpart.map(2,1) = -s * std::pow(L,2)*R(1,1) + (1.0_prt+s*L)*R(2,1);
+            refpart.map(2,2) = -s * std::pow(L,2)*R(1,2) + (1.0_prt+s*L)*R(2,2);
 
             refpart.map(3,3) = (1.0_prt-s*L)*R(3,3) + s*R(4,3);
             refpart.map(3,4) = (1.0_prt-s*L)*R(3,4) + s*R(4,4);
-            refpart.map(4,3) = -s*pow(L,2)*R(3,3) + (1.0_prt+s*L)*R(4,3);
-            refpart.map(4,4) = -s*pow(L,2)*R(3,4) + (1.0_prt+s*L)*R(4,4);
+            refpart.map(4,3) = -s * std::pow(L,2)*R(3,3) + (1.0_prt+s*L)*R(4,3);
+            refpart.map(4,4) = -s * std::pow(L,2)*R(3,4) + (1.0_prt+s*L)*R(4,4);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -498,12 +484,12 @@ namespace RFCavityData
             amrex::ignore_unused(ezf);
 
             refpart.t = t;
-            refpart.pt = pt - E0*(ezintf-ezint)*cos(k*t+phi);
+            refpart.pt = pt - E0*(ezintf-ezint) * std::cos(k*t+phi);
 
             // push the linear map equations
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
-            amrex::ParticleReal const M = E0*(ezintf-ezint)*k*sin(k*t+phi);
-            amrex::ParticleReal const L = E0*(ezpf-ezp)*sin(k*t+phi)/(2.0_prt*k)+M/2.0_prt;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::ParticleReal const M = E0*(ezintf-ezint)*k * std::sin(k*t+phi);
+            amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2.0_prt*k)+M/2.0_prt;
 
             refpart.map(2,1) = L*R(1,1) + R(2,1);
             refpart.map(2,2) = L*R(1,2) + R(2,2);
@@ -532,7 +518,6 @@ namespace RFCavityData
                 RFCavityData::d_sin_coef.erase(m_id);
         }
 
-    private:
         amrex::ParticleReal m_escale; //! scaling factor for RF electric field
         amrex::ParticleReal m_freq; //! RF frequency in Hz
         amrex::ParticleReal m_phase; //! RF driven phase in deg

@@ -30,12 +30,12 @@ ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.0e-3,
-    sigmaY=1.0e-3,
-    sigmaT=0.3,
-    sigmaPx=2.0e-4,
-    sigmaPy=2.0e-4,
-    sigmaPt=2.0e-4,
+    lambdaX=1.0e-3,
+    lambdaY=1.0e-3,
+    lambdaT=0.3,
+    lambdaPx=2.0e-4,
+    lambdaPy=2.0e-4,
+    lambdaPt=2.0e-4,
     muxpx=-0.0,
     muypy=0.0,
     mutpt=0.0,
@@ -48,13 +48,15 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element
 segment = [
-    elements.Drift(ds=0.003926990816987, nslice=ns),
-    elements.ThinDipole(theta=0.45, rc=1.0),
-    elements.Drift(ds=0.003926990816987, nslice=ns),
+    elements.Drift(name="drift1", ds=0.003926990816987, nslice=ns),
+    elements.ThinDipole(name="kick", theta=0.45, rc=1.0),
+    elements.Drift(name="drift2", ds=0.003926990816987, nslice=ns),
 ]
 bend = 200 * segment
 
-inverse_bend = elements.ExactSbend(ds=-1.570796326794897, phi=-90.0)
+inverse_bend = elements.ExactSbend(
+    name="inverse_bend", ds=-1.570796326794897, phi=-90.0
+)
 
 sim.lattice.append(monitor)
 sim.lattice.extend(bend)
@@ -62,7 +64,7 @@ sim.lattice.append(inverse_bend)
 sim.lattice.append(monitor)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

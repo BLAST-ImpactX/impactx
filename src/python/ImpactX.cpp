@@ -6,6 +6,7 @@
 #include "pyImpactX.H"
 
 #include <ImpactX.H>
+#include <particles/transformation/CoordinateTransformation.H>
 
 #include <AMReX.H>
 #include <AMReX_ParmParse.H>
@@ -61,20 +62,6 @@ void init_ImpactX (py::module& m)
 
         .def("load_inputs_file",
             [](ImpactX const & /* ix */, std::string const & filename) {
-#if defined(AMREX_DEBUG) || defined(DEBUG)
-                // note: only in debug, since this is costly for the file
-                // system for highly parallel simulations with MPI
-                // possible improvement:
-                // - rank 0 tests file & broadcasts existence/failure
-                bool inputs_file_exists = false;
-                if (FILE *fp = fopen(filename.c_str(), "r")) {
-                    fclose(fp);
-                    inputs_file_exists = true;
-                }
-                AMREX_ALWAYS_ASSERT_WITH_MESSAGE(inputs_file_exists,
-                    "load_inputs_file: file does not exist: " + filename);
-#endif
-
                 amrex::ParmParse::addfile(filename);
             })
 
@@ -202,6 +189,36 @@ void init_ImpactX (py::module& m)
             },
             "Whether to calculate space charge effects."
         )
+        .def_property("csr",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "csr");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("csr", enable);
+            },
+            "Enable or disable Coherent Synchrotron Radiation (CSR) calculations (default: disabled)."
+        )
+        .def_property("csr_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "csr_bins");
+            },
+            [](ImpactX & /* ix */, int csr_bins) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("csr_bins", csr_bins);
+            },
+            "Number of longitudinal bins used for CSR calculations (default: 150)."
+        )
+        .def_property("eigenemittances",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("diag", "eigenemittances");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_diag("diag");
+                pp_diag.add("eigenemittances", enable);
+            },
+            "Enable or disable eigenemittance diagnostic calculations (default: disabled)."
+        )
         .def_property("space_charge",
              [](ImpactX & /* ix */) {
                  return detail::get_or_throw<bool>("algo", "space_charge");
@@ -211,6 +228,20 @@ void init_ImpactX (py::module& m)
                  pp_algo.add("space_charge", enable);
              },
              "Enable or disable space charge calculations (default: enabled)."
+        )
+        .def_property("poisson_solver",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<std::string>("algo", "poisson_solver");
+            },
+            [](ImpactX & /* ix */, std::string const poisson_solver) {
+                if (poisson_solver != "multigrid" && poisson_solver != "fft") {
+                    throw std::runtime_error("Poisson solver must be multigrid or fft but is: " + poisson_solver);
+                }
+
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("poisson_solver", poisson_solver);
+            },
+            "The numerical solver to solve the Poisson equation when calculating space charge effects. Either multigrid (default) or fft."
         )
         .def_property("mlmg_relative_tolerance",
               [](ImpactX & /* ix */) {
@@ -297,20 +328,6 @@ void init_ImpactX (py::module& m)
              "The minimum number of digits (default: 6) used for the step\n"
              "number appended to the diagnostic file names."
         )
-        .def("set_diag_iota_invariants",
-              [](ImpactX & /* ix */, amrex::ParticleReal alpha, amrex::ParticleReal beta, amrex::ParticleReal tn, amrex::ParticleReal cn) {
-                  amrex::ParmParse pp_diag("diag");
-
-                  pp_diag.add("alpha", alpha);
-                  pp_diag.add("beta", beta);
-                  pp_diag.add("tn", tn);
-                  pp_diag.add("cn", cn);
-              },
-              py::arg("alpha"), py::arg("beta"), py::arg("tn"), py::arg("cn"),
-              "Set the Twiss alpha, beta (m), dimensionless strength of the nonlinear insert and "
-              "scale parameter of the nonlinear insert (m^[1/2]) of the IOTA nonlinear lens "
-              "invariants diagnostics."
-        )
         .def_property("particle_lost_diagnostics_backend",
                       [](ImpactX & /* ix */) {
                           return detail::get_or_throw<std::string>("diag", "backend");
@@ -362,6 +379,44 @@ void init_ImpactX (py::module& m)
             "if there are unused parameters in the input."
         )
 
+        .def_property("verbose",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<int>("impactx", "verbose");
+            },
+            [](ImpactX & /* ix */, int const verbose) {
+                amrex::ParmParse pp_impactx("impactx");
+                pp_impactx.add("verbose", verbose);
+            },
+            "Controls how much information is printed to the terminal, when running ImpactX.\n"
+            "``0`` for silent, higher is more verbose. Default is ``1``."
+        )
+
+        .def("deposit_charge",
+            [](ImpactX & ix) {
+                // transform from x',y',t to x,y,z
+                transformation::CoordinateTransformation(
+                        *(ix.amr_data)->m_particle_container,
+                        CoordSystem::t);
+
+                // Note: The following operation assume that
+                // the particles are in x, y, z coordinates.
+
+                // Resize the mesh, based on `m_particle_container` extent
+                ix.ResizeMesh();
+
+                // Redistribute particles in the new mesh in x, y, z
+                ix.amr_data->m_particle_container->Redistribute();
+
+                // charge deposition
+                ix.amr_data->m_particle_container->DepositCharge(ix.amr_data->m_rho, ix.amr_data->refRatio());
+
+                // transform from x,y,z to x',y',t
+                transformation::CoordinateTransformation(*(ix.amr_data)->m_particle_container,
+                                                         CoordSystem::s);
+            },
+            "Deposit charge in x,y,z."
+        )
+
         .def("finalize", &ImpactX::finalize,
              "Deallocate all contexts and data."
         )
@@ -381,9 +436,12 @@ void init_ImpactX (py::module& m)
         )
 
         .def("evolve", &ImpactX::evolve,
-             "Run the main simulation loop for a number of steps."
+             "Run the main simulation loop."
         )
-        // TODO: step
+        .def("track_particles", &ImpactX::track_particles,
+             "Run the particle tracking simulation loop."
+        )
+
         .def("resize_mesh", &ImpactX::ResizeMesh,
              "Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters."
         )

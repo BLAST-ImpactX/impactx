@@ -7,9 +7,9 @@
 #
 # -*- coding: utf-8 -*-
 
-from conftest import basepath
 import numpy as np
 import pytest
+from conftest import basepath
 
 from impactx import ImpactX, distribution, elements
 
@@ -34,7 +34,7 @@ def test_impactx_fodo_file():
     sim.init_beam_distribution_from_inputs()
     sim.init_lattice_elements_from_inputs()
 
-    sim.evolve()
+    sim.track_particles()
 
     # validate the results
     beam = sim.particle_container()
@@ -96,12 +96,12 @@ def test_impactx_nofile():
 
     #   particle bunch
     distr = distribution.Waterbag(
-        sigmaX=3.9984884770e-5,
-        sigmaY=3.9984884770e-5,
-        sigmaT=1.0e-3,
-        sigmaPx=2.6623538760e-5,
-        sigmaPy=2.6623538760e-5,
-        sigmaPt=2.0e-3,
+        lambdaX=3.9984884770e-5,
+        lambdaY=3.9984884770e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=2.6623538760e-5,
+        lambdaPy=2.6623538760e-5,
+        lambdaPt=2.0e-3,
         muxpx=-0.846574929020762,
         muypy=0.846574929020762,
         mutpt=0.0,
@@ -112,11 +112,11 @@ def test_impactx_nofile():
 
     # init accelerator lattice
     fodo = [
-        elements.Drift(0.25),
-        elements.Quad(1.0, 1.0),
-        elements.Drift(0.5),
-        elements.Quad(1.0, -1.0),
-        elements.Drift(0.25),
+        elements.Drift(name="d1", ds=0.25),
+        elements.Quad(name="q1", ds=1.0, k=1.0),
+        elements.Drift(name="d2", ds=0.5),
+        elements.Quad(name="q2", ds=1.0, k=-1.0),
+        elements.Drift(name="d3", ds=0.25),
     ]
     #  assign a fodo segment
     # sim.lattice = fodo
@@ -127,13 +127,13 @@ def test_impactx_nofile():
 
     # add 2 more drifts
     for i in range(4):
-        sim.lattice.append(elements.Drift(0.25))
+        sim.lattice.append(elements.Drift(name="d" + str(4 + i), ds=0.25))
 
     print(sim.lattice)
     print(len(sim.lattice))
     assert len(sim.lattice) > 5
 
-    sim.evolve()
+    sim.track_particles()
 
     # finalize simulation
     sim.finalize()
@@ -158,12 +158,12 @@ def test_impactx_noparticles():
     #   particle bunch: init intentionally missing
 
     # init accelerator lattice
-    sim.lattice.append(elements.Drift(0.5))
+    sim.lattice.append(elements.Drift(ds=0.5))
 
     with pytest.raises(
         RuntimeError, match="No particles found. Cannot run evolve without a beam."
     ):
-        sim.evolve()
+        sim.track_particles()
 
     # finalize simulation
     sim.finalize()
@@ -212,12 +212,12 @@ def test_impactx_resting_refparticle():
     #   reference particle: init intentionally missing
     #   particle bunch
     gaussian = distribution.Gaussian(
-        sigmaX=4.0e-5,
-        sigmaY=5.0e-5,
-        sigmaT=1.0e-3,
-        sigmaPx=1.0e-5,
-        sigmaPy=3.0e-5,
-        sigmaPt=2.0e-3,
+        lambdaX=4.0e-5,
+        lambdaY=5.0e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=1.0e-5,
+        lambdaPy=3.0e-5,
+        lambdaPt=2.0e-3,
     )
     with pytest.raises(
         RuntimeError,
@@ -225,13 +225,13 @@ def test_impactx_resting_refparticle():
     ):
         sim.add_particles(bunch_charge=0.0, distr=gaussian, npart=10)
 
-    sim.lattice.append(elements.Drift(0.25))
+    sim.lattice.append(elements.Drift(ds=0.25))
 
     with pytest.raises(
         RuntimeError,
         match="The reference particle energy is zero. Not yet initialized?",
     ):
-        sim.evolve()
+        sim.track_particles()
 
     # finalize simulation
     sim.finalize()
@@ -254,7 +254,7 @@ def test_impactx_no_elements():
         RuntimeError,
         match="Beamline lattice has zero elements. Not yet initialized?",
     ):
-        sim.evolve()
+        sim.track_particles()
 
     # finalize simulation
     sim.finalize()

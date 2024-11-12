@@ -9,6 +9,7 @@
  */
 #include "ImpactX.H"
 #include "initialization/InitAmrCore.H"
+#include "initialization/InitDistribution.H"
 #include "particles/CollectLost.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
@@ -17,8 +18,7 @@
 #include "particles/spacecharge/GatherAndPush.H"
 #include "particles/spacecharge/PoissonSolve.H"
 #include "particles/transformation/CoordinateTransformation.H"
-
-#include <ablastr/warn_manager/WarnManager.H>
+#include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -74,7 +74,11 @@ namespace impactx {
         init_warning_logger();
 
         // move old diagnostics out of the way
-        amrex::UtilCreateCleanDirectory("diags", true);
+        bool diag_enable = true;
+        amrex::ParmParse("diag").queryAdd("enable", diag_enable);
+        if (diag_enable) {
+            amrex::UtilCreateCleanDirectory("diags", true);
+        }
 
         // the particle container has been set to track the same Geometry as ImpactX
 
@@ -87,8 +91,11 @@ namespace impactx {
 
         // alloc particle containers
         //   the lost particles have an extra runtime attribute: s when it was lost
-        bool comm = true;
-        amr_data->m_particles_lost->AddRealComp(comm);
+        if (!amr_data->m_particles_lost->HasRealComp("s_lost"))
+        {
+            bool comm = true;
+            amr_data->m_particles_lost->AddRealComp("s_lost", comm);
+        }
 
         //   have to resize here, not in the constructor because grids have not
         //   been built when constructor was called.
@@ -102,8 +109,15 @@ namespace impactx {
 
         // print AMReX grid summary
         if (amrex::ParallelDescriptor::IOProcessor()) {
-            std::cout << "\nGrids Summary:\n";
-            amr_data->printGridSummary(std::cout, 0, amr_data->finestLevel());
+            // verbosity
+            amrex::ParmParse pp_impactx("impactx");
+            int verbose = 1;
+            pp_impactx.queryAdd("verbose", verbose);
+
+            if (verbose > 0) {
+                std::cout << "\nGrids Summary:\n";
+                amr_data->printGridSummary(std::cout, 0, amr_data->finestLevel());
+            }
         }
 
         // keep track that init is done
@@ -114,11 +128,23 @@ namespace impactx {
     {
         BL_PROFILE("ImpactX::evolve");
 
+        track_particles();
+    }
+
+    void ImpactX::track_particles ()
+    {
+        BL_PROFILE("ImpactX::track_particles");
+
         validate();
+
+        // verbosity
+        amrex::ParmParse pp_impactx("impactx");
+        int verbose = 1;
+        pp_impactx.queryAdd("verbose", verbose);
 
         // a global step for diagnostics including space charge slice steps in elements
         //   before we start the evolve loop, we are in "step 0" (initial state)
-        int global_step = 0;
+        int step = 0;
 
         // check typos in inputs after step 1
         bool early_params_checked = false;
@@ -126,7 +152,9 @@ namespace impactx {
         amrex::ParmParse pp_diag("diag");
         bool diag_enable = true;
         pp_diag.queryAdd("enable", diag_enable);
-        amrex::Print() << " Diagnostics: " << diag_enable << "\n";
+        if (verbose > 0) {
+            amrex::Print() << " Diagnostics: " << diag_enable << "\n";
+        }
 
         int file_min_digits = 6;
         if (diag_enable)
@@ -137,13 +165,7 @@ namespace impactx {
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
                                           diagnostics::OutputType::PrintRefParticle,
                                           "diags/ref_particle",
-                                          global_step);
-
-            // print the initial values of the two invariants H and I
-            std::string const diag_name = amrex::Concatenate("diags/nonlinear_lens_invariants_", global_step, file_min_digits);
-            diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                          diagnostics::OutputType::PrintNonlinearLensInvariants,
-                                          diag_name);
+                                          step);
 
             // print the initial values of reduced beam characteristics
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
@@ -155,13 +177,21 @@ namespace impactx {
         amrex::ParmParse pp_algo("algo");
         bool space_charge = false;
         pp_algo.query("space_charge", space_charge);
-        amrex::Print() << " Space Charge effects: " << space_charge << "\n";
+        if (verbose > 0) {
+            amrex::Print() << " Space Charge effects: " << space_charge << "\n";
+        }
+
+        bool csr = false;
+        pp_algo.query("csr", csr);
+        if (verbose > 0) {
+            amrex::Print() << " CSR effects: " << csr << "\n";
+        }
 
         // periods through the lattice
-        int periods = 1;
-        amrex::ParmParse("lattice").queryAdd("periods", periods);
+        int num_periods = 1;
+        amrex::ParmParse("lattice").queryAdd("periods", num_periods);
 
-        for (int cycle=0; cycle < periods; ++cycle) {
+        for (int period=0; period < num_periods; ++period) {
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
@@ -178,9 +208,14 @@ namespace impactx {
                 // sub-steps for space charge within the element
                 for (int slice_step = 0; slice_step < nslice; ++slice_step) {
                     BL_PROFILE("ImpactX::evolve::slice_step");
-                    global_step++;
-                    amrex::Print() << " ++++ Starting global_step=" << global_step
-                                   << " slice_step=" << slice_step << "\n";
+                    step++;
+                    if (verbose > 0) {
+                        amrex::Print() << " ++++ Starting step=" << step
+                                       << " slice_step=" << slice_step << "\n";
+                    }
+
+                    // Wakefield calculation: call wakefield function to apply wake effects
+                    particles::wakefields::HandleWakefield(*amr_data->m_particle_container, element_variant, slice_ds);
 
                     // Space-charge calculation: turn off if there is only 1 particle
                     if (space_charge &&
@@ -235,13 +270,15 @@ namespace impactx {
                     // assuming that the distribution did not change
 
                     // push all particles with external maps
-                    Push(*amr_data->m_particle_container, element_variant, global_step);
+                    Push(*amr_data->m_particle_container, element_variant, step, period);
 
                     // move "lost" particles to another particle container
                     collect_lost_particles(*amr_data->m_particle_container);
 
                     // just prints an empty newline at the end of the slice_step
-                    amrex::Print() << "\n";
+                    if (verbose > 0) {
+                        amrex::Print() << "\n";
+                    }
 
                     // slice-step diagnostics
                     bool slice_step_diagnostics = false;
@@ -252,14 +289,14 @@ namespace impactx {
                         diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
                                                       diagnostics::OutputType::PrintRefParticle,
                                                       "diags/ref_particle",
-                                                      global_step,
+                                                      step,
                                                       true);
 
                         // print slice step reduced beam characteristics to file
                         diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
                                                       diagnostics::OutputType::PrintReducedBeamCharacteristics,
                                                       "diags/reduced_beam_characteristics",
-                                                      global_step,
+                                                      step,
                                                       true);
 
                     }
@@ -278,19 +315,13 @@ namespace impactx {
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
                                           diagnostics::OutputType::PrintRefParticle,
                                           "diags/ref_particle_final",
-                                          global_step);
-
-            // print the final values of the two invariants H and I
-            diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                          diagnostics::OutputType::PrintNonlinearLensInvariants,
-                                          "diags/nonlinear_lens_invariants_final",
-                                          global_step);
+                                          step);
 
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
                                           diagnostics::OutputType::PrintReducedBeamCharacteristics,
                                           "diags/reduced_beam_characteristics_final",
-                                          global_step);
+                                          step);
 
             // output particles lost in apertures
             if (amr_data->m_particles_lost->TotalNumberOfParticles() > 0)
@@ -299,7 +330,7 @@ namespace impactx {
                 pp_diag.queryAdd("backend", openpmd_backend);
 
                 diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
-                output_lost(*amr_data->m_particles_lost, 0);
+                output_lost(*amr_data->m_particles_lost, 0, 0);
                 output_lost.finalize();
             }
         }
@@ -311,6 +342,5 @@ namespace impactx {
                 element.finalize();
             }, element_variant);
         }
-
     }
 } // namespace impactx

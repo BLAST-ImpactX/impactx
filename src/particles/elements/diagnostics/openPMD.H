@@ -17,6 +17,9 @@
 #include <AMReX_REAL.H>
 
 #include <any>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 
 namespace impactx::diagnostics
@@ -62,7 +65,7 @@ namespace detail
     struct BeamMonitor
     : public elements::Thin
     {
-        static constexpr auto name = "BeamMonitor";
+        static constexpr auto type = "BeamMonitor";
         using PType = typename ImpactXParticleContainer::ParticleType;
         using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PinnedArenaAllocator>;
 
@@ -73,8 +76,9 @@ namespace detail
          * @param series_name name of the data series, usually the element name
          * @param backend file format backend for openPMD, e.g., "bp" or "h5"
          * @param encoding openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
+         * @param period_sample_intervals for periodic lattice, only output every Nth period (turn)
          */
-        BeamMonitor (std::string series_name, std::string backend="default", std::string encoding="g");
+        BeamMonitor (std::string series_name, std::string backend="default", std::string encoding="g", int period_sample_intervals=1);
 
         BeamMonitor (BeamMonitor const & other) = default;
         BeamMonitor (BeamMonitor && other) = default;
@@ -86,11 +90,15 @@ namespace detail
          * And write reference particle.
          *
          * @param[in] pc particle container
+         * @param[in] real_soa_names ParticleReal component names
+         * @param[in] int_soa_names integer component names
          * @param[in] ref_part reference particle
          * @param[in] step global step for diagnostics
          */
         void prepare (
             PinnedContainer & pc,
+            std::vector<std::string> const & real_soa_names,
+            std::vector<std::string> const & int_soa_names,
             RefPart const & ref_part,
             int step
         );
@@ -101,19 +109,25 @@ namespace detail
          *
          * @param[in,out] pc particle container to push
          * @param[in] step global step for diagnostics
+         * @param[in] period for periodic lattices, this is the current period (turn or cycle)
          */
         void operator() (
             ImpactXParticleContainer & pc,
-            int step
+            int step,
+            int period
         );
 
         /** Write a tile of particles
          *
          * @param pti particle tile iterator
+         * @param[in] real_soa_names ParticleReal component names
+         * @param[in] int_soa_names integer component names
          * @param ref_part reference particle
          */
         void operator() (
             PinnedContainer::ParIterType & pti,
+            std::vector<std::string> const & real_soa_names,
+            std::vector<std::string> const & int_soa_names,
             RefPart const & ref_part
         );
 
@@ -138,12 +152,14 @@ namespace detail
         finalize ();
 
     private:
-        std::string m_series_name; //! ...
-        std::string m_OpenPMDFileType; //! ...
-        std::any m_series; //! openPMD::Series; ...
-        int m_step = 0; //! ...
+        std::string m_series_name; //! openPMD filename
+        std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
+        std::any m_series; //! openPMD::Series that holds potentially multiple outputs
+        int m_step = 0; //! global step for output
 
         int m_file_min_digits = 6; //! minimum number of digits to iteration number in file name
+
+        int m_period_sample_intervals = 1; //! only output every Nth period (turn or cycle) of periodic lattices
 
         /** This rank's offset in the MPI-global particle array, by level
          *
@@ -151,7 +167,24 @@ namespace detail
          */
         std::vector<uint64_t> m_offset;
 
+        /** Reduced Beam Characteristics
+         *
+         * In situ calculated particle bunch moments.
+         */
+        std::unordered_map<std::string, amrex::ParticleReal> m_rbc;
+
     };
+
+    /** Calculate additional particle properties.
+     *
+     * @param[in] element_name name of the element (for input queries)
+     * @param[inout] pc particle container
+     */
+    void
+    add_optional_properties (
+        std::string const & element_name,
+        ImpactXParticleContainer & pc
+    );
 
 } // namespace impactx::diagnostics
 

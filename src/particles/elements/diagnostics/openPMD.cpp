@@ -11,6 +11,7 @@
 #include "openPMD.H"
 #include "ImpactXVersion.H"
 #include "particles/ImpactXParticleContainer.H"
+#include "particles/diagnostics/ReducedBeamCharacteristics.H"
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
@@ -24,6 +25,7 @@ namespace io = openPMD;
 
 #include <string>
 #include <utility>
+#include <vector>
 
 
 namespace impactx::diagnostics
@@ -137,6 +139,7 @@ namespace detail
 
     void BeamMonitor::finalize ()
     {
+#ifdef ImpactX_USE_OPENPMD
         // close shared series alias
         if (m_series.has_value())
         {
@@ -148,10 +151,11 @@ namespace detail
         // remove from unique series map
         if (m_unique_series.count(m_series_name) != 0u)
             m_unique_series.erase(m_series_name);
+#endif // ImpactX_USE_OPENPMD
     }
 
-    BeamMonitor::BeamMonitor (std::string series_name, std::string backend, std::string encoding) :
-        m_series_name(std::move(series_name)), m_OpenPMDFileType(std::move(backend))
+    BeamMonitor::BeamMonitor (std::string series_name, std::string backend, std::string encoding, int period_sample_intervals) :
+        m_series_name(std::move(series_name)), m_OpenPMDFileType(std::move(backend)), m_period_sample_intervals(period_sample_intervals)
     {
 #ifdef ImpactX_USE_OPENPMD
         // pick first available backend if default is chosen
@@ -175,8 +179,10 @@ namespace detail
         else if ( "f" == encoding )
             series_encoding = openPMD::IterationEncoding::fileBased;
 
-        // legacy options from other diagnostics
         amrex::ParmParse pp_diag("diag");
+        // turn filter
+        pp_diag.queryAdd("period_sample_intervals", m_period_sample_intervals);
+        // legacy options from other diagnostics
         pp_diag.queryAdd("file_min_digits", m_file_min_digits);
 
         // Ensure m_series is the same for the same names.
@@ -217,6 +223,8 @@ namespace detail
 
     void BeamMonitor::prepare (
         PinnedContainer & pc,
+        std::vector<std::string> const & real_soa_names,
+        std::vector<std::string> const & int_soa_names,
         RefPart const & ref_part,
         int step
     ) {
@@ -253,6 +261,7 @@ namespace detail
         // reference particle information
         beam.setAttribute( "beta_ref", ref_part.beta() );
         beam.setAttribute( "gamma_ref", ref_part.gamma() );
+        beam.setAttribute( "beta_gamma_ref", ref_part.beta_gamma() );
         beam.setAttribute( "s_ref", ref_part.s );
         beam.setAttribute( "x_ref", ref_part.x );
         beam.setAttribute( "y_ref", ref_part.y );
@@ -262,8 +271,14 @@ namespace detail
         beam.setAttribute( "py_ref", ref_part.py );
         beam.setAttribute( "pz_ref", ref_part.pz );
         beam.setAttribute( "pt_ref", ref_part.pt );
-        beam.setAttribute( "mass", ref_part.mass );
-        beam.setAttribute( "charge", ref_part.charge );
+        beam.setAttribute( "mass_ref", ref_part.mass );
+        beam.setAttribute( "charge_ref", ref_part.charge );
+
+        // total particle bunch information
+        //   @see impactx::diagnostics::reduced_beam_characteristics
+        for (const auto &kv : m_rbc) {
+            beam.setAttribute(kv.first, kv.second);
+        }
 
         // openPMD coarse position: for global coordinates
         {
@@ -281,7 +296,6 @@ namespace detail
 
         // SoA: Real
         {
-            std::vector<std::string> real_soa_names = get_RealSoA_names(pc.NumRealComps());
             for (auto real_idx = 0; real_idx < pc.NumRealComps(); real_idx++) {
                 auto const component_name = real_soa_names.at(real_idx);
                 getComponentRecord(component_name).resetDataset(d_fl);
@@ -289,22 +303,41 @@ namespace detail
         }
         // SoA: Int
         static_assert(IntSoA::nattribs == 0); // not yet used
+        if (!int_soa_names.empty())
+            throw std::runtime_error("BeamMonitor: int_soa_names output not yet implemented!");
 #else
         amrex::ignore_unused(pc, step);
-#endif
+#endif // ImpactX_USE_OPENPMD
     }
 
     void
     BeamMonitor::operator() (
         ImpactXParticleContainer & pc,
-        int step
+        int step,
+        int period
     )
     {
-        std::string profile_name = "impactx::Push::" + std::string(BeamMonitor::name);
+        // filter out this turn?
+        if (period % m_period_sample_intervals != 0)
+            return;
+
+#ifdef ImpactX_USE_OPENPMD
+        std::string profile_name = "impactx::Push::" + std::string(BeamMonitor::type);
         BL_PROFILE(profile_name);
 
         // preparing to access reference particle data: RefPart
         RefPart & ref_part = pc.GetRefParticle();
+
+        // optional: add and calculate additional particle properties
+        add_optional_properties(m_series_name, pc);
+
+        // optional: calculate total particle bunch information
+        m_rbc.clear();
+        m_rbc = diagnostics::reduced_beam_characteristics(pc);
+
+        // component names
+        std::vector<std::string> real_soa_names = pc.RealSoA_names();
+        std::vector<std::string> int_soa_names = pc.intSoA_names();
 
         // pinned memory copy
         PinnedContainer pinned_pc = pc.make_alike<amrex::PinnedArenaAllocator>();
@@ -323,7 +356,7 @@ namespace detail
         */
 
         // prepare element access & write reference particle
-        this->prepare(pinned_pc, ref_part, step);
+        this->prepare(pinned_pc, real_soa_names, int_soa_names, ref_part, step);
 
         // loop over refinement levels
         int const nLevel = pinned_pc.finestLevel();
@@ -335,7 +368,7 @@ namespace detail
             // note: openPMD-api is not thread-safe, so do not run OMP parallel here
             for (ParIt pti(pinned_pc, lev); pti.isValid(); ++pti) {
                 // write beam particles relative to reference particle
-                this->operator()(pti, ref_part);
+                this->operator()(pti, real_soa_names, int_soa_names, ref_part);
             } // end loop over all particle boxes
         } // end mesh-refinement level loop
 
@@ -345,11 +378,16 @@ namespace detail
 
         // close iteration
         iteration.close();
+#else
+        amrex::ignore_unused(pc, step);
+#endif // ImpactX_USE_OPENPMD
     }
 
     void
     BeamMonitor::operator() (
         PinnedContainer::ParIterType & pti,
+        std::vector<std::string> const & real_soa_names,
+        std::vector<std::string> const & int_soa_names,
         RefPart const & ref_part
     )
     {
@@ -386,7 +424,6 @@ namespace detail
         }
         //   SoA floating point (ParticleReal) properties
         {
-            std::vector<std::string> real_soa_names = get_RealSoA_names(soa.NumRealComps());
             for (auto real_idx=0; real_idx < soa.NumRealComps(); real_idx++) {
                 auto const component_name = real_soa_names.at(real_idx);
                 getComponentRecord(component_name).storeChunkRaw(
@@ -396,10 +433,11 @@ namespace detail
         //   SoA integer (int) properties (not yet used)
         {
             static_assert(IntSoA::nattribs == 0); // not yet used
+            if (!int_soa_names.empty())
+                throw std::runtime_error("BeamMonitor: int_soa_names output not yet implemented!");
             /*
             // comment this in once IntSoA::nattribs is > 0
 
-            std::vector<std::string> int_soa_names(IntSoA::names_s.size);
             std::copy(IntSoA::names_s.begin(), IntSoA::names_s.end(), int_soa_names.begin());
 
             for (auto int_idx=0; int_idx < RealSoA::nattribs; int_idx++) {
@@ -421,7 +459,7 @@ namespace detail
         series.flush();
 #else
         amrex::ignore_unused(pti, ref_part);
-#endif
+#endif   // ImpactX_USE_OPENPMD
     }
 
 } // namespace impactx::diagnostics

@@ -34,12 +34,12 @@ ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Kurth6D(
-    sigmaX=9.84722273e-4,
-    sigmaY=6.96967278e-4,
-    sigmaT=4.486799242214e-03,
-    sigmaPx=0.0,
-    sigmaPy=0.0,
-    sigmaPt=0.0,
+    lambdaX=9.84722273e-4,
+    lambdaY=6.96967278e-4,
+    lambdaT=4.486799242214e-03,
+    lambdaPx=0.0,
+    lambdaPy=0.0,
+    lambdaPt=0.0,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -50,14 +50,15 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 sim.lattice.append(monitor)
 
 #   Quad elements
-fquad = elements.Quad(ds=0.15, k=2.4669749766168163, nslice=6)
-dquad = elements.Quad(ds=0.3, k=-2.4669749766168163, nslice=12)
+fquad = elements.Quad(name="fquad", ds=0.15, k=2.4669749766168163, nslice=6)
+dquad = elements.Quad(name="dquad", ds=0.3, k=-2.4669749766168163, nslice=12)
 
 #   Drift element
-dr = elements.Drift(ds=0.1, nslice=4)
+dr = elements.Drift(name="dr", ds=0.1, nslice=4)
 
 #   RF cavity elements
 gapa1 = elements.RFCavity(
+    name="gapa1",
     ds=1.0,
     escale=0.042631556991578,
     freq=7.0e8,
@@ -121,6 +122,7 @@ gapa1 = elements.RFCavity(
 )
 
 gapb1 = elements.RFCavity(
+    name="gapb1",
     ds=1.0,
     escale=0.042631556991578,
     freq=7.0e8,
@@ -195,7 +197,7 @@ for element in lattice_no_drifts[1:]:
 sim.lattice.append(monitor)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

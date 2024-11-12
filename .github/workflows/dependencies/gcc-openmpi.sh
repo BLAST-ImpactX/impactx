@@ -14,6 +14,8 @@ sudo apt-get install -y \
     ccache              \
     cmake               \
     gnupg               \
+    libfftw3-dev        \
+    libfftw3-mpi-dev    \
     libhdf5-openmpi-dev \
     libopenmpi-dev      \
     ninja-build         \
@@ -24,8 +26,10 @@ sudo apt-get install -y \
 
 python3 -m pip install -U pip
 python3 -m pip install -U build packaging setuptools wheel
-python3 -m pip install -U cmake pytest
+python3 -m pip install -U cmake
 python3 -m pip install -U -r requirements_mpi.txt
+python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
 python3 -m pip install -U -r examples/requirements.txt
+python3 -m pip install -U -r tests/python/requirements.txt
 
 python3 -m pip install -U openPMD-validator

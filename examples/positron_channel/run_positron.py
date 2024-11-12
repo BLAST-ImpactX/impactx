@@ -31,12 +31,12 @@ ref.set_charge_qe(1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_M
 
 #   particle bunch
 distr = distribution.Triangle(
-    sigmaX=5.054566450e-6,
-    sigmaY=5.054566450e-6,
-    sigmaT=8.43732950e-7,
-    sigmaPx=1.01091329e-7,
-    sigmaPy=1.01091329e-7,
-    sigmaPt=1.0e-2,
+    lambdaX=5.054566450e-6,
+    lambdaY=5.054566450e-6,
+    lambdaT=8.43732950e-7,
+    lambdaPx=1.01091329e-7,
+    lambdaPy=1.01091329e-7,
+    lambdaPt=1.0e-2,
     muxpx=0.0,
     muypy=0.0,
     mutpt=0.995037190209989,
@@ -50,14 +50,16 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 period = [
     monitor,
-    elements.ChrQuad(ds=0.1, k=-6.674941, units=1, nslice=ns),
-    elements.ChrDrift(ds=0.3, nslice=ns),
-    elements.ChrQuad(ds=0.2, k=6.674941, units=1, nslice=ns),
-    elements.ChrDrift(ds=0.3, nslice=ns),
-    elements.ChrQuad(ds=0.1, k=-6.674941, units=1, nslice=ns),
-    elements.ChrDrift(ds=0.1, nslice=ns),
-    elements.ChrAcc(ds=1.8, ez=10871.950994502130424, bz=1.0e-12, nslice=ns),
-    elements.ChrDrift(ds=0.1, nslice=ns),
+    elements.ChrQuad(name="quad1", ds=0.1, k=-6.674941, unit=1, nslice=ns),
+    elements.ChrDrift(name="drift1", ds=0.3, nslice=ns),
+    elements.ChrQuad(name="quad2", ds=0.2, k=6.674941, unit=1, nslice=ns),
+    elements.ChrDrift(name="drift2", ds=0.3, nslice=ns),
+    elements.ChrQuad(name="quad3", ds=0.1, k=-6.674941, unit=1, nslice=ns),
+    elements.ChrDrift(name="drift3", ds=0.1, nslice=ns),
+    elements.ChrAcc(
+        name="acc", ds=1.8, ez=10871.950994502130424, bz=1.0e-12, nslice=ns
+    ),
+    elements.ChrDrift(name="drift4", ds=0.1, nslice=ns),
     monitor,
 ]
 
@@ -67,7 +69,7 @@ sim.lattice.extend(period)
 sim.periods = 250
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

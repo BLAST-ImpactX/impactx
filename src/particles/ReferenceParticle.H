@@ -12,11 +12,11 @@
 
 #include <ablastr/constant.H>
 
-#include <AMReX_Array.H>
 #include <AMReX_BLassert.H>
 #include <AMReX_Extension.H>
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SmallMatrix.H>
 
 #include <cmath>
 
@@ -41,7 +41,7 @@ namespace impactx
         amrex::ParticleReal charge = 0.0; ///< reference charge, in C
 
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
-        amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> map; ///< linearized map
+        amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
 
         /** Get reference particle relativistic gamma
          *
@@ -66,7 +66,7 @@ namespace impactx
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_beta = sqrt(1.0_prt - 1.0_prt/pow(ref_gamma,2));
+            amrex::ParticleReal const ref_beta = std::sqrt(1.0_prt - 1.0_prt / std::pow(ref_gamma, 2));
             return ref_beta;
         }
 
@@ -81,7 +81,7 @@ namespace impactx
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = sqrt(pow(ref_gamma, 2) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(std::pow(ref_gamma, 2) - 1.0_prt);
             return ref_betagamma;
         }
 
@@ -95,7 +95,7 @@ namespace impactx
         {
             using namespace amrex::literals;
 
-            constexpr amrex::ParticleReal inv_MeV_invc2 = 1.0_prt /  ablastr::constant::SI::MeV_invc2;
+            constexpr amrex::ParticleReal inv_MeV_invc2 = 1.0_prt / ablastr::constant::SI::MeV_invc2;
             return amrex::ParticleReal(mass * inv_MeV_invc2);
         }
 
@@ -118,7 +118,7 @@ namespace impactx
             if (pt != 0.0_prt)
             {
                 pt = -kin_energy_MeV() / massE - 1.0_prt;
-                pz = sqrt(pow(pt, 2) - 1.0_prt);
+                pz = std::sqrt(std::pow(pt, 2) - 1.0_prt);
             }
 
             return *this;
@@ -155,7 +155,7 @@ namespace impactx
             px = 0.0;
             py = 0.0;
             pt = -kin_energy / mass_MeV() - 1.0_prt;
-            pz = sqrt(pow(pt, 2) - 1.0_prt);
+            pz = std::sqrt(std::pow(pt, 2) - 1.0_prt);
 
             return *this;
         }
@@ -171,7 +171,7 @@ namespace impactx
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = sqrt(pow(ref_gamma, 2) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(std::pow(ref_gamma, 2) - 1.0_prt);
             //amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge; //fails due to "charge"
             amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/(ablastr::constant::SI::q_e);
             return ref_rigidity;
@@ -208,11 +208,11 @@ namespace impactx
 
         /** Get reference particle charge to mass ratio
          *
-         * @returns charge to mass ratio (elementary charge/eV)
+         * @returns charge to mass ratio (in SI units of C/kg)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         amrex::ParticleReal
-        qm_qeeV () const
+        qm_ratio_SI () const
         {
             return charge / mass;
         }

@@ -31,12 +31,12 @@ def test_element_push():
 
     #   particle bunch
     distr = distribution.Waterbag(
-        sigmaX=3.9984884770e-5,
-        sigmaY=3.9984884770e-5,
-        sigmaT=1.0e-3,
-        sigmaPx=2.6623538760e-5,
-        sigmaPy=2.6623538760e-5,
-        sigmaPt=2.0e-3,
+        lambdaX=3.9984884770e-5,
+        lambdaY=3.9984884770e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=2.6623538760e-5,
+        lambdaPy=2.6623538760e-5,
+        lambdaPt=2.0e-3,
         muxpx=-0.846574929020762,
         muypy=0.846574929020762,
         mutpt=0.0,
@@ -47,20 +47,26 @@ def test_element_push():
     assert pc.total_number_of_particles() == npart
 
     # init accelerator lattice
+    drift = elements.Drift(name="drift1", ds=0.25)
+    assert drift.name == "drift1"
+    # changed my mind on the name
+    drift.name = "mydrift"
+    assert drift.name == "mydrift"
+
     fodo = [
-        elements.Drift(0.25),
+        drift,
     ]
     sim.lattice.extend(fodo)
 
-    sim.evolve()
+    sim.track_particles()
 
-    # Push manually through a few elements
-    elements.Quad(1.0, 1.0).push(pc)
-    elements.Drift(0.5).push(pc)
-    elements.Quad(1.0, -1.0).push(pc)
+    # Push manually through a few (unnamed) elements
+    elements.Quad(ds=1.0, k=1.0).push(pc)
+    elements.Drift(ds=0.5).push(pc)
+    elements.Quad(ds=1.0, k=-1.0).push(pc)
 
     # alternative formulation
-    push(pc, elements.Drift(0.25))
+    push(pc, elements.Drift(ds=0.25))
 
     # finalize simulation
     sim.finalize()

@@ -23,9 +23,11 @@
 #include "ExactDrift.H"
 #include "ExactSbend.H"
 #include "Kicker.H"
+#include "Marker.H"
 #include "Multipole.H"
-#include "None.H"
+#include "Empty.H"
 #include "NonlinearLens.H"
+#include "PlaneXYRot.H"
 #include "Programmable.H"
 #include "Quad.H"
 #include "RFCavity.H"
@@ -35,6 +37,7 @@
 #include "PRot.H"
 #include "SoftSol.H"
 #include "SoftQuad.H"
+#include "TaperedPL.H"
 #include "ThinDipole.H"
 #include "diagnostics/openPMD.H"
 
@@ -44,7 +47,7 @@
 namespace impactx
 {
     using KnownElements = std::variant<
-        None, /* must be first, so KnownElements creates a default constructor */
+        Empty, /* must be first, so KnownElements creates a default constructor */
         Aperture,
         Buncher,
         CFbend,
@@ -59,8 +62,10 @@ namespace impactx
         ExactDrift,
         ExactSbend,
         Kicker,
+        Marker,
         Multipole,
         NonlinearLens,
+        PlaneXYRot,
         Programmable,
         PRot,
         Quad,
@@ -70,6 +75,7 @@ namespace impactx
         SoftSolenoid,
         SoftQuadrupole,
         Sol,
+        TaperedPL,
         ThinDipole
     >;
 

@@ -31,12 +31,12 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=3.9984884770e-5,
-    sigmaY=3.9984884770e-5,
-    sigmaT=1.0e-3,
-    sigmaPx=2.6623538760e-5,
-    sigmaPy=2.6623538760e-5,
-    sigmaPt=2.0e-3,
+    lambdaX=3.9984884770e-5,
+    lambdaY=3.9984884770e-5,
+    lambdaT=1.0e-3,
+    lambdaPx=2.6623538760e-5,
+    lambdaPy=2.6623538760e-5,
+    lambdaPt=2.0e-3,
     muxpx=-0.846574929020762,
     muypy=0.846574929020762,
     mutpt=0.0,
@@ -50,6 +50,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 
 quad1 = elements.SoftQuadrupole(
+    name="quad1",
     ds=1.0,
     gscale=1.0,
     cos_coefficients=[2],
@@ -59,6 +60,7 @@ quad1 = elements.SoftQuadrupole(
 )
 
 quad2 = elements.SoftQuadrupole(
+    name="quad2",
     ds=1.0,
     gscale=-1.0,
     cos_coefficients=[2],
@@ -67,14 +69,14 @@ quad2 = elements.SoftQuadrupole(
     nslice=ns,
 )
 
-drift1 = elements.Drift(ds=0.25, nslice=ns)
-drift2 = elements.Drift(ds=0.5, nslice=ns)
+drift1 = elements.Drift(name="drift1", ds=0.25, nslice=ns)
+drift2 = elements.Drift(name="drift2", ds=0.5, nslice=ns)
 
 # assign a fodo segment
 sim.lattice.extend([monitor, drift1, quad1, drift2, quad2, drift1, monitor])
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

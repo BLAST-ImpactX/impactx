@@ -53,6 +53,14 @@ namespace impactx::spacecharge
         std::array<amrex::Real, 3> const beta_xyz = {0.0, 0.0, beta_s};
 
         amrex::ParmParse pp_algo("algo");
+        std::string poisson_solver = "multigrid";
+        pp_algo.queryAdd("poisson_solver", poisson_solver);
+        const bool is_solver_igf_on_lev0 = poisson_solver == "fft";
+        if (poisson_solver != "multigrid" && poisson_solver != "fft") {
+            throw std::runtime_error("algo.poisson_solver must be multigrid or fft but is: " + poisson_solver);
+        }
+
+        // MLMG options
         amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
         pp_algo.queryAdd("mlmg_relative_tolerance", mlmg_relative_tolerance);
@@ -62,22 +70,6 @@ namespace impactx::spacecharge
         int mlmg_verbosity = 1;
         pp_algo.queryAdd("mlmg_max_iters", mlmg_max_iters);
         pp_algo.queryAdd("mlmg_verbosity", mlmg_verbosity);
-
-        struct PoissonBoundaryHandler {
-            amrex::Array<amrex::LinOpBCType, AMREX_SPACEDIM> const lobc = {
-                amrex::LinOpBCType::Dirichlet,
-                amrex::LinOpBCType::Dirichlet,
-                amrex::LinOpBCType::Dirichlet
-            };
-            amrex::Array<amrex::LinOpBCType, AMREX_SPACEDIM> const hibc = {
-                amrex::LinOpBCType::Dirichlet,
-                amrex::LinOpBCType::Dirichlet,
-                amrex::LinOpBCType::Dirichlet
-            };
-            //bool bcs_set = false;
-            //std::array<bool, AMREX_SPACEDIM * 2> dirichlet_flag;
-            //bool has_non_periodic = false;
-        } poisson_boundary_handler;
 
         // create a vector to our fields, sorted by level
         amrex::Vector<amrex::MultiFab*> sorted_rho;
@@ -89,6 +81,7 @@ namespace impactx::spacecharge
         }
 
         const bool do_single_precision_comms = false;
+        const bool eb_enabled = false;
         ablastr::fields::computePhi(
             sorted_rho,
             sorted_phi,
@@ -100,11 +93,14 @@ namespace impactx::spacecharge
             pc.GetParGDB()->Geom(),
             pc.GetParGDB()->DistributionMap(),
             pc.GetParGDB()->boxArray(),
-            poisson_boundary_handler,
+            ablastr::utils::enums::GridType::Collocated,
+            is_solver_igf_on_lev0,
+            eb_enabled,
             do_single_precision_comms,
             rel_ref_ratio
             /*
             post_phi_calculation,
+            poisson_boundary_handler
             gett_new(0),
             eb_farray_box_factory
             */

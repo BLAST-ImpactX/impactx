@@ -30,12 +30,12 @@ ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.0e-3,
-    sigmaY=1.0e-3,
-    sigmaT=0.3,
-    sigmaPx=2.0e-4,
-    sigmaPy=2.0e-4,
-    sigmaPt=2.0e-5,
+    lambdaX=1.0e-3,
+    lambdaY=1.0e-3,
+    lambdaT=0.3,
+    lambdaPx=2.0e-4,
+    lambdaPy=2.0e-4,
+    lambdaPt=2.0e-5,
     muxpx=-0.0,
     muypy=0.0,
     mutpt=0.0,
@@ -49,10 +49,10 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 period = [
     monitor,
-    elements.ChrAcc(ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
-    elements.ExactSbend(ds=0.25, phi=180.0, B=1),
-    elements.ChrAcc(ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
-    elements.ExactSbend(ds=0.25, phi=180.0, B=1),
+    elements.ChrAcc(name="acc1", ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
+    elements.ExactSbend(name="sbend1", ds=0.25, phi=180.0, B=1),
+    elements.ChrAcc(name="acc2", ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
+    elements.ExactSbend(name="sbend2", ds=0.25, phi=180.0, B=1),
     monitor,
 ]
 
@@ -62,7 +62,7 @@ sim.lattice.extend(period)
 sim.periods = 150
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

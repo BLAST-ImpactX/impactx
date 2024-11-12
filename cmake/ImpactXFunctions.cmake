@@ -209,7 +209,7 @@ endmacro()
 
 # Enables interprocedural optimization for a list of targets
 #
-function(enable_IPO all_targets_list)
+function(impactx_enable_IPO all_targets_list)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT is_IPO_available)
     if(is_IPO_available)
@@ -401,6 +401,7 @@ function(impactx_print_summary)
     #message("    ASCENT: ${ImpactX_ASCENT}")
     message("    COMPUTE: ${ImpactX_COMPUTE}")
     message("    IPO/LTO: ${ImpactX_IPO}")
+    message("    FFT: ${ImpactX_FFT}")
     message("    LIB: ${LIB_TYPE}")
     message("    MPI: ${ImpactX_MPI}")
     if(MPI)

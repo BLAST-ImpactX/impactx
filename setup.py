@@ -24,12 +24,12 @@ class CopyPreBuild(build):
         # clashes with directories many developers have in their source trees;
         # this can create confusing results with "pip install .", which clones
         # the whole source tree by default
-        self.build_base = "_tmppythonbuild"
+        self.build_base = os.path.join("_tmppythonbuild", "impactx")
 
     def run(self):
         # remove existing build directory
         #   by default, this stays around. we want to make sure generated
-        #   files like libwarpx.(2d|3d|rz).(so|pyd) are always only the
+        #   files like libimpactx.(so|pyd) are always only the
         #   ones we want to package and not ones from an earlier wheel's stage
         if os.path.exists(self.build_base):
             shutil.rmtree(self.build_base)
@@ -37,23 +37,9 @@ class CopyPreBuild(build):
         # call superclass
         build.run(self)
 
-        # matches: impactx_pybind.*.(so|pyd)
-        re_libprefix = re.compile(r"impactx_pybind\..*\.(?:so|pyd)")
-        libs_found = []
-        for lib_name in os.listdir(PYIMPACTX_libdir):
-            if re_libprefix.match(lib_name):
-                lib_path = os.path.join(PYIMPACTX_libdir, lib_name)
-                libs_found.append(lib_path)
-        if len(libs_found) == 0:
-            raise RuntimeError(
-                "Error: no pre-build pyImpactX libraries found in "
-                "PYIMPACTX_libdir='{}'".format(PYIMPACTX_libdir)
-            )
-
-        # copy external libs into collection of files in a temporary build dir
+        # copy Python module artifacts and sources
         dst_path = os.path.join(self.build_lib, "impactx")
-        for lib_path in libs_found:
-            shutil.copy(lib_path, dst_path)
+        shutil.copytree(PYIMPACTX_libdir, dst_path, dirs_exist_ok=True)
 
 
 class CMakeExtension(Extension):
@@ -70,14 +56,14 @@ class CMakeBuild(build_ext):
             out = subprocess.check_output(["cmake", "--version"])
         except OSError:
             raise RuntimeError(
-                "CMake 3.20.0+ must be installed to build the following "
+                "CMake 3.24.0+ must be installed to build the following "
                 + "extensions: "
                 + ", ".join(e.name for e in self.extensions)
             )
 
         cmake_version = parse(re.search(r"version\s*([\d.]+)", out.decode()).group(1))
-        if cmake_version < parse("3.20.0"):
-            raise RuntimeError("CMake >= 3.20.0 is required")
+        if cmake_version < parse("3.24.0"):
+            raise RuntimeError("CMake >= 3.24.0 is required")
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -88,13 +74,21 @@ class CMakeBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
+        pyv = sys.version_info
         cmake_args = [
+            # Python: use the calling interpreter in CMake
+            # https://cmake.org/cmake/help/latest/module/FindPython.html#hints
+            # https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-version-selection
+            f"-DPython_ROOT_DIR={sys.prefix}",
+            f"-DPython_FIND_VERSION={pyv.major}.{pyv.minor}.{pyv.micro}",
+            "-DPython_FIND_VERSION_EXACT=TRUE",
+            "-DPython_FIND_STRATEGY=LOCATION",
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + os.path.join(extdir, "impactx"),
             "-DCMAKE_VERBOSE_MAKEFILE=ON",
             "-DCMAKE_PYTHON_OUTPUT_DIRECTORY=" + extdir,
-            "-DPython_EXECUTABLE=" + sys.executable,
             ## variants
             "-DImpactX_COMPUTE=" + ImpactX_COMPUTE,
+            "-DImpactX_FFT:BOOL=" + ImpactX_FFT,
             "-DImpactX_MPI:BOOL=" + ImpactX_MPI,
             "-DImpactX_PRECISION=" + ImpactX_PRECISION,
             #'-DImpactX_PARTICLES_PRECISION=' + ImpactX_PARTICLES_PRECISION,
@@ -175,6 +169,7 @@ PYIMPACTX_libdir = os.environ.get("PYIMPACTX_LIBDIR")
 # ... build ImpactX libraries with CMake
 #   note: changed default for SHARED, MPI, TESTING and EXAMPLES
 ImpactX_COMPUTE = os.environ.get("IMPACTX_COMPUTE", "OMP")
+ImpactX_FFT = os.environ.get("IMPACTX_FFT", "OFF")
 ImpactX_MPI = os.environ.get("IMPACTX_MPI", "OFF")
 ImpactX_PRECISION = os.environ.get("IMPACTX_PRECISION", "DOUBLE")
 #   already prepared as a list 1;2;3
@@ -235,7 +230,7 @@ with open("./requirements.txt") as f:
 setup(
     name="impactx",
     # note PEP-440 syntax: x.y.zaN but x.y.z.devN
-    version="24.02",
+    version="24.10",
     packages=["impactx"],
     # Python sources:
     package_dir={"": "src/python"},
@@ -294,4 +289,9 @@ setup(
     # new PEP 639 format
     license="BSD-3-Clause-LBNL",
     license_files=["LICENSE"],
+    entry_points={
+        "console_scripts": [
+            "impactx-dashboard=impactx.dashboard.__main__:main",
+        ],
+    },
 )

@@ -31,12 +31,12 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=4.0e-3,
-    sigmaY=4.0e-3,
-    sigmaT=1.0e-3,
-    sigmaPx=3.0e-4,
-    sigmaPy=3.0e-4,
-    sigmaPt=2.0e-3,
+    lambdaX=4.0e-3,
+    lambdaY=4.0e-3,
+    lambdaT=1.0e-3,
+    lambdaPx=3.0e-4,
+    lambdaPy=3.0e-4,
+    lambdaPt=2.0e-3,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -46,16 +46,16 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice
 rotated_drift = [
     monitor,
-    elements.PRot(phi_in=0.0, phi_out=-5.0),
-    elements.Drift(ds=2.0, nslice=1),
-    elements.PRot(phi_in=-5.0, phi_out=0.0),
+    elements.PRot(name="rotation1", phi_in=0.0, phi_out=-5.0),
+    elements.Drift(name="drift1", ds=2.0, nslice=1),
+    elements.PRot(name="rotation2", phi_in=-5.0, phi_out=0.0),
     monitor,
 ]
 # assign a lattice segment
 sim.lattice.extend(rotated_drift)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

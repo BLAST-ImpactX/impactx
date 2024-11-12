@@ -31,12 +31,12 @@ ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.0e-3,
-    sigmaY=1.0e-3,
-    sigmaT=3.369701494258956e-4,
-    sigmaPx=1.0e-3,
-    sigmaPy=1.0e-3,
-    sigmaPt=2.9676219145931020e-3,
+    lambdaX=1.0e-3,
+    lambdaY=1.0e-3,
+    lambdaT=3.369701494258956e-4,
+    lambdaPx=1.0e-3,
+    lambdaPy=1.0e-3,
+    lambdaPt=2.9676219145931020e-3,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -47,13 +47,13 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 sim.lattice.extend(
     [
         monitor,
-        elements.ConstF(ds=2.0, kx=1.0, ky=1.0, kt=1.0),
+        elements.ConstF(name="constf1", ds=2.0, kx=1.0, ky=1.0, kt=1.0),
         monitor,
     ]
 )
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

@@ -10,6 +10,11 @@ function(find_pybind11)
         message(STATUS "pybind11 repository: ${ImpactX_pybind11_repo} (${ImpactX_pybind11_branch})")
         include(FetchContent)
     endif()
+
+    # rely on our find_package(Python ...) call
+    # https://pybind11.readthedocs.io/en/stable/compiling.html#modules-with-cmake
+    set(PYBIND11_FINDPYTHON ON)
+
     if(ImpactX_pybind11_internal OR ImpactX_pybind11_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
@@ -21,12 +26,7 @@ function(find_pybind11)
                 GIT_TAG        ${ImpactX_pybind11_branch}
                 BUILD_IN_SOURCE 0
             )
-            FetchContent_GetProperties(fetchedpybind11)
-
-            if(NOT fetchedpybind11_POPULATED)
-                FetchContent_Populate(fetchedpybind11)
-                add_subdirectory(${fetchedpybind11_SOURCE_DIR} ${fetchedpybind11_BINARY_DIR})
-            endif()
+            FetchContent_MakeAvailable(fetchedpybind11)
 
             # advanced fetch options
             mark_as_advanced(FETCHCONTENT_BASE_DIR)
@@ -37,7 +37,7 @@ function(find_pybind11)
             mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED_FETCHEDpybind11)
         endif()
     else()
-        find_package(pybind11 2.11.1 CONFIG REQUIRED)
+        find_package(pybind11 2.12.0 CONFIG REQUIRED)
         message(STATUS "pybind11: Found version '${pybind11_VERSION}'")
     endif()
 endfunction()
@@ -52,7 +52,7 @@ option(ImpactX_pybind11_internal "Download & build pybind11" ON)
 set(ImpactX_pybind11_repo "https://github.com/pybind/pybind11.git"
     CACHE STRING
     "Repository URI to pull and build pybind11 from if(ImpactX_pybind11_internal)")
-set(ImpactX_pybind11_branch "v2.11.1"
+set(ImpactX_pybind11_branch "v2.12.0"
     CACHE STRING
     "Repository branch for ImpactX_pybind11_repo if(ImpactX_pybind11_internal)")
 

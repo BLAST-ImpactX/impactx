@@ -3,118 +3,7 @@
 Parameters: Inputs File
 =======================
 
-This documents on how to use ImpactX with an inputs file (``impactx input_file.in``).
-
-.. note::
-   The AMReX parser (see :ref:`running-cpp-parameters-parser`) is used for the right-hand-side of all input parameters that consist of one or more integers or floats, so expressions like ``<species_name>.density_max = "2.+1."`` and/or using user-defined constants are accepted.
-
-.. _running-cpp-parameters-overall:
-
-Overall simulation parameters
------------------------------
-
-* ``max_step`` (``integer``)
-    The number of PIC cycles to perform.
-
-* ``stop_time`` (``float``; in seconds)
-    The maximum physical time of the simulation. Can be provided instead of ``max_step``. If both
-    ``max_step`` and ``stop_time`` are provided, both criteria are used and the simulation stops
-    when the first criterion is hit.
-
-* ``amrex.abort_on_out_of_gpu_memory``  (``0`` or ``1``; default is ``1`` for true)
-    When running on GPUs, memory that does not fit on the device will be automatically swapped to host memory when this option is set to ``0``.
-    This will cause severe performance drops.
-    Note that even with this set to ``1`` ImpactX will not catch all out-of-memory events yet when operating close to maximum device memory.
-    `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
-
-* ``amrex.the_arena_is_managed``  (``0`` or ``1``; default is ``0`` for false)
-    When running on GPUs, device memory that is accessed from the host will automatically be transferred with managed memory.
-    This is useful for convenience during development, but has sometimes severe performance and memory footprint implications if relied on (and sometimes vendor bugs).
-    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory and thus changed the AMReX default to false.
-    `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
-
-* ``amrex.omp_threads``  (``system``, ``nosmt`` or positive integer; default is ``nosmt``)
-    An integer number can be set in lieu of the ``OMP_NUM_THREADS`` environment variable to control the number of OpenMP threads to use for the ``OMP`` compute backend on CPUs.
-    By default, we use the ``nosmt`` option, which overwrites the OpenMP default of spawning one thread per logical CPU core, and instead only spawns a number of threads equal to the number of physical CPU cores on the machine.
-    If set, the environment variable ``OMP_NUM_THREADS`` takes precedence over ``system`` and ``nosmt``, but not over integer numbers set in this option.
-
-* ``amrex.abort_on_unused_inputs`` (``0`` or ``1``; default is ``0`` for false)
-    When set to ``1``, this option causes the simulation to fail *after* its completion if there were unused parameters.
-    It is mainly intended for continuous integration and automated testing to check that all tests and inputs are adapted to API changes.
-
-* ``impactx.always_warn_immediately`` (``0`` or ``1``; default is ``0`` for false)
-    If set to ``1``, ImpactX immediately prints every warning message as soon as it is generated.
-    It is mainly intended for debug purposes, in case a simulation crashes before a global warning report can be printed.
-
-* ``impactx.abort_on_warning_threshold`` (string: ``low``, ``medium`` or ``high``) optional
-    Optional threshold to abort as soon as a warning is raised.
-    If the threshold is set, warning messages with priority greater than or equal to the threshold trigger an immediate abort.
-    It is mainly intended for debug purposes, and is best used with ``impactx.always_warn_immediately=1``.
-    For more information on the warning logger, see `this section <https://warpx.readthedocs.io/en/latest/developers/warning_logger.html>`__ of the WarpX documentation.
-
-.. _running-cpp-parameters-box:
-
-
-Setting up the field mesh
--------------------------
-
-ImpactX uses an AMReX grid of boxes to organize and parallelize the simulation domain.
-These boxes also contain a field mesh, if space charge calculations are enabled.
-
-* ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
-    The number of grid points along each direction (on the **coarsest level**)
-
-* ``amr.max_level`` (``integer``, default: ``0``)
-    When using mesh refinement, the number of refinement levels that will be used.
-
-    Use ``0`` in order to disable mesh refinement.
-
-* ``amr.ref_ratio`` (``integer`` per refined level, default: ``2``)
-    When using mesh refinement, this is the refinement ratio per level.
-    With this option, all directions are fined by the same ratio.
-
-* ``amr.ref_ratio_vect`` (3 integers for x,y,z per refined level)
-    When using mesh refinement, this can be used to set the refinement ratio per direction and level, relative to the previous level.
-
-    Example: for three levels, a value of ``2 2 4 8 8 16`` refines the first level by 2-fold in x and y and 4-fold in z compared to the coarsest level (level 0/mother grid); compared to the first level, the second level is refined 8-fold in x and y and 16-fold in z.
-
-.. note::
-
-   Field boundaries for space charge calculation are located at the outer ends of the field mesh.
-   We currently assume `Dirichlet boundary conditions <https://en.wikipedia.org/wiki/Dirichlet_boundary_condition>`__ with zero potential (a mirror charge).
-   Thus, to emulate open boundaries, consider adding enough vacuum padding to the beam.
-   This will be improved in future versions.
-
-.. note::
-
-   Particles that move outside the simulation domain are removed.
-
-* ``geometry.dynamic_size`` (``boolean``) optional (default: ``true`` for dynamic)
-    Use dynamic (``true``) resizing of the field mesh, via ``geometry.prob_relative``, or static sizing (``false``), via ``geometry.prob_lo``/``geometry.prob_hi``.
-
-* ``geometry.prob_relative`` (positive ``float`` array with ``amr.max_level`` entries, unitless) optional (default: ``3.0 1.0 1.0 ...``)
-    By default, we dynamically extract the minimum and maximum of the particle positions in the beam.
-    The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
-    The beam minimum and maximum extent are symmetrically padded by the mesh.
-    For instance, ``1.2`` means the mesh will span 10% above and 10% below the beam;
-    ``1.0`` means the beam is exactly covered with the mesh.
-
-* ``geometry.prob_lo`` and ``geometry.prob_hi`` (3 floats, in meters) optional (required if ``geometry.dynamic_size`` is ``false``)
-    The extent of the full simulation domain relative to the reference particle position.
-    This can be used to explicitly size the simulation box and ignore ``geometry.prob_relative``.
-
-    This box is rectangular, and thus its extent is given here by the coordinates of the lower corner (``geometry.prob_lo``) and upper corner (``geometry.prob_hi``).
-    The first axis of the coordinates is x and the last is z.
-
-
-.. _running-cpp-parameters-bc:
-
-Domain Boundary Conditions
---------------------------
-
-.. note::
-
-   TODO :-)
+This documents how to use ImpactX with an input file (``impactx input_file.in``).
 
 
 .. _running-cpp-parameters-particle:
@@ -144,18 +33,18 @@ Initial Beam Distributions
 
     * Parameters that describe the phase space ellipse and position-momentum correlations:
 
-        * ``beam.sigmaX`` (``float``, in meters) phase space ellipse intersection with X
-        * ``beam.sigmaY`` (``float``, in meters) phase space ellipse intersection with Y
-        * ``beam.sigmaT`` (``float``, in meters) phase space ellipse intersection with T, normalized by multiplying with the speed of light *c*
-        * ``beam.sigmaPx`` (``float``, in radians) phase space ellipse intersection with Px
-        * ``beam.sigmaPy`` (``float``, in radians) phase space ellipse intersection with Py
-        * ``beam.sigmaPt`` (``float``, in radians) phase space ellipse intersection with Pt
+        * ``beam.lambdaX`` (``float``, in meters) phase space ellipse intersection with X
+        * ``beam.lambdaY`` (``float``, in meters) phase space ellipse intersection with Y
+        * ``beam.lambdaT`` (``float``, in meters) phase space ellipse intersection with T, normalized by multiplying with the speed of light *c*
+        * ``beam.lambdaPx`` (``float``, in radians) phase space ellipse intersection with Px
+        * ``beam.lambdaPy`` (``float``, in radians) phase space ellipse intersection with Py
+        * ``beam.lambdaPt`` (``float``, in radians) phase space ellipse intersection with Pt
         * ``beam.muxpx`` (``float``, dimensionless, default: ``0``) correlation X-Px
         * ``beam.muypy`` (``float``, dimensionless, default: ``0``) correlation Y-Py
         * ``beam.mutpt`` (``float``, dimensionless, default: ``0``) correlation T-Pt
 
-    * Courant-Snyder / Twiss parameters.
-      To enable input via CS / Twiss parameters, add the suffix ``_from_cs`` or ``from_twiss`` to the name of the distribution.
+    * Courant-Snyder (Twiss) parameters.
+      To enable input via Courant-Snyder (Twiss) parameters, add the suffix ``from_twiss`` to the name of the distribution.
       Use the following parameters to characterize it:
 
         * ``beam.alphaX`` (``float``, dimensionless, default: ``0``) CS / Twiss :math:`\alpha` for X
@@ -170,21 +59,21 @@ Initial Beam Distributions
 
     The following distributions are available:
 
-    * ``waterbag`` or ``waterbag_from_cs``/``waterbag_from_twiss`` for initial Waterbag distribution.
+    * ``waterbag`` or ``waterbag_from_twiss`` for initial Waterbag distribution.
 
-    * ``kurth6d`` or ``kurth6d_from_cs``/``kurth6d_from_twiss`` for initial 6D Kurth distribution.
+    * ``kurth6d`` or ``kurth6d_from_twiss`` for initial 6D Kurth distribution.
 
-    * ``gaussian`` or ``gaussian_from_cs``/``gaussian_from_twiss`` for initial 6D Gaussian (normal) distribution.
+    * ``gaussian`` or ``gaussian_from_twiss`` for initial 6D Gaussian (normal) distribution.
 
-    * ``kvdist`` or ``kvdist_from_cs``/``kvdist_from_twiss`` for initial K-V distribution in the transverse plane.
+    * ``kvdist`` or ``kvdist_from_twiss`` for initial K-V distribution in the transverse plane.
       The distribution is uniform in t and Gaussian in pt.
 
-    * ``kurth4d`` or ``kurth4d_from_cs``/``kurth4d_from_twiss`` for initial 4D Kurth distribution in the transverse plane.
+    * ``kurth4d`` or ``kurth4d_from_twiss`` for initial 4D Kurth distribution in the transverse plane.
       The distribution is uniform in t and Gaussian in pt.
 
-    * ``semigaussian`` or ``semigaussian_from_cs``/``semigaussian_from_twiss`` for initial Semi-Gaussian distribution.  The distribution is uniform within a cylinder in (x,y,z) and Gaussian in momenta (px,py,pt).
+    * ``semigaussian`` or ``semigaussian_from_twiss`` for initial Semi-Gaussian distribution.  The distribution is uniform within a cylinder in (x,y,z) and Gaussian in momenta (px,py,pt).
 
-    * ``triangle`` or ``triangle_from_cs``/``triangle_from_twiss`` a triangle distribution for laser-plasma acceleration related applications.
+    * ``triangle`` or ``triangle_from_twiss`` a triangle distribution for laser-plasma acceleration related applications.
       A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
       The transverse distribution is a 4D waterbag.
 
@@ -286,14 +175,14 @@ Lattice Elements
 
             * ``<element_name>.ds`` (``float``, in meters) the segment length
             * ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the quadrupole strength
-                = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if units = 0
+                = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if unit = 0
 
-             OR = magnetic field gradient in T/m - if units = 1
+             OR = magnetic field gradient in T/m - if unit = 1
 
               * k > 0 horizontal focusing
               * k < 0 horizontal defocusing
 
-            * ``<element_name>.units`` (``integer``) specification of units (default: ``0``)
+            * ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -320,11 +209,11 @@ Lattice Elements
 
             * ``<element_name>.ds`` (``float``, in meters) the segment length
             * ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the plasma lens focusing strength
-                = (azimuthal magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if units = 0
+                = (azimuthal magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if unit = 0
 
-             OR = azimuthal magnetic field gradient in T/m - if units = 1
+             OR = azimuthal magnetic field gradient in T/m - if unit = 1
 
-            * ``<element_name>.units`` (``integer``) specification of units (default: ``0``)
+            * ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -365,11 +254,16 @@ Lattice Elements
         * ``solenoid_softedge`` for a soft-edge solenoid. This requires these additional parameters:
 
             * ``<element_name>.ds`` (``float``, in meters) the segment length
-            * ``<element_name>.bscale`` (``float``, in inverse meters) Scaling factor for on-axis magnetic field Bz
+            * ``<element_name>.bscale`` (``float``, in inverse meters) Scaling factor for on-axis longitudinal magnetic field
+                = (magnetic field Bz in T) / (magnetic rigidity in T-m) - if unit = 0
+
+             OR = magnetic field Bz in T - if unit = 1
+
             * ``<element_name>.cos_coefficients`` (array of ``float``) cos coefficients in Fourier expansion of the on-axis magnetic field Bz
               (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
             * ``<element_name>.sin_coefficients`` (array of ``float``) sin coefficients in Fourier expansion of the on-axis magnetic field Bz
               (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
+            * ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -484,11 +378,18 @@ Lattice Elements
             * ``<element_name>.phi_in`` (``float``, in degrees) angle of the reference particle with respect to the longitudinal (z) axis in the original frame
             * ``<element_name>.phi_out`` (``float``, in degrees) angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame
 
+        * ``plane_xyrotation`` for a rotation in the x-y plane (i.e., about the reference velocity vector). This requires these additional parameters:
+
+            * ``<element_name>.angle`` (``float``, in degrees) nominal angle of rotation
+            * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+            * ``<element_name>.dy`` (``float``, in meters) vertical translation error
+            * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
         * ``kicker`` for a thin transverse kicker. This requires these additional parameters:
 
             * ``<element_name>.xkick`` (``float``, dimensionless OR in T-m) the horizontal kick strength
             * ``<element_name>.ykick`` (``float``, dimensionless OR in T-m) the vertical kick strength
-            * ``<element_name>.units`` (``string``) specification of units: ``dimensionless`` (default, in units of the magnetic rigidity of the reference particle) or ``T-m``
+            * ``<element_name>.unit`` (``string``) specification of units: ``dimensionless`` (default, in units of the magnetic rigidity of the reference particle) or ``T-m``
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -507,7 +408,32 @@ Lattice Elements
 
             * ``<element_name>.xmax`` (``float``, in meters) maximum value of the horizontal coordinate
             * ``<element_name>.ymax`` (``float``, in meters) maximum value of the vertical coordinate
+            * ``<element_name>.repeat_x`` (``float``, in meters) horizontal period for repeated aperture masking (inactive by default)
+            * ``<element_name>.repeat_y`` (``float``, in meters) vertical period for repeated aperture masking (inactive by default)
             * ``<element_name>.shape`` (``string``) shape of the aperture boundary: ``rectangular`` (default) or ``elliptical``
+            * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+            * ``<element_name>.dy`` (``float``, in meters) vertical translation error
+            * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
+        * ``tapered_pl`` for a thin nonlinear plasma lens with transverse (horizontal) taper.
+
+          .. math::
+
+             B_x = g \left( y + \frac{xy}{D_x} \right), \quad \quad B_y = -g \left(x + \frac{x^2 + y^2}{2 D_x} \right)
+
+          where :math:`g` is the (linear) field gradient in T/m and :math:`D_x` is the targeted horizontal dispersion in m.
+
+          This requires these additional parameters:
+
+            * ``<element_name>.k`` (``float``, in inverse meters OR in T) the integrated plasma lens focusing strength
+                = (length in m) * (magnetic field gradient :math:`g` in T/m) / (magnetic rigidity in T-m) - if unit = 0
+
+             OR = (length in m) * (magnetic field gradient :math:`g` in T/m) - if unit = 1
+
+            * ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
+            * ``<element_name>.taper`` (``float``, in 1/meters) horizontal taper parameter
+                = 1 / (target horizontal dispersion :math:`D_x` in m)
+
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -532,6 +458,26 @@ Lattice Elements
                 openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/0.14.0/usage/concepts.html#iteration-and-series>`__: (v)ariable based, (f)ile based, (g)roup based (default)
                 variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__.
 
+            * ``<element_name>.period_sample_intervals`` (``int``, default value: ``1``)
+
+                for periodic lattice, only output every Nth period (turn).
+                By default, diagnostics are returned every cycle.
+
+            * ``<element_name>.nonlinear_lens_invariants`` (``boolean``, default value: ``false``)
+
+                Compute and output the invariants H and I within the nonlinear magnetic insert element (see: ``nonlinear_lens``).
+                Invariants associated with the nonlinear magnetic insert described by V. Danilov and S. Nagaitsev, PRSTAB 13, 084002 (2010), Sect. V.A.
+
+                * ``<element_name>.alpha`` (``float``, unitless) Twiss alpha of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
+                  Horizontal and vertical values must be equal.
+
+                * ``<element_name>.beta`` (``float``, meters) Twiss beta of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
+                  Horizontal and vertical values must be equal.
+
+                * ``<element_name>.tn`` (``float``, unitless) dimensionless strength of the IOTA nonlinear magnetic insert element used for computing H and I.
+
+                * ``<element_name>.cn`` (``float``, meters^(1/2)) scale factor of the IOTA nonlinear magnetic insert element used for computing H and I.
+
         * ``line`` a sub-lattice (line) of elements to append to the lattice.
 
             * ``<element_name>.elements`` (``list of strings``) optional (default: no elements)
@@ -545,25 +491,136 @@ Lattice Elements
               Note: If ``reverse`` and ``repeat`` both appear, then ``reverse`` is applied before ``repeat``.
 
 
-.. _running-cpp-parameters-parallelization:
+.. _running-cpp-parameters-collective:
 
-Distribution across MPI ranks and parallelization
--------------------------------------------------
+Collective Effects
+------------------
 
-* ``amr.max_grid_size`` (``integer``) optional (default: ``128``)
-    Maximum allowable size of each **subdomain**
-    (expressed in number of grid points, in each direction).
-    Each subdomain has its own ghost cells, and can be handled by a
-    different MPI rank ; several OpenMP threads can work simultaneously on the
-    same subdomain.
+.. _running-cpp-parameters-collective-spacecharge:
 
-    If ``max_grid_size`` is such that the total number of subdomains is
-    **larger** that the number of MPI ranks used, than some MPI ranks
-    will handle several subdomains, thereby providing additional flexibility
-    for **load balancing**.
+Space Charge
+^^^^^^^^^^^^
 
-    When using mesh refinement, this number applies to the subdomains
-    of the coarsest level, but also to any of the finer level.
+Space charge kicks are applied in between slices of thick :ref:`lattice elements <running-cpp-parameters-lattice>`.
+See there ``nslice`` option on lattice elements for slicing.
+
+* ``algo.space_charge`` (``boolean``, optional, default: ``false``)
+    Whether to calculate space charge effects.
+
+ImpactX uses an AMReX grid of boxes to organize and parallelize space charge simulation domain.
+These boxes also contain a field mesh, if space charge calculations are enabled.
+
+* ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
+    The number of grid points along each direction (on the **coarsest level**)
+
+* ``amr.max_level`` (``integer``, default: ``0``)
+    When using mesh refinement, the number of refinement levels that will be used.
+
+    Use ``0`` in order to disable mesh refinement.
+
+* ``amr.ref_ratio`` (``integer`` per refined level, default: ``2``)
+    When using mesh refinement, this is the refinement ratio per level.
+    With this option, all directions are fined by the same ratio.
+
+* ``amr.ref_ratio_vect`` (3 integers for x,y,z per refined level)
+    When using mesh refinement, this can be used to set the refinement ratio per direction and level, relative to the previous level.
+
+    Example: for three levels, a value of ``2 2 4 8 8 16`` refines the first level by 2-fold in x and y and 4-fold in z compared to the coarsest level (level 0/mother grid); compared to the first level, the second level is refined 8-fold in x and y and 16-fold in z.
+
+.. note::
+
+   Particles that move outside the simulation domain are removed.
+
+* ``geometry.dynamic_size`` (``boolean``) optional (default: ``true`` for dynamic)
+    Use dynamic (``true``) resizing of the field mesh, via ``geometry.prob_relative``, or static sizing (``false``), via ``geometry.prob_lo``/``geometry.prob_hi``.
+
+* ``geometry.prob_relative`` (positive ``float`` array with ``amr.max_level`` entries, unitless) optional (default: ``3.0 1.0 1.0 ...``)
+    By default, we dynamically extract the minimum and maximum of the particle positions in the beam.
+    The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
+    The beam minimum and maximum extent are symmetrically padded by the mesh.
+    For instance, ``1.2`` means the mesh will span 10% above and 10% below the beam;
+    ``1.0`` means the beam is exactly covered with the mesh.
+
+* ``geometry.prob_lo`` and ``geometry.prob_hi`` (3 floats, in meters) optional (required if ``geometry.dynamic_size`` is ``false``)
+    The extent of the full simulation domain relative to the reference particle position.
+    This can be used to explicitly size the simulation box and ignore ``geometry.prob_relative``.
+
+    This box is rectangular, and thus its extent is given here by the coordinates of the lower corner (``geometry.prob_lo``) and upper corner (``geometry.prob_hi``).
+    The first axis of the coordinates is x and the last is z.
+
+* ``algo.particle_shape`` (``integer``; ``1``, ``2``, or ``3``)
+    The order of the shape factors (splines) for the macro-particles along all spatial directions: `1` for linear, `2` for quadratic, `3` for cubic.
+    Low-order shape factors result in faster simulations, but may lead to more noisy results.
+    High-order shape factors are computationally more expensive, but may increase the overall accuracy of the results.
+    For production runs it is generally safer to use high-order shape factors, such as cubic order.
+
+* ``algo.poisson_solver`` (``string``, optional, default: ``"multigrid"``)
+    The numerical solver to solve the Poisson equation when calculating space charge effects.
+    Currently, this is a 3D solver.
+    An additional `2D/2.5D solver <https://github.com/ECP-WarpX/impactx/issues/401>`__ will be added in the near future.
+
+    Options:
+
+    * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
+      See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).
+      This requires the compilation flag ``-DImpactX_FFT=ON``.
+      If mesh refinement (MR) is enabled, this FFT solver is used only on the coarsest level and a multi-grid solver is used on refined levels.
+      The boundary conditions are assumed to be open.
+
+    * ``multigrid``: Poisson's equation is solved using an iterative multigrid (MLMG) solver.
+      See the `AMReX documentation <https://amrex-codes.github.io/amrex/docs_html/LinearSolvers.html#>`__ for details of the MLMG solver.
+      Field boundaries for MLMG space charge calculation are located at the outer ends of the field mesh.
+      For the MLMG solver, we assume `Dirichlet boundary conditions <https://en.wikipedia.org/wiki/Dirichlet_boundary_condition>`__ with zero potential (a mirror charge).
+      Thus, to emulate open boundaries, consider adding enough vacuum padding to the beam.
+
+Multigrid-specific numerical options:
+
+* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7``)
+    The relative precision with which the electrostatic space-charge fields should be calculated.
+    More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.
+    This solver can fail to reach the default precision within a reasonable time.
+
+* ``algo.mlmg_absolute_tolerance`` (``float``, optional, default: ``0``, which means: ignored)
+    The absolute tolerance with which the space-charge fields should be calculated in units of V/m^2.
+    More specifically, the acceptable residual with which the solution can be considered converged.
+    In general this should be left as the default, but in cases where the simulation state changes very
+    little between steps it can occur that the initial guess for the MLMG solver is so close to the
+    converged value that it fails to improve that solution sufficiently to reach the
+    mlmg_relative_tolerance value."
+
+* ``algo.mlmg_max_iters`` (``integer``, optional, default: ``100``)
+    Maximum number of iterations used for MLMG solver for space-charge fields calculation.
+    In case if MLMG converges but fails to reach the desired self_fields_required_precision,
+    this parameter may be increased.
+
+* ``algo.mlmg_verbosity`` (``integer``, optional, default: ``1``)
+    The verbosity used for MLMG solver for space-charge fields calculation.
+    Currently MLMG solver looks for verbosity levels from 0-5.
+    A higher number results in more verbose output.
+
+
+.. _running-cpp-parameters-collective-csr:
+
+Coherent Synchrotron Radiation (CSR)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CSR effects are included in the simulation for bend lattice elements such as Sbend and CFbend.
+These effects are critical in accurately modeling the wakefields generated due to the interaction of particles with the synchrotron radiation field generated by the beam during bending.
+Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19 of
+`E. L. Saldin et al, NIMA 398, p. 373-394 (1997), DOI:10.1016/S0168-9002(97)00822-X <https://doi.org/10.1016/S0168-9002(97)00822-X>`__).
+
+* ``algo.csr`` (``boolean``, optional, default: ``false``)
+    Whether to calculate CSR effects.
+    CSR calculations involve several steps, including charge deposition, wakefield generation, and convolution, all of which are handled within the CSR bending process.
+
+* ``algo.csr_bins`` (``integer`, optional, default: ``150``)
+    The number of bins used for the CSR calculations along the longitudinal direction. Increasing the number of bins can lead to more accurate wakefield resolution at the cost of higher computational expense.
+
+.. note::
+
+   CSR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+
+   CSR effects require the compilation flag ``-DImpactX_FFT=ON``.
 
 
 .. _running-cpp-parameters-parser:
@@ -571,12 +628,13 @@ Distribution across MPI ranks and parallelization
 Math parser and user-defined constants
 --------------------------------------
 
-ImpactX uses AMReX's math parser that reads expressions in the input file.
-It can be used in all input parameters that consist of one or more integers or floats.
-Integer input expecting boolean, 0 or 1, are not parsed.
+The AMReX parser is used for the right-hand-side of all input parameters that consist of one or more integers or floats.
+Thus, expressions like ``beam.alphaY = beam.alphaX`` and/or using user-defined constants or simple math operations are accepted.
+
 Note that when multiple values are expected, the expressions are space delimited.
 For integer input values, the expressions are evaluated as real numbers and the final result rounded to the nearest integer.
-See `this section <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parser>`_ of the AMReX documentation for a complete list of functions supported by the math parser.
+See `this section <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parser>`__ of the AMReX documentation for a complete list of functions supported by the math parser.
+
 
 ImpactX constants
 ^^^^^^^^^^^^^^^^^
@@ -584,8 +642,6 @@ ImpactX constants
 ImpactX will provide a few pre-defined constants, that can be used for any parameter that consists of one or more floats.
 
 .. note::
-
-   Develop, such as:
 
    ======== ===================
    q_e      elementary charge
@@ -598,7 +654,6 @@ ImpactX will provide a few pre-defined constants, that can be used for any param
    pi       math constant pi
    ======== ===================
 
-   See in WarpX the file ``Source/Utils/WarpXConst.H`` for the values.
 
 User-defined constants
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -611,10 +666,10 @@ by ImpactX, and cannot be used as user-defined constants: ``x``, ``y``, ``z``, `
 The values of the constants can include the predefined ImpactX constants listed above as well as other user-defined constants.
 For example:
 
-* ``my_constants.a0 = 3.0``
-* ``my_constants.z_plateau = 150.e-6``
-* ``my_constants.n0 = 1.e22``
-* ``my_constants.wp = sqrt(n0*q_e**2/(epsilon0*m_e))``
+* ``my_constants.my_alpha = 3.0``
+* ``my_constants.my_beta = 12.e-6``
+* ``my_constants.abc = 1.23e10``
+
 
 Coordinates
 ^^^^^^^^^^^
@@ -667,28 +722,6 @@ Numerics and algorithms
     Currently MLMG solver looks for verbosity levels from 0-5.
     A higher number results in more verbose output.
 
-* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7``)
-    The relative precision with which the electrostatic space-charge fields should be calculated.
-    More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.
-    This solver can fail to reach the default precision within a reasonable time.
-
-* ``algo.mlmg_absolute_tolerance`` (``float``, optional, default: ``0``, which means: ignored)
-    The absolute tolerance with which the space-charge fields should be calculated in units of V/m^2.
-    More specifically, the acceptable residual with which the solution can be considered converged.
-    In general this should be left as the default, but in cases where the simulation state changes very
-    little between steps it can occur that the initial guess for the MLMG solver is so close to the
-    converged value that it fails to improve that solution sufficiently to reach the
-    mlmg_relative_tolerance value."
-
-* ``algo.mlmg_max_iters`` (``integer``, optional, default: ``100``)
-    Maximum number of iterations used for MLMG solver for space-charge fields calculation.
-    In case if MLMG converges but fails to reach the desired self_fields_required_precision,
-    this parameter may be increased.
-
-* ``algo.mlmg_verbosity`` (``integer``, optional, default: ``1``)
-    The verbosity used for MLMG solver for space-charge fields calculation.
-    Currently MLMG solver looks for verbosity levels from 0-5.
-    A higher number results in more verbose output.
 
 .. _running-cpp-parameters-diagnostics:
 
@@ -702,8 +735,8 @@ Diagnostics and output
   This option is ignored for the openPMD output elements (remove them from the lattice to disable).
 
 * ``diag.slice_step_diagnostics`` (``boolean``, optional, default: ``false``)
-  By default, diagnostics is performed at the beginning and end of the simulation.
-  Enabling this flag will write diagnostics every step and slice step
+  By default, diagnostics are computed and written at the beginning and end of the simulation.
+  Enabling this flag will write diagnostics at every step and slice step.
 
 * ``diag.file_min_digits`` (``integer``, optional, default: ``6``)
     The minimum number of digits used for the step number appended to the diagnostic file names.
@@ -713,25 +746,9 @@ Diagnostics and output
   Diagnostics for particles lost in apertures, stored as ``diags/openPMD/particles_lost.*`` at the end of the simulation.
   See the ``beam_monitor`` element for backend values.
 
-.. _running-cpp-parameters-diagnostics-reduced:
-
-Reduced Diagnostics
-^^^^^^^^^^^^^^^^^^^
-
-Reduced diagnostics allow the user to compute some reduced quantity (invariants of motion, particle temperature, max of a field, ...) and write a small amount of data to text files.
-Reduced diagnostics are run *in situ* with the simulation.
-
-Diagnostics related to integrable optics in the IOTA nonlinear magnetic insert element:
-
-* ``diag.alpha`` (``float``, unitless) Twiss alpha of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
-  Horizontal and vertical values must be equal.
-
-* ``diag.beta`` (``float``, meters) Twiss beta of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
-  Horizontal and vertical values must be equal.
-
-* ``diag.tn`` (``float``, unitless) dimensionless strength of the IOTA nonlinear magnetic insert element used for computing H and I.
-
-* ``diag.cn`` (``float``, meters^(1/2)) scale factor of the IOTA nonlinear magnetic insert element used for computing H and I.
+* ``diag.eigenemittances`` (``boolean``, optional, default: ``false``)
+  If this flag is enabled, the 3 eigenemittances of the 6D beam distribution are computed and written as diagnostics.
+  This flag is disabled by default to reduce computational cost.
 
 
 .. _running-cpp-parameters-diagnostics-insitu:
@@ -749,6 +766,7 @@ In-situ visualization
 
    TODO :-)
 
+
 .. _running-cpp-parameters-cp-restart:
 
 Checkpoints and restart
@@ -756,12 +774,14 @@ Checkpoints and restart
 
 .. note::
 
-   ImpactX will support checkpoints/restart via AMReX.
+   Future version of ImpactX will support checkpoints/restart via AMReX.
+   This is not yet implemented.
    The checkpoint capability can be turned with regular diagnostics: ``<diag_name>.format = checkpoint``.
 
    * ``amr.restart`` (`string`)
        Name of the checkpoint file to restart from. Returns an error if the folder does not exist
        or if it is not properly formatted.
+
 
 Intervals parser
 ----------------
@@ -814,3 +834,64 @@ This is essentially the python slicing syntax except that the stop is inclusive
 Note that if a given period is zero or negative, the corresponding slice is disregarded.
 For example, ``something_intervals = -1`` deactivates ``something`` and
 ``something_intervals = ::-1,100:1000:25`` is equivalent to ``something_intervals = 100:1000:25``.
+
+
+.. _running-cpp-parameters-overall:
+
+Overall simulation parameters
+-----------------------------
+
+* ``amrex.abort_on_out_of_gpu_memory``  (``0`` or ``1``; default is ``1`` for true)
+    When running on GPUs, memory that does not fit on the device will be automatically swapped to host memory when this option is set to ``0``.
+    This will cause severe performance drops.
+    Note that even with this set to ``1`` ImpactX will not catch all out-of-memory events yet when operating close to maximum device memory.
+    `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
+
+* ``amrex.the_arena_is_managed``  (``0`` or ``1``; default is ``0`` for false)
+    When running on GPUs, device memory that is accessed from the host will automatically be transferred with managed memory.
+    This is useful for convenience during development, but has sometimes severe performance and memory footprint implications if relied on (and sometimes vendor bugs).
+    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory and thus changed the AMReX default to false.
+    `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
+
+* ``amrex.omp_threads``  (``system``, ``nosmt`` or positive integer; default is ``nosmt``)
+    An integer number can be set in lieu of the ``OMP_NUM_THREADS`` environment variable to control the number of OpenMP threads to use for the ``OMP`` compute backend on CPUs.
+    By default, we use the ``nosmt`` option, which overwrites the OpenMP default of spawning one thread per logical CPU core, and instead only spawns a number of threads equal to the number of physical CPU cores on the machine.
+    If set, the environment variable ``OMP_NUM_THREADS`` takes precedence over ``system`` and ``nosmt``, but not over integer numbers set in this option.
+
+* ``amrex.abort_on_unused_inputs`` (``0`` or ``1``; default is ``0`` for false)
+    When set to ``1``, this option causes the simulation to fail *after* its completion if there were unused parameters.
+    It is mainly intended for continuous integration and automated testing to check that all tests and inputs are adapted to API changes.
+
+* ``impactx.always_warn_immediately`` (``0`` or ``1``; default is ``0`` for false)
+    If set to ``1``, ImpactX immediately prints every warning message as soon as it is generated.
+    It is mainly intended for debug purposes, in case a simulation crashes before a global warning report can be printed.
+
+* ``impactx.abort_on_warning_threshold`` (string: ``low``, ``medium`` or ``high``) optional
+    Optional threshold to abort as soon as a warning is raised.
+    If the threshold is set, warning messages with priority greater than or equal to the threshold trigger an immediate abort.
+    It is mainly intended for debug purposes, and is best used with ``impactx.always_warn_immediately=1``.
+    For more information on the warning logger, see `this section <https://warpx.readthedocs.io/en/latest/developers/warning_logger.html>`__ of the WarpX documentation.
+
+* ``impactx.verbose`` (int: ``0`` for silent, higher is more verbose; default is ``1``) optional
+    Controls how much information is printed to the terminal, when running ImpactX.
+
+
+.. _running-cpp-parameters-parallelization:
+
+Distribution across MPI ranks and parallelization
+-------------------------------------------------
+
+* ``amr.max_grid_size`` (``integer``) optional (default: ``128``)
+    Maximum allowable size of each **subdomain**
+    (expressed in number of grid points, in each direction).
+    Each subdomain has its own ghost cells, and can be handled by a
+    different MPI rank ; several OpenMP threads can work simultaneously on the
+    same subdomain.
+
+    If ``max_grid_size`` is such that the total number of subdomains is
+    **larger** that the number of MPI ranks used, than some MPI ranks
+    will handle several subdomains, thereby providing additional flexibility
+    for **load balancing**.
+
+    When using mesh refinement, this number applies to the subdomains
+    of the coarsest level, but also to any of the finer level.

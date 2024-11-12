@@ -32,12 +32,12 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=0.5e-3,
-    sigmaY=0.5e-3,
-    sigmaT=5.0e-3,
-    sigmaPx=1.0e-5,
-    sigmaPy=1.0e-5,
-    sigmaPt=4.0e-6,
+    lambdaX=0.5e-3,
+    lambdaY=0.5e-3,
+    lambdaT=5.0e-3,
+    lambdaPx=1.0e-5,
+    lambdaPy=1.0e-5,
+    lambdaPt=4.0e-6,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -47,16 +47,16 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice
 sim.lattice.append(monitor)
 #   Short RF cavity element
-shortrf1 = elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5)
+shortrf1 = elements.ShortRF(name="shortrf1", V=1000.0, freq=1.3e9, phase=-89.5)
 #   Drift element
-drift1 = elements.Drift(ds=1.7)
+drift1 = elements.Drift(name="drift1", ds=1.7)
 
 sim.lattice.extend([shortrf1, drift1])
 
 sim.lattice.append(monitor)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

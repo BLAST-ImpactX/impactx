@@ -21,11 +21,6 @@ sim.slice_step_diagnostics = True
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# diagnostics: IOTA nonlinear lens invariants calculation
-sim.set_diag_iota_invariants(
-    alpha=1.376381920471173, beta=1.892632003628881, tn=0.4, cn=0.01
-)
-
 # load a 2.5 MeV proton beam
 kin_energy_MeV = 2.5  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
@@ -37,12 +32,12 @@ ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.397456296195e-003,
-    sigmaY=1.397456296195e-003,
-    sigmaT=1.0e-4,
-    sigmaPx=1.256184325020e-003,
-    sigmaPy=1.256184325020e-003,
-    sigmaPt=0.0,
+    lambdaX=1.397456296195e-003,
+    lambdaY=1.397456296195e-003,
+    lambdaT=1.0e-4,
+    lambdaPx=1.256184325020e-003,
+    lambdaPy=1.256184325020e-003,
+    lambdaPt=0.0,
     muxpx=0.8090169943749474,
     muypy=0.8090169943749474,
     mutpt=0.0,
@@ -52,6 +47,12 @@ sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor.nonlinear_lens_invariants = True
+monitor.alpha = 1.376381920471173
+monitor.beta = 1.892632003628881
+monitor.tn = 0.4
+monitor.cn = 0.01
+
 sim.lattice.append(monitor)
 
 # defining parameters of the nonlinear lens
@@ -64,7 +65,7 @@ ds = lens_length / num_lenses
 
 # drift elements
 ds_half = ds / 2.0
-dr = elements.Drift(ds=ds_half)
+dr = elements.Drift(name="dr", ds=ds_half)
 
 # define the nonlinear lens segments
 for j in range(0, num_lenses):
@@ -75,13 +76,18 @@ for j in range(0, num_lenses):
     )
     knll_s = t_strength * c_parameter**2 * ds / beta
     cnll_s = c_parameter * math.sqrt(beta)
-    nllens = elements.NonlinearLens(knll=knll_s, cnll=cnll_s)
+    nllens = elements.NonlinearLens(name="nllens" + str(j), knll=knll_s, cnll=cnll_s)
     segments = [dr, nllens, dr]
     sim.lattice.extend(segments)
 
 # focusing lens
 const = elements.ConstF(
-    ds=1.0e-8, kx=12060.113295833, ky=12060.113295833, kt=1.0e-12, nslice=1
+    name="const",
+    ds=1.0e-8,
+    kx=12060.113295833,
+    ky=12060.113295833,
+    kt=1.0e-12,
+    nslice=1,
 )
 sim.lattice.append(const)
 sim.lattice.append(monitor)
@@ -90,7 +96,7 @@ sim.lattice.append(monitor)
 sim.periods = 1
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

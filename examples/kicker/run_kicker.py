@@ -31,12 +31,12 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=4.0e-3,
-    sigmaY=4.0e-3,
-    sigmaT=1.0e-3,
-    sigmaPx=3.0e-4,
-    sigmaPy=3.0e-4,
-    sigmaPt=2.0e-3,
+    lambdaX=4.0e-3,
+    lambdaY=4.0e-3,
+    lambdaT=1.0e-3,
+    lambdaPx=3.0e-4,
+    lambdaPy=3.0e-4,
+    lambdaPt=2.0e-3,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -46,15 +46,15 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice
 kicklattice = [
     monitor,
-    elements.Kicker(xkick=2.0e-3, ykick=0.0, units="dimensionless"),
-    elements.Kicker(xkick=0.0, ykick=3.0e-3, units="dimensionless"),
+    elements.Kicker(name="kick1", xkick=2.0e-3, ykick=0.0, unit="dimensionless"),
+    elements.Kicker(name="kick2", xkick=0.0, ykick=3.0e-3, unit="dimensionless"),
     monitor,
 ]
 # assign a lattice
 sim.lattice.extend(kicklattice)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

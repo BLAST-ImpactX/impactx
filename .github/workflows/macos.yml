@@ -12,41 +12,41 @@ jobs:
     runs-on: macos-latest
     if: github.event.pull_request.draft == false
     env:
-      CXXFLAGS: "-Werror -Wno-error=pass-failed"
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: TRUE
     steps:
-    - uses: actions/checkout@v3
-    - name: install dependencies
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      name: Install Python
+      with:
+        python-version: '3.x'
+    - name: install brew dependencies
       run: |
         set +e
         brew unlink gcc
         brew update
-        brew install --overwrite python
         brew install adios2
         brew install ccache
         brew install cmake
+        brew install fftw
         brew install hdf5-mpi
         brew install libomp
         brew link --overwrite --force libomp
         brew install ninja
         brew install open-mpi
         brew install pkg-config
-
-        python3 -m pip install --upgrade pip
-        python3 -m pip install --upgrade virtualenv
-
-        python3 -m venv py-venv
-        source py-venv/bin/activate
+        set -e
+    - name: install pip dependencies
+      run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade build packaging setuptools wheel pytest
-        python3 -m pip install --upgrade pytest
         python3 -m pip install --upgrade -r requirements_mpi.txt
+        python3 -m pip install --upgrade -r src/python/impactx/dashboard/requirements.txt
         python3 -m pip install --upgrade -r examples/requirements.txt
-        set -e
+        python3 -m pip install --upgrade -r tests/python/requirements.txt
         python3 -m pip install --upgrade pipx
         python3 -m pipx install openPMD-validator
     - name: CCache Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       # - once stored under a key, they become immutable (even if local cache path content changes)
       # - for a refresh the key has to change, e.g., hash of a tracked file in the key
       with:
@@ -57,30 +57,38 @@ jobs:
           ccache-macos-appleclang-
     - name: build ImpactX
       run: |
-        source py-venv/bin/activate
+        export CCACHE_COMPRESS=1
+        export CCACHE_COMPRESSLEVEL=10
+        export CCACHE_MAXSIZE=100M
+        export CCACHE_SLOPPINESS=time_macros
+        ccache -z
+
+        export CXXFLAGS="-Werror -Wno-error=pass-failed"
 
         cmake -S . -B build            \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
-          -DImpactX_PYTHON=ON          \
-          -DPython_EXECUTABLE=$(which python3)
+          -DImpactX_FFT=ON             \
+          -DImpactX_PYTHON=ON
         cmake --build build -j 3
+
+        du -hs ~/Library/Caches/ccache
+        ccache -s
 
     - name: run tests
       run: |
-        source py-venv/bin/activate
-
         ctest --test-dir build --output-on-failure -E pytest.AMReX
 
     - name: run installed python module
       run: |
         cmake --build build --target pip_install
 
-        source py-venv/bin/activate
         python3 examples/fodo/run_fodo.py
 
     - name: run installed app
       run: |
         sudo cmake --build build --target install
+
+        export DYLD_LIBRARY_PATH=/usr/local/lib:${DYLD_LIBRARY_PATH}
 
         impactx.MPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }

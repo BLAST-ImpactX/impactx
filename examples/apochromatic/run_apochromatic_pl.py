@@ -31,12 +31,12 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.Gaussian(
-    sigmaX=1.288697604e-6,
-    sigmaY=1.288697604e-6,
-    sigmaT=1.0e-6,
-    sigmaPx=3.965223396e-6,
-    sigmaPy=3.965223396e-6,
-    sigmaPt=0.01,  # 1% energy spread
+    lambdaX=1.288697604e-6,
+    lambdaY=1.288697604e-6,
+    lambdaT=1.0e-6,
+    lambdaPx=3.965223396e-6,
+    lambdaPy=3.965223396e-6,
+    lambdaPt=0.01,  # 1% energy spread
     muxpx=0.0,
     muypy=0.0,
     mutpt=0.0,
@@ -50,39 +50,39 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 25  # number of slices per ds in the element
 
 # Drift elements
-dr1 = elements.ChrDrift(ds=1.0, nslice=ns)
-dr2 = elements.ChrDrift(ds=2.0, nslice=ns)
+dr1 = elements.ChrDrift(name="dr1", ds=1.0, nslice=ns)
+dr2 = elements.ChrDrift(name="dr2", ds=2.0, nslice=ns)
 
 # Plasma lens elements
 q1 = elements.ChrPlasmaLens(
-    ds=0.331817852986604588, k=996.147787384348956, units=1, nslice=ns
+    name="q1", ds=0.331817852986604588, k=996.147787384348956, unit=1, nslice=ns
 )
 q2 = elements.ChrPlasmaLens(
-    ds=0.176038957633108457, k=528.485181135649785, units=1, nslice=ns
+    name="q2", ds=0.176038957633108457, k=528.485181135649785, unit=1, nslice=ns
 )
 q3 = elements.ChrPlasmaLens(
-    ds=1.041842576046930486, k=3127.707468391874166, units=1, nslice=ns
+    name="q3", ds=1.041842576046930486, k=3127.707468391874166, unit=1, nslice=ns
 )
 q4 = elements.ChrPlasmaLens(
-    ds=0.334367090894399520, k=501.900417308233112, units=1, nslice=ns
+    name="q4", ds=0.334367090894399520, k=501.900417308233112, unit=1, nslice=ns
 )
 q5 = elements.ChrPlasmaLens(
-    ds=1.041842576046930486, k=3127.707468391874166, units=1, nslice=ns
+    name="q5", ds=1.041842576046930486, k=3127.707468391874166, unit=1, nslice=ns
 )
 q6 = elements.ChrPlasmaLens(
-    ds=0.176038957633108457, k=528.485181135649785, units=1, nslice=ns
+    name="q6", ds=0.176038957633108457, k=528.485181135649785, unit=1, nslice=ns
 )
 q7 = elements.ChrPlasmaLens(
-    ds=0.331817852986604588, k=996.147787384348956, units=1, nslice=ns
+    name="q7", ds=0.331817852986604588, k=996.147787384348956, unit=1, nslice=ns
 )
 
-# q1 = elements.ChrPlasmaLens(ds=0.331817852986604588, k=2.98636067687944129, units=0, nslice=ns)
-# q2 = elements.ChrPlasmaLens(ds=0.176038957633108457, k=1.584350618697976110, units=0, nslice=ns)
-# q3 = elements.ChrPlasmaLens(ds=1.041842576046930486, k=9.37658318442237437, units=0, nslice=ns)
-# q4 = elements.ChrPlasmaLens(ds=0.334367090894399520, k=1.50465190902479784, units=0, nslice=ns)
-# q5 = elements.ChrPlasmaLens(ds=1.041842576046930486, k=9.37658318442237437, units=0, nslice=ns)
-# q6 = elements.ChrPlasmaLens(ds=0.176038957633108457, k=1.584350618697976110, units=0, nslice=ns)
-# q7 = elements.ChrPlasmaLens(ds=0.331817852986604588, k=2.98636067687944129, units=0, nslice=ns)
+# q1 = elements.ChrPlasmaLens(name="q1", ds=0.331817852986604588, k=2.98636067687944129, unit=0, nslice=ns)
+# q2 = elements.ChrPlasmaLens(name="q2", ds=0.176038957633108457, k=1.584350618697976110, unit=0, nslice=ns)
+# q3 = elements.ChrPlasmaLens(name="q3", ds=1.041842576046930486, k=9.37658318442237437, unit=0, nslice=ns)
+# q4 = elements.ChrPlasmaLens(name="q4", ds=0.334367090894399520, k=1.50465190902479784, unit=0, nslice=ns)
+# q5 = elements.ChrPlasmaLens(name="q5", ds=1.041842576046930486, k=9.37658318442237437, unit=0, nslice=ns)
+# q6 = elements.ChrPlasmaLens(name="q6", ds=0.176038957633108457, k=1.584350618697976110, unit=0, nslice=ns)
+# q7 = elements.ChrPlasmaLens(name="q7", ds=0.331817852986604588, k=2.98636067687944129, unit=0, nslice=ns)
 
 lattice_line = [
     monitor,
@@ -108,7 +108,7 @@ lattice_line = [
 sim.lattice.extend(lattice_line)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

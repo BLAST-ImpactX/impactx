@@ -14,14 +14,15 @@
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
+#include "mixin/named.H"
 #include "mixin/thick.H"
 
 #include <ablastr/constant.H>
 
 #include <AMReX.H>
-#include <AMReX_Array.H>
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SmallMatrix.H>
 
 #include <array>
 #include <cmath>
@@ -116,40 +117,50 @@ namespace SoftSolenoidData
 } // namespace SoftSolenoidData
 
     struct SoftSolenoid
-    : public elements::BeamOptic<SoftSolenoid>,
+    : public elements::Named,
+      public elements::BeamOptic<SoftSolenoid>,
       public elements::Thick,
       public elements::Alignment
     {
-        static constexpr auto name = "SoftSolenoid";
+        static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;
 
         /** A soft-edge solenoid
          *
          * @param ds Segment length in m
-         * @param bscale Scaling factor for on-axis magnetic field Bz in 1/m
+         * @param bscale Scaling factor for on-axis longitudinal magnetic field in 1/m (MAD-X convention)
+         *           = (Bz in T) / (rigidity in T-m)
+         *        OR Magnetic field Bz in T (SI units)
          * @param cos_coef cosine coefficients in Fourier expansion of on-axis magnetic field Bz
          * @param sin_coef sine coefficients in Fourier expansion of on-axis magnetic field Bz
+         * @param unit  Unit specification
+         *           unit = 0 MADX convention (default)
+         *           unit = 1 SI units
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param mapsteps number of integration steps per slice used for
          *        map and reference particle push in applied fields
          * @param nslice number of slices used for the application of space charge
+         * @param name a user defined and not necessarily unique name of the element
          */
         SoftSolenoid (
             amrex::ParticleReal ds,
             amrex::ParticleReal bscale,
             std::vector<amrex::ParticleReal> cos_coef,
             std::vector<amrex::ParticleReal> sin_coef,
+            int unit,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
             int mapsteps = 1,
-            int nslice = 1
+            int nslice = 1,
+            std::optional<std::string> name = std::nullopt
         )
-          : Thick(ds, nslice),
+          : Named(name),
+            Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
-            m_bscale(bscale), m_mapsteps(mapsteps), m_id(SoftSolenoidData::next_id)
+            m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps), m_id(SoftSolenoidData::next_id)
        {
            // next created soft solenoid has another id for its data
            SoftSolenoidData::next_id++;
@@ -213,46 +224,26 @@ namespace SoftSolenoidData
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
-
-            // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
-
             // get the linear map
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
 
             // symplectic linear map for a solenoid is computed using the
             // Hamiltonian formalism as described in:
             // https://uspas.fnal.gov/materials/09UNM/ComputationalMethods.pdf.
             // R denotes the transfer matrix in the basis (x,px,y,py,t,pt),
             // so that, e.g., R(3,4) = dyf/dpyi.
+            amrex::SmallVector<amrex::ParticleReal, 6, 1> const v{x, px, y, py, t, pt};
 
             // push particles using the linear map
-            xout = R(1,1)*x + R(1,2)*px + R(1,3)*y
-                     + R(1,4)*py + R(1,5)*t + R(1,6)*pt;
-            pxout = R(2,1)*x + R(2,2)*px + R(2,3)*y
-                  + R(2,4)*py + R(2,5)*t + R(2,6)*pt;
-            yout = R(3,1)*x + R(3,2)*px + R(3,3)*y
-                     + R(3,4)*py + R(3,5)*t + R(3,6)*pt;
-            pyout = R(4,1)*x + R(4,2)*px + R(4,3)*y
-                  + R(4,4)*py + R(4,5)*t + R(4,6)*pt;
-            tout = R(5,1)*x + R(5,2)*px + R(5,3)*y
-                     + R(5,4)*py + R(5,5)*t + R(5,6)*pt;
-            ptout = R(6,1)*x + R(6,2)*px + R(6,3)*y
-                  + R(6,4)*py + R(6,5)*t + R(6,6)*pt;
+            auto const out = R * v;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
-            px = pxout;
-            py = pyout;
-            pt = ptout;
+            x  = out[1];
+            px = out[2];
+            y  = out[3];
+            py = out[4];
+            t  = out[5];
+            pt = out[6];
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -279,18 +270,13 @@ namespace SoftSolenoidData
             amrex::ParticleReal const sedge = refpart.sedge;
 
             // initialize linear map (deviation) values
-            for (int i=1; i<7; i++) {
-               for (int j=1; j<7; j++) {
-                  auto const default_value = (i == j) ? 1.0_prt : 0.0_prt;
-                  refpart.map(i, j) = default_value;
-               }
-            }
+            refpart.map = decltype(refpart.map)::Identity();
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = sqrt(pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -315,7 +301,7 @@ namespace SoftSolenoidData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = sqrt(pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -365,12 +351,12 @@ namespace SoftSolenoidData
                bfieldint = z*bfield;
                for (int j=1; j < m_ncoef; ++j)
                {
-                 bfield = bfield + cos_data[j]*cos(j*2*pi*z/zlen) +
-                     sin_data[j]*sin(j*2*pi*z/zlen);
-                 bfieldp = bfieldp-j*2*pi*cos_data[j]*sin(j*2*pi*z/zlen)/zlen +
-                      j*2*pi*sin_data[j]*cos(j*2*pi*z/zlen)/zlen;
-                 bfieldint = bfieldint + zlen*cos_data[j]*sin(j*2*pi*z/zlen)/(j*2*pi) -
-                      zlen*sin_data[j]*cos(j*2*pi*z/zlen)/(j*2*pi);
+                 bfield = bfield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
+                     sin_data[j] * std::sin(j*2*pi*z/zlen);
+                 bfieldp = bfieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
+                      j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
+                 bfieldint = bfieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
+                      zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
                }
             }
             return std::make_tuple(bfield, bfieldp, bfieldint);
@@ -397,7 +383,7 @@ namespace SoftSolenoidData
             amrex::ParticleReal const z = zeval;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/sqrt(1.0_prt - pow(pt, -2));
+                refpart.t = t + tau/std::sqrt(1.0_prt - std::pow(pt, -2));
                 refpart.pt = pt;
             }
             else {
@@ -408,7 +394,7 @@ namespace SoftSolenoidData
             zeval = z + tau;
 
             // push the linear map equations
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
             refpart.map(1,1) = R(1,1) + tau*R(2,1);
@@ -421,8 +407,8 @@ namespace SoftSolenoidData
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/pow(betgam,2);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/pow(betgam,2);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/std::pow(betgam,2);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/std::pow(betgam,2);
 
         }
 
@@ -445,7 +431,10 @@ namespace SoftSolenoidData
             amrex::ParticleReal const pt = refpart.pt;
 
             // Define parameters and intermediate constants
-            amrex::ParticleReal const B0 = m_bscale;
+            amrex::ParticleReal const B0 =
+                m_unit == 1 ?
+                m_bscale / refpart.rigidity_Tm() :
+                m_bscale;
 
             // push the reference particle
             auto [bz, bzp, bzint] = Sol_Bfield(zeval);
@@ -455,9 +444,9 @@ namespace SoftSolenoidData
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const alpha = B0*bz/2.0_prt;
-            amrex::ParticleReal const alpha2 = pow(alpha,2);
+            amrex::ParticleReal const alpha2 = std::pow(alpha,2);
 
             refpart.map(2,1) = R(2,1) - tau*alpha2*R(1,1);
             refpart.map(2,2) = R(2,2) - tau*alpha2*R(1,2);
@@ -491,7 +480,10 @@ namespace SoftSolenoidData
             amrex::ParticleReal const z = zeval;
 
             // Define parameters and intermediate constants
-            amrex::ParticleReal const B0 = m_bscale;
+            amrex::ParticleReal const B0 =
+                m_unit == 1 ?
+                m_bscale / refpart.rigidity_Tm() :
+                m_bscale;
 
             // push the reference particle
             auto [bz, bzp, bzint] = Sol_Bfield(z);
@@ -501,10 +493,10 @@ namespace SoftSolenoidData
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const theta = tau*B0*bz/2.0_prt;
-            amrex::ParticleReal const cs = cos(theta);
-            amrex::ParticleReal const sn = sin(theta);
+            amrex::ParticleReal const cs = std::cos(theta);
+            amrex::ParticleReal const sn = std::sin(theta);
 
             refpart.map(1,1) = R(1,1)*cs + R(3,1)*sn;
             refpart.map(1,2) = R(1,2)*cs + R(3,2)*sn;
@@ -545,8 +537,8 @@ namespace SoftSolenoidData
                 SoftSolenoidData::d_sin_coef.erase(m_id);
         }
 
-    private:
         amrex::ParticleReal m_bscale; //! scaling factor for solenoid Bz field
+        int m_unit; //! unit specification for quad strength
         int m_mapsteps; //! number of map integration steps per slice
         int m_id; //! unique soft solenoid id used for data lookup map
 

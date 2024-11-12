@@ -9,12 +9,7 @@
 import numpy as np
 import pytest
 
-from impactx import (
-    CoordSystem,
-    ImpactX,
-    coordinate_transformation,
-    distribution,
-)
+from impactx import CoordSystem, ImpactX, coordinate_transformation, distribution
 
 
 def test_transformation():
@@ -47,12 +42,12 @@ def test_transformation():
 
     #   particle bunch
     distr = distribution.Gaussian(
-        sigmaX=3e-6,
-        sigmaY=3e-6,
-        sigmaT=1e-2,
-        sigmaPx=1.33 / energy_gamma,
-        sigmaPy=1.33 / energy_gamma,
-        sigmaPt=100 / energy_gamma,
+        lambdaX=3e-6,
+        lambdaY=3e-6,
+        lambdaT=1e-2,
+        lambdaPx=1.33 / energy_gamma,
+        lambdaPy=1.33 / energy_gamma,
+        lambdaPt=100 / energy_gamma,
         muxpx=-0.5,
         muypy=0.4,
         mutpt=0.8,
@@ -86,7 +81,7 @@ def test_transformation():
     for key, val in rbc_s0.items():
         if not np.isclose(val, rbc_s[key], rtol=rtol, atol=atol):
             print(f"initial[{key}]={val}, final[{key}]={rbc_s[key]} not equal")
-        assert np.isclose(val, rbc_s[key], rtol=rtol, atol=atol)
+            assert False
     # assert that the t-based beam is different, at least in the following keys:
     large_st_diff_keys = [
         "beta_x",

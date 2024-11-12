@@ -12,13 +12,16 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/ReferenceParticle.H"
+#include "EmittanceInvariants.H"
 
 #include <AMReX_BLProfiler.H>           // for TinyProfiler
 #include <AMReX_GpuQualifiers.H>        // for AMREX_GPU_DEVICE
-#include <AMReX_REAL.H>                 // for ParticleReal
-#include <AMReX_Reduce.H>               // for ReduceOps
 #include <AMReX_ParallelDescriptor.H>   // for ParallelDescriptor
 #include <AMReX_ParticleReduce.H>       // for ParticleReduce
+#include <AMReX_REAL.H>                 // for ParticleReal
+#include <AMReX_Reduce.H>               // for ReduceOps
+#include <AMReX_SmallMatrix.H>          // for SmallMatrix
+#include <AMReX_TypeList.H>             // for TypeMultiplier
 
 
 namespace impactx::diagnostics
@@ -32,51 +35,32 @@ namespace impactx::diagnostics
         RefPart const ref_part = pc.GetRefParticle();
         // reference particle charge in C
         amrex::ParticleReal const q_C = ref_part.charge;
+        // reference particle relativistic beta*gamma
+        amrex::ParticleReal const bg = ref_part.beta_gamma();
+        amrex::ParticleReal const bg2 = bg*bg;
 
         // preparing access to particle data: SoA
         using PType = typename ImpactXParticleContainer::SuperParticleType;
 
-        // prepare reduction operations for calculation of mean and min/max values in 6D phase space
-        amrex::ReduceOps<
-            // preparing mean values
-            amrex::ReduceOpSum,  // w
-            amrex::ReduceOpSum, amrex::ReduceOpSum, amrex::ReduceOpSum,  // x, y, t
-            amrex::ReduceOpSum, amrex::ReduceOpSum, amrex::ReduceOpSum,  // px, py, pt
-            // preparing min/max values
-            amrex::ReduceOpMin, amrex::ReduceOpMax,  // x_min/max
-            amrex::ReduceOpMin, amrex::ReduceOpMax,  // y_min/max
-            amrex::ReduceOpMin, amrex::ReduceOpMax,  // t_min/max
-            amrex::ReduceOpMin, amrex::ReduceOpMax,  // px_min/max
-            amrex::ReduceOpMin, amrex::ReduceOpMax,  // py_min/max
-            amrex::ReduceOpMin, amrex::ReduceOpMax   // pt_min/max
-        > reduce_ops;
+        /* The variables below need to be static to work around an MSVC bug
+         * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
+         */
+        // numbers of same type reduction operations in first concurrent batch
+        static constexpr std::size_t num_red_ops_1_sum = 7;  // summation
+        static constexpr std::size_t num_red_ops_1_min = 6;  // minimum
+        static constexpr std::size_t num_red_ops_1_max = 6;  // maximum
 
-        auto r = amrex::ParticleReduce<
-            amrex::ReduceData<
-                amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal
-            >
-        >(
+        // prepare reduction operations for calculation of mean and min/max values in 6D phase space
+        amrex::TypeMultiplier<amrex::ReduceOps,
+            amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt
+            amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
+            amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
+        > reduce_ops_1;
+        using ReducedDataT1 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_1_sum + num_red_ops_1_min + num_red_ops_1_max]>;
+
+        auto r1 = amrex::ParticleReduce<ReducedDataT1>(
             pc,
-            [=] AMREX_GPU_DEVICE (const PType& p) noexcept
-            -> amrex::GpuTuple<
-                amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal
-            >
+            [=] AMREX_GPU_DEVICE(const PType& p) noexcept -> ReducedDataT1::Type
             {
                 // access particle position data
                 const amrex::ParticleReal p_x = p.rdata(RealSoA::x);
@@ -101,25 +85,21 @@ namespace impactx::diagnostics
                 return {p_w,
                         p_x_mean, p_y_mean, p_t_mean,
                         p_px_mean, p_py_mean, p_pt_mean,
-                        p_x, p_x,
-                        p_y, p_y,
-                        p_t, p_t,
-                        p_px, p_px,
-                        p_py, p_py,
-                        p_pt, p_pt};
+                        p_x, p_y, p_t, p_px, p_py, p_pt,
+                        p_x, p_y, p_t, p_px, p_py, p_pt};
             },
-            reduce_ops
+            reduce_ops_1
         );
 
-        std::vector<amrex::ParticleReal> values_per_rank_1st = {
-                amrex::get<0>(r), // w
-                amrex::get<1>(r), // x_mean
-                amrex::get<2>(r), // y_mean
-                amrex::get<3>(r), // t_mean
-                amrex::get<4>(r), // px_mean
-                amrex::get<5>(r), // py_mean
-                amrex::get<6>(r), // pt_mean
-        };
+        std::vector<amrex::ParticleReal> values_per_rank_1st(num_red_ops_1_sum);
+
+        /* contains in this order:
+         * w, x_mean, y_mean, t_mean
+         * px_mean, py_mean, pt_mean
+         */
+        amrex::constexpr_for<0, num_red_ops_1_sum> ([&](auto i) {
+            values_per_rank_1st[i] = amrex::get<i>(r1);
+        });
 
         // reduced sum over mpi ranks (allreduce)
         amrex::ParallelAllReduce::Sum(
@@ -136,23 +116,27 @@ namespace impactx::diagnostics
         amrex::ParticleReal const py_mean = values_per_rank_1st.at(5) /= w_sum;
         amrex::ParticleReal const pt_mean = values_per_rank_1st.at(6) /= w_sum;
 
-        std::vector<amrex::ParticleReal> values_per_rank_min = {
-                amrex::get<7>(r), // x_min
-                amrex::get<9>(r), // y_min
-                amrex::get<11>(r), // t_min
-                amrex::get<13>(r), // px_min
-                amrex::get<15>(r), // py_min
-                amrex::get<17>(r), // pt_min
-        };
+        std::vector<amrex::ParticleReal> values_per_rank_min(num_red_ops_1_min);
 
-        std::vector<amrex::ParticleReal> values_per_rank_max = {
-                amrex::get<8>(r), // x_max
-                amrex::get<10>(r), // y_max
-                amrex::get<12>(r), // t_max
-                amrex::get<14>(r), // px_max
-                amrex::get<16>(r), // py_max
-                amrex::get<18>(r), // pt_max
-        };
+        /* contains in this order:
+         * x_min, y_min, t_min
+         * px_min, py_min, pt_min
+         */
+        amrex::constexpr_for<0, num_red_ops_1_min> ([&](auto i) {
+            constexpr std::size_t idx = i + num_red_ops_1_sum;
+            values_per_rank_min[i] = amrex::get<idx>(r1);
+        });
+
+        std::vector<amrex::ParticleReal> values_per_rank_max(num_red_ops_1_max);
+
+        /* contains in this order:
+         * x_max, y_max, t_max
+         * px_max, py_max, pt_max
+         */
+        amrex::constexpr_for<0, num_red_ops_1_max> ([&](auto i) {
+            constexpr std::size_t idx = i + num_red_ops_1_sum + num_red_ops_1_min;
+            values_per_rank_max[i] = amrex::get<idx>(r1);
+        });
 
         // reduced sum over mpi ranks (allreduce)
         amrex::ParallelAllReduce::Min(
@@ -168,31 +152,19 @@ namespace impactx::diagnostics
                 amrex::ParallelDescriptor::Communicator()
         );
 
+        /* The variable below needs to be static to work around an MSVC bug
+         * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
+         */
+        // number of reduction operations in second concurrent batch
+        static constexpr std::size_t num_red_ops_2 = 22;
         // prepare reduction operations for calculation of mean square and correlation values
-        amrex::ReduceOps<
-            amrex::ReduceOpSum, amrex::ReduceOpSum, amrex::ReduceOpSum,
-            amrex::ReduceOpSum, amrex::ReduceOpSum, amrex::ReduceOpSum,
-            amrex::ReduceOpSum, amrex::ReduceOpSum, amrex::ReduceOpSum,
-            amrex::ReduceOpSum
-        > reduce_ops2;
+        amrex::TypeMultiplier<amrex::ReduceOps, amrex::ReduceOpSum[num_red_ops_2]> reduce_ops_2;
+        using ReducedDataT2 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_2]>;
 
-
-        auto r2 = amrex::ParticleReduce<
-            amrex::ReduceData<
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal
-            >
-        >(
-            pc,
-            [=] AMREX_GPU_DEVICE(const PType& p) noexcept
-            -> amrex::GpuTuple<
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal
-            >
+        auto r2 = amrex::ParticleReduce<ReducedDataT2>(
+                pc,
+                [=] AMREX_GPU_DEVICE(const PType& p) noexcept
+            -> ReducedDataT2::Type
             {
                 // access SoA particle momentum data and weighting
                 const amrex::ParticleReal p_w = p.rdata(RealSoA::w);
@@ -211,39 +183,56 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_px_ms = (p_px-px_mean)*(p_px-px_mean)*p_w;
                 const amrex::ParticleReal p_py_ms = (p_py-py_mean)*(p_py-py_mean)*p_w;
                 const amrex::ParticleReal p_pt_ms = (p_pt-pt_mean)*(p_pt-pt_mean)*p_w;
-
+                // prepare position-momentum correlations
                 const amrex::ParticleReal p_xpx = (p_x-x_mean)*(p_px-px_mean)*p_w;
                 const amrex::ParticleReal p_ypy = (p_y-y_mean)*(p_py-py_mean)*p_w;
                 const amrex::ParticleReal p_tpt = (p_t-t_mean)*(p_pt-pt_mean)*p_w;
+                // prepare correlations for dispersion (4 required)
+                const amrex::ParticleReal p_xpt = (p_x-x_mean)*(p_pt-pt_mean)*p_w;
+                const amrex::ParticleReal p_pxpt = (p_px-px_mean)*(p_pt-pt_mean)*p_w;
+                const amrex::ParticleReal p_ypt = (p_y-y_mean)*(p_pt-pt_mean)*p_w;
+                const amrex::ParticleReal p_pypt = (p_py-py_mean)*(p_pt-pt_mean)*p_w;
+                // prepare additional cross-plane correlations (8 required)
+                const amrex::ParticleReal p_xy = (p_x-x_mean)*(p_y-y_mean)*p_w;
+                const amrex::ParticleReal p_xpy = (p_x-x_mean)*(p_py-py_mean)*p_w;
+                const amrex::ParticleReal p_xt = (p_x-x_mean)*(p_t-t_mean)*p_w;
+                const amrex::ParticleReal p_pxy = (p_px-px_mean)*(p_y-y_mean)*p_w;
+                const amrex::ParticleReal p_pxpy = (p_px-px_mean)*(p_py-py_mean)*p_w;
+                const amrex::ParticleReal p_pxt = (p_px-px_mean)*(p_t-t_mean)*p_w;
+                const amrex::ParticleReal p_yt = (p_y-y_mean)*(p_t-t_mean)*p_w;
+                const amrex::ParticleReal p_pyt = (p_py-py_mean)*(p_t-t_mean)*p_w;
 
                 const amrex::ParticleReal p_charge = q_C*p_w;
 
                 return {p_x_ms, p_y_ms, p_t_ms,
                         p_px_ms, p_py_ms, p_pt_ms,
                         p_xpx, p_ypy, p_tpt,
+                        p_xpt, p_pxpt, p_ypt, p_pypt,
+                        p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
                         p_charge};
             },
-            reduce_ops2
+                reduce_ops_2
         );
 
-        std::vector<amrex::ParticleReal> values_per_rank_2nd = {
-                amrex::get<0>(r2), // x_ms
-                amrex::get<1>(r2), // y_ms
-                amrex::get<2>(r2), // t_ms
-                amrex::get<3>(r2), // px_ms
-                amrex::get<4>(r2), // py_ms
-                amrex::get<5>(r2), // pt_ms
-                amrex::get<6>(r2), // xpx
-                amrex::get<7>(r2), // ypy
-                amrex::get<8>(r2), // tpt
-                amrex::get<9>(r2) // charge
-        };
+        std::vector<amrex::ParticleReal> values_per_rank_2nd(num_red_ops_2);
 
-        // reduced sum over mpi ranks (reduce to IO rank)
-        amrex::ParallelDescriptor::ReduceRealSum(
+        /* contains in this order:
+         * x_ms, y_ms, t_ms
+         * px_ms, py_ms, pt_ms,
+         * xpx, ypy, tpt,
+         * p_xpt, p_pxpt, p_ypt, p_pypt,
+         * p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
+         * charge
+         */
+        amrex::constexpr_for<0, num_red_ops_2> ([&](auto i) {
+            values_per_rank_2nd[i] = amrex::get<i>(r2);
+        });
+
+        // reduced sum over mpi ranks (allreduce)
+        amrex::ParallelAllReduce::Sum(
             values_per_rank_2nd.data(),
             values_per_rank_2nd.size(),
-            amrex::ParallelDescriptor::IOProcessorNumber()
+            amrex::ParallelDescriptor::Communicator()
         );
 
         // minimum values
@@ -270,7 +259,19 @@ namespace impactx::diagnostics
         amrex::ParticleReal const xpx    = values_per_rank_2nd.at(6) /= w_sum;
         amrex::ParticleReal const ypy    = values_per_rank_2nd.at(7) /= w_sum;
         amrex::ParticleReal const tpt    = values_per_rank_2nd.at(8) /= w_sum;
-        amrex::ParticleReal const charge = values_per_rank_2nd.at(9);
+        amrex::ParticleReal const xpt    = values_per_rank_2nd.at(9) /= w_sum;
+        amrex::ParticleReal const pxpt   = values_per_rank_2nd.at(10) /= w_sum;
+        amrex::ParticleReal const ypt    = values_per_rank_2nd.at(11) /= w_sum;
+        amrex::ParticleReal const pypt   = values_per_rank_2nd.at(12) /= w_sum;
+        amrex::ParticleReal const xy     = values_per_rank_2nd.at(13) /= w_sum;
+        amrex::ParticleReal const xpy    = values_per_rank_2nd.at(14) /= w_sum;
+        amrex::ParticleReal const xt     = values_per_rank_2nd.at(15) /= w_sum;
+        amrex::ParticleReal const pxy    = values_per_rank_2nd.at(16) /= w_sum;
+        amrex::ParticleReal const pxpy   = values_per_rank_2nd.at(17) /= w_sum;
+        amrex::ParticleReal const pxt    = values_per_rank_2nd.at(18) /= w_sum;
+        amrex::ParticleReal const yt     = values_per_rank_2nd.at(19) /= w_sum;
+        amrex::ParticleReal const pyt    = values_per_rank_2nd.at(20) /= w_sum;
+        amrex::ParticleReal const charge = values_per_rank_2nd.at(21);
         // standard deviations of positions
         amrex::ParticleReal const sig_x = std::sqrt(x_ms);
         amrex::ParticleReal const sig_y = std::sqrt(y_ms);
@@ -283,18 +284,88 @@ namespace impactx::diagnostics
         amrex::ParticleReal const emittance_x = std::sqrt(x_ms*px_ms-xpx*xpx);
         amrex::ParticleReal const emittance_y = std::sqrt(y_ms*py_ms-ypy*ypy);
         amrex::ParticleReal const emittance_t = std::sqrt(t_ms*pt_ms-tpt*tpt);
+        // Dispersion and dispersive beam moments
+        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
+        amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
+        amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
+        amrex::ParticleReal const emittance_xd = std::sqrt(x_msd*px_msd-xpx_d*xpx_d);
+        amrex::ParticleReal const y_msd = y_ms - pt_ms*dispersion_y*dispersion_y;
+        amrex::ParticleReal const py_msd = py_ms - pt_ms*dispersion_py*dispersion_py;
+        amrex::ParticleReal const ypy_d = ypy - pt_ms*dispersion_y*dispersion_py;
+        amrex::ParticleReal const emittance_yd = std::sqrt(y_msd*py_msd-ypy_d*ypy_d);
         // Courant-Snyder (Twiss) beta-function
-        amrex::ParticleReal const beta_x = x_ms / emittance_x;
-        amrex::ParticleReal const beta_y = y_ms / emittance_y;
+        amrex::ParticleReal const beta_x = x_msd / emittance_xd;
+        amrex::ParticleReal const beta_y = y_msd / emittance_yd;
         amrex::ParticleReal const beta_t = t_ms / emittance_t;
         // Courant-Snyder (Twiss) alpha
-        amrex::ParticleReal const alpha_x = - xpx / emittance_x;
-        amrex::ParticleReal const alpha_y = - ypy / emittance_y;
+        amrex::ParticleReal const alpha_x = - xpx_d / emittance_xd;
+        amrex::ParticleReal const alpha_y = - ypy_d / emittance_yd;
         amrex::ParticleReal const alpha_t = - tpt / emittance_t;
 
+        // Calculate normalized emittances
+        amrex::ParticleReal emittance_xn = emittance_x * bg;
+        amrex::ParticleReal emittance_yn = emittance_y * bg;
+        amrex::ParticleReal emittance_tn = emittance_t * bg;
+
+        // Determine whether to calculate eigenemittances, and initialize
+        amrex::ParmParse pp_diag("diag");
+        bool compute_eigenemittances = false;
+        pp_diag.queryAdd("eigenemittances", compute_eigenemittances);
+        amrex::ParticleReal emittance_1 = emittance_xn;
+        amrex::ParticleReal emittance_2 = emittance_yn;
+        amrex::ParticleReal emittance_3 = emittance_tn;
+
+        if (compute_eigenemittances) {
+           // Store the covariance matrix in dynamical variables:
+           amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> Sigma;
+           Sigma(1,1) = x_ms;
+           Sigma(1,2) = xpx * bg;
+           Sigma(1,3) = xy;
+           Sigma(1,4) = xpy * bg;
+           Sigma(1,5) = xt;
+           Sigma(1,6) = xpt * bg;
+           Sigma(2,1) = xpx * bg;
+           Sigma(2,2) = px_ms * bg2;
+           Sigma(2,3) = pxy * bg;
+           Sigma(2,4) = pxpy * bg2;
+           Sigma(2,5) = pxt * bg;
+           Sigma(2,6) = pxpt * bg2;
+           Sigma(3,1) = xy;
+           Sigma(3,2) = pxy * bg;
+           Sigma(3,3) = y_ms;
+           Sigma(3,4) = ypy * bg;
+           Sigma(3,5) = yt;
+           Sigma(3,6) = ypt * bg;
+           Sigma(4,1) = xpy * bg;
+           Sigma(4,2) = pxpy * bg2;
+           Sigma(4,3) = ypy * bg;
+           Sigma(4,4) = py_ms * bg2;
+           Sigma(4,5) = pyt * bg;
+           Sigma(4,6) = pypt * bg2;
+           Sigma(5,1) = xt;
+           Sigma(5,2) = pxt * bg;
+           Sigma(5,3) = yt;
+           Sigma(5,4) = pyt * bg;
+           Sigma(5,5) = t_ms;
+           Sigma(5,6) = tpt * bg;
+           Sigma(6,1) = xpt * bg;
+           Sigma(6,2) = pxpt * bg2;
+           Sigma(6,3) = ypt * bg;
+           Sigma(6,4) = pypt * bg2;
+           Sigma(6,5) = tpt * bg;
+           Sigma(6,6) = pt_ms * bg2;
+           // Calculate eigenemittances
+           std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> emittances = Eigenemittances(Sigma);
+           emittance_1 = std::get<0>(emittances);
+           emittance_2 = std::get<1>(emittances);
+           emittance_3 = std::get<2>(emittances);
+        }
+
         std::unordered_map<std::string, amrex::ParticleReal> data;
-        data["s"] = ref_part.s;  // TODO: remove when the output gets rerouted to openPMD
-        data["ref_beta_gamma"] = ref_part.beta_gamma();  // TODO: remove when the output gets rerouted to openPMD
         data["x_mean"] = x_mean;
         data["x_min"] = x_min;
         data["x_max"] = x_max;
@@ -328,7 +399,19 @@ namespace impactx::diagnostics
         data["beta_x"] = beta_x;
         data["beta_y"] = beta_y;
         data["beta_t"] = beta_t;
-        data["charge_C"] = charge;  // TODO: remove when the output gets rerouted to openPMD
+        data["dispersion_x"] = dispersion_x;
+        data["dispersion_px"] = dispersion_px;
+        data["dispersion_y"] = dispersion_y;
+        data["dispersion_py"] = dispersion_py;
+        data["charge_C"] = charge;
+        data["emittance_xn"] = emittance_xn;
+        data["emittance_yn"] = emittance_yn;
+        data["emittance_tn"] = emittance_tn;
+        if (compute_eigenemittances) {
+           data["emittance_1"] = emittance_1;
+           data["emittance_2"] = emittance_2;
+           data["emittance_3"] = emittance_3;
+        }
 
         return data;
     }

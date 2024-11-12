@@ -1058,4 +1058,3 @@ add_impactx_test(gaussian-SCdrift.py
     examples/ipac2018_mayes/analysis_expanding_ipac2018.py
     OFF  # no plot script yet
 )
-

@@ -245,6 +245,14 @@ namespace detail
             pp_element.get("phi_out", phi_out);
 
             m_lattice.emplace_back( PRot(phi_in, phi_out, element_name) );
+        } else if (element_type == "plane_xyrotation")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal phi;
+            pp_element.get("angle", phi);
+
+            m_lattice.emplace_back( PlaneXYRot(phi, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "solenoid_softedge")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);

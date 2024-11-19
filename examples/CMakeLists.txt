@@ -843,6 +843,22 @@ add_impactx_test(aperture.py
     OFF  # no plot script yet
 )
 
+# Absorber collimation ########################################################
+#
+# w/o space charge
+add_impactx_test(absorber
+    examples/aperture/input_absorber.in
+      ON  # ImpactX MPI-parallel
+    examples/aperture/analysis_absorber.py
+    OFF  # no plot script yet
+)
+add_impactx_test(absorber.py
+    examples/aperture/run_absorber.py
+      OFF  # ImpactX MPI-parallel
+    examples/aperture/analysis_absorber.py
+    OFF  # no plot script yet
+)
+
 # Apochromat drift-quad example ##########################################################
 #
 # w/o space charge

@@ -918,7 +918,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_NonlinearLens);
-    
+
    py::class_<PlaneXYRot, elements::Named, elements::Thin, elements::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
     py_PlaneXYRot
         .def("__repr__",
@@ -950,7 +950,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_PlaneXYRot);
-    
+
     py::class_<Programmable, elements::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",
              [](Programmable const & prg) {

@@ -26,3 +26,17 @@ impactx::Aperture::shape_name (Shape const & shape)
             throw std::runtime_error("Unknown shape");
     }
 }
+
+std::string
+impactx::Aperture::action_name (Action const & action)
+{
+    switch (action)
+    {
+        case Aperture::Action::transmit :  // default
+            return "transmit";
+        case Aperture::Action::absorb :
+            return "absorb";
+        default:
+            throw std::runtime_error("Unknown action");
+    }
+}

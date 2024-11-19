@@ -302,7 +302,7 @@ void init_elements(py::module& m)
 
                  if (action != "transmit" && action != "absorb")
                      throw std::runtime_error(R"(action must be "transmit" or "absorb")");
- 
+
                  Aperture::Shape const s = shape == "rectangular" ?
                      Aperture::Shape::rectangular :
                      Aperture::Shape::elliptical;
@@ -341,14 +341,14 @@ void init_elements(py::module& m)
         )
         .def_property("action",
             [](Aperture & ap)
-            { 
+            {
                 return ap.action_name(ap.m_action);
             },
             [](Aperture & ap, std::string const & action)
             {
                 if (action != "transmit" && action != "absorb")
                     throw std::runtime_error(R"(action must be "transmit" or "absorb")");
-                     
+
                 ap.m_action = action == "transmit" ?
                     Aperture::Action::transmit :
                     Aperture::Action::absorb;

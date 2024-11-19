@@ -49,7 +49,7 @@ namespace impactx
 
         static std::string
         shape_name (Shape const & shape);
-        
+
         static std::string
         action_name (Action const & action);
 
@@ -143,7 +143,7 @@ namespace impactx
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
-                  
+
                       case Shape::elliptical :
                         if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
@@ -161,7 +161,7 @@ namespace impactx
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
-                     
+
                      case Shape::elliptical :
                         if (std::pow(u,2) + std::pow(v,2) < 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();

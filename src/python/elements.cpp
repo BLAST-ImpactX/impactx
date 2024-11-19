@@ -919,7 +919,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_NonlinearLens);
 
-   py::class_<PlaneXYRot, elements::Named, elements::Thin, elements::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
+    py::class_<PlaneXYRot, elements::Named, elements::Thin, elements::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
     py_PlaneXYRot
         .def("__repr__",
              [](PlaneXYRot const & plane_xyrot) {

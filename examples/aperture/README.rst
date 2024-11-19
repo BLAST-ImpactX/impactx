@@ -154,4 +154,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_absorber.py
       :language: python3
       :caption: You can copy this file from ``examples/aperture/analysis_absorber.py``.
-

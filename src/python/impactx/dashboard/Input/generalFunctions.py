@@ -311,3 +311,16 @@ class generalFunctions:
             return str(value)
         else:
             raise ValueError("Unknown type")
+
+    # -----------------------------------------------------------------------------
+    # Tooltip Comments
+    # -----------------------------------------------------------------------------
+
+    state.particle_shape_tooltip = "Whether to calculate space charge effects."
+    state.kin_energy_tooltip = "Get reference particle energy (MeV)"
+    state.charge_qe_tooltip = (
+        "Get reference particle charge (positive elementary charge)"
+    )
+    state.npart_tooltip = "TBD"
+    state.mass_MeV_tooltip = "Get reference particle rest mass (MeV/c^2)"
+    state.bunch_charge_C_tooltip = "TBD"

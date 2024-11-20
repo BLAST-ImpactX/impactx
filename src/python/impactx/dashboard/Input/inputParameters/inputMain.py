@@ -6,7 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
@@ -111,58 +111,77 @@ class InputParameters:
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):
-                        vuetify.VTextField(
-                            label="Ref. Particle Charge",
-                            v_model=("charge_qe",),
-                            suffix="qe",
-                            type="number",
-                            dense=True,
-                            error_messages=("charge_qe_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'int','charge_qe','charge_qe_validation', ['non_zero']]",
-                            ),
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    label="Ref. Particle Charge",
+                                    v_model=("charge_qe",),
+                                    suffix="qe",
+                                    type="number",
+                                    dense=True,
+                                    error_messages=("charge_qe_validation",),
+                                    change=(
+                                        ctrl.on_input_change,
+                                        "[$event, 'int','charge_qe','charge_qe_validation', ['non_zero']]",
+                                    ),
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ charge_qe_tooltip }}")
                     with vuetify.VCol(cols=6, classes="py-0"):
-                        vuetify.VTextField(
-                            label="Ref. Particle Mass",
-                            v_model=("mass_MeV",),
-                            suffix="MeV",
-                            type="number",
-                            dense=True,
-                            error_messages=("mass_MeV_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'float','mass_MeV','mass_MeV_validation', ['positive']]",
-                            ),
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    label="Ref. Particle Mass",
+                                    v_model=("mass_MeV",),
+                                    suffix="MeV",
+                                    type="number",
+                                    dense=True,
+                                    error_messages=("mass_MeV_validation",),
+                                    change=(
+                                        ctrl.on_input_change,
+                                        "[$event, 'float','mass_MeV','mass_MeV_validation', ['positive']]",
+                                    ),
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ mass_MeV_tooltip }}")
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=12, classes="py-0"):
-                        vuetify.VTextField(
-                            v_model=("npart",),
-                            label="Number of Particles",
-                            error_messages=("npart_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'int','npart','npart_validation']",
-                            ),
-                            type="number",
-                            dense=True,
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    v_model=("npart",),
+                                    label="Number of Particles",
+                                    error_messages=("npart_validation",),
+                                    change=(
+                                        ctrl.on_input_change,
+                                        "[$event, 'int','npart','npart_validation']",
+                                    ),
+                                    type="number",
+                                    dense=True,
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ npart_tooltip }}")
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=8, classes="py-0"):
-                        vuetify.VTextField(
-                            v_model=("kin_energy",),
-                            label="Kinetic Energy",
-                            error_messages=("kin_energy_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'float','kin_energy','kin_energy_validation']",
-                            ),
-                            type="number",
-                            dense=True,
-                            classes="mr-2",
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    v_model=("kin_energy",),
+                                    label="Kinetic Energy",
+                                    error_messages=("kin_energy_validation",),
+                                    change=(
+                                        ctrl.on_input_change,
+                                        "[$event, 'float','kin_energy','kin_energy_validation']",
+                                    ),
+                                    type="number",
+                                    dense=True,
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ kin_energy_tooltip }}")
                     with vuetify.VCol(cols=4, classes="py-0"):
                         vuetify.VSelect(
                             v_model=("kin_energy_unit",),
@@ -173,17 +192,22 @@ class InputParameters:
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=8, classes="py-0"):
-                        vuetify.VTextField(
-                            label="Bunch Charge",
-                            v_model=("bunch_charge_C",),
-                            error_messages=("bunch_charge_C_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'float','bunch_charge_C','bunch_charge_C_validation']",
-                            ),
-                            type="number",
-                            dense=True,
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    label="Bunch Charge",
+                                    v_model=("bunch_charge_C",),
+                                    error_messages=("bunch_charge_C_validation",),
+                                    change=(
+                                        ctrl.on_input_change,
+                                        "[$event, 'float','bunch_charge_C','bunch_charge_C_validation']",
+                                    ),
+                                    type="number",
+                                    dense=True,
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ bunch_charge_C_tooltip }}")
                     with vuetify.VCol(cols=4, classes="py-0"):
                         vuetify.VTextField(
                             label="Unit",

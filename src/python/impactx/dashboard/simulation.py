@@ -56,6 +56,11 @@ def run_simulation():
         sim.blocking_factor_y = [state.blocking_factor_y]
         sim.blocking_factor_z = [state.blocking_factor_z]
 
+        if state.poisson_solver == "multigrid":
+            sim.mlmg_relative_tolerance = state.mlmg_relative_tolerance
+            sim.mlmg_absolute_tolerance = state.mlmg_absolute_tolerance
+            sim.mlmg_max_iters = state.mlmg_max_iters
+            sim.mlmg_verbosity = state.mlmg_verbosity
     # csr
     if state.csr:
         sim.csr = state.csr

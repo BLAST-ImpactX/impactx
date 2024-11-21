@@ -6,7 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
 from impactx import elements
 
@@ -36,6 +36,11 @@ state.selectedLattice = None
 state.selectedLatticeList = []
 state.nsliceDefaultValue = None
 
+
+parameter_tooltips = {
+    "nslice": "testing",
+}
+
 # -----------------------------------------------------------------------------
 # Main Functions
 # -----------------------------------------------------------------------------
@@ -63,6 +68,7 @@ def add_lattice_element():
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
                 ),
+                "parameter_tooltip": parameter_tooltips.get(parameter[0], "N/A"),
             }
             for parameter in selectedLatticeParameters
         ],
@@ -335,21 +341,32 @@ class LatticeConfiguration:
                                         cols="auto",
                                         classes="pa-2",
                                     ):
-                                        vuetify.VTextField(
-                                            label=("parameter.parameter_name",),
-                                            v_model=(
-                                                "parameter.parameter_default_value",
-                                            ),
-                                            change=(
-                                                ctrl.updateLatticeElementParameters,
-                                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
-                                            ),
-                                            error_messages=(
-                                                "parameter.parameter_error_message",
-                                            ),
-                                            dense=True,
-                                            style="width: 100px;",
-                                        )
+                                        with vuetify.VTooltip(
+                                            bottom=True, nudge_top="10"
+                                        ):
+                                            with vuetify.Template(
+                                                v_slot_activator="{ on, attrs }"
+                                            ):
+                                                vuetify.VTextField(
+                                                    label=("parameter.parameter_name",),
+                                                    v_model=(
+                                                        "parameter.parameter_default_value",
+                                                    ),
+                                                    change=(
+                                                        ctrl.updateLatticeElementParameters,
+                                                        "[index, parameter.parameter_name, $event, parameter.parameter_type]",
+                                                    ),
+                                                    error_messages=(
+                                                        "parameter.parameter_error_message",
+                                                    ),
+                                                    dense=True,
+                                                    style="width: 100px;",
+                                                    v_on="on",
+                                                    v_bind="attrs",
+                                                )
+                                            html.Span(
+                                                "{{ parameter.parameter_tooltip }}"
+                                            )
 
     @staticmethod
     def dialog_lattice_elementList():
@@ -385,17 +402,24 @@ class LatticeConfiguration:
                         cols="auto",
                         classes="pa-2",
                     ):
-                        vuetify.VTextField(
-                            label=("parameter.parameter_name",),
-                            v_model=("parameter.parameter_default_value",),
-                            change=(
-                                ctrl.updateLatticeElementParameters,
-                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
-                            ),
-                            error_messages=("parameter.parameter_error_message",),
-                            dense=True,
-                            style="width: 100px;",
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    label=("parameter.parameter_name",),
+                                    v_model=("parameter.parameter_default_value",),
+                                    change=(
+                                        ctrl.updateLatticeElementParameters,
+                                        "[index, parameter.parameter_name, $event, parameter.parameter_type]",
+                                    ),
+                                    error_messages=(
+                                        "parameter.parameter_error_message",
+                                    ),
+                                    dense=True,
+                                    style="width: 100px;",
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ parameter.parameter_tooltip }}")
 
     @staticmethod
     def dialog_lattice_settings():
@@ -418,16 +442,23 @@ class LatticeConfiguration:
                                     "nslice", classes="ma-0 pl-0 font-weight-bold"
                                 )
                             with vuetify.VCol(no_gutters=True):
-                                vuetify.VTextField(
-                                    v_model=("nsliceDefaultValue",),
-                                    change=(
-                                        ctrl.nsliceDefaultChange,
-                                        "['nslice', $event]",
-                                    ),
-                                    placeholder="Value",
-                                    dense=True,
-                                    outlined=True,
-                                    hide_details=True,
-                                    style="max-width: 75px",
-                                    classes="ma-0 pa-0",
-                                )
+                                with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                                    with vuetify.Template(
+                                        v_slot_activator="{ on, attrs }"
+                                    ):
+                                        vuetify.VTextField(
+                                            v_model=("nsliceDefaultValue",),
+                                            change=(
+                                                ctrl.nsliceDefaultChange,
+                                                "['nslice', $event]",
+                                            ),
+                                            placeholder="Value",
+                                            dense=True,
+                                            outlined=True,
+                                            hide_details=True,
+                                            style="max-width: 75px",
+                                            classes="ma-0 pa-0",
+                                            v_on="on",
+                                            v_bind="attrs",
+                                        )
+                                    html.Span("testing")  ## changing later

@@ -161,7 +161,7 @@ set(ImpactX_openpmd_src ""
 set(ImpactX_ablastr_repo "https://github.com/ECP-WarpX/WarpX.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "24.10"
+set(ImpactX_ablastr_branch "018eeece1602671e1efc5cdfd1817b6e49b42616"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 
@@ -169,7 +169,7 @@ set(ImpactX_ablastr_branch "24.10"
 set(ImpactX_amrex_repo "https://github.com/AMReX-Codes/amrex.git"
     CACHE STRING
     "Repository URI to pull and build AMReX from if(ImpactX_amrex_internal)")
-set(ImpactX_amrex_branch "e64ffef57a7608d1d60f9abe738cc634e9c1272e"
+set(ImpactX_amrex_branch "456c93c7d9512f1cdffac0574973d7df41417898"
     CACHE STRING
     "Repository branch for ImpactX_amrex_repo if(ImpactX_amrex_internal)")
 

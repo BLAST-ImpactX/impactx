@@ -40,18 +40,6 @@ state.selectedDistributionParameters = []
 state.distributionTypeDisabled = False
 
 
-parameter_tooltips = {
-    "beta_x": "Beta function value (unit: meter) in the x dimension, must be a non-zero positive value.",
-    "beta_y": "Beta function value (unit: meter) in the y dimension, must be a non-zero positive value.",
-    "beta_t": "Beta function value (unit: meter) in the t dimension (arrival time differences multiplied by light speed), must be a non-zero positive value.",
-    "emitt_x": "Emittance value (unit: meter times radian) in the x dimension, must be a non-zero positive value.",
-    "emitt_y": "Emittance value (unit: meter times radian) in the y dimension, must be a non-zero positive value.",
-    "emitt_t": "Emittance value (unit: meter times radian) in the t dimension (arrival time differences multiplied by light speed), must be a non-zero positive value.",
-    "alpha_x": "Alpha function value () in the x dimension, default is 0.0.",
-    "alpha_y": "Alpha function value in the y dimension, default is 0.0.",
-    "alpha_t": "Alpha function value in the t dimension, default is 0.0.",
-}
-
 # -----------------------------------------------------------------------------
 # Main Functions
 # -----------------------------------------------------------------------------
@@ -63,7 +51,6 @@ def populate_distribution_parameters(selectedDistribution):
     :param selectedDistribution (str): The name of the selected distribution
     whose parameters need to be populated.
     """
-
     if state.selectedDistributionType == "Twiss":
         sig = inspect.signature(twiss)
         state.selectedDistributionParameters = [
@@ -76,7 +63,9 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     param.default if param.default != param.empty else None, "float"
                 ),
-                "parameter_tooltip": parameter_tooltips.get(param.name, "N/A"),
+                "parameter_tooltip": generalFunctions.parameter_tooltips.get(
+                    param.name, "N/A"
+                ),
                 "parameter_units": "m"
                 if "beta" in param.name or "emitt" in param.name
                 else "",
@@ -99,7 +88,9 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
                 ),
-                "parameter_tooltip": parameter_tooltips.get(parameter[0], "N/A"),
+                "parameter_tooltip": generalFunctions.parameter_tooltips.get(
+                    parameter[0], "N/A"
+                ),
                 "parameter_units": "m"
                 if "beta" in parameter[0] or "emitt" in parameter[0]
                 else "",

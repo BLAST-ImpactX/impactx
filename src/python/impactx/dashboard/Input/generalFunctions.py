@@ -316,11 +316,24 @@ class generalFunctions:
     # Tooltip Comments
     # -----------------------------------------------------------------------------
 
-    state.particle_shape_tooltip = "Whether to calculate space charge effects."
-    state.kin_energy_tooltip = "Get reference particle energy (MeV)"
-    state.charge_qe_tooltip = (
-        "Get reference particle charge (positive elementary charge)"
-    )
-    state.npart_tooltip = "TBD"
-    state.mass_MeV_tooltip = "Get reference particle rest mass (MeV/c^2)"
-    state.bunch_charge_C_tooltip = "TBD"
+    parameter_tooltips = {
+        # Input Parameters
+        "particle_shape": "Whether to calculate space charge effects.",
+        "kin_energy": "Get reference particle energy (MeV).",
+        "charge_qe": "Get reference particle charge (positive elementary charge).",
+        "npart": "Number of particles to simulate.",
+        "mass_MeV": "Get reference particle rest mass (MeV/c^2).",
+        "bunch_charge_C": "Total charge of the particle bunch (Coulombs).",
+        # Distribution Parameters
+        "beta_x": "Beta function value (unit: meter) in the x dimension, must be a non-zero positive value.",
+        "beta_y": "Beta function value (unit: meter) in the y dimension, must be a non-zero positive value.",
+        "beta_t": "Beta function value (unit: meter) in the t dimension (arrival time differences multiplied by light speed), must be a non-zero positive value.",
+        "emitt_x": "Emittance value (unit: meter times radian) in the x dimension, must be a non-zero positive value.",
+        "emitt_y": "Emittance value (unit: meter times radian) in the y dimension, must be a non-zero positive value.",
+        "emitt_t": "Emittance value (unit: meter times radian) in the t dimension (arrival time differences multiplied by light speed), must be a non-zero positive value.",
+        "alpha_x": "Alpha function value () in the x dimension, default is 0.0.",
+        "alpha_y": "Alpha function value in the y dimension, default is 0.0.",
+        "alpha_t": "Alpha function value in the t dimension, default is 0.0.",
+        # Lattice Parameters
+        "nslice": "testing",
+    }

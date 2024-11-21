@@ -80,6 +80,7 @@ class InputParameters:
         state.bunch_charge_C_validation = []
         state.mass_MeV_validation = []
         state.charge_qe_validation = []
+        state.parameter_tooltips = generalFunctions.parameter_tooltips
 
     def card(self):
         """
@@ -127,7 +128,7 @@ class InputParameters:
                                     v_on="on",
                                     v_bind="attrs",
                                 )
-                            html.Span("{{ charge_qe_tooltip }}")
+                            html.Span("{{ parameter_tooltips.charge_qe }}")
                     with vuetify.VCol(cols=6, classes="py-0"):
                         with vuetify.VTooltip(bottom=True, nudge_top="10"):
                             with vuetify.Template(v_slot_activator="{ on, attrs }"):
@@ -145,7 +146,7 @@ class InputParameters:
                                     v_on="on",
                                     v_bind="attrs",
                                 )
-                            html.Span("{{ mass_MeV_tooltip }}")
+                            html.Span("{{ parameter_tooltips.mass_MeV }}")
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=12, classes="py-0"):
                         with vuetify.VTooltip(bottom=True, nudge_top="10"):
@@ -163,7 +164,7 @@ class InputParameters:
                                     v_on="on",
                                     v_bind="attrs",
                                 )
-                            html.Span("{{ npart_tooltip }}")
+                            html.Span("{{ parameter_tooltips.npart }}")
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=8, classes="py-0"):
                         with vuetify.VTooltip(bottom=True, nudge_top="10"):
@@ -181,7 +182,7 @@ class InputParameters:
                                     v_on="on",
                                     v_bind="attrs",
                                 )
-                            html.Span("{{ kin_energy_tooltip }}")
+                            html.Span("{{ parameter_tooltips.kin_energy }}")
                     with vuetify.VCol(cols=4, classes="py-0"):
                         vuetify.VSelect(
                             v_model=("kin_energy_unit",),
@@ -207,7 +208,7 @@ class InputParameters:
                                     v_on="on",
                                     v_bind="attrs",
                                 )
-                            html.Span("{{ bunch_charge_C_tooltip }}")
+                            html.Span("{{ parameter_tooltips.bunch_charge_C }}")
                     with vuetify.VCol(cols=4, classes="py-0"):
                         vuetify.VTextField(
                             label="Unit",

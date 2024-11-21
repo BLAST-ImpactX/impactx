@@ -37,10 +37,6 @@ state.selectedLatticeList = []
 state.nsliceDefaultValue = None
 
 
-parameter_tooltips = {
-    "nslice": "testing",
-}
-
 # -----------------------------------------------------------------------------
 # Main Functions
 # -----------------------------------------------------------------------------
@@ -68,7 +64,9 @@ def add_lattice_element():
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
                 ),
-                "parameter_tooltip": parameter_tooltips.get(parameter[0], "N/A"),
+                "parameter_tooltip": generalFunctions.parameter_tooltips.get(
+                    parameter[0], "N/A"
+                ),
             }
             for parameter in selectedLatticeParameters
         ],

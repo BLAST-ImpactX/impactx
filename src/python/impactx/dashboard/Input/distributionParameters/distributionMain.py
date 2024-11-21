@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import inspect
 
 from distribution_input_helpers import twiss
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
 from impactx import distribution
 
@@ -39,6 +39,19 @@ state.selectedDistributionType = "Twiss"
 state.selectedDistributionParameters = []
 state.distributionTypeDisabled = False
 
+
+parameter_tooltips = {
+    "beta_x": "Beta function value (unit: meter) in the x dimension, must be a non-zero positive value.",
+    "beta_y": "Beta function value (unit: meter) in the y dimension, must be a non-zero positive value.",
+    "beta_t": "Beta function value (unit: meter) in the t dimension (arrival time differences multiplied by light speed), must be a non-zero positive value.",
+    "emitt_x": "Emittance value (unit: meter times radian) in the x dimension, must be a non-zero positive value.",
+    "emitt_y": "Emittance value (unit: meter times radian) in the y dimension, must be a non-zero positive value.",
+    "emitt_t": "Emittance value (unit: meter times radian) in the t dimension (arrival time differences multiplied by light speed), must be a non-zero positive value.",
+    "alpha_x": "Alpha function value () in the x dimension, default is 0.0.",
+    "alpha_y": "Alpha function value in the y dimension, default is 0.0.",
+    "alpha_t": "Alpha function value in the t dimension, default is 0.0.",
+}
+
 # -----------------------------------------------------------------------------
 # Main Functions
 # -----------------------------------------------------------------------------
@@ -63,6 +76,7 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     param.default if param.default != param.empty else None, "float"
                 ),
+                "parameter_tooltip": parameter_tooltips.get(param.name, "N/A"),
                 "parameter_units": "m"
                 if "beta" in param.name or "emitt" in param.name
                 else "",
@@ -85,6 +99,7 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
                 ),
+                "parameter_tooltip": parameter_tooltips.get(parameter[0], "N/A"),
                 "parameter_units": "m"
                 if "beta" in parameter[0] or "emitt" in parameter[0]
                 else "",
@@ -219,17 +234,26 @@ class DistributionParameters:
                                 with vuetify.VCol(
                                     v_if=f"index % 3 == {i}", classes="py-1"
                                 ):
-                                    vuetify.VTextField(
-                                        label=("parameter.parameter_name",),
-                                        v_model=("parameter.parameter_default_value",),
-                                        suffix=("parameter.parameter_units",),
-                                        change=(
-                                            ctrl.updateDistributionParameters,
-                                            "[parameter.parameter_name, $event, parameter.parameter_type]",
-                                        ),
-                                        error_messages=(
-                                            "parameter.parameter_error_message",
-                                        ),
-                                        type="number",
-                                        dense=True,
-                                    )
+                                    with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                                        with vuetify.Template(
+                                            v_slot_activator="{ on, attrs }"
+                                        ):
+                                            vuetify.VTextField(
+                                                label=("parameter.parameter_name",),
+                                                v_model=(
+                                                    "parameter.parameter_default_value",
+                                                ),
+                                                suffix=("parameter.parameter_units",),
+                                                change=(
+                                                    ctrl.updateDistributionParameters,
+                                                    "[parameter.parameter_name, $event, parameter.parameter_type]",
+                                                ),
+                                                error_messages=(
+                                                    "parameter.parameter_error_message",
+                                                ),
+                                                type="number",
+                                                dense=True,
+                                                v_on="on",
+                                                v_bind="attrs",
+                                            )
+                                        html.Span("{{ parameter.parameter_tooltip }}")

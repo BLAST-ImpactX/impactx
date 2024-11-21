@@ -101,3 +101,56 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_aperture_periodic.py
       :language: python3
       :caption: You can copy this file from ``examples/aperture/analysis_aperture_periodic.py``.
+
+
+.. _examples-absorber:
+
+Collimation Using an Absorber
+================================
+
+Proton beam undergoing collimation through partial absorption by a rectangular domain.
+This test is the exact negative of the previous test, and illustrates the ``absorb`` option of the ``Aperture`` element.
+
+We use a 250 MeV proton beam with a horizontal rms beam size of 1.56 mm and a vertical rms beam size of 2.21 mm.
+
+After a short drift of 0.123, the beam hits a 1 mm x 1.5 mm rectangular structure, resulting in particle loss.
+
+In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nomin>
+The test fails if:
+
+* any of the final coordinates for the valid (not lost) particles lie inside the absorber boundary or
+* any of the lost particles are outside the absorber boundary or
+* if the sum of lost and kept particles is not equal to the initial particles or
+* if the recorded position :math:`s` for the lost particles does not coincide with the drift distance.
+
+
+Run
+---
+
+This example can be run as a Python script (``python3 run_absorber.py``) or with an app with an input file (``impactx input_absorber.in``).
+Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python Script
+
+       .. literalinclude:: run_absorber.py
+          :language: python3
+          :caption: You can copy this file from ``examples/aperture/run_absorber.py``.
+
+   .. tab-item:: App Input File
+
+       .. literalinclude:: input_absorber.in
+          :language: ini
+          :caption: You can copy this file from ``examples/aperture/input_absorber.in``.
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_absorber.py``
+
+   .. literalinclude:: analysis_absorber.py
+      :language: python3
+      :caption: You can copy this file from ``examples/aperture/analysis_absorber.py``.

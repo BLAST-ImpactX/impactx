@@ -387,18 +387,25 @@ namespace detail
             amrex::ParticleReal repeat_x = 0.0;
             amrex::ParticleReal repeat_y = 0.0;
             std::string shape_str = "rectangular";
+            std::string action_str = "transmit";
             pp_element.get("xmax", xmax);
             pp_element.get("ymax", ymax);
             pp_element.queryAdd("repeat_x", repeat_x);
             pp_element.queryAdd("repeat_y", repeat_y);
             pp_element.queryAdd("shape", shape_str);
+            pp_element.queryAdd("action", action_str);
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(shape_str == "rectangular" || shape_str == "elliptical",
                                              element_name + ".shape must be \"rectangular\" or \"elliptical\"");
             Aperture::Shape shape = shape_str == "rectangular" ?
                                         Aperture::Shape::rectangular :
                                         Aperture::Shape::elliptical;
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(action_str == "transmit" || action_str == "absorb",
+                                             element_name + ".action must be \"transmit\" or \"absorb\"");
+            Aperture::Action action = action_str == "transmit" ?
+                                        Aperture::Action::transmit :
+                                        Aperture::Action::absorb;
 
-            m_lattice.emplace_back( Aperture(xmax, ymax, repeat_x, repeat_y, shape, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( Aperture(xmax, ymax, repeat_x, repeat_y, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "beam_monitor")
         {
             std::string openpmd_name = element_name;

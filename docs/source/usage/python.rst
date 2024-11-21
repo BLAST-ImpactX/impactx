@@ -953,6 +953,7 @@ This module provides elements for the accelerator lattice.
    :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
    :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
+   :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -961,6 +962,10 @@ This module provides elements for the accelerator lattice.
    .. py:property:: shape
 
       aperture type (rectangular, elliptical)
+
+   .. py:property:: action
+
+      aperture type (transmit, absorb)
 
    .. py:property:: xmax
 

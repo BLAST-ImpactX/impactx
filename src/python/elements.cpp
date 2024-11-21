@@ -279,7 +279,8 @@ void init_elements(py::module& m)
              [](Aperture const & ap) {
                  return element_name(
                     ap,
-                    std::make_pair("shape", ap.shape_name(ap.m_shape))
+                    std::make_pair("shape", ap.shape_name(ap.m_shape)),
+                    std::make_pair("action", ap.action_name(ap.m_action))
                 );
              }
         )
@@ -289,6 +290,7 @@ void init_elements(py::module& m)
                  amrex::ParticleReal repeat_x,
                  amrex::ParticleReal repeat_y,
                  std::string const & shape,
+                 std::string const & action,
                  amrex::ParticleReal dx,
                  amrex::ParticleReal dy,
                  amrex::ParticleReal rotation_degree,
@@ -298,16 +300,23 @@ void init_elements(py::module& m)
                  if (shape != "rectangular" && shape != "elliptical")
                      throw std::runtime_error(R"(shape must be "rectangular" or "elliptical")");
 
+                 if (action != "transmit" && action != "absorb")
+                     throw std::runtime_error(R"(action must be "transmit" or "absorb")");
+
                  Aperture::Shape const s = shape == "rectangular" ?
                      Aperture::Shape::rectangular :
                      Aperture::Shape::elliptical;
-                 return new Aperture(xmax, ymax, repeat_x, repeat_y, s, dx, dy, rotation_degree, name);
+                 Aperture::Action const a = action == "transmit" ?
+                     Aperture::Action::transmit :
+                     Aperture::Action::absorb;
+                 return new Aperture(xmax, ymax, repeat_x, repeat_y, s, a, dx, dy, rotation_degree, name);
              }),
              py::arg("xmax"),
              py::arg("ymax"),
              py::arg("repeat_x") = 0,
              py::arg("repeat_y") = 0,
              py::arg("shape") = "rectangular",
+             py::arg("action") = "transmit",
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
@@ -329,6 +338,22 @@ void init_elements(py::module& m)
                     Aperture::Shape::elliptical;
             },
             "aperture type (rectangular, elliptical)"
+        )
+        .def_property("action",
+            [](Aperture & ap)
+            {
+                return ap.action_name(ap.m_action);
+            },
+            [](Aperture & ap, std::string const & action)
+            {
+                if (action != "transmit" && action != "absorb")
+                    throw std::runtime_error(R"(action must be "transmit" or "absorb")");
+
+                ap.m_action = action == "transmit" ?
+                    Aperture::Action::transmit :
+                    Aperture::Action::absorb;
+            },
+            "action type (transmit, absorb)"
         )
         .def_property("xmax",
             [](Aperture & ap) { return ap.m_xmax; },

@@ -166,7 +166,7 @@ class SpaceChargeConfiguration:
     @staticmethod
     def card():
         """
-        Creates UI content for space charge configuration 
+        Creates UI content for space charge configuration
         """
 
         with vuetify.VDialog(v_model=("showSpaceChargeDialog", False), width="500px"):

@@ -1,4 +1,4 @@
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
@@ -202,24 +202,39 @@ class SpaceChargeConfiguration:
                             hide_details=True,
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
-                        vuetify.VSelect(
-                            label="Particle Shape",
-                            v_model=("particle_shape",),
-                            items=([1, 2, 3],),
-                            dense=True,
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VSelect(
+                                    label="Particle Shape",
+                                    v_model=("particle_shape",),
+                                    items=([1, 2, 3],),
+                                    dense=True,
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ parameter_tooltips.particle_shape }}")
                     with vuetify.VCol(cols=3, classes="py-0"):
-                        vuetify.VSelect(
-                            label="Max Level",
-                            v_model=("max_level",),
-                            items=([0, 1, 2, 3, 4],),
-                            dense=True,
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VSelect(
+                                    label="Max Level",
+                                    v_model=("max_level",),
+                                    items=([0, 1, 2, 3, 4],),
+                                    dense=True,
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ parameter_tooltips.max_level }}")
                 with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "nCell",
-                        classes="font-weight-bold black--text",
-                    )
+                    with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                        with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                            vuetify.VListItemSubtitle(
+                                "nCell",
+                                classes="font-weight-bold black--text",
+                                v_on="on",
+                                v_bind="attrs",
+                            )
+                        html.Span("{{ parameter_tooltips.nCell }}")
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
                         with vuetify.VCol(cols=4, classes="py-0"):
@@ -232,10 +247,15 @@ class SpaceChargeConfiguration:
                                 style="margin-top: -5px",
                             )
                 with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "Blocking Factor",
-                        classes="font-weight-bold black--text mt-2",
-                    )
+                    with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                        with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                            vuetify.VListItemSubtitle(
+                                "Blocking Factor",
+                                classes="font-weight-bold black--text mt-2",
+                                v_on="on",
+                                v_bind="attrs",
+                            )
+                        html.Span("{{ parameter_tooltips.blocking_factor }}")
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
                         with vuetify.VCol(cols=4, classes="py-0"):
@@ -250,10 +270,15 @@ class SpaceChargeConfiguration:
                                 style="margin-top: -5px",
                             )
                 with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "prob_relative",
-                        classes="font-weight-bold black--text mt-2",
-                    )
+                    with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                        with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                            vuetify.VListItemSubtitle(
+                                "prob_relative",
+                                classes="font-weight-bold black--text mt-2",
+                                v_on="on",
+                                v_bind="attrs",
+                            )
+                        html.Span("{{ parameter_tooltips.prob_relative }}")
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(
                         v_for=("(field, index) in prob_relative_fields",),
@@ -288,41 +313,77 @@ class SpaceChargeConfiguration:
                             classes="my-2", v_if="poisson_solver == 'multigrid'"
                         ):
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Relative Tolerance",
-                                    v_model=("mlmg_relative_tolerance",),
-                                    error_messages=(
-                                        "error_message_mlmg_relative_tolerance",
-                                    ),
-                                    type="number",
-                                    dense=True,
-                                )
+                                with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                                    with vuetify.Template(
+                                        v_slot_activator="{ on, attrs }"
+                                    ):
+                                        vuetify.VTextField(
+                                            label="MLMG Relative Tolerance",
+                                            v_model=("mlmg_relative_tolerance",),
+                                            error_messages=(
+                                                "error_message_mlmg_relative_tolerance",
+                                            ),
+                                            type="number",
+                                            dense=True,
+                                            v_on="on",
+                                            v_bind="attrs",
+                                        )
+                                    html.Span(
+                                        "{{ parameter_tooltips.mlmg_relative_tolerance }}"
+                                    )
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Absolute Tolerance",
-                                    v_model=("mlmg_absolute_tolerance",),
-                                    error_messages=(
-                                        "error_message_mlmg_absolute_tolerance",
-                                    ),
-                                    type="number",
-                                    dense=True,
-                                )
+                                with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                                    with vuetify.Template(
+                                        v_slot_activator="{ on, attrs }"
+                                    ):
+                                        vuetify.VTextField(
+                                            label="MLMG Absolute Tolerance",
+                                            v_model=("mlmg_absolute_tolerance",),
+                                            error_messages=(
+                                                "error_message_mlmg_absolute_tolerance",
+                                            ),
+                                            type="number",
+                                            dense=True,
+                                            v_on="on",
+                                            v_bind="attrs",
+                                        )
+                                    html.Span(
+                                        "{{ parameter_tooltips.mlmg_absolute_tolerance }}"
+                                    )
                         with vuetify.VRow(
                             classes="my-0", v_if="poisson_solver == 'multigrid'"
                         ):
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Max Iterations",
-                                    v_model=("mlmg_max_iters",),
-                                    error_messages=("error_message_mlmg_max_iters",),
-                                    type="number",
-                                    dense=True,
-                                )
+                                with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                                    with vuetify.Template(
+                                        v_slot_activator="{ on, attrs }"
+                                    ):
+                                        vuetify.VTextField(
+                                            label="MLMG Max Iterations",
+                                            v_model=("mlmg_max_iters",),
+                                            error_messages=(
+                                                "error_message_mlmg_max_iters",
+                                            ),
+                                            type="number",
+                                            dense=True,
+                                            v_on="on",
+                                            v_bind="attrs",
+                                        )
+                                    html.Span("{{ parameter_tooltips.mlmg_max_iters }}")
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Verbosity",
-                                    v_model=("mlmg_verbosity",),
-                                    error_messages=("error_message_mlmg_verbosity",),
-                                    type="number",
-                                    dense=True,
-                                )
+                                with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                                    with vuetify.Template(
+                                        v_slot_activator="{ on, attrs }"
+                                    ):
+                                        vuetify.VTextField(
+                                            label="MLMG Verbosity",
+                                            v_model=("mlmg_verbosity",),
+                                            error_messages=(
+                                                "error_message_mlmg_verbosity",
+                                            ),
+                                            type="number",
+                                            dense=True,
+                                            v_on="on",
+                                            v_bind="attrs",
+                                        )
+                                    html.Span("{{ parameter_tooltips.mlmg_verbosity }}")

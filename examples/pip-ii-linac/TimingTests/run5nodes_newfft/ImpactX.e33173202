@@ -1,0 +1,37 @@
+amrex::Abort::9::CUDA error 2 in file /global/cfs/cdirs/m2937/cemitch/AMReX/ImpactX/impactx/build_pm_gpu/_deps/fetchedamrex-src/Src/Base/AMReX_Arena.cpp line 210: out of memory !!!
+SIGABRT
+amrex::Abort::6::CUDA error 2 in file /global/cfs/cdirs/m2937/cemitch/AMReX/ImpactX/impactx/build_pm_gpu/_deps/fetchedamrex-src/Src/Base/AMReX_Arena.cpp line 210: out of memory !!!
+SIGABRT
+amrex::Abort::1::CUDA error 2 in file /global/cfs/cdirs/m2937/cemitch/AMReX/ImpactX/impactx/build_pm_gpu/_deps/fetchedamrex-src/Src/Base/AMReX_Arena.cpp line 210: out of memory !!!
+SIGABRT
+amrex::Abort::0::CUDA error 2 in file /global/cfs/cdirs/m2937/cemitch/AMReX/ImpactX/impactx/build_pm_gpu/_deps/fetchedamrex-src/Src/Base/AMReX_Arena.cpp line 210: out of memory !!!
+SIGABRT
+See Backtrace.6 file for details
+See Backtrace.9 file for details
+See Backtrace.1 file for details
+See Backtrace.0 file for details
+MPICH ERROR [Rank 9] [job id 33173202.0] [Thu Nov 21 12:19:15 2024] [nid008292] - Abort(6) (rank 9 in comm 480): application called MPI_Abort(comm=0x84000003, 6) - process 9
+
+MPICH ERROR [Rank 6] [job id 33173202.0] [Thu Nov 21 12:19:15 2024] [nid008289] - Abort(6) (rank 6 in comm 480): application called MPI_Abort(comm=0x84000003, 6) - process 6
+
+MPICH ERROR [Rank 1] [job id 33173202.0] [Thu Nov 21 12:19:15 2024] [nid008228] - Abort(6) (rank 1 in comm 480): application called MPI_Abort(comm=0x84000003, 6) - process 1
+
+MPICH ERROR [Rank 0] [job id 33173202.0] [Thu Nov 21 12:19:15 2024] [nid008228] - Abort(6) (rank 0 in comm 480): application called MPI_Abort(comm=0x84000005, 6) - process 0
+
+srun: error: nid008292: task 11: Exited with exit code 6
+srun: Terminating StepId=33173202.0
+srun: error: nid008228: tasks 2-3: Exited with exit code 6
+srun: error: nid008289: task 6: Exited with exit code 6
+srun: error: nid008329: task 14: Exited with exit code 6
+srun: error: nid008332: task 17: Exited with exit code 6
+slurmstepd: error: *** STEP 33173202.0 ON nid008228 CANCELLED AT 2024-11-21T20:19:18 ***
+srun: error: nid008329: task 12: Exited with exit code 6
+srun: error: nid008332: task 19: Exited with exit code 6
+srun: error: nid008228: tasks 0-1: Exited with exit code 6
+srun: error: nid008292: tasks 8-10: Exited with exit code 6
+srun: error: nid008289: tasks 4-5,7: Exited with exit code 6
+srun: error: nid008329: task 15: Exited with exit code 6
+srun: error: nid008329: task 13: Exited with exit code 6
+srun: error: nid008332: task 18: Terminated
+srun: error: nid008332: task 16: Terminated
+srun: Force Terminated StepId=33173202.0

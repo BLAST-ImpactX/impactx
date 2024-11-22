@@ -1,0 +1,24 @@
+Initializing AMReX (24.11-23-g456c93c7d951)...
+MPI initialized with 20 MPI processes
+MPI initialized with thread support level 0
+Initializing CUDA...
+CUDA initialized with 20 devices.
+AMReX (24.11-23-g456c93c7d951) initialized
+
+Grids Summary:
+  Level 0   64 grids  16777216 cells  100 % of domain
+            smallest grid: 64 x 64 x 64  biggest grid: 64 x 64 x 64
+
+Beam kinetic energy (MeV): 2.1226695
+Bunch charge (C): 3.076923077e-11
+Particle type: proton
+Number of particles: 1000000000
+Beam distribution type: gaussian_from_twiss
+Static units
+Initialized beam distribution parameters
+# of particles: 1000000000
+Initialized element list
+ Diagnostics: 1
+ Space Charge effects: 1
+ CSR effects: 0
+ ++++ Starting step=1 slice_step=0

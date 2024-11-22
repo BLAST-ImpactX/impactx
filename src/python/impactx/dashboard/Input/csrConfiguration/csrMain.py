@@ -1,4 +1,4 @@
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
@@ -47,20 +47,28 @@ class csrConfiguration:
                 )
             vuetify.VDivider()
             with vuetify.VCardText():
-                with vuetify.VRow(classes="my-0"):
-                    with vuetify.VCol(classes="py-0"):
+                with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                    with vuetify.Template(v_slot_activator="{ on, attrs }"):
                         vuetify.VSelect(
                             label="Particle Shape",
                             v_model=("particle_shape",),
                             items=([1, 2, 3],),
                             dense=True,
+                            v_on="on",
+                            v_bind="attrs",
                         )
+                    html.Span("{{ parameter_tooltips.particle_shape }}")
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(classes="py-0"):
-                        vuetify.VTextField(
-                            label="CSR Bins",
-                            v_model=("csr_bins",),
-                            error_messages=("csr_bins_error_message",),
-                            type="number",
-                            dense=True,
-                        )
+                        with vuetify.VTooltip(bottom=True, nudge_top="10"):
+                            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                                vuetify.VTextField(
+                                    label="CSR Bins",
+                                    v_model=("csr_bins",),
+                                    error_messages=("csr_bins_error_message",),
+                                    type="number",
+                                    dense=True,
+                                    v_on="on",
+                                    v_bind="attrs",
+                                )
+                            html.Span("{{ parameter_tooltips.csr_bins }}")

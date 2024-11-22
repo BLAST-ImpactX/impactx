@@ -1,0 +1,22 @@
+pure virtual method called
+terminate called without an active exception
+pure virtual method called
+terminate called without an active exception
+pure virtual method called
+terminate called without an active exception
+pure virtual method called
+terminate called without an active exception
+pure virtual method called
+terminate called without an active exception
+pure virtual method called
+terminate called without an active exception
+pure virtual method called
+terminate called without an active exception
+srun: error: nid008381: task 2: Aborted
+srun: Terminating StepId=33179815.0
+pure virtual method called
+terminate called without an active exception
+srun: error: nid008384: task 5: Aborted
+slurmstepd: error: *** STEP 33179815.0 ON nid008381 CANCELLED AT 2024-11-22T03:03:54 ***
+srun: error: nid008381: tasks 0-1,3: Aborted
+srun: error: nid008384: tasks 4,6-7: Aborted

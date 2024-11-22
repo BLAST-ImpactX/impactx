@@ -36,11 +36,13 @@ def test_dashboard():
             wait_for_ready(sb, ".trame__loader", TIMEOUT)
 
             # Adjust beam properties
-            sb.click("#particle_shape")
-            sb.click("div.v-list-item:nth-of-type(2)")
             set_input_value(sb, "npart", 10000)
             set_input_value(sb, "kin_energy", 2.0e3)
             set_input_value(sb, "bunch_charge_C", 1.0e-9)
+
+            # Change distribution type to "Quadratic"
+            sb.click("#selected_distribution_type")
+            sb.click("div.v-list-item__title:contains('Quadratic Form')")
 
             # Adjust beam distribution
             set_input_value(sb, "selected_distribution", "Waterbag")

@@ -90,7 +90,7 @@ def start_dashboard():
     Function which starts up impactx-dashboard server.
     """
     repo_root = find_repo_root()
-    working_directory = os.path.join(repo_root, "src", "python", "impactx", "dashboard")
+    working_directory = os.path.join(repo_root, "src", "python", "impactx")
     working_directory = os.path.normpath(working_directory)
 
     return subprocess.Popen(

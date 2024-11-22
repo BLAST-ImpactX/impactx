@@ -22,100 +22,100 @@ beam.emittT = 5.051747540038566e-6
 # Beamline: lattice elements and segments
 ###############################################################################
 
-D1.type = drift 
-D1.ds = 0.25 
+D1.type = drift
+D1.ds = 0.25
 
-D2.type = drift 
-D2.ds = 0.05 
+D2.type = drift
+D2.ds = 0.05
 
-AP1.type = aperture 
-AP1.xmax = 0.015 
-AP1.ymax = 0.015 
-AP1.shape = elliptical 
+AP1.type = aperture
+AP1.xmax = 0.015
+AP1.ymax = 0.015
+AP1.shape = elliptical
 
-Q1.type = quad_chromatic 
-Q1.ds = 0.1 
-Q1.k = -12.2  
-Q1.units = 1 
+Q1.type = quad_chromatic
+Q1.ds = 0.1
+Q1.k = -12.2
+Q1.units = 1
 
-AP2.type = aperture 
-AP2.xmax = 0.015 
-AP2.ymax = 0.015 
-AP2.shape = elliptical 
+AP2.type = aperture
+AP2.xmax = 0.015
+AP2.ymax = 0.015
+AP2.shape = elliptical
 
-D3.type = drift 
-D3.ds = 0.035 
+D3.type = drift
+D3.ds = 0.035
 
-D4.type = drift 
-D4.ds = 1.0000000000000001e-11 
+D4.type = drift
+D4.ds = 1.0000000000000001e-11
 
-D5.type = drift 
-D5.ds = 0.035 
+D5.type = drift
+D5.ds = 0.035
 
-AP3.type = aperture 
-AP3.xmax = 0.015 
-AP3.ymax = 0.015 
-AP3.shape = elliptical 
+AP3.type = aperture
+AP3.xmax = 0.015
+AP3.ymax = 0.015
+AP3.shape = elliptical
 
-Q2.type = quad_chromatic 
-Q2.ds = 0.1 
-Q2.k = 10.88  
-Q2.units = 1 
+Q2.type = quad_chromatic
+Q2.ds = 0.1
+Q2.k = 10.88
+Q2.units = 1
 
-AP4.type = aperture 
-AP4.xmax = 0.015 
-AP4.ymax = 0.015 
-AP4.shape = elliptical 
+AP4.type = aperture
+AP4.xmax = 0.015
+AP4.ymax = 0.015
+AP4.shape = elliptical
 
-D6.type = drift 
-D6.ds = 0.05 
+D6.type = drift
+D6.ds = 0.05
 
-D7.type = drift 
-D7.ds = 0.009 
+D7.type = drift
+D7.ds = 0.009
 
-D8.type = drift 
-D8.ds = 0.009 
+D8.type = drift
+D8.ds = 0.009
 
-D9.type = drift 
-D9.ds = 0.0404 
+D9.type = drift
+D9.ds = 0.0404
 
-D10.type = drift 
-D10.ds = 0.05 
+D10.type = drift
+D10.ds = 0.05
 
-D11.type = drift 
-D11.ds = 0.05 
+D11.type = drift
+D11.ds = 0.05
 
-D12.type = drift 
-D12.ds = 1e-23 
+D12.type = drift
+D12.ds = 1e-23
 
-AP5.type = aperture 
-AP5.xmax = 0.0068 
-AP5.ymax = 0.015 
-AP5.shape = rectangular 
+AP5.type = aperture
+AP5.xmax = 0.0068
+AP5.ymax = 0.015
+AP5.shape = rectangular
 
-D13.type = drift 
-D13.ds = 1e-23 
+D13.type = drift
+D13.ds = 1e-23
 
-AP6.type = aperture 
-AP6.xmax = 0.015 
-AP6.ymax = 0.0052 
-AP6.shape = rectangular 
+AP6.type = aperture
+AP6.xmax = 0.015
+AP6.ymax = 0.0052
+AP6.shape = rectangular
 
-D14.type = drift 
-D14.ds = 0.05 
+D14.type = drift
+D14.ds = 0.05
 
-D15.type = drift 
-D15.ds = 0.02 
+D15.type = drift
+D15.ds = 0.02
 
-D16.type = drift 
-D16.ds = 0.03 
+D16.type = drift
+D16.ds = 0.03
 
-#RF1.type = rfcavity 
-#RF1.ds = 0.24 
-#RF1.escale = 0.065 
-#RF1.freq = 162500000.0 
-#RF1.phase = -90.0 
-#RF1.mapsteps = 100 
+#RF1.type = rfcavity
+#RF1.ds = 0.24
+#RF1.escale = 0.065
+#RF1.freq = 162500000.0
+#RF1.phase = -90.0
+#RF1.mapsteps = 100
 
 #####################
 RF1.type = line
@@ -130,206 +130,206 @@ RF1_rf.k = 3.405748160671483
 
 ######################
 
-D17.type = drift 
-D17.ds = 0.03 
+D17.type = drift
+D17.ds = 0.03
 
-D18.type = drift 
-D18.ds = 0.0016 
+D18.type = drift
+D18.ds = 0.0016
 
-D19.type = drift 
-D19.ds = 0.05 
+D19.type = drift
+D19.ds = 0.05
 
-Q3.type = quad_chromatic 
-Q3.ds = 0.1 
-Q3.k = -7.75  
-Q3.units = 1 
+Q3.type = quad_chromatic
+Q3.ds = 0.1
+Q3.k = -7.75
+Q3.units = 1
 
-D20.type = drift 
-D20.ds = 0.035 
+D20.type = drift
+D20.ds = 0.035
 
-D21.type = drift 
-D21.ds = 1.0000000000000001e-11 
+D21.type = drift
+D21.ds = 1.0000000000000001e-11
 
-D22.type = drift 
-D22.ds = 0.035 
+D22.type = drift
+D22.ds = 0.035
 
-Q4.type = quad_chromatic 
-Q4.ds = 0.1 
-Q4.k = 6.05  
-Q4.units = 1 
+Q4.type = quad_chromatic
+Q4.ds = 0.1
+Q4.k = 6.05
+Q4.units = 1
 
-D23.type = drift 
-D23.ds = 0.05 
+D23.type = drift
+D23.ds = 0.05
 
-D24.type = drift 
-D24.ds = 0.009 
+D24.type = drift
+D24.ds = 0.009
 
-D25.type = drift 
-D25.ds = 0.1 
+D25.type = drift
+D25.ds = 0.1
 
-D26.type = drift 
-D26.ds = 0.075 
+D26.type = drift
+D26.ds = 0.075
 
-D27.type = drift 
-D27.ds = 0.35 
+D27.type = drift
+D27.ds = 0.35
 
-D28.type = drift 
-D28.ds = 0.025 
+D28.type = drift
+D28.ds = 0.025
 
-D29.type = drift 
-D29.ds = 0.026 
+D29.type = drift
+D29.ds = 0.026
 
-D30.type = drift 
-D30.ds = 0.05 
+D30.type = drift
+D30.ds = 0.05
 
-D31.type = drift 
-D31.ds = 1e-23 
+D31.type = drift
+D31.ds = 1e-23
 
-D32.type = drift 
-D32.ds = 1e-23 
+D32.type = drift
+D32.ds = 1e-23
 
-D33.type = drift 
-D33.ds = 0.05 
+D33.type = drift
+D33.ds = 0.05
 
-D34.type = drift 
-D34.ds = 0.05 
+D34.type = drift
+D34.ds = 0.05
 
-D35.type = drift 
-D35.ds = 0.05 
+D35.type = drift
+D35.ds = 0.05
 
-Q5.type = quad_chromatic 
-Q5.ds = 0.05 
-Q5.k = -10.7  
-Q5.units = 1 
+Q5.type = quad_chromatic
+Q5.ds = 0.05
+Q5.k = -10.7
+Q5.units = 1
 
-D36.type = drift 
-D36.ds = 0.07 
+D36.type = drift
+D36.ds = 0.07
 
-Q6.type = quad_chromatic 
-Q6.ds = 0.1 
-Q6.k = 9.82  
-Q6.units = 1 
+Q6.type = quad_chromatic
+Q6.ds = 0.1
+Q6.k = 9.82
+Q6.units = 1
 
-D37.type = drift 
-D37.ds = 0.035 
+D37.type = drift
+D37.ds = 0.035
 
-D38.type = drift 
-D38.ds = 1.0000000000000001e-11 
+D38.type = drift
+D38.ds = 1.0000000000000001e-11
 
-D39.type = drift 
-D39.ds = 0.035 
+D39.type = drift
+D39.ds = 0.035
 
-Q7.type = quad_chromatic 
-Q7.ds = 0.05 
-Q7.k = -10.7  
-Q7.units = 1 
+Q7.type = quad_chromatic
+Q7.ds = 0.05
+Q7.k = -10.7
+Q7.units = 1
 
-D40.type = drift 
-D40.ds = 0.05 
+D40.type = drift
+D40.ds = 0.05
 
-D41.type = drift 
-D41.ds = 0.0065 
+D41.type = drift
+D41.ds = 0.0065
 
-D42.type = drift 
-D42.ds = 1e-13 
+D42.type = drift
+D42.ds = 1e-13
 
-D43.type = drift 
-D43.ds = 0.1 
+D43.type = drift
+D43.ds = 0.1
 
-D44.type = drift 
-D44.ds = 0.025 
+D44.type = drift
+D44.ds = 0.025
 
-D45.type = drift 
-D45.ds = 0.0185 
+D45.type = drift
+D45.ds = 0.0185
 
-D46.type = drift 
-D46.ds = 1e-13 
+D46.type = drift
+D46.ds = 1e-13
 
-D47.type = drift 
-D47.ds = 0.25 
+D47.type = drift
+D47.ds = 0.25
 
-D48.type = drift 
-D48.ds = 0.25 
+D48.type = drift
+D48.ds = 0.25
 
-D49.type = drift 
-D49.ds = 0.05 
+D49.type = drift
+D49.ds = 0.05
 
-D50.type = drift 
-D50.ds = 0.035 
+D50.type = drift
+D50.ds = 0.035
 
-D51.type = drift 
-D51.ds = 0.05 
+D51.type = drift
+D51.ds = 0.05
 
-AP7.type = aperture 
-AP7.xmax = 0.015 
-AP7.ymax = 0.015 
-AP7.shape = elliptical 
+AP7.type = aperture
+AP7.xmax = 0.015
+AP7.ymax = 0.015
+AP7.shape = elliptical
 
-Q8.type = quad_chromatic 
-Q8.ds = 0.05 
-Q8.k = -12.9  
-Q8.units = 1 
+Q8.type = quad_chromatic
+Q8.ds = 0.05
+Q8.k = -12.9
+Q8.units = 1
 
-AP8.type = aperture 
-AP8.xmax = 0.015 
-AP8.ymax = 0.015 
-AP8.shape = elliptical 
+AP8.type = aperture
+AP8.xmax = 0.015
+AP8.ymax = 0.015
+AP8.shape = elliptical
 
-D52.type = drift 
-D52.ds = 0.07 
+D52.type = drift
+D52.ds = 0.07
 
-Q9.type = quad_chromatic 
-Q9.ds = 0.1 
-Q9.k = 11.6  
-Q9.units = 1 
+Q9.type = quad_chromatic
+Q9.ds = 0.1
+Q9.k = 11.6
+Q9.units = 1
 
-D53.type = drift 
-D53.ds = 0.035 
+D53.type = drift
+D53.ds = 0.035
 
-D54.type = drift 
-D54.ds = 1.0000000000000001e-11 
+D54.type = drift
+D54.ds = 1.0000000000000001e-11
 
-D55.type = drift 
-D55.ds = 0.035 
+D55.type = drift
+D55.ds = 0.035
 
-AP9.type = aperture 
-AP9.xmax = 0.015 
-AP9.ymax = 0.015 
-AP9.shape = elliptical 
+AP9.type = aperture
+AP9.xmax = 0.015
+AP9.ymax = 0.015
+AP9.shape = elliptical
 
-Q10.type = quad_chromatic 
-Q10.ds = 0.05 
-Q10.k = -12.9  
-Q10.units = 1 
+Q10.type = quad_chromatic
+Q10.ds = 0.05
+Q10.k = -12.9
+Q10.units = 1
 
-AP10.type = aperture 
-AP10.xmax = 0.015 
-AP10.ymax = 0.015 
-AP10.shape = elliptical 
+AP10.type = aperture
+AP10.xmax = 0.015
+AP10.ymax = 0.015
+AP10.shape = elliptical
 
-D56.type = drift 
-D56.ds = 0.05 
+D56.type = drift
+D56.ds = 0.05
 
-AP11.type = aperture 
-AP11.xmax = 0.015 
-AP11.ymax = 0.015 
-AP11.shape = elliptical 
+AP11.type = aperture
+AP11.xmax = 0.015
+AP11.ymax = 0.015
+AP11.shape = elliptical
 
-D57.type = drift 
-D57.ds = 0.0065 
+D57.type = drift
+D57.ds = 0.0065
 
-D58.type = drift 
-D58.ds = 0.0035 
+D58.type = drift
+D58.ds = 0.0035
 
-D59.type = drift 
-D59.ds = 0.03 
+D59.type = drift
+D59.ds = 0.03
 
-#RF2.type = rfcavity 
-#RF2.ds = 0.24 
-#RF2.escale = 0.05 
-#RF2.freq = 162500000.0 
-#RF2.phase = -90.0 
-#RF2.mapsteps = 100 
+#RF2.type = rfcavity
+#RF2.ds = 0.24
+#RF2.escale = 0.05
+#RF2.freq = 162500000.0
+#RF2.phase = -90.0
+#RF2.mapsteps = 100
 
 #####################
 RF2.type = line
@@ -344,471 +344,471 @@ RF2_rf.k = 3.405748160671483
 
 ######################
 
-D60.type = drift 
-D60.ds = 0.02 
+D60.type = drift
+D60.ds = 0.02
 
-D61.type = drift 
-D61.ds = 0.33 
+D61.type = drift
+D61.ds = 0.33
 
-D62.type = drift 
-D62.ds = 0.095 
+D62.type = drift
+D62.ds = 0.095
 
-D63.type = drift 
-D63.ds = 0.01 
+D63.type = drift
+D63.ds = 0.01
 
-D64.type = drift 
-D64.ds = 0.05 
+D64.type = drift
+D64.ds = 0.05
 
-AP12.type = aperture 
-AP12.xmax = 0.015 
-AP12.ymax = 0.015 
-AP12.shape = elliptical 
+AP12.type = aperture
+AP12.xmax = 0.015
+AP12.ymax = 0.015
+AP12.shape = elliptical
 
-Q11.type = quad_chromatic 
-Q11.ds = 0.05 
-Q11.k = -13.3  
-Q11.units = 1 
+Q11.type = quad_chromatic
+Q11.ds = 0.05
+Q11.k = -13.3
+Q11.units = 1
 
-AP13.type = aperture 
-AP13.xmax = 0.015 
-AP13.ymax = 0.015 
-AP13.shape = elliptical 
+AP13.type = aperture
+AP13.xmax = 0.015
+AP13.ymax = 0.015
+AP13.shape = elliptical
 
-D65.type = drift 
-D65.ds = 0.07 
+D65.type = drift
+D65.ds = 0.07
 
-Q12.type = quad_chromatic 
-Q12.ds = 0.1 
-Q12.k = 11.6  
-Q12.units = 1 
+Q12.type = quad_chromatic
+Q12.ds = 0.1
+Q12.k = 11.6
+Q12.units = 1
 
-D66.type = drift 
-D66.ds = 0.035 
+D66.type = drift
+D66.ds = 0.035
 
-D67.type = drift 
-D67.ds = 1.0000000000000001e-11 
+D67.type = drift
+D67.ds = 1.0000000000000001e-11
 
-D68.type = drift 
-D68.ds = 0.035 
+D68.type = drift
+D68.ds = 0.035
 
-AP14.type = aperture 
-AP14.xmax = 0.015 
-AP14.ymax = 0.015 
-AP14.shape = elliptical 
+AP14.type = aperture
+AP14.xmax = 0.015
+AP14.ymax = 0.015
+AP14.shape = elliptical
 
-Q13.type = quad_chromatic 
-Q13.ds = 0.05 
-Q13.k = -13.3  
-Q13.units = 1 
+Q13.type = quad_chromatic
+Q13.ds = 0.05
+Q13.k = -13.3
+Q13.units = 1
 
-AP15.type = aperture 
-AP15.xmax = 0.015 
-AP15.ymax = 0.015 
-AP15.shape = elliptical 
+AP15.type = aperture
+AP15.xmax = 0.015
+AP15.ymax = 0.015
+AP15.shape = elliptical
 
-D69.type = drift 
-D69.ds = 0.05 
+D69.type = drift
+D69.ds = 0.05
 
-D70.type = drift 
-D70.ds = 0.0065 
+D70.type = drift
+D70.ds = 0.0065
 
-AP16.type = aperture 
-AP16.xmax = 0.015 
-AP16.ymax = 0.015 
-AP16.shape = elliptical 
+AP16.type = aperture
+AP16.xmax = 0.015
+AP16.ymax = 0.015
+AP16.shape = elliptical
 
-AP17.type = aperture 
-AP17.xmax = 0.015 
-AP17.ymax = 0.015 
-AP17.shape = elliptical 
+AP17.type = aperture
+AP17.xmax = 0.015
+AP17.ymax = 0.015
+AP17.shape = elliptical
 
-D71.type = drift 
-D71.ds = 0.05 
+D71.type = drift
+D71.ds = 0.05
 
-D72.type = drift 
-D72.ds = 0.0035 
+D72.type = drift
+D72.ds = 0.0035
 
-D73.type = drift 
-D73.ds = 0.1 
+D73.type = drift
+D73.ds = 0.1
 
-AP18.type = aperture 
-AP18.xmax = 0.02 
-AP18.ymax = 0.00646 
-AP18.shape = rectangular 
+AP18.type = aperture
+AP18.xmax = 0.02
+AP18.ymax = 0.00646
+AP18.shape = rectangular
 
-D74.type = drift 
-D74.ds = 0.25 
+D74.type = drift
+D74.ds = 0.25
 
-D75.type = drift 
-D75.ds = 0.25 
+D75.type = drift
+D75.ds = 0.25
 
-AP19.type = aperture 
-AP19.xmax = 0.02 
-AP19.ymax = 0.00646 
-AP19.shape = rectangular 
+AP19.type = aperture
+AP19.xmax = 0.02
+AP19.ymax = 0.00646
+AP19.shape = rectangular
 
-D76.type = drift 
-D76.ds = 0.05 
+D76.type = drift
+D76.ds = 0.05
 
-D77.type = drift 
-D77.ds = 0.025 
+D77.type = drift
+D77.ds = 0.025
 
-D78.type = drift 
-D78.ds = 1e-23 
+D78.type = drift
+D78.ds = 1e-23
 
-D79.type = drift 
-D79.ds = 0.05 
+D79.type = drift
+D79.ds = 0.05
 
-AP20.type = aperture 
-AP20.xmax = 0.015 
-AP20.ymax = 0.015 
-AP20.shape = elliptical 
+AP20.type = aperture
+AP20.xmax = 0.015
+AP20.ymax = 0.015
+AP20.shape = elliptical
 
-Q14.type = quad_chromatic 
-Q14.ds = 0.05 
-Q14.k = -12.7  
-Q14.units = 1 
+Q14.type = quad_chromatic
+Q14.ds = 0.05
+Q14.k = -12.7
+Q14.units = 1
 
-AP21.type = aperture 
-AP21.xmax = 0.015 
-AP21.ymax = 0.015 
-AP21.shape = elliptical 
+AP21.type = aperture
+AP21.xmax = 0.015
+AP21.ymax = 0.015
+AP21.shape = elliptical
 
-D80.type = drift 
-D80.ds = 0.07 
+D80.type = drift
+D80.ds = 0.07
 
-Q15.type = quad_chromatic 
-Q15.ds = 0.1 
-Q15.k = 11.09  
-Q15.units = 1 
+Q15.type = quad_chromatic
+Q15.ds = 0.1
+Q15.k = 11.09
+Q15.units = 1
 
-D81.type = drift 
-D81.ds = 0.035 
+D81.type = drift
+D81.ds = 0.035
 
-D82.type = drift 
-D82.ds = 1.0000000000000001e-11 
+D82.type = drift
+D82.ds = 1.0000000000000001e-11
 
-D83.type = drift 
-D83.ds = 0.035 
+D83.type = drift
+D83.ds = 0.035
 
-AP22.type = aperture 
-AP22.xmax = 0.015 
-AP22.ymax = 0.015 
-AP22.shape = elliptical 
+AP22.type = aperture
+AP22.xmax = 0.015
+AP22.ymax = 0.015
+AP22.shape = elliptical
 
-Q16.type = quad_chromatic 
-Q16.ds = 0.05 
-Q16.k = -12.7  
-Q16.units = 1 
+Q16.type = quad_chromatic
+Q16.ds = 0.05
+Q16.k = -12.7
+Q16.units = 1
 
-AP23.type = aperture 
-AP23.xmax = 0.015 
-AP23.ymax = 0.015 
-AP23.shape = elliptical 
+AP23.type = aperture
+AP23.xmax = 0.015
+AP23.ymax = 0.015
+AP23.shape = elliptical
 
-D84.type = drift 
-D84.ds = 0.05 
+D84.type = drift
+D84.ds = 0.05
 
-D85.type = drift 
-D85.ds = 0.0065 
+D85.type = drift
+D85.ds = 0.0065
 
-AP24.type = aperture 
-AP24.xmax = 0.015 
-AP24.ymax = 0.015 
-AP24.shape = elliptical 
+AP24.type = aperture
+AP24.xmax = 0.015
+AP24.ymax = 0.015
+AP24.shape = elliptical
 
-AP25.type = aperture 
-AP25.xmax = 0.015 
-AP25.ymax = 0.015 
-AP25.shape = elliptical 
+AP25.type = aperture
+AP25.xmax = 0.015
+AP25.ymax = 0.015
+AP25.shape = elliptical
 
-D86.type = drift 
-D86.ds = 0.0035 
+D86.type = drift
+D86.ds = 0.0035
 
-D87.type = drift 
-D87.ds = 0.04 
+D87.type = drift
+D87.ds = 0.04
 
-D88.type = drift 
-D88.ds = 0.1 
+D88.type = drift
+D88.ds = 0.1
 
-D89.type = drift 
-D89.ds = 0.05 
+D89.type = drift
+D89.ds = 0.05
 
-AP26.type = aperture 
-AP26.xmax = -0.0105 
-AP26.ymax = 0.009 
-AP26.shape = elliptical 
+AP26.type = aperture
+AP26.xmax = -0.0105
+AP26.ymax = 0.009
+AP26.shape = elliptical
 
-D90.type = drift 
-D90.ds = 0.05 
+D90.type = drift
+D90.ds = 0.05
 
-AP27.type = aperture 
-AP27.xmax = -0.01025 
-AP27.ymax = 0.0095 
-AP27.shape = elliptical 
+AP27.type = aperture
+AP27.xmax = -0.01025
+AP27.ymax = 0.0095
+AP27.shape = elliptical
 
-D91.type = drift 
-D91.ds = 0.05 
+D91.type = drift
+D91.ds = 0.05
 
-AP28.type = aperture 
-AP28.xmax = -0.01 
-AP28.ymax = 0.01 
-AP28.shape = elliptical 
+AP28.type = aperture
+AP28.xmax = -0.01
+AP28.ymax = 0.01
+AP28.shape = elliptical
 
-D92.type = drift 
-D92.ds = 0.05 
+D92.type = drift
+D92.ds = 0.05
 
-AP29.type = aperture 
-AP29.xmax = -0.00975 
-AP29.ymax = 0.0105 
-AP29.shape = elliptical 
+AP29.type = aperture
+AP29.xmax = -0.00975
+AP29.ymax = 0.0105
+AP29.shape = elliptical
 
-D93.type = drift 
-D93.ds = 0.05 
+D93.type = drift
+D93.ds = 0.05
 
-AP30.type = aperture 
-AP30.xmax = -0.0095 
-AP30.ymax = 0.011 
-AP30.shape = elliptical 
+AP30.type = aperture
+AP30.xmax = -0.0095
+AP30.ymax = 0.011
+AP30.shape = elliptical
 
-D94.type = drift 
-D94.ds = 0.05 
+D94.type = drift
+D94.ds = 0.05
 
-AP31.type = aperture 
-AP31.xmax = -0.00925 
-AP31.ymax = 0.0115 
-AP31.shape = elliptical 
+AP31.type = aperture
+AP31.xmax = -0.00925
+AP31.ymax = 0.0115
+AP31.shape = elliptical
 
-D95.type = drift 
-D95.ds = 0.05 
+D95.type = drift
+D95.ds = 0.05
 
-AP32.type = aperture 
-AP32.xmax = -0.009 
-AP32.ymax = 0.012 
-AP32.shape = elliptical 
+AP32.type = aperture
+AP32.xmax = -0.009
+AP32.ymax = 0.012
+AP32.shape = elliptical
 
-D96.type = drift 
-D96.ds = 0.05 
+D96.type = drift
+D96.ds = 0.05
 
-AP33.type = aperture 
-AP33.xmax = -0.00875 
-AP33.ymax = 0.0125 
-AP33.shape = elliptical 
+AP33.type = aperture
+AP33.xmax = -0.00875
+AP33.ymax = 0.0125
+AP33.shape = elliptical
 
-D97.type = drift 
-D97.ds = 0.05 
+D97.type = drift
+D97.ds = 0.05
 
-AP34.type = aperture 
-AP34.xmax = -0.00875 
-AP34.ymax = 0.013 
-AP34.shape = elliptical 
+AP34.type = aperture
+AP34.xmax = -0.00875
+AP34.ymax = 0.013
+AP34.shape = elliptical
 
-D98.type = drift 
-D98.ds = 0.05 
+D98.type = drift
+D98.ds = 0.05
 
-AP35.type = aperture 
-AP35.xmax = -0.00875 
-AP35.ymax = 0.013 
-AP35.shape = elliptical 
+AP35.type = aperture
+AP35.xmax = -0.00875
+AP35.ymax = 0.013
+AP35.shape = elliptical
 
-D99.type = drift 
-D99.ds = 0.05 
+D99.type = drift
+D99.ds = 0.05
 
-D100.type = drift 
-D100.ds = 0.035 
+D100.type = drift
+D100.ds = 0.035
 
-D101.type = drift 
-D101.ds = 0.05 
+D101.type = drift
+D101.ds = 0.05
 
-AP36.type = aperture 
-AP36.xmax = 0.015 
-AP36.ymax = 0.015 
-AP36.shape = elliptical 
+AP36.type = aperture
+AP36.xmax = 0.015
+AP36.ymax = 0.015
+AP36.shape = elliptical
 
-Q17.type = quad_chromatic 
-Q17.ds = 0.05 
-Q17.k = -13.88  
-Q17.units = 1 
+Q17.type = quad_chromatic
+Q17.ds = 0.05
+Q17.k = -13.88
+Q17.units = 1
 
-AP37.type = aperture 
-AP37.xmax = 0.015 
-AP37.ymax = 0.015 
-AP37.shape = elliptical 
+AP37.type = aperture
+AP37.xmax = 0.015
+AP37.ymax = 0.015
+AP37.shape = elliptical
 
-D102.type = drift 
-D102.ds = 0.07 
+D102.type = drift
+D102.ds = 0.07
 
-Q18.type = quad_chromatic 
-Q18.ds = 0.1 
-Q18.k = 12.24  
-Q18.units = 1 
+Q18.type = quad_chromatic
+Q18.ds = 0.1
+Q18.k = 12.24
+Q18.units = 1
 
-D103.type = drift 
-D103.ds = 0.035 
+D103.type = drift
+D103.ds = 0.035
 
-D104.type = drift 
-D104.ds = 1.0000000000000001e-11 
+D104.type = drift
+D104.ds = 1.0000000000000001e-11
 
-D105.type = drift 
-D105.ds = 0.035 
+D105.type = drift
+D105.ds = 0.035
 
-AP38.type = aperture 
-AP38.xmax = 0.015 
-AP38.ymax = 0.015 
-AP38.shape = elliptical 
+AP38.type = aperture
+AP38.xmax = 0.015
+AP38.ymax = 0.015
+AP38.shape = elliptical
 
-Q19.type = quad_chromatic 
-Q19.ds = 0.05 
-Q19.k = -13.88  
-Q19.units = 1 
+Q19.type = quad_chromatic
+Q19.ds = 0.05
+Q19.k = -13.88
+Q19.units = 1
 
-AP39.type = aperture 
-AP39.xmax = 0.015 
-AP39.ymax = 0.015 
-AP39.shape = elliptical 
+AP39.type = aperture
+AP39.xmax = 0.015
+AP39.ymax = 0.015
+AP39.shape = elliptical
 
-D106.type = drift 
-D106.ds = 0.05 
+D106.type = drift
+D106.ds = 0.05
 
-D107.type = drift 
-D107.ds = 0.0065 
+D107.type = drift
+D107.ds = 0.0065
 
-AP40.type = aperture 
-AP40.xmax = 0.015 
-AP40.ymax = 0.015 
-AP40.shape = elliptical 
+AP40.type = aperture
+AP40.xmax = 0.015
+AP40.ymax = 0.015
+AP40.shape = elliptical
 
-AP41.type = aperture 
-AP41.xmax = 0.015 
-AP41.ymax = 0.015 
-AP41.shape = elliptical 
+AP41.type = aperture
+AP41.xmax = 0.015
+AP41.ymax = 0.015
+AP41.shape = elliptical
 
-D108.type = drift 
-D108.ds = 0.0035 
+D108.type = drift
+D108.ds = 0.0035
 
-D109.type = drift 
-D109.ds = 0.1 
+D109.type = drift
+D109.ds = 0.1
 
-D110.type = drift 
-D110.ds = 0.025 
+D110.type = drift
+D110.ds = 0.025
 
-D111.type = drift 
-D111.ds = 0.1 
+D111.type = drift
+D111.ds = 0.1
 
-D112.type = drift 
-D112.ds = 1e-23 
+D112.type = drift
+D112.ds = 1e-23
 
-D113.type = drift 
-D113.ds = 0.05 
+D113.type = drift
+D113.ds = 0.05
 
-AP42.type = aperture 
-AP42.xmax = 0.005 
-AP42.ymax = 0.005 
-AP42.shape = elliptical 
+AP42.type = aperture
+AP42.xmax = 0.005
+AP42.ymax = 0.005
+AP42.shape = elliptical
 
-D114.type = drift 
-D114.ds = 1e-23 
+D114.type = drift
+D114.ds = 1e-23
 
-D115.type = drift 
-D115.ds = 0.2 
+D115.type = drift
+D115.ds = 0.2
 
-AP43.type = aperture 
-AP43.xmax = 0.005 
-AP43.ymax = 0.005 
-AP43.shape = elliptical 
+AP43.type = aperture
+AP43.xmax = 0.005
+AP43.ymax = 0.005
+AP43.shape = elliptical
 
-D116.type = drift 
-D116.ds = 0.05 
+D116.type = drift
+D116.ds = 0.05
 
-D117.type = drift 
-D117.ds = 0.2 
+D117.type = drift
+D117.ds = 0.2
 
-D118.type = drift 
-D118.ds = 0.05 
+D118.type = drift
+D118.ds = 0.05
 
-AP44.type = aperture 
-AP44.xmax = 0.015 
-AP44.ymax = 0.015 
-AP44.shape = elliptical 
+AP44.type = aperture
+AP44.xmax = 0.015
+AP44.ymax = 0.015
+AP44.shape = elliptical
 
-Q20.type = quad_chromatic 
-Q20.ds = 0.05 
-Q20.k = -13.5  
-Q20.units = 1 
+Q20.type = quad_chromatic
+Q20.ds = 0.05
+Q20.k = -13.5
+Q20.units = 1
 
-AP45.type = aperture 
-AP45.xmax = 0.015 
-AP45.ymax = 0.015 
-AP45.shape = elliptical 
+AP45.type = aperture
+AP45.xmax = 0.015
+AP45.ymax = 0.015
+AP45.shape = elliptical
 
-D119.type = drift 
-D119.ds = 0.07 
+D119.type = drift
+D119.ds = 0.07
 
-Q21.type = quad_chromatic 
-Q21.ds = 0.1 
-Q21.k = 12.1  
-Q21.units = 1 
+Q21.type = quad_chromatic
+Q21.ds = 0.1
+Q21.k = 12.1
+Q21.units = 1
 
-AP46.type = aperture 
-AP46.xmax = 0.015 
-AP46.ymax = 0.015 
-AP46.shape = elliptical 
+AP46.type = aperture
+AP46.xmax = 0.015
+AP46.ymax = 0.015
+AP46.shape = elliptical
 
-D120.type = drift 
-D120.ds = 0.035 
+D120.type = drift
+D120.ds = 0.035
 
-D121.type = drift 
-D121.ds = 1.0000000000000001e-11 
+D121.type = drift
+D121.ds = 1.0000000000000001e-11
 
-D122.type = drift 
-D122.ds = 0.035 
+D122.type = drift
+D122.ds = 0.035
 
-AP47.type = aperture 
-AP47.xmax = 0.015 
-AP47.ymax = 0.015 
-AP47.shape = elliptical 
+AP47.type = aperture
+AP47.xmax = 0.015
+AP47.ymax = 0.015
+AP47.shape = elliptical
 
-Q22.type = quad_chromatic 
-Q22.ds = 0.05 
-Q22.k = -13.5  
-Q22.units = 1 
+Q22.type = quad_chromatic
+Q22.ds = 0.05
+Q22.k = -13.5
+Q22.units = 1
 
-AP48.type = aperture 
-AP48.xmax = 0.015 
-AP48.ymax = 0.015 
-AP48.shape = elliptical 
+AP48.type = aperture
+AP48.xmax = 0.015
+AP48.ymax = 0.015
+AP48.shape = elliptical
 
-D123.type = drift 
-D123.ds = 0.05 
+D123.type = drift
+D123.ds = 0.05
 
-D124.type = drift 
-D124.ds = 0.0065 
+D124.type = drift
+D124.ds = 0.0065
 
-AP49.type = aperture 
-AP49.xmax = 0.015 
-AP49.ymax = 0.015 
-AP49.shape = elliptical 
+AP49.type = aperture
+AP49.xmax = 0.015
+AP49.ymax = 0.015
+AP49.shape = elliptical
 
-AP50.type = aperture 
-AP50.xmax = 0.015 
-AP50.ymax = 0.015 
-AP50.shape = elliptical 
+AP50.type = aperture
+AP50.xmax = 0.015
+AP50.ymax = 0.015
+AP50.shape = elliptical
 
-D125.type = drift 
-D125.ds = 0.0035 
+D125.type = drift
+D125.ds = 0.0035
 
-D126.type = drift 
-D126.ds = 0.03 
+D126.type = drift
+D126.ds = 0.03
 
-#RF3.type = rfcavity 
-#RF3.ds = 0.24 
-#RF3.escale = 0.0355 
-#RF3.freq = 162500000.0 
-#RF3.phase = -90.0 
-#RF3.mapsteps = 100 
+#RF3.type = rfcavity
+#RF3.ds = 0.24
+#RF3.escale = 0.0355
+#RF3.freq = 162500000.0
+#RF3.phase = -90.0
+#RF3.mapsteps = 100
 
 #####################
-RF3.type = line 
+RF3.type = line
 RF3.elements = RF3_dr RF3_rf RF3_dr
 
 RF3_dr.type = drift
@@ -820,372 +820,372 @@ RF3_rf.k = 3.405748160671483
 
 ######################
 
-D127.type = drift 
-D127.ds = 0.02 
+D127.type = drift
+D127.ds = 0.02
 
-D128.type = drift 
-D128.ds = 0.035 
+D128.type = drift
+D128.ds = 0.035
 
-D129.type = drift 
-D129.ds = 0.1 
+D129.type = drift
+D129.ds = 0.1
 
-D130.type = drift 
-D130.ds = 0.1 
+D130.type = drift
+D130.ds = 0.1
 
-D131.type = drift 
-D131.ds = 0.1 
+D131.type = drift
+D131.ds = 0.1
 
-D132.type = drift 
-D132.ds = 0.1 
+D132.type = drift
+D132.ds = 0.1
 
-D133.type = drift 
-D133.ds = 0.05 
+D133.type = drift
+D133.ds = 0.05
 
-AP51.type = aperture 
-AP51.xmax = 0.015 
-AP51.ymax = 0.015 
-AP51.shape = elliptical 
+AP51.type = aperture
+AP51.xmax = 0.015
+AP51.ymax = 0.015
+AP51.shape = elliptical
 
-Q23.type = quad_chromatic 
-Q23.ds = 0.05 
-Q23.k = -10.0  
-Q23.units = 1 
+Q23.type = quad_chromatic
+Q23.ds = 0.05
+Q23.k = -10.0
+Q23.units = 1
 
-AP52.type = aperture 
-AP52.xmax = 0.015 
-AP52.ymax = 0.015 
-AP52.shape = elliptical 
+AP52.type = aperture
+AP52.xmax = 0.015
+AP52.ymax = 0.015
+AP52.shape = elliptical
 
-D134.type = drift 
-D134.ds = 0.07 
+D134.type = drift
+D134.ds = 0.07
 
-Q24.type = quad_chromatic 
-Q24.ds = 0.1 
-Q24.k = 9.5  
-Q24.units = 1 
+Q24.type = quad_chromatic
+Q24.ds = 0.1
+Q24.k = 9.5
+Q24.units = 1
 
-AP53.type = aperture 
-AP53.xmax = 0.015 
-AP53.ymax = 0.015 
-AP53.shape = elliptical 
+AP53.type = aperture
+AP53.xmax = 0.015
+AP53.ymax = 0.015
+AP53.shape = elliptical
 
-D135.type = drift 
-D135.ds = 0.035 
+D135.type = drift
+D135.ds = 0.035
 
-D136.type = drift 
-D136.ds = 1.0000000000000001e-11 
+D136.type = drift
+D136.ds = 1.0000000000000001e-11
 
-D137.type = drift 
-D137.ds = 0.035 
+D137.type = drift
+D137.ds = 0.035
 
-AP54.type = aperture 
-AP54.xmax = 0.015 
-AP54.ymax = 0.015 
-AP54.shape = elliptical 
+AP54.type = aperture
+AP54.xmax = 0.015
+AP54.ymax = 0.015
+AP54.shape = elliptical
 
-Q25.type = quad_chromatic 
-Q25.ds = 0.05 
-Q25.k = -10.0  
-Q25.units = 1 
+Q25.type = quad_chromatic
+Q25.ds = 0.05
+Q25.k = -10.0
+Q25.units = 1
 
-AP55.type = aperture 
-AP55.xmax = 0.015 
-AP55.ymax = 0.015 
-AP55.shape = elliptical 
+AP55.type = aperture
+AP55.xmax = 0.015
+AP55.ymax = 0.015
+AP55.shape = elliptical
 
-D138.type = drift 
-D138.ds = 0.05 
+D138.type = drift
+D138.ds = 0.05
 
-D139.type = drift 
-D139.ds = 0.0065 
+D139.type = drift
+D139.ds = 0.0065
 
-AP56.type = aperture 
-AP56.xmax = 0.015 
-AP56.ymax = 0.015 
-AP56.shape = elliptical 
+AP56.type = aperture
+AP56.xmax = 0.015
+AP56.ymax = 0.015
+AP56.shape = elliptical
 
-AP57.type = aperture 
-AP57.xmax = 0.015 
-AP57.ymax = 0.015 
-AP57.shape = elliptical 
+AP57.type = aperture
+AP57.xmax = 0.015
+AP57.ymax = 0.015
+AP57.shape = elliptical
 
-D140.type = drift 
-D140.ds = 0.0035 
+D140.type = drift
+D140.ds = 0.0035
 
-D141.type = drift 
-D141.ds = 0.01 
+D141.type = drift
+D141.ds = 0.01
 
-D142.type = drift 
-D142.ds = 0.025 
+D142.type = drift
+D142.ds = 0.025
 
-D143.type = drift 
-D143.ds = 0.07 
+D143.type = drift
+D143.ds = 0.07
 
-D144.type = drift 
-D144.ds = 0.29 
+D144.type = drift
+D144.ds = 0.29
 
-D145.type = drift 
-D145.ds = 0.1 
+D145.type = drift
+D145.ds = 0.1
 
-D146.type = drift 
-D146.ds = 0.05 
+D146.type = drift
+D146.ds = 0.05
 
-D147.type = drift 
-D147.ds = 0.04 
+D147.type = drift
+D147.ds = 0.04
 
-D148.type = drift 
-D148.ds = 0.05 
+D148.type = drift
+D148.ds = 0.05
 
-D149.type = drift 
-D149.ds = 1e-23 
+D149.type = drift
+D149.ds = 1e-23
 
-AP58.type = aperture 
-AP58.xmax = 0.0064 
-AP58.ymax = 0.009 
-AP58.shape = rectangular 
+AP58.type = aperture
+AP58.xmax = 0.0064
+AP58.ymax = 0.009
+AP58.shape = rectangular
 
-D150.type = drift 
-D150.ds = 1e-23 
+D150.type = drift
+D150.ds = 1e-23
 
-AP59.type = aperture 
-AP59.xmax = 0.009 
-AP59.ymax = 0.006 
-AP59.shape = rectangular 
+AP59.type = aperture
+AP59.xmax = 0.009
+AP59.ymax = 0.006
+AP59.shape = rectangular
 
-D151.type = drift 
-D151.ds = 0.09 
+D151.type = drift
+D151.ds = 0.09
 
-D152.type = drift 
-D152.ds = 0.05 
+D152.type = drift
+D152.ds = 0.05
 
-AP60.type = aperture 
-AP60.xmax = 0.015 
-AP60.ymax = 0.015 
-AP60.shape = elliptical 
+AP60.type = aperture
+AP60.xmax = 0.015
+AP60.ymax = 0.015
+AP60.shape = elliptical
 
-Q26.type = quad_chromatic 
-Q26.ds = 0.05 
-Q26.k = -7.7  
-Q26.units = 1 
+Q26.type = quad_chromatic
+Q26.ds = 0.05
+Q26.k = -7.7
+Q26.units = 1
 
-AP61.type = aperture 
-AP61.xmax = 0.015 
-AP61.ymax = 0.015 
-AP61.shape = elliptical 
+AP61.type = aperture
+AP61.xmax = 0.015
+AP61.ymax = 0.015
+AP61.shape = elliptical
 
-D153.type = drift 
-D153.ds = 0.07 
+D153.type = drift
+D153.ds = 0.07
 
-Q27.type = quad_chromatic 
-Q27.ds = 0.1 
-Q27.k = 7.42  
-Q27.units = 1 
+Q27.type = quad_chromatic
+Q27.ds = 0.1
+Q27.k = 7.42
+Q27.units = 1
 
-AP62.type = aperture 
-AP62.xmax = 0.015 
-AP62.ymax = 0.015 
-AP62.shape = elliptical 
+AP62.type = aperture
+AP62.xmax = 0.015
+AP62.ymax = 0.015
+AP62.shape = elliptical
 
-D154.type = drift 
-D154.ds = 0.035 
+D154.type = drift
+D154.ds = 0.035
 
-D155.type = drift 
-D155.ds = 1.0000000000000001e-11 
+D155.type = drift
+D155.ds = 1.0000000000000001e-11
 
-D156.type = drift 
-D156.ds = 0.035 
+D156.type = drift
+D156.ds = 0.035
 
-AP63.type = aperture 
-AP63.xmax = 0.015 
-AP63.ymax = 0.015 
-AP63.shape = elliptical 
+AP63.type = aperture
+AP63.xmax = 0.015
+AP63.ymax = 0.015
+AP63.shape = elliptical
 
-Q28.type = quad_chromatic 
-Q28.ds = 0.05 
-Q28.k = -7.7  
-Q28.units = 1 
+Q28.type = quad_chromatic
+Q28.ds = 0.05
+Q28.k = -7.7
+Q28.units = 1
 
-AP64.type = aperture 
-AP64.xmax = 0.015 
-AP64.ymax = 0.015 
-AP64.shape = elliptical 
+AP64.type = aperture
+AP64.xmax = 0.015
+AP64.ymax = 0.015
+AP64.shape = elliptical
 
-D157.type = drift 
-D157.ds = 0.05 
+D157.type = drift
+D157.ds = 0.05
 
-D158.type = drift 
-D158.ds = 0.0065 
+D158.type = drift
+D158.ds = 0.0065
 
-AP65.type = aperture 
-AP65.xmax = 0.015 
-AP65.ymax = 0.015 
-AP65.shape = elliptical 
+AP65.type = aperture
+AP65.xmax = 0.015
+AP65.ymax = 0.015
+AP65.shape = elliptical
 
-AP66.type = aperture 
-AP66.xmax = 0.015 
-AP66.ymax = 0.015 
-AP66.shape = elliptical 
+AP66.type = aperture
+AP66.xmax = 0.015
+AP66.ymax = 0.015
+AP66.shape = elliptical
 
-D159.type = drift 
-D159.ds = 0.0035 
+D159.type = drift
+D159.ds = 0.0035
 
-D160.type = drift 
-D160.ds = 0.1 
+D160.type = drift
+D160.ds = 0.1
 
-D161.type = drift 
-D161.ds = 0.1 
+D161.type = drift
+D161.ds = 0.1
 
-D162.type = drift 
-D162.ds = 0.1 
+D162.type = drift
+D162.ds = 0.1
 
-D163.type = drift 
-D163.ds = 0.1 
+D163.type = drift
+D163.ds = 0.1
 
-D164.type = drift 
-D164.ds = 0.1 
+D164.type = drift
+D164.ds = 0.1
 
-D165.type = drift 
-D165.ds = 0.1 
+D165.type = drift
+D165.ds = 0.1
 
-D166.type = drift 
-D166.ds = 0.1 
+D166.type = drift
+D166.ds = 0.1
 
-D167.type = drift 
-D167.ds = 0.025 
+D167.type = drift
+D167.ds = 0.025
 
-D168.type = drift 
-D168.ds = 0.05 
+D168.type = drift
+D168.ds = 0.05
 
-AP67.type = aperture 
-AP67.xmax = 0.015 
-AP67.ymax = 0.015 
-AP67.shape = elliptical 
+AP67.type = aperture
+AP67.xmax = 0.015
+AP67.ymax = 0.015
+AP67.shape = elliptical
 
-Q29.type = quad_chromatic 
-Q29.ds = 0.05 
-Q29.k = -7.22  
-Q29.units = 1 
+Q29.type = quad_chromatic
+Q29.ds = 0.05
+Q29.k = -7.22
+Q29.units = 1
 
-AP68.type = aperture 
-AP68.xmax = 0.015 
-AP68.ymax = 0.015 
-AP68.shape = elliptical 
+AP68.type = aperture
+AP68.xmax = 0.015
+AP68.ymax = 0.015
+AP68.shape = elliptical
 
-D169.type = drift 
-D169.ds = 0.07 
+D169.type = drift
+D169.ds = 0.07
 
-Q30.type = quad_chromatic 
-Q30.ds = 0.1 
-Q30.k = 7.0  
-Q30.units = 1 
+Q30.type = quad_chromatic
+Q30.ds = 0.1
+Q30.k = 7.0
+Q30.units = 1
 
-AP69.type = aperture 
-AP69.xmax = 0.015 
-AP69.ymax = 0.015 
-AP69.shape = elliptical 
+AP69.type = aperture
+AP69.xmax = 0.015
+AP69.ymax = 0.015
+AP69.shape = elliptical
 
-D170.type = drift 
-D170.ds = 0.035 
+D170.type = drift
+D170.ds = 0.035
 
-D171.type = drift 
-D171.ds = 1.0000000000000001e-11 
+D171.type = drift
+D171.ds = 1.0000000000000001e-11
 
-D172.type = drift 
-D172.ds = 0.035 
+D172.type = drift
+D172.ds = 0.035
 
-AP70.type = aperture 
-AP70.xmax = 0.015 
-AP70.ymax = 0.015 
-AP70.shape = elliptical 
+AP70.type = aperture
+AP70.xmax = 0.015
+AP70.ymax = 0.015
+AP70.shape = elliptical
 
-Q31.type = quad_chromatic 
-Q31.ds = 0.05 
-Q31.k = -7.22  
-Q31.units = 1 
+Q31.type = quad_chromatic
+Q31.ds = 0.05
+Q31.k = -7.22
+Q31.units = 1
 
-AP71.type = aperture 
-AP71.xmax = 0.015 
-AP71.ymax = 0.015 
-AP71.shape = elliptical 
+AP71.type = aperture
+AP71.xmax = 0.015
+AP71.ymax = 0.015
+AP71.shape = elliptical
 
-D173.type = drift 
-D173.ds = 0.05 
+D173.type = drift
+D173.ds = 0.05
 
-D174.type = drift 
-D174.ds = 0.0065 
+D174.type = drift
+D174.ds = 0.0065
 
-AP72.type = aperture 
-AP72.xmax = 0.015 
-AP72.ymax = 0.015 
-AP72.shape = elliptical 
+AP72.type = aperture
+AP72.xmax = 0.015
+AP72.ymax = 0.015
+AP72.shape = elliptical
 
-AP73.type = aperture 
-AP73.xmax = 0.015 
-AP73.ymax = 0.015 
-AP73.shape = elliptical 
+AP73.type = aperture
+AP73.xmax = 0.015
+AP73.ymax = 0.015
+AP73.shape = elliptical
 
-D175.type = drift 
-D175.ds = 0.0035 
+D175.type = drift
+D175.ds = 0.0035
 
-D176.type = drift 
-D176.ds = 0.1 
+D176.type = drift
+D176.ds = 0.1
 
-D177.type = drift 
-D177.ds = 0.05 
+D177.type = drift
+D177.ds = 0.05
 
-D178.type = drift 
-D178.ds = 0.005 
+D178.type = drift
+D178.ds = 0.005
 
-D179.type = drift 
-D179.ds = 0.1 
+D179.type = drift
+D179.ds = 0.1
 
-D180.type = drift 
-D180.ds = 0.04 
+D180.type = drift
+D180.ds = 0.04
 
-D181.type = drift 
-D181.ds = 1e-23 
+D181.type = drift
+D181.ds = 1e-23
 
-AP74.type = aperture 
-AP74.xmax = 0.006900000000000001 
-AP74.ymax = 0.009 
-AP74.shape = rectangular 
+AP74.type = aperture
+AP74.xmax = 0.006900000000000001
+AP74.ymax = 0.009
+AP74.shape = rectangular
 
-D182.type = drift 
-D182.ds = 1e-23 
+D182.type = drift
+D182.ds = 1e-23
 
-AP75.type = aperture 
-AP75.xmax = 0.009 
-AP75.ymax = 0.006900000000000001 
-AP75.shape = rectangular 
+AP75.type = aperture
+AP75.xmax = 0.009
+AP75.ymax = 0.006900000000000001
+AP75.shape = rectangular
 
-D183.type = drift 
-D183.ds = 0.09 
+D183.type = drift
+D183.ds = 0.09
 
-D184.type = drift 
-D184.ds = 0.03 
+D184.type = drift
+D184.ds = 0.03
 
-D185.type = drift 
-D185.ds = 0.03 
+D185.type = drift
+D185.ds = 0.03
 
-D186.type = drift 
-D186.ds = 1e-23 
+D186.type = drift
+D186.ds = 1e-23
 
-D187.type = drift 
-D187.ds = 1e-23 
+D187.type = drift
+D187.ds = 1e-23
 
-#RF4.type = rfcavity 
-#RF4.ds = 0.24 
-#RF4.escale = 0.059 
-#RF4.freq = 162500000.0 
-#RF4.phase = -90.0 
-#RF4.mapsteps = 100 
+#RF4.type = rfcavity
+#RF4.ds = 0.24
+#RF4.escale = 0.059
+#RF4.freq = 162500000.0
+#RF4.phase = -90.0
+#RF4.mapsteps = 100
 
 #####################
-RF4.type = line  
+RF4.type = line
 RF4.elements = RF4_dr RF4_rf RF4_dr
 
 RF4_dr.type = drift
-RF4_dr.ds = 0.120   
+RF4_dr.ds = 0.120
 
 RF4_rf.type = buncher
 RF4_rf.V = 0.000914021988311
@@ -1193,134 +1193,134 @@ RF4_rf.k = 3.405748160671483
 
 ######################
 
-D188.type = drift 
-D188.ds = 0.02 
+D188.type = drift
+D188.ds = 0.02
 
-D189.type = drift 
-D189.ds = 0.05 
+D189.type = drift
+D189.ds = 0.05
 
-D190.type = drift 
-D190.ds = 0.05 
+D190.type = drift
+D190.ds = 0.05
 
-AP76.type = aperture 
-AP76.xmax = 0.015 
-AP76.ymax = 0.015 
-AP76.shape = elliptical 
+AP76.type = aperture
+AP76.xmax = 0.015
+AP76.ymax = 0.015
+AP76.shape = elliptical
 
-Q32.type = quad_chromatic 
-Q32.ds = 0.05 
-Q32.k = -11.1  
-Q32.units = 1 
+Q32.type = quad_chromatic
+Q32.ds = 0.05
+Q32.k = -11.1
+Q32.units = 1
 
-AP77.type = aperture 
-AP77.xmax = 0.015 
-AP77.ymax = 0.015 
-AP77.shape = elliptical 
+AP77.type = aperture
+AP77.xmax = 0.015
+AP77.ymax = 0.015
+AP77.shape = elliptical
 
-D191.type = drift 
-D191.ds = 0.07 
+D191.type = drift
+D191.ds = 0.07
 
-Q33.type = quad_chromatic 
-Q33.ds = 0.1 
-Q33.k = 10.32  
-Q33.units = 1 
+Q33.type = quad_chromatic
+Q33.ds = 0.1
+Q33.k = 10.32
+Q33.units = 1
 
-AP78.type = aperture 
-AP78.xmax = 0.015 
-AP78.ymax = 0.015 
-AP78.shape = elliptical 
+AP78.type = aperture
+AP78.xmax = 0.015
+AP78.ymax = 0.015
+AP78.shape = elliptical
 
-D192.type = drift 
-D192.ds = 0.035 
+D192.type = drift
+D192.ds = 0.035
 
-D193.type = drift 
-D193.ds = 1.0000000000000001e-11 
+D193.type = drift
+D193.ds = 1.0000000000000001e-11
 
-D194.type = drift 
-D194.ds = 0.035 
+D194.type = drift
+D194.ds = 0.035
 
-AP79.type = aperture 
-AP79.xmax = 0.015 
-AP79.ymax = 0.015 
-AP79.shape = elliptical 
+AP79.type = aperture
+AP79.xmax = 0.015
+AP79.ymax = 0.015
+AP79.shape = elliptical
 
-Q34.type = quad_chromatic 
-Q34.ds = 0.05 
-Q34.k = -11.1  
-Q34.units = 1 
+Q34.type = quad_chromatic
+Q34.ds = 0.05
+Q34.k = -11.1
+Q34.units = 1
 
-AP80.type = aperture 
-AP80.xmax = 0.015 
-AP80.ymax = 0.015 
-AP80.shape = elliptical 
+AP80.type = aperture
+AP80.xmax = 0.015
+AP80.ymax = 0.015
+AP80.shape = elliptical
 
-D195.type = drift 
-D195.ds = 0.05 
+D195.type = drift
+D195.ds = 0.05
 
-D196.type = drift 
-D196.ds = 0.0065 
+D196.type = drift
+D196.ds = 0.0065
 
-AP81.type = aperture 
-AP81.xmax = 0.015 
-AP81.ymax = 0.015 
-AP81.shape = elliptical 
+AP81.type = aperture
+AP81.xmax = 0.015
+AP81.ymax = 0.015
+AP81.shape = elliptical
 
-AP82.type = aperture 
-AP82.xmax = 0.015 
-AP82.ymax = 0.015 
-AP82.shape = elliptical 
+AP82.type = aperture
+AP82.xmax = 0.015
+AP82.ymax = 0.015
+AP82.shape = elliptical
 
-D197.type = drift 
-D197.ds = 0.0035 
+D197.type = drift
+D197.ds = 0.0035
 
-D198.type = drift 
-D198.ds = 0.19 
+D198.type = drift
+D198.ds = 0.19
 
-D199.type = drift 
-D199.ds = 1e-23 
+D199.type = drift
+D199.ds = 1e-23
 
-D200.type = drift 
-D200.ds = 1e-23 
+D200.type = drift
+D200.ds = 1e-23
 
-D201.type = drift 
-D201.ds = 0.05 
+D201.type = drift
+D201.ds = 0.05
 
-D202.type = drift 
-D202.ds = 0.1 
+D202.type = drift
+D202.ds = 0.1
 
-D203.type = drift 
-D203.ds = 0.1 
+D203.type = drift
+D203.ds = 0.1
 
-D204.type = drift 
-D204.ds = 0.1 
+D204.type = drift
+D204.ds = 0.1
 
-D205.type = drift 
-D205.ds = 0.1 
+D205.type = drift
+D205.ds = 0.1
 
-D206.type = drift 
-D206.ds = 0.1 
+D206.type = drift
+D206.ds = 0.1
 
-D207.type = drift 
-D207.ds = 0.1 
+D207.type = drift
+D207.ds = 0.1
 
-D208.type = drift 
-D208.ds = 0.1 
+D208.type = drift
+D208.ds = 0.1
 
-D209.type = drift 
-D209.ds = 1e-13 
+D209.type = drift
+D209.ds = 1e-13
 
-D210.type = drift 
-D210.ds = 0.17614 
+D210.type = drift
+D210.ds = 0.17614
 
-D211.type = drift 
-D211.ds = 1e-12 
+D211.type = drift
+D211.ds = 1e-12
 
-SOL1.type = solenoid_softedge 
-SOL1.ds = 0.3  
+SOL1.type = solenoid_softedge
+SOL1.ds = 0.3
 #SOL1.bscale = -1.67 # in T, for H-
 SOL1.bscale = 1.67
 SOL1.units = 1
-SOL1.mapsteps = 16 
+SOL1.mapsteps = 16
 SOL1.nslice = 25
 SOL1.cos_coefficients = \
            0.86107056619615296 \
@@ -1385,8 +1385,8 @@ SOL1.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D212.type = drift 
-D212.ds = 0.08059999999999999 
+D212.type = drift
+D212.ds = 0.08059999999999999
 
 RF5.type = rfcavity
 RF5.ds = 0.25
@@ -1396,70 +1396,70 @@ RF5.phase = 34.0
 RF5.mapsteps = 16
 RF5.nslice = 25
 RF5.cos_coefficients =                    \
-		-3.4070256464957538E-006 \
-		-4.3571000656328351E-006 \
-		-1.0283376299824454E-005 \
-		-8.2803518175467161E-007 \
-		2.8301892539772666E-005 \
-		4.1642766349880844E-005 \
-		2.5218347387223616E-005 \
-		-5.9350731458282513E-006 \
-		-1.8954410224487905E-005 \
-		-1.1738429703804509E-005 \
-		-5.4789941845781454E-006 \
-		-8.3760596094537010E-006 \
-		-3.4536962534373328E-006 \
-		2.7817471790932136E-005 \
-		4.2765619353339612E-005 \
-		1.3035348560570814E-005 \
-		-2.7612913983794674E-005 \
-		-4.9188527269088123E-005 \
-		-2.8112362601369345E-005 \
-		-1.2396994121026406E-005 \
-		-2.2237849650615094E-005 \
-		9.9268471007787906E-006 \
-		9.7751972685158200E-006 \
-		-4.1300010535030504E-005 \
-		-2.0365547415588173E-005 \
-		5.7671000508550258E-006 \
-		-2.6230172410999023E-005 \
-		-2.6082317118527806E-005 \
-		-6.0335065833229395E-007 \
-		1.7869938632850482E-005
+        -3.4070256464957538E-006 \
+        -4.3571000656328351E-006 \
+        -1.0283376299824454E-005 \
+        -8.2803518175467161E-007 \
+        2.8301892539772666E-005 \
+        4.1642766349880844E-005 \
+        2.5218347387223616E-005 \
+        -5.9350731458282513E-006 \
+        -1.8954410224487905E-005 \
+        -1.1738429703804509E-005 \
+        -5.4789941845781454E-006 \
+        -8.3760596094537010E-006 \
+        -3.4536962534373328E-006 \
+        2.7817471790932136E-005 \
+        4.2765619353339612E-005 \
+        1.3035348560570814E-005 \
+        -2.7612913983794674E-005 \
+        -4.9188527269088123E-005 \
+        -2.8112362601369345E-005 \
+        -1.2396994121026406E-005 \
+        -2.2237849650615094E-005 \
+        9.9268471007787906E-006 \
+        9.7751972685158200E-006 \
+        -4.1300010535030504E-005 \
+        -2.0365547415588173E-005 \
+        5.7671000508550258E-006 \
+        -2.6230172410999023E-005 \
+        -2.6082317118527806E-005 \
+        -6.0335065833229395E-007 \
+        1.7869938632850482E-005
 RF5.sin_coefficients =             \
-		0.0000000000000000 \
-		0.62049115802821175 \
-		0.40705480551759698 \
-		-6.4140505977184903E-002 \
-		-0.14023308628837425 \
-		-2.4151026200912563E-002 \
-		-4.9547390138271292E-003 \
-		-2.7450442828430188E-002 \
-		-1.1400156232152965E-002 \
-		8.1679161057242790E-003 \
-		5.7398434266837332E-003 \
-		1.4194540573497002E-004 \
-		9.7587869950381718E-004 \
-		1.6910420131989352E-003 \
-		1.2995046055820853E-004 \
-		-5.7333556363209706E-004 \
-		-2.0585342661474156E-004 \
-		-2.7637290346525095E-005 \
-		-1.4089623617034863E-004 \
-		-3.8181894294383317E-005 \
-		3.8109912229456616E-005 \
-		3.8812527452664058E-005 \
-		1.5472073318992252E-005 \
-		4.3120282226374873E-005 \
-		1.6733750095896532E-005 \
-		-8.7124994382521692E-006 \
-		-4.0957411683785472E-005 \
-		5.6286876444315570E-006 \
-		2.2451096776601211E-005 \
-		2.6879579203262227E-005
+        0.0000000000000000 \
+        0.62049115802821175 \
+        0.40705480551759698 \
+        -6.4140505977184903E-002 \
+        -0.14023308628837425 \
+        -2.4151026200912563E-002 \
+        -4.9547390138271292E-003 \
+        -2.7450442828430188E-002 \
+        -1.1400156232152965E-002 \
+        8.1679161057242790E-003 \
+        5.7398434266837332E-003 \
+        1.4194540573497002E-004 \
+        9.7587869950381718E-004 \
+        1.6910420131989352E-003 \
+        1.2995046055820853E-004 \
+        -5.7333556363209706E-004 \
+        -2.0585342661474156E-004 \
+        -2.7637290346525095E-005 \
+        -1.4089623617034863E-004 \
+        -3.8181894294383317E-005 \
+        3.8109912229456616E-005 \
+        3.8812527452664058E-005 \
+        1.5472073318992252E-005 \
+        4.3120282226374873E-005 \
+        1.6733750095896532E-005 \
+        -8.7124994382521692E-006 \
+        -4.0957411683785472E-005 \
+        5.6286876444315570E-006 \
+        2.2451096776601211E-005 \
+        2.6879579203262227E-005
 
-D213.type = drift 
-D213.ds = 0.055200000000000006 
+D213.type = drift
+D213.ds = 0.055200000000000006
 
 SOL2.type = solenoid_softedge
 SOL2.ds = 0.3
@@ -1467,7 +1467,7 @@ SOL2.ds = 0.3
 SOL2.bscale = 1.91
 SOL2.units = 1
 SOL2.mapsteps = 16
-SOL2.nslice = 25    
+SOL2.nslice = 25
 SOL2.cos_coefficients = \
            0.86107056619615296 \
            0.55971853194956966 \
@@ -1531,14 +1531,14 @@ SOL2.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D214.type = drift 
-D214.ds = 0.08059999999999999 
+D214.type = drift
+D214.ds = 0.08059999999999999
 
-RF6.type = rfcavity 
-RF6.ds = 0.25 
-#RF6.escale = 0.52 
+RF6.type = rfcavity
+RF6.ds = 0.25
+#RF6.escale = 0.52
 RF6.escale = 0.006084
-RF6.freq = 162500000.0 
+RF6.freq = 162500000.0
 #RF6.phase = -81.0 #e too large
 #RF6.phase = -90.0 #e too large, closer
 #RF6.phase = -100.0 #e too small
@@ -1606,17 +1606,17 @@ RF6.sin_coefficients =             \
                 -4.0957411683785472E-005 \
                 5.6286876444315570E-006 \
                 2.2451096776601211E-005 \
-                2.6879579203262227E-005   
-                
-D215.type = drift 
-D215.ds = 0.055200000000000006 
+                2.6879579203262227E-005
 
-SOL3.type = solenoid_softedge 
-SOL3.ds = 0.3  
-#SOL3.bscale = 2.13 
+D215.type = drift
+D215.ds = 0.055200000000000006
+
+SOL3.type = solenoid_softedge
+SOL3.ds = 0.3
+#SOL3.bscale = 2.13
 SOL3.bscale = -2.13
 SOL3.units = 1
-SOL3.mapsteps = 16 
+SOL3.mapsteps = 16
 SOL3.nslice = 25
 SOL3.cos_coefficients = \
            0.86107056619615296 \
@@ -1681,15 +1681,15 @@ SOL3.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D216.type = drift 
-D216.ds = 0.08059999999999999 
+D216.type = drift
+D216.ds = 0.08059999999999999
 
-RF7.type = rfcavity 
-RF7.ds = 0.25 
-#RF7.escale = 0.72 
+RF7.type = rfcavity
+RF7.ds = 0.25
+#RF7.escale = 0.72
 RF7.escale = 0.007309090909091
-RF7.freq = 162500000.0 
-#RF7.phase = -41.0 
+RF7.freq = 162500000.0
+#RF7.phase = -41.0
 #RF7.phase = -104.878
 #RF7.phase = -110.0
 RF7.phase = -115.0
@@ -1757,16 +1757,16 @@ RF7.sin_coefficients =             \
                 5.6286876444315570E-006 \
                 2.2451096776601211E-005 \
                 2.6879579203262227E-005
-          
-D217.type = drift 
-D217.ds = 0.055200000000000006 
 
-SOL4.type = solenoid_softedge 
-SOL4.ds = 0.3  
-#SOL4.bscale = -2.32 
+D217.type = drift
+D217.ds = 0.055200000000000006
+
+SOL4.type = solenoid_softedge
+SOL4.ds = 0.3
+#SOL4.bscale = -2.32
 SOL4.bscale = 2.32
 SOL4.units = 1
-SOL4.mapsteps = 16 
+SOL4.mapsteps = 16
 SOL4.cos_coefficients = \
            0.86107056619615296 \
            0.55971853194956966 \
@@ -1830,12 +1830,12 @@ SOL4.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D218.type = drift 
-D218.ds = 0.08059999999999999 
+D218.type = drift
+D218.ds = 0.08059999999999999
 
-RF8.type = rfcavity 
-RF8.ds = 0.25 
-#RF8.escale = 1.0 
+RF8.type = rfcavity
+RF8.ds = 0.25
+#RF8.escale = 1.0
 #RF8.escale = 0.0101515151515152
 #RF8.escale = 0.015 #too large
 #RF8.escale = 0.011 #too small
@@ -1844,8 +1844,8 @@ RF8.ds = 0.25
 #RF8.escale = 0.0115 #too small (slightly)
 #RF8.escale = 0.0118 #too large (barely)
 RF8.escale = 0.0117
-RF8.freq = 162500000.0 
-#RF8.phase = -33.0 
+RF8.freq = 162500000.0
+#RF8.phase = -33.0
 RF8.phase = -20.0
 RF8.mapsteps = 16
 RF8.nslice = 25
@@ -1912,12 +1912,12 @@ RF8.sin_coefficients =             \
                 2.2451096776601211E-005 \
                 2.6879579203262227E-005
 
-D219.type = drift 
-D219.ds = 0.055200000000000006 
+D219.type = drift
+D219.ds = 0.055200000000000006
 
-SOL5.type = solenoid_softedge 
-SOL5.ds = 0.3  
-#SOL5.bscale = 2.39 
+SOL5.type = solenoid_softedge
+SOL5.ds = 0.3
+#SOL5.bscale = 2.39
 SOL5.bscale = -2.39
 SOL5.units = 1
 SOL5.mapsteps = 16
@@ -1985,17 +1985,17 @@ SOL5.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D220.type = drift 
-D220.ds = 0.08059999999999999 
+D220.type = drift
+D220.ds = 0.08059999999999999
 
-RF9.type = rfcavity 
-RF9.ds = 0.25 
-#RF9.escale = 1.35 
+RF9.type = rfcavity
+RF9.ds = 0.25
+#RF9.escale = 1.35
 RF9.escale = 0.015795
-RF9.freq = 162500000.0 
+RF9.freq = 162500000.0
 #RF9.phase = 3.0 #zero crossing
 RF9.phase = -94.0
-RF9.mapsteps = 16   
+RF9.mapsteps = 16
 RF9.nslice = 25
 RF9.cos_coefficients = \
                 -3.4070256464957538E-006 \
@@ -2060,16 +2060,16 @@ RF9.sin_coefficients =             \
                 2.2451096776601211E-005 \
                 2.6879579203262227E-005
 
-D221.type = drift 
-D221.ds = 0.055200000000000006 
+D221.type = drift
+D221.ds = 0.055200000000000006
 
-SOL6.type = solenoid_softedge 
-SOL6.ds = 0.3  
-#SOL6.bscale = -2.38 
+SOL6.type = solenoid_softedge
+SOL6.ds = 0.3
+#SOL6.bscale = -2.38
 SOL6.bscale = 2.38
 SOL6.units = 1
 SOL6.mapsteps = 16
-SOL6.nslice = 25 
+SOL6.nslice = 25
 SOL6.cos_coefficients = \
            0.86107056619615296 \
            0.55971853194956966 \
@@ -2133,21 +2133,21 @@ SOL6.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D222.type = drift 
-D222.ds = 0.08059999999999999 
+D222.type = drift
+D222.ds = 0.08059999999999999
 
-RF10.type = rfcavity 
-RF10.ds = 0.25 
-#RF10.escale = 1.8 
+RF10.type = rfcavity
+RF10.ds = 0.25
+#RF10.escale = 1.8
 #RF10.escale = 0.02106
 RF10.escale = 0.022
-RF10.freq = 162500000.0 
+RF10.freq = 162500000.0
 #RF10.phase = 15.0  #reference - low e
 #RF10.phase = 108.0 #zero-crossing
 #RF10.phase = -21 #energy too low (new nominal)
 #RF10.phase = -40 #energy too low (worse)
 #RF10.phase = 0 #improved
-#RF10.phase = 20 
+#RF10.phase = 20
 RF10.phase = 30
 RF10.mapsteps = 16
 RF10.nslice = 25
@@ -2214,12 +2214,12 @@ RF10.sin_coefficients =             \
                 2.2451096776601211E-005 \
                 2.6879579203262227E-005
 
-D223.type = drift 
-D223.ds = 0.055200000000000006 
+D223.type = drift
+D223.ds = 0.055200000000000006
 
-SOL7.type = solenoid_softedge 
-SOL7.ds = 0.3  
-#SOL7.bscale = -2.1 
+SOL7.type = solenoid_softedge
+SOL7.ds = 0.3
+#SOL7.bscale = -2.1
 SOL7.bscale = 2.1
 SOL7.units = 1
 SOL7.mapsteps = 16
@@ -2287,14 +2287,14 @@ SOL7.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D224.type = drift 
-D224.ds = 0.08059999999999999 
+D224.type = drift
+D224.ds = 0.08059999999999999
 
-RF11.type = rfcavity 
-RF11.ds = 0.25 
-#RF11.escale = 1.95 
+RF11.type = rfcavity
+RF11.ds = 0.25
+#RF11.escale = 1.95
 RF11.escale = 0.0255
-RF11.freq = 162500000.0 
+RF11.freq = 162500000.0
 RF11.phase = -60.0
 RF11.mapsteps = 16
 RF11.nslice = 25
@@ -2361,12 +2361,12 @@ RF11.sin_coefficients =             \
                 2.2451096776601211E-005 \
                 2.6879579203262227E-005
 
-D225.type = drift 
-D225.ds = 0.055200000000000006 
+D225.type = drift
+D225.ds = 0.055200000000000006
 
-SOL8.type = solenoid_softedge 
-SOL8.ds = 0.3  
-#SOL8.bscale = 3.08 
+SOL8.type = solenoid_softedge
+SOL8.ds = 0.3
+#SOL8.bscale = 3.08
 SOL8.bscale = -3.08
 SOL8.units = 1
 SOL8.mapsteps = 16
@@ -2434,15 +2434,15 @@ SOL8.sin_coefficients = \
            7.6001015258952975E-008 \
           -3.2838215702213347E-008
 
-D226.type = drift 
-D226.ds = 0.08059999999999999 
+D226.type = drift
+D226.ds = 0.08059999999999999
 
-RF12.type = rfcavity 
-RF12.ds = 0.25 
-#RF12.escale = 2.0 
+RF12.type = rfcavity
+RF12.ds = 0.25
+#RF12.escale = 2.0
 RF12.escale = 0.026153846153846
-RF12.freq = 162500000.0 
-#RF12.phase = -23.0 
+RF12.freq = 162500000.0
+#RF12.phase = -23.0
 #RF12.phase = -1.0 #slightly high e
 #RF12.phase = -5.0 #slighly low e
 RF12.phase = -3.0
@@ -2511,26 +2511,26 @@ RF12.sin_coefficients =             \
                 2.2451096776601211E-005 \
                 2.6879579203262227E-005
 
-D227.type = drift 
-D227.ds = 0.055200000000000006 
+D227.type = drift
+D227.ds = 0.055200000000000006
 
-D228.type = drift 
-D228.ds = 0.16981200000000002 
+D228.type = drift
+D228.ds = 0.16981200000000002
 
-D229.type = drift 
-D229.ds = 0.095656 
+D229.type = drift
+D229.ds = 0.095656
 
-D230.type = drift 
-D230.ds = 0.045 
+D230.type = drift
+D230.ds = 0.045
 
-D231.type = drift 
-D231.ds = 0.045 
+D231.type = drift
+D231.ds = 0.045
 
-D232.type = drift 
-D232.ds = 0.085 
+D232.type = drift
+D232.ds = 0.085
 
-D233.type = drift 
-D233.ds = 0.075 
+D233.type = drift
+D233.ds = 0.075
 
 lattice.elements =  \
 D1 D2 AP1 Q1 AP2 D3 D4 D5 \

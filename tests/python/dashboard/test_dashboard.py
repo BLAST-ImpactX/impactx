@@ -19,7 +19,7 @@ TIMEOUT = 60
 def test_dashboard():
     """
     This test runs the FODO example on the dashboard and verifies
-    that the simulation has ran successfully.
+    that the simulation has run successfully.
     """
     from seleniumbase import SB
 

@@ -39,6 +39,23 @@ jobs:
       run: |
         .github/workflows/dependencies/gcc-openmpi.sh
         python3 -m pip install -U pybind11-stubgen
+        python3 -m pip install seleniumbase pytest
+
+    # Added: Install Firefox and geckodriver
+    - name: Install Browser Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y firefox-esr xvfb
+        wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+        tar -xzf geckodriver-v0.33.0-linux64.tar.gz
+        sudo mv geckodriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/geckodriver
+
+    # Added: Start virtual display
+    - name: Start Virtual Display
+      run: |
+        Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+        echo "DISPLAY=:99" >> $GITHUB_ENV
 
     - name: Set Up Cache
       uses: actions/cache@v4
@@ -81,7 +98,8 @@ jobs:
 
     - name: Unit tests
       run: |
-        mpiexec -np 1 python3 -m pytest tests/python/
+        export DISPLAY=:99
+        mpiexec -np 1 python3 -m pytest -v tests/python/
 
     - uses: stefanzweifel/git-auto-commit-action@v5
       name: Commit Updated Stub Files

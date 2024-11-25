@@ -10,6 +10,9 @@ file(MAKE_DIRECTORY ${pytest_rundir})
 file(COPY ${ImpactX_SOURCE_DIR}/examples
      DESTINATION ${pytest_rundir})
 
+file(COPY ${ImpactX_SOURCE_DIR}/src/python/impactx/dashboard
+DESTINATION ${pytest_rundir})
+
 #   run
 add_test(NAME ${pytest_name}
     COMMAND ${Python_EXECUTABLE} -m pytest -s -vvvv
@@ -22,3 +25,9 @@ set_property(TEST ${pytest_name} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2"
 
 #   set PYTHONPATH and PATH (for .dll files)
 impactx_test_set_pythonpath(${pytest_name})
+
+# Add environment variables needed for dashboard tests
+set_property(TEST ${pytest_name} APPEND PROPERTY ENVIRONMENT
+    "DISPLAY=:99"
+    "PYTHONPATH=${pytest_rundir}:$ENV{PYTHONPATH}"
+)

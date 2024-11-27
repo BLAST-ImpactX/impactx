@@ -67,7 +67,6 @@ def run_and_plot(case, r, ax):
     sigma_z = r * sigma_r
     gamma = energy_MeV / mass_MeV
     beta = (1.0 - (1.0 / gamma) ** 2) ** 0.5
-    c0 = 2.99792458e8  # speed of light in m/s
     sigma_t = sigma_z / (beta * gamma)  # recall t is implicitly scaled by c0
     print(f"r={r} sigma_t={sigma_t}m")
 
@@ -97,7 +96,6 @@ def run_and_plot(case, r, ax):
 
     gm = sim.Geom(lev=0)
     dr = gm.data().CellSize()
-    dV = np.prod(dr)
 
     half_x, half_y, half_z = [n // 2 for n in sim.n_cell]  # order: x,y,z
 
@@ -107,7 +105,6 @@ def run_and_plot(case, r, ax):
 
     # plot data slices
     ng = F_x.n_grow_vect
-    q_e = -1.602176634e-19
     for mfi in F_x:
         bx = mfi.validbox()
         rbx = amr.RealBox(bx, dr, gm.ProbLo())

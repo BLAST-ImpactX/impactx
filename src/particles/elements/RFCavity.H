@@ -148,6 +148,8 @@ namespace RFCavityData
         {
             // next created RF cavity has another id for its data
             RFCavityData::next_id++;
+            // update m_id, which did not appear to be previously set
+            m_id = RFCavityData::next_id;
 
             // validate sin and cos coefficients are the same length
             m_ncoef = int(cos_coef.size());

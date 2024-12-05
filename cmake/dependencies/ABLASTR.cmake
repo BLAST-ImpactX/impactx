@@ -35,6 +35,15 @@ macro(find_ablastr)
         endif()
     endif()
 
+    # control FFT cache (option 1)
+    if(ImpactX_amrex_internal OR ImpactX_amrex_src)
+        if(ImpactX_FFT)
+           set(AMReX_FFT ON CACHE INTERNAL "")
+        else()
+           set(AMReX_FFT OFF CACHE INTERNAL "")
+        endif()
+    endif()
+
     # transitive control for openPMD superbuild
     if(ImpactX_openpmd_src)
         set(WarpX_openpmd_src ${ImpactX_openpmd_src} CACHE PATH
@@ -70,6 +79,13 @@ macro(find_ablastr)
         set(WarpX_MPI ${ImpactX_MPI} CACHE INTERNAL "" FORCE)
         set(WarpX_MPI_THREAD_MULTIPLE ${ImpactX_MPI_THREAD_MULTIPLE} CACHE INTERNAL "" FORCE)
         set(WarpX_IPO ${ImpactX_IPO} CACHE INTERNAL "" FORCE)
+
+        # control FFT cache (option 2)
+        #if(ImpactX_FFT)
+        #   set(AMReX_FFT ON CACHE INTERNAL "")
+        #else()
+        #   set(AMReX_FFT OFF CACHE INTERNAL "")
+        #endif()
 
         # shared libs, i.e. for Python bindings, need relocatable code
         if(ImpactX_PYTHON OR BUILD_SHARED_LIBS)

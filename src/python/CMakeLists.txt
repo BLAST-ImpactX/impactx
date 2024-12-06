@@ -11,4 +11,5 @@ target_sources(pyImpactX
     ReferenceParticle.cpp
     transformation.cpp
     WakeConvolution.cpp
+    SmallMatrix.cpp
 )

@@ -66,7 +66,7 @@ PYBIND11_MODULE(example, m) {
         .def("as_array", [](const amrex::SmallMatrix<double, 6, 6>& mat) {
             return mat; // Will use type_caster to return a numpy array
         });
-    
+
     // Now Python functions expecting a SmallMatrix<double,6,6> can pass a numpy array directly:
     // def some_func(mat: SmallMatrix6x6): ...
 }

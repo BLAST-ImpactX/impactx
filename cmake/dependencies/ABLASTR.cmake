@@ -80,12 +80,12 @@ macro(find_ablastr)
         set(WarpX_MPI_THREAD_MULTIPLE ${ImpactX_MPI_THREAD_MULTIPLE} CACHE INTERNAL "" FORCE)
         set(WarpX_IPO ${ImpactX_IPO} CACHE INTERNAL "" FORCE)
 
-        # control FFT cache (option 2)
-        #if(ImpactX_FFT)
-        #   set(AMReX_FFT ON CACHE INTERNAL "")
-        #else()
-        #   set(AMReX_FFT OFF CACHE INTERNAL "")
-        #endif()
+         #control FFT cache (option 2)
+        if(ImpactX_FFT)
+           set(AMReX_FFT ON CACHE INTERNAL "")
+        else()
+           set(AMReX_FFT OFF CACHE INTERNAL "")
+        endif()
 
         # shared libs, i.e. for Python bindings, need relocatable code
         if(ImpactX_PYTHON OR BUILD_SHARED_LIBS)

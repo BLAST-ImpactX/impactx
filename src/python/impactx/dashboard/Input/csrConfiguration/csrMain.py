@@ -63,4 +63,6 @@ class csrConfiguration:
                             error_messages=("csr_bins_error_message",),
                             type="number",
                             dense=True,
+                            step=generalFunctions.get_default("csr_bins", "steps"),
+                            __properties=["step"],
                         )

@@ -66,6 +66,7 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_units": "m"
                 if "beta" in param.name or "emitt" in param.name
                 else "",
+                "parameter_step": generalFunctions.get_default(param.name, "steps"),
             }
             for param in sig.parameters.values()
         ]
@@ -88,6 +89,7 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_units": "m"
                 if "beta" in parameter[0] or "emitt" in parameter[0]
                 else "",
+                "parameter_step": generalFunctions.get_default(parameter[0], "steps"),
             }
             for parameter in selectedDistributionParameters
         ]
@@ -231,5 +233,7 @@ class DistributionParameters:
                                             "parameter.parameter_error_message",
                                         ),
                                         type="number",
+                                        step=("parameter.parameter_step",),
+                                        __properties=["step"],
                                         dense=True,
                                     )

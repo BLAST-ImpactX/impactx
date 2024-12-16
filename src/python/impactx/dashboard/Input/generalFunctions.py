@@ -13,6 +13,7 @@ import subprocess
 import webbrowser
 
 from ..trame_setup import setup_server
+from .defaults import DashboardDefaults
 
 server, state, ctrl = setup_server()
 
@@ -44,6 +45,19 @@ class generalFunctions:
             subprocess.run(["explorer.exe", url])
         else:
             webbrowser.open_new_tab(url)
+
+    @staticmethod
+    def get_default(parameter, type):
+        parameter_type_dictionary = getattr(
+            DashboardDefaults, f"PARAMETER_{type.upper()}", None
+        )
+        parameter_default = parameter_type_dictionary.get(parameter)
+
+        if parameter_default is not None:
+            return parameter_default
+
+        parameter_name_base = parameter.partition("_")[0]
+        return parameter_type_dictionary.get(parameter_name_base)
 
     # -----------------------------------------------------------------------------
     # Validation functions

@@ -57,6 +57,7 @@ def populate_prob_relative_fields(max_level):
             "error_message": SpaceChargeFunctions.validate_prob_relative_fields(
                 i, state.prob_relative[i]
             ),
+            "step": generalFunctions.get_default("prob_relative", "steps"),
         }
         for i in range(num_prob_relative_fields)
     ]
@@ -228,6 +229,8 @@ class SpaceChargeConfiguration:
                                 v_model=(f"n_cell_{direction}",),
                                 error_messages=(f"error_message_n_cell_{direction}",),
                                 type="number",
+                                step=generalFunctions.get_default("n_cell", "steps"),
+                                __properties=["step"],
                                 dense=True,
                                 style="margin-top: -5px",
                             )
@@ -246,6 +249,10 @@ class SpaceChargeConfiguration:
                                     f"error_message_blocking_factor_{direction}",
                                 ),
                                 type="number",
+                                step=generalFunctions.get_default(
+                                    "blocking_factor", "steps"
+                                ),
+                                __properties=["step"],
                                 dense=True,
                                 style="margin-top: -5px",
                             )
@@ -265,6 +272,8 @@ class SpaceChargeConfiguration:
                             input=(ctrl.update_prob_relative, "[index, $event]"),
                             error_messages=("field.error_message",),
                             type="number",
+                            step=("field.step",),
+                            __properties=["step"],
                             dense=True,
                             style="margin-top: -5px",
                         )
@@ -295,6 +304,10 @@ class SpaceChargeConfiguration:
                                         "error_message_mlmg_relative_tolerance",
                                     ),
                                     type="number",
+                                    step=generalFunctions.get_default(
+                                        "mlmg_relative_tolerance", "steps"
+                                    ),
+                                    __properties=["step"],
                                     dense=True,
                                 )
                             with vuetify.VCol(cols=6, classes="py-0"):
@@ -305,6 +318,10 @@ class SpaceChargeConfiguration:
                                         "error_message_mlmg_absolute_tolerance",
                                     ),
                                     type="number",
+                                    step=generalFunctions.get_default(
+                                        "mlmg_absolute_tolerance", "steps"
+                                    ),
+                                    __properties=["step"],
                                     dense=True,
                                 )
                         with vuetify.VRow(
@@ -316,6 +333,10 @@ class SpaceChargeConfiguration:
                                     v_model=("mlmg_max_iters",),
                                     error_messages=("error_message_mlmg_max_iters",),
                                     type="number",
+                                    step=generalFunctions.get_default(
+                                        "mlmg_max_iters", "steps"
+                                    ),
+                                    __properties=["step"],
                                     dense=True,
                                 )
                             with vuetify.VCol(cols=6, classes="py-0"):
@@ -324,5 +345,9 @@ class SpaceChargeConfiguration:
                                     v_model=("mlmg_verbosity",),
                                     error_messages=("error_message_mlmg_verbosity",),
                                     type="number",
+                                    step=generalFunctions.get_default(
+                                        "mlmg_verbosity", "steps"
+                                    ),
+                                    __properties=["step"],
                                     dense=True,
                                 )

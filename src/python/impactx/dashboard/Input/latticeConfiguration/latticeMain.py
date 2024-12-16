@@ -424,6 +424,11 @@ class LatticeConfiguration:
                                         ctrl.nsliceDefaultChange,
                                         "['nslice', $event]",
                                     ),
+                                    type="number",
+                                    step=generalFunctions.get_default(
+                                        "nslice", "steps"
+                                    ),
+                                    __properties=["step"],
                                     placeholder="Value",
                                     dense=True,
                                     outlined=True,

@@ -116,6 +116,8 @@ class InputParameters:
                             v_model=("charge_qe",),
                             suffix="qe",
                             type="number",
+                            step=generalFunctions.get_default("charge_qe", "steps"),
+                            __properties=["step"],
                             dense=True,
                             error_messages=("charge_qe_validation",),
                             change=(
@@ -129,6 +131,8 @@ class InputParameters:
                             v_model=("mass_MeV",),
                             suffix="MeV",
                             type="number",
+                            step=generalFunctions.get_default("mass_MeV", "steps"),
+                            __properties=["step"],
                             dense=True,
                             error_messages=("mass_MeV_validation",),
                             change=(
@@ -147,6 +151,8 @@ class InputParameters:
                                 "[$event, 'int','npart','npart_validation']",
                             ),
                             type="number",
+                            step=generalFunctions.get_default("npart", "steps"),
+                            __properties=["step"],
                             dense=True,
                         )
                 with vuetify.VRow(classes="my-2"):
@@ -160,6 +166,8 @@ class InputParameters:
                                 "[$event, 'float','kin_energy','kin_energy_validation']",
                             ),
                             type="number",
+                            step=generalFunctions.get_default("kin_energy", "steps"),
+                            __properties=["step"],
                             dense=True,
                             classes="mr-2",
                         )
@@ -172,7 +180,7 @@ class InputParameters:
                             dense=True,
                         )
                 with vuetify.VRow(classes="my-2"):
-                    with vuetify.VCol(cols=8, classes="py-0"):
+                    with vuetify.VCol(cols=12, classes="py-0"):
                         vuetify.VTextField(
                             label="Bunch Charge",
                             v_model=("bunch_charge_C",),
@@ -182,12 +190,10 @@ class InputParameters:
                                 "[$event, 'float','bunch_charge_C','bunch_charge_C_validation']",
                             ),
                             type="number",
+                            step=generalFunctions.get_default(
+                                "bunch_charge_C", "steps"
+                            ),
+                            __properties=["step"],
                             dense=True,
-                        )
-                    with vuetify.VCol(cols=4, classes="py-0"):
-                        vuetify.VTextField(
-                            label="Unit",
-                            value="C",
-                            dense=True,
-                            disabled=True,
+                            suffix="C",
                         )

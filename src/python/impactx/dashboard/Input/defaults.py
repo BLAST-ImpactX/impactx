@@ -3,7 +3,18 @@ class DashboardDefaults:
     Defaults for input parameters in the ImpactX dashboard.
     """
 
-    PARAMETER_VALUES = {
+    DEFAULTS = {
+        "distribution": "Waterbag",
+        "distribution_type": "Twiss",
+        "lattice": None,
+        "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
+        "distribution_type_list": ["Twiss", "Quadratic"],
+        "poisson_solver_list": ["fft", "multigrid"],
+        "particle_shape_list": [1, 2, 3],
+        "max_level_list": [0, 1, 2, 3, 4],
+    }
+
+    VALUES = {
         # Input Parameters
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
@@ -12,6 +23,7 @@ class DashboardDefaults:
         "bunch_charge_C": 1e-9,
         "particle_shape": 2,
         # Space Charge
+        "dynamic_size": False,
         "poisson_solver": "fft",
         "max_level": 0,
         "n_cell": 32,
@@ -27,7 +39,7 @@ class DashboardDefaults:
     }
 
     # If parameter is not included in the dictionary, default step amount is 1.
-    PARAMETER_STEPS = {
+    STEPS = {
         # Single input
         "mass_MeV": 0.1,
         "bunch_charge_C": 1e-11,
@@ -40,10 +52,11 @@ class DashboardDefaults:
         "alpha": 0.1,
     }
 
-    PARAMETER_UNITS = {
+    UNITS = {
         # Single input
         "charge_qe": "qe",
         "mass_MeV": "MeV",
+        "kin_energy": "MeV",
         "bunch_charge_C": "C",
         "mlmg_absolute_tolerance": "V/m",
         # Shared inputs (x,y,z)

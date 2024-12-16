@@ -34,8 +34,10 @@ state.listOfDistributionsAndParametersAndDefault = (
 # Defaults
 # -----------------------------------------------------------------------------
 
-state.selectedDistribution = "Waterbag"
-state.selectedDistributionType = "Twiss"
+state.selectedDistribution = generalFunctions.get_default("distribution", "defaults")
+state.selectedDistributionType = generalFunctions.get_default(
+    "distribution_type", "defaults"
+)
 state.selectedDistributionParameters = []
 state.distributionTypeDisabled = False
 
@@ -208,7 +210,11 @@ class DistributionParameters:
                         vuetify.VSelect(
                             v_model=("selectedDistributionType",),
                             label="Type",
-                            items=(["Twiss", "Quadratic Form"],),
+                            items=(
+                                generalFunctions.get_default(
+                                    "distribution_type_list", "defaults"
+                                ),
+                            ),
                             dense=True,
                             disabled=("distributionTypeDisabled",),
                         )

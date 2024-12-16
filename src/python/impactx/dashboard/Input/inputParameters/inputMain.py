@@ -70,8 +70,8 @@ class InputParameters:
         state.kin_energy = generalFunctions.get_default("kin_energy", "values")
         state.kin_energy_MeV = state.kin_energy
         state.bunch_charge_C = generalFunctions.get_default("bunch_charge_C", "values")
-        state.kin_energy_unit = "MeV"
-        state.old_kin_energy_unit = "MeV"
+        state.kin_energy_unit = generalFunctions.get_default("kin_energy", "units")
+        state.old_kin_energy_unit = generalFunctions.get_default("kin_energy", "units")
         state.charge_qe = generalFunctions.get_default("charge_qe", "values")
         state.mass_MeV = generalFunctions.get_default("mass_MeV", "values")
 
@@ -175,7 +175,11 @@ class InputParameters:
                         vuetify.VSelect(
                             v_model=("kin_energy_unit",),
                             label="Unit",
-                            items=(["meV", "eV", "keV", "MeV", "GeV", "TeV"],),
+                            items=(
+                                generalFunctions.get_default(
+                                    "kin_energy_unit_list", "defaults"
+                                ),
+                            ),
                             change=(ctrl.kin_energy_unit_change, "[$event]"),
                             dense=True,
                         )

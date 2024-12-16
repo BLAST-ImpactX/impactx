@@ -10,7 +10,7 @@ server, state, ctrl = setup_server()
 # Default
 # -----------------------------------------------------------------------------
 
-state.dynamic_size = False
+state.dynamic_size = generalFunctions.get_default("dynamic_size", "values")
 state.max_level = generalFunctions.get_default("max_level", "values")
 state.particle_shape = generalFunctions.get_default("particle_shape", "values")
 state.poisson_solver = generalFunctions.get_default("poisson_solver", "values")
@@ -213,7 +213,11 @@ class SpaceChargeConfiguration:
                         vuetify.VSelect(
                             label="Poisson Solver",
                             v_model=("poisson_solver",),
-                            items=(["multigrid", "fft"],),
+                            items=(
+                                generalFunctions.get_default(
+                                    "poisson_solver_list", "defaults"
+                                ),
+                            ),
                             dense=True,
                             hide_details=True,
                         )
@@ -221,14 +225,22 @@ class SpaceChargeConfiguration:
                         vuetify.VSelect(
                             label="Particle Shape",
                             v_model=("particle_shape",),
-                            items=([1, 2, 3],),
+                            items=(
+                                generalFunctions.get_default(
+                                    "particle_shape_list", "defaults"
+                                ),
+                            ),
                             dense=True,
                         )
                     with vuetify.VCol(cols=3, classes="py-0"):
                         vuetify.VSelect(
                             label="Max Level",
                             v_model=("max_level",),
-                            items=([0, 1, 2, 3, 4],),
+                            items=(
+                                generalFunctions.get_default(
+                                    "max_level_list", "defaults"
+                                ),
+                            ),
                             dense=True,
                         )
                 with vuetify.VCol(classes="pa-0"):

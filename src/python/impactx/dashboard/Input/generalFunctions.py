@@ -48,9 +48,7 @@ class generalFunctions:
 
     @staticmethod
     def get_default(parameter, type):
-        parameter_type_dictionary = getattr(
-            DashboardDefaults, f"PARAMETER_{type.upper()}", None
-        )
+        parameter_type_dictionary = getattr(DashboardDefaults, f"{type.upper()}", None)
         parameter_default = parameter_type_dictionary.get(parameter)
 
         if parameter_default is not None:

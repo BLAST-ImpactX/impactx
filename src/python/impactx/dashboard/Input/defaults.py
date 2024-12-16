@@ -16,3 +16,14 @@ class DashboardDefaults:
         "emitt": 1e-7,
         "alpha": 0.1,
     }
+
+    PARAMETER_UNITS = {
+        # Single input
+        "charge_qe": "qe",
+        "mass_MeV": "MeV",
+        "bunch_charge_C": "C",
+        "mlmg_absolute_tolerance": "V/m",
+        # Shared inputs (x,y,z)
+        "beta": "m",
+        "emitt": "m",
+    }

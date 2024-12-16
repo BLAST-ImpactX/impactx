@@ -114,7 +114,7 @@ class InputParameters:
                         vuetify.VTextField(
                             label="Ref. Particle Charge",
                             v_model=("charge_qe",),
-                            suffix="qe",
+                            suffix=generalFunctions.get_default("charge_qe", "units"),
                             type="number",
                             step=generalFunctions.get_default("charge_qe", "steps"),
                             __properties=["step"],
@@ -129,7 +129,7 @@ class InputParameters:
                         vuetify.VTextField(
                             label="Ref. Particle Mass",
                             v_model=("mass_MeV",),
-                            suffix="MeV",
+                            suffix=generalFunctions.get_default("mass_MeV", "units"),
                             type="number",
                             step=generalFunctions.get_default("mass_MeV", "steps"),
                             __properties=["step"],
@@ -195,5 +195,7 @@ class InputParameters:
                             ),
                             __properties=["step"],
                             dense=True,
-                            suffix="C",
+                            suffix=generalFunctions.get_default(
+                                "bunch_charge_C", "units"
+                            ),
                         )

@@ -63,7 +63,7 @@ def populate_distribution_parameters(selectedDistribution):
                 "parameter_error_message": generalFunctions.validate_against(
                     param.default if param.default != param.empty else None, "float"
                 ),
-                "parameter_units": "m"
+                "parameter_units": generalFunctions.get_default(param.name, "units")
                 if "beta" in param.name or "emitt" in param.name
                 else "",
                 "parameter_step": generalFunctions.get_default(param.name, "steps"),

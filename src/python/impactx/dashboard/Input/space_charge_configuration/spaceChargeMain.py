@@ -317,6 +317,9 @@ class SpaceChargeConfiguration:
                                     error_messages=(
                                         "error_message_mlmg_absolute_tolerance",
                                     ),
+                                    suffix=generalFunctions.get_default(
+                                        "mlmg_absolute_tolerance", "units"
+                                    ),
                                     type="number",
                                     step=generalFunctions.get_default(
                                         "mlmg_absolute_tolerance", "steps"

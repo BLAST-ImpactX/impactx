@@ -11,25 +11,30 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 state.dynamic_size = False
-state.max_level = 0
-state.n_cell = []
+state.max_level = generalFunctions.get_default("max_level", "values")
+state.particle_shape = generalFunctions.get_default("particle_shape", "values")
+state.poisson_solver = generalFunctions.get_default("poisson_solver", "values")
+
 state.prob_relative = []
-state.particle_shape = 2
-state.poisson_solver = "fft"
-
 state.prob_relative_fields = []
-state.n_cell_x = 32
-state.n_cell_y = 32
-state.n_cell_z = 32
 
-state.blocking_factor_x = 16
-state.blocking_factor_y = 16
-state.blocking_factor_z = 16
+state.n_cell = []
+state.n_cell_x = generalFunctions.get_default("n_cell", "values")
+state.n_cell_y = generalFunctions.get_default("n_cell", "values")
+state.n_cell_z = generalFunctions.get_default("n_cell", "values")
 
-state.mlmg_relative_tolerance = 1.0e-7
-state.mlmg_absolute_tolerance = 0.0
-state.mlmg_max_iters = 100
-state.mlmg_verbosity = 1
+state.blocking_factor_x = generalFunctions.get_default("blocking_factor", "values")
+state.blocking_factor_y = generalFunctions.get_default("blocking_factor", "values")
+state.blocking_factor_z = generalFunctions.get_default("blocking_factor", "values")
+
+state.mlmg_relative_tolerance = generalFunctions.get_default(
+    "mlmg_relative_tolerance", "values"
+)
+state.mlmg_absolute_tolerance = generalFunctions.get_default(
+    "mlmg_absolute_tolerance", "values"
+)
+state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "values")
+state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "values")
 
 state.error_message_mlmg_relative_tolerance = ""
 state.error_message_mlmg_absolute_tolerance = ""
@@ -43,11 +48,21 @@ state.error_message_mlmg_verbosity = ""
 
 def populate_prob_relative_fields(max_level):
     num_prob_relative_fields = int(max_level) + 1
+    fft_first_field_value = generalFunctions.get_default(
+        "prob_relative_first_value_fft", "values"
+    )
+    multigrid_first_field_value = generalFunctions.get_default(
+        "prob_relative_first_value_multigrid", "values"
+    )
 
     if state.poisson_solver == "fft":
-        state.prob_relative = [1.1] + [0.0] * (num_prob_relative_fields - 1)
+        state.prob_relative = [fft_first_field_value] + [0.0] * (
+            num_prob_relative_fields - 1
+        )
     elif state.poisson_solver == "multigrid":
-        state.prob_relative = [3.1] + [0.0] * (num_prob_relative_fields - 1)
+        state.prob_relative = [multigrid_first_field_value] + [0.0] * (
+            num_prob_relative_fields - 1
+        )
     else:
         state.prob_relative = [0.0] * num_prob_relative_fields
 

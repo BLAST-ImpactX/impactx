@@ -65,15 +65,15 @@ class InputParameters:
     """
 
     def __init__(self):
-        state.particle_shape = 2
-        state.npart = 1000
-        state.kin_energy = 2.0e3
+        state.particle_shape = generalFunctions.get_default("particle_shape", "values")
+        state.npart = generalFunctions.get_default("npart", "values")
+        state.kin_energy = generalFunctions.get_default("kin_energy", "values")
         state.kin_energy_MeV = state.kin_energy
-        state.bunch_charge_C = 1.0e-9
+        state.bunch_charge_C = generalFunctions.get_default("bunch_charge_C", "values")
         state.kin_energy_unit = "MeV"
         state.old_kin_energy_unit = "MeV"
-        state.charge_qe = -1
-        state.mass_MeV = 0.510998950
+        state.charge_qe = generalFunctions.get_default("charge_qe", "values")
+        state.mass_MeV = generalFunctions.get_default("mass_MeV", "values")
 
         state.npart_validation = []
         state.kin_energy_validation = []

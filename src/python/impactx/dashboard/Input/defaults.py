@@ -3,6 +3,29 @@ class DashboardDefaults:
     Defaults for input parameters in the ImpactX dashboard.
     """
 
+    PARAMETER_VALUES = {
+        # Input Parameters
+        "charge_qe": -1,
+        "mass_MeV": 0.51099895,
+        "npart": 1000,
+        "kin_energy": 2e3,
+        "bunch_charge_C": 1e-9,
+        "particle_shape": 2,
+        # Space Charge
+        "poisson_solver": "fft",
+        "max_level": 0,
+        "n_cell": 32,
+        "blocking_factor": 16,
+        "prob_relative_first_value_fft": 1.1,
+        "prob_relative_first_value_multigrid": 3.1,
+        "mlmg_relative_tolerance": 1.0e-7,
+        "mlmg_absolute_tolerance": 0,
+        "mlmg_verbosity": 1,
+        "mlmg_max_iters": 100,
+        # CSR
+        "csr_bins": 150,
+    }
+
     # If parameter is not included in the dictionary, default step amount is 1.
     PARAMETER_STEPS = {
         # Single input

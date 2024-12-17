@@ -34,10 +34,10 @@ hwr_fragment.elements = D1b SOL1b D2b RF1b D3b SOL2b D4b
 monitor.type = beam_monitor
 monitor.backend = h5
 
-D1.type = drift 
+D1.type = drift
 D1.ds = 0.17414
 
-D2.type = drift 
+D2.type = drift
 D2.ds = 0.06586
 
 D3.type = drift
@@ -49,14 +49,14 @@ D4.ds = 0.07
 D5.type = drift
 D5.ds = 1.0106078
 
-Q1.type = quad_chromatic 
+Q1.type = quad_chromatic
 Q1.ds = 0.05
-Q1.k = -11.4  
-Q1.units = 1 
+Q1.k = -11.4
+Q1.units = 1
 
 Q2.type = quad_chromatic
 Q2.ds = 0.1
-Q2.k = 10.47  
+Q2.k = 10.47
 Q2.units = 1
 
 Q3.type = quad_chromatic
@@ -134,10 +134,10 @@ RF1.sin_coefficients =             \
                  1.7088725904341150E-005 \
                 -6.9045871183576885E-006
 
-D1b.type = drift 
+D1b.type = drift
 D1b.ds = 0.177422
 
-D2b.type = drift 
+D2b.type = drift
 D2b.ds = 0.0679
 
 D3b.type = drift
@@ -182,7 +182,7 @@ SOL1b.cos_coefficients = \
           -1.1543046335580481E-005 \
            1.0876363164911279E-005 \
           -1.0739105769905916E-005 \
-           1.0832271198166904E-005  
+           1.0832271198166904E-005
 SOL1b.sin_coefficients = \
            0.0000000000000000 \
            8.4583007312587222E-009 \
@@ -213,7 +213,7 @@ SOL1b.sin_coefficients = \
            6.2776962295174599E-008 \
            1.1066968561013191E-007 \
            7.6001015258952975E-008 \
-          -3.2838215702213347E-008  
+          -3.2838215702213347E-008
 
 SOL2b.type = solenoid_softedge
 SOL2b.ds = 0.3
@@ -282,7 +282,7 @@ SOL2b.sin_coefficients = \
            6.2776962295174599E-008 \
            1.1066968561013191E-007 \
            7.6001015258952975E-008 \
-          -3.2838215702213347E-008  
+          -3.2838215702213347E-008
 
 RF1b.type = rfcavity
 RF1b.ds = 0.25
@@ -369,4 +369,3 @@ geometry.prob_relative = 1.1 1.1
 # Diagnostics
 ###############################################################################
 diag.slice_step_diagnostics = true
-

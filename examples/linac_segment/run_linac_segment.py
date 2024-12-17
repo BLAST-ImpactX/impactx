@@ -14,7 +14,7 @@ sim = ImpactX()
 
 # set numerical parameters for space charge
 sim.max_level = 0
-#sim.n_cell = [64, 64, 64]  #use this for high-resolution runs
+# sim.n_cell = [64, 64, 64]  #use this for high-resolution runs
 sim.n_cell = [32, 32, 32]
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = True
@@ -29,7 +29,7 @@ sim.slice_step_diagnostics = True
 sim.init_grids()
 
 # npart = 2  # number of macro particles
-#npart = 1000000  #use this for high-resolution runs
+# npart = 1000000  #use this for high-resolution runs
 npart = 10000
 ns = 25  # default number of slices per element
 

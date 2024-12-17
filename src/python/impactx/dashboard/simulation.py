@@ -93,11 +93,13 @@ def run_simulation():
     sim.evolve()
 
     fig = adjusted_settings_plot(pc)
+    ctrl.matplotlib_figure_update(fig)
+
     fig_original = pc.plot_phasespace()
 
     if fig_original is not None:
         image_base64 = fig_to_base64(fig_original)
-        state.image_data = f"data:image/png;base64, {image_base64}"
+        state.phase_space_png = f"data:image/png;base64, {image_base64}"
 
     sim.finalize()
 

@@ -83,11 +83,14 @@ class generalFunctions:
         Validates the input value against the desired type and additional conditions.
         :param input_value: The value to validate.
         :param value_type: The desired type ('int', 'float', 'str').
-        :param conditions: A list of additional conditions to validate.
+        :param additional_conditions: A list of additional conditions to validate.
         :return: A list of error messages. An empty list if there are no errors.
         """
         errors = []
         value = None
+
+        if input_value == "None":
+            return errors
 
         # value_type checking
         if value_type == "int":

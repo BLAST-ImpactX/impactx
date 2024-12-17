@@ -104,6 +104,7 @@ Virtual Test Stands
    examples/pytorch_surrogate_model/README.rst
    examples/apochromatic/README.rst
    examples/fodo_tune/README.rst
+   examples/linac_segment/README.rst
 
 
 Unit tests

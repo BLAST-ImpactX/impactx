@@ -1040,3 +1040,19 @@ add_impactx_test(rotation-xy.py
     examples/rotation/analysis_rotation_xy.py
     OFF  # no plot script yet
 )
+
+# PIP-II linac segment #########################################################
+#
+# with space charge
+add_impactx_test(linac-segment
+    examples/linac_segment/input_linac_segment.in
+    ON   # ImpactX MPI-parallel
+    examples/linac_segment/analysis_linac_segment.py
+    OFF  # no plot script yet
+)
+add_impactx_test(linac-segment.py
+    examples/linac_segment/run_linac_segment.py
+    OFF  # ImpactX MPI-parallel
+    examples/linac_segment/analysis_linac_segment.py
+    OFF  # no plot script yet
+)

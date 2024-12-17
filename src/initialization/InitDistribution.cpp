@@ -236,6 +236,9 @@ namespace impactx
         } else if (particle_type == "proton") {
             qe = 1.0;
             massE = ablastr::constant::SI::m_p / ablastr::constant::SI::MeV_invc2;
+        } else if (particle_type == "Hminus") {
+            qe = -1.0;
+            massE = 939.294308;  // value used in TraceWin
         }
         else {  // default to electron
             ablastr::warn_manager::WMRecordWarning(

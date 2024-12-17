@@ -2,7 +2,8 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-beam.npart = 10000000
+#beam.npart = 10000000  #use this value for high-resolution runs
+beam.npart = 10000
 beam.units = static
 beam.kin_energy = 2.1226695
 beam.charge = 2.9824923076852509e-11  #based on I/f
@@ -362,7 +363,8 @@ algo.space_charge = true
 
 # Space charge using IGF solver
 algo.poisson_solver = "fft"
-amr.n_cell = 64 64 64
+#amr.n_cell = 64 64 64  #use this value for high resolution runs
+amr.n_cell = 32 32 32
 geometry.prob_relative = 1.1 1.1
 
 ###############################################################################

@@ -156,7 +156,12 @@ def on_lattice_element_name_change(selectedLattice, **kwargs):
 @ctrl.add("add_latticeElement")
 def on_add_lattice_element_click():
     selectedLattice = state.selectedLattice
-    if selectedLattice:
+
+    if selectedLattice not in state.listOfLatticeElements:
+        state.isSelectedLatticeListEmpty = (
+            f"Lattice element '{selectedLattice}' does not exist."
+        )
+    else:
         add_lattice_element()
         state.dirty("selectedLatticeList")
 

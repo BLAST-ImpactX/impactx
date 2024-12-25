@@ -65,15 +65,23 @@ class InputParameters:
     """
 
     def __init__(self):
-        state.particle_shape = generalFunctions.get_default("particle_shape", "values")
-        state.npart = generalFunctions.get_default("npart", "values")
-        state.kin_energy = generalFunctions.get_default("kin_energy", "values")
+        state.particle_shape = generalFunctions.get_default(
+            "particle_shape", "default_values"
+        )
+        state.npart = generalFunctions.get_default("npart", "default_values")
+        state.kin_energy = generalFunctions.get_default("kin_energy", "default_values")
         state.kin_energy_MeV = state.kin_energy
-        state.bunch_charge_C = generalFunctions.get_default("bunch_charge_C", "values")
-        state.kin_energy_unit = generalFunctions.get_default("kin_energy", "units")
-        state.old_kin_energy_unit = generalFunctions.get_default("kin_energy", "units")
-        state.charge_qe = generalFunctions.get_default("charge_qe", "values")
-        state.mass_MeV = generalFunctions.get_default("mass_MeV", "values")
+        state.bunch_charge_C = generalFunctions.get_default(
+            "bunch_charge_C", "default_values"
+        )
+        state.kin_energy_unit = generalFunctions.get_default(
+            "kin_energy_unit", "default_values"
+        )
+        state.old_kin_energy_unit = generalFunctions.get_default(
+            "kin_energy_unit", "default_values"
+        )
+        state.charge_qe = generalFunctions.get_default("charge_qe", "default_values")
+        state.mass_MeV = generalFunctions.get_default("mass_MeV", "default_values")
 
         state.npart_validation = []
         state.kin_energy_validation = []
@@ -177,7 +185,7 @@ class InputParameters:
                             label="Unit",
                             items=(
                                 generalFunctions.get_default(
-                                    "kin_energy_unit_list", "defaults"
+                                    "kin_energy_unit_list", "default_values"
                                 ),
                             ),
                             change=(ctrl.kin_energy_unit_change, "[$event]"),

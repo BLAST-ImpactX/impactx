@@ -10,31 +10,37 @@ server, state, ctrl = setup_server()
 # Default
 # -----------------------------------------------------------------------------
 
-state.dynamic_size = generalFunctions.get_default("dynamic_size", "values")
-state.max_level = generalFunctions.get_default("max_level", "values")
-state.particle_shape = generalFunctions.get_default("particle_shape", "values")
-state.poisson_solver = generalFunctions.get_default("poisson_solver", "values")
+state.dynamic_size = generalFunctions.get_default("dynamic_size", "default_values")
+state.max_level = generalFunctions.get_default("max_level", "default_values")
+state.particle_shape = generalFunctions.get_default("particle_shape", "default_values")
+state.poisson_solver = generalFunctions.get_default("poisson_solver", "default_values")
 
 state.prob_relative = []
 state.prob_relative_fields = []
 
 state.n_cell = []
-state.n_cell_x = generalFunctions.get_default("n_cell", "values")
-state.n_cell_y = generalFunctions.get_default("n_cell", "values")
-state.n_cell_z = generalFunctions.get_default("n_cell", "values")
+state.n_cell_x = generalFunctions.get_default("n_cell", "default_values")
+state.n_cell_y = generalFunctions.get_default("n_cell", "default_values")
+state.n_cell_z = generalFunctions.get_default("n_cell", "default_values")
 
-state.blocking_factor_x = generalFunctions.get_default("blocking_factor", "values")
-state.blocking_factor_y = generalFunctions.get_default("blocking_factor", "values")
-state.blocking_factor_z = generalFunctions.get_default("blocking_factor", "values")
+state.blocking_factor_x = generalFunctions.get_default(
+    "blocking_factor", "default_values"
+)
+state.blocking_factor_y = generalFunctions.get_default(
+    "blocking_factor", "default_values"
+)
+state.blocking_factor_z = generalFunctions.get_default(
+    "blocking_factor", "default_values"
+)
 
 state.mlmg_relative_tolerance = generalFunctions.get_default(
-    "mlmg_relative_tolerance", "values"
+    "mlmg_relative_tolerance", "default_values"
 )
 state.mlmg_absolute_tolerance = generalFunctions.get_default(
-    "mlmg_absolute_tolerance", "values"
+    "mlmg_absolute_tolerance", "default_values"
 )
-state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "values")
-state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "values")
+state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "default_values")
+state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "default_values")
 
 state.error_message_mlmg_relative_tolerance = ""
 state.error_message_mlmg_absolute_tolerance = ""
@@ -49,10 +55,10 @@ state.error_message_mlmg_verbosity = ""
 def populate_prob_relative_fields(max_level):
     num_prob_relative_fields = int(max_level) + 1
     fft_first_field_value = generalFunctions.get_default(
-        "prob_relative_first_value_fft", "values"
+        "prob_relative_first_value_fft", "default_values"
     )
     multigrid_first_field_value = generalFunctions.get_default(
-        "prob_relative_first_value_multigrid", "values"
+        "prob_relative_first_value_multigrid", "default_values"
     )
 
     if state.poisson_solver == "fft":
@@ -215,7 +221,7 @@ class SpaceChargeConfiguration:
                             v_model=("poisson_solver",),
                             items=(
                                 generalFunctions.get_default(
-                                    "poisson_solver_list", "defaults"
+                                    "poisson_solver_list", "default_values"
                                 ),
                             ),
                             dense=True,
@@ -227,7 +233,7 @@ class SpaceChargeConfiguration:
                             v_model=("particle_shape",),
                             items=(
                                 generalFunctions.get_default(
-                                    "particle_shape_list", "defaults"
+                                    "particle_shape_list", "default_values"
                                 ),
                             ),
                             dense=True,
@@ -238,7 +244,7 @@ class SpaceChargeConfiguration:
                             v_model=("max_level",),
                             items=(
                                 generalFunctions.get_default(
-                                    "max_level_list", "defaults"
+                                    "max_level_list", "default_values"
                                 ),
                             ),
                             dense=True,

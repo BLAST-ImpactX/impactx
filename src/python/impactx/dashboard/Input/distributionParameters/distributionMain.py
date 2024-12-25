@@ -34,9 +34,11 @@ state.listOfDistributionsAndParametersAndDefault = (
 # Defaults
 # -----------------------------------------------------------------------------
 
-state.selectedDistribution = generalFunctions.get_default("distribution", "defaults")
+state.selectedDistribution = generalFunctions.get_default(
+    "selected_distribution", "default_values"
+)
 state.selectedDistributionType = generalFunctions.get_default(
-    "distribution_type", "defaults"
+    "selected_distribution_type", "default_values"
 )
 state.selectedDistributionParameters = []
 state.distributionTypeDisabled = False
@@ -212,7 +214,7 @@ class DistributionParameters:
                             label="Type",
                             items=(
                                 generalFunctions.get_default(
-                                    "distribution_type_list", "defaults"
+                                    "distribution_type_list", "default_values"
                                 ),
                             ),
                             dense=True,

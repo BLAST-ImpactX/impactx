@@ -9,7 +9,7 @@ server, state, ctrl = setup_server()
 # Default State Variables
 # -----------------------------------------------------------------------------
 
-state.csr_bins = generalFunctions.get_default("csr_bins", "values")
+state.csr_bins = generalFunctions.get_default("csr_bins", "default_values")
 state.csr_bins_error_message = ""
 
 # -----------------------------------------------------------------------------

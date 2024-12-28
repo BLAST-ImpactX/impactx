@@ -11,19 +11,50 @@ from trame.widgets import html, vuetify
 from ..Input.generalFunctions import generalFunctions
 from ..trame_setup import setup_server
 from .exportTemplate import input_file
+from .importParser import DashboardParser
 
 server, state, ctrl = setup_server()
 
 state.show_dashboard_alert = True
+state.import_file = False
+state.import_file_details = None
+state.import_file_error = False
+state.importing_file = False
+
 
 # -----------------------------------------------------------------------------
-# Triggers
+# Triggers/Controllers
 # -----------------------------------------------------------------------------
+def reset_importing_states():
+    state.import_file_error = None
+    state.import_file_details = None
+    state.import_file = None
+    state.importing_file = False
+
+
+@ctrl.add("reset_all")
+def reset_all():
+    reset_importing_states()
+    generalFunctions.reset_inputs("all")
 
 
 @ctrl.trigger("export")
 def on_export_click():
     return input_file()
+
+
+@state.change("import_file")
+def on_import_file_change(import_file, **kwargs):
+    if import_file:
+        try:
+            state.importing_file = True
+            DashboardParser.file_details(import_file)
+            DashboardParser.populate_impactx_simulation_file_to_ui(import_file)
+        except Exception:
+            state.import_file_error = True
+            state.import_file_error_message = "Unable to parse"
+        finally:
+            state.importing_file = False
 
 
 # -----------------------------------------------------------------------------
@@ -38,13 +69,16 @@ class ToolbarElements:
     """
 
     @staticmethod
-    def export_input_data():
-        vuetify.VIcon(
-            "mdi-download",
-            style="color: #00313C;",
+    def export_button():
+        with vuetify.VBtn(
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
+            outlined=True,
+            small=True,
             disabled=("disableRunSimulationButton", True),
-        )
+            classes="mx-2",
+        ):
+            vuetify.VIcon("mdi-download", left=True, small=True)
+            html.Span("Export")
 
     @staticmethod
     def plot_options():
@@ -68,9 +102,53 @@ class ToolbarElements:
         )
 
     @staticmethod
+    def import_button():
+        vuetify.VFileInput(
+            v_model=("import_file",),
+            accept=".py",
+            __properties=["accept"],
+            style="display: none;",
+            ref="fileInput",
+        )
+        with html.Div(
+            style="position: relative",
+        ):
+            with vuetify.VBtn(
+                click="$refs.fileInput.$refs.input.click()",
+                outlined=True,
+                small=True,
+                disabled=("(import_file_details)",),
+                color=("import_file_error ? 'error' : ''",),
+            ):
+                vuetify.VIcon(
+                    "mdi-upload",
+                    left=True,
+                    small=True,
+                )
+                html.Span("Import")
+            with html.Div(
+                style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
+            ):
+                html.Span(
+                    "{{ import_file_error ? import_file_error_message : import_file_details }}",
+                    style="text-overflow: ellipsis; overflow: hidden;",
+                    classes=(
+                        "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
+                    ),
+                )
+                vuetify.VIcon(
+                    "mdi-close",
+                    x_small=True,
+                    style="cursor: pointer;",
+                    click=ctrl.reset_all,
+                    v_if="import_file_details || import_file_error",
+                    color=("import_file_error ? 'error' : 'grey darken-1'",),
+                )
+
+    @staticmethod
     def reset_inputs_button():
         with vuetify.VBtn(
-            click=lambda: generalFunctions.reset_inputs("all"),
+            click=ctrl.reset_all,
             outlined=True,
             small=True,
         ):
@@ -105,8 +183,10 @@ class Toolbars:
         if toolbar_name == "input":
             (ToolbarElements.dashboard_info(),)
             vuetify.VSpacer()
+            ToolbarElements.import_button()
+            ToolbarElements.export_button()
             ToolbarElements.reset_inputs_button()
-            ToolbarElements.export_input_data()
+
         elif toolbar_name == "run":
             (ToolbarElements.dashboard_info(),)
             (vuetify.VSpacer(),)

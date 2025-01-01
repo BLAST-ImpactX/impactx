@@ -60,9 +60,10 @@ def build_space_charge_or_csr():
     Generates simulation content for space charge
     and csr.
     """
+    content = ""
+
     if state.space_charge:
-        content = f"""# Space Charge
-sim.csr = {state.csr}
+        content += f"""# Space Charge
 sim.space_charge = {state.space_charge}
 sim.dynamic_size = {state.dynamic_size}
 sim.poisson_solver = '{state.poisson_solver}'
@@ -81,15 +82,17 @@ sim.mlmg_relative_tolerance = {state.mlmg_relative_tolerance}
 sim.mlmg_absolute_tolerance = {state.mlmg_absolute_tolerance}
 sim.mlmg_max_iters = {state.mlmg_max_iters}
 sim.mlmg_verbosity = {state.mlmg_verbosity}
-    """
-    elif state.csr:
-        content = f"""# Coherent Synchrotron Radiation
-sim.space_charge = {state.space_charge}
+"""
+    if state.csr:
+        content += f"""# Coherent Synchrotron Radiation
 sim.csr = {state.csr}
-sim.particle_shape = {state.particle_shape}
 sim.csr_bins = {state.csr_bins}
-        """
-    else:
+"""
+        if not state.space_charge:
+            content += f"""
+sim.particle_shape = {state.particle_shape}
+"""
+    if not content:
         content = f"""
 sim.particle_shape = {state.particle_shape}
 """

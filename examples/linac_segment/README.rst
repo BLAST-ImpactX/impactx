@@ -1,7 +1,7 @@
 .. _examples-linac-segment:
 
 PIP-II Linac Segment
-=======================
+====================
 
 This example illustrates a small segment of the PIP-II linac, which includes the last RF cavity in the MEBT section (a quarter-wave resonator cavity for longitudinal bunching) and the first
 RF cavity in the succeeding cryomodule (a superconducting half-wave resonator for acceleration).

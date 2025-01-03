@@ -2,7 +2,7 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-#beam.npart = 10000000  #use this value for high-resolution runs
+#beam.npart = 10000000  # use this value for high-resolution runs
 beam.npart = 10000
 beam.units = static
 beam.kin_energy = 2.1226695
@@ -262,7 +262,7 @@ SOL2b.sin_coefficients = \
           -1.3824319466948509E-009 \
           -2.3654450397774321E-008 \
           -2.3981556296348572E-008 \
-           -4.3793988876300594E-008 \
+          -4.3793988876300594E-008 \
            5.3089692633387364E-009 \
            6.5186324602062307E-009 \
            3.9130100049078465E-008 \
@@ -363,7 +363,7 @@ algo.space_charge = true
 
 # Space charge using IGF solver
 algo.poisson_solver = "fft"
-#amr.n_cell = 64 64 64  #use this value for high resolution runs
+#amr.n_cell = 64 64 64  # use this value for high resolution runs
 amr.n_cell = 32 32 32
 geometry.prob_relative = 1.1 1.1
 

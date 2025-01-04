@@ -185,11 +185,6 @@ def on_lattice_element_parameter_change(
     )
 
 
-@ctrl.add("clear_latticeElements")
-def on_clear_lattice_element_click():
-    state.selectedLatticeList = []
-
-
 @ctrl.add("deleteLatticeElement")
 def on_delete_LatticeElement_click(index):
     state.selected_lattice_list.pop(index)
@@ -265,7 +260,7 @@ class LatticeConfiguration:
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow(align="center", no_gutters=True):
-                    with vuetify.VCol(cols=8):
+                    with vuetify.VCol(cols=10):
                         vuetify.VCombobox(
                             label="Select Accelerator Lattice",
                             v_model=("selected_lattice", None),
@@ -281,14 +276,6 @@ class LatticeConfiguration:
                             dense=True,
                             classes="mr-2",
                             click=ctrl.add_latticeElement,
-                        )
-                    with vuetify.VCol(cols="auto"):
-                        vuetify.VBtn(
-                            "CLEAR",
-                            color="secondary",
-                            dense=True,
-                            classes="mr-2",
-                            click=ctrl.clear_latticeElements,
                         )
                     with vuetify.VCol(cols="auto"):
                         vuetify.VIcon(

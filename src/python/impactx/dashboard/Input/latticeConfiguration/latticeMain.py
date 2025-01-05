@@ -245,10 +245,7 @@ class LatticeConfiguration:
             LatticeConfiguration.dialog_lattice_settings()
 
         with vuetify.VCard(style="width: 696px;"):
-            with vuetify.VCardTitle("Lattice Configuration"):
-                vuetify.VSpacer()
-                TrameFunctions.documentation_icon("lattice_configuration")
-            vuetify.VDivider()
+            TrameFunctions.input_section_header("Lattice Configuration")
             with vuetify.VCardText():
                 with vuetify.VRow(align="center", no_gutters=True):
                     with vuetify.VCol(cols=8):

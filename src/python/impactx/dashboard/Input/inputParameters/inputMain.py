@@ -96,10 +96,7 @@ class InputParameters:
         """
 
         with vuetify.VCard(style="width: 340px; height: 350px"):
-            with vuetify.VCardTitle("Input Parameters"):
-                vuetify.VSpacer()
-                TrameFunctions.documentation_icon("input_parameters")
-            vuetify.VDivider()
+            TrameFunctions.input_section_header("Input Parameters")
             with vuetify.VCardText():
                 with vuetify.VRow(classes="py-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):

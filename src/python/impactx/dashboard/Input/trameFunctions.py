@@ -77,3 +77,12 @@ class TrameFunctions:
             style="color: #00313C;",
             click=lambda: generalFunctions.documentation(section_name),
         )
+
+    def input_section_header(section_name, additional_components=None):
+        documentation_name = section_name.lower().replace(" ", "_")
+        with vuetify.VCardTitle(section_name):
+            vuetify.VSpacer()
+            if additional_components:
+                additional_components
+            TrameFunctions.documentation_icon(documentation_name)
+        vuetify.VDivider()

@@ -38,10 +38,7 @@ class csrConfiguration:
         """
 
         with vuetify.VCard(v_show="csr", style="width: 170px;"):
-            with vuetify.VCardTitle("CSR"):
-                vuetify.VSpacer()
-                TrameFunctions.documentation_icon("csr")
-            vuetify.VDivider()
+            TrameFunctions.input_section_header("CSR")
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(classes="py-0"):

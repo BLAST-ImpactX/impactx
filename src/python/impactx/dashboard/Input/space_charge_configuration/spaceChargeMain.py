@@ -184,6 +184,14 @@ def on_update_prob_relative_call(index, value):
 # UI
 # -----------------------------------------------------------------------------
 
+multigrid_settings = vuetify.VIcon(
+    "mdi-cog",
+    classes="ml-2",
+    v_if="poisson_solver == 'multigrid'",
+    click="showSpaceChargeDialog = true",
+    style="cursor: pointer;",
+)
+
 
 class SpaceChargeConfiguration:
     @staticmethod
@@ -196,17 +204,9 @@ class SpaceChargeConfiguration:
             SpaceChargeConfiguration.dialog_space_charge_settings()
 
         with vuetify.VCard(v_show="space_charge", style="width: 340px;"):
-            with vuetify.VCardTitle("Space Charge"):
-                vuetify.VSpacer()
-                vuetify.VIcon(
-                    "mdi-cog",
-                    classes="ml-2",
-                    v_if="poisson_solver == 'multigrid'",
-                    click="showSpaceChargeDialog = true",
-                    style="cursor: pointer;",
-                )
-                TrameFunctions.documentation_icon("space_charge")
-            vuetify.VDivider()
+            TrameFunctions.input_section_header(
+                "Space Charge", additional_components=multigrid_settings
+            )
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=5, classes="py-0"):

@@ -192,10 +192,7 @@ class DistributionParameters:
         """
 
         with vuetify.VCard(style="width: 340px; height: 300px"):
-            with vuetify.VCardTitle("Distribution Parameters"):
-                vuetify.VSpacer()
-                TrameFunctions.documentation_icon("distribution_parameters")
-            vuetify.VDivider()
+            TrameFunctions.input_section_header("Distribution Parameters")
             with vuetify.VCardText():
                 with vuetify.VRow():
                     with vuetify.VCol(cols=6):

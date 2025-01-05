@@ -13,6 +13,7 @@ from trame.widgets import vuetify
 
 from impactx import distribution
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 from .distributionFunctions import DistributionFunctions
@@ -202,22 +203,20 @@ class DistributionParameters:
             with vuetify.VCardText():
                 with vuetify.VRow():
                     with vuetify.VCol(cols=6):
-                        vuetify.VCombobox(
+                        TrameFunctions.select(
                             label="Select Distribution",
-                            v_model=("selectedDistribution",),
+                            v_model_name="selectedDistribution",
                             items=("listOfDistributions",),
-                            dense=True,
                         )
                     with vuetify.VCol(cols=6):
-                        vuetify.VSelect(
-                            v_model=("selectedDistributionType",),
+                        TrameFunctions.select(
                             label="Type",
+                            v_model_name="selectedDistributionType",
                             items=(
                                 generalFunctions.get_default(
                                     "distribution_type_list", "default_values"
                                 ),
                             ),
-                            dense=True,
                             disabled=("distributionTypeDisabled",),
                         )
                 with vuetify.VRow(classes="my-2"):

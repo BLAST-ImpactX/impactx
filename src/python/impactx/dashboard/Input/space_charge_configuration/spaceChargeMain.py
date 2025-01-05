@@ -1,5 +1,6 @@
 from trame.widgets import vuetify
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 from .spaceChargeFunctions import SpaceChargeFunctions
@@ -42,10 +43,10 @@ state.mlmg_absolute_tolerance = generalFunctions.get_default(
 state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "default_values")
 state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "default_values")
 
-state.error_message_mlmg_relative_tolerance = ""
-state.error_message_mlmg_absolute_tolerance = ""
-state.error_message_mlmg_max_iters = ""
-state.error_message_mlmg_verbosity = ""
+state.mlmg_relative_tolerance_error_message = ""
+state.mlmg_absolute_tolerance_error_message = ""
+state.mlmg_max_iters_error_message = ""
+state.mlmg_verbosity_error_message = ""
 
 # -----------------------------------------------------------------------------
 # Helper functions
@@ -216,38 +217,20 @@ class SpaceChargeConfiguration:
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=5, classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Poisson Solver",
-                            v_model=("poisson_solver",),
-                            items=(
-                                generalFunctions.get_default(
-                                    "poisson_solver_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
+                            v_model_name="poisson_solver",
                             hide_details=True,
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Particle Shape",
-                            v_model=("particle_shape",),
-                            items=(
-                                generalFunctions.get_default(
-                                    "particle_shape_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
+                            v_model_name="particle_shape",
                         )
                     with vuetify.VCol(cols=3, classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Max Level",
-                            v_model=("max_level",),
-                            items=(
-                                generalFunctions.get_default(
-                                    "max_level_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
+                            v_model_name="max_level",
                         )
                 with vuetify.VCol(classes="pa-0"):
                     vuetify.VListItemSubtitle(
@@ -330,60 +313,26 @@ class SpaceChargeConfiguration:
                             classes="my-2", v_if="poisson_solver == 'multigrid'"
                         ):
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
+                                TrameFunctions.text_field(
                                     label="MLMG Relative Tolerance",
-                                    v_model=("mlmg_relative_tolerance",),
-                                    error_messages=(
-                                        "error_message_mlmg_relative_tolerance",
-                                    ),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_relative_tolerance", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
+                                    v_model_name="mlmg_relative_tolerance",
                                 )
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
+                                TrameFunctions.text_field(
                                     label="MLMG Absolute Tolerance",
-                                    v_model=("mlmg_absolute_tolerance",),
-                                    error_messages=(
-                                        "error_message_mlmg_absolute_tolerance",
-                                    ),
-                                    suffix=generalFunctions.get_default(
-                                        "mlmg_absolute_tolerance", "units"
-                                    ),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_absolute_tolerance", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
+                                    v_model_name="mlmg_absolute_tolerance",
                                 )
+
                         with vuetify.VRow(
                             classes="my-0", v_if="poisson_solver == 'multigrid'"
                         ):
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Max Iterations",
-                                    v_model=("mlmg_max_iters",),
-                                    error_messages=("error_message_mlmg_max_iters",),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_max_iters", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
+                                TrameFunctions.text_field(
+                                    label="MLMG Max Iters",
+                                    v_model_name="mlmg_max_iters",
                                 )
                             with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
+                                TrameFunctions.text_field(
                                     label="MLMG Verbosity",
-                                    v_model=("mlmg_verbosity",),
-                                    error_messages=("error_message_mlmg_verbosity",),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_verbosity", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
+                                    v_model_name="mlmg_verbosity",
                                 )

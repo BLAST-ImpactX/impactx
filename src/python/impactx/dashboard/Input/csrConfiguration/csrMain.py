@@ -1,5 +1,6 @@
 from trame.widgets import vuetify
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 
@@ -49,20 +50,12 @@ class csrConfiguration:
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Particle Shape",
-                            v_model=("particle_shape",),
-                            items=([1, 2, 3],),
-                            dense=True,
+                            v_model_name="particle_shape",
                         )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(classes="py-0"):
-                        vuetify.VTextField(
-                            label="CSR Bins",
-                            v_model=("csr_bins",),
-                            error_messages=("csr_bins_error_message",),
-                            type="number",
-                            dense=True,
-                            step=generalFunctions.get_default("csr_bins", "steps"),
-                            __properties=["step"],
+                        TrameFunctions.text_field(
+                            label="CSR Bins", v_model_name="csr_bins"
                         )

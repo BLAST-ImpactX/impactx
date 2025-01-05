@@ -154,16 +154,16 @@ class generalFunctions:
                     )
 
         # Check for errors in input card
-        if state.npart_validation:
-            error_details.append(f"Number of Particles: {state.npart_validation}")
-        if state.kin_energy_validation:
-            error_details.append(f"Kinetic Energy: {state.kin_energy_validation}")
-        if state.bunch_charge_C_validation:
-            error_details.append(f"Bunch Charge: {state.bunch_charge_C_validation}")
-        if state.charge_qe_validation:
-            error_details.append(f"Ref. Particle Charge: {state.charge_qe_validation}")
-        if state.mass_MeV_validation:
-            error_details.append(f"Ref. Particle Mass: {state.mass_MeV}")
+        if state.npart_error_message:
+            error_details.append(f"Number of Particles: {state.npart_error_message}")
+        if state.kin_energy_error_message:
+            error_details.append(f"Kinetic Energy: {state.kin_energy_error_message}")
+        if state.bunch_charge_C_error_message:
+            error_details.append(f"Bunch Charge: {state.bunch_charge_C_error_message}")
+        if state.charge_qe_error_message:
+            error_details.append(f"Ref. Particle Charge: {state.charge_qe_error_message}")
+        if state.mass_MeV_error_message:
+            error_details.append(f"Ref. Particle Mass: {state.mass_MeV_error_message}")
 
         if state.selectedLatticeList == []:
             error_details.append("LatticeListIsEmpty")

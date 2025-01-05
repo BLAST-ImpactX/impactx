@@ -30,11 +30,11 @@ class generalFunctions:
         :param section_name (str): The name of the documentation section to open.
         """
         url_dict = {
-            "LatticeElements": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
-            "BeamDistributions": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
-            "pythonParameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#general",
-            "space_charge_documentation": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
-            "CSR": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+            "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#general",
+            "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
+            "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
+            "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
+            "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
         }
 
         url = url_dict.get(section_name)
@@ -161,7 +161,9 @@ class generalFunctions:
         if state.bunch_charge_C_error_message:
             error_details.append(f"Bunch Charge: {state.bunch_charge_C_error_message}")
         if state.charge_qe_error_message:
-            error_details.append(f"Ref. Particle Charge: {state.charge_qe_error_message}")
+            error_details.append(
+                f"Ref. Particle Charge: {state.charge_qe_error_message}"
+            )
         if state.mass_MeV_error_message:
             error_details.append(f"Ref. Particle Mass: {state.mass_MeV_error_message}")
 

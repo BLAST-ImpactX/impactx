@@ -98,11 +98,7 @@ class InputParameters:
         with vuetify.VCard(style="width: 340px; height: 350px"):
             with vuetify.VCardTitle("Input Parameters"):
                 vuetify.VSpacer()
-                vuetify.VIcon(
-                    "mdi-information",
-                    style="color: #00313C;",
-                    click=lambda: generalFunctions.documentation("pythonParameters"),
-                )
+                TrameFunctions.documentation_icon("input_parameters")
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow(classes="py-2"):

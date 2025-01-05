@@ -40,12 +40,7 @@ class csrConfiguration:
         with vuetify.VCard(v_show="csr", style="width: 170px;"):
             with vuetify.VCardTitle("CSR"):
                 vuetify.VSpacer()
-                vuetify.VIcon(
-                    "mdi-information",
-                    classes="ml-2",
-                    click=lambda: generalFunctions.documentation("CSR"),
-                    style="color: #00313C;",
-                )
+                TrameFunctions.documentation_icon("csr")
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):

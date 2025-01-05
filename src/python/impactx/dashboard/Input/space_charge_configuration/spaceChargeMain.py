@@ -205,14 +205,7 @@ class SpaceChargeConfiguration:
                     click="showSpaceChargeDialog = true",
                     style="cursor: pointer;",
                 )
-                vuetify.VIcon(
-                    "mdi-information",
-                    classes="ml-2",
-                    click=lambda: generalFunctions.documentation(
-                        "space_charge_documentation"
-                    ),
-                    style="color: #00313C;",
-                )
+                TrameFunctions.documentation_icon("space_charge")
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):

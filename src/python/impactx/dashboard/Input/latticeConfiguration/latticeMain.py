@@ -10,6 +10,7 @@ from trame.widgets import vuetify
 
 from impactx import elements
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 
@@ -246,12 +247,7 @@ class LatticeConfiguration:
         with vuetify.VCard(style="width: 696px;"):
             with vuetify.VCardTitle("Lattice Configuration"):
                 vuetify.VSpacer()
-                vuetify.VIcon(
-                    "mdi-information",
-                    classes="ml-2",
-                    click=lambda: generalFunctions.documentation("LatticeElements"),
-                    style="color: #00313C;",
-                )
+                TrameFunctions.documentation_icon("lattice_configuration")
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow(align="center", no_gutters=True):

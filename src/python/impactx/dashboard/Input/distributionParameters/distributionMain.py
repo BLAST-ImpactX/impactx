@@ -194,11 +194,7 @@ class DistributionParameters:
         with vuetify.VCard(style="width: 340px; height: 300px"):
             with vuetify.VCardTitle("Distribution Parameters"):
                 vuetify.VSpacer()
-                vuetify.VIcon(
-                    "mdi-information",
-                    style="color: #00313C;",
-                    click=lambda: generalFunctions.documentation("BeamDistributions"),
-                )
+                TrameFunctions.documentation_icon("distribution_parameters")
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow():

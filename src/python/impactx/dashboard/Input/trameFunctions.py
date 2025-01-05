@@ -70,3 +70,10 @@ class TrameFunctions:
             dense=True,
             **kwargs,
         )
+
+    def documentation_icon(section_name, **kwargs):
+        vuetify.VIcon(
+            "mdi-information",
+            style="color: #00313C;",
+            click=lambda: generalFunctions.documentation(section_name),
+        )

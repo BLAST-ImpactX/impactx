@@ -13,6 +13,7 @@ from trame.widgets import vuetify
 
 from impactx import distribution
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 from .distributionFunctions import DistributionFunctions
@@ -34,11 +35,11 @@ state.listOfDistributionsAndParametersAndDefault = (
 # Defaults
 # -----------------------------------------------------------------------------
 
-state.selectedDistribution = generalFunctions.get_default(
-    "selectedDistribution", "default_values"
+state.selected_distribution = generalFunctions.get_default(
+    "selected_distribution", "default_values"
 )
-state.selectedDistributionType = generalFunctions.get_default(
-    "selectedDistributionType", "default_values"
+state.selected_distribution_type = generalFunctions.get_default(
+    "selected_distribution_type", "default_values"
 )
 state.selected_distribution_parameters = []
 state.distributionTypeDisabled = False

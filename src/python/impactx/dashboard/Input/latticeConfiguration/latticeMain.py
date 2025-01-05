@@ -10,8 +10,8 @@ from trame.widgets import vuetify
 
 from impactx import elements
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
 from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
@@ -33,10 +33,6 @@ state.listOfLatticeElementParametersAndDefault = (
 # Default
 # -----------------------------------------------------------------------------
 
-state.selectedLattice = generalFunctions.get_default(
-    "selectedLattice", "default_values"
-)
-state.selectedLatticeList = []
 state.selected_lattice = generalFunctions.get_default(
     "selected_lattice", "default_values"
 )

@@ -1,5 +1,6 @@
 from trame.widgets import vuetify
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 from .spaceChargeFunctions import SpaceChargeFunctions

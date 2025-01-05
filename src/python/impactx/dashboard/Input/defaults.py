@@ -13,8 +13,6 @@ class DashboardDefaults:
     }
 
     INPUT_PARAMETERS = {
-        "space_charge": False,
-        "csr": False,
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
         "npart": 1000,
@@ -29,8 +27,8 @@ class DashboardDefaults:
     }
 
     LATTICE = {
-        "selectedLatticeList": [],
-        "selectedLattice": None,
+        "selected_lattice_list": [],
+        "selected_lattice": None,
     }
 
     SPACE_CHARGE = {

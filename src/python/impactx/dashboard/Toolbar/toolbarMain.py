@@ -6,7 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
 from ..Input.generalFunctions import generalFunctions
 from ..trame_setup import setup_server
@@ -107,6 +107,7 @@ class Toolbars:
 
         (ToolbarElements.dashboard_info(),)
         vuetify.VSpacer()
+        ToolbarElements.reset_inputs_button()
         ToolbarElements.export_input_data()
 
     @staticmethod

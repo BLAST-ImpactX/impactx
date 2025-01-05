@@ -41,3 +41,15 @@ class TrameFunctions:
                 vuetify.VIcon(mdi_icon)
             with vuetify.VListItemContent():
                 vuetify.VListItemTitle(route_title)
+
+    @staticmethod
+    def create_refresh_button(reset_function_name):
+        """
+        Creates a standardized refresh button.
+        :param reset_function: The reset function to call when clicked.
+        """
+        return vuetify.VIcon(
+            "mdi-refresh",
+            style="color: #00313C;",
+            click=reset_function_name,
+        )

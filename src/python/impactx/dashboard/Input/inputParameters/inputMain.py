@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import vuetify
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 from .inputFunctions import InputFunctions

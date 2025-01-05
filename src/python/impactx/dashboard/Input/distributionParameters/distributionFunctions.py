@@ -25,7 +25,7 @@ class DistributionFunctions:
             param["parameter_name"]: float(param["parameter_default_value"])
             if param_is_valid
             else 0.0
-            for param in state.selectedDistributionParameters
+            for param in state.selected_distribution_parameters
             if (param_is_valid := param["parameter_error_message"] == [])
         }
 

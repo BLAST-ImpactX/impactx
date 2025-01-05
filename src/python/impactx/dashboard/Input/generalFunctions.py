@@ -139,14 +139,14 @@ class generalFunctions:
         error_details = []
 
         # Check for errors in distribution parameters
-        for param in state.selectedDistributionParameters:
+        for param in state.selected_distribution_parameters:
             if param["parameter_error_message"]:
                 error_details.append(
                     f"{param['parameter_name']}: {param['parameter_error_message']}"
                 )
 
         # Check for errors in lattice parameters
-        for lattice in state.selectedLatticeList:
+        for lattice in state.selected_lattice_list:
             for param in lattice["parameters"]:
                 if param["parameter_error_message"]:
                     error_details.append(
@@ -165,7 +165,7 @@ class generalFunctions:
         if state.mass_MeV_validation:
             error_details.append(f"Ref. Particle Mass: {state.mass_MeV}")
 
-        if state.selectedLatticeList == []:
+        if state.selected_lattice_list == []:
             error_details.append("LatticeListIsEmpty")
 
         # Check for errors in CSR parameters

@@ -35,12 +35,14 @@ state.listOfDistributionsAndParametersAndDefault = (
 # -----------------------------------------------------------------------------
 
 state.selectedDistribution = generalFunctions.get_default(
-    "selected_distribution", "default_values"
+    "selectedDistribution", "default_values"
 )
 state.selectedDistributionType = generalFunctions.get_default(
-    "selected_distribution_type", "default_values"
+    "selectedDistributionType", "default_values"
 )
-state.selectedDistributionParameters = []
+state.selected_distribution_parameters = generalFunctions.get_default(
+    "selected_distribution_parameters", "default_values"
+)
 state.distributionTypeDisabled = False
 
 # -----------------------------------------------------------------------------
@@ -48,16 +50,16 @@ state.distributionTypeDisabled = False
 # -----------------------------------------------------------------------------
 
 
-def populate_distribution_parameters(selectedDistribution):
+def populate_distribution_parameters(selected_distribution):
     """
     Populates distribution parameters based on the selected distribution.
-    :param selectedDistribution (str): The name of the selected distribution
+    :param selected_distribution (str): The name of the selected distribution
     whose parameters need to be populated.
     """
 
-    if state.selectedDistributionType == "Twiss":
+    if state.selected_distribution_type == "Twiss":
         sig = inspect.signature(twiss)
-        state.selectedDistributionParameters = [
+        state.selected_distribution_parameters = [
             {
                 "parameter_name": param.name,
                 "parameter_default_value": param.default
@@ -76,13 +78,13 @@ def populate_distribution_parameters(selectedDistribution):
         ]
 
     else:  # when type == 'Quadratic Form'
-        selectedDistributionParameters = (
+        selected_distribution_parameters = (
             state.listOfDistributionsAndParametersAndDefault.get(
-                selectedDistribution, []
+                selected_distribution, []
             )
         )
 
-        state.selectedDistributionParameters = [
+        state.selected_distribution_parameters = [
             {
                 "parameter_name": parameter[0],
                 "parameter_default_value": parameter[1],
@@ -95,11 +97,11 @@ def populate_distribution_parameters(selectedDistribution):
                 else "",
                 "parameter_step": generalFunctions.get_default(parameter[0], "steps"),
             }
-            for parameter in selectedDistributionParameters
+            for parameter in selected_distribution_parameters
         ]
 
         generalFunctions.update_simulation_validation_status()
-        return selectedDistributionParameters
+        return selected_distribution_parameters
 
 
 def update_distribution_parameters(
@@ -113,13 +115,13 @@ def update_distribution_parameters(
     :param parameterErrorMessage: The error message related to the parameter's value.
     """
 
-    for param in state.selectedDistributionParameters:
+    for param in state.selected_distribution_parameters:
         if param["parameter_name"] == parameterName:
             param["parameter_default_value"] = parameterValue
             param["parameter_error_message"] = parameterErrorMessage
 
     generalFunctions.update_simulation_validation_status()
-    state.dirty("selectedDistributionParameters")
+    state.dirty("selected_distribution_parameters")
 
 
 # -----------------------------------------------------------------------------
@@ -133,10 +135,10 @@ def distribution_parameters():
     initialized with the appropriate parameters provided by the user.
     """
 
-    distribution_name = state.selectedDistribution
+    distribution_name = state.selected_distribution
     parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
 
-    if state.selectedDistributionType == "Twiss":
+    if state.selected_distribution_type == "Twiss":
         twiss_params = twiss(**parameters)
         distr = getattr(distribution, distribution_name)(**twiss_params)
     else:
@@ -150,20 +152,20 @@ def distribution_parameters():
 # -----------------------------------------------------------------------------
 
 
-@state.change("selectedDistribution")
-def on_distribution_name_change(selectedDistribution, **kwargs):
-    if selectedDistribution == "Thermal":
-        state.selectedDistributionType = "Quadratic Form"
+@state.change("selected_distribution")
+def on_distribution_name_change(selected_distribution, **kwargs):
+    if selected_distribution == "Thermal":
+        state.selected_distribution_type = "Quadratic Form"
         state.distributionTypeDisabled = True
-        state.dirty("selectedDistributionType")
+        state.dirty("selected_distribution_type")
     else:
         state.distributionTypeDisabled = False
-    populate_distribution_parameters(selectedDistribution)
+    populate_distribution_parameters(selected_distribution)
 
 
-@state.change("selectedDistributionType")
+@state.change("selected_distribution_type")
 def on_distribution_type_change(**kwargs):
-    populate_distribution_parameters(state.selectedDistribution)
+    populate_distribution_parameters(state.selected_distribution)
 
 
 @ctrl.add("updateDistributionParameters")
@@ -204,13 +206,13 @@ class DistributionParameters:
                     with vuetify.VCol(cols=6):
                         vuetify.VCombobox(
                             label="Select Distribution",
-                            v_model=("selectedDistribution",),
+                            v_model=("selected_distribution",),
                             items=("listOfDistributions",),
                             dense=True,
                         )
                     with vuetify.VCol(cols=6):
                         vuetify.VSelect(
-                            v_model=("selectedDistributionType",),
+                            v_model=("selected_distribution_type",),
                             label="Type",
                             items=(
                                 generalFunctions.get_default(
@@ -224,7 +226,7 @@ class DistributionParameters:
                     for i in range(3):
                         with vuetify.VCol(cols=4, classes="py-0"):
                             with vuetify.VRow(
-                                v_for="(parameter, index) in selectedDistributionParameters"
+                                v_for="(parameter, index) in selected_distribution_parameters"
                             ):
                                 with vuetify.VCol(
                                     v_if=f"index % 3 == {i}", classes="py-1"

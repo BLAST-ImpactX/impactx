@@ -326,3 +326,32 @@ class generalFunctions:
             return str(value)
         else:
             raise ValueError("Unknown type")
+
+    @staticmethod
+    def reset_inputs(input_section):
+        """
+        Resets dashboard inputs to default values.
+
+        :param input_section: The input section to reset.
+        """
+
+        possible_section_names = []
+        for name in vars(DashboardDefaults):
+            if name != "DEFAULT_VALUES" and name.isupper():
+                possible_section_names.append(name)
+
+        if input_section.upper() in possible_section_names:
+            state.update(getattr(DashboardDefaults, input_section.upper()))
+
+            if input_section == "distribution":
+                state.dirty("selected_distribution_type")
+            elif input_section == "lattice":
+                state.selected_lattice_list = []
+            elif input_section == "space_charge":
+                state.dirty("max_level")
+
+        elif input_section == "all":
+            state.update(DashboardDefaults.DEFAULT_VALUES)
+            state.dirty("selected_distribution_type")
+            state.selected_lattice_list = []
+            state.dirty("max_level")

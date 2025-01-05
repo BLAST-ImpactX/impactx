@@ -40,9 +40,7 @@ state.selectedDistribution = generalFunctions.get_default(
 state.selectedDistributionType = generalFunctions.get_default(
     "selectedDistributionType", "default_values"
 )
-state.selected_distribution_parameters = generalFunctions.get_default(
-    "selected_distribution_parameters", "default_values"
-)
+state.selected_distribution_parameters = []
 state.distributionTypeDisabled = False
 
 # -----------------------------------------------------------------------------
@@ -195,6 +193,9 @@ class DistributionParameters:
         with vuetify.VCard(style="width: 340px; height: 300px"):
             with vuetify.VCardTitle("Distribution Parameters"):
                 vuetify.VSpacer()
+                TrameFunctions.create_refresh_button(
+                    lambda: generalFunctions.reset_inputs("distribution")
+                )
                 vuetify.VIcon(
                     "mdi-information",
                     style="color: #00313C;",

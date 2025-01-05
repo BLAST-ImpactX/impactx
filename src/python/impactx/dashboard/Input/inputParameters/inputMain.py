@@ -97,6 +97,9 @@ class InputParameters:
         with vuetify.VCard(style="width: 340px; height: 350px"):
             with vuetify.VCardTitle("Input Parameters"):
                 vuetify.VSpacer()
+                TrameFunctions.create_refresh_button(
+                    lambda: generalFunctions.reset_inputs("input_parameters")
+                )
                 vuetify.VIcon(
                     "mdi-information",
                     style="color: #00313C;",

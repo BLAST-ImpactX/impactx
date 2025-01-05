@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import vuetify
 
+from ..Input.generalFunctions import generalFunctions
 from ..trame_setup import setup_server
 from .exportTemplate import input_file
 
@@ -65,6 +66,16 @@ class ToolbarElements:
             click=ctrl.run_simulation,
             disabled=("disableRunSimulationButton", True),
         )
+
+    @staticmethod
+    def reset_inputs_button():
+        with vuetify.VBtn(
+            click=lambda: generalFunctions.reset_inputs("all"),
+            outlined=True,
+            small=True,
+        ):
+            vuetify.VIcon("mdi-refresh", left=True)
+            html.Span("Reset")
 
     @staticmethod
     def dashboard_info():

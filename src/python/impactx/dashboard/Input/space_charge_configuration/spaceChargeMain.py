@@ -204,6 +204,9 @@ class SpaceChargeConfiguration:
                     click="showSpaceChargeDialog = true",
                     style="cursor: pointer;",
                 )
+                TrameFunctions.create_refresh_button(
+                    lambda: generalFunctions.reset_inputs("space_charge")
+                )
                 vuetify.VIcon(
                     "mdi-information",
                     classes="ml-2",

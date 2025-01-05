@@ -12,6 +12,7 @@ from impactx import elements
 
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
+from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 
@@ -252,6 +253,9 @@ class LatticeConfiguration:
         with vuetify.VCard(style="width: 696px;"):
             with vuetify.VCardTitle("Lattice Configuration"):
                 vuetify.VSpacer()
+                TrameFunctions.create_refresh_button(
+                    lambda: generalFunctions.reset_inputs("lattice")
+                )
                 vuetify.VIcon(
                     "mdi-information",
                     classes="ml-2",

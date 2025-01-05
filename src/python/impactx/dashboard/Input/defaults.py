@@ -24,8 +24,8 @@ class DashboardDefaults:
     }
 
     DISTRIBUTION = {
-        "selectedDistribution": "Waterbag",
-        "selectedDistributionType": "Twiss",
+        "selected_distribution": "Waterbag",
+        "selected_distribution_type": "Twiss",
     }
 
     LATTICE = {

@@ -99,8 +99,8 @@ def populate_distribution_parameters(selected_distribution):
             for parameter in selected_distribution_parameters
         ]
 
-        generalFunctions.update_simulation_validation_status()
-        return selected_distribution_parameters
+    generalFunctions.update_simulation_validation_status()
+    return state.selected_distribution_parameters
 
 
 def update_distribution_parameters(

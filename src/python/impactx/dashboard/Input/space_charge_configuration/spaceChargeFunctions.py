@@ -58,10 +58,10 @@ class SpaceChargeFunctions:
             blocking_factor_value, "int", ["non_zero", "positive"]
         )
 
-        setattr(state, f"error_message_n_cell_{direction}", "; ".join(n_cell_errors))
+        setattr(state, f"n_cell_{direction}_error_message", "; ".join(n_cell_errors))
         setattr(
             state,
-            f"error_message_blocking_factor_{direction}",
+            f"blocking_factor_{direction}_error_message",
             "; ".join(blocking_factor_errors),
         )
 
@@ -71,6 +71,6 @@ class SpaceChargeFunctions:
             if n_cell_value % blocking_factor_value != 0:
                 setattr(
                     state,
-                    f"error_message_n_cell_{direction}",
+                    f"n_cell_{direction}_error_message",
                     "Must be a multiple of blocking factor.",
                 )

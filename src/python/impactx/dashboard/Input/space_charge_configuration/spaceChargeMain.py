@@ -93,9 +93,9 @@ def update_blocking_factor_and_n_cell(category, kwargs):
             direction = state_name.split("_")[-1]
             SpaceChargeFunctions.validate_n_cell_and_blocking_factor(direction)
 
-            n_cell_error = getattr(state, f"error_message_n_cell_{direction}")
+            n_cell_error = getattr(state, f"n_cell_{direction}_error_message")
             blocking_factor_error = getattr(
-                state, f"error_message_blocking_factor_{direction}"
+                state, f"blocking_factor_{direction}_error_message"
             )
 
             if not n_cell_error:
@@ -233,14 +233,10 @@ class SpaceChargeConfiguration:
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
                         with vuetify.VCol(cols=4, classes="py-0"):
-                            vuetify.VTextField(
-                                placeholder=direction,
-                                v_model=(f"n_cell_{direction}",),
-                                error_messages=(f"error_message_n_cell_{direction}",),
-                                type="number",
-                                step=generalFunctions.get_default("n_cell", "steps"),
-                                __properties=["step"],
-                                dense=True,
+                            TrameFunctions.text_field(
+                                label="",
+                                v_model_name=f"n_cell_{direction}",
+                                prefix=f"{direction}:",
                                 style="margin-top: -5px",
                             )
                 with vuetify.VCol(classes="pa-0"):
@@ -251,18 +247,10 @@ class SpaceChargeConfiguration:
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
                         with vuetify.VCol(cols=4, classes="py-0"):
-                            vuetify.VTextField(
-                                placeholder=direction,
-                                v_model=(f"blocking_factor_{direction}",),
-                                error_messages=(
-                                    f"error_message_blocking_factor_{direction}",
-                                ),
-                                type="number",
-                                step=generalFunctions.get_default(
-                                    "blocking_factor", "steps"
-                                ),
-                                __properties=["step"],
-                                dense=True,
+                            TrameFunctions.text_field(
+                                label="",
+                                prefix=f"{direction}:",
+                                v_model_name=f"blocking_factor_{direction}",
                                 style="margin-top: -5px",
                             )
                 with vuetify.VCol(classes="pa-0"):

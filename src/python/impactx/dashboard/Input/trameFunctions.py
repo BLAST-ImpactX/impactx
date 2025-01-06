@@ -83,6 +83,6 @@ class TrameFunctions:
         with vuetify.VCardTitle(section_name):
             vuetify.VSpacer()
             if additional_components:
-                additional_components
+                additional_components()
             TrameFunctions.documentation_icon(documentation_name)
         vuetify.VDivider()

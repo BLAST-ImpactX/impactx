@@ -184,12 +184,13 @@ def on_update_prob_relative_call(index, value):
 # UI
 # -----------------------------------------------------------------------------
 
-multigrid_settings = vuetify.VIcon(
-    "mdi-cog",
-    classes="ml-2",
-    v_if="poisson_solver == 'multigrid'",
-    click="showSpaceChargeDialog = true",
-    style="cursor: pointer;",
+def multigrid_settings():
+    vuetify.VIcon(
+        "mdi-cog",
+        classes="ml-2",
+        v_if="poisson_solver == 'multigrid'",
+        click="showSpaceChargeDialog = true",
+        style="cursor: pointer;",
 )
 
 

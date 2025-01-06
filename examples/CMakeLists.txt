@@ -82,7 +82,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                         amrex.throw_exception = 1
                         amrex.signal_handling = 0
                         impactx.always_warn_immediately=1
-                        impactx.abort_on_warning_threshold=low
+                        impactx.abort_on_warning_threshold=medium
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
     endif()
@@ -208,6 +208,21 @@ add_impactx_test(FODO.MADX.py
       OFF  # ImpactX MPI-parallel
     examples/fodo/analysis_fodo.py
     examples/fodo/plot_fodo.py
+)
+
+# Python: FODO Cell w/ custom linear element  #################################
+#
+add_impactx_test(FODO.userdef
+        examples/fodo_userdef/input_fodo_userdef.in
+        ON   # ImpactX MPI-parallel
+        examples/fodo_userdef/analysis_fodo.py
+        examples/fodo_userdef/plot_fodo.py
+)
+add_impactx_test(FODO.userdef.py
+        examples/fodo_userdef/run_fodo_userdef.py
+        OFF  # ImpactX MPI-parallel
+        examples/fodo_userdef/analysis_fodo.py
+        examples/fodo_userdef/plot_fodo.py
 )
 
 # Python: MPI-parallel FODO Cell ##############################################

@@ -86,3 +86,13 @@ class TrameFunctions:
                 additional_components()
             TrameFunctions.documentation_icon(documentation_name)
         vuetify.VDivider()
+
+    def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]):
+        if len(tab_names) != num_tabs:
+            raise ValueError("Number of tab names must match number of tabs_names")
+
+        with vuetify.VCard():
+            with vuetify.VTabs(v_model=(f"{name}", 0)):
+                for tab_name in tab_names:
+                    vuetify.VTab(tab_name)
+            vuetify.VDivider()

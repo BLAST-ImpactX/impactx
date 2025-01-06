@@ -35,7 +35,9 @@ state.listOfLatticeElementParametersAndDefault = (
 
 state.selectedLattice = generalFunctions.get_default("lattice", "default_values")
 state.selectedLatticeList = []
-state.nsliceDefaultValue = generalFunctions.get_default("n_slice", "default_values")
+state.nslice = generalFunctions.get_default("n_slice", "default_values")
+state.nslice_error_message = ""
+state.lattice_configuration_dialog_settings = False
 
 # -----------------------------------------------------------------------------
 # Main Functions
@@ -241,8 +243,10 @@ class LatticeConfiguration:
         with vuetify.VDialog(v_model=("showDialog", False), width="1200px"):
             LatticeConfiguration.dialog_lattice_elementList()
 
-        with vuetify.VDialog(v_model=("showDialog_settings", False), width="500px"):
-            LatticeConfiguration.dialog_lattice_settings()
+        with vuetify.VDialog(
+            v_model=("lattice_configuration_dialog_settings",), width="500px"
+        ):
+            LatticeConfiguration.dialog_settings()
 
         with vuetify.VCard(style="width: 696px;"):
             TrameFunctions.input_section_header("Lattice Configuration")
@@ -276,7 +280,7 @@ class LatticeConfiguration:
                     with vuetify.VCol(cols="auto"):
                         vuetify.VIcon(
                             "mdi-cog",
-                            click="showDialog_settings = true",
+                            click="lattice_configuration_dialog_settings = true",
                         )
                 with vuetify.VRow():
                     with vuetify.VCol():
@@ -396,41 +400,24 @@ class LatticeConfiguration:
                         )
 
     @staticmethod
-    def dialog_lattice_settings():
+    def dialog_settings():
         """
-        Creates UI content for lattice configuration
-        settings.
+        Provides controls for lattice element configuration,
+        allowing dashboard users to define parameter defaults.
         """
+        dialog_name = "lattice_configuration_dialog_tab_settings"
 
-        with vuetify.VCard():
-            with vuetify.VTabs(v_model=("tab", "Settings")):
-                vuetify.VTab("Settings")
-                # vuetify.VTab("Variable Referencing")
-            vuetify.VDivider()
-            with vuetify.VTabsItems(v_model="tab"):
-                with vuetify.VTabItem():
-                    with vuetify.VContainer(fluid=True):
-                        with vuetify.VRow(no_gutters=True, align="center"):
-                            with vuetify.VCol(no_gutters=True, cols="auto"):
-                                vuetify.VListItem(
-                                    "nslice", classes="ma-0 pl-0 font-weight-bold"
-                                )
-                            with vuetify.VCol(no_gutters=True):
-                                vuetify.VTextField(
-                                    v_model=("nsliceDefaultValue",),
-                                    change=(
-                                        ctrl.nsliceDefaultChange,
-                                        "['nslice', $event]",
-                                    ),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "nslice", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    placeholder="Value",
-                                    dense=True,
-                                    outlined=True,
-                                    hide_details=True,
-                                    style="max-width: 75px",
-                                    classes="ma-0 pa-0",
-                                )
+        TrameFunctions.create_dialog_tabs(dialog_name, 1, ["Defaults"])
+        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
+            with vuetify.VTabItem():
+                with vuetify.VCardText():
+                    with vuetify.VRow():
+                        with vuetify.VCol(cols=3):
+                            TrameFunctions.text_field(
+                                label="nslice",
+                                v_model_name="nslice",
+                                change=(
+                                    ctrl.nsliceDefaultChange,
+                                    "['nslice', $event]",
+                                ),
+                            )

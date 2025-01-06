@@ -47,7 +47,7 @@ state.mlmg_relative_tolerance_error_message = ""
 state.mlmg_absolute_tolerance_error_message = ""
 state.mlmg_max_iters_error_message = ""
 state.mlmg_verbosity_error_message = ""
-
+state.space_charge_dialog_settings = False
 # -----------------------------------------------------------------------------
 # Helper functions
 # -----------------------------------------------------------------------------
@@ -184,14 +184,13 @@ def on_update_prob_relative_call(index, value):
 # UI
 # -----------------------------------------------------------------------------
 
+
 def multigrid_settings():
     vuetify.VIcon(
         "mdi-cog",
-        classes="ml-2",
         v_if="poisson_solver == 'multigrid'",
-        click="showSpaceChargeDialog = true",
-        style="cursor: pointer;",
-)
+        click="space_charge_dialog_settings = true",
+    )
 
 
 class SpaceChargeConfiguration:
@@ -201,8 +200,8 @@ class SpaceChargeConfiguration:
         Creates UI content for space charge configuration
         """
 
-        with vuetify.VDialog(v_model=("showSpaceChargeDialog", False), width="500px"):
-            SpaceChargeConfiguration.dialog_space_charge_settings()
+        with vuetify.VDialog(v_model=("space_charge_dialog_settings",), width="500px"):
+            SpaceChargeConfiguration.dialog_settings()
 
         with vuetify.VCard(v_show="space_charge", style="width: 340px;"):
             TrameFunctions.input_section_header(
@@ -289,44 +288,37 @@ class SpaceChargeConfiguration:
                         )
 
     @staticmethod
-    def dialog_space_charge_settings():
+    def dialog_settings():
         """
         Creates UI content for space charge configuration
         settings.
         """
-        with vuetify.VCard():
-            with vuetify.VTabs(
-                v_model=("space_charge_tab", "Advanced Multigrid Settings")
-            ):
-                vuetify.VTab("Settings")
-            vuetify.VDivider()
-            with vuetify.VTabsItems(v_model="space_charge_tab"):
-                with vuetify.VTabItem():
-                    with vuetify.VContainer(fluid=True):
-                        with vuetify.VRow(
-                            classes="my-2", v_if="poisson_solver == 'multigrid'"
-                        ):
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                TrameFunctions.text_field(
-                                    label="MLMG Relative Tolerance",
-                                    v_model_name="mlmg_relative_tolerance",
-                                )
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                TrameFunctions.text_field(
-                                    label="MLMG Absolute Tolerance",
-                                    v_model_name="mlmg_absolute_tolerance",
-                                )
-
-                        with vuetify.VRow(
-                            classes="my-0", v_if="poisson_solver == 'multigrid'"
-                        ):
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                TrameFunctions.text_field(
-                                    label="MLMG Max Iters",
-                                    v_model_name="mlmg_max_iters",
-                                )
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                TrameFunctions.text_field(
-                                    label="MLMG Verbosity",
-                                    v_model_name="mlmg_verbosity",
-                                )
+        dialog_name = "space_charge_dialog_tab_settings"
+        TrameFunctions.create_dialog_tabs(
+            dialog_name, 1, ["Advanced Multigrid Settings"]
+        )
+        with vuetify.VTabsItems(v_model=("dialog_name", 0)):
+            with vuetify.VTabItem():
+                with vuetify.VCardText():
+                    with vuetify.VRow():
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Relative Tolerance",
+                                v_model_name="mlmg_relative_tolerance",
+                            )
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Absolute Tolerance",
+                                v_model_name="mlmg_absolute_tolerance",
+                            )
+                    with vuetify.VRow():
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Max Iters",
+                                v_model_name="mlmg_max_iters",
+                            )
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Verbosity",
+                                v_model_name="mlmg_verbosity",
+                            )

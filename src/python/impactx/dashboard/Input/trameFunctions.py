@@ -43,6 +43,7 @@ class TrameFunctions:
             with vuetify.VListItemContent():
                 vuetify.VListItemTitle(route_title)
 
+    @staticmethod
     def select(label, v_model_name, items=None, **kwargs):
         # in place for now as some variables are not in same format
         if items is None:
@@ -58,6 +59,7 @@ class TrameFunctions:
             **kwargs,
         )
 
+    @staticmethod
     def text_field(label, v_model_name, **kwargs):
         vuetify.VTextField(
             label=label,
@@ -71,6 +73,7 @@ class TrameFunctions:
             **kwargs,
         )
 
+    @staticmethod
     def documentation_icon(section_name, **kwargs):
         vuetify.VIcon(
             "mdi-information",
@@ -78,6 +81,7 @@ class TrameFunctions:
             click=lambda: generalFunctions.documentation(section_name),
         )
 
+    @staticmethod
     def input_section_header(section_name, additional_components=None):
         documentation_name = section_name.lower().replace(" ", "_")
         with vuetify.VCardTitle(section_name):
@@ -87,6 +91,7 @@ class TrameFunctions:
             TrameFunctions.documentation_icon(documentation_name)
         vuetify.VDivider()
 
+    @staticmethod
     def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]):
         if len(tab_names) != num_tabs:
             raise ValueError("Number of tab names must match number of tabs_names")

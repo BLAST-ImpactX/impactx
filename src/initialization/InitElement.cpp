@@ -454,7 +454,8 @@ namespace detail
             }
             ablastr::warn_manager::WMRecordWarning(
                 "ImpactX::read_element",
-                "Caution, a user-provided linear map is used. Transport may not be symplectic.",
+                "Caution, a user-provided linear map is used in '" +
+                element_name + "'. Transport may not be symplectic.",
                 ablastr::warn_manager::WarnPriority::low
             );
 

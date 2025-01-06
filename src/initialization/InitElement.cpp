@@ -449,7 +449,7 @@ namespace detail
             for (int i=1; i<=6; ++i) {
                 for (int j=1; j<=6; ++j) {
                     std::string name = "R" + std::to_string(i) + std::to_string(j);
-                    pp_element.queryAdd(name.c_str(), transport_map(i, j));
+                    pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), transport_map(i, j));
                 }
             }
             ablastr::warn_manager::WMRecordWarning(

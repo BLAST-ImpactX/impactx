@@ -43,7 +43,8 @@ namespace impactx::elements
 
         // 6x6 linear transport map
         using Map6x6 = amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1>;
-        Map6x6 m_transport_map; ///< linearized map
+        // note: for most elements, R is returned by a member function. Some store it also internally as a member.
+        // Map6x6 m_transport_map; ///< linearized map
     };
 
 } // namespace impactx::elements

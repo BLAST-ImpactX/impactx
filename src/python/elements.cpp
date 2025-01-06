@@ -221,10 +221,10 @@ void init_elements(py::module& m)
               "1-indexed, Fortran-ordered, 6x6 linear transport map type"
         )
         // values of the map
-        .def_property_readonly("transport_map",
-              [](elements::LinearTransport const & lt) { return lt.m_transport_map; },
-              "1-indexed, Fortran-ordered, 6x6 linear transport map values"
-        )
+        //.def_property_readonly("R",
+        //      [](elements::LinearTransport const & lt) { return lt.m_transport_map; },
+        //      "1-indexed, Fortran-ordered, 6x6 linear transport map values"
+        //)
     ;
 
     // diagnostics

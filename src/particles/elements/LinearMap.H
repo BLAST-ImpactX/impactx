@@ -116,7 +116,6 @@ namespace impactx
         using Thin::operator();
 
         LinearTransport::Map6x6 m_transport_map;  // 6x6 transport map
-
     };
 
 } // namespace impactx

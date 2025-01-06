@@ -11,6 +11,8 @@
 #include "particles/elements/All.H"
 #include "particles/elements/mixin/lineartransport.H"
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>
@@ -441,17 +443,20 @@ namespace detail
         {
             auto a = detail::query_alignment(pp_element);
 
-            elements::LinearTransport::Map6x6 transport_map;
+            elements::LinearTransport::Map6x6 transport_map = elements::LinearTransport::Map6x6::Identity();
+
+            // safe to ParmParse inputs for reproducibility
             for (int i=1; i<=6; ++i) {
                 for (int j=1; j<=6; ++j) {
-                    amrex::ParticleReal R_ij = (i == j) ? 1.0 : 0.0;
                     std::string name = "R" + std::to_string(i) + std::to_string(j);
-                    pp_element.queryAdd(name.c_str(), R_ij);
-
-                    transport_map(i, j) = R_ij;
+                    pp_element.queryAdd(name.c_str(), transport_map(i, j));
                 }
             }
-            std::cout << "Caution: A user-provided linear map is used.  Transport may not be symplectic." << "\n";
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactX::read_element",
+                "Caution, a user-provided linear map is used. Transport may not be symplectic.",
+                ablastr::warn_manager::WarnPriority::low
+            );
 
             m_lattice.emplace_back(LinearMap(transport_map, a["dx"], a["dy"], a["rotation_degree"]) );
         } else {

@@ -131,8 +131,8 @@ namespace impactx
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {
-
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
             using namespace amrex::literals; // for _rt and _prt
 
             // assign input reference particle values
@@ -160,7 +160,6 @@ namespace impactx
 
             // advance integrated path length
             refpart.s = s + slice_ds;
-
         }
 
         /** This function returns the linear transport map.
@@ -168,12 +167,10 @@ namespace impactx
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-
-        amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1>
-        transport_map(RefPart & AMREX_RESTRICT refpart) {
-
+        elements::LinearTransport::Map6x6
+        transport_map (RefPart & AMREX_RESTRICT refpart) const
+        {
             using namespace amrex::literals; // for _rt and _prt
-            elements::LinearTransport::Map6x6 R = {};
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
@@ -183,19 +180,13 @@ namespace impactx
             amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
 
             // assign linear map matrix elements
-            R(1,1) = 1.0_prt;
+            elements::LinearTransport::Map6x6 R = elements::LinearTransport::Map6x6::Identity();
             R(1,2) = slice_ds;
-            R(2,2) = 1.0_prt;
-            R(3,3) = 1.0_prt;
             R(3,4) = slice_ds;
-            R(4,4) = 1.0_prt;
-            R(5,5) = 1.0_prt;
-            R(5,6) = slice_ds/betgam2;
-            R(6,6) = 1.0_prt;
+            R(5,6) = slice_ds / betgam2;
+
             return R;
-
         }
-
     };
 
 } // namespace impactx

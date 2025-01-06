@@ -55,14 +55,10 @@ namespace impactx
             amrex::ParticleReal rotation_degree = 0,
             std::optional<std::string> name = std::nullopt
         )
-        : Named(name),
-        Alignment(dx, dy, rotation_degree)
+        : Named(std::move(name)),
+          Alignment(dx, dy, rotation_degree)
         {
-            for (int i=1; i<=6; ++i) {
-                for (int j = 1; j <= 6; ++j) {
-                    m_transport_map(i, j) = R(i, j);
-                }
-            }
+            m_transport_map = R;
         }
 
         /** Push all particles */
@@ -98,23 +94,11 @@ namespace impactx
             shift_in(x, y, px, py);
 
             // input and output phase space vectors
-            amrex::Array1D<amrex::ParticleReal,1,6> vectorin;
-            amrex::Array1D<amrex::ParticleReal,1,6> vectorout;
-            vectorin(1) = x;
-            vectorin(2) = px;
-            vectorin(3) = y;
-            vectorin(4) = py;
-            vectorin(5) = t;
-            vectorin(6) = pt;
+            amrex::SmallVector<amrex::ParticleReal, 6, 1> vectorin{
+                x, px, y, py, t, pt
+            };
 
-            for (int i=1; i<=6; ++i) {
-
-                vectorout(i) = 0.0;
-                for (int j = 1; j <= 6; ++j) {
-                    vectorout(i) += m_transport_map(i, j) * vectorin(j);
-                }
-
-            }
+            amrex::SmallVector<amrex::ParticleReal, 6, 1> const vectorout = m_transport_map * vectorin;
 
             // assign updated values
             x = vectorout(1);

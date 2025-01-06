@@ -211,6 +211,22 @@ void init_elements(py::module& m)
         )
     ;
 
+    py::class_<elements::LinearTransport>(me, "LinearTransport")
+        .def(py::init<>(),
+             "Mixin class for linear transport approximation via matrices."
+        )
+        // type of map
+        .def_property_readonly_static("Map6x6",
+              [](py::object /* lt */){ return py::type::of<elements::LinearTransport::Map6x6>(); },
+              "1-indexed, Fortran-ordered, 6x6 linear transport map type"
+        )
+        // values of the map
+        .def_property_readonly("transport_map",
+              [](elements::LinearTransport const & lt) { return lt.m_transport_map; },
+              "1-indexed, Fortran-ordered, 6x6 linear transport map values"
+        )
+    ;
+
     // diagnostics
 
     py::class_<diagnostics::BeamMonitor, elements::Thin> py_BeamMonitor(me, "BeamMonitor");

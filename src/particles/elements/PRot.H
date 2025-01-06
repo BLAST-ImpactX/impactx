@@ -52,7 +52,7 @@ namespace impactx
             amrex::ParticleReal phi_out,
             std::optional<std::string> name = std::nullopt
         )
-        : Named(name),
+        : Named(std::move(name)),
           m_phi_in(phi_in * degree2rad),
           m_phi_out(phi_out * degree2rad)
         {

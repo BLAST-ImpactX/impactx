@@ -607,6 +607,18 @@ This module provides elements for the accelerator lattice.
    :param unit: specification of units (``"dimensionless"`` in units of the magnetic rigidity of the reference particle or ``"T-m"``)
    :param name: an optional name for the element
 
+.. py::class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
+
+   A custom, linear transport matrix.
+
+   TODO: describe units to put in the R entries.
+
+   :param R: a linear transport map to multiply with the the beam vector :math:`x,px,y,py,t,pt`.
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, name=None)
 
    A general thin multipole element.

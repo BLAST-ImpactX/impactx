@@ -349,6 +349,21 @@ Lattice Elements
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
             * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
+        * ``linear_map`` for a custom, linear transport matrix.
+
+          The matrix elements are 1-indexed.
+          The transport matrix :math:`R` is defaulted to the identity matrix, so only matrix entries that are differing from that need to be specified.
+
+          TODO: describe units to put in the R entries.
+
+          This requires these additional parameters:
+
+            * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
+                a 1-indexed, 6x6, linear transport map to multiply with the the beam vector :math:`x,px,y,py,t,pt`.
+            * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+            * ``<element_name>.dy`` (``float``, in meters) vertical translation error
+            * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
         * ``multipole`` for a thin multipole element.
           This requires these additional parameters:
 

@@ -33,10 +33,16 @@ Detailed particle computing interfaces are presented in the `pyAMReX examples <h
 Linear Map
 ----------
 
+A custom linear element can be provided by specifying the 6x6 linear transport matrix :math:`R` as an input.
+See the :ref:` example <examples-fodo-userdef>` for Python and inputs file syntax to specify a custom linear element.
+
+The entries of the transport matrix are ordered for multiplication with the beam vector :math:`x,px,y,py,t,pt`.
+The units of the transport matrix :math:`R` elements are... TODO
+
 .. note::
 
-   We plan to add a simple, linear map element that can be configured in user input.
-   Follow `issue #538 <https://github.com/ECP-WarpX/impactx/issues/538>`__ for progress.
+   Note that generally, if a user-provided linear map is used, the beam transport may not be symplectic.
+   Thus, where symplecticity is needed, the programmable element and the C++ element provide a more general approach.
 
 
 C++ Element

@@ -10,6 +10,25 @@ The workflows described here apply both for thin kicks or thick elements.
 Thick elements can also use soft-edged fringe fields (see `existing soft-edged elements for implementation details <https://github.com/ECP-WarpX/impactx/tree/development/src/particles/elements>`__).
 
 
+.. _usage-workflows-add-element-linmap:
+
+Linear Map
+----------
+
+A custom linear element can be provided by specifying the 6x6 linear transport matrix :math:`R` as an input.
+See the :ref:` example <examples-fodo-userdef>` for Python and inputs file syntax to specify a custom linear element.
+
+The entries of the transport matrix are ordered for multiplication with the beam vector :math:`x,px,y,py,t,pt`.
+The units of the transport matrix :math:`R` elements are... TODO
+
+.. note::
+
+   Note that generally, if a user-provided linear map is used, the beam transport may not be symplectic.
+   Thus, where symplecticity is needed, the :ref:`Python Programmable Element <usage-workflows-add-element-python>` and the :ref:`C++ Element <usage-workflows-add-element-cxx>` provide a more general approach.
+
+
+.. _usage-workflows-add-element-python:
+
 Python Programmable Element
 ---------------------------
 
@@ -30,20 +49,7 @@ Detailed examples that show usage of the programmable element are:
 Detailed particle computing interfaces are presented in the `pyAMReX examples <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
 
 
-Linear Map
-----------
-
-A custom linear element can be provided by specifying the 6x6 linear transport matrix :math:`R` as an input.
-See the :ref:` example <examples-fodo-userdef>` for Python and inputs file syntax to specify a custom linear element.
-
-The entries of the transport matrix are ordered for multiplication with the beam vector :math:`x,px,y,py,t,pt`.
-The units of the transport matrix :math:`R` elements are... TODO
-
-.. note::
-
-   Note that generally, if a user-provided linear map is used, the beam transport may not be symplectic.
-   Thus, where symplecticity is needed, the programmable element and the C++ element provide a more general approach.
-
+.. _usage-workflows-add-element-cxx:
 
 C++ Element
 -----------

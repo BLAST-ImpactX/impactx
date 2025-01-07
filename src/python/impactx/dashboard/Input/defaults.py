@@ -22,12 +22,12 @@ class DashboardDefaults:
         "bunch_charge_C": 1e-9,
     }
 
-    DISTRIBUTION = {
+    DISTRIBUTION_PARAMETERS = {
         "selected_distribution": "Waterbag",
         "selected_distribution_type": "Twiss",
     }
 
-    LATTICE = {
+    LATTICE_CONFIGURATION = {
         "selected_lattice_list": [],
         "selected_lattice": None,
     }
@@ -71,8 +71,8 @@ class DashboardDefaults:
     DEFAULT_VALUES = {
         **SELECTION,
         **INPUT_PARAMETERS,
-        **DISTRIBUTION,
-        **LATTICE,
+        **DISTRIBUTION_PARAMETERS,
+        **LATTICE_CONFIGURATION,
         **SPACE_CHARGE,
         **CSR,
         **LISTS,

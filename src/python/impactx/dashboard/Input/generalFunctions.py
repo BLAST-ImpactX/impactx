@@ -345,9 +345,9 @@ class generalFunctions:
         if input_section.upper() in possible_section_names:
             state.update(getattr(DashboardDefaults, input_section.upper()))
 
-            if input_section == "distribution":
+            if input_section == "distribution_parameters":
                 state.dirty("selected_distribution_type")
-            elif input_section == "lattice":
+            elif input_section == "lattice_configuration":
                 state.selected_lattice_list = []
             elif input_section == "space_charge":
                 state.dirty("max_level")

@@ -82,15 +82,15 @@ class TrameFunctions:
         )
 
     @staticmethod
-    def create_refresh_button(reset_function_name):
+    def refresh_icon(section_name):
         """
         Creates a standardized refresh button.
         :param reset_function: The reset function to call when clicked.
         """
-        return vuetify.VIcon(
+        vuetify.VIcon(
             "mdi-refresh",
             style="color: #00313C;",
-            click=reset_function_name,
+            click=lambda: generalFunctions.reset_inputs(section_name),
         )
 
     @staticmethod
@@ -100,6 +100,7 @@ class TrameFunctions:
             vuetify.VSpacer()
             if additional_components:
                 additional_components()
+            TrameFunctions.refresh_icon(documentation_name)
             TrameFunctions.documentation_icon(documentation_name)
         vuetify.VDivider()
 

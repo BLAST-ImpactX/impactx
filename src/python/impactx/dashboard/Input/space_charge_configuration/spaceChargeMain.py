@@ -16,7 +16,6 @@ state.prob_relative_fields = []
 state.n_cell = []
 
 
-state.space_charge_dialog_settings = False
 # -----------------------------------------------------------------------------
 # Helper functions
 # -----------------------------------------------------------------------------
@@ -169,7 +168,9 @@ class SpaceChargeConfiguration:
         Creates UI content for space charge configuration
         """
 
-        with vuetify.VDialog(v_model=("space_charge_dialog_settings",), width="500px"):
+        with vuetify.VDialog(
+            v_model=("space_charge_dialog_settings", False), width="500px"
+        ):
             SpaceChargeConfiguration.dialog_settings()
 
         with vuetify.VCard(v_show="space_charge", style="width: 340px;"):

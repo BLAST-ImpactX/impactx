@@ -35,7 +35,6 @@ state.listOfLatticeElementParametersAndDefault = (
 
 state.selectedLatticeList = []
 state.nslice = ""
-state.lattice_configuration_dialog_settings = False
 
 # -----------------------------------------------------------------------------
 # Main Functions
@@ -242,7 +241,7 @@ class LatticeConfiguration:
             LatticeConfiguration.dialog_lattice_elementList()
 
         with vuetify.VDialog(
-            v_model=("lattice_configuration_dialog_settings",), width="500px"
+            v_model=("lattice_configuration_dialog_settings", False), width="500px"
         ):
             LatticeConfiguration.dialog_settings()
 

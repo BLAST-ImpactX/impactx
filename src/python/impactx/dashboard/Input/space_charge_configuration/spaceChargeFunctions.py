@@ -26,7 +26,7 @@ class SpaceChargeFunctions:
 
             if index == 0:
                 if poisson_solver == "multigrid":
-                    if prob_relative_value < 3:
+                    if prob_relative_value <= 3:
                         error_message = "Must be greater than 3."
                 elif poisson_solver == "fft":
                     if prob_relative_value <= 1:

@@ -43,10 +43,6 @@ state.mlmg_absolute_tolerance = generalFunctions.get_default(
 state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "default_values")
 state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "default_values")
 
-state.mlmg_relative_tolerance_error_message = ""
-state.mlmg_absolute_tolerance_error_message = ""
-state.mlmg_max_iters_error_message = ""
-state.mlmg_verbosity_error_message = ""
 state.space_charge_dialog_settings = False
 # -----------------------------------------------------------------------------
 # Helper functions

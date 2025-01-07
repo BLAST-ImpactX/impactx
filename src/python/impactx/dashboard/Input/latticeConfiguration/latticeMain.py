@@ -36,7 +36,6 @@ state.listOfLatticeElementParametersAndDefault = (
 state.selectedLattice = generalFunctions.get_default("lattice", "default_values")
 state.selectedLatticeList = []
 state.nslice = generalFunctions.get_default("n_slice", "default_values")
-state.nslice_error_message = ""
 state.lattice_configuration_dialog_settings = False
 
 # -----------------------------------------------------------------------------

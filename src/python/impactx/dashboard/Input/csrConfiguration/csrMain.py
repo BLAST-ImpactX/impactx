@@ -11,7 +11,6 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 state.csr_bins = generalFunctions.get_default("csr_bins", "default_values")
-state.csr_bins_error_message = ""
 
 # -----------------------------------------------------------------------------
 #
@@ -20,8 +19,9 @@ state.csr_bins_error_message = ""
 
 @state.change("csr_bins")
 def on_csr_bins_change(csr_bins, **kwargs):
-    error_message = generalFunctions.validate_against(csr_bins, "int", ["positive"])
-    state.csr_bins_error_message = error_message
+    state.csr_bins_error_message = generalFunctions.validate_against(
+        csr_bins, "int", ["positive"]
+    )
     generalFunctions.update_simulation_validation_status()
 
 

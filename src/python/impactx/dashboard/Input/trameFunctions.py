@@ -64,7 +64,7 @@ class TrameFunctions:
         vuetify.VTextField(
             label=label,
             v_model=(f"{v_model_name}",),
-            error_messages=(f"{v_model_name}_error_message",),
+            error_messages=(f"{v_model_name}_error_message", []),
             type="number",
             step=generalFunctions.get_default(f"{v_model_name}", "steps"),
             suffix=generalFunctions.get_default(f"{v_model_name}", "units"),

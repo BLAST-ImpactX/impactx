@@ -84,12 +84,6 @@ class InputParameters:
         state.charge_qe = generalFunctions.get_default("charge_qe", "default_values")
         state.mass_MeV = generalFunctions.get_default("mass_MeV", "default_values")
 
-        state.npart_error_message = []
-        state.kin_energy_error_message = []
-        state.bunch_charge_C_error_message = []
-        state.mass_MeV_error_message = []
-        state.charge_qe_error_message = []
-
     def card(self):
         """
         Creates UI content for beam properties.

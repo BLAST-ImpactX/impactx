@@ -66,7 +66,7 @@ namespace impactx
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )
-        : Named(name),
+        : Named(std::move(name)),
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           m_k(k), m_unit(unit)

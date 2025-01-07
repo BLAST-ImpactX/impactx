@@ -6,8 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
+from trame.widgets import html, vuetify
 
+from ..Input.generalFunctions import generalFunctions
 from ..trame_setup import setup_server
 from .exportTemplate import input_file
 
@@ -67,6 +68,16 @@ class ToolbarElements:
         )
 
     @staticmethod
+    def reset_inputs_button():
+        with vuetify.VBtn(
+            click=lambda: generalFunctions.reset_inputs("all"),
+            outlined=True,
+            small=True,
+        ):
+            vuetify.VIcon("mdi-refresh", left=True)
+            html.Span("Reset")
+
+    @staticmethod
     def dashboard_info():
         """
         Creates an alert box with dashboard information.
@@ -94,6 +105,7 @@ class Toolbars:
         if toolbar_name == "input":
             (ToolbarElements.dashboard_info(),)
             vuetify.VSpacer()
+            ToolbarElements.reset_inputs_button()
             ToolbarElements.export_input_data()
         elif toolbar_name == "run":
             (ToolbarElements.dashboard_info(),)

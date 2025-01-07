@@ -7,9 +7,12 @@ class DashboardDefaults:
     # Inputs by section
     # -------------------------------------------------------------------------
 
-    INPUT_PARAMETERS = {
+    SELECTION = {
         "space_charge": False,
         "csr": False,
+    }
+
+    INPUT_PARAMETERS = {
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
         "npart": 1000,
@@ -66,6 +69,7 @@ class DashboardDefaults:
     # -------------------------------------------------------------------------
 
     DEFAULT_VALUES = {
+        **SELECTION,
         **INPUT_PARAMETERS,
         **DISTRIBUTION,
         **LATTICE,

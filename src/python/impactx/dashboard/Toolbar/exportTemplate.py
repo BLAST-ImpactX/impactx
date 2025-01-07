@@ -14,15 +14,15 @@ def build_distribution_list():
     Generates an instance of distribution inputs
     as a string for exporting purposes.
     """
-    distribution_name = state.selectedDistribution
+    distribution_name = state.selected_distribution
     parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
 
-    indentation = " " * (8 if state.selectedDistributionType == "Twiss" else 4)
+    indentation = " " * (8 if state.selected_distribution_type == "Twiss" else 4)
     distribution_parameters = ",\n".join(
         f"{indentation}{key}={value}" for key, value in parameters.items()
     )
 
-    if state.selectedDistributionType == "Twiss":
+    if state.selected_distribution_type == "Twiss":
         return (
             f"distr = distribution.{distribution_name}(\n"
             f"    **twiss(\n"
@@ -51,7 +51,7 @@ def build_lattice_list():
             for key, value in parameter_input_checker_for_lattice(element).items()
         )
         + ")"
-        for element in state.selectedLatticeList
+        for element in state.selected_lattice_list
     )
 
     return f"lattice_configuration = [\n    {lattice_elements}\n]"

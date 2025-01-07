@@ -780,7 +780,7 @@ This module provides elements for the accelerator lattice.
    :param ds: Segment length in m.
    :param k:  focusing strength in m^(-2) (if unit = 0)
               = (azimuthal magnetic field gradient in T/m) / (rigidity in T-m)
-          OR  azimuthal magnetic field gradient in T/m (if unit = 1)
+              OR  azimuthal magnetic field gradient in T/m (if unit = 1)
    :param unit: specification of units for plasma lens focusing strength
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -901,7 +901,7 @@ This module provides elements for the accelerator lattice.
    :param ds: Segment length in m.
    :param bscale: Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0)
               = (magnetic field Bz in T) / (rigidity in T-m)
-          OR  Magnetic field Bz in T (SI units, if unit = 1)
+              OR  Magnetic field Bz in T (SI units, if unit = 1)
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz

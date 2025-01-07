@@ -82,6 +82,18 @@ class TrameFunctions:
         )
 
     @staticmethod
+    def create_refresh_button(reset_function_name):
+        """
+        Creates a standardized refresh button.
+        :param reset_function: The reset function to call when clicked.
+        """
+        return vuetify.VIcon(
+            "mdi-refresh",
+            style="color: #00313C;",
+            click=reset_function_name,
+        )
+
+    @staticmethod
     def input_section_header(section_name, additional_components=None):
         documentation_name = section_name.lower().replace(" ", "_")
         with vuetify.VCardTitle(section_name):

@@ -146,7 +146,7 @@ namespace SoftQuadrupoleData
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )
-          : Named(name),
+          : Named(std::move(name)),
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
             m_gscale(gscale), m_mapsteps(mapsteps), m_id(SoftQuadrupoleData::next_id)

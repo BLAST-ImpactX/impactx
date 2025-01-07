@@ -81,28 +81,42 @@ The initial distribution used is a 6D waterbag.
 The beam second moments should remain nearly unchanged, except for some small emittance growth due to nonlinear space charge.
 This is tested using the second moments of the distribution.
 
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 
 
 Run
 ---
 
-This example can be run as a Python script (``python3 run_cfchannel_10nC.py``) or  as an app with an input file (``impactx input_cfchannel_10nC.in``).
+This example can be run as a Python script (``python3 run_cfchannel_10nC_fft.py``) or  as an app with an input file (``impactx input_cfchannel_10nC_fft.in``).
 Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+We also provide the same example with the multi-grid (MLMG) Poisson solver.
 
 .. tab-set::
 
-   .. tab-item:: Python Script
+   .. tab-item:: Python Script (FFT)
 
-       .. literalinclude:: run_cfchannel_10nC.py
+       .. literalinclude:: run_cfchannel_10nC_fft.py
           :language: python3
-          :caption: You can copy this file from ``examples/cfchannel/run_cfchannel_10nC.py``.
+          :caption: You can copy this file from ``examples/cfchannel/run_cfchannel_10nC_fft.py``.
 
-   .. tab-item:: App Input File
+   .. tab-item:: Python Script (MLMG)
 
-       .. literalinclude:: input_cfchannel_10nC.in
+       .. literalinclude:: run_cfchannel_10nC_mlmg.py
+          :language: python3
+          :caption: You can copy this file from ``examples/cfchannel/run_cfchannel_10nC_mlmg.py``.
+
+   .. tab-item:: App Input File (FFT)
+
+       .. literalinclude:: input_cfchannel_10nC_fft.in
           :language: ini
-          :caption: You can copy this file from ``examples/cfchannel/input_cfchannel_10nC.in``.
+          :caption: You can copy this file from ``examples/cfchannel/input_cfchannel_10nC_fft.in``.
+
+   .. tab-item:: App Input File (MLMG)
+
+       .. literalinclude:: input_cfchannel_10nC_mlmg.in
+          :language: ini
+          :caption: You can copy this file from ``examples/cfchannel/input_cfchannel_10nC_mlmg.in``.
 
 
 Analyze

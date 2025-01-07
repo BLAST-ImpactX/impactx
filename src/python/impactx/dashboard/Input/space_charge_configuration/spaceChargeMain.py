@@ -11,37 +11,10 @@ server, state, ctrl = setup_server()
 # Default
 # -----------------------------------------------------------------------------
 
-state.dynamic_size = generalFunctions.get_default("dynamic_size", "default_values")
-state.max_level = generalFunctions.get_default("max_level", "default_values")
-state.particle_shape = generalFunctions.get_default("particle_shape", "default_values")
-state.poisson_solver = generalFunctions.get_default("poisson_solver", "default_values")
-
 state.prob_relative = []
 state.prob_relative_fields = []
-
 state.n_cell = []
-state.n_cell_x = generalFunctions.get_default("n_cell", "default_values")
-state.n_cell_y = generalFunctions.get_default("n_cell", "default_values")
-state.n_cell_z = generalFunctions.get_default("n_cell", "default_values")
 
-state.blocking_factor_x = generalFunctions.get_default(
-    "blocking_factor", "default_values"
-)
-state.blocking_factor_y = generalFunctions.get_default(
-    "blocking_factor", "default_values"
-)
-state.blocking_factor_z = generalFunctions.get_default(
-    "blocking_factor", "default_values"
-)
-
-state.mlmg_relative_tolerance = generalFunctions.get_default(
-    "mlmg_relative_tolerance", "default_values"
-)
-state.mlmg_absolute_tolerance = generalFunctions.get_default(
-    "mlmg_absolute_tolerance", "default_values"
-)
-state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "default_values")
-state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "default_values")
 
 state.space_charge_dialog_settings = False
 # -----------------------------------------------------------------------------

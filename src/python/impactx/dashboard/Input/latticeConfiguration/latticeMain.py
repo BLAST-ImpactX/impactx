@@ -33,9 +33,8 @@ state.listOfLatticeElementParametersAndDefault = (
 # Default
 # -----------------------------------------------------------------------------
 
-state.selectedLattice = generalFunctions.get_default("lattice", "default_values")
 state.selectedLatticeList = []
-state.nslice = generalFunctions.get_default("n_slice", "default_values")
+state.nslice = ""
 state.lattice_configuration_dialog_settings = False
 
 # -----------------------------------------------------------------------------

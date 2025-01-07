@@ -65,25 +65,6 @@ class InputParameters:
     User-Input section for beam properties.
     """
 
-    def __init__(self):
-        state.particle_shape = generalFunctions.get_default(
-            "particle_shape", "default_values"
-        )
-        state.npart = generalFunctions.get_default("npart", "default_values")
-        state.kin_energy = generalFunctions.get_default("kin_energy", "default_values")
-        state.kin_energy_MeV = state.kin_energy
-        state.bunch_charge_C = generalFunctions.get_default(
-            "bunch_charge_C", "default_values"
-        )
-        state.kin_energy_unit = generalFunctions.get_default(
-            "kin_energy_unit", "default_values"
-        )
-        state.old_kin_energy_unit = generalFunctions.get_default(
-            "kin_energy_unit", "default_values"
-        )
-        state.charge_qe = generalFunctions.get_default("charge_qe", "default_values")
-        state.mass_MeV = generalFunctions.get_default("mass_MeV", "default_values")
-
     def card(self):
         """
         Creates UI content for beam properties.

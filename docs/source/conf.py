@@ -241,9 +241,8 @@ subprocess.call(
 # Copy .pyi interface files and make them available as .py files
 # path to .pyi files w/o having them installed
 src_path = "../../src/python/impactx"
-dst_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "_static/pyapi/impactx"
-)
+api_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_static/pyapi")
+dst_path = os.path.join(api_path, "impactx")
 if os.path.exists(dst_path) and os.path.isdir(dst_path):
     shutil.rmtree(dst_path)
 shutil.copytree(src_path, dst_path)
@@ -260,3 +259,12 @@ for subdir, _dirs, files in os.walk(dst_path):
 
 # insert into PYTHONPATH
 sys.path.insert(0, os.path.join(dst_path, ".."))
+
+# make archive for download of dependent Sphinx projects
+shutil.make_archive(dst_path, "zip", dst_path)
+
+# Download pyAMReX stub files
+url = "https://pyamrex.readthedocs.io/en/latest/_static/pyapi/amrex.zip"
+amr_path = os.path.join(api_path, "amrex.zip")
+urllib.request.urlretrieve(url, amr_path)
+shutil.unpack_archive(amr_path, os.path.join(api_path, "amrex"))

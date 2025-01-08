@@ -78,6 +78,19 @@ class DashboardDefaults:
         **LISTS,
     }
 
+    TYPES = {
+        "npart": "int",
+        "kin_energy": "float",
+        "bunch_charge_C": "float",
+        "mass_MeV": "float",
+        "charge_qe": "int",
+    }
+
+    VALIDATION_CONDITION = {
+        "charge_qe": ["non_zero"],
+        "mass_MeV": ["positive"],
+    }
+
     # If a parameter is not included in the dictionary, default step amount is 1.
     STEPS = {
         "mass_MeV": 0.1,

@@ -12,6 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/alignment.H"
+#include "mixin/aperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/named.H"
@@ -31,6 +32,7 @@ namespace impactx
       public elements::BeamOptic<Drift>,
       public elements::Thick,
       public elements::Alignment,
+      public elements::Aperture,
       public elements::NoFinalize
     {
         static constexpr auto type = "Drift";
@@ -42,6 +44,8 @@ namespace impactx
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param xmax horizontal aperture in m
+         * @param ymax vertical aperture in m
          * @param nslice number of slices used for the application of space charge
          * @param name a user defined and not necessarily unique name of the element
          */
@@ -50,12 +54,15 @@ namespace impactx
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
+            amrex::ParticleReal xmax = 0,
+            amrex::ParticleReal ymax = 0,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
-          Alignment(dx, dy, rotation_degree)
+          Alignment(dx, dy, rotation_degree),
+          Aperture(xmax, ymax)
         {
         }
 
@@ -120,6 +127,11 @@ namespace impactx
             px = pxout;
             py = pyout;
             pt = ptout;
+
+            // apply transverse aperture
+            if (m_xmax > 0 && m_ymax > 0) {
+               apply_aperture(x, y, idcpu);  //value of idcpu?
+            }
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

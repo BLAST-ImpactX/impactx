@@ -93,6 +93,28 @@ namespace detail
 
         return values;
     }
+
+    /** Read the Aperture parameters xmax and ymax from inputs
+     *
+     * @param pp_element the element being read
+     * @return key-value pairs for xmax and ymax
+     */
+    std::map<std::string, amrex::ParticleReal>
+    query_aperture (amrex::ParmParse& pp_element)
+    {
+        amrex::ParticleReal xmax = 0;
+        amrex::ParticleReal ymax = 0;
+        pp_element.query("xmax", xmax);
+        pp_element.query("ymax", ymax);
+
+        std::map<std::string, amrex::ParticleReal> values = {
+                {"xmax", xmax},
+                {"ymax", ymax}
+        };
+
+        return values;
+    }
+
 } // namespace detail
 
     /** Read a lattice element
@@ -128,8 +150,9 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
-            m_lattice.emplace_back( Drift(ds, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( Drift(ds, a["dx"], a["dy"], a["rotation_degree"], b["xmax"], b["ymax"], nslice, element_name) );
         } else if (element_type == "sbend")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);

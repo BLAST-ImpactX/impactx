@@ -59,6 +59,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT y,
             uint64_t & AMREX_RESTRICT idcpu
         ) const {
+            using namespace amrex::literals; // for _rt and _prt
 
             // scale horizontal and vertical coordinates
             amrex::ParticleReal const u = x / m_xmax;

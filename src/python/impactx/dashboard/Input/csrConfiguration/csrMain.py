@@ -38,10 +38,9 @@ class csrConfiguration:
                     with vuetify.VCol(classes="py-0"):
                         TrameFunctions.select(
                             label="Particle Shape",
-                            v_model_name="particle_shape",
                         )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(classes="py-0"):
                         TrameFunctions.text_field(
-                            label="CSR Bins", v_model_name="csr_bins"
+                            label="CSR Bins",
                         )

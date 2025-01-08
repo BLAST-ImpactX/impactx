@@ -182,18 +182,15 @@ class SpaceChargeConfiguration:
                     with vuetify.VCol(cols=5, classes="py-0"):
                         TrameFunctions.select(
                             label="Poisson Solver",
-                            v_model_name="poisson_solver",
                             hide_details=True,
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
                         TrameFunctions.select(
                             label="Particle Shape",
-                            v_model_name="particle_shape",
                         )
                     with vuetify.VCol(cols=3, classes="py-0"):
                         TrameFunctions.select(
                             label="Max Level",
-                            v_model_name="max_level",
                         )
                 with vuetify.VCol(classes="pa-0"):
                     vuetify.VListItemSubtitle(
@@ -262,21 +259,17 @@ class SpaceChargeConfiguration:
                         with vuetify.VCol():
                             TrameFunctions.text_field(
                                 label="MLMG Relative Tolerance",
-                                v_model_name="mlmg_relative_tolerance",
                             )
                         with vuetify.VCol():
                             TrameFunctions.text_field(
                                 label="MLMG Absolute Tolerance",
-                                v_model_name="mlmg_absolute_tolerance",
                             )
                     with vuetify.VRow():
                         with vuetify.VCol():
                             TrameFunctions.text_field(
                                 label="MLMG Max Iters",
-                                v_model_name="mlmg_max_iters",
                             )
                         with vuetify.VCol():
                             TrameFunctions.text_field(
                                 label="MLMG Verbosity",
-                                v_model_name="mlmg_verbosity",
                             )

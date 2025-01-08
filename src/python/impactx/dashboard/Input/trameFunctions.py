@@ -44,8 +44,11 @@ class TrameFunctions:
                 vuetify.VListItemTitle(route_title)
 
     @staticmethod
-    def select(label, v_model_name, items=None, **kwargs):
+    def select(label, v_model_name=None, items=None, **kwargs):
         # in place for now as some variables are not in same format
+        if v_model_name is None:
+            v_model_name = label.lower().replace(" ", "_")
+
         if items is None:
             items = (
                 generalFunctions.get_default(f"{v_model_name}_list", "default_values"),
@@ -60,7 +63,10 @@ class TrameFunctions:
         )
 
     @staticmethod
-    def text_field(label, v_model_name, **kwargs):
+    def text_field(label, v_model_name=None, **kwargs):
+        if v_model_name is None:
+            v_model_name = label.lower().replace(" ", "_")
+
         vuetify.VTextField(
             label=label,
             v_model=(f"{v_model_name}",),

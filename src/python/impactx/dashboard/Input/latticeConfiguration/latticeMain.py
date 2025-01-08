@@ -6,13 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
-
 from impactx import elements
 
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
+from .. import TrameFunctions, generalFunctions, setup_server, vuetify
 
 server, state, ctrl = setup_server()
 

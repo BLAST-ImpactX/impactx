@@ -9,13 +9,10 @@ License: BSD-3-Clause-LBNL
 import inspect
 
 from distribution_input_helpers import twiss
-from trame.widgets import vuetify
 
 from impactx import distribution
 
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
+from .. import TrameFunctions, generalFunctions, setup_server, vuetify
 from .distributionFunctions import DistributionFunctions
 
 server, state, ctrl = setup_server()

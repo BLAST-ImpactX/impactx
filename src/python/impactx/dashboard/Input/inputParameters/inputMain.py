@@ -6,12 +6,13 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
-
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..defaults import DashboardDefaults
-from ..generalFunctions import generalFunctions
+from .. import (
+    DashboardDefaults,
+    TrameFunctions,
+    generalFunctions,
+    setup_server,
+    vuetify,
+)
 from .inputFunctions import InputFunctions
 
 server, state, ctrl = setup_server()

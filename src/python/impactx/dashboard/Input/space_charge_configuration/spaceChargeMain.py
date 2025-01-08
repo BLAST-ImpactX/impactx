@@ -1,8 +1,4 @@
-from trame.widgets import vuetify
-
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
+from .. import TrameFunctions, generalFunctions, setup_server, vuetify
 from .spaceChargeFunctions import SpaceChargeFunctions
 
 server, state, ctrl = setup_server()

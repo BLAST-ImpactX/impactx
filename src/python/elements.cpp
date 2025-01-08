@@ -654,7 +654,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_DipEdge);
 
-    py::class_<Drift, elements::Named, elements::Thick, elements::Alignment> py_Drift(me, "Drift");
+    py::class_<Drift, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Drift(me, "Drift");
     py_Drift
         .def("__repr__",
              [](Drift const & drift) {
@@ -669,6 +669,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -676,6 +678,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("xmax") = 0,
+             py::arg("ymax") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A drift."

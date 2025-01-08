@@ -135,14 +135,19 @@ namespace
 
 void init_elements(py::module& m)
 {
-    py::module_ const me = m.def_submodule(
+    py::module_ me = m.def_submodule(
         "elements",
         "Accelerator lattice elements in ImpactX"
     );
 
     // mixin classes
 
-    py::class_<elements::Named>(me, "Named")
+    py::module_ const mx = me.def_submodule(
+        "mixin",
+        "Mixin classes for accelerator lattice elements in ImpactX"
+    );
+
+    py::class_<elements::Named>(mx, "Named")
         .def_property("name",
             [](elements::Named & nm) { return nm.name(); },
             [](elements::Named & nm, std::string new_name) { nm.set_name(new_name); },
@@ -151,7 +156,7 @@ void init_elements(py::module& m)
         .def_property_readonly("has_name", &elements::Named::has_name)
     ;
 
-    py::class_<elements::Thick>(me, "Thick")
+    py::class_<elements::Thick>(mx, "Thick")
         .def(py::init<
                  amrex::ParticleReal,
                  amrex::ParticleReal
@@ -172,7 +177,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<elements::Thin>(me, "Thin")
+    py::class_<elements::Thin>(mx, "Thin")
         .def(py::init<>(),
              "Mixin class for lattice elements with zero length."
         )
@@ -186,7 +191,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<elements::Alignment>(me, "Alignment")
+    py::class_<elements::Alignment>(mx, "Alignment")
         .def(py::init<>(),
              "Mixin class for lattice elements with horizontal/vertical alignment errors."
         )

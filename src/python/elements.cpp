@@ -214,7 +214,7 @@ void init_elements(py::module& m)
             "rotation error in the transverse plane in degree"
         )
     ;
-    
+
         py::class_<elements::Aperture>(mx, "Aperture")
         .def(py::init<>(),
              "Mixin class for lattice elements with a transverse aperture."

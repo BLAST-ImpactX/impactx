@@ -35,12 +35,6 @@ state.listOfDistributionsAndParametersAndDefault = (
 # Defaults
 # -----------------------------------------------------------------------------
 
-state.selected_distribution = generalFunctions.get_default(
-    "selected_distribution", "default_values"
-)
-state.selected_distribution_type = generalFunctions.get_default(
-    "selected_distribution_type", "default_values"
-)
 state.selected_distribution_parameters = []
 state.distributionTypeDisabled = False
 
@@ -49,14 +43,14 @@ state.distributionTypeDisabled = False
 # -----------------------------------------------------------------------------
 
 
-def populate_distribution_parameters(selected_distribution):
+def populate_distribution_parameters():
     """
     Populates distribution parameters based on the selected distribution.
     :param selected_distribution (str): The name of the selected distribution
     whose parameters need to be populated.
     """
 
-    if state.selected_distribution_type == "Twiss":
+    if state.distribution_type == "Twiss":
         sig = inspect.signature(twiss)
         state.selected_distribution_parameters = [
             {
@@ -78,9 +72,7 @@ def populate_distribution_parameters(selected_distribution):
 
     else:  # when type == 'Quadratic Form'
         selected_distribution_parameters = (
-            state.listOfDistributionsAndParametersAndDefault.get(
-                selected_distribution, []
-            )
+            state.listOfDistributionsAndParametersAndDefault.get(state.distribution, [])
         )
 
         state.selected_distribution_parameters = [
@@ -134,10 +126,10 @@ def distribution_parameters():
     initialized with the appropriate parameters provided by the user.
     """
 
-    distribution_name = state.selected_distribution
+    distribution_name = state.distribution
     parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
 
-    if state.selected_distribution_type == "Twiss":
+    if state.distribution_type == "Twiss":
         twiss_params = twiss(**parameters)
         distr = getattr(distribution, distribution_name)(**twiss_params)
     else:
@@ -151,20 +143,20 @@ def distribution_parameters():
 # -----------------------------------------------------------------------------
 
 
-@state.change("selected_distribution")
-def on_distribution_name_change(selected_distribution, **kwargs):
-    if selected_distribution == "Thermal":
-        state.selected_distribution_type = "Quadratic Form"
+@state.change("distribution")
+def on_distribution_name_change(distribution, **kwargs):
+    if distribution == "Thermal":
+        state.distribution_type = "Quadratic Form"
         state.distributionTypeDisabled = True
-        state.dirty("selected_distribution_type")
+        state.dirty("distribution_type")
     else:
         state.distributionTypeDisabled = False
-    populate_distribution_parameters(selected_distribution)
+    populate_distribution_parameters()
 
 
-@state.change("selected_distribution_type")
+@state.change("distribution_type")
 def on_distribution_type_change(**kwargs):
-    populate_distribution_parameters(state.selected_distribution)
+    populate_distribution_parameters()
 
 
 @ctrl.add("updateDistributionParameters")
@@ -198,18 +190,13 @@ class DistributionParameters:
                     with vuetify.VCol(cols=6):
                         TrameFunctions.select(
                             label="Select Distribution",
-                            v_model_name="selected_distribution",
+                            v_model_name="distribution",
                             items=("listOfDistributions",),
                         )
                     with vuetify.VCol(cols=6):
                         TrameFunctions.select(
                             label="Type",
-                            v_model_name="selected_distribution_type",
-                            items=(
-                                generalFunctions.get_default(
-                                    "distribution_type_list", "default_values"
-                                ),
-                            ),
+                            v_model_name="distribution_type",
                             disabled=("distributionTypeDisabled",),
                         )
                 with vuetify.VRow(classes="my-2"):

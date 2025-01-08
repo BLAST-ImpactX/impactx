@@ -23,8 +23,8 @@ class DashboardDefaults:
     }
 
     DISTRIBUTION_PARAMETERS = {
-        "selected_distribution": "Waterbag",
-        "selected_distribution_type": "Twiss",
+        "distribution": "Waterbag",
+        "distribution_type": "Twiss",
     }
 
     LATTICE_CONFIGURATION = {

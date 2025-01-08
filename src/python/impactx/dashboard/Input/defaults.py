@@ -84,11 +84,13 @@ class DashboardDefaults:
         "bunch_charge_C": "float",
         "mass_MeV": "float",
         "charge_qe": "int",
+        "csr_bins": "int",
     }
 
     VALIDATION_CONDITION = {
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
+        "csr_bins": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

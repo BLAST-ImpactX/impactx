@@ -21,19 +21,14 @@ server, state, ctrl = setup_server()
 # Helpful
 # -----------------------------------------------------------------------------
 
-DISTRIBUTIONS_MODULE_NAME = distribution
-
-state.listOfDistributions = generalFunctions.select_classes(DISTRIBUTIONS_MODULE_NAME)
-state.listOfDistributionsAndParametersAndDefault = (
-    generalFunctions.class_parameters_with_defaults(DISTRIBUTIONS_MODULE_NAME)
+DISTRIBUTION_MODULE_NAME = distribution
+DISTRIBUTION_LIST = generalFunctions.select_classes(DISTRIBUTION_MODULE_NAME)
+DISTRIBUTION_PARAMETERS_AND_DEFAULTS = generalFunctions.class_parameters_with_defaults(
+    DISTRIBUTION_MODULE_NAME
 )
 
-# -----------------------------------------------------------------------------
-# Defaults
-# -----------------------------------------------------------------------------
-
 state.selected_distribution_parameters = []
-state.distributionTypeDisabled = False
+state.distribution_type_disable = False
 
 # -----------------------------------------------------------------------------
 # Main Functions
@@ -68,8 +63,8 @@ def populate_distribution_parameters():
         ]
 
     else:  # when type == 'Quadratic Form'
-        selected_distribution_parameters = (
-            state.listOfDistributionsAndParametersAndDefault.get(state.distribution, [])
+        selected_distribution_parameters = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(
+            state.distribution, []
         )
 
         state.selected_distribution_parameters = [
@@ -90,26 +85,6 @@ def populate_distribution_parameters():
 
     generalFunctions.update_simulation_validation_status()
     return state.selected_distribution_parameters
-
-
-def update_distribution_parameters(
-    parameterName, parameterValue, parameterErrorMessage
-):
-    """
-    Updates the value of a distribution parameter and its error message.
-
-    :param parameterName (str): The name of the parameter to update.
-    :param parameterValue: The new value for the parameter.
-    :param parameterErrorMessage: The error message related to the parameter's value.
-    """
-
-    for param in state.selected_distribution_parameters:
-        if param["parameter_name"] == parameterName:
-            param["parameter_default_value"] = parameterValue
-            param["parameter_error_message"] = parameterErrorMessage
-
-    generalFunctions.update_simulation_validation_status()
-    state.dirty("selected_distribution_parameters")
 
 
 # -----------------------------------------------------------------------------
@@ -144,10 +119,10 @@ def distribution_parameters():
 def on_distribution_name_change(distribution, **kwargs):
     if distribution == "Thermal":
         state.distribution_type = "Quadratic Form"
-        state.distributionTypeDisabled = True
+        state.distribution_type_disable = True
         state.dirty("distribution_type")
     else:
-        state.distributionTypeDisabled = False
+        state.distribution_type_disable = False
     populate_distribution_parameters()
 
 
@@ -161,7 +136,13 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
     parameter_value, input_type = generalFunctions.determine_input_type(parameter_value)
     error_message = generalFunctions.validate_against(parameter_value, parameter_type)
 
-    update_distribution_parameters(parameter_name, parameter_value, error_message)
+    for param in state.selected_distribution_parameters:
+        if param["parameter_name"] == parameter_name:
+            param["parameter_default_value"] = parameter_value
+            param["parameter_error_message"] = error_message
+
+    generalFunctions.update_simulation_validation_status()
+    state.dirty("selected_distribution_parameters")
 
 
 # -----------------------------------------------------------------------------
@@ -188,23 +169,22 @@ class DistributionParameters:
                         TrameFunctions.select(
                             label="Select Distribution",
                             v_model_name="distribution",
-                            items=("listOfDistributions",),
+                            items=(DISTRIBUTION_LIST,),
                         )
                     with vuetify.VCol(cols=6):
                         TrameFunctions.select(
                             label="Type",
                             v_model_name="distribution_type",
-                            disabled=("distributionTypeDisabled",),
+                            disabled=("distribution_type_disable",),
                         )
                 with vuetify.VRow(classes="my-2"):
                     for i in range(3):
                         with vuetify.VCol(cols=4, classes="py-0"):
                             with vuetify.VRow(
-                                v_for="(parameter, index) in selected_distribution_parameters"
+                                v_for="(parameter, index) in selected_distribution_parameters",
+                                v_if=f"index % 3 == {i}",
                             ):
-                                with vuetify.VCol(
-                                    v_if=f"index % 3 == {i}", classes="py-1"
-                                ):
+                                with vuetify.VCol(classes="py-1"):
                                     vuetify.VTextField(
                                         label=("parameter.parameter_name",),
                                         v_model=("parameter.parameter_default_value",),

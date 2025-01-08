@@ -29,7 +29,6 @@ def validate_and_convert_to_correct_type(state_name):
     validation_name = f"{state_name}_error_message"
     conditions = DashboardDefaults.VALIDATION_CONDITION.get(state_name, None)
 
-    print(f"{state_name}: {desired_type}")
     validation_result = generalFunctions.validate_against(
         value, desired_type, conditions
     )

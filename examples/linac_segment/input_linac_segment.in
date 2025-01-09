@@ -6,7 +6,7 @@
 beam.npart = 10000
 beam.units = static
 beam.kin_energy = 2.1226695
-beam.charge = 2.9824923076852509e-11  #based on I/f
+beam.charge = 2.9824923076852509e-11  # based on I/f
 beam.particle = Hminus
 beam.distribution = gaussian_from_twiss
 beam.alphaX = 0.13233244124654187

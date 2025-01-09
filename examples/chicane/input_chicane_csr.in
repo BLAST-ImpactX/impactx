@@ -14,7 +14,7 @@ beam.lambdaPx = 1.598353425e-6
 beam.lambdaPy = 2.803697378e-6
 beam.lambdaPt = 2.000000000e-6
 beam.muxpx = 0.933345606203060
-beam.muypy = 0.933345606203060
+beam.muypy = beam.muxpx
 beam.mutpt = 0.999999961419755
 
 

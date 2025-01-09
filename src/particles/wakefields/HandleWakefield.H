@@ -58,7 +58,7 @@ namespace impactx::particles::wakefields
 #endif
 
             int csr_bins = 150;
-            pp_algo.queryAdd("csr_bins", csr_bins);
+            pp_algo.queryAddWithParser("csr_bins", csr_bins);
 
             // Measure beam size, extract the min, max of particle positions
             [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =

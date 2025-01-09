@@ -112,7 +112,7 @@ namespace impactx {
             // verbosity
             amrex::ParmParse pp_impactx("impactx");
             int verbose = 1;
-            pp_impactx.queryAdd("verbose", verbose);
+            pp_impactx.queryAddWithParser("verbose", verbose);
 
             if (verbose > 0) {
                 std::cout << "\nGrids Summary:\n";
@@ -140,7 +140,7 @@ namespace impactx {
         // verbosity
         amrex::ParmParse pp_impactx("impactx");
         int verbose = 1;
-        pp_impactx.queryAdd("verbose", verbose);
+        pp_impactx.queryAddWithParser("verbose", verbose);
 
         // a global step for diagnostics including space charge slice steps in elements
         //   before we start the evolve loop, we are in "step 0" (initial state)
@@ -159,7 +159,7 @@ namespace impactx {
         int file_min_digits = 6;
         if (diag_enable)
         {
-            pp_diag.queryAdd("file_min_digits", file_min_digits);
+            pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
@@ -189,7 +189,7 @@ namespace impactx {
 
         // periods through the lattice
         int num_periods = 1;
-        amrex::ParmParse("lattice").queryAdd("periods", num_periods);
+        amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
 
         for (int period=0; period < num_periods; ++period) {
             // loop over all beamline elements

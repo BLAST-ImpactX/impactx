@@ -58,6 +58,7 @@ macro(find_ablastr)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
         set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
+        set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
 
         set(WarpX_APP OFF CACHE BOOL "" FORCE)
         set(WarpX_LIB OFF CACHE BOOL "" FORCE)

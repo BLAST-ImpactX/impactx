@@ -61,14 +61,20 @@ namespace impactx::elements
         ) const {
             using namespace amrex::literals; // for _rt and _prt
 
-            // scale horizontal and vertical coordinates
-            amrex::ParticleReal const u = x / m_xmax;
-            amrex::ParticleReal const v = y / m_ymax;
+            // skip aperture if xmax=0 or ymax=0
+            if (m_xmax > 0 && m_ymax > 0) {
 
-            // compare against the aperture boundary
-            if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
-               amrex::ParticleIDWrapper{idcpu}.make_invalid();
+               // scale horizontal and vertical coordinates
+               amrex::ParticleReal const u = x / m_xmax;
+               amrex::ParticleReal const v = y / m_ymax;
+
+               // compare against the aperture boundary
+               if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
+                  amrex::ParticleIDWrapper{idcpu}.make_invalid();
+               }
+
             }
+
 
         }
 

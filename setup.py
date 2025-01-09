@@ -230,7 +230,7 @@ with open("./requirements.txt") as f:
 setup(
     name="impactx",
     # note PEP-440 syntax: x.y.zaN but x.y.z.devN
-    version="24.12",
+    version="25.01",
     packages=["impactx"],
     # Python sources:
     package_dir={"": "src/python"},

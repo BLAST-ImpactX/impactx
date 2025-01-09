@@ -1072,4 +1072,3 @@ add_impactx_test(aperture-thick.py
     examples/aperture/analysis_aperture_thick.py
     OFF  # no plot script yet
 )
-

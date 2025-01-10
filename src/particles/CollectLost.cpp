@@ -55,8 +55,26 @@ namespace impactx
         BL_PROFILE("impactX::collect_lost_particles");
 
         using SrcData = ImpactXParticleContainer::ParticleTileType::ConstParticleTileDataType;
-
         ImpactXParticleContainer& dest = *source.GetLostParticleContainer();
+
+        // Check destination has the same attributes as source + "s_lost"
+        for (auto & name : source.GetRealSoANames())
+        {
+            if (!dest.HasRealComp(name)) {
+                dest.AddRealComp(name);
+            }
+        }
+        for (auto & name : source.GetIntSoANames())
+        {
+            if (!dest.HasIntComp(name)) {
+                dest.AddIntComp(name);
+            }
+        }
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(source.GetRealSoANames().size() + 1 == dest.GetRealSoANames().size(),
+                                         "Source and destination have different Real attributes!");
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(source.GetIntSoANames().size() == dest.GetIntSoANames().size(),
+                                         "Source and destination have different Int attributes!");
+
         const int s_runtime_index = dest.GetRealCompIndex("s_lost") - dest.NArrayReal;
 
         RefPart const ref_part = source.GetRefParticle();

@@ -1,21 +1,19 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
  * This file is part of ImpactX.
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #ifndef IMPACTX_ELEMENTS_MIXIN_APERTURE_H
 #define IMPACTX_ELEMENTS_MIXIN_APERTURE_H
 
-#include "particles/ImpactXParticleContainer.H"
-
-#include <ablastr/constant.H>
-
-#include <AMReX_Math.H>
 #include <AMReX_Extension.H>
+#include <AMReX_GpuQualifiers.H>
+#include <AMReX_Math.H>
+#include <AMReX_Particle.H>
 #include <AMReX_REAL.H>
 
 
@@ -74,8 +72,6 @@ namespace impactx::elements
                }
 
             }
-
-
         }
 
         /** Horizontal aperture size

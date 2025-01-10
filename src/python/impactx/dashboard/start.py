@@ -25,7 +25,6 @@ def initialize_states():
     """
     for name, value in DashboardDefaults.DEFAULT_VALUES.items():
         setattr(state, name, value)
-        print(f"state.{name}={value}")
 
 
 def main():

@@ -26,14 +26,14 @@ namespace impactx::elements
 
         /** A finite-length element
          *
-         * @param xmax horizontal aperture size in m
-         * @param ymax vertical aperture size in m
+         * @param x_aperture horizontal half-aperture size in m
+         * @param y_aperture vertical half-aperture size in m
          */
         Aperture (
-            amrex::ParticleReal xmax,
-            amrex::ParticleReal ymax
+            amrex::ParticleReal x_aperture,
+            amrex::ParticleReal y_aperture
         )
-        : m_xmax(xmax), m_ymax(ymax)
+        : m_x_aperture(x_aperture), m_y_aperture(y_aperture)
         {
         }
 
@@ -59,12 +59,12 @@ namespace impactx::elements
         ) const {
             using namespace amrex::literals; // for _rt and _prt
 
-            // skip aperture if xmax=0 or ymax=0
-            if (m_xmax > 0 && m_ymax > 0) {
+            // skip aperture application if x_aperture <= 0 or y_aperture <= 0
+            if (m_x_aperture > 0 && m_y_aperture > 0) {
 
                // scale horizontal and vertical coordinates
-               amrex::ParticleReal const u = x / m_xmax;
-               amrex::ParticleReal const v = y / m_ymax;
+               amrex::ParticleReal const u = x / m_x_aperture;
+               amrex::ParticleReal const v = y / m_y_aperture;
 
                // compare against the aperture boundary
                if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
@@ -79,9 +79,9 @@ namespace impactx::elements
          * @return horizontal aperture size in m
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        amrex::ParticleReal xmax () const
+        amrex::ParticleReal x_aperture () const
         {
-            return m_xmax;
+            return m_x_aperture;
         }
 
         /** Vertical aperture size
@@ -89,13 +89,13 @@ namespace impactx::elements
          * @return vertical aperture size in m
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        amrex::ParticleReal ymax () const
+        amrex::ParticleReal y_aperture () const
         {
-            return m_ymax;
+            return m_y_aperture;
         }
 
-        amrex::ParticleReal m_xmax = 0; //! horizontal aperture size [m]
-        amrex::ParticleReal m_ymax = 0; //! vertical aperture size [m]
+        amrex::ParticleReal m_x_aperture = 0; //! horizontal aperture size [m]
+        amrex::ParticleReal m_y_aperture = 0; //! vertical aperture size [m]
     };
 
 } // namespace impactx::elements

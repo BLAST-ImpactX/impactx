@@ -44,8 +44,8 @@ namespace impactx
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param xmax horizontal aperture in m
-         * @param ymax vertical aperture in m
+         * @param x_aperture horizontal half-aperture in m
+         * @param y_aperture vertical half-aperture in m
          * @param nslice number of slices used for the application of space charge
          * @param name a user defined and not necessarily unique name of the element
          */
@@ -54,15 +54,15 @@ namespace impactx
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal xmax = 0,
-            amrex::ParticleReal ymax = 0,
+            amrex::ParticleReal x_aperture = 0,
+            amrex::ParticleReal y_aperture = 0,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
-          Aperture(xmax, ymax)
+          Aperture(x_aperture, y_aperture)
         {
         }
 

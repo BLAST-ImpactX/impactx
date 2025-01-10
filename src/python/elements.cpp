@@ -693,8 +693,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
-             py::arg("xmax") = 0,
-             py::arg("ymax") = 0,
+             py::arg("x_aperture") = 0,
+             py::arg("y_aperture") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A drift."

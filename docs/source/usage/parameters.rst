@@ -135,8 +135,8 @@ Lattice Elements
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
-            * ``<element_name>.xmax`` (``float``, in meters) horizontal half-aperture (elliptical)
-            * ``<element_name>.ymax`` (``float``, in meters) vertical half-aperture (elliptical)
+            * ``<element_name>.x_aperture`` (``float``, in meters) horizontal half-aperture (elliptical)
+            * ``<element_name>.y_aperture`` (``float``, in meters) vertical half-aperture (elliptical)
             * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
         * ``drift_chromatic`` for a free drift, with chromatic effects included.

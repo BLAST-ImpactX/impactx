@@ -39,7 +39,7 @@ namespace impactx
             int nslice=1,
             std::optional<std::string> name = std::nullopt
         )
-          : Named(name), m_ds(ds), m_nslice(nslice)
+          : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
         {}
 
         /** Push all particles relative to the reference particle

@@ -13,6 +13,7 @@ import subprocess
 import webbrowser
 
 from ..trame_setup import setup_server
+from .defaults import DashboardDefaults
 
 server, state, ctrl = setup_server()
 
@@ -28,20 +29,33 @@ class generalFunctions:
         Opens a tab to the specified section link in the documentation.
         :param section_name (str): The name of the documentation section to open.
         """
+        url_dict = {
+            "LatticeElements": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
+            "BeamDistributions": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
+            "pythonParameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#general",
+            "space_charge_documentation": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
+            "CSR": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+        }
 
-        if section_name == "LatticeElements":
-            url = "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements"
-        elif section_name == "BeamDistributions":
-            url = "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions"
-        elif section_name == "pythonParameters":
-            url = "https://impactx.readthedocs.io/en/latest/usage/python.html#general"
-        else:
+        url = url_dict.get(section_name)
+        if url is None:
             raise ValueError(f"Invalid section name: {section_name}")
 
         if "WSL_DISTRO_NAME" in os.environ:
             subprocess.run(["explorer.exe", url])
         else:
             webbrowser.open_new_tab(url)
+
+    @staticmethod
+    def get_default(parameter, type):
+        parameter_type_dictionary = getattr(DashboardDefaults, f"{type.upper()}", None)
+        parameter_default = parameter_type_dictionary.get(parameter)
+
+        if parameter_default is not None:
+            return parameter_default
+
+        parameter_name_base = parameter.partition("_")[0]
+        return parameter_type_dictionary.get(parameter_name_base)
 
     # -----------------------------------------------------------------------------
     # Validation functions
@@ -69,11 +83,14 @@ class generalFunctions:
         Validates the input value against the desired type and additional conditions.
         :param input_value: The value to validate.
         :param value_type: The desired type ('int', 'float', 'str').
-        :param conditions: A list of additional conditions to validate.
+        :param additional_conditions: A list of additional conditions to validate.
         :return: A list of error messages. An empty list if there are no errors.
         """
         errors = []
         value = None
+
+        if input_value == "None":
+            return errors
 
         # value_type checking
         if value_type == "int":
@@ -104,11 +121,11 @@ class generalFunctions:
         if errors == [] and additional_conditions:
             for condition in additional_conditions:
                 if condition == "non_zero" and value == 0:
-                    errors.append("Must be non-zero")
-                if condition == "positive" and value <= 0:
-                    errors.append("Must be positive")
-                if condition == "negative" and value >= 0:
-                    errors.append("Must be negative")
+                    errors.append("Must be non-zero.")
+                if condition == "positive" and value < 0:
+                    errors.append("Must be positive.")
+                if condition == "negative" and value > 0:
+                    errors.append("Must be negative.")
 
         return errors
 
@@ -122,14 +139,14 @@ class generalFunctions:
         error_details = []
 
         # Check for errors in distribution parameters
-        for param in state.selectedDistributionParameters:
+        for param in state.selected_distribution_parameters:
             if param["parameter_error_message"]:
                 error_details.append(
                     f"{param['parameter_name']}: {param['parameter_error_message']}"
                 )
 
         # Check for errors in lattice parameters
-        for lattice in state.selectedLatticeList:
+        for lattice in state.selected_lattice_list:
             for param in lattice["parameters"]:
                 if param["parameter_error_message"]:
                     error_details.append(
@@ -148,8 +165,37 @@ class generalFunctions:
         if state.mass_MeV_validation:
             error_details.append(f"Ref. Particle Mass: {state.mass_MeV}")
 
-        if state.selectedLatticeList == []:
+        if state.selected_lattice_list == []:
             error_details.append("LatticeListIsEmpty")
+
+        # Check for errors in CSR parameters
+        if state.csr_bins_error_message:
+            error_details.append(f"CSR Bins: {state.csr_bins_error_message}")
+
+        # Check for errors in Space Charge parameters
+        if state.space_charge:
+            # n_cell parameters
+            for direction in ["x", "y", "z"]:
+                n_cell_error = getattr(state, f"error_message_n_cell_{direction}")
+                if n_cell_error:
+                    error_details.append(f"n_cell_{direction}: {n_cell_error}")
+
+            # Blocking factor parameters
+            for direction in ["x", "y", "z"]:
+                blocking_factor_error = getattr(
+                    state, f"error_message_blocking_factor_{direction}"
+                )
+                if blocking_factor_error:
+                    error_details.append(
+                        f"blocking_factor_{direction}: {blocking_factor_error}"
+                    )
+
+            # Prob Relative Fields
+            for index, field in enumerate(state.prob_relative_fields):
+                if field["error_message"]:
+                    error_details.append(
+                        f"prob_relative[{index}]: {field['error_message']}"
+                    )
 
         state.disableRunSimulationButton = bool(error_details)
 
@@ -280,3 +326,32 @@ class generalFunctions:
             return str(value)
         else:
             raise ValueError("Unknown type")
+
+    @staticmethod
+    def reset_inputs(input_section):
+        """
+        Resets dashboard inputs to default values.
+
+        :param input_section: The input section to reset.
+        """
+
+        possible_section_names = []
+        for name in vars(DashboardDefaults):
+            if name != "DEFAULT_VALUES" and name.isupper():
+                possible_section_names.append(name)
+
+        if input_section.upper() in possible_section_names:
+            state.update(getattr(DashboardDefaults, input_section.upper()))
+
+            if input_section == "distribution":
+                state.dirty("selected_distribution_type")
+            elif input_section == "lattice":
+                state.selected_lattice_list = []
+            elif input_section == "space_charge":
+                state.dirty("max_level")
+
+        elif input_section == "all":
+            state.update(DashboardDefaults.DEFAULT_VALUES)
+            state.dirty("selected_distribution_type")
+            state.selected_lattice_list = []
+            state.dirty("max_level")

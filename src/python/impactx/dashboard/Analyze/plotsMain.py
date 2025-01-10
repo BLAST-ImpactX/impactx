@@ -101,6 +101,7 @@ state.active_plot = None
 state.filtered_data = []
 state.all_data = []
 state.all_headers = []
+state.phase_space_png = None
 
 # -----------------------------------------------------------------------------
 # Functions to update table/plot
@@ -134,14 +135,13 @@ def update_plot():
         state.show_table = True
     elif state.active_plot == "Phase Space Plots":
         state.show_table = False
-        ctrl.matplotlib_figure_update(state.simulation_data)
 
 
 def run_simulation_impactX():
     buf = io.StringIO()
 
     with pipes(stdout=buf, stderr=buf):
-        state.simulation_data = run_simulation()
+        run_simulation()
 
     buf.seek(0)
     lines = [line.strip() for line in buf.getvalue().splitlines()]
@@ -232,7 +232,9 @@ class AnalyzeSimulation:
                     vuetify.VDivider()
                     with vuetify.VTabsItems(v_model="active_tab"):
                         with vuetify.VTabItem():
-                            vuetify.VImg(v_if=("image_data",), src=("image_data",))
+                            vuetify.VImg(
+                                v_if=("phase_space_png",), src=("phase_space_png",)
+                            )
 
                         with vuetify.VTabItem():
                             with vuetify.VContainer(

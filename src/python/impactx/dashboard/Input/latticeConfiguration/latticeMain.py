@@ -10,6 +10,7 @@ from trame.widgets import vuetify
 
 from impactx import elements
 
+from ...Input.trameFunctions import TrameFunctions
 from ...trame_setup import setup_server
 from ..generalFunctions import generalFunctions
 
@@ -32,9 +33,11 @@ state.listOfLatticeElementParametersAndDefault = (
 # Default
 # -----------------------------------------------------------------------------
 
-state.selectedLattice = None
-state.selectedLatticeList = []
-state.nsliceDefaultValue = None
+state.selected_lattice = generalFunctions.get_default(
+    "selected_lattice", "default_values"
+)
+state.selected_lattice_list = []
+state.nsliceDefaultValue = generalFunctions.get_default("n_slice", "default_values")
 
 # -----------------------------------------------------------------------------
 # Main Functions
@@ -48,13 +51,13 @@ def add_lattice_element():
     :return: dictionary representing the added lattice element with its parameters.
     """
 
-    selectedLattice = state.selectedLattice
-    selectedLatticeParameters = state.listOfLatticeElementParametersAndDefault.get(
-        selectedLattice, []
+    selected_lattice = state.selected_lattice
+    selected_lattice_parameters = state.listOfLatticeElementParametersAndDefault.get(
+        selected_lattice, []
     )
 
-    selectedLatticeElement = {
-        "name": selectedLattice,
+    selected_lattice_element = {
+        "name": selected_lattice,
         "parameters": [
             {
                 "parameter_name": parameter[0],
@@ -64,13 +67,13 @@ def add_lattice_element():
                     parameter[1], parameter[2]
                 ),
             }
-            for parameter in selectedLatticeParameters
+            for parameter in selected_lattice_parameters
         ],
     }
 
-    state.selectedLatticeList.append(selectedLatticeElement)
+    state.selected_lattice_list.append(selected_lattice_element)
     generalFunctions.update_simulation_validation_status()
-    return selectedLatticeElement
+    return selected_lattice_element
 
 
 def update_latticeElement_parameters(
@@ -80,13 +83,13 @@ def update_latticeElement_parameters(
     Updates parameter value and includes error message if user input is not valid
     """
 
-    for param in state.selectedLatticeList[index]["parameters"]:
+    for param in state.selected_lattice_list[index]["parameters"]:
         if param["parameter_name"] == parameterName:
             param["parameter_default_value"] = parameterValue
             param["parameter_error_message"] = parameterErrorMessage
 
     generalFunctions.update_simulation_validation_status()
-    state.dirty("selectedLatticeList")
+    state.dirty("selected_lattice_list")
 
 
 # -----------------------------------------------------------------------------
@@ -124,7 +127,7 @@ def lattice_elements():
     """
 
     elements_list = []
-    for latticeElement in state.selectedLatticeList:
+    for latticeElement in state.selected_lattice_list:
         latticeElement_name = latticeElement["name"]
         parameters = parameter_input_checker_for_lattice(latticeElement)
 
@@ -139,26 +142,31 @@ def lattice_elements():
 # -----------------------------------------------------------------------------
 
 
-@state.change("selectedLatticeList")
-def on_selectedLatticeList_change(selectedLatticeList, **kwargs):
-    if selectedLatticeList == []:
+@state.change("selected_lattice_list")
+def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
+    if selected_lattice_list == []:
         state.isSelectedLatticeListEmpty = "Please select a lattice element"
         generalFunctions.update_simulation_validation_status()
     else:
         state.isSelectedLatticeListEmpty = ""
 
 
-@state.change("selectedLattice")
-def on_lattice_element_name_change(selectedLattice, **kwargs):
+@state.change("selected_lattice")
+def on_lattice_element_name_change(selected_lattice, **kwargs):
     return
 
 
 @ctrl.add("add_latticeElement")
 def on_add_lattice_element_click():
-    selectedLattice = state.selectedLattice
-    if selectedLattice:
+    selected_lattice = state.selected_lattice
+
+    if selected_lattice not in state.listOfLatticeElements:
+        state.isSelectedLatticeListEmpty = (
+            f"Lattice element '{selected_lattice}' does not exist."
+        )
+    else:
         add_lattice_element()
-        state.dirty("selectedLatticeList")
+        state.dirty("selected_lattice_list")
 
 
 @ctrl.add("updateLatticeElementParameters")
@@ -173,35 +181,30 @@ def on_lattice_element_parameter_change(
     )
 
 
-@ctrl.add("clear_latticeElements")
-def on_clear_lattice_element_click():
-    state.selectedLatticeList = []
-
-
 @ctrl.add("deleteLatticeElement")
 def on_delete_LatticeElement_click(index):
-    state.selectedLatticeList.pop(index)
-    state.dirty("selectedLatticeList")
+    state.selected_lattice_list.pop(index)
+    state.dirty("selected_lattice_list")
 
 
 @ctrl.add("move_latticeElementIndex_up")
 def on_move_latticeElementIndex_up_click(index):
     if index > 0:
-        state.selectedLatticeList[index], state.selectedLatticeList[index - 1] = (
-            state.selectedLatticeList[index - 1],
-            state.selectedLatticeList[index],
+        state.selected_lattice_list[index], state.selected_lattice_list[index - 1] = (
+            state.selected_lattice_list[index - 1],
+            state.selected_lattice_list[index],
         )
-        state.dirty("selectedLatticeList")
+        state.dirty("selected_lattice_list")
 
 
 @ctrl.add("move_latticeElementIndex_down")
 def on_move_latticeElementIndex_down_click(index):
-    if index < len(state.selectedLatticeList) - 1:
-        state.selectedLatticeList[index], state.selectedLatticeList[index + 1] = (
-            state.selectedLatticeList[index + 1],
-            state.selectedLatticeList[index],
+    if index < len(state.selected_lattice_list) - 1:
+        state.selected_lattice_list[index], state.selected_lattice_list[index + 1] = (
+            state.selected_lattice_list[index + 1],
+            state.selected_lattice_list[index],
         )
-        state.dirty("selectedLatticeList")
+        state.dirty("selected_lattice_list")
 
 
 @ctrl.add("nsliceDefaultChange")
@@ -241,6 +244,9 @@ class LatticeConfiguration:
         with vuetify.VCard(style="width: 696px;"):
             with vuetify.VCardTitle("Lattice Configuration"):
                 vuetify.VSpacer()
+                TrameFunctions.create_refresh_button(
+                    lambda: generalFunctions.reset_inputs("lattice")
+                )
                 vuetify.VIcon(
                     "mdi-information",
                     classes="ml-2",
@@ -250,10 +256,10 @@ class LatticeConfiguration:
             vuetify.VDivider()
             with vuetify.VCardText():
                 with vuetify.VRow(align="center", no_gutters=True):
-                    with vuetify.VCol(cols=8):
+                    with vuetify.VCol(cols=10):
                         vuetify.VCombobox(
                             label="Select Accelerator Lattice",
-                            v_model=("selectedLattice", None),
+                            v_model=("selected_lattice", None),
                             items=("listOfLatticeElements",),
                             error_messages=("isSelectedLatticeListEmpty",),
                             dense=True,
@@ -266,14 +272,6 @@ class LatticeConfiguration:
                             dense=True,
                             classes="mr-2",
                             click=ctrl.add_latticeElement,
-                        )
-                    with vuetify.VCol(cols="auto"):
-                        vuetify.VBtn(
-                            "CLEAR",
-                            color="secondary",
-                            dense=True,
-                            classes="mr-2",
-                            click=ctrl.clear_latticeElements,
                         )
                     with vuetify.VCol(cols="auto"):
                         vuetify.VIcon(
@@ -297,7 +295,7 @@ class LatticeConfiguration:
                             vuetify.VDivider()
                             with vuetify.VContainer(fluid=True):
                                 with vuetify.VRow(
-                                    v_for="(latticeElement, index) in selectedLatticeList",
+                                    v_for="(latticeElement, index) in selected_lattice_list",
                                     align="center",
                                     no_gutters=True,
                                     style="min-width: 1500px;",
@@ -364,7 +362,7 @@ class LatticeConfiguration:
             vuetify.VDivider()
             with vuetify.VContainer(fluid=True):
                 with vuetify.VRow(
-                    v_for="(latticeElement, index) in selectedLatticeList",
+                    v_for="(latticeElement, index) in selected_lattice_list",
                     align="center",
                     no_gutters=True,
                     style="min-width: 1500px;",
@@ -424,6 +422,11 @@ class LatticeConfiguration:
                                         ctrl.nsliceDefaultChange,
                                         "['nslice', $event]",
                                     ),
+                                    type="number",
+                                    step=generalFunctions.get_default(
+                                        "nslice", "steps"
+                                    ),
+                                    __properties=["step"],
                                     placeholder="Value",
                                     dense=True,
                                     outlined=True,

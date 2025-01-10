@@ -136,14 +136,19 @@ namespace
 
 void init_elements(py::module& m)
 {
-    py::module_ const me = m.def_submodule(
+    py::module_ me = m.def_submodule(
         "elements",
         "Accelerator lattice elements in ImpactX"
     );
 
     // mixin classes
 
-    py::class_<elements::Named>(me, "Named")
+    py::module_ const mx = me.def_submodule(
+        "mixin",
+        "Mixin classes for accelerator lattice elements in ImpactX"
+    );
+
+    py::class_<elements::Named>(mx, "Named")
         .def_property("name",
             [](elements::Named & nm) { return nm.name(); },
             [](elements::Named & nm, std::string new_name) { nm.set_name(new_name); },
@@ -152,7 +157,7 @@ void init_elements(py::module& m)
         .def_property_readonly("has_name", &elements::Named::has_name)
     ;
 
-    py::class_<elements::Thick>(me, "Thick")
+    py::class_<elements::Thick>(mx, "Thick")
         .def(py::init<
                  amrex::ParticleReal,
                  amrex::ParticleReal
@@ -173,7 +178,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<elements::Thin>(me, "Thin")
+    py::class_<elements::Thin>(mx, "Thin")
         .def(py::init<>(),
              "Mixin class for lattice elements with zero length."
         )
@@ -187,7 +192,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<elements::Alignment>(me, "Alignment")
+    py::class_<elements::Alignment>(mx, "Alignment")
         .def(py::init<>(),
              "Mixin class for lattice elements with horizontal/vertical alignment errors."
         )
@@ -296,14 +301,18 @@ void init_elements(py::module& m)
              [](Aperture const & ap) {
                  return element_name(
                     ap,
-                    std::make_pair("shape", ap.shape_name(ap.m_shape))
+                    std::make_pair("shape", ap.shape_name(ap.m_shape)),
+                    std::make_pair("action", ap.action_name(ap.m_action))
                 );
              }
         )
         .def(py::init([](
                  amrex::ParticleReal xmax,
                  amrex::ParticleReal ymax,
+                 amrex::ParticleReal repeat_x,
+                 amrex::ParticleReal repeat_y,
                  std::string const & shape,
+                 std::string const & action,
                  amrex::ParticleReal dx,
                  amrex::ParticleReal dy,
                  amrex::ParticleReal rotation_degree,
@@ -313,14 +322,23 @@ void init_elements(py::module& m)
                  if (shape != "rectangular" && shape != "elliptical")
                      throw std::runtime_error(R"(shape must be "rectangular" or "elliptical")");
 
+                 if (action != "transmit" && action != "absorb")
+                     throw std::runtime_error(R"(action must be "transmit" or "absorb")");
+
                  Aperture::Shape const s = shape == "rectangular" ?
                      Aperture::Shape::rectangular :
                      Aperture::Shape::elliptical;
-                 return new Aperture(xmax, ymax, s, dx, dy, rotation_degree, name);
+                 Aperture::Action const a = action == "transmit" ?
+                     Aperture::Action::transmit :
+                     Aperture::Action::absorb;
+                 return new Aperture(xmax, ymax, repeat_x, repeat_y, s, a, dx, dy, rotation_degree, name);
              }),
              py::arg("xmax"),
              py::arg("ymax"),
+             py::arg("repeat_x") = 0,
+             py::arg("repeat_y") = 0,
              py::arg("shape") = "rectangular",
+             py::arg("action") = "transmit",
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
@@ -343,6 +361,22 @@ void init_elements(py::module& m)
             },
             "aperture type (rectangular, elliptical)"
         )
+        .def_property("action",
+            [](Aperture & ap)
+            {
+                return ap.action_name(ap.m_action);
+            },
+            [](Aperture & ap, std::string const & action)
+            {
+                if (action != "transmit" && action != "absorb")
+                    throw std::runtime_error(R"(action must be "transmit" or "absorb")");
+
+                ap.m_action = action == "transmit" ?
+                    Aperture::Action::transmit :
+                    Aperture::Action::absorb;
+            },
+            "action type (transmit, absorb)"
+        )
         .def_property("xmax",
             [](Aperture & ap) { return ap.m_xmax; },
             [](Aperture & ap, amrex::ParticleReal xmax) { ap.m_xmax = xmax; },
@@ -352,6 +386,16 @@ void init_elements(py::module& m)
             [](Aperture & ap) { return ap.m_ymax; },
             [](Aperture & ap, amrex::ParticleReal ymax) { ap.m_ymax = ymax; },
             "maximum vertical coordinate"
+        )
+        .def_property("repeat_x",
+            [](Aperture & ap) { return ap.m_repeat_x; },
+            [](Aperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
+            "horizontal period for repeated aperture masking"
+        )
+        .def_property("repeat_y",
+            [](Aperture & ap) { return ap.m_repeat_y; },
+            [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
+            "vertical period for repeated aperture masking"
         )
     ;
     register_beamoptics_push(py_Aperture);
@@ -896,6 +940,38 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_NonlinearLens);
+
+    py::class_<PlaneXYRot, elements::Named, elements::Thin, elements::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
+    py_PlaneXYRot
+        .def("__repr__",
+             [](PlaneXYRot const & plane_xyrot) {
+                 return element_name(
+                     plane_xyrot,
+                     std::make_pair("angle", plane_xyrot.m_phi)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                std::optional<std::string>
+             >(),
+             py::arg("angle"),
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             "A rotation in the x-y plane."
+        )
+        .def_property("angle",
+            [](PlaneXYRot & plane_xyrot) { return plane_xyrot.m_phi; },
+            [](PlaneXYRot & plane_xyrot, amrex::ParticleReal phi) { plane_xyrot.m_phi = phi; },
+            "Rotation angle (rad)."
+        )
+    ;
+    register_beamoptics_push(py_PlaneXYRot);
 
     py::class_<Programmable, elements::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",

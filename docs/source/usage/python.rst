@@ -215,7 +215,11 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:method:: evolve()
 
-      Run the main simulation loop for a number of steps.
+      Run the main simulation loop (deprecated, use ``track_particles``)
+
+   .. py:method:: track_particles()
+
+      Run the particle tracking simulation loop.
 
    .. py:method:: resize_mesh()
 
@@ -788,7 +792,7 @@ This module provides elements for the accelerator lattice.
    :param ds: Segment length in m.
    :param k:  focusing strength in m^(-2) (if unit = 0)
               = (azimuthal magnetic field gradient in T/m) / (rigidity in T-m)
-          OR  azimuthal magnetic field gradient in T/m (if unit = 1)
+              OR  azimuthal magnetic field gradient in T/m (if unit = 1)
    :param unit: specification of units for plasma lens focusing strength
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -909,7 +913,7 @@ This module provides elements for the accelerator lattice.
    :param ds: Segment length in m.
    :param bscale: Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0)
               = (magnetic field Bz in T) / (rigidity in T-m)
-          OR  Magnetic field Bz in T (SI units, if unit = 1)
+              OR  Magnetic field Bz in T (SI units, if unit = 1)
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz
@@ -942,13 +946,26 @@ This module provides elements for the accelerator lattice.
    :param phi_out: angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
    :param name: an optional name for the element
 
+.. py:class:: impactx.elements.PlaneXYRot(angle,  dx=0, dy=0, rotation=0, name=None)
+
+   Map for a transverse rotation in the x-y plane (i.e., about the reference velocity vector).
+
+   :param angle: nominal angle of rotation in the x-y plane, in degrees
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.Aperture(xmax, ymax, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
    :param xmax: maximum allowed value of the horizontal coordinate (meter)
    :param ymax: maximum allowed value of the vertical coordinate (meter)
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
+   :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -957,6 +974,10 @@ This module provides elements for the accelerator lattice.
    .. py:property:: shape
 
       aperture type (rectangular, elliptical)
+
+   .. py:property:: action
+
+      aperture type (transmit, absorb)
 
    .. py:property:: xmax
 

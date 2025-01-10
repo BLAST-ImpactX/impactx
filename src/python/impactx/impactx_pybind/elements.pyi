@@ -31,6 +31,7 @@ __all__ = [
     "Named",
     "NonlinearLens",
     "PRot",
+    "PlaneXYRot",
     "Programmable",
     "Quad",
     "RFCavity",
@@ -77,7 +78,10 @@ class Aperture(Named, Thin, Alignment):
         self,
         xmax: float,
         ymax: float,
+        repeat_x: float = 0,
+        repeat_y: float = 0,
         shape: str = "rectangular",
+        action: str = "transmit",
         dx: float = 0,
         dy: float = 0,
         rotation: float = 0,
@@ -96,6 +100,27 @@ class Aperture(Named, Thin, Alignment):
         """
         Push first the reference particle, then all other particles.
         """
+    @property
+    def action(self) -> str:
+        """
+        action type (transmit, absorb)
+        """
+    @action.setter
+    def action(self, arg1: str) -> None: ...
+    @property
+    def repeat_x(self) -> float:
+        """
+        horizontal period for repeated aperture masking
+        """
+    @repeat_x.setter
+    def repeat_x(self, arg1: float) -> None: ...
+    @property
+    def repeat_y(self) -> float:
+        """
+        vertical period for repeated aperture masking
+        """
+    @repeat_y.setter
+    def repeat_y(self, arg1: float) -> None: ...
     @property
     def shape(self) -> str:
         """
@@ -672,6 +697,7 @@ class KnownElementsList:
         | Marker
         | Multipole
         | NonlinearLens
+        | PlaneXYRot
         | Programmable
         | PRot
         | Quad
@@ -707,6 +733,7 @@ class KnownElementsList:
         | Marker
         | Multipole
         | NonlinearLens
+        | PlaneXYRot
         | Programmable
         | PRot
         | Quad
@@ -743,6 +770,7 @@ class KnownElementsList:
         | Marker
         | Multipole
         | NonlinearLens
+        | PlaneXYRot
         | Programmable
         | PRot
         | Quad
@@ -918,6 +946,36 @@ class PRot(Named, Thin):
         """
     @phi_out.setter
     def phi_out(self, arg1: float) -> None: ...
+
+class PlaneXYRot(Named, Thin, Alignment):
+    def __init__(
+        self,
+        angle: float,
+        dx: float = 0,
+        dy: float = 0,
+        rotation: float = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A rotation in the x-y plane.
+        """
+    def __repr__(self) -> str: ...
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: int = 0,
+        period: int = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @property
+    def angle(self) -> float:
+        """
+        Rotation angle (rad).
+        """
+    @angle.setter
+    def angle(self, arg1: float) -> None: ...
 
 class Programmable(Named):
     ds: float

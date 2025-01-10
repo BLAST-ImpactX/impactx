@@ -59,7 +59,7 @@ namespace impactx
             amrex::ParticleReal rotation_degree = 0,
             std::optional<std::string> name = std::nullopt
         )
-        : Named(name),
+        : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
           m_k(k), m_taper(taper), m_unit(unit)
         {

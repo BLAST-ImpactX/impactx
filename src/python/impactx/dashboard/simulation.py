@@ -38,12 +38,35 @@ def fig_to_base64(fig):
 
 def run_simulation():
     """
-    This tests using ImpactX and Pandas Dataframes
+    This tests runs a simulation on ImpactX
+    based on user inputs from the dashboard.
     """
     sim = ImpactX()
 
+    # space charge selections
+    if state.space_charge:
+        sim.max_level = state.max_level
+        sim.n_cell = state.n_cell
+        sim.particle_shape = state.particle_shape
+        sim.poisson_solver = state.poisson_solver
+        sim.space_charge = state.space_charge
+        sim.dynamic_size = state.dynamic_size
+        sim.prob_relative = state.prob_relative
+        sim.blocking_factor_x = [state.blocking_factor_x]
+        sim.blocking_factor_y = [state.blocking_factor_y]
+        sim.blocking_factor_z = [state.blocking_factor_z]
+
+        if state.poisson_solver == "multigrid":
+            sim.mlmg_relative_tolerance = state.mlmg_relative_tolerance
+            sim.mlmg_absolute_tolerance = state.mlmg_absolute_tolerance
+            sim.mlmg_max_iters = state.mlmg_max_iters
+            sim.mlmg_verbosity = state.mlmg_verbosity
+    # csr
+    if state.csr:
+        sim.csr = state.csr
+        sim.csr_bins = state.csr_bins
+
     sim.particle_shape = state.particle_shape
-    sim.space_charge = False
     sim.slice_step_diagnostics = True
     sim.init_grids()
 
@@ -70,11 +93,13 @@ def run_simulation():
     sim.evolve()
 
     fig = adjusted_settings_plot(pc)
+    ctrl.matplotlib_figure_update(fig)
+
     fig_original = pc.plot_phasespace()
 
     if fig_original is not None:
         image_base64 = fig_to_base64(fig_original)
-        state.image_data = f"data:image/png;base64, {image_base64}"
+        state.phase_space_png = f"data:image/png;base64, {image_base64}"
 
     sim.finalize()
 

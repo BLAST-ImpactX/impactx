@@ -858,6 +858,22 @@ add_impactx_test(aperture.py
     OFF  # no plot script yet
 )
 
+# Absorber collimation ########################################################
+#
+# w/o space charge
+add_impactx_test(absorber
+    examples/aperture/input_absorber.in
+      ON  # ImpactX MPI-parallel
+    examples/aperture/analysis_absorber.py
+    OFF  # no plot script yet
+)
+add_impactx_test(absorber.py
+    examples/aperture/run_absorber.py
+      OFF  # ImpactX MPI-parallel
+    examples/aperture/analysis_absorber.py
+    OFF  # no plot script yet
+)
+
 # Apochromat drift-quad example ##########################################################
 #
 # w/o space charge
@@ -1005,5 +1021,53 @@ add_impactx_test(coupled-optics.py
     examples/coupled_optics/run_coupled_optics.py
     OFF  # ImpactX MPI-parallel
     examples/coupled_optics/analysis_coupled_optics.py
+    OFF  # no plot script yet
+)
+
+# Aperture with Periodic Masking #########################################################
+#
+# w/o space charge
+add_impactx_test(aperture-periodic
+    examples/aperture/input_aperture_periodic.in
+    ON   # ImpactX MPI-parallel
+    examples/aperture/analysis_aperture_periodic.py
+    OFF  # no plot script yet
+)
+add_impactx_test(aperture-periodic.py
+    examples/aperture/run_aperture_periodic.py
+    OFF  # ImpactX MPI-parallel
+    examples/aperture/analysis_aperture_periodic.py
+    OFF  # no plot script yet
+)
+
+# Rotation in the transverse plane #########################################################
+#
+# w/o space charge
+add_impactx_test(rotation-xy
+    examples/rotation/input_rotation_xy.in
+    ON   # ImpactX MPI-parallel
+    examples/rotation/analysis_rotation_xy.py
+    OFF  # no plot script yet
+)
+add_impactx_test(rotation-xy.py
+    examples/rotation/run_rotation_xy.py
+    OFF  # ImpactX MPI-parallel
+    examples/rotation/analysis_rotation_xy.py
+    OFF  # no plot script yet
+)
+
+# PIP-II linac segment #########################################################
+#
+# with space charge
+add_impactx_test(linac-segment
+    examples/linac_segment/input_linac_segment.in
+    ON   # ImpactX MPI-parallel
+    examples/linac_segment/analysis_linac_segment.py
+    OFF  # no plot script yet
+)
+add_impactx_test(linac-segment.py
+    examples/linac_segment/run_linac_segment.py
+    OFF  # ImpactX MPI-parallel
+    examples/linac_segment/analysis_linac_segment.py
     OFF  # no plot script yet
 )

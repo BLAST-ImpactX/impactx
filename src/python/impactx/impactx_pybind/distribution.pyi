@@ -17,12 +17,16 @@ __all__ = [
 ]
 
 class Empty:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self) -> None:
         """
         Sets all values to zero.
         """
 
 class Gaussian:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,
@@ -40,6 +44,8 @@ class Gaussian:
         """
 
 class KVdist:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,
@@ -58,6 +64,8 @@ class KVdist:
         """
 
 class Kurth4D:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,
@@ -76,6 +84,8 @@ class Kurth4D:
         """
 
 class Kurth6D:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,
@@ -96,6 +106,8 @@ class Kurth6D:
         """
 
 class Semigaussian:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,
@@ -113,6 +125,8 @@ class Semigaussian:
         """
 
 class Thermal:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         k: float,
@@ -129,6 +143,8 @@ class Thermal:
         """
 
 class Triangle:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,
@@ -149,6 +165,8 @@ class Triangle:
         """
 
 class Waterbag:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         lambdaX: float,

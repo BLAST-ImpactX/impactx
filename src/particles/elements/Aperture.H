@@ -41,16 +41,27 @@ namespace impactx
             rectangular,
             elliptical
         };
+        enum Action
+        {
+            transmit,
+            absorb
+        };
 
         static std::string
         shape_name (Shape const & shape);
+
+        static std::string
+        action_name (Action const & action);
 
         /** A thin collimator element that applies a transverse aperture boundary.
          *  Particles outside the boundary are considered lost.
          *
          * @param shape aperture shape
+         * @param action specify action of domain (transmit/absorb)
          * @param xmax maximum value of horizontal coordinate (m)
          * @param ymax maximum value of vertical coordinate (m)
+         * @param repeat_x horizontal period for repeated masking, optional (m)
+         * @param repeat_y vertical period for repeated masking, optional (m)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -59,15 +70,18 @@ namespace impactx
         Aperture (
             amrex::ParticleReal xmax,
             amrex::ParticleReal ymax,
+            amrex::ParticleReal repeat_x,
+            amrex::ParticleReal repeat_y,
             Shape shape,
+            Action action,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
             std::optional<std::string> name = std::nullopt
         )
-        : Named(name),
+        : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_xmax(xmax), m_ymax(ymax)
+          m_shape(shape), m_action(action), m_xmax(xmax), m_ymax(ymax), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
         {
         }
 
@@ -103,25 +117,60 @@ namespace impactx
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
+            // define intermediate variables
+            amrex::ParticleReal u;
+            amrex::ParticleReal v;
+            amrex::ParticleReal dx = m_repeat_x/2.0;
+            amrex::ParticleReal dy = m_repeat_y/2.0;
+
+            // if the aperture is periodic, shift x,y coordinates to the fundamental domain
+            u = (m_repeat_x==0.0) ? x : (std::fmod(std::abs(x)+dx,m_repeat_x)-dx);
+            v = (m_repeat_y==0.0) ? y : (std::fmod(std::abs(y)+dy,m_repeat_y)-dy);
+
             // scale horizontal and vertical coordinates
-            amrex::ParticleReal const u = x / m_xmax;
-            amrex::ParticleReal const v = y / m_ymax;
+            u = u / m_xmax;
+            v = v / m_ymax;
 
             // compare against the aperture boundary
-            switch (m_shape)
+            switch (m_action)
             {
-                case Shape::rectangular :  // default
-                  if (std::pow(u,2)>1 || std::pow(v,2) > 1_prt) {
-                      amrex::ParticleIDWrapper{idcpu}.make_invalid();
+               case Action::transmit :  // default action
+
+                  switch (m_shape)
+                  {
+                      case Shape::rectangular :  // default shape
+                        if (std::pow(u,2)>1 || std::pow(v,2) > 1_prt) {
+                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                        }
+                        break;
+
+                      case Shape::elliptical :
+                        if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
+                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                        }
+                        break;
                   }
                   break;
 
-               case Shape::elliptical :
-                  if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
-                      amrex::ParticleIDWrapper{idcpu}.make_invalid();
+               case Action::absorb :
+
+                  switch (m_shape)
+                  {
+                      case Shape::rectangular :  // default
+                        if (std::pow(u,2) < 1 && std::pow(v,2) < 1_prt) {
+                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                        }
+                        break;
+
+                     case Shape::elliptical :
+                        if (std::pow(u,2) + std::pow(v,2) < 1_prt) {
+                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                        }
+                        break;
                   }
                   break;
             }
+
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -131,8 +180,11 @@ namespace impactx
         using Thin::operator();
 
         Shape m_shape; //! aperture type (rectangular, elliptical)
+        Action m_action; //! action type (transmit, absorb)
         amrex::ParticleReal m_xmax; //! maximum horizontal coordinate
         amrex::ParticleReal m_ymax; //! maximum vertical coordinate
+        amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
+        amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
 
     };
 

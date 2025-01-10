@@ -393,6 +393,13 @@ Lattice Elements
             * ``<element_name>.phi_in`` (``float``, in degrees) angle of the reference particle with respect to the longitudinal (z) axis in the original frame
             * ``<element_name>.phi_out`` (``float``, in degrees) angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame
 
+        * ``plane_xyrotation`` for a rotation in the x-y plane (i.e., about the reference velocity vector). This requires these additional parameters:
+
+            * ``<element_name>.angle`` (``float``, in degrees) nominal angle of rotation
+            * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+            * ``<element_name>.dy`` (``float``, in meters) vertical translation error
+            * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
         * ``kicker`` for a thin transverse kicker. This requires these additional parameters:
 
             * ``<element_name>.xkick`` (``float``, dimensionless OR in T-m) the horizontal kick strength
@@ -416,7 +423,10 @@ Lattice Elements
 
             * ``<element_name>.xmax`` (``float``, in meters) maximum value of the horizontal coordinate
             * ``<element_name>.ymax`` (``float``, in meters) maximum value of the vertical coordinate
+            * ``<element_name>.repeat_x`` (``float``, in meters) horizontal period for repeated aperture masking (inactive by default)
+            * ``<element_name>.repeat_y`` (``float``, in meters) vertical period for repeated aperture masking (inactive by default)
             * ``<element_name>.shape`` (``string``) shape of the aperture boundary: ``rectangular`` (default) or ``elliptical``
+            * ``<element_name>.action`` (``string``) action of the aperture domain: ``transmit`` (default) or ``absorb``
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -818,7 +828,7 @@ Overall simulation parameters
 * ``amrex.the_arena_is_managed``  (``0`` or ``1``; default is ``0`` for false)
     When running on GPUs, device memory that is accessed from the host will automatically be transferred with managed memory.
     This is useful for convenience during development, but has sometimes severe performance and memory footprint implications if relied on (and sometimes vendor bugs).
-    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory and thus changed the AMReX default to false.
+    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory.
     `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
 
 * ``amrex.omp_threads``  (``system``, ``nosmt`` or positive integer; default is ``nosmt``)

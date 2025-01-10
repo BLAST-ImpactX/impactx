@@ -46,6 +46,8 @@ class Config:
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
 
 class CoordSystem:
     """
@@ -61,6 +63,8 @@ class CoordSystem:
     ]  # value = {'s': <CoordSystem.s: 0>, 't': <CoordSystem.t: 1>}
     s: typing.ClassVar[CoordSystem]  # value = <CoordSystem.s: 0>
     t: typing.ClassVar[CoordSystem]  # value = <CoordSystem.t: 1>
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __eq__(self, other: typing.Any) -> bool: ...
     def __getstate__(self) -> int: ...
     def __hash__(self) -> int: ...
@@ -77,6 +81,8 @@ class CoordSystem:
     def value(self) -> int: ...
 
 class ImpactX:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def DistributionMap(
         self, lev: int
     ) -> amrex.space3d.amrex_3d_pybind.DistributionMapping: ...
@@ -110,7 +116,7 @@ class ImpactX:
         """
     def evolve(self) -> None:
         """
-        Run the main simulation loop for a number of steps.
+        Run the main simulation loop.
         """
     def finalize(self) -> None:
         """
@@ -146,6 +152,10 @@ class ImpactX:
     ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
         """
         space charge force (vector: x,y,z) per level
+        """
+    def track_particles(self) -> None:
+        """
+        Run the particle tracking simulation loop.
         """
     @property
     def abort_on_unused_inputs(self) -> int:
@@ -367,6 +377,8 @@ class ImpactX:
 class ImpactXParConstIter(
     amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_8_0_default
 ):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @typing.overload
     def __init__(
         self,
@@ -395,6 +407,8 @@ class ImpactXParConstIter(
         """
 
 class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @typing.overload
     def __init__(
         self,
@@ -427,6 +441,8 @@ class ImpactXParticleContainer(
 ):
     const_iterator = ImpactXParConstIter
     iterator = ImpactXParIter
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -521,6 +537,8 @@ class ImpactXParticleContainer(
         """
 
 class RefPart:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @staticmethod
     def load_file(ref: RefPart, madx_file):
         """
@@ -693,6 +711,7 @@ def push(
     | elements.Marker
     | elements.Multipole
     | elements.NonlinearLens
+    | elements.PlaneXYRot
     | elements.Programmable
     | elements.PRot
     | elements.Quad
@@ -715,6 +734,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "24.10"
+__version__: str = "25.01"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

@@ -31,9 +31,18 @@ def populate_prob_relative_fields():
     elif state.poisson_solver == "multigrid":
         first_field_value = multigrid_first_field_value
 
-    state.prob_relative = [first_field_value] + [0.0] * (
-        tot_num_prob_relative_fields - 1
-    )
+    if state.prob_relative:
+        size = len(state.prob_relative)
+        num_of_extra_fields = tot_num_prob_relative_fields - size
+
+        if size < tot_num_prob_relative_fields:
+            state.prob_relative.extend([0.0] * (num_of_extra_fields))
+        elif size > tot_num_prob_relative_fields:
+            state.prob_relative = state.prob_relative[:tot_num_prob_relative_fields]
+    else:
+        state.prob_relative = [first_field_value] + [0.0] * (
+            tot_num_prob_relative_fields - 1
+        )
 
     state.prob_relative_fields = [
         {

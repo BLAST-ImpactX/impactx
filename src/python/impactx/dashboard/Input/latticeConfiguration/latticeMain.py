@@ -29,7 +29,7 @@ state.listOfLatticeElementParametersAndDefault = (
 # Default
 # -----------------------------------------------------------------------------
 
-state.selectedLatticeList = []
+state.selected_lattice_list = []
 state.nslice = ""
 
 # -----------------------------------------------------------------------------
@@ -213,7 +213,7 @@ def update_default_value(parameter_name, new_value):
 
 
 # -----------------------------------------------------------------------------
-# ContentSetup
+# UI
 # -----------------------------------------------------------------------------
 
 
@@ -228,8 +228,8 @@ class LatticeConfiguration:
         Creates UI content for lattice configuration.
         """
 
-        with vuetify.VDialog(v_model=("showDialog", False), width="1200px"):
-            LatticeConfiguration.dialog_lattice_elementList()
+        with vuetify.VDialog(v_model=("showDialog", False)):
+            LatticeConfiguration.dialog_configuration_list()
 
         with vuetify.VDialog(
             v_model=("lattice_configuration_dialog_settings", False), width="500px"
@@ -277,107 +277,26 @@ class LatticeConfiguration:
                                     click="showDialog = true",
                                 )
                             vuetify.VDivider()
-                            with vuetify.VContainer(fluid=True):
-                                with vuetify.VRow(
-                                    v_for="(latticeElement, index) in selected_lattice_list",
-                                    align="center",
-                                    no_gutters=True,
-                                    style="min-width: 1500px;",
-                                ):
-                                    with vuetify.VCol(cols="auto", classes="pa-2"):
-                                        vuetify.VIcon(
-                                            "mdi-menu-up",
-                                            click=(
-                                                ctrl.move_latticeElementIndex_up,
-                                                "[index]",
-                                            ),
-                                        )
-                                        vuetify.VIcon(
-                                            "mdi-menu-down",
-                                            click=(
-                                                ctrl.move_latticeElementIndex_down,
-                                                "[index]",
-                                            ),
-                                        )
-                                        vuetify.VIcon(
-                                            "mdi-delete",
-                                            click=(
-                                                ctrl.deleteLatticeElement,
-                                                "[index]",
-                                            ),
-                                        )
-                                        vuetify.VChip(
-                                            v_text=("latticeElement.name",),
-                                            dense=True,
-                                            classes="mr-2",
-                                            style="justify-content: center",
-                                        )
-                                    with vuetify.VCol(
-                                        v_for="(parameter, parameterIndex) in latticeElement.parameters",
-                                        cols="auto",
-                                        classes="pa-2",
-                                    ):
-                                        vuetify.VTextField(
-                                            label=("parameter.parameter_name",),
-                                            v_model=(
-                                                "parameter.parameter_default_value",
-                                            ),
-                                            change=(
-                                                ctrl.updateLatticeElementParameters,
-                                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
-                                            ),
-                                            error_messages=(
-                                                "parameter.parameter_error_message",
-                                            ),
-                                            dense=True,
-                                            style="width: 100px;",
-                                        )
+                            LatticeConfiguration.configuration_list()
+
+    # -----------------------------------------------------------------------------
+    # Dialogs
+    # -----------------------------------------------------------------------------
 
     @staticmethod
-    def dialog_lattice_elementList():
+    def dialog_configuration_list():
         """
-        Displays the content shown on the dialog
-        box for lattice configuration.
+        Displays the configuration for lattice elements
+        shown in a dialog box.
         """
 
         with vuetify.VCard():
-            with vuetify.VCardTitle("Elements", classes="text-subtitle-2 pa-3"):
+            with vuetify.VCardTitle("Elements", classes="headline d-flex align-center"):
                 vuetify.VSpacer()
+                with vuetify.VBtn(icon=True, click="showDialog = false"):
+                    vuetify.VIcon("mdi-close")
             vuetify.VDivider()
-            with vuetify.VContainer(fluid=True):
-                with vuetify.VRow(
-                    v_for="(latticeElement, index) in selected_lattice_list",
-                    align="center",
-                    no_gutters=True,
-                    style="min-width: 1500px;",
-                ):
-                    with vuetify.VCol(cols="auto", classes="pa-2"):
-                        vuetify.VIcon(
-                            "mdi-delete",
-                            click=(ctrl.deleteLatticeElement, "[index]"),
-                        )
-                        vuetify.VChip(
-                            v_text=("latticeElement.name",),
-                            dense=True,
-                            classes="mr-2",
-                            style="justify-content: center",
-                        )
-                    with vuetify.VCol(
-                        v_for="(parameter, parameterIndex) in latticeElement.parameters",
-                        cols="auto",
-                        classes="pa-2",
-                    ):
-                        vuetify.VTextField(
-                            label=("parameter.parameter_name",),
-                            v_model=("parameter.parameter_default_value",),
-                            change=(
-                                ctrl.updateLatticeElementParameters,
-                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
-                            ),
-                            error_messages=("parameter.parameter_error_message",),
-                            dense=True,
-                            style="width: 100px;",
-                        )
+            LatticeConfiguration.configuration_list()
 
     @staticmethod
     def dialog_settings():
@@ -401,3 +320,55 @@ class LatticeConfiguration:
                                     "['nslice', $event]",
                                 ),
                             )
+
+    # -----------------------------------------------------------------------------
+    # lattice_configuration_lsit
+    # -----------------------------------------------------------------------------
+
+    @staticmethod
+    def configuration_list():
+        """
+        Displays the configuration for lattice elements.
+        """
+        with vuetify.VContainer(fluid=True):
+            with vuetify.VRow(
+                v_for="(latticeElement, index) in selected_lattice_list",
+                align="center",
+                no_gutters=True,
+                style="min-width: 1500px;",
+            ):
+                with vuetify.VCol(cols="auto", classes="pa-2"):
+                    vuetify.VIcon(
+                        "mdi-menu-up",
+                        click=(ctrl.move_latticeElementIndex_up, "[index]"),
+                    )
+                    vuetify.VIcon(
+                        "mdi-menu-down",
+                        click=(ctrl.move_latticeElementIndex_down, "[index]"),
+                    )
+                    vuetify.VIcon(
+                        "mdi-delete",
+                        click=(ctrl.deleteLatticeElement, "[index]"),
+                    )
+                    vuetify.VChip(
+                        v_text=("latticeElement.name",),
+                        dense=True,
+                        classes="mr-2",
+                        style="justify-content: center",
+                    )
+                with vuetify.VCol(
+                    v_for="(parameter, parameterIndex) in latticeElement.parameters",
+                    cols="auto",
+                    classes="pa-2",
+                ):
+                    vuetify.VTextField(
+                        label=("parameter.parameter_name",),
+                        v_model=("parameter.parameter_default_value",),
+                        change=(
+                            ctrl.updateLatticeElementParameters,
+                            "[index, parameter.parameter_name, $event, parameter.parameter_type]",
+                        ),
+                        error_messages=("parameter.parameter_error_message",),
+                        dense=True,
+                        style="width: 100px;",
+                    )

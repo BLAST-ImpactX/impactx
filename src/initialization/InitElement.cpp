@@ -152,7 +152,7 @@ namespace detail
             auto a = detail::query_alignment(pp_element);
             auto b = detail::query_aperture(pp_element);
 
-            m_lattice.emplace_back( Drift(ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["y_aperture"], nslice, element_name) );
+            m_lattice.emplace_back( Drift(ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "sbend")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);

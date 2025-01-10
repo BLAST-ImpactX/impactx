@@ -26,14 +26,14 @@ namespace impactx::elements
 
         /** A finite-length element
          *
-         * @param x_aperture horizontal half-aperture size in m
-         * @param y_aperture vertical half-aperture size in m
+         * @param aperture_x horizontal half-aperture size in m
+         * @param aperture_y vertical half-aperture size in m
          */
         Aperture (
-            amrex::ParticleReal x_aperture,
-            amrex::ParticleReal y_aperture
+            amrex::ParticleReal aperture_x,
+            amrex::ParticleReal aperture_y
         )
-        : m_x_aperture(x_aperture), m_y_aperture(y_aperture)
+        : m_aperture_x(aperture_x), m_aperture_y(aperture_y)
         {
         }
 
@@ -59,12 +59,12 @@ namespace impactx::elements
         ) const {
             using namespace amrex::literals; // for _rt and _prt
 
-            // skip aperture application if x_aperture <= 0 or y_aperture <= 0
-            if (m_x_aperture > 0 && m_y_aperture > 0) {
+            // skip aperture application if aperture_x <= 0 or aperture_y <= 0
+            if (m_aperture_x > 0 && m_aperture_y > 0) {
 
                // scale horizontal and vertical coordinates
-               amrex::ParticleReal const u = x / m_x_aperture;
-               amrex::ParticleReal const v = y / m_y_aperture;
+               amrex::ParticleReal const u = x / m_aperture_x;
+               amrex::ParticleReal const v = y / m_aperture_y;
 
                // compare against the aperture boundary
                if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
@@ -79,9 +79,9 @@ namespace impactx::elements
          * @return horizontal aperture size in m
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        amrex::ParticleReal x_aperture () const
+        amrex::ParticleReal aperture_x () const
         {
-            return m_x_aperture;
+            return m_aperture_x;
         }
 
         /** Vertical aperture size
@@ -89,13 +89,13 @@ namespace impactx::elements
          * @return vertical aperture size in m
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        amrex::ParticleReal y_aperture () const
+        amrex::ParticleReal aperture_y () const
         {
-            return m_y_aperture;
+            return m_aperture_y;
         }
 
-        amrex::ParticleReal m_x_aperture = 0; //! horizontal aperture size [m]
-        amrex::ParticleReal m_y_aperture = 0; //! vertical aperture size [m]
+        amrex::ParticleReal m_aperture_x = 0; //! horizontal aperture size [m]
+        amrex::ParticleReal m_aperture_y = 0; //! vertical aperture size [m]
     };
 
 } // namespace impactx::elements

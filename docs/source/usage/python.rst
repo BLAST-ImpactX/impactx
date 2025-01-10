@@ -570,7 +570,7 @@ This module provides elements for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Drift(ds, dx=0, dy=0, rotation=0, x_aperture=0, y_aperture=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Drift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift.
 
@@ -578,8 +578,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
-   :param x_aperture: horizontal half-aperture (elliptical) in m
-   :param y_aperture: vertical half-aperture (elliptical) in m
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 

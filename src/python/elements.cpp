@@ -219,12 +219,12 @@ void init_elements(py::module& m)
         .def(py::init<>(),
              "Mixin class for lattice elements with a transverse aperture."
         )
-        .def_property_readonly("x_aperture",
-            &elements::Aperture::x_aperture,
+        .def_property_readonly("aperture_x",
+            &elements::Aperture::aperture_x,
             "horizontal aperture in m"
         )
-        .def_property_readonly("y_aperture",
-            &elements::Aperture::y_aperture,
+        .def_property_readonly("aperture_y",
+            &elements::Aperture::aperture_y,
             "vertical aperture in m"
         )
     ;
@@ -693,8 +693,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
-             py::arg("x_aperture") = 0,
-             py::arg("y_aperture") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A drift."

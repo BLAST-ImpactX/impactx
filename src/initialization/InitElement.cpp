@@ -94,22 +94,22 @@ namespace detail
         return values;
     }
 
-    /** Read the Aperture parameters x_aperture and y_aperture from inputs
+    /** Read the Aperture parameters aperture_x and aperture_y from inputs
      *
      * @param pp_element the element being read
-     * @return key-value pairs for x_aperture and y_aperture
+     * @return key-value pairs for aperture_x and aperture_y
      */
     std::map<std::string, amrex::ParticleReal>
     query_aperture (amrex::ParmParse& pp_element)
     {
-        amrex::ParticleReal x_aperture = 0;
-        amrex::ParticleReal y_aperture = 0;
-        pp_element.query("x_aperture", x_aperture);
-        pp_element.query("y_aperture", y_aperture);
+        amrex::ParticleReal aperture_x = 0;
+        amrex::ParticleReal aperture_y = 0;
+        pp_element.query("aperture_x", aperture_x);
+        pp_element.query("aperture_y", aperture_y);
 
         std::map<std::string, amrex::ParticleReal> values = {
-                {"x_aperture", x_aperture},
-                {"y_aperture", y_aperture}
+                {"aperture_x", aperture_x},
+                {"aperture_y", aperture_y}
         };
 
         return values;
@@ -152,7 +152,7 @@ namespace detail
             auto a = detail::query_alignment(pp_element);
             auto b = detail::query_aperture(pp_element);
 
-            m_lattice.emplace_back( Drift(ds, a["dx"], a["dy"], a["rotation_degree"], b["x_aperture"], b["y_aperture"], nslice, element_name) );
+            m_lattice.emplace_back( Drift(ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["y_aperture"], nslice, element_name) );
         } else if (element_type == "sbend")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);

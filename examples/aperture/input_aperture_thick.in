@@ -29,8 +29,8 @@ monitor.backend = h5
 
 drift.type = drift
 drift.ds = 0.123
-drift.x_aperture = 1.0e-3
-drift.y_aperture = 1.5e-3
+drift.aperture_x = 1.0e-3
+drift.aperture_y = 1.5e-3
 
 
 ###############################################################################

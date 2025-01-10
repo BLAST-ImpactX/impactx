@@ -813,7 +813,7 @@ Overall simulation parameters
 * ``amrex.the_arena_is_managed``  (``0`` or ``1``; default is ``0`` for false)
     When running on GPUs, device memory that is accessed from the host will automatically be transferred with managed memory.
     This is useful for convenience during development, but has sometimes severe performance and memory footprint implications if relied on (and sometimes vendor bugs).
-    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory and thus changed the AMReX default to false.
+    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory.
     `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
 
 * ``amrex.omp_threads``  (``system``, ``nosmt`` or positive integer; default is ``nosmt``)

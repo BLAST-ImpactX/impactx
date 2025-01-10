@@ -80,6 +80,7 @@ namespace impactx::spacecharge
             sorted_phi.emplace_back(&phi[lev]);
         }
 
+        const bool is_igf_2d = false;
         const bool do_single_precision_comms = false;
         const bool eb_enabled = false;
         ablastr::fields::computePhi(
@@ -95,6 +96,7 @@ namespace impactx::spacecharge
             pc.GetParGDB()->boxArray(),
             ablastr::utils::enums::GridType::Collocated,
             is_solver_igf_on_lev0,
+            is_igf_2d,
             eb_enabled,
             do_single_precision_comms,
             rel_ref_ratio

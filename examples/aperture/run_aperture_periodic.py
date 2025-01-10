@@ -6,12 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
 from impactx import ImpactX, distribution, elements
-
-# work-around for https://github.com/ECP-WarpX/impactx/issues/499
-pp_amrex = amr.ParmParse("amrex")
-pp_amrex.add("the_arena_is_managed", 1)
 
 sim = ImpactX()
 

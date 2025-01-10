@@ -219,12 +219,12 @@ void init_elements(py::module& m)
         .def(py::init<>(),
              "Mixin class for lattice elements with a transverse aperture."
         )
-        .def_property_readonly("xmax",
-            &elements::Aperture::xmax,
+        .def_property_readonly("x_aperture",
+            &elements::Aperture::x_aperture,
             "horizontal aperture in m"
         )
-        .def_property_readonly("ymax",
-            &elements::Aperture::ymax,
+        .def_property_readonly("y_aperture",
+            &elements::Aperture::y_aperture,
             "vertical aperture in m"
         )
     ;

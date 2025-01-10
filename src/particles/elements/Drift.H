@@ -77,7 +77,7 @@ namespace impactx
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index (unused)
+         * @param idcpu particle global index
          * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -88,7 +88,7 @@ namespace impactx
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            uint64_t & AMREX_RESTRICT idcpu,
             RefPart const & refpart
         ) const
         {

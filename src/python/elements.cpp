@@ -216,7 +216,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<elements::LinearTransport>(me, "LinearTransport")
+    py::class_<elements::LinearTransport>(mx, "LinearTransport")
         .def(py::init<>(),
              "Mixin class for linear transport approximation via matrices."
         )
@@ -1573,7 +1573,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_TaperedPL);
 
-    py::class_<LinearMap, elements::Named, elements::Thin, elements::Alignment, elements::LinearTransport> py_LinearMap(me, "LinearMap");
+    py::class_<LinearMap, elements::Named, elements::Alignment, elements::LinearTransport> py_LinearMap(me, "LinearMap");
     py_LinearMap
         .def("__repr__",
              [](LinearMap const & linearmap) {
@@ -1589,9 +1589,11 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("R"),
+             py::arg("ds") = 0,
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
@@ -1602,6 +1604,15 @@ void init_elements(py::module& m)
             [](LinearMap & linearmap) { return linearmap.m_transport_map; },
             [](LinearMap & linearmap, elements::LinearTransport::Map6x6 R) { linearmap.m_transport_map = R; },
             "linear map as a 6x6 transport matrix"
+        )
+        .def_property("ds",
+            [](LinearMap & linearmap) { return linearmap.m_ds; },
+            [](LinearMap & linearmap, amrex::ParticleReal ds) { linearmap.m_ds = ds; },
+            "segment length in m"
+        )
+        .def_property_readonly("nslice",
+            [](LinearMap & linearmap) { return linearmap.nslice(); },
+            "one, because we do not support slicing of this element"
         )
      ;
      register_beamoptics_push(py_LinearMap);

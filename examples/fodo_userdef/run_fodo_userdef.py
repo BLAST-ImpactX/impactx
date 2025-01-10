@@ -51,14 +51,18 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # add a user-defined, linear element for the drifts
 Iden = elements.LinearMap.Map6x6.identity()
 R1, R2 = Iden, Iden
-R1[1, 2] = 0.25  # ds
-R1[3, 4] = 0.25  # ds
-R1[5, 6] = 0.25 / 16.6464  # ds / (beta*gamma^2)
-drift1 = elements.LinearMap(name="drift1", R=R1)
-R2[1, 2] = 0.5  # ds
-R2[3, 4] = 0.5  # ds
-R2[5, 6] = 0.5 / 16.6464  # ds / (beta*gamma^2)
-drift2 = elements.LinearMap(name="drift2", R=R2)
+
+ds1 = 0.25
+R1[1, 2] = ds1
+R1[3, 4] = ds1
+R1[5, 6] = ds1 / 16.6464  # ds / (beta*gamma^2)
+drift1 = elements.LinearMap(name="drift1", R=R1, ds=ds1)
+
+ds2 = 0.5
+R2[1, 2] = ds2
+R2[3, 4] = ds2
+R2[5, 6] = ds2 / 16.6464  # ds / (beta*gamma^2)
+drift2 = elements.LinearMap(name="drift2", R=R2, ds=ds2)
 
 # design the accelerator lattice)
 ns = 25  # number of slices per ds in the element

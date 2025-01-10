@@ -14,7 +14,6 @@
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/lineartransport.H"
-#include "mixin/thin.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -29,7 +28,6 @@ namespace impactx
     struct LinearMap
     : public elements::Named,
       public elements::BeamOptic<LinearMap>,
-      public elements::Thin,
       public elements::Alignment,
       public elements::LinearTransport,
       public elements::NoFinalize
@@ -43,6 +41,7 @@ namespace impactx
          *       px_final = R(2,1)*x + R(2,2)*px + R(2,3)*y + ..., etc.
          *
          * @param R user-provided transport map
+         * @param ds Segment length in m
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -50,6 +49,7 @@ namespace impactx
          */
         LinearMap (
             LinearTransport::Map6x6 const & R,
+            amrex::ParticleReal ds = 0,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -59,6 +59,7 @@ namespace impactx
           Alignment(dx, dy, rotation_degree)
         {
             m_transport_map = R;
+            m_ds = ds;
         }
 
         /** Push all particles */
@@ -112,10 +113,68 @@ namespace impactx
             shift_out(x, y, px, py);
         }
 
-        /** This pushes the reference particle. */
-        using Thin::operator();
+        /** This pushes the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
+            if (m_ds > 0)  // Drift
+            {
+                using namespace amrex::literals; // for _rt and _prt
+
+                // assign input reference particle values
+                amrex::ParticleReal const x = refpart.x;
+                amrex::ParticleReal const px = refpart.px;
+                amrex::ParticleReal const y = refpart.y;
+                amrex::ParticleReal const py = refpart.py;
+                amrex::ParticleReal const z = refpart.z;
+                amrex::ParticleReal const pz = refpart.pz;
+                amrex::ParticleReal const t = refpart.t;
+                amrex::ParticleReal const pt = refpart.pt;
+                amrex::ParticleReal const s = refpart.s;
+
+                // length of the current slice
+                amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+                // assign intermediate parameter
+                amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+
+                // advance position and momentum (drift)
+                refpart.x = x + step*px;
+                refpart.y = y + step*py;
+                refpart.z = z + step*pz;
+                refpart.t = t - step*pt;
+
+                // advance integrated path length
+                refpart.s = s + slice_ds;
+            }
+            // else nothing to do for a zero-length element
+        }
+
+        /** Number of slices used for the application of space charge
+         *
+         * @return one, because we do not support slicing of this element
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        int nslice () const
+        {
+            return 1;
+        }
+
+        /** Return the segment length
+         *
+         * @return by default zero, but users can set a corresponding ds for bookkeeping
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        amrex::ParticleReal ds () const
+        {
+            return m_ds;
+        }
 
         LinearTransport::Map6x6 m_transport_map;  // 6x6 transport map
+        amrex::ParticleReal m_ds;  // finite ds allowed for bookkeeping, but we do not allow slicing
     };
 
 } // namespace impactx

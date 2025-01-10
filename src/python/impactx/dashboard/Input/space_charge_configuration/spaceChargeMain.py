@@ -25,7 +25,7 @@ def populate_prob_relative_fields():
     multigrid_first_field_value = generalFunctions.get_default(
         "prob_relative_first_value_multigrid", "default_values"
     )
-
+    first_field_value = 0
     if state.poisson_solver == "fft":
         first_field_value = fft_first_field_value
     elif state.poisson_solver == "multigrid":

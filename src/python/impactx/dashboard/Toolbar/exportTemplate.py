@@ -14,15 +14,15 @@ def build_distribution_list():
     Generates an instance of distribution inputs
     as a string for exporting purposes.
     """
-    distribution_name = state.selected_distribution
+    distribution_name = state.distribution
     parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
 
-    indentation = " " * (8 if state.selected_distribution_type == "Twiss" else 4)
+    indentation = " " * (8 if state.distribution_type == "Twiss" else 4)
     distribution_parameters = ",\n".join(
         f"{indentation}{key}={value}" for key, value in parameters.items()
     )
 
-    if state.selected_distribution_type == "Twiss":
+    if state.distribution_type == "Twiss":
         return (
             f"distr = distribution.{distribution_name}(\n"
             f"    **twiss(\n"

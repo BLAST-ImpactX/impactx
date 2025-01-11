@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import (
+    CardComponents,
     DashboardDefaults,
     TrameFunctions,
     generalFunctions,
@@ -76,7 +77,7 @@ class InputParameters:
         """
 
         with vuetify.VCard(style="width: 340px; height: 350px"):
-            TrameFunctions.input_section_header("Input Parameters")
+            CardComponents.input_header("Input Parameters")
             with vuetify.VCardText():
                 with vuetify.VRow(classes="py-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):

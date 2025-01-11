@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from impactx import elements
 
-from .. import TrameFunctions, generalFunctions, setup_server, vuetify
+from .. import CardComponents, TrameFunctions, generalFunctions, setup_server, vuetify
 
 server, state, ctrl = setup_server()
 
@@ -237,7 +237,7 @@ class LatticeConfiguration:
             LatticeConfiguration.dialog_settings()
 
         with vuetify.VCard(style="width: 696px;"):
-            TrameFunctions.input_section_header("Lattice Configuration")
+            CardComponents.input_header("Lattice Configuration")
             with vuetify.VCardText():
                 with vuetify.VRow(align="center", no_gutters=True):
                     with vuetify.VCol(cols=10):

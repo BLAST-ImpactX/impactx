@@ -1,4 +1,4 @@
-from .. import TrameFunctions, setup_server, vuetify
+from .. import CardComponents, TrameFunctions, setup_server, vuetify
 
 server, state, ctrl = setup_server()
 
@@ -11,7 +11,7 @@ class csrConfiguration:
         """
 
         with vuetify.VCard(v_show="csr", style="width: 170px;"):
-            TrameFunctions.input_section_header("CSR")
+            CardComponents.input_header("CSR")
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(classes="py-0"):

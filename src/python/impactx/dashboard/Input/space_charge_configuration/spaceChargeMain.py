@@ -1,4 +1,4 @@
-from .. import TrameFunctions, generalFunctions, setup_server, vuetify
+from .. import CardComponents, TrameFunctions, generalFunctions, setup_server, vuetify
 from .spaceChargeFunctions import SpaceChargeFunctions
 
 server, state, ctrl = setup_server()
@@ -177,7 +177,7 @@ class SpaceChargeConfiguration:
             SpaceChargeConfiguration.dialog_settings()
 
         with vuetify.VCard(v_show="space_charge", style="width: 340px;"):
-            TrameFunctions.input_section_header(
+            CardComponents.input_header(
                 "Space Charge", additional_components=multigrid_settings
             )
             with vuetify.VCardText():

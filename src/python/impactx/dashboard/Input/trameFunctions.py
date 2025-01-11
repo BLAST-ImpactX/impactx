@@ -80,37 +80,6 @@ class TrameFunctions:
         )
 
     @staticmethod
-    def documentation_icon(section_name, **kwargs):
-        vuetify.VIcon(
-            "mdi-information",
-            style="color: #00313C;",
-            click=lambda: generalFunctions.documentation(section_name),
-        )
-
-    @staticmethod
-    def refresh_icon(section_name):
-        """
-        Creates a standardized refresh button.
-        :param reset_function: The reset function to call when clicked.
-        """
-        vuetify.VIcon(
-            "mdi-refresh",
-            style="color: #00313C;",
-            click=lambda: generalFunctions.reset_inputs(section_name),
-        )
-
-    @staticmethod
-    def input_section_header(section_name, additional_components=None):
-        documentation_name = section_name.lower().replace(" ", "_")
-        with vuetify.VCardTitle(section_name):
-            vuetify.VSpacer()
-            if additional_components:
-                additional_components()
-            TrameFunctions.refresh_icon(documentation_name)
-            TrameFunctions.documentation_icon(documentation_name)
-        vuetify.VDivider()
-
-    @staticmethod
     def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]):
         if len(tab_names) != num_tabs:
             raise ValueError("Number of tab names must match number of tabs_names")

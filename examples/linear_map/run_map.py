@@ -58,7 +58,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # initialize the linear map
 Iden = elements.LinearMap.Map6x6.identity()
-Rmat = Iden
+R = Iden
 
 # desired tunes
 Qx = 0.139

@@ -9,7 +9,7 @@
 # from elements import LinearTransport
 import numpy as np
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, distribution, elements, twiss
 
 sim = ImpactX()
 

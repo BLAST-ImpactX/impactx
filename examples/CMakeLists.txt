@@ -1071,3 +1071,19 @@ add_impactx_test(linac-segment.py
     examples/linac_segment/analysis_linac_segment.py
     OFF  # no plot script yet
 )
+
+# Iteration of a linear one-turn map #########################################
+#
+# w/o space charge
+add_impactx_test(linear-map
+    examples/linear_map/input_map.in
+    ON   # ImpactX MPI-parallel
+    examples/linear_map/analysis_map.py
+    OFF  # no plot script yet
+)
+add_impactx_test(linear-map.py
+    examples/linear_map/run_map.py
+    ON  # ImpactX MPI-parallel
+    examples/linear_map/analysis_map.py
+    OFF  # no plot script yet
+)

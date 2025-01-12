@@ -23,8 +23,8 @@ The units of the transport matrix :math:`R` elements are... TODO
 
 .. note::
 
-   Note that generally, if a user-provided linear map is used, the beam transport may not be symplectic.
-   Thus, where symplecticity is needed, the :ref:`Python Programmable Element <usage-workflows-add-element-python>` and the :ref:`C++ Element <usage-workflows-add-element-cxx>` provide a more general approach.
+   If a user-provided linear map is used, it is up to the user to ensure that the 6x6 transport matrix is symplectic.
+   If a more general form of user-defined transport is needed, the :ref:`Python Programmable Element <usage-workflows-add-element-python>` and the :ref:`C++ Element <usage-workflows-add-element-cxx>` provide a more general approach.
 
 
 .. _usage-workflows-add-element-python:

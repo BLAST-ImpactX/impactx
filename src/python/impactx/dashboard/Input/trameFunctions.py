@@ -8,7 +8,6 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import vuetify
 
-from ..Input.generalFunctions import generalFunctions
 from ..trame_setup import setup_server
 
 server, state, ctrl = setup_server()
@@ -42,42 +41,6 @@ class TrameFunctions:
                 vuetify.VIcon(mdi_icon)
             with vuetify.VListItemContent():
                 vuetify.VListItemTitle(route_title)
-
-    @staticmethod
-    def select(label, v_model_name=None, items=None, **kwargs):
-        # in place for now as some variables are not in same format
-        if v_model_name is None:
-            v_model_name = label.lower().replace(" ", "_")
-
-        if items is None:
-            items = (
-                generalFunctions.get_default(f"{v_model_name}_list", "default_values"),
-            )
-
-        vuetify.VSelect(
-            label=label,
-            v_model=(f"{v_model_name}",),
-            items=items,
-            dense=True,
-            **kwargs,
-        )
-
-    @staticmethod
-    def text_field(label, v_model_name=None, **kwargs):
-        if v_model_name is None:
-            v_model_name = label.lower().replace(" ", "_")
-
-        vuetify.VTextField(
-            label=label,
-            v_model=(f"{v_model_name}",),
-            error_messages=(f"{v_model_name}_error_message", []),
-            type="number",
-            step=generalFunctions.get_default(f"{v_model_name}", "steps"),
-            suffix=generalFunctions.get_default(f"{v_model_name}", "units"),
-            __properties=["step"],
-            dense=True,
-            **kwargs,
-        )
 
     @staticmethod
     def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]):

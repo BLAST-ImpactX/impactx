@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 from .. import (
     CardComponents,
     DashboardDefaults,
-    TrameFunctions,
+    InputComponents,
     generalFunctions,
     setup_server,
     vuetify,
@@ -94,41 +94,41 @@ class InputParameters:
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):
-                        TrameFunctions.text_field(
+                        InputComponents.text_field(
                             label="Ref. Particle Charge",
                             v_model_name="charge_qe",
                             input=(ctrl.input_change, "['charge_qe']"),
                         )
                     with vuetify.VCol(cols=6, classes="py-0"):
-                        TrameFunctions.text_field(
+                        InputComponents.text_field(
                             label="Ref. Particle Mass",
                             v_model_name="mass_MeV",
                             input=(ctrl.input_change, "['mass_MeV']"),
                         )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=12, classes="py-0"):
-                        TrameFunctions.text_field(
+                        InputComponents.text_field(
                             label="Number of Particles",
                             v_model_name="npart",
                             input=(ctrl.input_change, "['npart']"),
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=8, classes="py-0"):
-                        TrameFunctions.text_field(
+                        InputComponents.text_field(
                             label="Kinetic Energy",
                             v_model_name="kin_energy",
                             input=(ctrl.input_change, "['kin_energy']"),
                             classes="mr-2",
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
-                        TrameFunctions.select(
+                        InputComponents.select(
                             label="Unit",
                             v_model_name="kin_energy_unit",
                             input=(ctrl.kin_energy_unit_change, "[$event]"),
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=12, classes="py-0"):
-                        TrameFunctions.text_field(
+                        InputComponents.text_field(
                             label="Bunch Charge",
                             v_model_name="bunch_charge_C",
                             input=(ctrl.input_change, "['bunch_charge_C']"),

@@ -8,7 +8,14 @@ License: BSD-3-Clause-LBNL
 
 from impactx import elements
 
-from .. import CardComponents, TrameFunctions, generalFunctions, setup_server, vuetify
+from .. import (
+    CardComponents,
+    InputComponents,
+    TrameFunctions,
+    generalFunctions,
+    setup_server,
+    vuetify,
+)
 
 server, state, ctrl = setup_server()
 
@@ -312,7 +319,7 @@ class LatticeConfiguration:
                 with vuetify.VCardText():
                     with vuetify.VRow():
                         with vuetify.VCol(cols=3):
-                            TrameFunctions.text_field(
+                            InputComponents.text_field(
                                 label="nslice",
                                 v_model_name="nslice",
                                 change=(

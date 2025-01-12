@@ -126,3 +126,47 @@ class InputComponents:
             dense=True,
             **kwargs,
         )
+
+
+class NavigationComponents:
+    """
+    Class contains staticmethods to create
+    navigation-related Vuetify components.
+    """
+
+    @staticmethod
+    def create_route(route_title: str, mdi_icon: str) -> None:
+        """
+        Creates a route with specified title and icon.
+
+        :param route_title: The title for the route
+        :param mdi_icon: The MDI icon name to display
+        """
+        state[route_title] = False  # Does not display route by default
+
+        to = f"/{route_title}"
+        click = f"{route_title} = true"
+
+        with vuetify.VListItem(to=to, click=click):
+            with vuetify.VListItemIcon():
+                vuetify.VIcon(mdi_icon)
+            with vuetify.VListItemContent():
+                vuetify.VListItemTitle(route_title)
+
+    @staticmethod
+    def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]) -> None:
+        """
+        Creates a tabbed dialog interface.
+
+        :param name: The base name for the tab group
+        :param num_tabs: Number of tabs to create
+        :param tab_names: List of names for each tab
+        """
+        if len(tab_names) != num_tabs:
+            raise ValueError("Number of tab names must match number of tabs_names")
+
+        with vuetify.VCard():
+            with vuetify.VTabs(v_model=(f"{name}", 0)):
+                for tab_name in tab_names:
+                    vuetify.VTab(tab_name)
+            vuetify.VDivider()

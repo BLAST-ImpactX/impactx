@@ -1,7 +1,7 @@
 from .. import (
     CardComponents,
     InputComponents,
-    TrameFunctions,
+    NavigationComponents,
     generalFunctions,
     setup_server,
     vuetify,
@@ -259,7 +259,7 @@ class SpaceChargeConfiguration:
         settings.
         """
         dialog_name = "space_charge_dialog_tab_settings"
-        TrameFunctions.create_dialog_tabs(
+        NavigationComponents.create_dialog_tabs(
             dialog_name, 1, ["Advanced Multigrid Settings"]
         )
         with vuetify.VTabsItems(v_model=("dialog_name", 0)):

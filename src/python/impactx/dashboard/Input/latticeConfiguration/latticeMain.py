@@ -11,7 +11,7 @@ from impactx import elements
 from .. import (
     CardComponents,
     InputComponents,
-    TrameFunctions,
+    NavigationComponents,
     generalFunctions,
     setup_server,
     vuetify,
@@ -313,7 +313,7 @@ class LatticeConfiguration:
         """
         dialog_name = "lattice_configuration_dialog_tab_settings"
 
-        TrameFunctions.create_dialog_tabs(dialog_name, 1, ["Defaults"])
+        NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"])
         with vuetify.VTabsItems(v_model=(dialog_name, 0)):
             with vuetify.VTabItem():
                 with vuetify.VCardText():

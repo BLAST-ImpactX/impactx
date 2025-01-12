@@ -58,7 +58,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # initialize the linear map
 Iden = elements.LinearMap.Map6x6.identity()
-R = Iden
+Rmat = Iden
 
 # desired tunes
 Qx = 0.139
@@ -71,20 +71,20 @@ phi_y = 2.0 * np.pi * Qy
 phi_t = 2.0 * np.pi * Qt
 
 # matrix elements for the horizontal plane
-R[1, 1] = np.cos(phi_x)
-R[1, 2] = beta_star_x * np.sin(phi_x)
-R[2, 1] = -np.sin(phi_x) / beta_star_x
-R[2, 2] = np.cos(phi_x)
+Rmat[1, 1] = np.cos(phi_x)
+Rmat[1, 2] = beta_star_x * np.sin(phi_x)
+Rmat[2, 1] = -np.sin(phi_x) / beta_star_x
+Rmat[2, 2] = np.cos(phi_x)
 # matrix elements for the vertical plane
-R[3, 3] = np.cos(phi_y)
-R[3, 4] = beta_star_y * np.sin(phi_y)
-R[4, 3] = -np.sin(phi_y) / beta_star_y
-R[4, 4] = np.cos(phi_y)
+Rmat[3, 3] = np.cos(phi_y)
+Rmat[3, 4] = beta_star_y * np.sin(phi_y)
+Rmat[4, 3] = -np.sin(phi_y) / beta_star_y
+Rmat[4, 4] = np.cos(phi_y)
 # matrix elements for the longitudinal plane
-R[5, 5] = np.cos(phi_t)
-R[5, 6] = beta_star_t * np.sin(phi_t)
-R[6, 5] = -np.sin(phi_t) / beta_star_t
-R[6, 6] = np.cos(phi_t)
+Rmat[5, 5] = np.cos(phi_t)
+Rmat[5, 6] = beta_star_t * np.sin(phi_t)
+Rmat[6, 5] = -np.sin(phi_t) / beta_star_t
+Rmat[6, 6] = np.cos(phi_t)
 
 # design the accelerator lattice
 map = [

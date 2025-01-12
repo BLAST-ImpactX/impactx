@@ -9,6 +9,7 @@ import numpy as np
 import openpmd_api as io
 from scipy.stats import moment
 
+
 def get_moments(beam):
     """Calculate standard deviations of beam position & momenta
     and emittance values
@@ -31,6 +32,7 @@ def get_moments(beam):
 
     return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
+
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
@@ -48,7 +50,7 @@ print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
- 
+
 atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
@@ -110,9 +112,9 @@ for k_i, i in series.iterations.items():
     turn = beam.to_df()
     x.append(turn["position_x"][j])
     px.append(turn["momentum_x"][j])
-    y.append(turn["position_y"][j]) 
+    y.append(turn["position_y"][j])
     py.append(turn["momentum_y"][j])
-    t.append(turn["position_t"][j]) 
+    t.append(turn["position_t"][j])
     pt.append(turn["momentum_t"][j])
     n = n + 1
 

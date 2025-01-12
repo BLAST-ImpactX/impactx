@@ -20,7 +20,7 @@ beam.emittT = 1.33e-6
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.periods = 1
+lattice.periods = 5
 lattice.elements = monitor map1
 
 monitor.type = beam_monitor

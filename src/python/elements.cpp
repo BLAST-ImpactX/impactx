@@ -1170,7 +1170,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Sbend);
 
-    py::class_<CFbend, elements::Named, elements::Thick, elements::Alignment> py_CFbend(me, "CFbend");
+    py::class_<CFbend, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_CFbend(me, "CFbend");
     py_CFbend
         .def("__repr__",
              [](CFbend const & cfbend) {
@@ -1189,6 +1189,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -1198,6 +1200,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An ideal combined function bend (sector bend with quadrupole component)."

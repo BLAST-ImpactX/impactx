@@ -166,12 +166,13 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal rc, k;
             pp_element.get("rc", rc);
             pp_element.get("k", k);
 
-            m_lattice.emplace_back( CFbend(ds, rc, k, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( CFbend(ds, rc, k, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "dipedge")
         {
             auto a = detail::query_alignment(pp_element);

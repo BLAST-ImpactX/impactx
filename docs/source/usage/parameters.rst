@@ -351,15 +351,16 @@ Lattice Elements
 
         * ``linear_map`` for a custom, linear transport matrix.
 
-          The matrix elements are 1-indexed.
-          The transport matrix :math:`R` is defaulted to the identity matrix, so only matrix entries that are differing from that need to be specified.
+          The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`. 
+          The transport matrix :math:`R` is defaulted to the identity matrix, so only matrix entries that differ from that need to be specified.
 
-          TODO: describe units to put in the R entries.
+          The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
+          and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
 
           This requires these additional parameters:
 
             * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
-                a 1-indexed, 6x6, linear transport map to multiply with the the beam vector :math:`x,px,y,py,t,pt`.
+                a 1-indexed, 6x6, linear transport map to multiply with the the phase space vector :math:`x,px,y,py,t,pt`.
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

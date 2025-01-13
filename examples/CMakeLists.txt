@@ -116,6 +116,8 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     else()
         set_property(TEST ${name}.run APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
     endif()
+    # special return code for skipped tests (e.g., runtime prerequisite fails)
+    set_tests_properties(${name}.run PROPERTIES SKIP_RETURN_CODE 42)
 
     # analysis and plots
     set(THIS_Python_SCRIPT_EXE)

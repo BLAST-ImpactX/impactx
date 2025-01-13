@@ -37,7 +37,7 @@ except ImportError:
     print("Warning: Cannot import PyTorch. Skipping test.")
     import sys
 
-    sys.exit(0)
+    sys.exit(42)  # ImpactX special return code for skipped tests
 
 import zipfile
 from urllib import request

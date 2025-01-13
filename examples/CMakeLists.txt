@@ -131,6 +131,11 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
 
         # make HDF5 I/O more robust on various filesystems
         set_property(TEST ${name}.analysis APPEND PROPERTY ENVIRONMENT "HDF5_USE_FILE_LOCKING=FALSE")
+
+        # run test failed? Mark this as skipped
+        set_property(TEST ${name}.analysis PROPERTY SKIP_REGULAR_EXPRESSION
+            "Supplied directory is not valid: diags"
+        )
     endif()
     if(plot_script)
         add_test(NAME ${name}.plot
@@ -141,6 +146,11 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
 
         # make HDF5 I/O more robust on various filesystems
         set_property(TEST ${name}.plot APPEND PROPERTY ENVIRONMENT "HDF5_USE_FILE_LOCKING=FALSE")
+
+        # run test failed? Mark this as skipped
+        set_property(TEST ${name}.plot PROPERTY SKIP_REGULAR_EXPRESSION
+            "ValueError: No objects to concatenate"
+        )
     endif()
 endfunction()
 
@@ -1125,4 +1135,3 @@ add_impactx_test(pytorch_surrogate_model
     examples/pytorch_surrogate_model/visualize_ml_surrogate_15_stage.py
 )
 label_impactx_test(pytorch_surrogate_model slow)
-label_impactx_test(pytorch_surrogate_model.MPI slow)

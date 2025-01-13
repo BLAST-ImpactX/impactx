@@ -363,6 +363,7 @@ Lattice Elements
 
             * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
                 a 1-indexed, 6x6, linear transport map to multiply with the the phase space vector :math:`x,px,y,py,t,pt`.
+            * ``<element_name>.ds`` (``float``, in meters) length associated with a user-defined linear element (defaults to 0)
             * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
             * ``<element_name>.dy`` (``float``, in meters) vertical translation error
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

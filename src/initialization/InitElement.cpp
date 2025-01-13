@@ -462,6 +462,9 @@ namespace detail
         {
             auto a = detail::query_alignment(pp_element);
 
+            amrex::ParticleReal ds = 0.0;
+            pp_element.queryAdd("ds", ds);
+
             elements::LinearTransport::Map6x6 transport_map = elements::LinearTransport::Map6x6::Identity();
 
             // safe to ParmParse inputs for reproducibility
@@ -472,7 +475,7 @@ namespace detail
                 }
             }
 
-            m_lattice.emplace_back(LinearMap(transport_map, a["dx"], a["dy"], a["rotation_degree"]) );
+            m_lattice.emplace_back(LinearMap(transport_map, ds, a["dx"], a["dy"], a["rotation_degree"]) );
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);
         }

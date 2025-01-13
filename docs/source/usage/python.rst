@@ -624,6 +624,7 @@ This module provides elements for the accelerator lattice.
    up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
 
    :param R: a linear transport map to multiply with the the phase space vector :math:`(x,px,y,py,t,pt)`.
+   :param ds: length associated with a user-defined linear element (defaults to 0), in m
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

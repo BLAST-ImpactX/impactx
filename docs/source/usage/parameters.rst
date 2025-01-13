@@ -357,7 +357,9 @@ Lattice Elements
           The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
           and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
 
-          This requires these additional parameters:
+          The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
+
+          This element requires these additional parameters:
 
             * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
                 a 1-indexed, 6x6, linear transport map to multiply with the the phase space vector :math:`x,px,y,py,t,pt`.

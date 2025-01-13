@@ -471,12 +471,6 @@ namespace detail
                     pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), transport_map(i, j));
                 }
             }
-            ablastr::warn_manager::WMRecordWarning(
-                "ImpactX::read_element",
-                "Caution, a user-provided linear map is used in '" +
-                element_name + "'. Transport may not be symplectic.",
-                ablastr::warn_manager::WarnPriority::low
-            );
 
             m_lattice.emplace_back(LinearMap(transport_map, a["dx"], a["dy"], a["rotation_degree"]) );
         } else {

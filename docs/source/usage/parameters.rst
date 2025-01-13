@@ -351,7 +351,7 @@ Lattice Elements
 
         * ``linear_map`` for a custom, linear transport matrix.
 
-          The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`. 
+          The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`.
           The transport matrix :math:`R` is defaulted to the identity matrix, so only matrix entries that differ from that need to be specified.
 
           The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m

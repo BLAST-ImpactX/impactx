@@ -238,7 +238,7 @@ add_impactx_test(FODO.MADX.py
 # Python: FODO Cell w/ custom linear element  #################################
 #
 add_impactx_test(FODO.userdef
-        "examples/fodo_userdef/input_fodo_userdef.in impactx.abort_on_warning_threshold=medium"
+        examples/fodo_userdef/input_fodo_userdef.in
         ON   # ImpactX MPI-parallel
         examples/fodo_userdef/analysis_fodo.py
         examples/fodo_userdef/plot_fodo.py

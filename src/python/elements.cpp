@@ -1578,9 +1578,7 @@ void init_elements(py::module& m)
         .def("__repr__",
              [](LinearMap const & linearmap) {
                  return element_name(
-                     linearmap,
-                     std::make_pair("R11", linearmap.m_transport_map(1,1)),
-                     std::make_pair("R12", linearmap.m_transport_map(1,2))
+                     linearmap
                  );
              }
         )

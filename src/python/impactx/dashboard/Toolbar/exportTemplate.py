@@ -32,9 +32,7 @@ def build_distribution_list():
         )
     else:
         return (
-            f"distr = distribution.{distribution_name}(\n"
-            f"{distribution_parameters},\n"
-            f")"
+            f"distr = distribution.{distribution_name}(\n{distribution_parameters},\n)"
         )
 
 
@@ -45,7 +43,7 @@ def build_lattice_list():
     """
 
     lattice_elements = ",\n    ".join(
-        f'elements.{element["name"]}('
+        f"elements.{element['name']}("
         + ", ".join(
             f"{key}={value}"
             for key, value in parameter_input_checker_for_lattice(element).items()

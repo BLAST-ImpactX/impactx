@@ -183,11 +183,11 @@ class MyRefPart:
     def __repr__(self):
         mystr = ""
         for attr in self.attr_list:
-            mystr += f"self.{attr}={getattr(self,attr)}, "
+            mystr += f"self.{attr}={getattr(self, attr)}, "
         return mystr
 
     def __str__(self):
         mystr = ""
         for attr in self.attr_list:
-            mystr += f"self.{attr}={getattr(self,attr)}, "
+            mystr += f"self.{attr}={getattr(self, attr)}, "
         return mystr

@@ -9,13 +9,16 @@ License: BSD-3-Clause-LBNL
 import inspect
 
 from distribution_input_helpers import twiss
-from trame.widgets import vuetify
 
 from impactx import distribution
 
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
+from .. import (
+    DashboardDefaults,
+    TrameFunctions,
+    generalFunctions,
+    setup_server,
+    vuetify,
+)
 from .distributionFunctions import DistributionFunctions
 
 server, state, ctrl = setup_server()
@@ -24,39 +27,28 @@ server, state, ctrl = setup_server()
 # Helpful
 # -----------------------------------------------------------------------------
 
-DISTRIBUTIONS_MODULE_NAME = distribution
-
-state.listOfDistributions = generalFunctions.select_classes(DISTRIBUTIONS_MODULE_NAME)
-state.listOfDistributionsAndParametersAndDefault = (
-    generalFunctions.class_parameters_with_defaults(DISTRIBUTIONS_MODULE_NAME)
+DISTRIBUTION_MODULE_NAME = distribution
+DISTRIBUTION_LIST = generalFunctions.select_classes(DISTRIBUTION_MODULE_NAME)
+DISTRIBUTION_PARAMETERS_AND_DEFAULTS = generalFunctions.class_parameters_with_defaults(
+    DISTRIBUTION_MODULE_NAME
 )
 
-# -----------------------------------------------------------------------------
-# Defaults
-# -----------------------------------------------------------------------------
-
-state.selected_distribution = generalFunctions.get_default(
-    "selected_distribution", "default_values"
-)
-state.selected_distribution_type = generalFunctions.get_default(
-    "selected_distribution_type", "default_values"
-)
 state.selected_distribution_parameters = []
-state.distributionTypeDisabled = False
+state.distribution_type_disable = False
 
 # -----------------------------------------------------------------------------
 # Main Functions
 # -----------------------------------------------------------------------------
 
 
-def populate_distribution_parameters(selected_distribution):
+def populate_distribution_parameters():
     """
     Populates distribution parameters based on the selected distribution.
     :param selected_distribution (str): The name of the selected distribution
     whose parameters need to be populated.
     """
 
-    if state.selected_distribution_type == "Twiss":
+    if state.distribution_type == "Twiss":
         sig = inspect.signature(twiss)
         state.selected_distribution_parameters = [
             {
@@ -77,10 +69,8 @@ def populate_distribution_parameters(selected_distribution):
         ]
 
     else:  # when type == 'Quadratic Form'
-        selected_distribution_parameters = (
-            state.listOfDistributionsAndParametersAndDefault.get(
-                selected_distribution, []
-            )
+        selected_distribution_parameters = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(
+            state.distribution, []
         )
 
         state.selected_distribution_parameters = [
@@ -103,26 +93,6 @@ def populate_distribution_parameters(selected_distribution):
     return state.selected_distribution_parameters
 
 
-def update_distribution_parameters(
-    parameterName, parameterValue, parameterErrorMessage
-):
-    """
-    Updates the value of a distribution parameter and its error message.
-
-    :param parameterName (str): The name of the parameter to update.
-    :param parameterValue: The new value for the parameter.
-    :param parameterErrorMessage: The error message related to the parameter's value.
-    """
-
-    for param in state.selected_distribution_parameters:
-        if param["parameter_name"] == parameterName:
-            param["parameter_default_value"] = parameterValue
-            param["parameter_error_message"] = parameterErrorMessage
-
-    generalFunctions.update_simulation_validation_status()
-    state.dirty("selected_distribution_parameters")
-
-
 # -----------------------------------------------------------------------------
 # Write to file functions
 # -----------------------------------------------------------------------------
@@ -134,10 +104,10 @@ def distribution_parameters():
     initialized with the appropriate parameters provided by the user.
     """
 
-    distribution_name = state.selected_distribution
+    distribution_name = state.distribution
     parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
 
-    if state.selected_distribution_type == "Twiss":
+    if state.distribution_type == "Twiss":
         twiss_params = twiss(**parameters)
         distr = getattr(distribution, distribution_name)(**twiss_params)
     else:
@@ -151,20 +121,25 @@ def distribution_parameters():
 # -----------------------------------------------------------------------------
 
 
-@state.change("selected_distribution")
-def on_distribution_name_change(selected_distribution, **kwargs):
-    if selected_distribution == "Thermal":
-        state.selected_distribution_type = "Quadratic Form"
-        state.distributionTypeDisabled = True
-        state.dirty("selected_distribution_type")
+@state.change("distribution")
+def on_distribution_name_change(distribution, **kwargs):
+    if distribution == "Thermal" or distribution == "Empty":
+        state.distribution_type = ""
+        state.distribution_type_disable = True
+        state.dirty("distribution_type")
     else:
-        state.distributionTypeDisabled = False
-    populate_distribution_parameters(selected_distribution)
+        type_list_default = DashboardDefaults.LISTS["distribution_type_list"]
+        type_default = DashboardDefaults.DISTRIBUTION_PARAMETERS["distribution_type"]
+
+        if state.distribution_type not in type_list_default:
+            state.distribution_type = type_default
+
+        state.distribution_type_disable = False
 
 
-@state.change("selected_distribution_type")
+@state.change("distribution_type")
 def on_distribution_type_change(**kwargs):
-    populate_distribution_parameters(state.selected_distribution)
+    populate_distribution_parameters()
 
 
 @ctrl.add("updateDistributionParameters")
@@ -172,7 +147,13 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
     parameter_value, input_type = generalFunctions.determine_input_type(parameter_value)
     error_message = generalFunctions.validate_against(parameter_value, parameter_type)
 
-    update_distribution_parameters(parameter_name, parameter_value, error_message)
+    for param in state.selected_distribution_parameters:
+        if param["parameter_name"] == parameter_name:
+            param["parameter_default_value"] = parameter_value
+            param["parameter_error_message"] = error_message
+
+    generalFunctions.update_simulation_validation_status()
+    state.dirty("selected_distribution_parameters")
 
 
 # -----------------------------------------------------------------------------
@@ -192,47 +173,29 @@ class DistributionParameters:
         """
 
         with vuetify.VCard(style="width: 340px; height: 300px"):
-            with vuetify.VCardTitle("Distribution Parameters"):
-                vuetify.VSpacer()
-                TrameFunctions.create_refresh_button(
-                    lambda: generalFunctions.reset_inputs("distribution")
-                )
-                vuetify.VIcon(
-                    "mdi-information",
-                    style="color: #00313C;",
-                    click=lambda: generalFunctions.documentation("BeamDistributions"),
-                )
-            vuetify.VDivider()
+            TrameFunctions.input_section_header("Distribution Parameters")
             with vuetify.VCardText():
                 with vuetify.VRow():
                     with vuetify.VCol(cols=6):
-                        vuetify.VCombobox(
+                        TrameFunctions.select(
                             label="Select Distribution",
-                            v_model=("selected_distribution",),
-                            items=("listOfDistributions",),
-                            dense=True,
+                            v_model_name="distribution",
+                            items=(DISTRIBUTION_LIST,),
                         )
                     with vuetify.VCol(cols=6):
-                        vuetify.VSelect(
-                            v_model=("selected_distribution_type",),
+                        TrameFunctions.select(
                             label="Type",
-                            items=(
-                                generalFunctions.get_default(
-                                    "distribution_type_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
-                            disabled=("distributionTypeDisabled",),
+                            v_model_name="distribution_type",
+                            disabled=("distribution_type_disable",),
                         )
                 with vuetify.VRow(classes="my-2"):
                     for i in range(3):
                         with vuetify.VCol(cols=4, classes="py-0"):
                             with vuetify.VRow(
-                                v_for="(parameter, index) in selected_distribution_parameters"
+                                v_for="(parameter, index) in selected_distribution_parameters",
+                                v_if=f"index % 3 == {i}",
                             ):
-                                with vuetify.VCol(
-                                    v_if=f"index % 3 == {i}", classes="py-1"
-                                ):
+                                with vuetify.VCol(classes="py-1"):
                                     vuetify.VTextField(
                                         label=("parameter.parameter_name",),
                                         v_model=("parameter.parameter_default_value",),

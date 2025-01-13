@@ -9,6 +9,9 @@
  */
 #include "ImpactX.H"
 #include "particles/elements/All.H"
+#include "particles/elements/mixin/lineartransport.H"
+
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
@@ -479,6 +482,24 @@ namespace detail
                     read_element(sub_element_name, m_lattice, nslice_default, mapsteps_default);
                 }
             }
+        } else if (element_type == "linear_map")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal ds = 0.0;
+            pp_element.queryAdd("ds", ds);
+
+            elements::LinearTransport::Map6x6 transport_map = elements::LinearTransport::Map6x6::Identity();
+
+            // safe to ParmParse inputs for reproducibility
+            for (int i=1; i<=6; ++i) {
+                for (int j=1; j<=6; ++j) {
+                    std::string name = "R" + std::to_string(i) + std::to_string(j);
+                    pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), transport_map(i, j));
+                }
+            }
+
+            m_lattice.emplace_back(LinearMap(transport_map, ds, a["dx"], a["dy"], a["rotation_degree"]) );
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);
         }

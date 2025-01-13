@@ -17,16 +17,17 @@ class DashboardDefaults:
         "mass_MeV": 0.51099895,
         "npart": 1000,
         "kin_energy": 2e3,
+        "kin_energy_MeV": 2e3,
         "kin_energy_unit": "MeV",
         "bunch_charge_C": 1e-9,
     }
 
-    DISTRIBUTION = {
-        "selected_distribution": "Waterbag",
-        "selected_distribution_type": "Twiss",
+    DISTRIBUTION_PARAMETERS = {
+        "distribution": "Waterbag",
+        "distribution_type": "Twiss",
     }
 
-    LATTICE = {
+    LATTICE_CONFIGURATION = {
         "selected_lattice_list": [],
         "selected_lattice": None,
     }
@@ -70,11 +71,26 @@ class DashboardDefaults:
     DEFAULT_VALUES = {
         **SELECTION,
         **INPUT_PARAMETERS,
-        **DISTRIBUTION,
-        **LATTICE,
+        **DISTRIBUTION_PARAMETERS,
+        **LATTICE_CONFIGURATION,
         **SPACE_CHARGE,
         **CSR,
         **LISTS,
+    }
+
+    TYPES = {
+        "npart": "int",
+        "kin_energy": "float",
+        "bunch_charge_C": "float",
+        "mass_MeV": "float",
+        "charge_qe": "int",
+        "csr_bins": "int",
+    }
+
+    VALIDATION_CONDITION = {
+        "charge_qe": ["non_zero"],
+        "mass_MeV": ["positive"],
+        "csr_bins": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

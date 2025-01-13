@@ -6,6 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+from .Input.defaults import DashboardDefaults
 from .trame_setup import setup_server
 
 server, state, ctrl = setup_server()
@@ -16,9 +17,20 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 
+def initialize_states():
+    """
+    Initializes all dashboard state values upon call.
+
+    The issue as of now is it initialize all at once instead of by section.
+    """
+    for name, value in DashboardDefaults.DEFAULT_VALUES.items():
+        setattr(state, name, value)
+
+
 def main():
     """
     Launches Trame application server
     """
+    initialize_states()
     server.start()
     return 0

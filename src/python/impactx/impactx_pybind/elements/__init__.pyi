@@ -46,6 +46,8 @@ __all__ = [
 ]
 
 class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         xmax: float,
@@ -116,6 +118,8 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def ymax(self, arg1: float) -> None: ...
 
 class BeamMonitor(mixin.Thin):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         name: str,
@@ -179,6 +183,8 @@ class BeamMonitor(mixin.Thin):
     def tn(self, arg1: float) -> None: ...
 
 class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         V: float,
@@ -217,6 +223,8 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
     def k(self, arg1: float) -> None: ...
 
 class CFbend(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -257,6 +265,8 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment):
     def rc(self, arg1: float) -> None: ...
 
 class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -297,6 +307,8 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
     def ez(self, arg1: float) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -321,6 +333,8 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment):
         """
 
 class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -361,6 +375,8 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment):
     def unit(self, arg1: int) -> None: ...
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -401,6 +417,8 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment):
     def unit(self, arg1: int) -> None: ...
 
 class ConstF(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -449,6 +467,8 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment):
     def ky(self, arg1: float) -> None: ...
 
 class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         psi: float,
@@ -503,6 +523,8 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def rc(self, arg1: float) -> None: ...
 
 class Drift(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -527,6 +549,8 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment):
         """
 
 class Empty(mixin.Thin):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self) -> None:
         """
         This element does nothing.
@@ -543,6 +567,8 @@ class Empty(mixin.Thin):
         """
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -567,6 +593,8 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment):
         """
 
 class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -607,6 +635,8 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment):
     def phi(self, arg1: float) -> None: ...
 
 class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         xkick: float,
@@ -646,6 +676,8 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def ykick(self, arg1: float) -> None: ...
 
 class KnownElementsList:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @typing.overload
     def __init__(self) -> None: ...
     @typing.overload
@@ -779,6 +811,8 @@ class KnownElementsList:
         """
 
 class Marker(mixin.Named, mixin.Thin):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self, arg0: str) -> None:
         """
         This named element does nothing.
@@ -795,6 +829,8 @@ class Marker(mixin.Named, mixin.Thin):
         """
 
 class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         multipole: int,
@@ -841,6 +877,8 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def multipole(self, arg1: float) -> None: ...
 
 class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         knll: float,
@@ -879,6 +917,8 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
     def knll(self, arg1: float) -> None: ...
 
 class PRot(mixin.Named, mixin.Thin):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self, phi_in: float, phi_out: float, name: str | None = None) -> None:
         """
         An exact pole-face rotation in the x-z plane. Both angles are in degrees.
@@ -909,6 +949,8 @@ class PRot(mixin.Named, mixin.Thin):
     def phi_out(self, arg1: float) -> None: ...
 
 class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         angle: float,
@@ -941,6 +983,8 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
 class Programmable(mixin.Named):
     ds: float
     nslice: int
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self, ds: float = 0.0, nslice: int = 1, name: str | None = None
     ) -> None:
@@ -999,6 +1043,8 @@ class Programmable(mixin.Named):
     def threadsafe(self, arg1: bool) -> None: ...
 
 class Quad(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1031,6 +1077,8 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment):
     def k(self, arg1: float) -> None: ...
 
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1089,6 +1137,8 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment):
     def phase(self, arg1: float) -> None: ...
 
 class Sbend(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1121,6 +1171,8 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment):
     def rc(self, arg1: float) -> None: ...
 
 class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         V: float,
@@ -1167,6 +1219,8 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def phase(self, arg1: float) -> None: ...
 
 class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1209,6 +1263,8 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment):
     def mapsteps(self, arg1: int) -> None: ...
 
 class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1259,6 +1315,8 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment):
     def unit(self, arg1: float) -> None: ...
 
 class Sol(mixin.Named, mixin.Thick, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1291,6 +1349,8 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment):
     def ks(self, arg1: float) -> None: ...
 
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         k: float,
@@ -1343,6 +1403,8 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def unit(self, arg1: int) -> None: ...
 
 class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         theta: float,

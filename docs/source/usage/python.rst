@@ -616,6 +616,25 @@ This module provides elements for the accelerator lattice.
    :param unit: specification of units (``"dimensionless"`` in units of the magnetic rigidity of the reference particle or ``"T-m"``)
    :param name: an optional name for the element
 
+.. py::class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
+
+   A custom, linear transport matrix.
+
+   The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`.
+
+   The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
+   and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
+
+   The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is
+   up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
+
+   :param R: a linear transport map to multiply with the the phase space vector :math:`(x,px,y,py,t,pt)`.
+   :param ds: length associated with a user-defined linear element (defaults to 0), in m
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, name=None)
 
    A general thin multipole element.

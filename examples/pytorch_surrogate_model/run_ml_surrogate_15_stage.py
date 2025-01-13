@@ -276,9 +276,9 @@ L_drift_2 = L_drift - L_drift_before_2nd_stage + dL
 
 
 def get_lattice_element_iter(sim, j):
-    assert (
-        0 <= j < len(sim.lattice)
-    ), f"Argument j must be a nonnegative integer satisfying 0 <= j < {len(sim.lattice)}, not {j}"
+    assert 0 <= j < len(sim.lattice), (
+        f"Argument j must be a nonnegative integer satisfying 0 <= j < {len(sim.lattice)}, not {j}"
+    )
     i = 0
     lat_it = sim.lattice.__iter__()
     next(lat_it)

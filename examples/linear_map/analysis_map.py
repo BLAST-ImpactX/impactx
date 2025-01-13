@@ -5,7 +5,6 @@
 # License: BSD-3-Clause-LBNL
 #
 
-
 import numpy as np
 import openpmd_api as io
 from scipy.stats import moment
@@ -38,8 +37,7 @@ def get_moments(beam):
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
-beam_final = series.iterations[last_step].particles["beam"]
-final = beam_final.to_df()
+final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
 num_particles = 10000
@@ -60,27 +58,23 @@ print(f"  rtol={rtol} (ignored: atol~={atol})")
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
-        7.5451170454175073e-005,
-        7.5441588239210947e-005,
-        9.9775878164077539e-004,
-        1.9959540393751392e-009,
-        2.0175015289132990e-009,
-        2.0013820193294972e-006,
+        6.363961030678928e-6,
+        28.284271247461902e-9,
+        0.0035,
+        0.27e-9,
+        1.0e-12,
+        1.33e-6,
     ],
     rtol=rtol,
     atol=atol,
 )
 
-
 print("")
 print("Final Beam:")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(final)
-s_ref = beam_final.get_attribute("s_ref")
-gamma_ref = beam_final.get_attribute("gamma_ref")
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
-    f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}\n"
-    f"  s_ref={s_ref:e} gamma_ref={gamma_ref:e}"
+    f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
 
 atol = 0.0  # ignored
@@ -88,17 +82,73 @@ rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distributio
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
+    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
-        7.4790118496224206e-005,
-        7.5357525169680140e-005,
-        9.9775879288128088e-004,
-        1.9959539836392703e-009,
-        2.0175014668882125e-009,
-        2.0013820380883801e-006,
-        3.000000,
-        3.914902e003,
+        6.363961030678928e-6,
+        28.284271247461902e-9,
+        0.0035,
+        0.27e-9,
+        1.0e-12,
+        1.33e-6,
     ],
     rtol=rtol,
     atol=atol,
+)
+
+# Specify time series for particle j
+j = 5
+print(f"output for particle index = {j}")
+
+# Create array of TBT data values
+x = []
+px = []
+y = []
+py = []
+t = []
+pt = []
+n = 0
+for k_i, i in series.iterations.items():
+    beam = i.particles["beam"]
+    turn = beam.to_df()
+    x.append(turn["position_x"][j])
+    px.append(turn["momentum_x"][j])
+    y.append(turn["position_y"][j])
+    py.append(turn["momentum_y"][j])
+    t.append(turn["position_t"][j])
+    pt.append(turn["momentum_t"][j])
+    n = n + 1
+
+# Output number of periods in data series
+nturns = len(x)
+print(f"number of periods = {nturns}")
+print()
+
+# Approximate the tune and closed orbit using the 4-turn formula:
+
+# from x data only
+argument = (x[0] - x[1] + x[2] - x[3]) / (2.0 * (x[1] - x[2]))
+tunex = np.arccos(argument) / (2.0 * np.pi)
+print(f"tune output from 4-turn formula, using x data = {tunex}")
+
+# from y data only
+argument = (y[0] - y[1] + y[2] - y[3]) / (2.0 * (y[1] - y[2]))
+tuney = np.arccos(argument) / (2.0 * np.pi)
+print(f"tune output from 4-turn formula, using y data = {tuney}")
+
+# from t data only
+argument = (t[0] - t[1] + t[2] - t[3]) / (2.0 * (t[1] - t[2]))
+tunet = np.arccos(argument) / (2.0 * np.pi)
+print(f"tune output from 4-turn formula, using t data = {tunet}")
+
+rtol = 1.0e-3
+print(f"  rtol={rtol}")
+
+assert np.allclose(
+    [tunex, tuney, tunet],
+    [
+        0.139,
+        0.219,
+        0.0250,
+    ],
+    rtol=rtol,
 )

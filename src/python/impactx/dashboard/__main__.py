@@ -72,11 +72,11 @@ def application():
         layout.title.hide()
         with layout.toolbar:
             with vuetify.Template(v_if="$route.path == '/Analyze'"):
-                Toolbars.analyze_toolbar()
+                Toolbars.dashboard_toolbar("analyze")
             with vuetify.Template(v_if="$route.path == '/Input'"):
-                Toolbars.input_toolbar()
+                Toolbars.dashboard_toolbar("input")
             with vuetify.Template(v_if="$route.path == '/Run'"):
-                Toolbars.run_toolbar()
+                Toolbars.dashboard_toolbar("run")
 
         with layout.drawer as drawer:
             drawer.width = 200

@@ -351,6 +351,25 @@ Lattice Elements
             * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
             * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
+        * ``linear_map`` for a custom, linear transport matrix.
+
+          The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`.
+          The transport matrix :math:`R` is defaulted to the identity matrix, so only matrix entries that differ from that need to be specified.
+
+          The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
+          and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
+
+          The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
+
+          This element requires these additional parameters:
+
+            * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
+                a 1-indexed, 6x6, linear transport map to multiply with the the phase space vector :math:`x,px,y,py,t,pt`.
+            * ``<element_name>.ds`` (``float``, in meters) length associated with a user-defined linear element (defaults to 0)
+            * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+            * ``<element_name>.dy`` (``float``, in meters) vertical translation error
+            * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
         * ``multipole`` for a thin multipole element.
           This requires these additional parameters:
 
@@ -815,7 +834,7 @@ Overall simulation parameters
 * ``amrex.the_arena_is_managed``  (``0`` or ``1``; default is ``0`` for false)
     When running on GPUs, device memory that is accessed from the host will automatically be transferred with managed memory.
     This is useful for convenience during development, but has sometimes severe performance and memory footprint implications if relied on (and sometimes vendor bugs).
-    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory and thus changed the AMReX default to false.
+    For all regular ImpactX operations, we therefore do explicit memory transfers without the need for managed memory.
     `Please also see the documentation in AMReX <https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters>`__.
 
 * ``amrex.omp_threads``  (``system``, ``nosmt`` or positive integer; default is ``nosmt``)

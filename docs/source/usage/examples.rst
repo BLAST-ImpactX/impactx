@@ -31,10 +31,11 @@ Single Particle Dynamics
    examples/aperture/README.rst
    examples/iota_lens/README.rst
    examples/achromatic_spectrometer/README.rst
+   examples/fodo_userdef/README.rst
    examples/fodo_programmable/README.rst
    examples/dogleg/README.rst
    examples/coupled_optics/README.rst
-
+   examples/linear_map/README.rst
 
 Collective Effects
 ------------------

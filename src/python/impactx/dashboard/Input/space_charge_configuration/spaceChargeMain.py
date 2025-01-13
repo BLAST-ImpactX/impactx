@@ -1,8 +1,4 @@
-from trame.widgets import vuetify
-
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
+from .. import TrameFunctions, generalFunctions, setup_server, vuetify
 from .spaceChargeFunctions import SpaceChargeFunctions
 
 server, state, ctrl = setup_server()
@@ -11,67 +7,42 @@ server, state, ctrl = setup_server()
 # Default
 # -----------------------------------------------------------------------------
 
-state.dynamic_size = generalFunctions.get_default("dynamic_size", "default_values")
-state.max_level = generalFunctions.get_default("max_level", "default_values")
-state.particle_shape = generalFunctions.get_default("particle_shape", "default_values")
-state.poisson_solver = generalFunctions.get_default("poisson_solver", "default_values")
-
 state.prob_relative = []
 state.prob_relative_fields = []
-
 state.n_cell = []
-state.n_cell_x = generalFunctions.get_default("n_cell_x", "default_values")
-state.n_cell_y = generalFunctions.get_default("n_cell_y", "default_values")
-state.n_cell_z = generalFunctions.get_default("n_cell_z", "default_values")
 
-state.blocking_factor_x = generalFunctions.get_default(
-    "blocking_factor_x", "default_values"
-)
-state.blocking_factor_y = generalFunctions.get_default(
-    "blocking_factor_y", "default_values"
-)
-state.blocking_factor_z = generalFunctions.get_default(
-    "blocking_factor_z", "default_values"
-)
-
-state.mlmg_relative_tolerance = generalFunctions.get_default(
-    "mlmg_relative_tolerance", "default_values"
-)
-state.mlmg_absolute_tolerance = generalFunctions.get_default(
-    "mlmg_absolute_tolerance", "default_values"
-)
-state.mlmg_max_iters = generalFunctions.get_default("mlmg_max_iters", "default_values")
-state.mlmg_verbosity = generalFunctions.get_default("mlmg_verbosity", "default_values")
-
-state.error_message_mlmg_relative_tolerance = ""
-state.error_message_mlmg_absolute_tolerance = ""
-state.error_message_mlmg_max_iters = ""
-state.error_message_mlmg_verbosity = ""
 
 # -----------------------------------------------------------------------------
 # Helper functions
 # -----------------------------------------------------------------------------
 
 
-def populate_prob_relative_fields(max_level):
-    num_prob_relative_fields = int(max_level) + 1
+def populate_prob_relative_fields():
+    tot_num_prob_relative_fields = int(state.max_level) + 1
     fft_first_field_value = generalFunctions.get_default(
         "prob_relative_first_value_fft", "default_values"
     )
     multigrid_first_field_value = generalFunctions.get_default(
         "prob_relative_first_value_multigrid", "default_values"
     )
-
+    first_field_value = 0
     if state.poisson_solver == "fft":
-        state.prob_relative = [fft_first_field_value] + [0.0] * (
-            num_prob_relative_fields - 1
-        )
+        first_field_value = fft_first_field_value
     elif state.poisson_solver == "multigrid":
-        state.prob_relative = [multigrid_first_field_value] + [0.0] * (
-            num_prob_relative_fields - 1
-        )
+        first_field_value = multigrid_first_field_value
+
+    if state.prob_relative:
+        size = len(state.prob_relative)
+        num_of_extra_fields = tot_num_prob_relative_fields - size
+
+        if size < tot_num_prob_relative_fields:
+            state.prob_relative.extend([0.0] * (num_of_extra_fields))
+        elif size > tot_num_prob_relative_fields:
+            state.prob_relative = state.prob_relative[:tot_num_prob_relative_fields]
     else:
-        state.prob_relative = [0.0] * num_prob_relative_fields
+        state.prob_relative = [first_field_value] + [0.0] * (
+            tot_num_prob_relative_fields - 1
+        )
 
     state.prob_relative_fields = [
         {
@@ -81,7 +52,7 @@ def populate_prob_relative_fields(max_level):
             ),
             "step": generalFunctions.get_default("prob_relative", "steps"),
         }
-        for i in range(num_prob_relative_fields)
+        for i in range(tot_num_prob_relative_fields)
     ]
 
 
@@ -93,9 +64,9 @@ def update_blocking_factor_and_n_cell(category, kwargs):
             direction = state_name.split("_")[-1]
             SpaceChargeFunctions.validate_n_cell_and_blocking_factor(direction)
 
-            n_cell_error = getattr(state, f"error_message_n_cell_{direction}")
+            n_cell_error = getattr(state, f"n_cell_{direction}_error_message")
             blocking_factor_error = getattr(
-                state, f"error_message_blocking_factor_{direction}"
+                state, f"blocking_factor_{direction}_error_message"
             )
 
             if not n_cell_error:
@@ -119,7 +90,7 @@ def update_blocking_factor_and_n_cell(category, kwargs):
 # -----------------------------------------------------------------------------
 @state.change("poisson_solver")
 def on_poisson_solver_change(poisson_solver, **kwargs):
-    populate_prob_relative_fields(state.max_level)
+    populate_prob_relative_fields()
     state.dirty("prob_relative_fields")
     generalFunctions.update_simulation_validation_status()
 
@@ -132,7 +103,7 @@ def on_space_charge_change(space_charge, **kwargs):
 
 @state.change("max_level")
 def on_max_level_change(max_level, **kwargs):
-    populate_prob_relative_fields(max_level)
+    populate_prob_relative_fields()
     generalFunctions.update_simulation_validation_status()
 
 
@@ -185,6 +156,14 @@ def on_update_prob_relative_call(index, value):
 # -----------------------------------------------------------------------------
 
 
+def multigrid_settings():
+    vuetify.VIcon(
+        "mdi-cog",
+        v_if="poisson_solver == 'multigrid'",
+        click="space_charge_dialog_settings = true",
+    )
+
+
 class SpaceChargeConfiguration:
     @staticmethod
     def card():
@@ -192,66 +171,29 @@ class SpaceChargeConfiguration:
         Creates UI content for space charge configuration
         """
 
-        with vuetify.VDialog(v_model=("showSpaceChargeDialog", False), width="500px"):
-            SpaceChargeConfiguration.dialog_space_charge_settings()
+        with vuetify.VDialog(
+            v_model=("space_charge_dialog_settings", False), width="500px"
+        ):
+            SpaceChargeConfiguration.dialog_settings()
 
         with vuetify.VCard(v_show="space_charge", style="width: 340px;"):
-            with vuetify.VCardTitle("Space Charge"):
-                vuetify.VSpacer()
-                vuetify.VIcon(
-                    "mdi-cog",
-                    classes="ml-2",
-                    v_if="poisson_solver == 'multigrid'",
-                    click="showSpaceChargeDialog = true",
-                    style="cursor: pointer;",
-                )
-                TrameFunctions.create_refresh_button(
-                    lambda: generalFunctions.reset_inputs("space_charge")
-                )
-                vuetify.VIcon(
-                    "mdi-information",
-                    classes="ml-2",
-                    click=lambda: generalFunctions.documentation(
-                        "space_charge_documentation"
-                    ),
-                    style="color: #00313C;",
-                )
-            vuetify.VDivider()
+            TrameFunctions.input_section_header(
+                "Space Charge", additional_components=multigrid_settings
+            )
             with vuetify.VCardText():
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=5, classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Poisson Solver",
-                            v_model=("poisson_solver",),
-                            items=(
-                                generalFunctions.get_default(
-                                    "poisson_solver_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
                             hide_details=True,
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Particle Shape",
-                            v_model=("particle_shape",),
-                            items=(
-                                generalFunctions.get_default(
-                                    "particle_shape_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
                         )
                     with vuetify.VCol(cols=3, classes="py-0"):
-                        vuetify.VSelect(
+                        TrameFunctions.select(
                             label="Max Level",
-                            v_model=("max_level",),
-                            items=(
-                                generalFunctions.get_default(
-                                    "max_level_list", "default_values"
-                                ),
-                            ),
-                            dense=True,
                         )
                 with vuetify.VCol(classes="pa-0"):
                     vuetify.VListItemSubtitle(
@@ -261,14 +203,10 @@ class SpaceChargeConfiguration:
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
                         with vuetify.VCol(cols=4, classes="py-0"):
-                            vuetify.VTextField(
-                                placeholder=direction,
-                                v_model=(f"n_cell_{direction}",),
-                                error_messages=(f"error_message_n_cell_{direction}",),
-                                type="number",
-                                step=generalFunctions.get_default("n_cell", "steps"),
-                                __properties=["step"],
-                                dense=True,
+                            TrameFunctions.text_field(
+                                label="",
+                                v_model_name=f"n_cell_{direction}",
+                                prefix=f"{direction}:",
                                 style="margin-top: -5px",
                             )
                 with vuetify.VCol(classes="pa-0"):
@@ -279,18 +217,10 @@ class SpaceChargeConfiguration:
                 with vuetify.VRow(classes="my-0"):
                     for direction in ["x", "y", "z"]:
                         with vuetify.VCol(cols=4, classes="py-0"):
-                            vuetify.VTextField(
-                                placeholder=direction,
-                                v_model=(f"blocking_factor_{direction}",),
-                                error_messages=(
-                                    f"error_message_blocking_factor_{direction}",
-                                ),
-                                type="number",
-                                step=generalFunctions.get_default(
-                                    "blocking_factor", "steps"
-                                ),
-                                __properties=["step"],
-                                dense=True,
+                            TrameFunctions.text_field(
+                                label="",
+                                prefix=f"{direction}:",
+                                v_model_name=f"blocking_factor_{direction}",
                                 style="margin-top: -5px",
                             )
                 with vuetify.VCol(classes="pa-0"):
@@ -316,78 +246,33 @@ class SpaceChargeConfiguration:
                         )
 
     @staticmethod
-    def dialog_space_charge_settings():
+    def dialog_settings():
         """
         Creates UI content for space charge configuration
         settings.
         """
-        with vuetify.VCard():
-            with vuetify.VTabs(
-                v_model=("space_charge_tab", "Advanced Multigrid Settings")
-            ):
-                vuetify.VTab("Settings")
-            vuetify.VDivider()
-            with vuetify.VTabsItems(v_model="space_charge_tab"):
-                with vuetify.VTabItem():
-                    with vuetify.VContainer(fluid=True):
-                        with vuetify.VRow(
-                            classes="my-2", v_if="poisson_solver == 'multigrid'"
-                        ):
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Relative Tolerance",
-                                    v_model=("mlmg_relative_tolerance",),
-                                    error_messages=(
-                                        "error_message_mlmg_relative_tolerance",
-                                    ),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_relative_tolerance", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
-                                )
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Absolute Tolerance",
-                                    v_model=("mlmg_absolute_tolerance",),
-                                    error_messages=(
-                                        "error_message_mlmg_absolute_tolerance",
-                                    ),
-                                    suffix=generalFunctions.get_default(
-                                        "mlmg_absolute_tolerance", "units"
-                                    ),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_absolute_tolerance", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
-                                )
-                        with vuetify.VRow(
-                            classes="my-0", v_if="poisson_solver == 'multigrid'"
-                        ):
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Max Iterations",
-                                    v_model=("mlmg_max_iters",),
-                                    error_messages=("error_message_mlmg_max_iters",),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_max_iters", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
-                                )
-                            with vuetify.VCol(cols=6, classes="py-0"):
-                                vuetify.VTextField(
-                                    label="MLMG Verbosity",
-                                    v_model=("mlmg_verbosity",),
-                                    error_messages=("error_message_mlmg_verbosity",),
-                                    type="number",
-                                    step=generalFunctions.get_default(
-                                        "mlmg_verbosity", "steps"
-                                    ),
-                                    __properties=["step"],
-                                    dense=True,
-                                )
+        dialog_name = "space_charge_dialog_tab_settings"
+        TrameFunctions.create_dialog_tabs(
+            dialog_name, 1, ["Advanced Multigrid Settings"]
+        )
+        with vuetify.VTabsItems(v_model=("dialog_name", 0)):
+            with vuetify.VTabItem():
+                with vuetify.VCardText():
+                    with vuetify.VRow():
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Relative Tolerance",
+                            )
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Absolute Tolerance",
+                            )
+                    with vuetify.VRow():
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Max Iters",
+                            )
+                        with vuetify.VCol():
+                            TrameFunctions.text_field(
+                                label="MLMG Verbosity",
+                            )

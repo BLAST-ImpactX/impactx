@@ -30,11 +30,11 @@ class generalFunctions:
         :param section_name (str): The name of the documentation section to open.
         """
         url_dict = {
-            "LatticeElements": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
-            "BeamDistributions": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
-            "pythonParameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#general",
-            "space_charge_documentation": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
-            "CSR": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+            "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#general",
+            "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
+            "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
+            "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
+            "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
         }
 
         url = url_dict.get(section_name)
@@ -154,16 +154,18 @@ class generalFunctions:
                     )
 
         # Check for errors in input card
-        if state.npart_validation:
-            error_details.append(f"Number of Particles: {state.npart_validation}")
-        if state.kin_energy_validation:
-            error_details.append(f"Kinetic Energy: {state.kin_energy_validation}")
-        if state.bunch_charge_C_validation:
-            error_details.append(f"Bunch Charge: {state.bunch_charge_C_validation}")
-        if state.charge_qe_validation:
-            error_details.append(f"Ref. Particle Charge: {state.charge_qe_validation}")
-        if state.mass_MeV_validation:
-            error_details.append(f"Ref. Particle Mass: {state.mass_MeV}")
+        if state.npart_error_message:
+            error_details.append(f"Number of Particles: {state.npart_error_message}")
+        if state.kin_energy_error_message:
+            error_details.append(f"Kinetic Energy: {state.kin_energy_error_message}")
+        if state.bunch_charge_C_error_message:
+            error_details.append(f"Bunch Charge: {state.bunch_charge_C_error_message}")
+        if state.charge_qe_error_message:
+            error_details.append(
+                f"Ref. Particle Charge: {state.charge_qe_error_message}"
+            )
+        if state.mass_MeV_error_message:
+            error_details.append(f"Ref. Particle Mass: {state.mass_MeV_error_message}")
 
         if state.selected_lattice_list == []:
             error_details.append("LatticeListIsEmpty")
@@ -343,9 +345,9 @@ class generalFunctions:
         if input_section.upper() in possible_section_names:
             state.update(getattr(DashboardDefaults, input_section.upper()))
 
-            if input_section == "distribution":
+            if input_section == "distribution_parameters":
                 state.dirty("selected_distribution_type")
-            elif input_section == "lattice":
+            elif input_section == "lattice_configuration":
                 state.selected_lattice_list = []
             elif input_section == "space_charge":
                 state.dirty("max_level")

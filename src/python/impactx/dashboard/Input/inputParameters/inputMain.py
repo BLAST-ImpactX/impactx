@@ -6,11 +6,13 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import vuetify
-
-from ...Input.trameFunctions import TrameFunctions
-from ...trame_setup import setup_server
-from ..generalFunctions import generalFunctions
+from .. import (
+    DashboardDefaults,
+    TrameFunctions,
+    generalFunctions,
+    setup_server,
+    vuetify,
+)
 from .inputFunctions import InputFunctions
 
 server, state, ctrl = setup_server()
@@ -20,10 +22,13 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 
-@ctrl.add("on_input_change")
-def validate_and_convert_to_correct_type(
-    value, desired_type, state_name, validation_name, conditions=None
-):
+@ctrl.add("input_change")
+def validate_and_convert_to_correct_type(state_name):
+    value = getattr(state, state_name)
+    desired_type = DashboardDefaults.TYPES[state_name]
+    validation_name = f"{state_name}_error_message"
+    conditions = DashboardDefaults.VALIDATION_CONDITION.get(state_name, None)
+
     validation_result = generalFunctions.validate_against(
         value, desired_type, conditions
     )
@@ -65,48 +70,13 @@ class InputParameters:
     User-Input section for beam properties.
     """
 
-    def __init__(self):
-        state.particle_shape = generalFunctions.get_default(
-            "particle_shape", "default_values"
-        )
-        state.npart = generalFunctions.get_default("npart", "default_values")
-        state.kin_energy = generalFunctions.get_default("kin_energy", "default_values")
-        state.kin_energy_MeV = state.kin_energy
-        state.bunch_charge_C = generalFunctions.get_default(
-            "bunch_charge_C", "default_values"
-        )
-        state.kin_energy_unit = generalFunctions.get_default(
-            "kin_energy_unit", "default_values"
-        )
-        state.old_kin_energy_unit = generalFunctions.get_default(
-            "kin_energy_unit", "default_values"
-        )
-        state.charge_qe = generalFunctions.get_default("charge_qe", "default_values")
-        state.mass_MeV = generalFunctions.get_default("mass_MeV", "default_values")
-
-        state.npart_validation = []
-        state.kin_energy_validation = []
-        state.bunch_charge_C_validation = []
-        state.mass_MeV_validation = []
-        state.charge_qe_validation = []
-
     def card(self):
         """
         Creates UI content for beam properties.
         """
 
         with vuetify.VCard(style="width: 340px; height: 350px"):
-            with vuetify.VCardTitle("Input Parameters"):
-                vuetify.VSpacer()
-                TrameFunctions.create_refresh_button(
-                    lambda: generalFunctions.reset_inputs("input_parameters")
-                )
-                vuetify.VIcon(
-                    "mdi-information",
-                    style="color: #00313C;",
-                    click=lambda: generalFunctions.documentation("pythonParameters"),
-                )
-            vuetify.VDivider()
+            TrameFunctions.input_section_header("Input Parameters")
             with vuetify.VCardText():
                 with vuetify.VRow(classes="py-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):
@@ -123,95 +93,42 @@ class InputParameters:
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=6, classes="py-0"):
-                        vuetify.VTextField(
+                        TrameFunctions.text_field(
                             label="Ref. Particle Charge",
-                            v_model=("charge_qe",),
-                            suffix=generalFunctions.get_default("charge_qe", "units"),
-                            type="number",
-                            step=generalFunctions.get_default("charge_qe", "steps"),
-                            __properties=["step"],
-                            dense=True,
-                            error_messages=("charge_qe_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'int','charge_qe','charge_qe_validation', ['non_zero']]",
-                            ),
+                            v_model_name="charge_qe",
+                            input=(ctrl.input_change, "['charge_qe']"),
                         )
                     with vuetify.VCol(cols=6, classes="py-0"):
-                        vuetify.VTextField(
+                        TrameFunctions.text_field(
                             label="Ref. Particle Mass",
-                            v_model=("mass_MeV",),
-                            suffix=generalFunctions.get_default("mass_MeV", "units"),
-                            type="number",
-                            step=generalFunctions.get_default("mass_MeV", "steps"),
-                            __properties=["step"],
-                            dense=True,
-                            error_messages=("mass_MeV_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'float','mass_MeV','mass_MeV_validation', ['positive']]",
-                            ),
+                            v_model_name="mass_MeV",
+                            input=(ctrl.input_change, "['mass_MeV']"),
                         )
                 with vuetify.VRow(classes="my-0"):
                     with vuetify.VCol(cols=12, classes="py-0"):
-                        vuetify.VTextField(
-                            v_model=("npart",),
+                        TrameFunctions.text_field(
                             label="Number of Particles",
-                            error_messages=("npart_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'int','npart','npart_validation']",
-                            ),
-                            type="number",
-                            step=generalFunctions.get_default("npart", "steps"),
-                            __properties=["step"],
-                            dense=True,
+                            v_model_name="npart",
+                            input=(ctrl.input_change, "['npart']"),
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=8, classes="py-0"):
-                        vuetify.VTextField(
-                            v_model=("kin_energy",),
+                        TrameFunctions.text_field(
                             label="Kinetic Energy",
-                            error_messages=("kin_energy_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'float','kin_energy','kin_energy_validation']",
-                            ),
-                            type="number",
-                            step=generalFunctions.get_default("kin_energy", "steps"),
-                            __properties=["step"],
-                            dense=True,
+                            v_model_name="kin_energy",
+                            input=(ctrl.input_change, "['kin_energy']"),
                             classes="mr-2",
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
-                        vuetify.VSelect(
-                            v_model=("kin_energy_unit",),
+                        TrameFunctions.select(
                             label="Unit",
-                            items=(
-                                generalFunctions.get_default(
-                                    "kin_energy_unit_list", "default_values"
-                                ),
-                            ),
-                            change=(ctrl.kin_energy_unit_change, "[$event]"),
-                            dense=True,
+                            v_model_name="kin_energy_unit",
+                            input=(ctrl.kin_energy_unit_change, "[$event]"),
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=12, classes="py-0"):
-                        vuetify.VTextField(
+                        TrameFunctions.text_field(
                             label="Bunch Charge",
-                            v_model=("bunch_charge_C",),
-                            error_messages=("bunch_charge_C_validation",),
-                            change=(
-                                ctrl.on_input_change,
-                                "[$event, 'float','bunch_charge_C','bunch_charge_C_validation']",
-                            ),
-                            type="number",
-                            step=generalFunctions.get_default(
-                                "bunch_charge_C", "steps"
-                            ),
-                            __properties=["step"],
-                            dense=True,
-                            suffix=generalFunctions.get_default(
-                                "bunch_charge_C", "units"
-                            ),
+                            v_model_name="bunch_charge_C",
+                            input=(ctrl.input_change, "['bunch_charge_C']"),
                         )

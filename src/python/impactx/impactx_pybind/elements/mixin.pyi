@@ -7,6 +7,8 @@ from __future__ import annotations
 __all__ = ["Alignment", "Named", "Thick", "Thin"]
 
 class Alignment:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self) -> None:
         """
         Mixin class for lattice elements with horizontal/vertical alignment errors.
@@ -34,6 +36,8 @@ class Alignment:
     def rotation(self, arg1: float) -> None: ...
 
 class Named:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def has_name(self) -> bool: ...
     @property
@@ -45,6 +49,8 @@ class Named:
     def name(self, arg1: str) -> None: ...
 
 class Thick:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self, ds: float, nslice: float = 1) -> None:
         """
         Mixin class for lattice elements with finite length.
@@ -65,6 +71,8 @@ class Thick:
     def nslice(self, arg1: int) -> None: ...
 
 class Thin:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self) -> None:
         """
         Mixin class for lattice elements with zero length.

@@ -55,6 +55,30 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     # make a unique run directory
     file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${name})
 
+    # get input file/script and optional command-line arguments
+    separate_arguments(INPUTS_LIST UNIX_COMMAND "${input}")
+    list(GET INPUTS_LIST 0 INPUTS_FILE)
+    list(LENGTH INPUTS_LIST INPUTS_LIST_LENGTH)
+    if(INPUTS_LIST_LENGTH GREATER 1)
+        list(SUBLIST INPUTS_LIST 1 -1 INPUTS_ARGS)
+        list(JOIN INPUTS_ARGS " " INPUTS_ARGS)
+    else()
+        set(INPUTS_ARGS "")
+    endif()
+    cmake_path(SET INPUTS_FILE "${ImpactX_SOURCE_DIR}/${INPUTS_FILE}")
+
+    # get analysis script and optional command-line arguments
+    separate_arguments(ANALYSIS_LIST UNIX_COMMAND "${analysis_script}")
+    list(GET ANALYSIS_LIST 0 ANALYSIS_FILE)
+    cmake_path(SET ANALYSIS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${ANALYSIS_FILE}")
+    list(LENGTH ANALYSIS_LIST ANALYSIS_LIST_LENGTH)
+    if(ANALYSIS_LIST_LENGTH GREATER 1)
+        list(SUBLIST ANALYSIS_LIST 1 -1 ANALYSIS_ARGS)
+        list(JOIN ANALYSIS_ARGS " " ANALYSIS_ARGS)
+    else()
+        set(ANALYSIS_ARGS "")
+    endif()
+
     # test run
     set(THIS_WORKING_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${name})
     set(THIS_MPI_TEST_EXE)
@@ -64,10 +88,10 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     set(THIS_Python_EXE)
     if(is_python)
         set(THIS_Python_EXE ${Python_EXECUTABLE})
-    endif()
-    if(is_python)
+        # for argparse, do not pass command-line arguments as one quoted string
+        separate_arguments(INPUTS_ARGS UNIX_COMMAND "${INPUTS_ARGS}")
         add_test(NAME ${name}.run
-                 COMMAND ${THIS_MPI_TEST_EXE} ${THIS_Python_EXE} ${ImpactX_SOURCE_DIR}/${input}
+                 COMMAND ${THIS_MPI_TEST_EXE} ${THIS_Python_EXE} ${INPUTS_FILE} ${INPUTS_ARGS}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
         # TODO:
@@ -77,12 +101,13 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     else()
         add_test(NAME ${name}.run
                  COMMAND
-                    ${THIS_MPI_TEST_EXE} $<TARGET_FILE:app> ${ImpactX_SOURCE_DIR}/${input}
+                    ${THIS_MPI_TEST_EXE} $<TARGET_FILE:app> ${INPUTS_FILE}
                         amrex.abort_on_unused_inputs=1
                         amrex.throw_exception = 1
                         amrex.signal_handling = 0
                         impactx.always_warn_immediately=1
-                        impactx.abort_on_warning_threshold=medium
+                        impactx.abort_on_warning_threshold=low
+                        ${INPUTS_ARGS}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
     endif()
@@ -213,7 +238,7 @@ add_impactx_test(FODO.MADX.py
 # Python: FODO Cell w/ custom linear element  #################################
 #
 add_impactx_test(FODO.userdef
-        examples/fodo_userdef/input_fodo_userdef.in
+        "examples/fodo_userdef/input_fodo_userdef.in impactx.abort_on_warning_threshold=medium"
         ON   # ImpactX MPI-parallel
         examples/fodo_userdef/analysis_fodo.py
         examples/fodo_userdef/plot_fodo.py

@@ -620,7 +620,7 @@ This module provides elements for the accelerator lattice.
    The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
    and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
 
-   The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is 
+   The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is
    up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
 
    :param R: a linear transport map to multiply with the the phase space vector :math:`(x,px,y,py,t,pt)`.

@@ -144,11 +144,12 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal k;
             pp_element.get("k", k);
 
-            m_lattice.emplace_back( Quad(ds, k, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( Quad(ds, k, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "drift")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
@@ -160,11 +161,12 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal rc;
             pp_element.get("rc", rc);
 
-            m_lattice.emplace_back( Sbend(ds, rc, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( Sbend(ds, rc, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "cfbend")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
@@ -191,13 +193,14 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::Real kx, ky, kt;
             pp_element.get("kx", kx);
             pp_element.get("ky", ky);
             pp_element.get("kt", kt);
 
-            m_lattice.emplace_back( ConstF(ds, kx, ky, kt, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ConstF(ds, kx, ky, kt, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "buncher")
         {
             auto a = detail::query_alignment(pp_element);
@@ -242,6 +245,7 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal escale, freq, phase;
             int mapsteps = mapsteps_default;
@@ -255,16 +259,17 @@ namespace detail
             detail::queryAddResize(pp_element, "cos_coefficients", cos_coef);
             detail::queryAddResize(pp_element, "sin_coefficients", sin_coef);
 
-            m_lattice.emplace_back( RFCavity(ds, escale, freq, phase, cos_coef, sin_coef, a["dx"], a["dy"], a["rotation_degree"], mapsteps, nslice, element_name) );
+            m_lattice.emplace_back( RFCavity(ds, escale, freq, phase, cos_coef, sin_coef, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], mapsteps, nslice, element_name) );
         } else if (element_type == "solenoid")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal ks;
             pp_element.get("ks", ks);
 
-            m_lattice.emplace_back( Sol(ds, ks, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( Sol(ds, ks, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "prot")
         {
             amrex::ParticleReal phi_in, phi_out;
@@ -284,6 +289,7 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal bscale;
             int mapsteps = mapsteps_default;
@@ -297,11 +303,12 @@ namespace detail
             detail::queryAddResize(pp_element, "cos_coefficients", cos_coef);
             detail::queryAddResize(pp_element, "sin_coefficients", sin_coef);
 
-            m_lattice.emplace_back( SoftSolenoid(ds, bscale, cos_coef, sin_coef, units, a["dx"], a["dy"], a["rotation_degree"], mapsteps, nslice, element_name) );
+            m_lattice.emplace_back( SoftSolenoid(ds, bscale, cos_coef, sin_coef, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], mapsteps, nslice, element_name) );
         } else if (element_type == "quadrupole_softedge")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal gscale;
             int mapsteps = mapsteps_default;
@@ -313,16 +320,18 @@ namespace detail
             detail::queryAddResize(pp_element, "cos_coefficients", cos_coef);
             detail::queryAddResize(pp_element, "sin_coefficients", sin_coef);
 
-            m_lattice.emplace_back( SoftQuadrupole(ds, gscale, cos_coef, sin_coef, a["dx"], a["dy"], a["rotation_degree"], mapsteps, nslice, element_name) );
+            m_lattice.emplace_back( SoftQuadrupole(ds, gscale, cos_coef, sin_coef, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], mapsteps, nslice, element_name) );
         } else if (element_type == "drift_chromatic")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
-            m_lattice.emplace_back( ChrDrift(ds, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ChrDrift(ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "quad_chromatic")
         {
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
 
             amrex::ParticleReal k;
@@ -330,10 +339,11 @@ namespace detail
             pp_element.get("k", k);
             pp_element.queryAdd("units", units);
 
-            m_lattice.emplace_back( ChrQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ChrQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "plasma_lens_chromatic")
         {
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
 
             amrex::ParticleReal k;
@@ -341,7 +351,7 @@ namespace detail
             pp_element.get("k", k);
             pp_element.queryAdd("units", units);
 
-            m_lattice.emplace_back( ChrPlasmaLens(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ChrPlasmaLens(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "tapered_plasma_lens")
         {
             auto a = detail::query_alignment(pp_element);
@@ -358,29 +368,32 @@ namespace detail
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
-            m_lattice.emplace_back( ExactDrift(ds, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ExactDrift(ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "sbend_exact")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal phi;
             amrex::ParticleReal B = 0.0;
             pp_element.get("phi", phi);
             pp_element.queryAdd("B", B);
 
-            m_lattice.emplace_back( ExactSbend(ds, phi, B, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ExactSbend(ds, phi, B, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "uniform_acc_chromatic")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal ez, bz;
             pp_element.get("ez", ez);
             pp_element.get("bz", bz);
 
-            m_lattice.emplace_back( ChrAcc(ds, ez, bz, a["dx"], a["dy"], a["rotation_degree"], nslice, element_name) );
+            m_lattice.emplace_back( ChrAcc(ds, ez, bz, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "thin_dipole")
         {
             auto a = detail::query_alignment(pp_element);

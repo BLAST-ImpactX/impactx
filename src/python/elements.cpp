@@ -414,7 +414,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Aperture);
 
-    py::class_<ChrDrift, elements::Named, elements::Thick, elements::Alignment> py_ChrDrift(me, "ChrDrift");
+    py::class_<ChrDrift, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ChrDrift(me, "ChrDrift");
     py_ChrDrift
         .def("__repr__",
              [](ChrDrift const & chr_drift) {
@@ -429,6 +429,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -436,6 +438,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Drift with chromatic effects included."
@@ -443,7 +447,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ChrDrift);
 
-    py::class_<ChrQuad, elements::Named, elements::Thick, elements::Alignment> py_ChrQuad(me, "ChrQuad");
+    py::class_<ChrQuad, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ChrQuad(me, "ChrQuad");
     py_ChrQuad
         .def("__repr__",
              [](ChrQuad const & chr_quad) {
@@ -461,6 +465,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -470,6 +476,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Quadrupole magnet with chromatic effects included."
@@ -487,7 +495,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ChrQuad);
 
-    py::class_<ChrPlasmaLens, elements::Named, elements::Thick, elements::Alignment> py_ChrPlasmaLens(me, "ChrPlasmaLens");
+    py::class_<ChrPlasmaLens, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ChrPlasmaLens(me, "ChrPlasmaLens");
     py_ChrPlasmaLens
         .def("__repr__",
              [](ChrPlasmaLens const & chr_pl_lens) {
@@ -505,6 +513,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -514,6 +524,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An active Plasma Lens with chromatic effects included."
@@ -550,6 +562,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -559,6 +573,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A region of Uniform Acceleration, with chromatic effects included."
@@ -576,7 +592,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ChrAcc);
 
-    py::class_<ConstF, elements::Named, elements::Thick, elements::Alignment> py_ConstF(me, "ConstF");
+    py::class_<ConstF, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ConstF(me, "ConstF");
     py_ConstF
         .def("__repr__",
              [](ConstF const & constf) {
@@ -597,6 +613,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -607,6 +625,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A linear Constant Focusing element."
@@ -718,7 +738,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Drift);
 
-    py::class_<ExactDrift, elements::Named, elements::Thick, elements::Alignment> py_ExactDrift(me, "ExactDrift");
+    py::class_<ExactDrift, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ExactDrift(me, "ExactDrift");
     py_ExactDrift
         .def("__repr__",
              [](ExactDrift const & exact_drift) {
@@ -733,6 +753,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -740,6 +762,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Drift using the exact nonlinear map."
@@ -747,7 +771,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ExactDrift);
 
-    py::class_<ExactSbend, elements::Named, elements::Thick, elements::Alignment> py_ExactSbend(me, "ExactSbend");
+    py::class_<ExactSbend, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ExactSbend(me, "ExactSbend");
     py_ExactSbend
         .def("__repr__",
              [](ExactSbend const & exact_sbend) {
@@ -766,6 +790,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -775,6 +801,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An ideal sector bend using the exact nonlinear map.  When B = 0, the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B."
@@ -1046,7 +1074,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<Quad, elements::Named, elements::Thick, elements::Alignment> py_Quad(me, "Quad");
+    py::class_<Quad, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Quad(me, "Quad");
     py_Quad
         .def("__repr__",
              [](Quad const & quad) {
@@ -1063,6 +1091,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -1071,6 +1101,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Quadrupole magnet."
@@ -1083,7 +1115,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Quad);
 
-    py::class_<RFCavity, elements::Named, elements::Thick, elements::Alignment> py_RFCavity(me, "RFCavity");
+    py::class_<RFCavity, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_RFCavity(me, "RFCavity");
     py_RFCavity
         .def("__repr__",
              [](RFCavity const & rfc) {
@@ -1106,6 +1138,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 int,
                 std::optional<std::string>
@@ -1119,6 +1153,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("mapsteps") = 1,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
@@ -1149,7 +1185,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_RFCavity);
 
-    py::class_<Sbend, elements::Named, elements::Thick, elements::Alignment> py_Sbend(me, "Sbend");
+    py::class_<Sbend, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Sbend(me, "Sbend");
     py_Sbend
         .def("__repr__",
              [](Sbend const & sbend) {
@@ -1166,6 +1202,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -1174,6 +1212,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An ideal sector bend."
@@ -1323,7 +1363,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ShortRF);
 
-    py::class_<SoftSolenoid, elements::Named, elements::Thick, elements::Alignment> py_SoftSolenoid(me, "SoftSolenoid");
+    py::class_<SoftSolenoid, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_SoftSolenoid(me, "SoftSolenoid");
     py_SoftSolenoid
         .def("__repr__",
              [](SoftSolenoid const & soft_sol) {
@@ -1343,6 +1383,8 @@ void init_elements(py::module& m)
                  amrex::ParticleReal,
                  amrex::ParticleReal,
                  amrex::ParticleReal,
+                 amrex::ParticleReal,
+                 amrex::ParticleReal,
                  int,
                  int,
                  std::optional<std::string>
@@ -1355,6 +1397,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("mapsteps") = 1,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
@@ -1380,7 +1424,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_SoftSolenoid);
 
-    py::class_<Sol, elements::Named, elements::Thick, elements::Alignment> py_Sol(me, "Sol");
+    py::class_<Sol, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Sol(me, "Sol");
     py_Sol
         .def("__repr__",
              [](Sol const & sol) {
@@ -1397,6 +1441,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 int,
                 std::optional<std::string>
              >(),
@@ -1405,6 +1451,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An ideal hard-edge Solenoid magnet."
@@ -1451,7 +1499,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_PRot);
 
-    py::class_<SoftQuadrupole, elements::Named, elements::Thick, elements::Alignment> py_SoftQuadrupole(me, "SoftQuadrupole");
+    py::class_<SoftQuadrupole, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_SoftQuadrupole(me, "SoftQuadrupole");
     py_SoftQuadrupole
         .def("__repr__",
              [](SoftQuadrupole const & soft_quad) {
@@ -1470,6 +1518,8 @@ void init_elements(py::module& m)
                  amrex::ParticleReal,
                  amrex::ParticleReal,
                  amrex::ParticleReal,
+                 amrex::ParticleReal,
+                 amrex::ParticleReal,
                  int,
                  int,
                  std::optional<std::string>
@@ -1481,6 +1531,8 @@ void init_elements(py::module& m)
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
              py::arg("mapsteps") = 1,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),

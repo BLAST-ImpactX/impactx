@@ -521,7 +521,7 @@ This module provides elements for the accelerator lattice.
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
    :param aperture_x: horizontal half-aperture (elliptical) in m
-   :param aperture_y: vertical half-aperture (elliptical) in m      
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 

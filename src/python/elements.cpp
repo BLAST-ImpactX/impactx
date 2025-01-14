@@ -321,8 +321,8 @@ void init_elements(py::module& m)
              }
         )
         .def(py::init([](
-                 amrex::ParticleReal xmax,
-                 amrex::ParticleReal ymax,
+                 amrex::ParticleReal aperture_x,
+                 amrex::ParticleReal aperture_y,
                  amrex::ParticleReal repeat_x,
                  amrex::ParticleReal repeat_y,
                  std::string const & shape,
@@ -345,10 +345,10 @@ void init_elements(py::module& m)
                  Aperture::Action const a = action == "transmit" ?
                      Aperture::Action::transmit :
                      Aperture::Action::absorb;
-                 return new Aperture(xmax, ymax, repeat_x, repeat_y, s, a, dx, dy, rotation_degree, name);
+                 return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, s, a, dx, dy, rotation_degree, name);
              }),
-             py::arg("xmax"),
-             py::arg("ymax"),
+             py::arg("aperture_x"),
+             py::arg("aperture_y"),
              py::arg("repeat_x") = 0,
              py::arg("repeat_y") = 0,
              py::arg("shape") = "rectangular",
@@ -391,14 +391,14 @@ void init_elements(py::module& m)
             },
             "action type (transmit, absorb)"
         )
-        .def_property("xmax",
-            [](Aperture & ap) { return ap.m_xmax; },
-            [](Aperture & ap, amrex::ParticleReal xmax) { ap.m_xmax = xmax; },
+        .def_property("aperture_x",
+            [](Aperture & ap) { return ap.m_aperture_x; },
+            [](Aperture & ap, amrex::ParticleReal aperture_x) { ap.m_aperture_x = aperture_x; },
             "maximum horizontal coordinate"
         )
-        .def_property("ymax",
-            [](Aperture & ap) { return ap.m_ymax; },
-            [](Aperture & ap, amrex::ParticleReal ymax) { ap.m_ymax = ymax; },
+        .def_property("aperture_y",
+            [](Aperture & ap) { return ap.m_aperture_y; },
+            [](Aperture & ap, amrex::ParticleReal aperture_y) { ap.m_aperture_y = aperture_y; },
             "maximum vertical coordinate"
         )
         .def_property("repeat_x",

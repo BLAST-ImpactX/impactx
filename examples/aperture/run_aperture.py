@@ -51,7 +51,7 @@ sim.lattice.extend(
         monitor,
         elements.Drift(name="drift", ds=0.123),
         elements.Aperture(
-            name="collimator", xmax=1.0e-3, ymax=1.5e-3, shape="rectangular"
+            name="collimator", aperture_x=1.0e-3, aperture_y=1.5e-3, shape="rectangular"
         ),
         monitor,
     ]

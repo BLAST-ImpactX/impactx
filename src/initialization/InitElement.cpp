@@ -423,13 +423,13 @@ namespace detail
         {
             auto a = detail::query_alignment(pp_element);
 
-            amrex::Real xmax, ymax;
+            amrex::Real aperture_x, aperture_y;
             amrex::ParticleReal repeat_x = 0.0;
             amrex::ParticleReal repeat_y = 0.0;
             std::string shape_str = "rectangular";
             std::string action_str = "transmit";
-            pp_element.get("xmax", xmax);
-            pp_element.get("ymax", ymax);
+            pp_element.get("aperture_x", aperture_x);
+            pp_element.get("aperture_y", aperture_y);
             pp_element.queryAdd("repeat_x", repeat_x);
             pp_element.queryAdd("repeat_y", repeat_y);
             pp_element.queryAdd("shape", shape_str);
@@ -445,7 +445,7 @@ namespace detail
                                         Aperture::Action::transmit :
                                         Aperture::Action::absorb;
 
-            m_lattice.emplace_back( Aperture(xmax, ymax, repeat_x, repeat_y, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "beam_monitor")
         {
             std::string openpmd_name = element_name;

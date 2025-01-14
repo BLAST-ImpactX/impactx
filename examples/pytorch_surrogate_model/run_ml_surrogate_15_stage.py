@@ -37,7 +37,7 @@ except ImportError:
     print("Warning: Cannot import PyTorch. Skipping test.")
     import sys
 
-    sys.exit(0)
+    sys.exit(42)  # ImpactX special return code for skipped tests
 
 import zipfile
 from urllib import request
@@ -100,18 +100,19 @@ print(
 data_url = "https://zenodo.org/records/10810754/files/models.zip?download=1"
 download_and_unzip(data_url, "models.zip")
 
-# It was found that the PyTorch multithreaded defaults interfere with MPI-enabled AMReX
-# when initializing the models: https://github.com/AMReX-Codes/pyamrex/issues/322
+# It was found that the PyTorch multithreaded defaults interfere with AMReX OpenMP
+# when initializing the models or iterating elements:
+# https://github.com/AMReX-Codes/pyamrex/issues/322
+# https://github.com/ECP-WarpX/impactx/issues/773#issuecomment-2585043099
 # So we manually set the number of threads to serial (1).
-if Config.have_mpi:
-    n_threads = torch.get_num_threads()
-    torch.set_num_threads(1)
+# Torch threading is not a problem with GPUs and might work when MPI is disabled.
+# Could also just be a mixing of OpenMP libraries (gomp and llvm omp) when using the
+# pre-build PyTorch pip packages.
+torch.set_num_threads(1)
 model_list = [
     surrogate_model(f"models/beam_stage_{stage_i}_model.pt", device=device)
     for stage_i in range(N_stage)
 ]
-if Config.have_mpi:
-    torch.set_num_threads(n_threads)
 
 pp_amrex = amr.ParmParse("amrex")
 pp_amrex.add("the_arena_init_size", 0)
@@ -328,6 +329,7 @@ for i in range(N_stage):
     lpa = LPASurrogateStage(i, model_list[i], L_surrogate, L_stage_period * i)
     lpa.nslice = n_slice
     lpa.ds = L_surrogate
+    lpa.threadsafe = False
     lpa_stages.append(lpa)
 
 monitor = elements.BeamMonitor("monitor")

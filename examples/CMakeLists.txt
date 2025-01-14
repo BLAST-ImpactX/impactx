@@ -116,6 +116,8 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     else()
         set_property(TEST ${name}.run APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
     endif()
+    # special return code for skipped tests (e.g., runtime prerequisite fails)
+    set_tests_properties(${name}.run PROPERTIES SKIP_RETURN_CODE 42)
 
     # analysis and plots
     set(THIS_Python_SCRIPT_EXE)
@@ -131,6 +133,11 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
 
         # make HDF5 I/O more robust on various filesystems
         set_property(TEST ${name}.analysis APPEND PROPERTY ENVIRONMENT "HDF5_USE_FILE_LOCKING=FALSE")
+
+        # run test failed? Mark this as skipped
+        set_property(TEST ${name}.analysis PROPERTY SKIP_REGULAR_EXPRESSION
+            "Supplied directory is not valid: diags"
+        )
     endif()
     if(plot_script)
         add_test(NAME ${name}.plot
@@ -141,6 +148,11 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
 
         # make HDF5 I/O more robust on various filesystems
         set_property(TEST ${name}.plot APPEND PROPERTY ENVIRONMENT "HDF5_USE_FILE_LOCKING=FALSE")
+
+        # run test failed? Mark this as skipped
+        set_property(TEST ${name}.plot PROPERTY SKIP_REGULAR_EXPRESSION
+            "ValueError: No objects to concatenate"
+        )
     endif()
 endfunction()
 
@@ -1000,6 +1012,7 @@ add_impactx_test(spectrometer.py
     OFF  # no plot script yet
 )
 
+
 # Chicane with CSR ###########################################################
 #
 if(ImpactX_FFT)
@@ -1128,3 +1141,14 @@ add_impactx_test(linear-map.py
     examples/linear_map/analysis_map.py
     OFF  # no plot script yet
 )
+
+
+# PyTorch Surrogate: Staged LPA ##############################################
+#
+add_impactx_test(pytorch_surrogate_model
+    examples/pytorch_surrogate_model/run_ml_surrogate_15_stage.py
+      OFF  # ImpactX MPI-parallel
+    examples/pytorch_surrogate_model/analyze_ml_surrogate_15_stage.py
+    examples/pytorch_surrogate_model/visualize_ml_surrogate_15_stage.py
+)
+label_impactx_test(pytorch_surrogate_model slow)

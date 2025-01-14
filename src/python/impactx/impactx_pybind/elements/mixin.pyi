@@ -4,7 +4,9 @@ Mixin classes for accelerator lattice elements in ImpactX
 
 from __future__ import annotations
 
-__all__ = ["Alignment", "Named", "Thick", "Thin"]
+import amrex.space3d.amrex_3d_pybind
+
+__all__ = ["Alignment", "LinearTransport", "Named", "Thick", "Thin"]
 
 class Alignment:
     @staticmethod
@@ -34,6 +36,15 @@ class Alignment:
         """
     @rotation.setter
     def rotation(self, arg1: float) -> None: ...
+
+class LinearTransport:
+    Map6x6 = amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
+    def __init__(self) -> None:
+        """
+        Mixin class for linear transport approximation via matrices.
+        """
 
 class Named:
     @staticmethod

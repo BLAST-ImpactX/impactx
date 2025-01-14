@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import typing
 
+import amrex.space3d.amrex_3d_pybind
 import impactx.impactx_pybind
 
 from . import mixin
@@ -27,6 +28,7 @@ __all__ = [
     "ExactSbend",
     "Kicker",
     "KnownElementsList",
+    "LinearMap",
     "Marker",
     "Multipole",
     "NonlinearLens",
@@ -698,6 +700,7 @@ class KnownElementsList:
         | ExactDrift
         | ExactSbend
         | Kicker
+        | LinearMap
         | Marker
         | Multipole
         | NonlinearLens
@@ -734,6 +737,7 @@ class KnownElementsList:
         | ExactDrift
         | ExactSbend
         | Kicker
+        | LinearMap
         | Marker
         | Multipole
         | NonlinearLens
@@ -771,6 +775,7 @@ class KnownElementsList:
         | ExactDrift
         | ExactSbend
         | Kicker
+        | LinearMap
         | Marker
         | Multipole
         | NonlinearLens
@@ -808,6 +813,53 @@ class KnownElementsList:
     def pop_back(self) -> None:
         """
         Return and remove the last element of the list.
+        """
+
+class LinearMap(mixin.Named, mixin.Alignment, mixin.LinearTransport):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
+    def __init__(
+        self,
+        R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ds: float = 0,
+        dx: float = 0,
+        dy: float = 0,
+        rotation: float = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        (A user-provided linear map, represented as a 6x6 transport matrix.)
+        """
+    def __repr__(self) -> str: ...
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: int = 0,
+        period: int = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @property
+    def R(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linear map as a 6x6 transport matrix
+        """
+    @R.setter
+    def R(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def ds(self) -> float:
+        """
+        segment length in m
+        """
+    @ds.setter
+    def ds(self, arg1: float) -> None: ...
+    @property
+    def nslice(self) -> int:
+        """
+        one, because we do not support slicing of this element
         """
 
 class Marker(mixin.Named, mixin.Thin):

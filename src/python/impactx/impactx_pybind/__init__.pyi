@@ -708,6 +708,7 @@ def push(
     | elements.ExactDrift
     | elements.ExactSbend
     | elements.Kicker
+    | elements.LinearMap
     | elements.Marker
     | elements.Multipole
     | elements.NonlinearLens

@@ -181,9 +181,9 @@ namespace detail
 
         amrex::ParmParse pp_diag("diag");
         // turn filter
-        pp_diag.queryAdd("period_sample_intervals", m_period_sample_intervals);
+        pp_diag.queryAddWithParser("period_sample_intervals", m_period_sample_intervals);
         // legacy options from other diagnostics
-        pp_diag.queryAdd("file_min_digits", m_file_min_digits);
+        pp_diag.queryAddWithParser("file_min_digits", m_file_min_digits);
 
         // Ensure m_series is the same for the same names.
         if (m_unique_series.count(m_series_name) == 0u) {

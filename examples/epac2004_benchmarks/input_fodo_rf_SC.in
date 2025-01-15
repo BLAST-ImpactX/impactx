@@ -37,7 +37,7 @@ fquad.nslice = 6
 
 dquad.type = quad
 dquad.ds = 0.3
-dquad.k = -2.4669749766168163
+dquad.k = -fquad.k
 dquad.nslice = 12
 
 gapa1.type = rfcavity

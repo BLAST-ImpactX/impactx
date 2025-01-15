@@ -37,10 +37,16 @@ namespace detail
     template< typename T>
     auto get_or_throw (std::string const & prefix, std::string const & name)
     {
-        T value;
+        using V = std::decay_t<T>;
+        V value;
+
+        bool has_name = false;
         // TODO: if array do queryarr
-        // bool const has_name = amrex::ParmParse(prefix).queryarr(name.c_str(), value);
-        bool const has_name = amrex::ParmParse(prefix).query(name.c_str(), value);
+        // has_name = amrex::ParmParse(prefix).queryarr(name.c_str(), value);
+        if constexpr (std::is_same_v<V, bool> || std::is_same_v<V, std::string>)
+            has_name = amrex::ParmParse(prefix).query(name.c_str(), value);
+        else
+            has_name = amrex::ParmParse(prefix).queryWithParser(name.c_str(), value);
 
         if (!has_name)
             throw std::runtime_error(prefix + "." + name + " is not set yet");

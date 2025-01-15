@@ -8,10 +8,10 @@ beam.charge = 1.0e-8
 beam.particle = proton
 beam.distribution = kurth6d
 beam.lambdaX = 1.11e-3
-beam.lambdaY = 1.11e-3
+beam.lambdaY = beam.lambdaX
 beam.lambdaT = 3.74036839224568e-4
 beam.lambdaPx = 9.00900900901e-4
-beam.lambdaPy = 9.00900900901e-4
+beam.lambdaPy = beam.lambdaPx
 beam.lambdaPt = 2.6735334467940146e-3
 
 
@@ -29,8 +29,8 @@ drift1.ds = 1.0
 constf1.type = constf
 constf1.ds = 2.0
 constf1.kx = 0.7
-constf1.ky = 0.7
-constf1.kt = 0.7
+constf1.ky = constf1.kx
+constf1.kt = constf1.kx
 
 
 ###############################################################################

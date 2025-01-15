@@ -27,7 +27,7 @@ void ImpactX::init_warning_logger ()
 
     // verbosity
     int verbose = 1;
-    pp_impactx.queryAdd("verbose", verbose);
+    pp_impactx.queryAddWithParser("verbose", verbose);
 
     // Set the flag to control if ImpactX has to emit a warning message
     // as soon as a warning is recorded
@@ -64,7 +64,7 @@ bool ImpactX::early_param_check ()
     // verbosity
     amrex::ParmParse pp_impactx("impactx");
     int verbose = 1;
-    pp_impactx.queryAdd("verbose", verbose);
+    pp_impactx.queryAddWithParser("verbose", verbose);
 
     if (verbose > 0) {
         amrex::Print() << "\n";

@@ -99,7 +99,7 @@ namespace details
 
         // Mesh-refinement
         int max_level = 0;
-        pp_amr.query("max_level", max_level);
+        pp_amr.queryWithParser("max_level", max_level);
         //   amrex::AmrMesh::InitAmrMesh will query amr.ref_ratio or amr.ref_ratio_vect on its own
         amrex::Vector<amrex::IntVect> const & ref_ratios = amrex::Vector<amrex::IntVect>();
 
@@ -144,7 +144,7 @@ namespace details
 
         // Mesh-refinement
         int max_level = 0;
-        pp_amr.query("max_level", max_level);
+        pp_amr.queryWithParser("max_level", max_level);
         //   amrex::AmrMesh::InitAmrMesh will query amr.ref_ratio or amr.ref_ratio_vect on its own
         amrex::Vector<amrex::IntVect> const & ref_ratios = amrex::Vector<amrex::IntVect>();
 

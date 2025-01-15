@@ -194,15 +194,15 @@ namespace impactx
         amrex::ParticleReal alphax = 0.0, alphay = 0.0, alphat = 0.0;
 
         // Reading the input Twiss parameters
-        pp_dist.query("alphaX", alphax);
-        pp_dist.query("alphaY", alphay);
-        pp_dist.query("alphaT", alphat);
-        pp_dist.get("betaX", betax);
-        pp_dist.get("betaY", betay);
-        pp_dist.get("betaT", betat);
-        pp_dist.get("emittX", emittx);
-        pp_dist.get("emittY", emitty);
-        pp_dist.get("emittT", emittt);
+        pp_dist.queryWithParser("alphaX", alphax);
+        pp_dist.queryWithParser("alphaY", alphay);
+        pp_dist.queryWithParser("alphaT", alphat);
+        pp_dist.getWithParser("betaX", betax);
+        pp_dist.getWithParser("betaY", betay);
+        pp_dist.getWithParser("betaT", betat);
+        pp_dist.getWithParser("emittX", emittx);
+        pp_dist.getWithParser("emittY", emitty);
+        pp_dist.getWithParser("emittT", emittt);
 
         if (betax <= 0.0_prt || betay <= 0.0_prt || betat <= 0.0_prt) {
             throw std::runtime_error("Input Error: The beta function values need to be non-zero positive values in all dimensions.");
@@ -251,15 +251,15 @@ namespace impactx
         amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
     )
     {
-        pp_dist.get("lambdaX", sigx);
-        pp_dist.get("lambdaY", sigy);
-        pp_dist.get("lambdaT", sigt);
-        pp_dist.get("lambdaPx", sigpx);
-        pp_dist.get("lambdaPy", sigpy);
-        pp_dist.get("lambdaPt", sigpt);
-        pp_dist.query("muxpx", muxpx);
-        pp_dist.query("muypy", muypy);
-        pp_dist.query("mutpt", mutpt);
+        pp_dist.getWithParser("lambdaX", sigx);
+        pp_dist.getWithParser("lambdaY", sigy);
+        pp_dist.getWithParser("lambdaT", sigt);
+        pp_dist.getWithParser("lambdaPx", sigpx);
+        pp_dist.getWithParser("lambdaPy", sigpy);
+        pp_dist.getWithParser("lambdaPt", sigpt);
+        pp_dist.queryWithParser("muxpx", muxpx);
+        pp_dist.queryWithParser("muypy", muypy);
+        pp_dist.queryWithParser("mutpt", mutpt);
     }
 
     void ImpactX::initBeamDistributionFromInputs ()
@@ -272,10 +272,10 @@ namespace impactx
         amrex::ParmParse const pp_dist("beam");
 
         amrex::ParticleReal kin_energy = 0.0;  // Beam kinetic energy (MeV)
-        pp_dist.get("kin_energy", kin_energy);
+        pp_dist.getWithParser("kin_energy", kin_energy);
 
         amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
-        pp_dist.get("charge", bunch_charge);
+        pp_dist.getWithParser("charge", bunch_charge);
 
         std::string particle_type;  // Particle type
         pp_dist.get("particle", particle_type);
@@ -310,7 +310,7 @@ namespace impactx
                 .set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy);
 
         int npart = 1;  // Number of simulation particles
-        pp_dist.get("npart", npart);
+        pp_dist.getWithParser("npart", npart);
 
         std::string unit_type;  // System of units
         pp_dist.get("units", unit_type);
@@ -415,14 +415,14 @@ namespace impactx
         } else if (distribution_type == "thermal") {
             amrex::ParticleReal k, kT, kT_halo, normalize, normalize_halo;
             amrex::ParticleReal halo = 0.0;
-            pp_dist.get("k", k);
-            pp_dist.get("kT", kT);
+            pp_dist.getWithParser("k", k);
+            pp_dist.getWithParser("kT", kT);
             kT_halo = kT;
-            pp_dist.get("normalize", normalize);
+            pp_dist.getWithParser("normalize", normalize);
             normalize_halo = normalize;
-            pp_dist.query("kT_halo", kT_halo);
-            pp_dist.query("normalize_halo", normalize_halo);
-            pp_dist.query("halo", halo);
+            pp_dist.queryWithParser("kT_halo", kT_halo);
+            pp_dist.queryWithParser("normalize_halo", normalize_halo);
+            pp_dist.queryWithParser("halo", halo);
 
             distribution::KnownDistributions thermal(distribution::Thermal(k, kT, kT_halo, normalize, normalize_halo, halo));
 

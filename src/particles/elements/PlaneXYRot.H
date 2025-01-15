@@ -29,11 +29,11 @@
 namespace impactx
 {
     struct PlaneXYRot
-    : public elements::Named,
-      public elements::BeamOptic<PlaneXYRot>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<PlaneXYRot>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "PlaneXYRot";
         using PType = ImpactXParticleContainer::ParticleType;

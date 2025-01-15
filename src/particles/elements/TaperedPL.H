@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct TaperedPL
-    : public elements::Named,
-      public elements::BeamOptic<TaperedPL>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<TaperedPL>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "TaperedPL";
         using PType = ImpactXParticleContainer::ParticleType;

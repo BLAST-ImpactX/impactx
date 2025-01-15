@@ -113,11 +113,11 @@ namespace SoftQuadrupoleData
 } // namespace SoftQuadrupoleData
 
     struct SoftQuadrupole
-    : public elements::Named,
-      public elements::BeamOptic<SoftQuadrupole>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<SoftQuadrupole>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture
     {
         static constexpr auto type = "SoftQuadrupole";
         using PType = ImpactXParticleContainer::ParticleType;

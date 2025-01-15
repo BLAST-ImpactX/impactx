@@ -28,12 +28,12 @@
 namespace impactx
 {
     struct Sol
-    : public elements::Named,
-      public elements::BeamOptic<Sol>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Sol>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Sol";
         using PType = ImpactXParticleContainer::ParticleType;

@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct NonlinearLens
-    : public elements::Named,
-      public elements::BeamOptic<NonlinearLens>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<NonlinearLens>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "NonlinearLens";
         using PType = ImpactXParticleContainer::ParticleType;

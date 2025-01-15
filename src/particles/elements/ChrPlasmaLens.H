@@ -27,12 +27,12 @@
 namespace impactx
 {
     struct ChrPlasmaLens
-    : public elements::Named,
-      public elements::BeamOptic<ChrPlasmaLens>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<ChrPlasmaLens>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "ChrPlasmaLens";
         using PType = ImpactXParticleContainer::ParticleType;

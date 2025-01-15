@@ -28,12 +28,12 @@
 namespace impactx
 {
     struct Sbend
-    : public elements::Named,
-      public elements::BeamOptic<Sbend>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Sbend>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Sbend";
         using PType = ImpactXParticleContainer::ParticleType;

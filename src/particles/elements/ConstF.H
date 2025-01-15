@@ -27,12 +27,12 @@
 namespace impactx
 {
     struct ConstF
-    : public elements::Named,
-      public elements::BeamOptic<ConstF>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<ConstF>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "ConstF";
         using PType = ImpactXParticleContainer::ParticleType;

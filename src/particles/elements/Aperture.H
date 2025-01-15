@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct Aperture
-    : public elements::Named,
-      public elements::BeamOptic<Aperture>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Aperture>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Aperture";
         using PType = ImpactXParticleContainer::ParticleType;

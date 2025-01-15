@@ -7,8 +7,8 @@
  * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_ELEMENTS_MIXIN_APERTURE_H
-#define IMPACTX_ELEMENTS_MIXIN_APERTURE_H
+#ifndef IMPACTX_ELEMENTS_MIXIN_PIPE_APERTURE_H
+#define IMPACTX_ELEMENTS_MIXIN_PIPE_APERTURE_H
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuQualifiers.H>
@@ -17,7 +17,7 @@
 #include <AMReX_REAL.H>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for applying a transverse aperture restriction to thick lattice elements
      */
@@ -98,6 +98,6 @@ namespace impactx::elements
         amrex::ParticleReal m_aperture_y = 0; //! vertical aperture size [m]
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
-#endif // IMPACTX_ELEMENTS_MIXIN_APERTURE_H
+#endif // IMPACTX_ELEMENTS_MIXIN_PIPE_APERTURE_H

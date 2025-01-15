@@ -22,8 +22,8 @@
 namespace impactx
 {
     struct Empty
-    : public elements::Thin,
-      public elements::NoFinalize
+    : public elements::mixin::Thin,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "None";
         using PType = ImpactXParticleContainer::ParticleType;

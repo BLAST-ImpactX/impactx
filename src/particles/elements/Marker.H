@@ -22,9 +22,9 @@
 namespace impactx
 {
     struct Marker
-    : public elements::Named,
-      public elements::Thin,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::Thin,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Marker";
         using PType = ImpactXParticleContainer::ParticleType;

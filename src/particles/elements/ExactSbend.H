@@ -29,12 +29,12 @@
 namespace impactx
 {
     struct ExactSbend
-    : public elements::Named,
-      public elements::BeamOptic<ExactSbend>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<ExactSbend>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "ExactSbend";
         static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;

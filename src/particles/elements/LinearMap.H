@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct LinearMap
-    : public elements::Named,
-      public elements::BeamOptic<LinearMap>,
-      public elements::Alignment,
-      public elements::LinearTransport,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<LinearMap>,
+      public elements::mixin::Alignment,
+      public elements::mixin::LinearTransport,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "LinearMap";
         using PType = ImpactXParticleContainer::ParticleType;

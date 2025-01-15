@@ -118,11 +118,11 @@ namespace SoftSolenoidData
 } // namespace SoftSolenoidData
 
     struct SoftSolenoid
-    : public elements::Named,
-      public elements::BeamOptic<SoftSolenoid>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<SoftSolenoid>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture
     {
         static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;

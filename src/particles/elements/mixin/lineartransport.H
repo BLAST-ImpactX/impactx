@@ -20,7 +20,7 @@
 #include <AMReX_SmallMatrix.H>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements that can be expressed as linear transport maps.
      */
@@ -47,6 +47,6 @@ namespace impactx::elements
         // Map6x6 m_transport_map; ///< linearized map
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_LINEAR_TRANSPORT_H

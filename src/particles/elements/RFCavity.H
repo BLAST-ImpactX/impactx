@@ -104,11 +104,11 @@ namespace RFCavityData
 } // namespace RFCavityData
 
     struct RFCavity
-    : public elements::Named,
-      public elements::BeamOptic<RFCavity>,
-      public elements::Thick,
-      public elements::Alignment,
-      public elements::PipeAperture
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<RFCavity>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture
     {
         static constexpr auto type = "RFCavity";
         using PType = ImpactXParticleContainer::ParticleType;

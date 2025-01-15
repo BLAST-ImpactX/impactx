@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct Buncher
-    : public elements::Named,
-      public elements::BeamOptic<Buncher>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Buncher>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Buncher";
         using PType = ImpactXParticleContainer::ParticleType;

@@ -21,15 +21,15 @@ namespace impactx::elements
 {
     /** This is a helper class for applying a transverse aperture restriction to thick lattice elements
      */
-    struct Aperture
+    struct PipeAperture
     {
 
-        /** A finite-length element
+        /** A finite-length element with a constant elliptical aperture over s.
          *
          * @param aperture_x horizontal half-aperture size in m
          * @param aperture_y vertical half-aperture size in m
          */
-        Aperture (
+        PipeAperture (
             amrex::ParticleReal aperture_x,
             amrex::ParticleReal aperture_y
         )
@@ -37,13 +37,13 @@ namespace impactx::elements
         {
         }
 
-        Aperture () = default;
-        Aperture (Aperture const &) = default;
-        Aperture& operator= (Aperture const &) = default;
-        Aperture (Aperture&&) = default;
-        Aperture& operator= (Aperture&& rhs) = default;
+        PipeAperture () = default;
+        PipeAperture (PipeAperture const &) = default;
+        PipeAperture& operator= (PipeAperture const &) = default;
+        PipeAperture (PipeAperture&&) = default;
+        PipeAperture& operator= (PipeAperture&& rhs) = default;
 
-        ~Aperture () = default;
+        ~PipeAperture () = default;
 
         /** Apply the transverse aperture
          *

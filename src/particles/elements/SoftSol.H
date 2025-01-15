@@ -122,7 +122,7 @@ namespace SoftSolenoidData
       public elements::BeamOptic<SoftSolenoid>,
       public elements::Thick,
       public elements::Alignment,
-      public elements::Aperture
+      public elements::PipeAperture
     {
         static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -166,7 +166,7 @@ namespace SoftSolenoidData
           : Named(std::move(name)),
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
-            Aperture(aperture_x, aperture_y),
+            PipeAperture(aperture_x, aperture_y),
             m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps), m_id(SoftSolenoidData::next_id)
        {
            // next created soft solenoid has another id for its data

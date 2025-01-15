@@ -33,7 +33,7 @@ namespace impactx
       public elements::BeamOptic<ExactSbend>,
       public elements::Thick,
       public elements::Alignment,
-      public elements::Aperture,
+      public elements::PipeAperture,
       public elements::NoFinalize
     {
         static constexpr auto type = "ExactSbend";
@@ -78,7 +78,7 @@ namespace impactx
         : Named(std::move(name)),
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
-          Aperture(aperture_x, aperture_y),
+          PipeAperture(aperture_x, aperture_y),
           m_phi(phi * degree2rad), m_B(B)
         {
         }

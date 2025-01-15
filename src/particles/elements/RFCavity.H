@@ -108,7 +108,7 @@ namespace RFCavityData
       public elements::BeamOptic<RFCavity>,
       public elements::Thick,
       public elements::Alignment,
-      public elements::Aperture
+      public elements::PipeAperture
     {
         static constexpr auto type = "RFCavity";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -150,7 +150,7 @@ namespace RFCavityData
           : Named(std::move(name)),
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
-            Aperture(aperture_x, aperture_y),
+            PipeAperture(aperture_x, aperture_y),
             m_escale(escale), m_freq(freq), m_phase(phase), m_mapsteps(mapsteps), m_id(RFCavityData::next_id)
         {
             // next created RF cavity has another id for its data

@@ -117,7 +117,7 @@ namespace SoftQuadrupoleData
       public elements::BeamOptic<SoftQuadrupole>,
       public elements::Thick,
       public elements::Alignment,
-      public elements::Aperture
+      public elements::PipeAperture
     {
         static constexpr auto type = "SoftQuadrupole";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -155,7 +155,7 @@ namespace SoftQuadrupoleData
           : Named(std::move(name)),
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
-            Aperture(aperture_x, aperture_y),
+            PipeAperture(aperture_x, aperture_y),
             m_gscale(gscale), m_mapsteps(mapsteps), m_id(SoftQuadrupoleData::next_id)
         {
             // next created soft quad has another id for its data

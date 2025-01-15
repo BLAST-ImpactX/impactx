@@ -216,16 +216,16 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<elements::Aperture>(mx, "Aperture")
+    py::class_<elements::PipeAperture>(mx, "PipeAperture")
         .def(py::init<>(),
-             "Mixin class for lattice elements with a transverse aperture."
+             "Mixin class for applying a transverse aperture restriction to thick lattice elements."
         )
         .def_property_readonly("aperture_x",
-            &elements::Aperture::aperture_x,
+            &elements::PipeAperture::aperture_x,
             "horizontal aperture in m"
         )
         .def_property_readonly("aperture_y",
-            &elements::Aperture::aperture_y,
+            &elements::PipeAperture::aperture_y,
             "vertical aperture in m"
         )
     ;
@@ -414,7 +414,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Aperture);
 
-    py::class_<ChrDrift, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ChrDrift(me, "ChrDrift");
+    py::class_<ChrDrift, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_ChrDrift(me, "ChrDrift");
     py_ChrDrift
         .def("__repr__",
              [](ChrDrift const & chr_drift) {
@@ -447,7 +447,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ChrDrift);
 
-    py::class_<ChrQuad, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ChrQuad(me, "ChrQuad");
+    py::class_<ChrQuad, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_ChrQuad(me, "ChrQuad");
     py_ChrQuad
         .def("__repr__",
              [](ChrQuad const & chr_quad) {
@@ -495,7 +495,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ChrQuad);
 
-    py::class_<ChrPlasmaLens, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ChrPlasmaLens(me, "ChrPlasmaLens");
+    py::class_<ChrPlasmaLens, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_ChrPlasmaLens(me, "ChrPlasmaLens");
     py_ChrPlasmaLens
         .def("__repr__",
              [](ChrPlasmaLens const & chr_pl_lens) {
@@ -592,7 +592,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ChrAcc);
 
-    py::class_<ConstF, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ConstF(me, "ConstF");
+    py::class_<ConstF, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_ConstF(me, "ConstF");
     py_ConstF
         .def("__repr__",
              [](ConstF const & constf) {
@@ -705,7 +705,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_DipEdge);
 
-    py::class_<Drift, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Drift(me, "Drift");
+    py::class_<Drift, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_Drift(me, "Drift");
     py_Drift
         .def("__repr__",
              [](Drift const & drift) {
@@ -738,7 +738,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Drift);
 
-    py::class_<ExactDrift, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ExactDrift(me, "ExactDrift");
+    py::class_<ExactDrift, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_ExactDrift(me, "ExactDrift");
     py_ExactDrift
         .def("__repr__",
              [](ExactDrift const & exact_drift) {
@@ -771,7 +771,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ExactDrift);
 
-    py::class_<ExactSbend, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_ExactSbend(me, "ExactSbend");
+    py::class_<ExactSbend, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_ExactSbend(me, "ExactSbend");
     py_ExactSbend
         .def("__repr__",
              [](ExactSbend const & exact_sbend) {
@@ -1074,7 +1074,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    py::class_<Quad, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Quad(me, "Quad");
+    py::class_<Quad, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_Quad(me, "Quad");
     py_Quad
         .def("__repr__",
              [](Quad const & quad) {
@@ -1115,7 +1115,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Quad);
 
-    py::class_<RFCavity, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_RFCavity(me, "RFCavity");
+    py::class_<RFCavity, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_RFCavity(me, "RFCavity");
     py_RFCavity
         .def("__repr__",
              [](RFCavity const & rfc) {
@@ -1185,7 +1185,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_RFCavity);
 
-    py::class_<Sbend, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Sbend(me, "Sbend");
+    py::class_<Sbend, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_Sbend(me, "Sbend");
     py_Sbend
         .def("__repr__",
              [](Sbend const & sbend) {
@@ -1226,7 +1226,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_Sbend);
 
-    py::class_<CFbend, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_CFbend(me, "CFbend");
+    py::class_<CFbend, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_CFbend(me, "CFbend");
     py_CFbend
         .def("__repr__",
              [](CFbend const & cfbend) {
@@ -1363,7 +1363,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_ShortRF);
 
-    py::class_<SoftSolenoid, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_SoftSolenoid(me, "SoftSolenoid");
+    py::class_<SoftSolenoid, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_SoftSolenoid(me, "SoftSolenoid");
     py_SoftSolenoid
         .def("__repr__",
              [](SoftSolenoid const & soft_sol) {
@@ -1424,7 +1424,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_SoftSolenoid);
 
-    py::class_<Sol, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_Sol(me, "Sol");
+    py::class_<Sol, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_Sol(me, "Sol");
     py_Sol
         .def("__repr__",
              [](Sol const & sol) {
@@ -1499,7 +1499,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_PRot);
 
-    py::class_<SoftQuadrupole, elements::Named, elements::Thick, elements::Alignment, elements::Aperture> py_SoftQuadrupole(me, "SoftQuadrupole");
+    py::class_<SoftQuadrupole, elements::Named, elements::Thick, elements::Alignment, elements::PipeAperture> py_SoftQuadrupole(me, "SoftQuadrupole");
     py_SoftQuadrupole
         .def("__repr__",
              [](SoftQuadrupole const & soft_quad) {

@@ -158,14 +158,6 @@ void init_elements(py::module& m)
     ;
 
     py::class_<elements::Thick>(mx, "Thick")
-        .def(py::init<
-                 amrex::ParticleReal,
-                 amrex::ParticleReal
-             >(),
-             py::arg("ds"),
-             py::arg("nslice") = 1,
-             "Mixin class for lattice elements with finite length."
-        )
         .def_property("ds",
             [](elements::Thick & th) { return th.m_ds; },
             [](elements::Thick & th, amrex::ParticleReal ds) { th.m_ds = ds; },
@@ -179,9 +171,6 @@ void init_elements(py::module& m)
     ;
 
     py::class_<elements::Thin>(mx, "Thin")
-        .def(py::init<>(),
-             "Mixin class for lattice elements with zero length."
-        )
         .def_property_readonly("ds",
             &elements::Thin::ds,
             "segment length in m"
@@ -193,9 +182,6 @@ void init_elements(py::module& m)
     ;
 
     py::class_<elements::Alignment>(mx, "Alignment")
-        .def(py::init<>(),
-             "Mixin class for lattice elements with horizontal/vertical alignment errors."
-        )
         .def_property("dx",
             [](elements::Alignment & a) { return a.dx(); },
             [](elements::Alignment & a, amrex::ParticleReal dx) { a.m_dx = dx; },
@@ -217,9 +203,6 @@ void init_elements(py::module& m)
     ;
 
     py::class_<elements::PipeAperture>(mx, "PipeAperture")
-        .def(py::init<>(),
-             "Mixin class for applying a transverse aperture restriction to thick lattice elements."
-        )
         .def_property_readonly("aperture_x",
             &elements::PipeAperture::aperture_x,
             "horizontal aperture in m"
@@ -231,9 +214,6 @@ void init_elements(py::module& m)
     ;
 
     py::class_<elements::LinearTransport>(mx, "LinearTransport")
-        .def(py::init<>(),
-             "Mixin class for linear transport approximation via matrices."
-        )
         // type of map
         .def_property_readonly_static("Map6x6",
               [](py::object /* lt */){ return py::type::of<elements::LinearTransport::Map6x6>(); },

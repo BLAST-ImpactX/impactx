@@ -60,7 +60,6 @@ namespace impactx
         // Check destination has the same attributes as source + "s_lost"
         for (auto & name : source.RealSoA_names())
         {
-            amrex::Print() << "name: " << name << std::endl;
             if (!dest.HasRealComp(name)) {
                 amrex::Print() << "adding " << name << std::endl;
                 dest.AddRealComp(name);

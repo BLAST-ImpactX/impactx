@@ -428,8 +428,31 @@ namespace detail
             amrex::ParticleReal repeat_y = 0.0;
             std::string shape_str = "rectangular";
             std::string action_str = "transmit";
-            pp_element.getWithParser("aperture_x", aperture_x);
-            pp_element.getWithParser("aperture_y", aperture_y);
+
+            // In the future, just use this:
+            // pp_element.getWithParser("aperture_x", aperture_x);
+            // pp_element.getWithParser("aperture_y", aperture_y);
+            // Backwards compatibility to ImpactX <= 25.01
+            bool const has_old_xmax = pp_element.queryAddWithParser("xmax", aperture_x);
+            bool const has_old_ymax = pp_element.queryAddWithParser("ymax", aperture_y);
+            if (has_old_xmax) {
+                pp_element.queryAddWithParser("aperture_x", aperture_x);
+                ablastr::warn_manager::WMRecordWarning(
+                    "ImpactX::read_element",
+                    element_name + ".xmax is deprecated. Use " + element_name + ".aperture_x instead.",
+                    ablastr::warn_manager::WarnPriority::high
+                );
+            }
+            if (has_old_ymax) {
+                pp_element.queryAddWithParser("aperture_y", aperture_y);
+                ablastr::warn_manager::WMRecordWarning(
+                    "ImpactX::read_element",
+                    element_name + ".ymax is deprecated. Use " + element_name + ".aperture_y instead.",
+                    ablastr::warn_manager::WarnPriority::high
+                );
+            }
+
+            pp_element.queryAddWithParser("repeat_y", repeat_y);
             pp_element.queryAddWithParser("repeat_x", repeat_x);
             pp_element.queryAddWithParser("repeat_y", repeat_y);
             pp_element.queryAdd("shape", shape_str);

@@ -442,6 +442,8 @@ namespace detail
                     element_name + ".xmax is deprecated. Use " + element_name + ".aperture_x instead.",
                     ablastr::warn_manager::WarnPriority::high
                 );
+            } else {
+                pp_element.getWithParser("aperture_x", aperture_x);
             }
             if (has_old_ymax) {
                 pp_element.queryAddWithParser("aperture_y", aperture_y);
@@ -450,6 +452,8 @@ namespace detail
                     element_name + ".ymax is deprecated. Use " + element_name + ".aperture_y instead.",
                     ablastr::warn_manager::WarnPriority::high
                 );
+            } else {
+                pp_element.getWithParser("aperture_y", aperture_y);
             }
 
             pp_element.queryAddWithParser("repeat_y", repeat_y);

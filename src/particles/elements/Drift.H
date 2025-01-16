@@ -131,7 +131,7 @@ namespace impactx
             pt = ptout;
 
             // apply transverse aperture
-            apply_aperture(x, y, idcpu);  //value of idcpu?
+            apply_aperture(x, y, idcpu);
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

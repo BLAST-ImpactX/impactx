@@ -12,7 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/alignment.H"
-#include "mixin/aperture.H"
+#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/named.H"

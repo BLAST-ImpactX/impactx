@@ -154,4 +154,3 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_iotalens_sdep_aperture.in
           :language: ini
           :caption: You can copy this file from ``examples/iota_lens/input_iotalens_sdep_aperture.in``.
-

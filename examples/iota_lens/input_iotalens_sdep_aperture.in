@@ -1,7 +1,7 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-beam.npart = 10000
+beam.npart = 100000  #note: we use 100K particles to get reasonable loss statistics
 beam.units = static
 beam.kin_energy = 2.5
 beam.charge = 1.0e-9
@@ -30,6 +30,7 @@ beam.mutpt = 0.0
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
+lattice.periods = 3
 lattice.elements = monitor lens const monitor
 
 lens.type = line

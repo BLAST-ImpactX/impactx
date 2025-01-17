@@ -119,7 +119,7 @@ for j in range(0, num_lenses):
     knll_s = t_strength * c_parameter**2 * ds / beta
     cnll_s = c_parameter * math.sqrt(beta)
     ap = elements.Aperture(
-        name="ap" + str(j), type="elliptical", aperture_x=ap_x[j], aperture_y=ap_y[j]
+        name="ap" + str(j), shape="elliptical", aperture_x=ap_x[j], aperture_y=ap_y[j]
     )
     nllens = elements.NonlinearLens(name="nllens" + str(j), knll=knll_s, cnll=cnll_s)
     segments = [dr, ap, nllens, dr]

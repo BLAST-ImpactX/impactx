@@ -92,7 +92,7 @@ assert np.allclose(
         1.020826e-04,
         2.868312e-06,
         3.163618e-06,
-        5.400000e+00,
+        5.400000e00,
     ],
     rtol=rtol,
     atol=atol,
@@ -101,7 +101,7 @@ assert np.allclose(
 charge_i = initial_beam.get_attribute("charge_C")
 charge_f = final_beam.get_attribute("charge_C")
 
-loss_pct = 100.0*(charge_i - charge_f)/charge_i
+loss_pct = 100.0 * (charge_i - charge_f) / charge_i
 
 print(f" fractional loss (%) = {loss_pct}")
 
@@ -109,9 +109,6 @@ atol = 0.2  # tolerance 0.2%
 print(f"  atol={atol}")
 assert np.allclose(
     [loss_pct],
-    [
-        6.0824
-    ],
+    [6.0824],
     atol=atol,
 )
-

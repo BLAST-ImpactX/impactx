@@ -24,7 +24,7 @@ sim.init_grids()
 # load a 2.5 MeV proton beam
 kin_energy_MeV = 2.5  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
-npart = 10000  # number of macro particles
+npart = 100000  # number of macro particles
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
@@ -138,7 +138,7 @@ sim.lattice.append(const)
 sim.lattice.append(monitor)
 
 # number of periods
-sim.periods = 1
+sim.periods = 3
 
 # run simulation
 sim.track_particles()

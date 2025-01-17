@@ -1160,12 +1160,12 @@ label_impactx_test(pytorch_surrogate_model slow)
 add_impactx_test(IOTA_nll_aperture
     examples/iota_lens/input_iotalens_sdep_aperture.in
       ON   # ImpactX MPI-parallel
-#    examples/iota_lens/analysis_iotalens_sdep.py
+    examples/iota_lens/analysis_iotalens_sdep.py
     OFF  # no plot script yet
 )
 add_impactx_test(IOTA_nll_aperture.py
     examples/iota_lens/run_iotalens_sdep_aperture.py
       OFF   # ImpactX MPI-parallel
-#    examples/iota_lens/analysis_iotalens_sdep.py
+    examples/iota_lens/analysis_iotalens_sdep.py
     OFF  # no plot script yet
 )

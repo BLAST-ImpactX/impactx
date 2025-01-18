@@ -433,8 +433,8 @@ namespace detail
             // pp_element.getWithParser("aperture_x", aperture_x);
             // pp_element.getWithParser("aperture_y", aperture_y);
             // Backwards compatibility to ImpactX <= 25.01
-            bool const has_old_xmax = pp_element.queryAddWithParser("xmax", aperture_x);
-            bool const has_old_ymax = pp_element.queryAddWithParser("ymax", aperture_y);
+            bool const has_old_xmax = pp_element.queryWithParser("xmax", aperture_x);
+            bool const has_old_ymax = pp_element.queryWithParser("ymax", aperture_y);
             if (has_old_xmax) {
                 pp_element.queryAddWithParser("aperture_x", aperture_x);
                 ablastr::warn_manager::WMRecordWarning(

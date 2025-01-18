@@ -19,7 +19,6 @@ if os.name == "nt":
 # import core bindings to C++
 from . import impactx_pybind as cxx
 from .distribution_input_helpers import twiss  # noqa
-from .extensions.ImpactXParIter import register_ImpactXParIter_extension
 from .extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
@@ -43,5 +42,4 @@ elements.KnownElementsList.load_file = lambda self, madx_file, nslice=1: self.ex
 RefPart.load_file = read_beam  # noqa
 
 # Pure Python extensions to ImpactX types
-register_ImpactXParIter_extension(cxx)
 register_ImpactXParticleContainer_extension(cxx.ImpactXParticleContainer)

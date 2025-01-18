@@ -521,7 +521,7 @@ class ImpactXParticleContainer(
         Set reference particle attributes.
         """
     @property
-    def RealSoA_names(self) -> list[str]:
+    def GetRealSoANames(self) -> list[str]:
         """
         Get the name of each ParticleReal SoA component
         """
@@ -531,7 +531,7 @@ class ImpactXParticleContainer(
         Get the current coordinate system of particles in this container
         """
     @property
-    def intSoA_names(self) -> list[str]:
+    def GetIntSoANames(self) -> list[str]:
         """
         Get the name of each int SoA component
         """

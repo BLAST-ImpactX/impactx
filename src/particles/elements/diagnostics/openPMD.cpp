@@ -336,8 +336,8 @@ namespace detail
         m_rbc = diagnostics::reduced_beam_characteristics(pc);
 
         // component names
-        std::vector<std::string> real_soa_names = pc.RealSoA_names();
-        std::vector<std::string> int_soa_names = pc.intSoA_names();
+        std::vector<std::string> real_soa_names = pc.GetRealSoANames();
+        std::vector<std::string> int_soa_names = pc.GetIntSoANames();
 
         // pinned memory copy
         PinnedContainer pinned_pc = pc.make_alike<amrex::PinnedArenaAllocator>();

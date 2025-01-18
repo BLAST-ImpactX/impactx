@@ -111,7 +111,7 @@ We run the following script to analyze correctness:
 .. _examples-iotalens-sdep-aperture:
 
 A nonlinear focusing channel based on the physical IOTA nonlinear magnet with aperture
-=======================================================================================
+======================================================================================
 
 A representation of the physical IOTA nonlinear magnetic element with realistic
 s-dependence, obtained using a sequence of nonlinear lenses and drifts equivalent

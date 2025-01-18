@@ -40,24 +40,14 @@ def validate_and_convert_to_correct_type(state_name):
 
         if getattr(state, state_name) != converted_value:
             setattr(state, state_name, converted_value)
-            if state_name == "kin_energy":
-                state.kin_energy_MeV = InputFunctions.value_of_kin_energy_MeV(
-                    converted_value, state.kin_energy_unit
-                )
+            if state_name == "kin_energy_on_ui":
+                on_kin_energy_unit_change()
 
 
-@ctrl.add("kin_energy_unit_change")
-def on_convert_kin_energy_change(new_unit):
-    old_unit = state.old_kin_energy_unit
-    if old_unit != new_unit and float(state.kin_energy) > 0:
-        state.kin_energy = InputFunctions.update_kin_energy_on_display(
-            old_unit, new_unit, state.kin_energy
-        )
-        state.kin_energy_unit = new_unit
-        state.old_kin_energy_unit = new_unit
-        state.kin_energy_MeV = InputFunctions.value_of_kin_energy_MeV(
-            float(state.kin_energy), new_unit
-        )
+@state.change("kin_energy_unit")
+def on_kin_energy_unit_change(**kwargs) -> None:
+    if state.kin_energy_on_ui != 0:
+        InputFunctions.update_kin_energy_sim_value()
 
 
 # -----------------------------------------------------------------------------
@@ -115,15 +105,14 @@ class InputParameters:
                     with vuetify.VCol(cols=8, classes="py-0"):
                         TrameFunctions.text_field(
                             label="Kinetic Energy",
-                            v_model_name="kin_energy",
-                            input=(ctrl.input_change, "['kin_energy']"),
+                            v_model_name="kin_energy_on_ui",
+                            input=(ctrl.input_change, "['kin_energy_on_ui']"),
                             classes="mr-2",
                         )
                     with vuetify.VCol(cols=4, classes="py-0"):
                         TrameFunctions.select(
                             label="Unit",
                             v_model_name="kin_energy_unit",
-                            input=(ctrl.kin_energy_unit_change, "[$event]"),
                         )
                 with vuetify.VRow(classes="my-2"):
                     with vuetify.VCol(cols=12, classes="py-0"):

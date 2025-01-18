@@ -16,7 +16,7 @@ class DashboardDefaults:
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
         "npart": 1000,
-        "kin_energy": 2e3,
+        "kin_energy_on_ui": 2e3,
         "kin_energy_MeV": 2e3,
         "kin_energy_unit": "MeV",
         "bunch_charge_C": 1e-9,
@@ -80,7 +80,7 @@ class DashboardDefaults:
 
     TYPES = {
         "npart": "int",
-        "kin_energy": "float",
+        "kin_energy_on_ui": "float",
         "bunch_charge_C": "float",
         "mass_MeV": "float",
         "charge_qe": "int",

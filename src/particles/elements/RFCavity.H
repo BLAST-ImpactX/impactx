@@ -13,6 +13,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
+#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/named.H"
 #include "mixin/thick.H"
@@ -103,10 +104,11 @@ namespace RFCavityData
 } // namespace RFCavityData
 
     struct RFCavity
-    : public elements::Named,
-      public elements::BeamOptic<RFCavity>,
-      public elements::Thick,
-      public elements::Alignment
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<RFCavity>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture
     {
         static constexpr auto type = "RFCavity";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -122,6 +124,8 @@ namespace RFCavityData
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
          * @param mapsteps number of integration steps per slice used for
          *        map and reference particle push in applied fields
          * @param nslice number of slices used for the application of space charge
@@ -137,6 +141,8 @@ namespace RFCavityData
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
+            amrex::ParticleReal aperture_x = 0,
+            amrex::ParticleReal aperture_y = 0,
             int mapsteps = 1,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
@@ -144,6 +150,7 @@ namespace RFCavityData
           : Named(std::move(name)),
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
+            PipeAperture(aperture_x, aperture_y),
             m_escale(escale), m_freq(freq), m_phase(phase), m_mapsteps(mapsteps), m_id(RFCavityData::next_id)
         {
             // next created RF cavity has another id for its data
@@ -188,7 +195,7 @@ namespace RFCavityData
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index (unused)
+         * @param idcpu particle global index
          * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -199,7 +206,7 @@ namespace RFCavityData
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            uint64_t & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & refpart
         ) const
         {
@@ -228,6 +235,9 @@ namespace RFCavityData
             py = out[4];
             t  = out[5];
             pt = out[6];
+
+            // apply transverse aperture
+            apply_aperture(x, y, idcpu);
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

@@ -21,7 +21,7 @@
 #include <string>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements with a user-defined name
      */
@@ -148,6 +148,6 @@ namespace impactx::elements
         char * m_name = nullptr; //! a user defined and not necessarily unique name of the element
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_NAMED_H

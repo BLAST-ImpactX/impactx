@@ -19,7 +19,7 @@
 #include <AMReX_REAL.H>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements with horizontal/vertical alignment errors
      */
@@ -147,6 +147,6 @@ namespace impactx::elements
         amrex::ParticleReal m_rotation = 0; //! rotation error in the transverse plane [rad]
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_ALIGNMENT_H

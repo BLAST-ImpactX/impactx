@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct Multipole
-    : public elements::Named,
-      public elements::BeamOptic<Multipole>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Multipole>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;

@@ -106,9 +106,9 @@ class surrogate_model:
     def __init__(self, model_file, device=None):
         self.device = device
         if device is None:
-            model_dict = torch.load(model_file, map_location="cpu")
+            model_dict = torch.load(model_file, map_location="cpu", weights_only=False)
         else:
-            model_dict = torch.load(model_file, map_location=device)
+            model_dict = torch.load(model_file, map_location=device, weights_only=False)
         self.source_means = torch.tensor(
             model_dict["source_means"], device=self.device, dtype=torch.float64
         )

@@ -23,7 +23,7 @@
 namespace impactx
 {
     struct Programmable
-    : public elements::Named
+    : public elements::mixin::Named
     {
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;

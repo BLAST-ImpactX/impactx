@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct Aperture
-    : public elements::Named,
-      public elements::BeamOptic<Aperture>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Aperture>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Aperture";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -58,8 +58,8 @@ namespace impactx
          *
          * @param shape aperture shape
          * @param action specify action of domain (transmit/absorb)
-         * @param xmax maximum value of horizontal coordinate (m)
-         * @param ymax maximum value of vertical coordinate (m)
+         * @param aperture_x horizontal half-aperture (m)
+         * @param aperture_y vertical half-aperture (m)
          * @param repeat_x horizontal period for repeated masking, optional (m)
          * @param repeat_y vertical period for repeated masking, optional (m)
          * @param dx horizontal translation error in m
@@ -68,8 +68,8 @@ namespace impactx
          * @param name a user defined and not necessarily unique name of the element
          */
         Aperture (
-            amrex::ParticleReal xmax,
-            amrex::ParticleReal ymax,
+            amrex::ParticleReal aperture_x,
+            amrex::ParticleReal aperture_y,
             amrex::ParticleReal repeat_x,
             amrex::ParticleReal repeat_y,
             Shape shape,
@@ -81,7 +81,7 @@ namespace impactx
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_action(action), m_xmax(xmax), m_ymax(ymax), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
+          m_shape(shape), m_action(action), m_aperture_x(aperture_x), m_aperture_y(aperture_y), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
         {
         }
 
@@ -128,8 +128,8 @@ namespace impactx
             v = (m_repeat_y==0.0) ? y : (std::fmod(std::abs(y)+dy,m_repeat_y)-dy);
 
             // scale horizontal and vertical coordinates
-            u = u / m_xmax;
-            v = v / m_ymax;
+            u = u / m_aperture_x;
+            v = v / m_aperture_y;
 
             // compare against the aperture boundary
             switch (m_action)
@@ -181,8 +181,8 @@ namespace impactx
 
         Shape m_shape; //! aperture type (rectangular, elliptical)
         Action m_action; //! action type (transmit, absorb)
-        amrex::ParticleReal m_xmax; //! maximum horizontal coordinate
-        amrex::ParticleReal m_ymax; //! maximum vertical coordinate
+        amrex::ParticleReal m_aperture_x; //! maximum horizontal coordinate
+        amrex::ParticleReal m_aperture_y; //! maximum vertical coordinate
         amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
         amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
 

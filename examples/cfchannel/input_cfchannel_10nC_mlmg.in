@@ -9,10 +9,10 @@ beam.charge = 1.0e-8
 beam.particle = proton
 beam.distribution = waterbag
 beam.lambdaX = 1.2154443728379865788e-3
-beam.lambdaY = 1.2154443728379865788e-3
+beam.lambdaY = beam.lambdaX
 beam.lambdaT = 4.0956844276541331005e-4
 beam.lambdaPx = 8.2274435782286157175e-4
-beam.lambdaPy = 8.2274435782286157175e-4
+beam.lambdaPy = beam.lambdaPx
 beam.lambdaPt = 2.4415943602685364584e-3
 
 

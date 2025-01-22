@@ -16,7 +16,7 @@
 #include <AMReX_REAL.H>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements with zero length
      */
@@ -54,6 +54,6 @@ namespace impactx::elements
         }
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_THIN_H

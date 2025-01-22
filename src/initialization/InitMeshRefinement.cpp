@@ -37,7 +37,7 @@ namespace detail
         amrex::ParmParse pp_geometry("geometry");
 
         int max_level = 0;
-        pp_amr.query("max_level", max_level);
+        pp_amr.queryWithParser("max_level", max_level);
 
         std::string poisson_solver = "multigrid";
         pp_algo.queryAdd("poisson_solver", poisson_solver);

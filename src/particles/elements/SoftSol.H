@@ -13,6 +13,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
+#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/named.H"
 #include "mixin/thick.H"
@@ -117,10 +118,11 @@ namespace SoftSolenoidData
 } // namespace SoftSolenoidData
 
     struct SoftSolenoid
-    : public elements::Named,
-      public elements::BeamOptic<SoftSolenoid>,
-      public elements::Thick,
-      public elements::Alignment
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<SoftSolenoid>,
+      public elements::mixin::Thick,
+      public elements::mixin::Alignment,
+      public elements::mixin::PipeAperture
     {
         static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -139,6 +141,8 @@ namespace SoftSolenoidData
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
          * @param mapsteps number of integration steps per slice used for
          *        map and reference particle push in applied fields
          * @param nslice number of slices used for the application of space charge
@@ -153,6 +157,8 @@ namespace SoftSolenoidData
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
+            amrex::ParticleReal aperture_x = 0,
+            amrex::ParticleReal aperture_y = 0,
             int mapsteps = 1,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
@@ -160,6 +166,7 @@ namespace SoftSolenoidData
           : Named(std::move(name)),
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
+            PipeAperture(aperture_x, aperture_y),
             m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps), m_id(SoftSolenoidData::next_id)
        {
            // next created soft solenoid has another id for its data
@@ -204,7 +211,7 @@ namespace SoftSolenoidData
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index (unused)
+         * @param idcpu particle global index
          * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -215,7 +222,7 @@ namespace SoftSolenoidData
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            uint64_t & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & refpart
         ) const
         {
@@ -244,6 +251,9 @@ namespace SoftSolenoidData
             py = out[4];
             t  = out[5];
             pt = out[6];
+
+            // apply transverse aperture
+            apply_aperture(x, y, idcpu);
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

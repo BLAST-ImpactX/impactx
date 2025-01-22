@@ -38,7 +38,8 @@ def get_moments(beam):
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
-final = series.iterations[last_step].particles["beam"].to_df()
+beam_final = series.iterations[last_step].particles["beam"]
+final = beam_final.to_df()
 
 # compare number of particles
 num_particles = 10000
@@ -74,9 +75,12 @@ assert np.allclose(
 print("")
 print("Final Beam:")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(final)
+s_ref = beam_final.get_attribute("s_ref")
+gamma_ref = beam_final.get_attribute("gamma_ref")
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
-    f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
+    f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}\n"
+    f"  s_ref={s_ref:e} gamma_ref={gamma_ref:e}"
 )
 
 atol = 0.0  # ignored
@@ -84,7 +88,7 @@ rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distributio
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
+    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
     [
         7.4790118496224206e-005,
         7.5357525169680140e-005,
@@ -92,6 +96,8 @@ assert np.allclose(
         1.9959539836392703e-009,
         2.0175014668882125e-009,
         2.0013820380883801e-006,
+        3.000000,
+        3.914902e003,
     ],
     rtol=rtol,
     atol=atol,

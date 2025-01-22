@@ -4,13 +4,13 @@ Mixin classes for accelerator lattice elements in ImpactX
 
 from __future__ import annotations
 
-__all__ = ["Alignment", "Named", "Thick", "Thin"]
+import amrex.space3d.amrex_3d_pybind
+
+__all__ = ["Alignment", "LinearTransport", "Named", "PipeAperture", "Thick", "Thin"]
 
 class Alignment:
-    def __init__(self) -> None:
-        """
-        Mixin class for lattice elements with horizontal/vertical alignment errors.
-        """
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def dx(self) -> float:
         """
@@ -33,7 +33,14 @@ class Alignment:
     @rotation.setter
     def rotation(self, arg1: float) -> None: ...
 
+class LinearTransport:
+    Map6x6 = amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
+
 class Named:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def has_name(self) -> bool: ...
     @property
@@ -44,11 +51,23 @@ class Named:
     @name.setter
     def name(self, arg1: str) -> None: ...
 
+class PipeAperture:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
+    @property
+    def aperture_x(self) -> float:
+        """
+        horizontal aperture in m
+        """
+    @property
+    def aperture_y(self) -> float:
+        """
+        vertical aperture in m
+        """
+
 class Thick:
-    def __init__(self, ds: float, nslice: float = 1) -> None:
-        """
-        Mixin class for lattice elements with finite length.
-        """
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def ds(self) -> float:
         """
@@ -65,10 +84,8 @@ class Thick:
     def nslice(self, arg1: int) -> None: ...
 
 class Thin:
-    def __init__(self) -> None:
-        """
-        Mixin class for lattice elements with zero length.
-        """
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def ds(self) -> float:
         """

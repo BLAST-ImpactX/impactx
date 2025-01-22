@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct ShortRF
-    : public elements::Named,
-      public elements::BeamOptic<ShortRF>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<ShortRF>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "ShortRF";
         using PType = ImpactXParticleContainer::ParticleType;

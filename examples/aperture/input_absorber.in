@@ -32,8 +32,8 @@ drift.ds = 0.123
 
 collimator.type = aperture
 collimator.shape = rectangular
-collimator.xmax = 1.0e-3
-collimator.ymax = 1.5e-3
+collimator.aperture_x = 1.0e-3
+collimator.aperture_y = 1.5e-3
 collimator.action = absorb
 
 ###############################################################################

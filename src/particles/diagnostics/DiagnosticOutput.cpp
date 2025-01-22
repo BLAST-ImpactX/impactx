@@ -193,16 +193,16 @@ namespace impactx::diagnostics
                     amrex::ParmParse pp_diag("diag");
 
                     amrex::ParticleReal alpha = 0.0;
-                    pp_diag.queryAdd("alpha", alpha);
+                    pp_diag.queryAddWithParser("alpha", alpha);
 
                     amrex::ParticleReal beta = 1.0;
-                    pp_diag.queryAdd("beta", beta);
+                    pp_diag.queryAddWithParser("beta", beta);
 
                     amrex::ParticleReal tn = 0.4;
-                    pp_diag.queryAdd("tn", tn);
+                    pp_diag.queryAddWithParser("tn", tn);
 
                     amrex::ParticleReal cn = 0.01;
-                    pp_diag.queryAdd("cn", cn);
+                    pp_diag.queryAddWithParser("cn", cn);
 
                     NonlinearLensInvariants const nonlinear_lens_invariants(alpha, beta, tn, cn);
 

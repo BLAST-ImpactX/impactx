@@ -39,7 +39,7 @@ namespace impactx::initialization
         pp_algo.queryAdd("poisson_solver", poisson_solver);
 
         int max_level = 0;
-        pp_amr.query("max_level", max_level);
+        pp_amr.queryWithParser("max_level", max_level);
 
         if (max_level > 1 && !space_charge)
             throw std::runtime_error(

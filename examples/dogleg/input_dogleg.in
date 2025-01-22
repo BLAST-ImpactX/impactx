@@ -14,7 +14,7 @@ beam.lambdaPx = 1.598353425e-6
 beam.lambdaPy = 2.803697378e-6
 beam.lambdaPt = 2.000000000e-6
 beam.muxpx = 0.933345606203060
-beam.muypy = 0.933345606203060
+beam.muypy = beam.muxpx
 beam.mutpt = 0.999999961419755
 
 
@@ -29,11 +29,11 @@ sbend1.ds = 0.500194828041958       # projected length 0.5 m, angle 2.77 deg
 sbend1.rc = -10.3462283686195526
 
 drift1.type = drift
-drift1.ds = 5.0058489435  # projected length 5 m
+drift1.ds = 5.0058489435            # projected length 5 m
 
 sbend2.type = sbend
-sbend2.ds = 0.500194828041958       # projected length 0.5 m, angle 2.77 deg
-sbend2.rc = 10.3462283686195526
+sbend2.ds = sbend1.ds               # projected length 0.5 m, angle 2.77 deg
+sbend2.rc = -sbend1.rc
 
 drift2.type = drift
 drift2.ds = 0.5
@@ -45,8 +45,8 @@ dipedge1.g = 0.0
 dipedge1.K2 = 0.0
 
 dipedge2.type = dipedge
-dipedge2.psi = 0.048345620280243
-dipedge2.rc = 10.3462283686195526
+dipedge2.psi = -dipedge1.psi
+dipedge2.rc = -dipedge1.rc
 dipedge2.g = 0.0
 dipedge2.K2 = 0.0
 

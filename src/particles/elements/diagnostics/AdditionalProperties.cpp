@@ -39,16 +39,16 @@ namespace impactx::diagnostics
             return;
 
         amrex::ParticleReal alpha = 0.0;
-        pp_element.queryAdd("alpha", alpha);
+        pp_element.queryAddWithParser("alpha", alpha);
 
         amrex::ParticleReal beta = 1.0;
-        pp_element.queryAdd("beta", beta);
+        pp_element.queryAddWithParser("beta", beta);
 
         amrex::ParticleReal tn = 0.4;
-        pp_element.queryAdd("tn", tn);
+        pp_element.queryAddWithParser("tn", tn);
 
         amrex::ParticleReal cn = 0.01;
-        pp_element.queryAdd("cn", cn);
+        pp_element.queryAddWithParser("cn", cn);
 
         NonlinearLensInvariants const nonlinear_lens_invariants(alpha, beta, tn, cn);
 

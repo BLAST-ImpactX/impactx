@@ -32,4 +32,6 @@ python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
 python3 -m pip install -U -r examples/requirements.txt
 python3 -m pip install -U -r tests/python/requirements.txt
 
+# extra tests
+python3 -m pip install -U -r examples/requirements_torch_cpu.txt
 python3 -m pip install -U openPMD-validator

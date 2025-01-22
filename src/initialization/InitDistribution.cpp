@@ -10,6 +10,7 @@
 #include "initialization/InitDistribution.H"
 
 #include "ImpactX.H"
+#include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
 
@@ -31,6 +32,60 @@
 
 namespace impactx
 {
+
+    /** Ignore the shape of a distribution and use the 2nd moments to create a covariance matrix
+     */
+    CovarianceMatrix
+    create_covariance_matrix (
+        distribution::KnownDistributions const & distr
+    )
+    {
+        // zero out the 6x6 matrix
+        CovarianceMatrix cv{};
+
+        // initialize from 2nd order beam moments
+        std::visit([&](auto&& distribution) {
+            // quick hack
+            using Distribution = std::remove_cv_t< std::remove_reference_t< decltype(distribution)> >;
+            if constexpr (std::is_same<Distribution, distribution::Empty>::value ||
+                          std::is_same<Distribution, distribution::Thermal>::value)
+            {
+                throw std::runtime_error("Empty and Thermal type cannot create Covariance matrices!");
+            } else {
+                amrex::ParticleReal lambdaX = distribution.m_lambdaX;
+                amrex::ParticleReal lambdaY = distribution.m_lambdaY;
+                amrex::ParticleReal lambdaT = distribution.m_lambdaT;
+                amrex::ParticleReal lambdaPx = distribution.m_lambdaPx;
+                amrex::ParticleReal lambdaPy = distribution.m_lambdaPy;
+                amrex::ParticleReal lambdaPt = distribution.m_lambdaPt;
+                amrex::ParticleReal muxpx = distribution.m_muxpx;
+                amrex::ParticleReal muypy = distribution.m_muypy;
+                amrex::ParticleReal mutpt = distribution.m_mutpt;
+
+                // use distribution inputs to populate a 6x6 covariance matrix
+                amrex::ParticleReal denom_x = 1.0 - muxpx*muxpx;
+                cv(1,1) = lambdaX*lambdaX / denom_x;
+                cv(1,2) = -lambdaX*lambdaPx*muxpx / denom_x;
+                cv(2,1) = cv(1,2);
+                cv(2,2) = lambdaPx*lambdaPx / denom_x;
+
+                amrex::ParticleReal denom_y = 1.0 - muypy*muypy;
+                cv(3,3) = lambdaY*lambdaY / denom_y;
+                cv(3,4) = -lambdaY*lambdaPy*muypy / denom_y;
+                cv(4,3) = cv(3,4);
+                cv(4,4) = lambdaPy*lambdaPy / denom_y;
+
+                amrex::ParticleReal denom_t = 1.0 - mutpt*mutpt;
+                cv(5,5) = lambdaT*lambdaT / denom_t;
+                cv(5,6) = -lambdaT*lambdaPt*mutpt / denom_t;
+                cv(6,5) = cv(5,6);
+                cv(6,6) = lambdaPt*lambdaPt / denom_t;
+
+            }
+        }, distr);
+
+        return cv;
+    }
 
     void
     ImpactX::add_particles (
@@ -95,7 +150,7 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
 
-            using Distribution = std::remove_reference_t< std::remove_cv_t<decltype(distribution)> >;
+            using Distribution = std::remove_reference_t< std::remove_cv_t<decltype(distribution)> >; // TODO: switch order ov remove_ ...?
             initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
                 distribution, x_ptr, y_ptr, t_ptr, px_ptr, py_ptr, pt_ptr);
             amrex::ParallelForRNG(npart_this_proc, init_single_particle_data);
@@ -139,15 +194,15 @@ namespace impactx
         amrex::ParticleReal alphax = 0.0, alphay = 0.0, alphat = 0.0;
 
         // Reading the input Twiss parameters
-        pp_dist.query("alphaX", alphax);
-        pp_dist.query("alphaY", alphay);
-        pp_dist.query("alphaT", alphat);
-        pp_dist.get("betaX", betax);
-        pp_dist.get("betaY", betay);
-        pp_dist.get("betaT", betat);
-        pp_dist.get("emittX", emittx);
-        pp_dist.get("emittY", emitty);
-        pp_dist.get("emittT", emittt);
+        pp_dist.queryWithParser("alphaX", alphax);
+        pp_dist.queryWithParser("alphaY", alphay);
+        pp_dist.queryWithParser("alphaT", alphat);
+        pp_dist.getWithParser("betaX", betax);
+        pp_dist.getWithParser("betaY", betay);
+        pp_dist.getWithParser("betaT", betat);
+        pp_dist.getWithParser("emittX", emittx);
+        pp_dist.getWithParser("emittY", emitty);
+        pp_dist.getWithParser("emittT", emittt);
 
         if (betax <= 0.0_prt || betay <= 0.0_prt || betat <= 0.0_prt) {
             throw std::runtime_error("Input Error: The beta function values need to be non-zero positive values in all dimensions.");
@@ -196,15 +251,15 @@ namespace impactx
         amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
     )
     {
-        pp_dist.get("lambdaX", sigx);
-        pp_dist.get("lambdaY", sigy);
-        pp_dist.get("lambdaT", sigt);
-        pp_dist.get("lambdaPx", sigpx);
-        pp_dist.get("lambdaPy", sigpy);
-        pp_dist.get("lambdaPt", sigpt);
-        pp_dist.query("muxpx", muxpx);
-        pp_dist.query("muypy", muypy);
-        pp_dist.query("mutpt", mutpt);
+        pp_dist.getWithParser("lambdaX", sigx);
+        pp_dist.getWithParser("lambdaY", sigy);
+        pp_dist.getWithParser("lambdaT", sigt);
+        pp_dist.getWithParser("lambdaPx", sigpx);
+        pp_dist.getWithParser("lambdaPy", sigpy);
+        pp_dist.getWithParser("lambdaPt", sigpt);
+        pp_dist.queryWithParser("muxpx", muxpx);
+        pp_dist.queryWithParser("muypy", muypy);
+        pp_dist.queryWithParser("mutpt", mutpt);
     }
 
     void ImpactX::initBeamDistributionFromInputs ()
@@ -217,10 +272,10 @@ namespace impactx
         amrex::ParmParse const pp_dist("beam");
 
         amrex::ParticleReal kin_energy = 0.0;  // Beam kinetic energy (MeV)
-        pp_dist.get("kin_energy", kin_energy);
+        pp_dist.getWithParser("kin_energy", kin_energy);
 
         amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
-        pp_dist.get("charge", bunch_charge);
+        pp_dist.getWithParser("charge", bunch_charge);
 
         std::string particle_type;  // Particle type
         pp_dist.get("particle", particle_type);
@@ -255,7 +310,7 @@ namespace impactx
                 .set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy);
 
         int npart = 1;  // Number of simulation particles
-        pp_dist.get("npart", npart);
+        pp_dist.getWithParser("npart", npart);
 
         std::string unit_type;  // System of units
         pp_dist.get("units", unit_type);
@@ -360,14 +415,14 @@ namespace impactx
         } else if (distribution_type == "thermal") {
             amrex::ParticleReal k, kT, kT_halo, normalize, normalize_halo;
             amrex::ParticleReal halo = 0.0;
-            pp_dist.get("k", k);
-            pp_dist.get("kT", kT);
+            pp_dist.getWithParser("k", k);
+            pp_dist.getWithParser("kT", kT);
             kT_halo = kT;
-            pp_dist.get("normalize", normalize);
+            pp_dist.getWithParser("normalize", normalize);
             normalize_halo = normalize;
-            pp_dist.query("kT_halo", kT_halo);
-            pp_dist.query("normalize_halo", normalize_halo);
-            pp_dist.query("halo", halo);
+            pp_dist.queryWithParser("kT_halo", kT_halo);
+            pp_dist.queryWithParser("normalize_halo", normalize_halo);
+            pp_dist.queryWithParser("halo", halo);
 
             distribution::KnownDistributions thermal(distribution::Thermal(k, kT, kT_halo, normalize, normalize_halo, halo));
 

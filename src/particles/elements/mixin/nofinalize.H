@@ -11,7 +11,7 @@
 #define IMPACTX_ELEMENTS_MIXIN_NOFINALIZE_H
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements that need no finalize function.
      *
@@ -29,6 +29,6 @@ namespace impactx::elements
         }
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_NOFINALIZE_H

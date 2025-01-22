@@ -13,12 +13,12 @@ from trame.ui.vuetify import SinglePageWithDrawerLayout
 from trame.widgets import router, vuetify, xterm
 
 from .Analyze.plotsMain import AnalyzeSimulation
+from .Input.components import NavigationComponents
 from .Input.csrConfiguration.csrMain import csrConfiguration
 from .Input.distributionParameters.distributionMain import DistributionParameters
 from .Input.inputParameters.inputMain import InputParameters
 from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
 from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
-from .Input.trameFunctions import TrameFunctions
 from .start import main
 from .Toolbar.toolbarMain import Toolbars
 from .trame_setup import setup_server
@@ -72,19 +72,19 @@ def application():
         layout.title.hide()
         with layout.toolbar:
             with vuetify.Template(v_if="$route.path == '/Analyze'"):
-                Toolbars.analyze_toolbar()
+                Toolbars.dashboard_toolbar("analyze")
             with vuetify.Template(v_if="$route.path == '/Input'"):
-                Toolbars.input_toolbar()
+                Toolbars.dashboard_toolbar("input")
             with vuetify.Template(v_if="$route.path == '/Run'"):
-                Toolbars.run_toolbar()
+                Toolbars.dashboard_toolbar("run")
 
         with layout.drawer as drawer:
             drawer.width = 200
             with vuetify.VList():
                 vuetify.VSubheader("Simulation")
-            TrameFunctions.create_route("Input", "mdi-file-edit")
-            TrameFunctions.create_route("Run", "mdi-play")
-            TrameFunctions.create_route("Analyze", "mdi-chart-box-multiple")
+            NavigationComponents.create_route("Input", "mdi-file-edit")
+            NavigationComponents.create_route("Run", "mdi-play")
+            NavigationComponents.create_route("Analyze", "mdi-chart-box-multiple")
 
         with layout.content:
             router.RouterView()

@@ -16,7 +16,7 @@
 #include <AMReX_REAL.H>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements with finite length
      */
@@ -59,6 +59,6 @@ namespace impactx::elements
         int m_nslice; //! number of slices used for the application of space charge
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_THICK_H

@@ -2,17 +2,17 @@
 # Particle Beam(s)
 ###############################################################################
 beam.npart = 10000
-#beam.npart = 100000 #optional for increased precision
+#beam.npart = 100000  # optional for increased precision
 beam.units = static
 beam.kin_energy = 2.0e3
 beam.charge = 1.0e-8
 beam.particle = proton
 beam.distribution = kurth6d
 beam.lambdaX = 1.46e-3
-beam.lambdaY = 1.46e-3
+beam.lambdaY = beam.lambdaX
 beam.lambdaT = 4.9197638312420749e-4
 beam.lambdaPx = 6.84931506849e-4
-beam.lambdaPy = 6.84931506849e-4
+beam.lambdaPy = beam.lambdaPx
 beam.lambdaPt = 2.0326178944803812e-3
 
 
@@ -21,7 +21,7 @@ beam.lambdaPt = 2.0326178944803812e-3
 ###############################################################################
 lattice.elements = monitor drift1 constf1 drift1 monitor
 lattice.nslice = 20
-#lattice.nslice = 30 #optional for increased precision
+#lattice.nslice = 30  # optional for increased precision
 
 monitor.type = beam_monitor
 monitor.backend = h5

@@ -26,11 +26,11 @@
 namespace impactx
 {
     struct Kicker
-    : public elements::Named,
-      public elements::BeamOptic<Kicker>,
-      public elements::Thin,
-      public elements::Alignment,
-      public elements::NoFinalize
+    : public elements::mixin::Named,
+      public elements::mixin::BeamOptic<Kicker>,
+      public elements::mixin::Thin,
+      public elements::mixin::Alignment,
+      public elements::mixin::NoFinalize
     {
         static constexpr auto type = "Kicker";
         using PType = ImpactXParticleContainer::ParticleType;

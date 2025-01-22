@@ -19,7 +19,7 @@
 #include <type_traits>
 
 
-namespace impactx::elements
+namespace impactx::elements::mixin
 {
 namespace detail
 {
@@ -190,6 +190,6 @@ namespace detail
          }
     };
 
-} // namespace impactx::elements
+} // namespace impactx::elements::mixin
 
 #endif // IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H

@@ -63,13 +63,13 @@ namespace impactx::spacecharge
         // MLMG options
         amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
-        pp_algo.queryAdd("mlmg_relative_tolerance", mlmg_relative_tolerance);
-        pp_algo.queryAdd("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
+        pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
+        pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
 
         int mlmg_max_iters = 100;
         int mlmg_verbosity = 1;
-        pp_algo.queryAdd("mlmg_max_iters", mlmg_max_iters);
-        pp_algo.queryAdd("mlmg_verbosity", mlmg_verbosity);
+        pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
+        pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
         // create a vector to our fields, sorted by level
         amrex::Vector<amrex::MultiFab*> sorted_rho;
@@ -80,6 +80,7 @@ namespace impactx::spacecharge
             sorted_phi.emplace_back(&phi[lev]);
         }
 
+        const bool is_igf_2d = false;
         const bool do_single_precision_comms = false;
         const bool eb_enabled = false;
         ablastr::fields::computePhi(
@@ -95,6 +96,7 @@ namespace impactx::spacecharge
             pc.GetParGDB()->boxArray(),
             ablastr::utils::enums::GridType::Collocated,
             is_solver_igf_on_lev0,
+            is_igf_2d,
             eb_enabled,
             do_single_precision_comms,
             rel_ref_ratio

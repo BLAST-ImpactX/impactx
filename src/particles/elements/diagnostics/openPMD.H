@@ -63,7 +63,7 @@ namespace detail
      * same series name as an existing instance.
      */
     struct BeamMonitor
-    : public elements::Thin
+    : public elements::mixin::Thin
     {
         static constexpr auto type = "BeamMonitor";
         using PType = typename ImpactXParticleContainer::ParticleType;

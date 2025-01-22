@@ -96,36 +96,22 @@ class ToolbarElements:
 
 class Toolbars:
     """
-    Builds section toolbars for various pages.
+    Builds toolbar for dashboard.
     """
 
     @staticmethod
-    def input_toolbar():
-        """
-        Builds toolbar for the 'Input' page.
-        """
-
-        (ToolbarElements.dashboard_info(),)
-        vuetify.VSpacer()
-        ToolbarElements.reset_inputs_button()
-        ToolbarElements.export_input_data()
-
-    @staticmethod
-    def run_toolbar():
-        """
-        Builds toolbar for the 'Run' page.
-        """
-
-        (ToolbarElements.dashboard_info(),)
-        (vuetify.VSpacer(),)
-        (ToolbarElements.run_simulation_button(),)
-
-    @staticmethod
-    def analyze_toolbar():
-        """
-        Builds toolbar for the 'Analyze' page.
-        """
-
-        (ToolbarElements.dashboard_info(),)
-        vuetify.VSpacer()
-        ToolbarElements.plot_options()
+    def dashboard_toolbar(toolbar_name: str) -> None:
+        toolbar_name = toolbar_name.lower()
+        if toolbar_name == "input":
+            (ToolbarElements.dashboard_info(),)
+            vuetify.VSpacer()
+            ToolbarElements.reset_inputs_button()
+            ToolbarElements.export_input_data()
+        elif toolbar_name == "run":
+            (ToolbarElements.dashboard_info(),)
+            (vuetify.VSpacer(),)
+            (ToolbarElements.run_simulation_button(),)
+        elif toolbar_name == "analyze":
+            (ToolbarElements.dashboard_info(),)
+            vuetify.VSpacer()
+            ToolbarElements.plot_options()

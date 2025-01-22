@@ -8,10 +8,10 @@ beam.charge = 1.0e-9
 beam.particle = electron
 beam.distribution = waterbag
 beam.lambdaX = 4.0e-3
-beam.lambdaY = 4.0e-3
+beam.lambdaY = beam.lambdaX
 beam.lambdaT = 1.0e-3
 beam.lambdaPx = 3.0e-4
-beam.lambdaPy = 3.0e-4
+beam.lambdaPy = beam.lambdaPx
 beam.lambdaPt = 2.0e-3
 beam.muxpx = 0.0
 beam.muypy = 0.0
@@ -27,17 +27,17 @@ monitor.type = beam_monitor
 monitor.backend = h5
 
 thin_quadrupole.type = multipole
-thin_quadrupole.multipole = 2      //Thin quadrupole
+thin_quadrupole.multipole = 2      # Thin quadrupole
 thin_quadrupole.k_normal = 3.0
 thin_quadrupole.k_skew = 0.0
 
 thin_sextupole.type = multipole
-thin_sextupole.multipole = 3      //Thin sextupole
+thin_sextupole.multipole = 3       # Thin sextupole
 thin_sextupole.k_normal = 100.0
 thin_sextupole.k_skew = -50.0
 
 thin_octupole.type = multipole
-thin_octupole.multipole = 4     //Thin octupole
+thin_octupole.multipole = 4        # Thin octupole
 thin_octupole.k_normal = 65.0
 thin_octupole.k_skew = 6.0
 

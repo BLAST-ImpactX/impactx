@@ -138,32 +138,40 @@ namespace impactx
             // assign intermediate quantities
             amrex::ParticleReal const pperp2 = std::pow(pt,2)-2.0_prt/bet*pt-pow(py,2)+1.0_prt;
             amrex::ParticleReal const px2 = std::pow(px,2);
-            amrex::ParticleReal const pperp = (pperp2 > px2) ? std::sqrt(pperp2) : std::abs(px);
-            amrex::ParticleReal const pzi = std::sqrt(std::pow(pperp,2) - std::pow(px,2));
-            amrex::ParticleReal const rho = rc + xout;
-            auto const [sin_phi, cos_phi] = amrex::Math::sincos(slice_phi);
+            // determine if particle lies within the domain of map definition
+            if (pperp2 <= px2) {
+                amrex::ParticleIDWrapper{idcpu}.make_invalid();
+            } else {
+                amrex::ParticleReal const pperp = std::sqrt(pperp2);
+                amrex::ParticleReal const pzi = std::sqrt(std::pow(pperp,2) - std::pow(px,2));
+                amrex::ParticleReal const rho = rc + xout;
+                auto const [sin_phi, cos_phi] = amrex::Math::sincos(slice_phi);
 
-            // update momenta
-            pxout = px*cos_phi + (pzi - rho/rc)*sin_phi;
-            pyout = py;
-            ptout = pt;
+                // update momenta
+                pxout = px*cos_phi + (pzi - rho/rc)*sin_phi;
+                pyout = py;
+                ptout = pt;
 
-            // angle of momentum rotation
-            amrex::ParticleReal const pperp2f = std::pow(pperp,2);
-            amrex::ParticleReal const px2f = std::pow(pxout,2);
-            amrex::ParticleReal const pperpf = (pperp2f > px2f) ? pperp : std::abs(pxout);
-            amrex::ParticleReal const pzf = std::sqrt(std::pow(pperp,2)-pow(pxout,2));
-            amrex::ParticleReal const theta = slice_phi + std::asin(px/pperp) - std::asin(pxout/pperpf);
+                // angle of momentum rotation
+                amrex::ParticleReal const px2f = std::pow(pxout,2);
+                // determine if particle lies within domain of map definition
+                if (pperp2 <= px2f) {
+                    amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                } else {
+                    amrex::ParticleReal const pzf = std::sqrt(std::pow(pperp,2)-pow(pxout,2));
+                    amrex::ParticleReal const theta = slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
 
-            // update position coordinates
-            x = -rc + rho*cos_phi + rc*(pzf + px*sin_phi - pzi*cos_phi);
-            y = yout + theta * rc * py;
-            t = tout - theta * rc * (pt - 1.0_prt / bet) - m_phi * rc / bet;
+                    // update position coordinates
+                    x = -rc + rho*cos_phi + rc*(pzf + px*sin_phi - pzi*cos_phi);
+                    y = yout + theta * rc * py;
+                    t = tout - theta * rc * (pt - 1.0_prt / bet) - m_phi * rc / bet;
 
-            // assign updated momenta
-            px = pxout;
-            py = pyout;
-            pt = ptout;
+                    // assign updated momenta
+                    px = pxout;
+                    py = pyout;
+                    pt = ptout;
+                }
+            }
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

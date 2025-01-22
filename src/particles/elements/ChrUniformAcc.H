@@ -116,57 +116,66 @@ namespace impactx
             // compute intermediate quantities related to acceleration
             amrex::ParticleReal const pti_tot = pti_ref + pt;
             amrex::ParticleReal const ptf_tot = ptf_ref + pt;
-            amrex::ParticleReal const pzi_tot = std::sqrt(std::pow(pti_tot,2)-1_prt);
-            amrex::ParticleReal const pzf_tot = std::sqrt(std::pow(ptf_tot,2)-1_prt);
-            amrex::ParticleReal const pzi_ref = std::sqrt(std::pow(pti_ref,2)-1_prt);
-            amrex::ParticleReal const pzf_ref = std::sqrt(std::pow(ptf_ref,2)-1_prt);
+            amrex::ParticleReal const pti_tot2 = std::pow(pti_tot,2);
+            amrex::ParticleReal const ptf_tot2 = std::pow(ptf_tot,2);
 
-            amrex::ParticleReal const numer = -ptf_tot + pzf_tot;
-            amrex::ParticleReal const denom = -pti_tot + pzi_tot;
+            // check whether particle lies within the domain of map definition
+            if (pti_tot2 <= 1_prt || ptf_tot2 <= 1_prt) {
+                amrex::ParticleIDWrapper{idcpu}.make_invalid();
+            } else {
+                amrex::ParticleReal const pzi_tot = std::sqrt(std::pow(pti_tot,2)-1_prt);
+                amrex::ParticleReal const pzf_tot = std::sqrt(std::pow(ptf_tot,2)-1_prt);
+                amrex::ParticleReal const pzi_ref = std::sqrt(std::pow(pti_ref,2)-1_prt);
+                amrex::ParticleReal const pzf_ref = std::sqrt(std::pow(ptf_ref,2)-1_prt);
 
-            // compute focusing constant (1/m) and rotation angle (in rad)
-            amrex::ParticleReal const alpha = m_bz/2.0_prt;
-            amrex::ParticleReal const theta = alpha/m_ez*std::log(numer/denom);
+                amrex::ParticleReal const numer = -ptf_tot + pzf_tot;
+                amrex::ParticleReal const denom = -pti_tot + pzi_tot;
 
-            // intialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
+                // compute focusing constant (1/m) and rotation angle (in rad)
+                amrex::ParticleReal const alpha = m_bz/2.0_prt;
+                amrex::ParticleReal const theta = alpha/m_ez*std::log(numer/denom);
 
-            // advance positions and momenta using map for focusing
-            xout = std::cos(theta)*x + std::sin(theta)/alpha*px;
-            pxout = -alpha * std::sin(theta)*x + std::cos(theta)*px;
+                // intialize output values
+                amrex::ParticleReal xout = x;
+                amrex::ParticleReal yout = y;
+                amrex::ParticleReal tout = t;
+                amrex::ParticleReal pxout = px;
+                amrex::ParticleReal pyout = py;
+                amrex::ParticleReal ptout = pt;
 
-            yout = std::cos(theta)*y + std::sin(theta)/alpha*py;
-            pyout = -alpha * std::sin(theta)*y + std::cos(theta)*py;
+                // advance positions and momenta using map for focusing
+                xout = std::cos(theta)*x + std::sin(theta)/alpha*px;
+                pxout = -alpha * std::sin(theta)*x + std::cos(theta)*px;
 
-            // the correct symplectic update for t
-            tout = t + (pzf_tot - pzf_ref - pzi_tot + pzi_ref)/m_ez;
-            tout = tout + (1_prt/pzi_tot - 1_prt/pzf_tot)*(std::pow(py-alpha*x,2) + std::pow(px+alpha*y,2))/(2_prt*m_ez);
-            ptout = pt;
+                yout = std::cos(theta)*y + std::sin(theta)/alpha*py;
+                pyout = -alpha * std::sin(theta)*y + std::cos(theta)*py;
 
-            // assign intermediate momenta
-            px = pxout;
-            py = pyout;
-            pt = ptout;
+                // the correct symplectic update for t
+                tout = t + (pzf_tot - pzf_ref - pzi_tot + pzi_ref)/m_ez;
+                tout = tout + (1_prt/pzi_tot - 1_prt/pzf_tot)*(std::pow(py-alpha*x,2) + std::pow(px+alpha*y,2))/(2_prt*m_ez);
+                ptout = pt;
 
-            // advance positions and momenta using map for rotation
-            x = std::cos(theta)*xout + std::sin(theta)*yout;
-            pxout = std::cos(theta)*px + std::sin(theta)*py;
+                // assign intermediate momenta
+                px = pxout;
+                py = pyout;
+                pt = ptout;
 
-            y = -std::sin(theta)*xout + std::cos(theta)*yout;
-            pyout = -std::sin(theta)*px + std::cos(theta)*py;
+                // advance positions and momenta using map for rotation
+                x = std::cos(theta)*xout + std::sin(theta)*yout;
+                pxout = std::cos(theta)*px + std::sin(theta)*py;
 
-            t = tout;
-            ptout = pt;
+                y = -std::sin(theta)*xout + std::cos(theta)*yout;
+                pyout = -std::sin(theta)*px + std::cos(theta)*py;
 
-            // assign updated momenta
-            px = pxout;
-            py = pyout;
-            pt = ptout;
+                t = tout;
+                ptout = pt;
+
+                // assign updated momenta
+                px = pxout;
+                py = pyout;
+                pt = ptout;
+
+            }
 
             // final conversion from dynamic to static units:
             px = px/bgf;

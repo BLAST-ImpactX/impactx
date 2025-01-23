@@ -346,7 +346,7 @@ class generalFunctions:
             state.update(getattr(DashboardDefaults, input_section.upper()))
 
             if input_section == "distribution_parameters":
-                state.dirty("selected_distribution_type")
+                state.dirty("distribution_type")
             elif input_section == "lattice_configuration":
                 state.selected_lattice_list = []
             elif input_section == "space_charge":
@@ -354,6 +354,6 @@ class generalFunctions:
 
         elif input_section == "all":
             state.update(DashboardDefaults.DEFAULT_VALUES)
-            state.dirty("selected_distribution_type")
+            state.dirty("distribution_type")
             state.selected_lattice_list = []
             state.dirty("max_level")

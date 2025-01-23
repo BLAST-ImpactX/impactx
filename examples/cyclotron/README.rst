@@ -60,6 +60,10 @@ Cyclotron with Dynamical Losses
 This is identical to the example above, except that the initial energy spread of the beam is increased.  The value is so large that some particles are not successfully transported.
 These particles are considered "lost".
 
+In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+In addition, the fraction of charge that is lost must agree with the nominal value of 7.7754%, to within a specified tolerance.
+
 
 Run
 ---

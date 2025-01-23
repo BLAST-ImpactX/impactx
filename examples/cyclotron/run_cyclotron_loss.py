@@ -15,6 +15,7 @@ sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
+sim.particle_lost_diagnostics_backend = "h5"
 
 # domain decomposition & space charge mesh
 sim.init_grids()
@@ -35,7 +36,7 @@ distr = distribution.Waterbag(
     lambdaT=0.3,
     lambdaPx=2.0e-4,
     lambdaPy=2.0e-4,
-    lambdaPt=2.0e-3,
+    lambdaPt=1.0e-3,
     muxpx=-0.0,
     muypy=0.0,
     mutpt=0.0,

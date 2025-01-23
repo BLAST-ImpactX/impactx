@@ -12,7 +12,7 @@ beam.lambdaY = 1.0e-3
 beam.lambdaT = 0.3
 beam.lambdaPx = 2.0e-4
 beam.lambdaPy = 2.0e-4
-beam.lambdaPt = 2.0e-3
+beam.lambdaPt = 1.0e-3
 beam.muxpx = 0.0
 beam.muypy = 0.0
 beam.mutpt = 0.0
@@ -52,3 +52,4 @@ algo.space_charge = false
 # Diagnostics
 ###############################################################################
 diag.slice_step_diagnostics = true
+diag.backend = h5

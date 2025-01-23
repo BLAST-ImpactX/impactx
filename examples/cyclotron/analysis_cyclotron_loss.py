@@ -37,8 +37,10 @@ def get_moments(beam):
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
-final = series.iterations[last_step].particles["beam"].to_df()
+initial_beam = series.iterations[1].particles["beam"]
+final_beam = series.iterations[last_step].particles["beam"]
+initial = initial_beam.to_df()
+final = final_beam.to_df()
 
 # compare number of particles
 num_particles = 10000
@@ -85,13 +87,28 @@ print(f"  rtol={rtol} (ignored: atol~={atol})")
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
-        1.040898e-03,
-        2.221367e-03,
-        3.426366e-01,
-        1.151532e-08,
-        1.160797e-08,
-        3.440357e-07,
+        2.259496e-03,
+        2.238626e-03,
+        7.907789e+00,
+        2.619309e-08,
+        1.182834e-08,
+        8.914989e-05,
     ],
     rtol=rtol,
+    atol=atol,
+)
+
+charge_i = initial_beam.get_attribute("charge_C")
+charge_f = final_beam.get_attribute("charge_C")
+
+loss_pct = 100.0 * (charge_i - charge_f) / charge_i
+
+print(f" fractional loss (%) = {loss_pct}")
+
+atol = 0.2  # tolerance 0.2%
+print(f"  atol={atol}")
+assert np.allclose(
+    [loss_pct],
+    [7.7754],
     atol=atol,
 )

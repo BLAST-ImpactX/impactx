@@ -105,7 +105,7 @@ loss_pct = 100.0 * (charge_i - charge_f) / charge_i
 
 print(f" fractional loss (%) = {loss_pct}")
 
-atol = 0.3 #tolerance 0.3%
+atol = 0.3  # tolerance 0.3%
 print(f"  atol={atol}")
 assert np.allclose(
     [loss_pct],

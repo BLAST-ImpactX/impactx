@@ -55,7 +55,7 @@ Visualize
 .. _examples-cyclotron-loss:
 
 Cyclotron with Dynamical Losses
-================================
+===============================
 
 This is identical to the example above, except that the initial energy spread of the beam is increased.  The value is so large that some particles are not successfully transported.
 These particles are considered "lost".

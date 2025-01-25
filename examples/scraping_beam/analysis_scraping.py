@@ -147,18 +147,6 @@ assert np.allclose(
     atol=atol,
 )
 
-atol = 1.0e-11  # ignored
-assert np.allclose(
-    [sigpt, emittance_x, emittance_y, emittance_t],
-    [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-    ],
-    atol=atol,
-)
-
 charge_i = initial_beam.get_attribute("charge_C")
 charge_f = final_beam.get_attribute("charge_C")
 

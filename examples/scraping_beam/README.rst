@@ -43,11 +43,11 @@ This example can be run as a Python script (``python3 run_scraping.py``) or with
 Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
 .. tab-set::
-      
+
    .. tab-item:: Python Script
 
        .. literalinclude:: run_scraping.py
-          :language: python3   
+          :language: python3
           :caption: You can copy this file from ``examples/scraping_beam
 /run_scraping.py``.
 
@@ -56,7 +56,7 @@ Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, 
        .. literalinclude:: input_scraping.in
           :language: ini
           :caption: You can copy this file from ``examples/scraping_beam/input_scraping.in``.
-   
+
 
 Analyze
 -------

@@ -48,9 +48,9 @@ drift_distance = 6.0
 
 #   particle bunch
 distr = distribution.Kurth4D(
-    lambdaX=beam_radius/2.0,
-    lambdaY=beam_radius/2.0,
-    lambdaT=beam_radius/2.0,
+    lambdaX=beam_radius / 2.0,
+    lambdaY=beam_radius / 2.0,
+    lambdaT=beam_radius / 2.0,
     lambdaPx=0.0,
     lambdaPy=0.0,
     lambdaPt=0.0,
@@ -63,11 +63,17 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # initialize the linear map
 Iden = elements.LinearMap.Map6x6.identity()
 Rmat = Iden
-Rmat[2,1] = correlation_k
-Rmat[4,3] = correlation_k
+Rmat[2, 1] = correlation_k
+Rmat[4, 3] = correlation_k
 
 # elements
-drift1 = elements.Drift(name="d1", ds=drift_distance, aperture_x = aperture_radius, aperture_y = aperture_radius, nslice=40)
+drift1 = elements.Drift(
+    name="d1",
+    ds=drift_distance,
+    aperture_x=aperture_radius,
+    aperture_y=aperture_radius,
+    nslice=40,
+)
 map1 = elements.LinearMap(R=Rmat)
 
 # design the accelerator lattice

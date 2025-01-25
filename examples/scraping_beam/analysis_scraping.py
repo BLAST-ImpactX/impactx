@@ -31,7 +31,17 @@ def get_moments(beam):
     emittance_y = (sigy**2 * sigpy**2 - epstrms["position_y"]["momentum_y"] ** 2) ** 0.5
     emittance_t = (sigt**2 * sigpt**2 - epstrms["position_t"]["momentum_t"] ** 2) ** 0.5
 
-    return (sigx, sigy, sigt, sigpx, sigpy, sigpt, emittance_x, emittance_y, emittance_t)
+    return (
+        sigx,
+        sigy,
+        sigt,
+        sigpx,
+        sigpy,
+        sigpt,
+        emittance_x,
+        emittance_y,
+        emittance_t,
+    )
 
 
 # initial/final beam
@@ -50,10 +60,12 @@ assert num_particles == len(initial)
 beam_radius = 2.0e-3
 aperture_radius = 3.5e-3
 correlation_k = 0.5
-drift_distance = 6.0   
+drift_distance = 6.0
 
 print("Initial Beam:")
-sigx, sigy, sigt, sigpx, sigpy, sigpt, emittance_x, emittance_y, emittance_t = get_moments(initial)
+sigx, sigy, sigt, sigpx, sigpy, sigpt, emittance_x, emittance_y, emittance_t = (
+    get_moments(initial)
+)
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(f"  sigpx={sigpx:e} sigpy={sigpy:e} sigpt={sigpt:e}")
 print(
@@ -67,16 +79,16 @@ print(f"  rtol={rtol} (ignored: atol~={atol})")
 assert np.allclose(
     [sigx, sigy, sigt],
     [
-        beam_radius/2.0,
-        beam_radius/2.0,
-        beam_radius/2.0,
+        beam_radius / 2.0,
+        beam_radius / 2.0,
+        beam_radius / 2.0,
     ],
     rtol=rtol,
     atol=atol,
 )
 
 atol = 1.0e-11  # ignored
-print(f"  atol={atol}")  
+print(f"  atol={atol}")
 
 assert np.allclose(
     [sigpx, sigpy, sigpt, emittance_x, emittance_y, emittance_t],
@@ -93,23 +105,25 @@ assert np.allclose(
 
 
 # calculation of predicted final beam parameters
-beam_radius_no_aperture = beam_radius*(1.0 + correlation_k * drift_distance)
+beam_radius_no_aperture = beam_radius * (1.0 + correlation_k * drift_distance)
 beam_radius_with_aperture = min(beam_radius_no_aperture, aperture_radius)
 
-fractional_loss = 1.0 - min(1.0, (aperture_radius/beam_radius_no_aperture)**2)
-sigma_x_final = beam_radius_with_aperture/2.0
-sigma_px_final = correlation_k/(1.0 + correlation_k * drift_distance) * sigma_x_final
+fractional_loss = 1.0 - min(1.0, (aperture_radius / beam_radius_no_aperture) ** 2)
+sigma_x_final = beam_radius_with_aperture / 2.0
+sigma_px_final = correlation_k / (1.0 + correlation_k * drift_distance) * sigma_x_final
 
 print("")
 print("Predicted Final Beam:")
-print(f"  sigx={sigma_x_final:e} sigy={sigma_x_final:e} sigt={beam_radius/2.0:e}")
+print(f"  sigx={sigma_x_final:e} sigy={sigma_x_final:e} sigt={beam_radius / 2.0:e}")
 print(f"  sigpx={sigma_px_final:e} sigpy={sigma_px_final:e} sigpt=0.0")
 print(f"  fractional_loss={fractional_loss:e}")
 
 
 print("")
 print("Final Beam:")
-sigx, sigy, sigt, sigpx, sigpy, sigpt, emittance_x, emittance_y, emittance_t = get_moments(final)
+sigx, sigy, sigt, sigpx, sigpy, sigpt, emittance_x, emittance_y, emittance_t = (
+    get_moments(final)
+)
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(f"  sigpx={sigpx:e} sigpy={sigpy:e} sigpt={sigpt:e}")
 print(
@@ -125,7 +139,7 @@ assert np.allclose(
     [
         sigma_x_final,
         sigma_x_final,
-        beam_radius/2.0,
+        beam_radius / 2.0,
         sigma_px_final,
         sigma_px_final,
     ],
@@ -141,7 +155,7 @@ assert np.allclose(
         0.0,
         0.0,
         0.0,
-    ],      
+    ],
     atol=atol,
 )
 
@@ -156,6 +170,6 @@ atol = 0.2  # tolerance 0.2%
 print(f"  atol={atol}")
 assert np.allclose(
     [loss_pct],
-    [100*fractional_loss],
+    [100 * fractional_loss],
     atol=atol,
 )

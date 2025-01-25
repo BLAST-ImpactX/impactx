@@ -15,6 +15,7 @@
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
+#include <AMReX_BLProfiler.H>
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_ParticleTile.H>
 
@@ -28,6 +29,8 @@ namespace impactx
         std::unordered_map<int, amrex::MultiFab> & rho,
         amrex::Vector<amrex::IntVect> const & ref_ratio)
     {
+        BL_PROFILE("ImpactXParticleContainer::DepositCharge");
+
         using namespace amrex::literals; // for _rt and _prt
 
         // reset the values in rho to zero

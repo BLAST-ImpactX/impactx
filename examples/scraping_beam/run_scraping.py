@@ -51,9 +51,9 @@ distr = distribution.Kurth4D(
     lambdaX=beam_radius / 2.0,
     lambdaY=beam_radius / 2.0,
     lambdaT=beam_radius / 2.0,
-    lambdaPx=1.0e-13,
-    lambdaPy=1.0e-13,
-    lambdaPt=1.0e-13,
+    lambdaPx=0.0,
+    lambdaPy=0.0,
+    lambdaPt=0.0,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 

@@ -322,6 +322,19 @@ namespace SoftSolenoidData
             refpart.s = s + slice_ds;
         }
 
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // TODO
+            return Map6x6::Identity();
+        }
+
         /** This evaluates the on-axis magnetic field Bz at a fixed location
          *  z, together with certain required integrals and derivatives.
          *  The field returned is normalized to a peak value of 1.

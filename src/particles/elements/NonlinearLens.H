@@ -159,6 +159,19 @@ namespace impactx
         /** This pushes the reference particle. */
         using Thin::operator();
 
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // TODO
+            return Map6x6::Identity();
+        }
+
         amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)
         amrex::ParticleReal m_cnll; //! distance of singularities from the origin (m)
     };

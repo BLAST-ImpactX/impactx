@@ -17,7 +17,10 @@
 namespace impactx
 {
     /** this is a 6x6 matrix */
-    using CovarianceMatrix = amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1>;
+    using Map6x6 = amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1>;
+
+    /** the covariance matrix is 6x6 */
+    using CovarianceMatrix = Map6x6;
 
 } // namespace impactx::distribution
 

@@ -51,6 +51,29 @@ namespace impactx
             // nothing to do
         }
 
+        /** Dos nothing to the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // nothing to do
+        }
+
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // nothing to do
+            return Map6x6::Identity();
+        }
+
         /** Does nothing to a particle.
          *
          * @param x particle position in x

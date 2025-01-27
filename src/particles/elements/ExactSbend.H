@@ -234,6 +234,19 @@ namespace impactx
 
         }
 
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // TODO
+            return Map6x6::Identity();
+        }
+
         amrex::ParticleReal m_phi; //! bend angle in radians
         amrex::ParticleReal m_B;  //! magnetic field in T
     };

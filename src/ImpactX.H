@@ -104,6 +104,10 @@ namespace impactx
          */
         void track_particles ();
 
+        /** Run the linear transport of the covariance matrix simulation loop
+         */
+        void track_covariance_map ();
+
         /** Query input for warning logger variables and set up warning logger accordingly
          *
          * Input variables are: ``always_warn_immediately`` and ``abort_on_warning_threshold``.

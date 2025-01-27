@@ -529,7 +529,7 @@ namespace detail
             amrex::ParticleReal ds = 0.0;
             pp_element.queryAdd("ds", ds);
 
-            elements::mixin::LinearTransport::Map6x6 transport_map = elements::mixin::LinearTransport::Map6x6::Identity();
+            Map6x6 transport_map = Map6x6::Identity();
 
             // safe to ParmParse inputs for reproducibility
             for (int i=1; i<=6; ++i) {

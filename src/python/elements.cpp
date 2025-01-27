@@ -142,6 +142,14 @@ namespace
 
 void init_elements(py::module& m)
 {
+    /*
+    m.def_property_readonly_static(
+        "Map6x6",
+        [](py::object){ return py::type::of<Map6x6>(); },
+        "1-indexed, Fortran-ordered, 6x6 linear transport map type"
+    );
+    */
+
     py::module_ me = m.def_submodule(
         "elements",
         "Accelerator lattice elements in ImpactX"
@@ -219,10 +227,11 @@ void init_elements(py::module& m)
         )
     ;
 
+    /*
     py::class_<elements::mixin::LinearTransport>(mx, "LinearTransport")
         // type of map
         .def_property_readonly_static("Map6x6",
-              [](py::object /* lt */){ return py::type::of<elements::mixin::LinearTransport::Map6x6>(); },
+              [](py::object){ return py::type::of<elements::mixin::LinearTransport::R>(); },
               "1-indexed, Fortran-ordered, 6x6 linear transport map type"
         )
         // values of the map
@@ -231,6 +240,7 @@ void init_elements(py::module& m)
         //      "1-indexed, Fortran-ordered, 6x6 linear transport map values"
         //)
     ;
+    */
 
     // diagnostics
 
@@ -1633,7 +1643,7 @@ void init_elements(py::module& m)
     ;
     register_beamoptics_push(py_TaperedPL);
 
-    py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment, elements::mixin::LinearTransport> py_LinearMap(me, "LinearMap");
+    py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment> py_LinearMap(me, "LinearMap");
     py_LinearMap
         .def("__repr__",
              [](LinearMap const & linearmap) {
@@ -1643,7 +1653,7 @@ void init_elements(py::module& m)
              }
         )
         .def(py::init<
-                elements::mixin::LinearTransport::Map6x6,
+                Map6x6,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
@@ -1660,7 +1670,7 @@ void init_elements(py::module& m)
         )
         .def_property("R",
             [](LinearMap & linearmap) { return linearmap.m_transport_map; },
-            [](LinearMap & linearmap, elements::mixin::LinearTransport::Map6x6 R) { linearmap.m_transport_map = R; },
+            [](LinearMap & linearmap, Map6x6 R) { linearmap.m_transport_map = R; },
             "linear map as a 6x6 transport matrix"
         )
         .def_property("ds",

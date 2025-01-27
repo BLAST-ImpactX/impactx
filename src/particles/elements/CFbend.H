@@ -236,6 +236,19 @@ namespace impactx
             refpart.s = s + slice_ds;
         }
 
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // TODO
+            return Map6x6::Identity();
+        }
+
         amrex::ParticleReal m_rc; //! bend radius in m
         amrex::ParticleReal m_k;  //! quadrupole strength in m^(-2)
     };

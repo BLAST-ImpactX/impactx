@@ -12,6 +12,7 @@
 
 
 #include "particles/ImpactXParticleContainer.H"
+#include "particles/CovarianceMatrix.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
@@ -178,6 +179,19 @@ namespace impactx
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // nothing to do -- TODO: IS that true?
+            return Map6x6::Identity();
+        }
 
         Shape m_shape; //! aperture type (rectangular, elliptical)
         Action m_action; //! action type (transmit, absorb)

@@ -336,4 +336,37 @@ namespace impactx {
             }, element_variant);
         }
     }
+
+    void
+    ImpactX::track_covariance_map ()
+    {
+        // TODO: move whole body out in separate file
+
+        // TODO: init done?
+        amrex::ParmParse const pp_dist = amrex::ParmParse("beam");
+        auto ref = initialization::read_reference_particle(pp_dist);
+        auto dist = initialization::read_distribution(pp_dist);
+        auto cm = impactx::initialization::create_covariance_matrix(dist);
+
+        // TODO: output of init state?
+
+        // loop over all beamline elements
+        for (auto & element_variant : m_lattice)
+        {
+            std::visit([&ref, &cm](auto&& element){
+                // push reference particle in global coordinates
+                {
+                    BL_PROFILE("impactx::Push::RefPart");
+                    element(ref);
+                }
+
+                // push Covariance Matrix
+                cm = element.transport_map(ref) * cm * element.transport_map(ref).transpose();
+
+                // TODO: later on, we can add element slicing and space charge kicking in this loop
+            }, element_variant);
+        }
+
+        // TODO: output
+    }
 } // namespace impactx

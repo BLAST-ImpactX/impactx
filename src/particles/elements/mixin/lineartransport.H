@@ -10,7 +10,7 @@
 #ifndef IMPACTX_ELEMENTS_MIXIN_LINEAR_TRANSPORT_H
 #define IMPACTX_ELEMENTS_MIXIN_LINEAR_TRANSPORT_H
 
-#include "particles/ImpactXParticleContainer.H"
+#include "particles/CovarianceMatrix.H"
 
 #include <ablastr/constant.H>
 
@@ -24,16 +24,10 @@ namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements that can be expressed as linear transport maps.
      */
+    template<typename T_Element>
     struct LinearTransport
     {
-        /** ...
-         */
-        LinearTransport (
-        )
-        {
-        }
-
-        //LinearTransport () = default;
+        LinearTransport () = default;
         LinearTransport (LinearTransport const &) = default;
         LinearTransport& operator= (LinearTransport const &) = default;
         LinearTransport (LinearTransport&&) = default;
@@ -41,10 +35,24 @@ namespace impactx::elements::mixin
 
         ~LinearTransport () = default;
 
-        // 6x6 linear transport map
-        using Map6x6 = amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1>;
-        // note: for most elements, R is returned by a member function. Some store it also internally as a member.
-        // Map6x6 m_transport_map; ///< linearized map
+        /** Linear push of the covariance matrix through an element
+         *
+         * @param cm covariance matrix
+         */
+        AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+        void
+        operator() (Map6x6 & cm) const
+        {
+            static_assert(
+                std::is_base_of_v<LinearTransport, T_Element>,
+                "LinearTransport can only be used as a mixin class!"
+            );
+
+            // small trick to force every derived class has to implement a method transport_map
+            // (w/o using a purely virtual function)
+            T_Element& element = *static_cast<T_Element*>(this);
+            cm *= element.transport_map(cm);
+        }
     };
 
 } // namespace impactx::elements::mixin

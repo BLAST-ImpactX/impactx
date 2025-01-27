@@ -197,6 +197,19 @@ namespace impactx
 
         }
 
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // TODO
+            return Map6x6::Identity();
+        }
+
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.
         amrex::ParticleReal m_freq; //! RF frequency in Hz.
         amrex::ParticleReal m_phase; //! reference RF phase in degrees.

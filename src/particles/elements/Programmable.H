@@ -11,6 +11,7 @@
 #define IMPACTX_ELEMENTS_PROGRAMMABLE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "particles/CovarianceMatrix.H"
 #include "mixin/named.H"
 #include "mixin/thick.H"
 
@@ -18,6 +19,7 @@
 #include <AMReX_REAL.H>
 
 #include <functional>
+#include <stdexcept>
 
 
 namespace impactx
@@ -67,6 +69,21 @@ namespace impactx
         void operator() (
             RefPart & refpart
         ) const;
+
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        {
+            // TODO: can/should we fuse the two elements?
+            throw std::runtime_error("The Programmable element cannot be used for linear transport maps. Use the LinearMap element instead.");
+
+            return Map6x6::Identity();
+        }
 
         /** Number of slices used for the application of space charge
          *

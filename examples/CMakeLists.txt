@@ -1191,13 +1191,13 @@ add_impactx_test(IOTA_nll_aperture.py
 # w/o space charge
 add_impactx_test(examples-scraping
     examples/scraping_beam/input_scraping.in
-      ON   # ImpactX MPI-parallel
+    ON   # ImpactX MPI-parallel
     examples/scraping_beam/analysis_scraping.py
     OFF  # no plot script yet
 )
 add_impactx_test(examples-scraping.py
     examples/scraping_beam/run_scraping.py
-      OFF   # ImpactX MPI-parallel
+    OFF   # ImpactX MPI-parallel
     examples/scraping_beam/analysis_scraping.py
     OFF  # no plot script yet
 )

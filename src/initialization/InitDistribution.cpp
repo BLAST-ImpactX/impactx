@@ -32,11 +32,155 @@
 
 namespace impactx
 {
+    RefPart
+    initialization::read_reference_particle (amrex::ParmParse const & pp_dist)
+    {
+        amrex::ParticleReal kin_energy = 0.0;  // Beam kinetic energy (MeV)
+        pp_dist.getWithParser("kin_energy", kin_energy);
 
-    /** Ignore the shape of a distribution and use the 2nd moments to create a covariance matrix
-     */
+        std::string particle_type;  // Particle type
+        pp_dist.get("particle", particle_type);
+
+        amrex::ParticleReal qe;     // charge (elementary charge)
+        amrex::ParticleReal massE;  // MeV/c^2
+        if (particle_type == "electron") {
+            qe = -1.0;
+            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+        } else if (particle_type == "positron") {
+            qe = 1.0;
+            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+        } else if (particle_type == "proton") {
+            qe = 1.0;
+            massE = ablastr::constant::SI::m_p / ablastr::constant::SI::MeV_invc2;
+        } else if (particle_type == "Hminus") {
+            qe = -1.0;
+            massE = 939.294308;  // value used in TraceWin
+        }
+        else {  // default to electron
+            ablastr::warn_manager::WMRecordWarning(
+                    "ImpactX::initBeamDistributionFromInputs",
+                    "No beam.particle specified, defaulting to electrons.",
+                    ablastr::warn_manager::WarnPriority::low
+            );
+            qe = -1.0;
+            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+        }
+
+        // configure a new reference particle
+        RefPart ref;
+        ref.set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy);
+        return ref;
+    }
+
+    distribution::KnownDistributions
+    initialization::read_distribution (amrex::ParmParse const & pp_dist)
+    {
+        distribution::KnownDistributions dist;
+
+        std::string distribution_type;  // Beam distribution type
+        pp_dist.get("distribution", distribution_type);
+
+        std::string base_dist_type = distribution_type;
+        // Position of the underscore for splitting off the suffix in case the distribution name either ends in "_from_twiss"
+        std::size_t str_pos_from_twiss = distribution_type.rfind("_from_twiss");
+        bool initialize_from_twiss = false;
+
+        if (str_pos_from_twiss != std::string::npos) { // "_from_twiss" is found
+            // Calculate suffix and base type, consider length of "_from_twiss" = 12
+            base_dist_type = distribution_type.substr(0, str_pos_from_twiss);
+            initialize_from_twiss = true;
+        }
+
+        /* After separating a potential suffix from its base type, check if the base distribution type is in the set of
+         * distributions that all share the same input signature (from a beam ellipse or otherwise).
+         */
+        std::set<std::string> const distribution_types_from_beam_ellipse = {
+                "gaussian", "kurth4d", "kurth6d", "kvdist", "semigaussian", "triangle", "waterbag"
+        };
+        if (distribution_types_from_beam_ellipse.find(base_dist_type) != distribution_types_from_beam_ellipse.end())
+        {
+            amrex::ParticleReal sigx, sigy, sigt, sigpx, sigpy, sigpt;
+            amrex::ParticleReal muxpx = 0.0, muypy = 0.0, mutpt = 0.0;
+
+            if (initialize_from_twiss)
+            {
+                initialization::set_distribution_parameters_from_twiss_inputs(
+                        pp_dist,
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt
+                );
+            } else {
+                initialization::set_distribution_parameters_from_phase_space_inputs(
+                        pp_dist,
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt
+                );
+            }
+
+            if (base_dist_type == "waterbag") {
+                dist = distribution::Waterbag(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else if (base_dist_type == "kurth6d") {
+                dist = distribution::Kurth6D(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else if (base_dist_type == "gaussian") {
+                dist = distribution::Gaussian(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else if (base_dist_type == "kvdist") {
+                dist = distribution::KVdist(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else if (base_dist_type == "kurth4d") {
+                dist = distribution::Kurth4D(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else if (base_dist_type == "semigaussian") {
+                dist = distribution::Semigaussian(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else if (base_dist_type == "triangle") {
+                dist = distribution::Triangle(
+                        sigx, sigy, sigt,
+                        sigpx, sigpy, sigpt,
+                        muxpx, muypy, mutpt);
+            } else {
+                throw std::runtime_error("Unknown distribution: " + distribution_type);
+            }
+
+        }
+        else if (distribution_type == "thermal")
+        {
+            amrex::ParticleReal k, kT, kT_halo, normalize, normalize_halo;
+            amrex::ParticleReal halo = 0.0;
+            pp_dist.getWithParser("k", k);
+            pp_dist.getWithParser("kT", kT);
+            kT_halo = kT;
+            pp_dist.getWithParser("normalize", normalize);
+            normalize_halo = normalize;
+            pp_dist.queryWithParser("kT_halo", kT_halo);
+            pp_dist.queryWithParser("normalize_halo", normalize_halo);
+            pp_dist.queryWithParser("halo", halo);
+
+            dist = distribution::Thermal(k, kT, kT_halo, normalize, normalize_halo, halo);
+        } else {
+            throw std::runtime_error("Unknown distribution: " + distribution_type);
+        }
+        return dist;
+    }
+
     CovarianceMatrix
-    create_covariance_matrix (
+    initialization::create_covariance_matrix (
         distribution::KnownDistributions const & distr
     )
     {
@@ -80,7 +224,6 @@ namespace impactx
                 cv(5,6) = -lambdaT*lambdaPt*mutpt / denom_t;
                 cv(6,5) = cv(5,6);
                 cv(6,6) = lambdaPt*lambdaPt / denom_t;
-
             }
         }, distr);
 
@@ -150,7 +293,7 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
 
-            using Distribution = std::remove_reference_t< std::remove_cv_t<decltype(distribution)> >; // TODO: switch order ov remove_ ...?
+            using Distribution = std::decay_t<decltype(distribution)>;
             initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
                 distribution, x_ptr, y_ptr, t_ptr, px_ptr, py_ptr, pt_ptr);
             amrex::ParallelForRNG(npart_this_proc, init_single_particle_data);
@@ -271,43 +414,12 @@ namespace impactx
         // Parse the beam distribution parameters
         amrex::ParmParse const pp_dist("beam");
 
-        amrex::ParticleReal kin_energy = 0.0;  // Beam kinetic energy (MeV)
-        pp_dist.getWithParser("kin_energy", kin_energy);
+        // set charge and mass and energy of ref particle
+        RefPart const ref = initialization::read_reference_particle(pp_dist);
+        amr_data->m_particle_container->SetRefParticle(ref);
 
         amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
         pp_dist.getWithParser("charge", bunch_charge);
-
-        std::string particle_type;  // Particle type
-        pp_dist.get("particle", particle_type);
-
-        amrex::ParticleReal qe;     // charge (elementary charge)
-        amrex::ParticleReal massE;  // MeV/c^2
-        if (particle_type == "electron") {
-            qe = -1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
-        } else if (particle_type == "positron") {
-            qe = 1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
-        } else if (particle_type == "proton") {
-            qe = 1.0;
-            massE = ablastr::constant::SI::m_p / ablastr::constant::SI::MeV_invc2;
-        } else if (particle_type == "Hminus") {
-            qe = -1.0;
-            massE = 939.294308;  // value used in TraceWin
-        }
-        else {  // default to electron
-            ablastr::warn_manager::WMRecordWarning(
-                "ImpactX::initBeamDistributionFromInputs",
-                "No beam.particle specified, defaulting to electrons.",
-                ablastr::warn_manager::WarnPriority::low
-            );
-            qe = -1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
-        }
-
-        // set charge and mass and energy of ref particle
-        amr_data->m_particle_container->GetRefParticle()
-                .set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy);
 
         int npart = 1;  // Number of simulation particles
         pp_dist.getWithParser("npart", npart);
@@ -315,128 +427,23 @@ namespace impactx
         std::string unit_type;  // System of units
         pp_dist.get("units", unit_type);
 
-        // Beam distributions that all share the same input signature for parameters from a beam ellipse
-        std::set<std::string> distribution_types_from_beam_ellipse = {
-                "gaussian", "kurth4d", "kurth6d", "kvdist", "semigaussian", "triangle", "waterbag"
-        };
-
-        std::string distribution_type;  // Beam distribution type
-        pp_dist.get("distribution", distribution_type);
-
-        std::string base_dist_type = distribution_type;
-        // Position of the underscore for splitting off the suffix in case the distribution name either ends in "_from_twiss"
-        std::size_t str_pos_from_twiss = distribution_type.rfind("_from_twiss");
-        bool initialize_from_twiss = false;
-
-        if (str_pos_from_twiss != std::string::npos) { // "_from_twiss" is found
-            // Calculate suffix and base type, consider length of "_from_twiss" = 12
-            base_dist_type = distribution_type.substr(0, str_pos_from_twiss);
-            initialize_from_twiss = true;
-        }
-
-        /* After separating a potential suffix from its base type, check if the base distribution type is in the set of
-         * distributions that all share the same input signature.
-         */
-        if (distribution_types_from_beam_ellipse.find(base_dist_type) != distribution_types_from_beam_ellipse.end())
-        {
-            amrex::ParticleReal sigx, sigy, sigt, sigpx, sigpy, sigpt;
-            amrex::ParticleReal muxpx = 0.0, muypy = 0.0, mutpt = 0.0;
-
-            if (initialize_from_twiss)
-            {
-                initialization::set_distribution_parameters_from_twiss_inputs(
-                        pp_dist,
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt
-                );
-            } else {
-                initialization::set_distribution_parameters_from_phase_space_inputs(
-                        pp_dist,
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt
-                );
-            }
-
-            if(base_dist_type == "waterbag"){
-                distribution::KnownDistributions const waterbag(distribution::Waterbag(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, waterbag, npart);
-            } else if (base_dist_type == "kurth6d") {
-                distribution::KnownDistributions const kurth6D(distribution::Kurth6D(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, kurth6D, npart);
-            } else if (base_dist_type == "gaussian") {
-                distribution::KnownDistributions const gaussian(distribution::Gaussian(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, gaussian, npart);
-            } else if (base_dist_type == "kvdist") {
-                distribution::KnownDistributions const kvDist(distribution::KVdist(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, kvDist, npart);
-            } else if (base_dist_type == "kurth4d") {
-                distribution::KnownDistributions const kurth4D(distribution::Kurth4D(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, kurth4D, npart);
-            } else if (base_dist_type == "semigaussian") {
-                distribution::KnownDistributions const semigaussian(distribution::Semigaussian(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, semigaussian, npart);
-            } else if (base_dist_type == "triangle") {
-                distribution::KnownDistributions const triangle(distribution::Triangle(
-                        sigx, sigy, sigt,
-                        sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt));
-
-                add_particles(bunch_charge, triangle, npart);
-            } else {
-                throw std::runtime_error("Unknown distribution: " + distribution_type);
-            }
-
-        } else if (distribution_type == "thermal") {
-            amrex::ParticleReal k, kT, kT_halo, normalize, normalize_halo;
-            amrex::ParticleReal halo = 0.0;
-            pp_dist.getWithParser("k", k);
-            pp_dist.getWithParser("kT", kT);
-            kT_halo = kT;
-            pp_dist.getWithParser("normalize", normalize);
-            normalize_halo = normalize;
-            pp_dist.queryWithParser("kT_halo", kT_halo);
-            pp_dist.queryWithParser("normalize_halo", normalize_halo);
-            pp_dist.queryWithParser("halo", halo);
-
-            distribution::KnownDistributions thermal(distribution::Thermal(k, kT, kT_halo, normalize, normalize_halo, halo));
-
-            add_particles(bunch_charge, thermal, npart);
-        } else {
-            throw std::runtime_error("Unknown distribution: " + distribution_type);
-        }
+        distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
+        add_particles(bunch_charge, dist, npart);
 
         // print information on the initialized beam
-        amrex::Print() << "Beam kinetic energy (MeV): " << kin_energy << std::endl;
+        amrex::Print() << "Beam kinetic energy (MeV): " << ref.kin_energy_MeV() << std::endl;
         amrex::Print() << "Bunch charge (C): " << bunch_charge << std::endl;
-        amrex::Print() << "Particle type: " << particle_type << std::endl;
+        {
+            std::string particle_type;  // Particle type
+            pp_dist.get("particle", particle_type);
+            amrex::Print() << "Particle type: " << particle_type << std::endl;
+        }
         amrex::Print() << "Number of particles: " << npart << std::endl;
-        amrex::Print() << "Beam distribution type: " << distribution_type << std::endl;
+        {
+            std::string distribution_type;  // Beam distribution type
+            pp_dist.get("distribution", distribution_type);
+            amrex::Print() << "Beam distribution type: " << distribution_type << std::endl;
+        }
 
         if (unit_type == "static") {
             amrex::Print() << "Static units" << std::endl;

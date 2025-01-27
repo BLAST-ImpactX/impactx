@@ -11,6 +11,8 @@
 #define IMPACTX_INITIALIZATION_INITDISTRIBUTION_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "particles/CovarianceMatrix.H"
+#include "particles/distribution/All.H"
 
 #include <AMReX_Extension.H>  // for AMREX_RESTRICT
 #include <AMReX_REAL.H>
@@ -20,6 +22,29 @@
 
 namespace impactx::initialization
 {
+    /** Read the reference particle configuration from inputs
+     *
+     * @param pp_dist the distribution group in the ParmParser
+     * @return a configured reference particle
+     */
+    RefPart
+    read_reference_particle (amrex::ParmParse const & pp_dist);
+
+    /** Read a distribution configuration from inputs
+     *
+     * @param pp_dist the distribution group in the ParmParser
+     * @return a configured distribution
+     */
+    distribution::KnownDistributions
+    read_distribution (amrex::ParmParse const & pp_dist);
+
+    /** Ignore the shape of a distribution and use the 2nd moments to create a covariance matrix
+     */
+    CovarianceMatrix
+    create_covariance_matrix (
+        distribution::KnownDistributions const & distr
+    );
+
     /** Initialize a single particle's data using the given distribution
      *
      * Note: we usually would just write a C++ lambda below in ParallelFor. But, due to restrictions

@@ -7,7 +7,7 @@ This example describes a coasting bunch, expanding transversely and encountering
 Space charge is neglected, making the problem analytically soluble.
 
 We use a cold (zero emittance) 250 MeV proton bunch whose
-initial distribution is a uniformly-populated cylinder of transverse radius :math:`rb = 2 \mathrm{mm}` with zero momentum spread.
+initial distribution is a uniformly-populated cylinder of transverse radius :math:`r_b = 2 \mathrm{mm}` with zero momentum spread.
 
 The beam propagates in a drift with a vacuum chamber radius of :math:`R = 3.5 \mathrm{mm}`.
 
@@ -20,7 +20,7 @@ In the presence of an aperture, particles are lost during the transverse expansi
 
 .. math::
 
-   Q_s/Q_0 = \min{1,R^2/(r_b^2(1+s\cdot k)^2)}.
+   Q_s/Q_0 = \min\left{1,R^2/(r_b^2(1+s\cdot k)^2)\right}.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 
@@ -33,10 +33,10 @@ The physical problem is defined by four relevant parameters, defined within ``ru
 .. code-block:: python
 
    # problem parameters
-   beam_radius = :math:`r_b`
-   aperture_radius = :math:`R`
-   correlation_k = :math:`k`
-   drift_distance = :math:`s`
+   beam_radius = r_b
+   aperture_radius = R
+   correlation_k = k
+   drift_distance = s
 
 These parameters should also be modified inside ``analysis_scraping.py`` for testing.
 

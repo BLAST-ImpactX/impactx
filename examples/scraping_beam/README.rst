@@ -12,7 +12,7 @@ initial distribution is a uniformly-populated cylinder of transverse radius :mat
 The beam propagates in a drift with a vacuum chamber radius of :math:`R = 3.5 \mathrm{mm}`.
 
 To generate an expanding beam, a linear map is first applied.  This map applies a radial kick to each particle that is proportional to the particle's initial distance from the axis.
-This induces a phase space correlation within the beam, such that :math:`p_x = k \cdot x` and `p_y = k \cdot y`, similar to what would be induced by a space charge kick.
+This induces a phase space correlation within the beam, such that :math:`p_x = k \cdot x` and :math:`p_y = k \cdot y`, similar to what would be induced by a space charge kick.
 
 The beam remains cylindrical with zero emittance during its evolution in a 6 m drift.
 In the absence of an aperture, the beam radius evolves as :math:`r_b(s) = r_b(1 + k\cdot s)`.

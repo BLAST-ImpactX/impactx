@@ -20,7 +20,7 @@ In the presence of an aperture, particles are lost during the transverse expansi
 
 .. math::
 
-   Q_s/Q_0 = \min\left{1,R^2/(r_b^2(1+s\cdot k)^2)\right}.
+   \frac{Q_s}{Q_0} = \min\left[1,R^2/(r_b^2(1+s\cdot k)^2)\right].
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 

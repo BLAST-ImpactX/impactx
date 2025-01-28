@@ -53,8 +53,7 @@ Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, 
 
        .. literalinclude:: run_scraping.py
           :language: python3
-          :caption: You can copy this file from ``examples/scraping_beam
-/run_scraping.py``.
+          :caption: You can copy this file from ``examples/scraping_beam/run_scraping.py``.
 
    .. tab-item:: App Input File
 

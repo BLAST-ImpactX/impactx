@@ -16,7 +16,7 @@ For data analysis of openPMD data, see examples of `many supported tools, Python
 
 See also `WarpX' documentation on openPMD <https://warpx.readthedocs.io/en/latest/dataanalysis/formats.html>`__.
 
-At each monitor, the output for every particle in the beam is provided.  This includes the 6 canonical phase space variables (x [m], px, y[m], py, t[m], pt), where each coordinate is measured 
+At each monitor, the output for every particle in the beam is provided.  This includes the 6 canonical phase space variables (x [m], px, y[m], py, t[m], pt), where each coordinate is measured
 relative to the reference particle, in the local moving frame.  See the section :ref:`Coordinates and Units <theory-coordinates-and-units>` for additional details.
 
 .. _dataanalysis-monitor-refparticle:

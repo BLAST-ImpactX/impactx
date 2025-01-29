@@ -117,14 +117,19 @@ namespace impactx
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
+            // intermediate quantities - to avoid division by zero
+            amrex::ParticleReal const sincx = (m_kx > 0) ? std::sin(m_kx*slice_ds)/m_kx : slice_ds;
+            amrex::ParticleReal const sincy = (m_ky > 0) ? std::sin(m_ky*slice_ds)/m_ky : slice_ds;
+            amrex::ParticleReal const sinct = (m_kt > 0) ? std::sin(m_kt*slice_ds)/m_kt : slice_ds;
+
             // advance position and momentum
-            xout = std::cos(m_kx*slice_ds)*x + std::sin(m_kx*slice_ds)/m_kx*px;
+            xout = std::cos(m_kx*slice_ds)*x + sincx*px;
             pxout = -m_kx * std::sin(m_kx*slice_ds)*x + std::cos(m_kx*slice_ds)*px;
 
-            yout = std::cos(m_ky*slice_ds)*y + std::sin(m_ky*slice_ds)/m_ky*py;
+            yout = std::cos(m_ky*slice_ds)*y + sincy*py;
             pyout = -m_ky * std::sin(m_ky*slice_ds)*y + std::cos(m_ky*slice_ds)*py;
 
-            tout = std::cos(m_kt*slice_ds)*t + std::sin(m_kt*slice_ds)/(betgam2*m_kt)*pt;
+            tout = std::cos(m_kt*slice_ds)*t + sinct/(betgam2)*pt;
             ptout = -(m_kt*betgam2) * std::sin(m_kt*slice_ds)*t + std::cos(m_kt*slice_ds)*pt;
 
             // assign updated values

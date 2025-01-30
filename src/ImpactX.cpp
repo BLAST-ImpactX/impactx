@@ -161,6 +161,7 @@ namespace impactx {
                                           step);
 
             // print the initial values of reduced beam characteristics
+            // TODO:  add covariance matrix as an argument in this function call (optional)
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
                                           diagnostics::OutputType::PrintReducedBeamCharacteristics,
                                           "diags/reduced_beam_characteristics");

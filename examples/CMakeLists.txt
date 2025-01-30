@@ -624,6 +624,28 @@ add_impactx_test(solenoid.MADX.py
 )
 
 
+# Ideal, Hard-Edge Solenoid (Restart + 270 degrees) ###########################
+#
+# w/o space charge
+add_impactx_test(solenoid.restart
+    examples/solenoid_restart/input_solenoid.in
+    OFF  # ImpactX MPI-parallel
+    examples/solenoid_restart/analysis_solenoid.py
+    OFF  # no plot script yet
+)
+set_property(TEST solenoid.restart.run APPEND PROPERTY DEPENDS "solenoid.run")
+
+add_impactx_test(solenoid.restart.py
+    examples/solenoid_restart/run_solenoid.py
+    OFF  # ImpactX MPI-parallel
+    examples/solenoid_restart/analysis_solenoid.py
+    OFF  # no plot script yet
+)
+if(ImpactX_PYTHON)
+    set_property(TEST solenoid.restart.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+
+
 # Pole-face rotation ##########################################################
 #
 # w/o space charge

@@ -17,6 +17,7 @@
 #include "mixin/thick.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -30,6 +31,7 @@ namespace impactx
     struct Sbend
     : public elements::mixin::Named,
       public elements::mixin::BeamOptic<Sbend>,
+      public elements::mixin::LinearTransport<Sbend>,
       public elements::mixin::Thick,
       public elements::mixin::Alignment,
       public elements::mixin::PipeAperture,
@@ -198,17 +200,44 @@ namespace impactx
 
         }
 
-        /** This function returns the linear transport map.
+       /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        transport_map (RefPart & AMREX_RESTRICT refpart) const
         {
-            // TODO
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+         
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+        
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const bet = std::sqrt(betgam2/(1.0_prt + betgam2));
+
+            // calculate expensive terms once
+            amrex::ParticleReal const theta = slice_ds/m_rc;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            // assign linear map matrix elements
+            R(1,1) = cos_theta;
+            R(1,2) = m_rc*sin_theta;
+            R(1,6) = - (m_rc/bet)*(1.0_prt - cos_theta);
+            R(2,1) = -sin_theta/m_rc;
+            R(2,2) = cos_theta;
+            R(2,6) = - sin_theta/bet;
+            R(3,4) = m_rc*theta;
+            R(5,1) = sin_theta/bet;
+            R(5,2) = m_rc/bet*(1.0_prt - cos_theta);
+            R(5,6) = m_rc*(-theta+sin_theta/(bet*bet));
+
+            return R;
         }
 
         amrex::ParticleReal m_rc; //! bend radius in m

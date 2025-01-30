@@ -102,7 +102,7 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
 * ``emittance_1``, ``emittance_2``, ``emittance_3``
     Normalized rms beam eigenemittances (aka mode emittances) (unit: meter)
     These three diagnostics are written optionally if the flag eigenemittances = True.
-* ``charge``
+* ``charge_C``
     Total beam charge (unit: Coulomb)
 
 

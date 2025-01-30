@@ -204,7 +204,7 @@ namespace impactx
             refpart.s = s + slice_ds;
         }
 
-       /** This function returns the linear transport map.
+        /** This function returns the linear transport map.
          *
          * @returns 6x6 transport matrix
          */

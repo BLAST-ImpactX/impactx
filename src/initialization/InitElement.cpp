@@ -503,6 +503,17 @@ namespace detail
             }
 
             m_lattice.emplace_back(diagnostics::BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
+        } else if (element_type == "source")
+        {
+            std::string distribution, openpmd_path;
+            pp_element.get("distribution", distribution);
+
+            if (distribution == "openPMD")
+            {
+                pp_element.get("openpmd_path", openpmd_path);
+            }
+
+            m_lattice.emplace_back( Source(distribution, openpmd_path, element_name) );
         } else if (element_type == "line")
         {
             // Parse the lattice elements for the sub-lattice in the line

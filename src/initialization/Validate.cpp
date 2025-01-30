@@ -14,6 +14,7 @@
 #include <AMReX_INT.H>
 
 #include <stdexcept>
+#include <string_view>
 
 
 namespace impactx
@@ -37,9 +38,19 @@ namespace impactx
                 nParticles += amr_data->track_particles.m_particle_container->NumberOfParticlesAtLevel(lev);
             }
             if (nParticles == 0)
-                throw std::runtime_error("No particles found. Cannot run evolve without a beam.");
-            if (nParticles == 1)
+            {
+                // do we have a source element as the first element of the beamline?
+                auto & first_element = m_lattice.front();
+                std::visit([](auto&& element){
+                    if (std::string_view(element.type) != std::string_view("Source")) {
+                        throw std::runtime_error("No particles found. Cannot run evolve without a beam.");
+                    }
+                }, first_element);
+            }
+            else if (nParticles == 1)
+            {
                 throw std::runtime_error("Only one particle found. This is not yet supported: https://github.com/ECP-WarpX/impactx/issues/44");
+            }
         }
 
         // elements

@@ -17,6 +17,7 @@
 #include "mixin/thick.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
@@ -29,6 +30,7 @@ namespace impactx
     struct Quad
     : public elements::mixin::Named,
       public elements::mixin::BeamOptic<Quad>,
+      public elements::mixin::LinearTransport<Quad>,
       public elements::mixin::Thick,
       public elements::mixin::Alignment,
       public elements::mixin::PipeAperture,
@@ -202,17 +204,59 @@ namespace impactx
             refpart.s = s + slice_ds;
         }
 
-        /** This function returns the linear transport map.
+       /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        transport_map (RefPart & AMREX_RESTRICT refpart) const
         {
-            // TODO
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+                
+            // compute phase advance per unit length in s (in rad/m)
+            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+
+            // compute phase advance per unit length in s (in rad/m)
+            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            if (m_k > 0.0) {
+                R(1,1) = std::cos(omega*slice_ds);
+                R(1,2) = std::sin(omega*slice_ds)/omega;
+                R(2,1) = -omega*std::sin(omega*slice_ds);
+                R(2,2) = std::cos(omega*slice_ds);
+                R(3,3) = std::cosh(omega*slice_ds);
+                R(3,4) = std::sinh(omega*slice_ds)/omega;
+                R(4,3) = omega*std::sinh(omega*slice_ds);
+                R(4,4) = std::cosh(omega*slice_ds);
+                R(5,6) = slice_ds/betgam2;
+            } else if (m_k < 0.0) {
+                R(1,1) = std::cosh(omega*slice_ds);
+                R(1,2) = std::sinh(omega*slice_ds)/omega;
+                R(2,1) = omega*std::sinh(omega*slice_ds);
+                R(2,2) = std::cosh(omega*slice_ds);
+                R(3,3) = std::cos(omega*slice_ds);
+                R(3,4) = std::sin(omega*slice_ds)/omega;
+                R(4,3) = -omega*std::sin(omega*slice_ds);
+                R(4,4) = std::cos(omega*slice_ds);
+                R(5,6) = slice_ds/betgam2;
+            } else {
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
+            }
+            
+            return R;
         }
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m

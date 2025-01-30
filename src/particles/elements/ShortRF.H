@@ -16,6 +16,7 @@
 #include "mixin/thin.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
@@ -28,6 +29,7 @@ namespace impactx
     struct ShortRF
     : public elements::mixin::Named,
       public elements::mixin::BeamOptic<ShortRF>,
+      public elements::mixin::LinearTransport<ShortRF>,
       public elements::mixin::Thin,
       public elements::mixin::Alignment,
       public elements::mixin::NoFinalize
@@ -206,8 +208,31 @@ namespace impactx
         Map6x6
         transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
         {
-            // TODO
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            // Define parameters and intermediate constants
+            using ablastr::constant::math::pi;
+            using ablastr::constant::SI::c;
+            amrex::ParticleReal const k = (2.0_prt*pi/c)*m_freq;
+            amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
+
+            // access reference particle values (final, initial):
+            amrex::ParticleReal const ptf_ref = refpart.pt;
+            amrex::ParticleReal const pti_ref = ptf_ref + m_V * std::cos(phi);
+            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
+
+            // initialize transport matrix
+            Map6x6 R = Map6x6::Identity();
+
+            // This is a nonlinear element: the linearized map is returned here.
+            // assign linear map matrix elements
+            R(2,2) = bgi/bgf;
+            R(4,4) = bgi/bgf;
+            R(6,5) = k*m_V*std::sin(phi)/bgf;
+            R(6,6) = bgi/bgf;
+
+            return R;
         }
 
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.

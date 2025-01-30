@@ -224,9 +224,6 @@ namespace impactx
             // compute phase advance per unit length in s (in rad/m)
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
 
-            // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
-
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 

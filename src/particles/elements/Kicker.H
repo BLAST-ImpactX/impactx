@@ -23,6 +23,8 @@
 #include <AMReX_GpuComplex.H>
 
 #include <cmath>
+#include <stdexcept>
+
 
 namespace impactx
 {
@@ -153,7 +155,7 @@ namespace impactx
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            // TODO
+            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
             return Map6x6::Identity();
         }
 

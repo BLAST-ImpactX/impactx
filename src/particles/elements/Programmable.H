@@ -12,6 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/CovarianceMatrix.H"
+#include "mixin/lineartransport.H"
 #include "mixin/named.H"
 #include "mixin/thick.H"
 
@@ -25,7 +26,8 @@
 namespace impactx
 {
     struct Programmable
-    : public elements::mixin::Named
+    : public elements::mixin::Named,
+      public elements::mixin::LinearTransport<Programmable>
     {
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -70,14 +72,17 @@ namespace impactx
             RefPart & refpart
         ) const;
 
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
         /** This function returns the linear transport map.
          *
          * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             // TODO: can/should we fuse the two elements?
             throw std::runtime_error("The Programmable element cannot be used for linear transport maps. Use the LinearMap element instead.");

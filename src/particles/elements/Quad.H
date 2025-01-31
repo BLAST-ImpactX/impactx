@@ -208,9 +208,9 @@ namespace impactx
          *
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map (RefPart & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
@@ -255,6 +255,9 @@ namespace impactx
 
             return R;
         }
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m
     };

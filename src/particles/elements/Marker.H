@@ -12,6 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/thin.H"
+#include "mixin/lineartransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -23,6 +24,7 @@ namespace impactx
 {
     struct Marker
     : public elements::mixin::Named,
+      public elements::mixin::LinearTransport<Marker>,
       public elements::mixin::Thin,
       public elements::mixin::NoFinalize
     {
@@ -84,14 +86,17 @@ namespace impactx
         /** This pushes the reference particle. */
         using Thin::operator();
 
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
         /** This function returns the linear transport map.
          *
          * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             // nothing to do
             return Map6x6::Identity();

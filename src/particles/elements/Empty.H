@@ -12,6 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/thin.H"
+#include "mixin/lineartransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -23,6 +24,7 @@ namespace impactx
 {
     struct Empty
     : public elements::mixin::Thin,
+      public elements::mixin::LinearTransport<Empty>,
       public elements::mixin::NoFinalize
     {
         static constexpr auto type = "None";
@@ -66,9 +68,9 @@ namespace impactx
          * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             // nothing to do
             return Map6x6::Identity();
@@ -102,6 +104,9 @@ namespace impactx
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
     };
 
 } // namespace impactx

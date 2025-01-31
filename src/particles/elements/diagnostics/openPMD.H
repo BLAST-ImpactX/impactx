@@ -13,6 +13,7 @@
 #include "particles/elements/mixin/thin.H"
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
+#include "particles/elements/mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
@@ -64,7 +65,8 @@ namespace detail
      * same series name as an existing instance.
      */
     struct BeamMonitor
-    : public elements::mixin::Thin
+    : public elements::mixin::LinearTransport<BeamMonitor>,
+      public elements::mixin::Thin
     {
         static constexpr auto type = "BeamMonitor";
         using PType = typename ImpactXParticleContainer::ParticleType;
@@ -135,14 +137,17 @@ namespace detail
         /** This does nothing to the reference particle. */
         using Thin::operator();
 
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
         /** This function returns the linear transport map.
          *
          * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             // nothing to do
             return Map6x6::Identity();

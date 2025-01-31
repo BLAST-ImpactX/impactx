@@ -12,6 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/ReferenceParticle.H"
+#include "particles/CovarianceMatrix.H"
 #include "EmittanceInvariants.H"
 
 #include <AMReX_BLProfiler.H>           // for TinyProfiler
@@ -29,7 +30,7 @@ namespace impactx::diagnostics
     std::unordered_map<std::string, amrex::ParticleReal>
     reduced_beam_characteristics (ImpactXParticleContainer const & pc)
     {
-        BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics");
+        BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(pc)");
 
         // preparing to access reference particle data: RefPart
         RefPart const ref_part = pc.GetRefParticle();
@@ -403,7 +404,6 @@ namespace impactx::diagnostics
         data["dispersion_px"] = dispersion_px;
         data["dispersion_y"] = dispersion_y;
         data["dispersion_py"] = dispersion_py;
-        data["charge_C"] = charge;
         data["emittance_xn"] = emittance_xn;
         data["emittance_yn"] = emittance_yn;
         data["emittance_tn"] = emittance_tn;
@@ -412,7 +412,166 @@ namespace impactx::diagnostics
            data["emittance_2"] = emittance_2;
            data["emittance_3"] = emittance_3;
         }
+        data["charge_C"] = charge;
 
         return data;
     }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    reduced_beam_characteristics (Map6x6 const & cm, RefPart const & ref_part)
+    {
+        BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(cm)");
+
+        // reference particle relativistic beta*gamma
+        amrex::ParticleReal const bg = ref_part.beta_gamma();
+        amrex::ParticleReal const bg2 = bg*bg;
+
+       // mean square and correlation values
+        amrex::ParticleReal const x_ms   = cm(1,1);
+        amrex::ParticleReal const y_ms   = cm(3,3);
+        amrex::ParticleReal const t_ms   = cm(5,5);
+        amrex::ParticleReal const px_ms  = cm(2,2);
+        amrex::ParticleReal const py_ms  = cm(4,4);
+        amrex::ParticleReal const pt_ms  = cm(6,6);
+        amrex::ParticleReal const xpx    = cm(1,2);
+        amrex::ParticleReal const ypy    = cm(3,4);
+        amrex::ParticleReal const tpt    = cm(5,6);
+        amrex::ParticleReal const xpt    = cm(1,6);
+        amrex::ParticleReal const pxpt   = cm(2,6);
+        amrex::ParticleReal const ypt    = cm(3,6);
+        amrex::ParticleReal const pypt   = cm(4,6);
+        amrex::ParticleReal const xy     = cm(1,3);
+        amrex::ParticleReal const xpy    = cm(1,4);
+        amrex::ParticleReal const xt     = cm(1,5);
+        amrex::ParticleReal const pxy    = cm(2,3);
+        amrex::ParticleReal const pxpy   = cm(2,4);
+        amrex::ParticleReal const pxt    = cm(2,5);
+        amrex::ParticleReal const yt     = cm(3,5);
+        amrex::ParticleReal const pyt    = cm(4,5);
+        // standard deviations of positions
+        amrex::ParticleReal const sig_x = std::sqrt(x_ms);
+        amrex::ParticleReal const sig_y = std::sqrt(y_ms);
+        amrex::ParticleReal const sig_t = std::sqrt(t_ms);
+        // standard deviations of momenta
+        amrex::ParticleReal const sig_px = std::sqrt(px_ms);
+        amrex::ParticleReal const sig_py = std::sqrt(py_ms);
+        amrex::ParticleReal const sig_pt = std::sqrt(pt_ms);
+        // RMS emittances
+        amrex::ParticleReal const emittance_x = std::sqrt(x_ms*px_ms-xpx*xpx);
+        amrex::ParticleReal const emittance_y = std::sqrt(y_ms*py_ms-ypy*ypy);
+        amrex::ParticleReal const emittance_t = std::sqrt(t_ms*pt_ms-tpt*tpt);
+        // Dispersion and dispersive beam moments
+        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
+        amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
+        amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
+        amrex::ParticleReal const emittance_xd = std::sqrt(x_msd*px_msd-xpx_d*xpx_d);
+        amrex::ParticleReal const y_msd = y_ms - pt_ms*dispersion_y*dispersion_y;
+        amrex::ParticleReal const py_msd = py_ms - pt_ms*dispersion_py*dispersion_py;
+        amrex::ParticleReal const ypy_d = ypy - pt_ms*dispersion_y*dispersion_py;
+        amrex::ParticleReal const emittance_yd = std::sqrt(y_msd*py_msd-ypy_d*ypy_d);
+        // Courant-Snyder (Twiss) beta-function
+        amrex::ParticleReal const beta_x = x_msd / emittance_xd;
+        amrex::ParticleReal const beta_y = y_msd / emittance_yd;
+        amrex::ParticleReal const beta_t = t_ms / emittance_t;
+        // Courant-Snyder (Twiss) alpha
+        amrex::ParticleReal const alpha_x = - xpx_d / emittance_xd;
+        amrex::ParticleReal const alpha_y = - ypy_d / emittance_yd;
+        amrex::ParticleReal const alpha_t = - tpt / emittance_t;
+
+        // Calculate normalized emittances
+        amrex::ParticleReal emittance_xn = emittance_x * bg;
+        amrex::ParticleReal emittance_yn = emittance_y * bg;
+        amrex::ParticleReal emittance_tn = emittance_t * bg;
+
+        // Determine whether to calculate eigenemittances, and initialize
+        amrex::ParmParse pp_diag("diag");
+        bool compute_eigenemittances = false;
+        pp_diag.queryAdd("eigenemittances", compute_eigenemittances);
+        amrex::ParticleReal emittance_1 = emittance_xn;
+        amrex::ParticleReal emittance_2 = emittance_yn;
+        amrex::ParticleReal emittance_3 = emittance_tn;
+
+        if (compute_eigenemittances) {
+           // Store the covariance matrix in dynamical variables:
+           amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> Sigma;
+           Sigma(1,1) = x_ms;
+           Sigma(1,2) = xpx * bg;
+           Sigma(1,3) = xy;
+           Sigma(1,4) = xpy * bg;
+           Sigma(1,5) = xt;
+           Sigma(1,6) = xpt * bg;
+           Sigma(2,1) = xpx * bg;
+           Sigma(2,2) = px_ms * bg2;
+           Sigma(2,3) = pxy * bg;
+           Sigma(2,4) = pxpy * bg2;
+           Sigma(2,5) = pxt * bg;
+           Sigma(2,6) = pxpt * bg2;
+           Sigma(3,1) = xy;
+           Sigma(3,2) = pxy * bg;
+           Sigma(3,3) = y_ms;
+           Sigma(3,4) = ypy * bg;
+           Sigma(3,5) = yt;
+           Sigma(3,6) = ypt * bg;
+           Sigma(4,1) = xpy * bg;
+           Sigma(4,2) = pxpy * bg2;
+           Sigma(4,3) = ypy * bg;
+           Sigma(4,4) = py_ms * bg2;
+           Sigma(4,5) = pyt * bg;
+           Sigma(4,6) = pypt * bg2;
+           Sigma(5,1) = xt;
+           Sigma(5,2) = pxt * bg;
+           Sigma(5,3) = yt;
+           Sigma(5,4) = pyt * bg;
+           Sigma(5,5) = t_ms;
+           Sigma(5,6) = tpt * bg;
+           Sigma(6,1) = xpt * bg;
+           Sigma(6,2) = pxpt * bg2;
+           Sigma(6,3) = ypt * bg;
+           Sigma(6,4) = pypt * bg2;
+           Sigma(6,5) = tpt * bg;
+           Sigma(6,6) = pt_ms * bg2;
+           // Calculate eigenemittances
+           std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> emittances = Eigenemittances(Sigma);
+           emittance_1 = std::get<0>(emittances);
+           emittance_2 = std::get<1>(emittances);
+           emittance_3 = std::get<2>(emittances);
+        }
+
+        std::unordered_map<std::string, amrex::ParticleReal> data;
+        data["sig_x"] = sig_x;
+        data["sig_y"] = sig_y;
+        data["sig_t"] = sig_t;
+        data["sig_px"] = sig_px;
+        data["sig_py"] = sig_py;
+        data["sig_pt"] = sig_pt;
+        data["emittance_x"] = emittance_x;
+        data["emittance_y"] = emittance_y;
+        data["emittance_t"] = emittance_t;
+        data["alpha_x"] = alpha_x;
+        data["alpha_y"] = alpha_y;
+        data["alpha_t"] = alpha_t;
+        data["beta_x"] = beta_x;
+        data["beta_y"] = beta_y;
+        data["beta_t"] = beta_t;
+        data["dispersion_x"] = dispersion_x;
+        data["dispersion_px"] = dispersion_px;
+        data["dispersion_y"] = dispersion_y;
+        data["dispersion_py"] = dispersion_py;
+        data["emittance_xn"] = emittance_xn;
+        data["emittance_yn"] = emittance_yn;
+        data["emittance_tn"] = emittance_tn;
+        if (compute_eigenemittances) {
+           data["emittance_1"] = emittance_1;
+           data["emittance_2"] = emittance_2;
+           data["emittance_3"] = emittance_3;
+        }
+        //data["charge_C"] = 0.0;  // TODO with space charge
+
+        return data;
+    }
+
 } // namespace impactx::diagnostics

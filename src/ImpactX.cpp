@@ -362,7 +362,7 @@ namespace impactx {
                 }
 
                 // push Covariance Matrix
-                cm = element.transport_map(ref) * cm * element.transport_map(ref).transpose();
+                element(cm, ref);
 
                 // TODO: later on, we can add element slicing and space charge kicking in this loop
             }, element_variant);

@@ -37,11 +37,17 @@ namespace impactx::elements::mixin
 
         /** Linear push of the covariance matrix through an element
          *
-         * @param cm covariance matrix
+         * Expects that the reference particle was advanced first.
+         *
+         * @param[in,out] cm covariance matrix
+         * @param[in] refpart reference particle
          */
-        AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         void
-        operator() (Map6x6 & cm) const
+        operator() (
+            Map6x6 & AMREX_RESTRICT cm,
+            RefPart const & AMREX_RESTRICT ref
+        ) const
         {
             static_assert(
                 std::is_base_of_v<LinearTransport, T_Element>,
@@ -50,8 +56,8 @@ namespace impactx::elements::mixin
 
             // small trick to force every derived class has to implement a method transport_map
             // (w/o using a purely virtual function)
-            T_Element& element = *static_cast<T_Element*>(this);
-            cm *= element.transport_map(cm);
+            T_Element const & element = *static_cast<T_Element const*>(this);
+            cm = element.transport_map(ref) * cm * element.transport_map(ref).transpose();
         }
     };
 

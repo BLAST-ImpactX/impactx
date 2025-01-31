@@ -447,6 +447,9 @@ void init_ImpactX (py::module& m)
         .def("track_particles", &ImpactX::track_particles,
              "Run the particle tracking simulation loop."
         )
+        .def("track_covariance_map", &ImpactX::track_covariance_map,
+             "Run the envelope tracking simulation loop."
+        )
 
         .def("resize_mesh", &ImpactX::ResizeMesh,
              "Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters."

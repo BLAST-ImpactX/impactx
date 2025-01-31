@@ -59,7 +59,7 @@ namespace
     /** Registers the mixin BeamOptics::operator methods
      */
     template<typename T_PyClass>
-    void register_beamoptics_push(T_PyClass & cl)
+    void register_beamoptics_push (T_PyClass & cl)
     {
         using Element = typename T_PyClass::type;  // py::class<T, options...>
 
@@ -69,6 +69,22 @@ namespace
             },
             py::arg("pc"), py::arg("step")=0, py::arg("period")=0,
             "Push first the reference particle, then all other particles."
+        );
+    }
+
+    /** Registers the mixin LinearTransport::operator method
+     */
+    template<typename T_PyClass>
+    void register_envelope_push (T_PyClass & cl)
+    {
+        using Element = typename T_PyClass::type;  // py::class<T, options...>
+
+        cl.def("push",
+               [](Element & el, Map6x6 & cm, RefPart const & AMREX_RESTRICT ref) {
+                   el(cm, ref);
+               },
+               py::arg("cm"), py::arg("ref"),
+               "Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first."
         );
     }
 
@@ -300,8 +316,8 @@ void init_elements(py::module& m)
             "Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I."
         )
     ;
-
     register_beamoptics_push(py_BeamMonitor);
+    register_envelope_push(py_BeamMonitor);
 
     // beam optics
 
@@ -409,6 +425,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Aperture);
+    register_envelope_push(py_Aperture);
 
     py::class_<ChrDrift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrDrift(me, "ChrDrift");
     py_ChrDrift
@@ -442,6 +459,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ChrDrift);
+    register_envelope_push(py_ChrDrift);
 
     py::class_<ChrQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrQuad(me, "ChrQuad");
     py_ChrQuad
@@ -490,6 +508,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ChrQuad);
+    register_envelope_push(py_ChrQuad);
 
     py::class_<ChrPlasmaLens, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrPlasmaLens(me, "ChrPlasmaLens");
     py_ChrPlasmaLens
@@ -538,6 +557,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ChrPlasmaLens);
+    register_envelope_push(py_ChrPlasmaLens);
 
     py::class_<ChrAcc, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment> py_ChrAcc(me, "ChrAcc");
     py_ChrAcc
@@ -587,6 +607,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ChrAcc);
+    register_envelope_push(py_ChrAcc);
 
     py::class_<ConstF, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ConstF(me, "ConstF");
     py_ConstF
@@ -644,6 +665,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ConstF);
+    register_envelope_push(py_ConstF);
 
     py::class_<DipEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_DipEdge(me, "DipEdge");
     py_DipEdge
@@ -700,6 +722,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_DipEdge);
+    register_envelope_push(py_DipEdge);
 
     py::class_<Drift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Drift(me, "Drift");
     py_Drift
@@ -733,6 +756,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Drift);
+    register_envelope_push(py_Drift);
 
     py::class_<ExactDrift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactDrift(me, "ExactDrift");
     py_ExactDrift
@@ -766,6 +790,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ExactDrift);
+    register_envelope_push(py_ExactDrift);
 
     py::class_<ExactSbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactSbend(me, "ExactSbend");
     py_ExactSbend
@@ -815,6 +840,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ExactSbend);
+    register_envelope_push(py_ExactSbend);
 
     py::class_<Kicker, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Kicker(me, "Kicker");
     py_Kicker
@@ -867,6 +893,7 @@ void init_elements(py::module& m)
         // TODO unit
     ;
     register_beamoptics_push(py_Kicker);
+    register_envelope_push(py_Kicker);
 
     py::class_<Multipole, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Multipole(me, "Multipole");
     py_Multipole
@@ -916,6 +943,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Multipole);
+    register_envelope_push(py_Multipole);
 
     py::class_<Empty, elements::mixin::Thin> py_Empty(me, "Empty");
     py_Empty
@@ -929,6 +957,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Empty);
+    register_envelope_push(py_Empty);
 
     py::class_<Marker, elements::mixin::Named, elements::mixin::Thin> py_Marker(me, "Marker");
     py_Marker
@@ -942,6 +971,7 @@ void init_elements(py::module& m)
             )
             ;
     register_beamoptics_push(py_Marker);
+    register_envelope_push(py_Marker);
 
     py::class_<NonlinearLens, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_NonlinearLens(me, "NonlinearLens");
     py_NonlinearLens
@@ -982,6 +1012,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_NonlinearLens);
+    register_envelope_push(py_NonlinearLens);
 
     py::class_<PlaneXYRot, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
     py_PlaneXYRot
@@ -1014,6 +1045,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_PlaneXYRot);
+    register_envelope_push(py_PlaneXYRot);
 
     py::class_<Programmable, elements::mixin::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",
@@ -1110,6 +1142,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Quad);
+    register_envelope_push(py_Quad);
 
     py::class_<RFCavity, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_RFCavity(me, "RFCavity");
     py_RFCavity
@@ -1180,6 +1213,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_RFCavity);
+    register_envelope_push(py_RFCavity);
 
     py::class_<Sbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sbend(me, "Sbend");
     py_Sbend
@@ -1221,6 +1255,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Sbend);
+    register_envelope_push(py_Sbend);
 
     py::class_<CFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_CFbend(me, "CFbend");
     py_CFbend
@@ -1270,6 +1305,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_CFbend);
+    register_envelope_push(py_CFbend);
 
     py::class_<Buncher, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Buncher(me, "Buncher");
     py_Buncher
@@ -1310,6 +1346,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Buncher);
+    register_envelope_push(py_Buncher);
 
     py::class_<ShortRF, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_ShortRF(me, "ShortRF");
     py_ShortRF
@@ -1358,6 +1395,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ShortRF);
+    register_envelope_push(py_ShortRF);
 
     py::class_<SoftSolenoid, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SoftSolenoid(me, "SoftSolenoid");
     py_SoftSolenoid
@@ -1419,6 +1457,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_SoftSolenoid);
+    register_envelope_push(py_SoftSolenoid);
 
     py::class_<Sol, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sol(me, "Sol");
     py_Sol
@@ -1460,6 +1499,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_Sol);
+    register_envelope_push(py_Sol);
 
     py::class_<PRot, elements::mixin::Named, elements::mixin::Thin> py_PRot(me, "PRot");
     py_PRot
@@ -1494,6 +1534,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_PRot);
+    register_envelope_push(py_PRot);
 
     py::class_<SoftQuadrupole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SoftQuadrupole(me, "SoftQuadrupole");
     py_SoftQuadrupole
@@ -1548,6 +1589,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_SoftQuadrupole);
+    register_envelope_push(py_SoftQuadrupole);
 
     py::class_<ThinDipole, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_ThinDipole(me, "ThinDipole");
     py_ThinDipole
@@ -1588,6 +1630,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_ThinDipole);
+    register_envelope_push(py_ThinDipole);
 
     py::class_<TaperedPL, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_TaperedPL(me, "TaperedPL");
     py_TaperedPL
@@ -1642,6 +1685,7 @@ void init_elements(py::module& m)
         )
     ;
     register_beamoptics_push(py_TaperedPL);
+    register_envelope_push(py_TaperedPL);
 
     py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment> py_LinearMap(me, "LinearMap");
     py_LinearMap
@@ -1684,6 +1728,7 @@ void init_elements(py::module& m)
         )
      ;
      register_beamoptics_push(py_LinearMap);
+     register_envelope_push(py_LinearMap);
 
     // freestanding push function
     m.def("push", &Push,

@@ -18,7 +18,6 @@ import os as os
 
 from amrex import space3d as amr
 from impactx.distribution_input_helpers import twiss
-from impactx.extensions.ImpactXParIter import register_ImpactXParIter_extension
 from impactx.extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
@@ -68,7 +67,6 @@ __all__ = [
     "push",
     "read_beam",
     "read_lattice",
-    "register_ImpactXParIter_extension",
     "register_ImpactXParticleContainer_extension",
     "s",
     "t",

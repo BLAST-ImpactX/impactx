@@ -395,16 +395,6 @@ class ImpactXParConstIter(
     def pc(
         self,
     ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
-    def soa(self):
-        """
-        Get the StructOfArrays on the current tile
-
-            Parameters
-            ----------
-            self : ImpactXParIter or ImpactXParConstIter
-              used to query particle container component names
-
-        """
 
 class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
     @staticmethod
@@ -425,16 +415,6 @@ class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
     def pc(
         self,
     ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
-    def soa(self):
-        """
-        Get the StructOfArrays on the current tile
-
-            Parameters
-            ----------
-            self : ImpactXParIter or ImpactXParConstIter
-              used to query particle container component names
-
-        """
 
 class ImpactXParticleContainer(
     amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default
@@ -521,19 +501,9 @@ class ImpactXParticleContainer(
         Set reference particle attributes.
         """
     @property
-    def RealSoA_names(self) -> list[str]:
-        """
-        Get the name of each ParticleReal SoA component
-        """
-    @property
     def coord_system(self) -> CoordSystem:
         """
         Get the current coordinate system of particles in this container
-        """
-    @property
-    def intSoA_names(self) -> list[str]:
-        """
-        Get the name of each int SoA component
         """
 
 class RefPart:

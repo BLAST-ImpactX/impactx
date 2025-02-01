@@ -37,20 +37,12 @@ If want to use ImpactX on a specific high-performance computing (HPC) systems, j
 
    .. image:: conda.svg
 
-Using the Conda Package
------------------------
+Using the Conda-Forge Package
+-----------------------------
 
-A package for ImpactX is available via the `Conda <https://conda.io>`_ package manager.
+A package for ImpactX is available via `Conda-Forge <https://conda-forge.org/download/>`__.
 
 .. tip::
-
-   We recommend to configure your conda to use the faster ``libmamba`` `dependency solver <https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community>`__.
-
-   .. code-block:: bash
-
-      conda update -y -n base conda
-      conda install -y -n base conda-libmamba-solver
-      conda config --set solver libmamba
 
    We recommend to deactivate that conda self-activates its ``base`` environment.
    This `avoids interference with the system and other package managers <https://collegeville.github.io/CW20/WorkshopResources/WhitePapers/huebl-working-with-multiple-pkg-mgrs.pdf>`__.
@@ -59,14 +51,21 @@ A package for ImpactX is available via the `Conda <https://conda.io>`_ package m
 
       conda config --set auto_activate_base false
 
+   In order to make sure that the conda configuration uses ``conda-forge`` as the only channel, which will help avoid issues with blocked ``defaults`` or ``anaconda`` repositories, please set the following configurations:
+
+   .. code-block:: bash
+
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+
 .. code-block:: bash
 
-   conda create -n impactx -c conda-forge impactx
-   conda activate impactx
+   mamba create -n impactx -c conda-forge impactx
+   mamba activate impactx
 
 .. note::
 
-   The ``impactx`` `conda package <https://anaconda.org/conda-forge/impactx>`__ does not yet provide GPU support.
+   The ``impactx`` package on conda-forge does not yet provide `GPU support <https://github.com/conda-forge/impactx-feedstock/issues/4>`__.
 
 
 .. _install-spack:

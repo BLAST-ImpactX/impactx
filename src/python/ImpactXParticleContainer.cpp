@@ -130,11 +130,6 @@ void init_impactxparticlecontainer(py::module& m)
              "Charge deposition"
         )
         */
-
-        .def_property_readonly("RealSoA_names", &ImpactXParticleContainer::RealSoA_names,
-              "Get the name of each ParticleReal SoA component")
-        .def_property_readonly("intSoA_names", &ImpactXParticleContainer::intSoA_names,
-               "Get the name of each int SoA component")
     ;
 
     py_pariter_soa.def("pc", &ParIterSoA::pc);

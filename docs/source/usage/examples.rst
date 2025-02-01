@@ -36,6 +36,8 @@ Single Particle Dynamics
    examples/dogleg/README.rst
    examples/coupled_optics/README.rst
    examples/linear_map/README.rst
+   examples/scraping_beam/README.rst
+
 
 Collective Effects
 ------------------

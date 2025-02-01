@@ -1185,3 +1185,19 @@ add_impactx_test(IOTA_nll_aperture.py
     examples/iota_lens/analysis_iotalens_sdep_aperture.py
     OFF  # no plot script yet
 )
+
+# Expanding beam scraping against a vacuum pipe ##############################
+#
+# w/o space charge
+add_impactx_test(examples-scraping
+    examples/scraping_beam/input_scraping.in
+    ON   # ImpactX MPI-parallel
+    examples/scraping_beam/analysis_scraping.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-scraping.py
+    examples/scraping_beam/run_scraping.py
+    OFF   # ImpactX MPI-parallel
+    examples/scraping_beam/analysis_scraping.py
+    OFF  # no plot script yet
+)

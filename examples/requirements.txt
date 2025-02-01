@@ -1,7 +1,9 @@
 -r ../requirements.txt
+# Work-Around for https://github.com/nkarast/PyNAFF/pull/10
+# pynaff
+git+https://github.com/ax3l/PyNAFF.git@fix-complex-warning
 matplotlib
 numpy
 openpmd-api
 pandas
-pynaff
 scipy

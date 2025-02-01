@@ -158,13 +158,7 @@ namespace
 
 void init_elements(py::module& m)
 {
-    /*
-    m.def_property_readonly_static(
-        "Map6x6",
-        [](py::object){ return py::type::of<Map6x6>(); },
-        "1-indexed, Fortran-ordered, 6x6 linear transport map type"
-    );
-    */
+    m.attr("Map6x6") = py::type::of<Map6x6>();
 
     py::module_ me = m.def_submodule(
         "elements",

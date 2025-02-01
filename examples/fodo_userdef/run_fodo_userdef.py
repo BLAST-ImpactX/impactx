@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements, twiss
+from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 sim = ImpactX()
 
@@ -49,7 +49,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # add a user-defined, linear element for the drifts
-Iden = elements.LinearMap.Map6x6.identity()
+Iden = Map6x6.identity()
 R1, R2 = Iden, Iden
 
 ds1 = 0.25

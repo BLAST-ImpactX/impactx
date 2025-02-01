@@ -9,7 +9,7 @@
 # from elements import LinearTransport
 import numpy as np
 
-from impactx import ImpactX, distribution, elements, twiss
+from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 sim = ImpactX()
 
@@ -57,7 +57,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # initialize the linear map
-Iden = elements.LinearMap.Map6x6.identity()
+Iden = Map6x6.identity()
 Rmat = Iden
 
 # desired tunes

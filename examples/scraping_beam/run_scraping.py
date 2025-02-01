@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, Map6x6, distribution, elements
 
 sim = ImpactX()
 
@@ -61,7 +61,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # initialize the linear map
-Iden = elements.LinearMap.Map6x6.identity()
+Iden = Map6x6.identity()
 Rmat = Iden
 Rmat[2, 1] = correlation_k
 Rmat[4, 3] = correlation_k

@@ -343,17 +343,54 @@ namespace impactx {
     {
         // TODO: move whole body out in separate file
 
+        // verbosity
+        amrex::ParmParse pp_impactx("impactx");
+        int verbose = 1;
+        pp_impactx.queryAddWithParser("verbose", verbose);
+
+        // a global step for diagnostics including space charge slice steps in elements
+        //   before we start the evolve loop, we are in "step 0" (initial state)
+        int step = 0;
+
+        // check typos in inputs after step 1
+        bool early_params_checked = false;
+
         // TODO: init done?
         amrex::ParmParse const pp_dist = amrex::ParmParse("beam");
         auto ref = initialization::read_reference_particle(pp_dist);
         auto dist = initialization::read_distribution(pp_dist);
         auto cm = impactx::initialization::create_covariance_matrix(dist);
 
-        // TODO: output of init state?
+        // output of init state
+        amrex::ParmParse pp_diag("diag");
+        bool diag_enable = true;
+        pp_diag.queryAdd("enable", diag_enable);
+        //if (verbose > 0) {
+        //    amrex::Print() << " Diagnostics: " << diag_enable << "\n";
+        //}
+
+        int file_min_digits = 6;
+        if (diag_enable)
+        {
+            pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
+
+            // print initial reference particle to file
+            // TODO
+
+            // print the initial values of reduced beam characteristics
+            diagnostics::DiagnosticOutput(cm,
+                                          ref,
+                                          diagnostics::OutputType::PrintReducedBeamCharacteristics,
+                                          "diags/reduced_beam_characteristics");
+
+        }
 
         // loop over all beamline elements
         for (auto & element_variant : m_lattice)
         {
+            // TODO: later on, we can add element slicing and space charge kicking in this loop
+            step++;
+
             std::visit([&ref, &cm](auto&& element){
                 // push reference particle in global coordinates
                 {
@@ -364,10 +401,60 @@ namespace impactx {
                 // push Covariance Matrix
                 element(cm, ref);
 
-                // TODO: later on, we can add element slicing and space charge kicking in this loop
             }, element_variant);
+
+            // slice-step diagnostics
+            bool slice_step_diagnostics = false;
+            pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
+
+            if (diag_enable && slice_step_diagnostics) {
+                // print slice step reference particle to file
+                // TODO
+
+                // print slice step reduced beam characteristics to file
+                diagnostics::DiagnosticOutput(cm,
+                                              ref,
+                                              diagnostics::OutputType::PrintReducedBeamCharacteristics,
+                                              "diags/reduced_beam_characteristics",
+                                              step,
+                                              true);
+
+            }
+
+            // inputs: unused parameters (e.g. typos) check after step 1 has finished
+            if (!early_params_checked) { early_params_checked = early_param_check(); }
         }
 
-        // TODO: output
+        if (diag_enable)
+        {
+            // print final reference particle to file
+            // TODO
+
+            // print the final values of the reduced beam characteristics
+            diagnostics::DiagnosticOutput(cm,
+                                          ref,
+                                          diagnostics::OutputType::PrintReducedBeamCharacteristics,
+                                          "diags/reduced_beam_characteristics",
+                                          step);
+
+            // output particles lost in apertures
+            if (amr_data->m_particles_lost->TotalNumberOfParticles() > 0)
+            {
+                std::string openpmd_backend = "default";
+                pp_diag.queryAdd("backend", openpmd_backend);
+
+                diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
+                output_lost(*amr_data->m_particles_lost, 0, 0);
+                output_lost.finalize();
+            }
+        }
+
+        // loop over all beamline elements & finalize them
+        for (auto & element_variant : m_lattice)
+        {
+            std::visit([](auto&& element){
+                element.finalize();
+            }, element_variant);
+        }
     }
 } // namespace impactx

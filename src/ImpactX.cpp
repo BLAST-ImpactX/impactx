@@ -62,6 +62,17 @@ namespace impactx {
         }
     }
 
+    void ImpactX::finalize_elements ()
+    {
+        // loop over all beamline elements & finalize them
+        for (auto & element_variant : m_lattice)
+        {
+            std::visit([](auto&& element){
+                element.finalize();
+            }, element_variant);
+        }
+    }
+
     void ImpactX::init_grids ()
     {
         BL_PROFILE("ImpactX::init_grids");
@@ -121,7 +132,17 @@ namespace impactx {
     {
         BL_PROFILE("ImpactX::evolve");
 
-        track_particles();
+        amrex::ParmParse pp_algo("algo");
+        std::string track = "particles";
+        pp_algo.queryAdd("track", track);
+
+        if (track == "particles") {
+            track_particles();
+        }
+        else if (track == "envelope") {
+            track_envelope();
+        }
+        // TODO: reference_particle only tracking
     }
 
     void ImpactX::track_particles ()
@@ -323,16 +344,11 @@ namespace impactx {
         }
 
         // loop over all beamline elements & finalize them
-        for (auto & element_variant : m_lattice)
-        {
-            std::visit([](auto&& element){
-                element.finalize();
-            }, element_variant);
-        }
+        finalize_elements();
     }
 
     void
-    ImpactX::track_covariance_map ()
+    ImpactX::track_envelope ()
     {
         // TODO: move whole body out in separate file
 
@@ -431,11 +447,6 @@ namespace impactx {
         }
 
         // loop over all beamline elements & finalize them
-        for (auto & element_variant : m_lattice)
-        {
-            std::visit([](auto&& element){
-                element.finalize();
-            }, element_variant);
-        }
+        finalize_elements();
     }
 } // namespace impactx

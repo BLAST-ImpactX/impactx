@@ -441,13 +441,17 @@ void init_ImpactX (py::module& m)
              "AMReX grid boxes."
         )
 
-        .def("evolve", &ImpactX::evolve,
+        .def("evolve",  /** TODO: deprecated API. Only for internal use. Remove after a few releases. */
+             [](ImpactX & ix) {
+                py::print("Warning: evolve() is deprecated and will soon be removed. Use track_particles() instead.");
+                ix.evolve();
+             },
              "Run the main simulation loop."
         )
         .def("track_particles", &ImpactX::track_particles,
              "Run the particle tracking simulation loop."
         )
-        .def("track_covariance_map", &ImpactX::track_covariance_map,
+        .def("track_envelope", &ImpactX::track_envelope,
              "Run the envelope tracking simulation loop."
         )
 

@@ -155,15 +155,12 @@ namespace impactx {
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                          diagnostics::OutputType::PrintRefParticle,
+            diagnostics::DiagnosticOutput(amr_data->m_particle_container->GetRefParticle(),
                                           "diags/ref_particle",
                                           step);
 
             // print the initial values of reduced beam characteristics
-            // TODO:  add covariance matrix as an argument in this function call (optional)
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                          diagnostics::OutputType::PrintReducedBeamCharacteristics,
                                           "diags/reduced_beam_characteristics");
 
         }
@@ -280,15 +277,13 @@ namespace impactx {
 
                     if (diag_enable && slice_step_diagnostics) {
                         // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                                      diagnostics::OutputType::PrintRefParticle,
+                        diagnostics::DiagnosticOutput(amr_data->m_particle_container->GetRefParticle(),
                                                       "diags/ref_particle",
                                                       step,
                                                       true);
 
                         // print slice step reduced beam characteristics to file
                         diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                                      diagnostics::OutputType::PrintReducedBeamCharacteristics,
                                                       "diags/reduced_beam_characteristics",
                                                       step,
                                                       true);
@@ -306,14 +301,12 @@ namespace impactx {
         if (diag_enable)
         {
             // print final reference particle to file
-            diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                          diagnostics::OutputType::PrintRefParticle,
+            diagnostics::DiagnosticOutput(amr_data->m_particle_container->GetRefParticle(),
                                           "diags/ref_particle_final",
                                           step);
 
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
-                                          diagnostics::OutputType::PrintReducedBeamCharacteristics,
                                           "diags/reduced_beam_characteristics_final",
                                           step);
 
@@ -375,13 +368,10 @@ namespace impactx {
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            // TODO
+            diagnostics::DiagnosticOutput(ref, "diags/ref_particle");
 
             // print the initial values of reduced beam characteristics
-            diagnostics::DiagnosticOutput(cm,
-                                          ref,
-                                          diagnostics::OutputType::PrintReducedBeamCharacteristics,
-                                          "diags/reduced_beam_characteristics");
+            diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics");
 
         }
 
@@ -409,15 +399,10 @@ namespace impactx {
 
             if (diag_enable && slice_step_diagnostics) {
                 // print slice step reference particle to file
-                // TODO
+                diagnostics::DiagnosticOutput(ref, "diags/ref_particle", step, true);
 
                 // print slice step reduced beam characteristics to file
-                diagnostics::DiagnosticOutput(cm,
-                                              ref,
-                                              diagnostics::OutputType::PrintReducedBeamCharacteristics,
-                                              "diags/reduced_beam_characteristics",
-                                              step,
-                                              true);
+                diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics", step, true);
 
             }
 
@@ -428,14 +413,10 @@ namespace impactx {
         if (diag_enable)
         {
             // print final reference particle to file
-            // TODO
+            diagnostics::DiagnosticOutput(ref, "diags/ref_particle_final", step);
 
             // print the final values of the reduced beam characteristics
-            diagnostics::DiagnosticOutput(cm,
-                                          ref,
-                                          diagnostics::OutputType::PrintReducedBeamCharacteristics,
-                                          "diags/reduced_beam_characteristics",
-                                          step);
+            diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics_final", step);
 
             // output particles lost in apertures
             if (amr_data->m_particles_lost->TotalNumberOfParticles() > 0)

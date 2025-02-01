@@ -24,18 +24,26 @@
 
 namespace
 {
+    /** Type of beam diagnostic output
+     */
+    enum class OutputType
+    {
+        PrintRefParticle, ///< ASCII diagnostics
+        PrintReducedBeamCharacteristics ///< ASCII diagnostics, for beam momenta and Twiss parameters
+    };
+
     void
     write_column_header (
         amrex::AllPrintToFile & file_handler,
-        impactx::diagnostics::OutputType otype,
+        OutputType otype,
         bool has_charge
     )
     {
-        if (otype == impactx::diagnostics::OutputType::PrintRefParticle)
+        if (otype == OutputType::PrintRefParticle)
         {
             file_handler << "step s beta gamma beta_gamma x y z t px py pz pt\n";
         }
-        else if (otype == impactx::diagnostics::OutputType::PrintReducedBeamCharacteristics)
+        else if (otype == OutputType::PrintReducedBeamCharacteristics)
         {
             // determine whether to output eigenemittances
             amrex::ParmParse pp_diag("diag");
@@ -73,7 +81,7 @@ namespace
     void
     prepare_header (
         amrex::AllPrintToFile & file_handler,
-        impactx::diagnostics::OutputType otype,
+        OutputType otype,
         bool has_charge,
         bool append
     )
@@ -151,7 +159,6 @@ namespace impactx::diagnostics
 {
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
-        OutputType const otype,
         std::string file_name,
         int step,
         bool append
@@ -161,97 +168,22 @@ namespace impactx::diagnostics
 
         using namespace amrex::literals; // for _rt and _prt
 
+        OutputType const otype = OutputType::PrintReducedBeamCharacteristics;
+
         // keep file open as we add more and more lines
         amrex::AllPrintToFile file_handler(std::move(file_name));
         prepare_header(file_handler, otype, true, append);
 
-        if (otype == OutputType::PrintRefParticle)
-        {
-            RefPart const ref_part = pc.GetRefParticle();
-            write_ref(file_handler, ref_part, step);
-        }
+        amrex::ParticleReal const s = pc.GetRefParticle().s;
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
+            diagnostics::reduced_beam_characteristics(pc);
 
-        else if (otype == OutputType::PrintReducedBeamCharacteristics)
-        {
-            amrex::ParticleReal const s = pc.GetRefParticle().s;
-            std::unordered_map<std::string, amrex::ParticleReal> const rbc =
-                diagnostics::reduced_beam_characteristics(pc);
-
-            write_rbc(file_handler, rbc, s, step);
-        }
-
-        if (otype == OutputType::PrintNonlinearLensInvariants)
-        {
-            // create a host-side particle buffer
-            auto tmp = pc.make_alike<amrex::PinnedArenaAllocator>();
-
-            // copy all particles from device to host
-            bool const local = true;
-            tmp.copyParticles(pc, local);
-
-            // loop over refinement levels
-            int const nLevel = tmp.finestLevel();
-            for (int lev = 0; lev <= nLevel; ++lev) {
-                // loop over all particle boxes
-                using MyPinnedParIter = amrex::ParIterSoA<RealSoA::nattribs,IntSoA::nattribs, amrex::PinnedArenaAllocator>;
-                for (MyPinnedParIter pti(tmp, lev); pti.isValid(); ++pti) {
-                    const int np = pti.numParticles();
-
-                    // preparing access to particle data: SoA of Reals
-                    auto const& soa = pti.GetStructOfArrays();
-                    auto const& part_x = soa.GetRealData(RealSoA::x);
-                    auto const& part_y = soa.GetRealData(RealSoA::y);
-                    auto const& part_px = soa.GetRealData(RealSoA::px);
-                    auto const& part_py = soa.GetRealData(RealSoA::py);
-
-                    auto const& part_idcpu = soa.GetIdCPUData().dataPtr();
-
-                    // Parse the diagnostic parameters
-                    amrex::ParmParse pp_diag("diag");
-
-                    amrex::ParticleReal alpha = 0.0;
-                    pp_diag.queryAddWithParser("alpha", alpha);
-
-                    amrex::ParticleReal beta = 1.0;
-                    pp_diag.queryAddWithParser("beta", beta);
-
-                    amrex::ParticleReal tn = 0.4;
-                    pp_diag.queryAddWithParser("tn", tn);
-
-                    amrex::ParticleReal cn = 0.01;
-                    pp_diag.queryAddWithParser("cn", cn);
-
-                    NonlinearLensInvariants const nonlinear_lens_invariants(alpha, beta, tn, cn);
-
-                    // print out particles (this hack works only on CPU and on GPUs with
-                    // unified memory access)
-                    for (int i = 0; i < np; ++i) {
-                        amrex::ParticleReal const x = part_x[i];
-                        amrex::ParticleReal const y = part_y[i];
-                        uint64_t const global_id = part_idcpu[i];
-
-                        amrex::ParticleReal const px = part_px[i];
-                        amrex::ParticleReal const py = part_py[i];
-
-                        // calculate invariants of motion
-                        NonlinearLensInvariants::Data const HI_out =
-                                nonlinear_lens_invariants(x, y, px, py);
-
-                        // write particle invariant data to file
-                        file_handler
-                                << global_id << " "
-                                << HI_out.H << " " << HI_out.I << "\n";
-
-                    } // i=0...np
-                } // end loop over all particle boxes
-            } // end mesh-refinement level loop
-        }
+        write_rbc(file_handler, rbc, s, step);
     }
 
     void DiagnosticOutput (
         Map6x6 const & cm,
         RefPart const & ref_part,
-        OutputType otype,
         std::string file_name,
         int step,
         bool append
@@ -261,26 +193,30 @@ namespace impactx::diagnostics
 
         // keep file open as we add more and more lines
         amrex::AllPrintToFile file_handler(std::move(file_name));
-        prepare_header(file_handler, otype, false, append);
+        prepare_header(file_handler, OutputType::PrintReducedBeamCharacteristics, false, append);
 
-        if (otype == OutputType::PrintRefParticle)
-        {
-            write_ref(file_handler, ref_part, step);
-        }
+        amrex::ParticleReal const s = ref_part.s;
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
+            diagnostics::reduced_beam_characteristics(cm, ref_part);
 
-        else if (otype == OutputType::PrintReducedBeamCharacteristics)
-        {
-            amrex::ParticleReal const s = ref_part.s;
-            std::unordered_map<std::string, amrex::ParticleReal> const rbc =
-                diagnostics::reduced_beam_characteristics(cm, ref_part);
+        write_rbc(file_handler, rbc, s, step);
+    }
 
-            write_rbc(file_handler, rbc, s, step);
-        }
+    void DiagnosticOutput (
+        RefPart const & ref_part,
+        std::string file_name,
+        int step,
+        bool append
+    )
+    {
+        BL_PROFILE("impactx::diagnostics::DiagnosticOutput(pc)");
 
-        if (otype == OutputType::PrintNonlinearLensInvariants)
-        {
-            throw std::runtime_error("DiagnosticOutput(cm): PrintNonlinearLensInvariants is not implemented.");
-        }
+        OutputType const otype = OutputType::PrintRefParticle;
+
+        // keep file open as we add more and more lines
+        amrex::AllPrintToFile file_handler(std::move(file_name));
+        prepare_header(file_handler, otype, true, append);
+        write_ref(file_handler, ref_part, step);
     }
 
 } // namespace impactx::diagnostics

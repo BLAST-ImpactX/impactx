@@ -40,7 +40,7 @@ namespace impactx::elements::mixin
          * Expects that the reference particle was advanced first.
          *
          * @param[in,out] cm covariance matrix
-         * @param[in] refpart reference particle
+         * @param[in] ref reference particle
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         void

@@ -40,7 +40,6 @@ namespace impactx::diagnostics
      *
      * @param cm covariance matrix
      * @param ref_part reference particle
-     * @param otype the type of output to produce
      * @param file_name the file name to write to
      * @param step the global step
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)

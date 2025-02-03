@@ -137,20 +137,27 @@ namespace
         pp_diag.queryAdd("eigenemittances", compute_eigenemittances);
 
         file_handler << step << " " << s << " "
-                     << rbc.at("sig_x") << " " << rbc.at("sig_y") << " " << rbc.at("sig_t") << " "
-                     << rbc.at("sig_px") << " " << rbc.at("sig_py") << " " << rbc.at("sig_pt") << " "
-                     << rbc.at("emittance_x") << " " << rbc.at("emittance_y") << " " << rbc.at("emittance_t") << " "
-                     << rbc.at("alpha_x") << " " << rbc.at("alpha_y") << " " << rbc.at("alpha_t") << " "
-                     << rbc.at("beta_x") << " " << rbc.at("beta_y") << " " << rbc.at("beta_t") << " "
-                     << rbc.at("dispersion_x") << " " << rbc.at("dispersion_px") << " "
-                     << rbc.at("dispersion_y") << " " << rbc.at("dispersion_py") << " "
-                     << rbc.at("emittance_xn") << " " << rbc.at("emittance_yn") << " " << rbc.at("emittance_tn");
+                << rbc.at("x_mean") << " " << rbc.at("x_min") << " " << rbc.at("x_max") << " "
+                << rbc.at("y_mean") << " " << rbc.at("y_min") << " " << rbc.at("y_max") << " "
+                << rbc.at("t_mean") << " " << rbc.at("t_min") << " " << rbc.at("t_max") << " "
+                << rbc.at("sig_x") << " " << rbc.at("sig_y") << " " << rbc.at("sig_t") << " "
+                << rbc.at("px_mean") << " " << rbc.at("px_min") << " " << rbc.at("px_max") << " "
+                << rbc.at("py_mean") << " " << rbc.at("py_min") << " " << rbc.at("py_max") << " "
+                << rbc.at("pt_mean") << " " << rbc.at("pt_min") << " " << rbc.at("pt_max") << " "
+                << rbc.at("sig_px") << " " << rbc.at("sig_py") << " " << rbc.at("sig_pt") << " "
+                << rbc.at("emittance_x") << " " << rbc.at("emittance_y") << " " << rbc.at("emittance_t") << " "
+                << rbc.at("alpha_x") << " " << rbc.at("alpha_y") << " " << rbc.at("alpha_t") << " "
+                << rbc.at("beta_x") << " " << rbc.at("beta_y") << " " << rbc.at("beta_t") << " "
+                << rbc.at("dispersion_x") << " " << rbc.at("dispersion_px") << " "
+                << rbc.at("dispersion_y") << " " << rbc.at("dispersion_py") << " "
+                << rbc.at("emittance_xn") << " " << rbc.at("emittance_yn") << " " << rbc.at("emittance_tn");
         if (compute_eigenemittances) {
             file_handler << " "
                          << rbc.at("emittance_1") << " " << rbc.at("emittance_2") << " " << rbc.at("emittance_3");
 
         }
-        file_handler << "\n";
+        file_handler << " " << rbc.at("charge_C")
+                     << "\n";
     }
 }
 

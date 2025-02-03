@@ -24,6 +24,8 @@
 #include <AMReX_SmallMatrix.H>          // for SmallMatrix
 #include <AMReX_TypeList.H>             // for TypeMultiplier
 
+#include <limits>
+
 
 namespace impactx::diagnostics
 {
@@ -541,10 +543,30 @@ namespace impactx::diagnostics
            emittance_3 = std::get<2>(emittances);
         }
 
+        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+
         std::unordered_map<std::string, amrex::ParticleReal> data;
+        data["x_mean"] = nan;
+        data["x_min"] = nan;
+        data["x_max"] = nan;
+        data["y_mean"] = nan;
+        data["y_min"] = nan;
+        data["y_max"] = nan;
+        data["t_mean"] = nan;
+        data["t_min"] = nan;
+        data["t_max"] = nan;
         data["sig_x"] = sig_x;
         data["sig_y"] = sig_y;
         data["sig_t"] = sig_t;
+        data["px_mean"] = nan;
+        data["px_min"] = nan;
+        data["px_max"] = nan;
+        data["py_mean"] = nan;
+        data["py_min"] = nan;
+        data["py_max"] = nan;
+        data["pt_mean"] = nan;
+        data["pt_min"] = nan;
+        data["pt_max"] = nan;
         data["sig_px"] = sig_px;
         data["sig_py"] = sig_py;
         data["sig_pt"] = sig_pt;
@@ -569,7 +591,7 @@ namespace impactx::diagnostics
            data["emittance_2"] = emittance_2;
            data["emittance_3"] = emittance_3;
         }
-        //data["charge_C"] = 0.0;  // TODO with space charge
+        data["charge_C"] = nan;  // TODO: with space charge
 
         return data;
     }

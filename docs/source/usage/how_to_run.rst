@@ -9,7 +9,7 @@ When to run: Physics Models
 
 ImpactX most powerful and central physics model is its symplectic particle tracker with collective effects (space charge, CSR, wakefields, etc.).
 Additionally, ImpactX provides two simplified physics models to aid scientists through every step, from beamline inception to operation:
-tracking of the reference particle orbit, or tracking of the beam envelop (covariance matrix) through linearized transport maps.
+only tracking of the reference particle orbit, or tracking of the beam envelope (covariance matrix) through linearized transport maps.
 
 ================== =============== =============== ==================
 Mode               Use Case        Generality      Collective Effects

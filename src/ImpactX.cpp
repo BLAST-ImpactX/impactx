@@ -142,7 +142,7 @@ namespace impactx {
         else if (track == "envelope") {
             track_envelope();
         }
-        // TODO: reference_particle only tracking
+        // TODO: reference_orbit only tracking
     }
 
     void ImpactX::track_particles ()

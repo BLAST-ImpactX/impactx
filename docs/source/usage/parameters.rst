@@ -11,6 +11,20 @@ This documents how to use ImpactX with an input file (``impactx input_file.in``)
    A `parser <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parser>`__) is used for the right-hand-side of all input parameters that consist of one or more integers or floats, so expressions like ``beam.kin_energy = "2.+1."``, ``beam.lambdaY = beam.lambdaX`` and/or using user-defined constants are accepted.
 
 
+.. _running-cpp-parameters-mode:
+
+Physics Models
+--------------
+
+* ``algo.track`` (``string``)
+
+  Physical tracking model to run:
+
+  * ``particles`` (default): symplectic particle tracking
+  * ``reference_orbit``: *not yet implemented*, only tracking of the reference particle orbit
+  * ``envelope``: beam envelop (covariance matrix) tracking, through linearized transport maps
+
+
 .. _running-cpp-parameters-particle:
 
 Initial Beam Distributions

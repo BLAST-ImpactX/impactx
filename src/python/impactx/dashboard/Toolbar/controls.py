@@ -22,6 +22,7 @@ state.import_file_error = False
 state.importing_file = False
 
 
+<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
 # -----------------------------------------------------------------------------
 # Triggers/Controllers
 # -----------------------------------------------------------------------------
@@ -63,14 +64,33 @@ def on_import_file_change(import_file, **kwargs):
 
 
 class ToolbarElements:
+=======
+
+class InputToolbar:
+>>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py
     """
-    Helper functions to create
-    Vuetify UI elements for toolbar.
+    Contains toolbar elements for the Input page.
     """
 
+    @ctrl.trigger("export")
+    def on_export_click():
+        return input_file()
+
     @staticmethod
+<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
     def export_button():
         with vuetify.VBtn(
+=======
+    def export_input_data() -> vuetify.VIcon:
+        """
+        Creates an export button to download a .py file
+        containing the user's current input values.
+        """
+
+        return vuetify.VIcon(
+            "mdi-download",
+            style="color: #00313C;",
+>>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
             outlined=True,
             small=True,
@@ -81,8 +101,54 @@ class ToolbarElements:
             html.Span("Export")
 
     @staticmethod
-    def plot_options():
-        vuetify.VSelect(
+    def reset_inputs_button() -> vuetify.VBtn:
+        """
+        Creates a button to reset all input fields to
+        default values.
+        """
+
+        with vuetify.VBtn(
+            click=lambda: generalFunctions.reset_inputs("all"),
+            outlined=True,
+            small=True,
+        ):
+            vuetify.VIcon("mdi-refresh", left=True)
+            html.Span("Reset")
+
+
+class RunToolbar:
+    """
+    Contains toolbar elements for the Run page.
+    """
+
+    @staticmethod
+    def run_simulation_button() -> vuetify.VBtn:
+        """
+        Creates a button to run an ImpactX simulation
+        with the current user-provided inputs.
+        """
+
+        return vuetify.VBtn(
+            "Run Simulation",
+            style="background-color: #00313C; color: white; margin: 0 20px;",
+            click=ctrl.run_simulation,
+            disabled=("disableRunSimulationButton", True),
+        )
+
+
+class AnalyzeToolbar:
+    """
+    Contains toolbar elements for the Analyze page.
+    """
+
+    @staticmethod
+    def plot_options() -> vuetify.VSelect:
+        """
+        Creates a dropdown menu for selecting a plot
+        to visualize simulation results.
+        """
+
+        return vuetify.VSelect(
             v_model=("active_plot", "1D plots over s"),
             items=("plot_options",),
             label="Select plot to view",
@@ -92,16 +158,14 @@ class ToolbarElements:
             disabled=("disableRunSimulationButton", True),
         )
 
-    @staticmethod
-    def run_simulation_button():
-        vuetify.VBtn(
-            "Run Simulation",
-            style="background-color: #00313C; color: white; margin: 0 20px;",
-            click=ctrl.run_simulation,
-            disabled=("disableRunSimulationButton", True),
-        )
+
+class GeneralToolbar:
+    """
+    General tolbar elements.
+    """
 
     @staticmethod
+<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
     def import_button():
         vuetify.VFileInput(
             v_model=("import_file",),
@@ -157,11 +221,42 @@ class ToolbarElements:
 
     @staticmethod
     def dashboard_info():
+=======
+    def dashboard_toolbar(toolbar_name: str) -> None:
+>>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py
         """
-        Creates an alert box with dashboard information.
+        Builds and displays the appropriate toolbar
+        based on the selected dashboard section.
+
+        :param toolbar_name: The name of the dashboard section
+        for which the toolbar is needed.
         """
 
-        vuetify.VAlert(
+        toolbar_name = toolbar_name.lower()
+        if toolbar_name == "input":
+            (GeneralToolbar.dashboard_info(),)
+            vuetify.VSpacer()
+            InputToolbar.reset_inputs_button()
+            InputToolbar.export_input_data()
+        elif toolbar_name == "run":
+            (GeneralToolbar.dashboard_info(),)
+            (vuetify.VSpacer(),)
+            (RunToolbar.run_simulation_button(),)
+        elif toolbar_name == "analyze":
+            (GeneralToolbar.dashboard_info(),)
+            vuetify.VSpacer()
+            AnalyzeToolbar.plot_options()
+
+    @staticmethod
+    def dashboard_info() -> vuetify.VAlert:
+        """
+        Creates an informational alert box for the dashboard to
+        notify users that the ImpactX dashboard is still in development.
+
+        :return: A Vuetify alert component displaying the dashboard notice.
+        """
+
+        return vuetify.VAlert(
             "ImpactX Dashboard is provided as a preview and continues to be developed. "
             "Thus, it may not yet include all the features available in ImpactX.",
             type="info",
@@ -170,6 +265,7 @@ class ToolbarElements:
             v_model=("show_dashboard_alert", True),
             classes="mt-4",
         )
+<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
 
 
 class Toolbars:
@@ -195,3 +291,5 @@ class Toolbars:
             (ToolbarElements.dashboard_info(),)
             vuetify.VSpacer()
             ToolbarElements.plot_options()
+=======
+>>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py

@@ -20,7 +20,7 @@ from .Input.inputParameters.inputMain import InputParameters
 from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
 from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
 from .start import main
-from .Toolbar.toolbarMain import Toolbars
+from .Toolbar.controls import GeneralToolbar
 from .trame_setup import setup_server
 
 server, state, ctrl = setup_server()
@@ -72,11 +72,11 @@ def application():
         layout.title.hide()
         with layout.toolbar:
             with vuetify.Template(v_if="$route.path == '/Analyze'"):
-                Toolbars.dashboard_toolbar("analyze")
+                GeneralToolbar.dashboard_toolbar("analyze")
             with vuetify.Template(v_if="$route.path == '/Input'"):
-                Toolbars.dashboard_toolbar("input")
+                GeneralToolbar.dashboard_toolbar("input")
             with vuetify.Template(v_if="$route.path == '/Run'"):
-                Toolbars.dashboard_toolbar("run")
+                GeneralToolbar.dashboard_toolbar("run")
 
         with layout.drawer as drawer:
             drawer.width = 200

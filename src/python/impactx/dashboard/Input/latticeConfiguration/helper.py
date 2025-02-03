@@ -1,0 +1,159 @@
+from trame.widgets import html
+
+
+from .. import generalFunctions, InputComponents, NavigationComponents, setup_server, vuetify
+
+server, state, ctrl = setup_server()
+
+
+state.variables = [
+    {"name": "", "value": 0}
+    ]
+state.is_only_variable = True if len(state.variables) == 1 else False
+
+state.new_variable_name = ""
+state.new_variable_value = ""
+state.toolbar_settings = False
+
+
+@ctrl.add("add_variable")
+def on_add_change():
+    new_variable = { key: "" for key in state.variables[0] }
+    state.variables.append(new_variable)
+    state.dirty("variables")
+    LatticeVariableHandler.update_delete_availability()
+
+@ctrl.add("delete_variable")
+def on_delete_change(index) -> None:
+    """
+    Deleted the variable defined by the user
+    provided the index
+
+    :param index: The index of the variable
+    """
+    print(f"index is {index}")
+    state.variables.pop(index)
+    state.dirty("variables")
+    LatticeVariableHandler.update_delete_availability()
+    print(f"Deleted variable at index {index}. Updated list: {state.variables}")
+
+@ctrl.add("update_variable")
+def on_variable_change(key_name: str, index: int, event):
+    if key_name == "name":
+        LatticeVariableHandler.validate_variable_name(event, index)
+
+    state.variables[index][key_name] = event
+    print(state.variables)
+
+
+class LatticeVariableHandler:
+    """
+    Stores all functionality for dashboard variable referencing.
+    """
+
+    @staticmethod
+    def update_delete_availability() -> None:
+        """
+        Updates the state flag that controls whether the delete variable
+        functionality should be disabled. The delete functionality is disabled
+        when there is only one variable in the list.
+        """
+
+        state.is_only_variable = True if len(state.variables) == 1 else False
+        state.dirty("is_only_variable")
+
+    @staticmethod
+    def validate_variable_name(event, index):
+        new_name = event
+        names_except_current_index = [var["name"] for i, var in enumerate(state.variables) if i != index]
+
+        if new_name in names_except_current_index:
+            state.variable_error_message = "Repeated name"
+            return
+        else:
+            generalFunctions.clear_error_message("variable")
+
+    @staticmethod
+    def determine_if_variable(var_name):
+        found_index = next((i for i, var in enumerate(state.variables) if var["name"] == var_name), None)
+        return (found_index is not None, found_index)
+
+    @staticmethod
+    def variable_btn(**kwargs) -> vuetify.VBtn:
+        """
+        Creates a templated button.
+        """
+        return vuetify.VBtn(
+            icon=True,
+            small=True,
+            elevation=2,
+            **kwargs,
+        )
+
+    @staticmethod
+    def variable_btn_icon(mdi_name: str) -> vuetify.VIcon:
+        """
+        Creates a templated icon for the button.
+        """
+        return vuetify.VIcon(mdi_name,small=True)
+
+    @staticmethod
+    def dialog_settings():
+        dialog_name = "lattice_configuration_dialog"
+
+        NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Variables", "Defaults"])
+
+        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
+            with vuetify.VTabItem():
+                with vuetify.VCardText():
+                    with vuetify.VContainer(fluid=True):
+                        with vuetify.VRow(
+                            v_for="(variable, index) in variables",
+                            classes="align-center justify-center py-0",
+                        ):
+                            with vuetify.VCol(cols=5, classes="pr-0"):
+                                vuetify.VTextField(
+                                    placeholder="Name",
+                                    outlined=True,
+                                    dense=True,
+                                    background_color="grey lighten-4",
+                                    input=(ctrl.update_variable, "['name', index, $event]"),
+                                    error_messages=("variable_error_message", []),
+                                    hide_details=True,
+                                )
+                            with vuetify.VCol(cols=1, classes="px-0 text-center"):
+                                html.Span("=", classes="mx-0")
+                            with vuetify.VCol(cols=4, classes="pl-0"):
+                                vuetify.VTextField(
+                                    placeholder="Value",
+                                    outlined=True,
+                                    dense=True,
+                                    type="number",
+                                    background_color="grey lighten-4",
+                                    change=(ctrl.update_variable, "['value', index, $event]"),
+                                    hide_details=True,
+                                )
+                            with vuetify.VCol(cols=2, classes="d-flex"):
+                                with html.Div(classes="mr-2"):
+                                    with LatticeVariableHandler.variable_btn(
+                                        color="primary",
+                                        click=ctrl.add_variable,
+                                    ):
+                                        LatticeVariableHandler.variable_btn_icon("mdi-plus")
+                                with html.Div():
+                                    with LatticeVariableHandler.variable_btn(
+                                        color="secondary",
+                                        click=(ctrl.delete_variable, "[index]"),
+                                        disabled=("is_only_variable",)
+                                    ):
+                                        LatticeVariableHandler.variable_btn_icon("mdi-delete")
+
+            with vuetify.VTabItem():
+                with vuetify.VCardText():
+                    with vuetify.VRow():
+                        with vuetify.VCol(cols=3):
+                            InputComponents.text_field(
+                                label="nslice",
+                                v_model_name="nslice",
+                                change=(ctrl.nsliceDefaultChange, "['nslice', $event]"),
+                            )

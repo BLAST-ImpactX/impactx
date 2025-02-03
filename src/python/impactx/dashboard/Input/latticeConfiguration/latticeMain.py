@@ -10,13 +10,12 @@ from impactx import elements
 
 from .. import (
     CardComponents,
-    InputComponents,
-    NavigationComponents,
     generalFunctions,
     setup_server,
     vuetify,
 )
 
+from .helper import LatticeVariableHandler
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
@@ -61,7 +60,8 @@ def add_lattice_element():
         "parameters": [
             {
                 "parameter_name": parameter[0],
-                "parameter_default_value": parameter[1],
+                "ui_value": parameter[1],
+                "sim_value": parameter[1],
                 "parameter_type": parameter[2],
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
@@ -74,22 +74,6 @@ def add_lattice_element():
     state.selected_lattice_list.append(selected_lattice_element)
     generalFunctions.update_simulation_validation_status()
     return selected_lattice_element
-
-
-def update_latticeElement_parameters(
-    index, parameterName, parameterValue, parameterErrorMessage
-):
-    """
-    Updates parameter value and includes error message if user input is not valid
-    """
-
-    for param in state.selected_lattice_list[index]["parameters"]:
-        if param["parameter_name"] == parameterName:
-            param["parameter_default_value"] = parameterValue
-            param["parameter_error_message"] = parameterErrorMessage
-
-    generalFunctions.update_simulation_validation_status()
-    state.dirty("selected_lattice_list")
 
 
 # -----------------------------------------------------------------------------
@@ -108,11 +92,11 @@ def parameter_input_checker_for_lattice(latticeElement):
         if parameter["parameter_error_message"] == []:
             if parameter["parameter_type"] == "str":
                 parameter_input[parameter["parameter_name"]] = (
-                    f"'{parameter['parameter_default_value']}'"
+                    f"'{parameter['sim_value']}'"
                 )
             else:
                 parameter_input[parameter["parameter_name"]] = parameter[
-                    "parameter_default_value"
+                    "sim_value"
                 ]
         else:
             parameter_input[parameter["parameter_name"]] = 0
@@ -170,15 +154,23 @@ def on_add_lattice_element_click():
 
 
 @ctrl.add("updateLatticeElementParameters")
-def on_lattice_element_parameter_change(
-    index, parameter_name, parameter_value, parameter_type
-):
-    parameter_value, input_type = generalFunctions.determine_input_type(parameter_value)
-    error_message = generalFunctions.validate_against(parameter_value, parameter_type)
+def on_lattice_element_parameter_change(index, parameter_name, ui_value, parameter_type):
+    lattice_variable, variable_index = LatticeVariableHandler.determine_if_variable(ui_value)
+    if lattice_variable:
+        sim_value = state.variables[variable_index]["value"]
+    else:
+        sim_value, input_type = generalFunctions.determine_input_type(ui_value)
 
-    update_latticeElement_parameters(
-        index, parameter_name, parameter_value, error_message
-    )
+    error_message = generalFunctions.validate_against(sim_value, parameter_type)
+    
+    for param in state.selected_lattice_list[index]["parameters"]:
+        if param["parameter_name"] == parameter_name:
+            param["ui_value"] = ui_value
+            param["sim_value"] = sim_value
+            param["parameter_error_message"] = error_message
+
+    generalFunctions.update_simulation_validation_status()
+    state.dirty("selected_lattice_list")
 
 
 @ctrl.add("deleteLatticeElement")
@@ -241,7 +233,7 @@ class LatticeConfiguration:
         with vuetify.VDialog(
             v_model=("lattice_configuration_dialog_settings", False), width="500px"
         ):
-            LatticeConfiguration.dialog_settings()
+            LatticeVariableHandler.dialog_settings()
 
         with vuetify.VCard(style="width: 696px;"):
             CardComponents.input_header("Lattice Configuration")
@@ -305,28 +297,6 @@ class LatticeConfiguration:
             vuetify.VDivider()
             LatticeConfiguration.configuration_list()
 
-    @staticmethod
-    def dialog_settings():
-        """
-        Provides controls for lattice element configuration,
-        allowing dashboard users to define parameter defaults.
-        """
-        dialog_name = "lattice_configuration_dialog_tab_settings"
-
-        NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"])
-        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol(cols=3):
-                            InputComponents.text_field(
-                                label="nslice",
-                                v_model_name="nslice",
-                                change=(
-                                    ctrl.nsliceDefaultChange,
-                                    "['nslice', $event]",
-                                ),
-                            )
 
     # -----------------------------------------------------------------------------
     # lattice_configuration_lsit
@@ -370,7 +340,7 @@ class LatticeConfiguration:
                 ):
                     vuetify.VTextField(
                         label=("parameter.parameter_name",),
-                        v_model=("parameter.parameter_default_value",),
+                        v_model=("parameter.ui_value",),
                         change=(
                             ctrl.updateLatticeElementParameters,
                             "[index, parameter.parameter_name, $event, parameter.parameter_type]",

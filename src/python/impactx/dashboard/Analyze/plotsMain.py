@@ -6,15 +6,11 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-import asyncio
 import glob
-import io
 import os
 
 from trame.widgets import matplotlib, plotly, vuetify
-from wurlitzer import pipes
 
-from ..simulation import run_simulation
 from ..trame_setup import setup_server
 from .analyzeFunctions import AnalyzeFunctions
 from .plot_ParameterEvolutionOverS.overS import line_plot_1d
@@ -137,24 +133,6 @@ def update_plot():
         state.show_table = False
 
 
-def run_simulation_impactX():
-    buf = io.StringIO()
-
-    with pipes(stdout=buf, stderr=buf):
-        run_simulation()
-
-    buf.seek(0)
-    lines = [line.strip() for line in buf.getvalue().splitlines()]
-
-    # Use $nextTick to ensure the terminal is fully rendered before printing
-    async def print_lines():
-        for line in lines:
-            ctrl.terminal_print(line)
-        ctrl.terminal_print("Simulation complete.")
-
-    asyncio.create_task(print_lines())
-
-
 # -----------------------------------------------------------------------------
 # State changes
 # -----------------------------------------------------------------------------
@@ -171,14 +149,6 @@ def on_header_selection_change(selected_headers, **kwargs):
 @state.change("filtered_data", "active_plot")
 def on_filtered_data_change(**kwargs):
     update_plot()
-
-
-@ctrl.add("run_simulation")
-def run_simulation_and_store():
-    state.plot_options = available_plot_options(simulationClicked=True)
-    run_simulation_impactX()
-    update_plot()
-    load_dataTable_data()
 
 
 # -----------------------------------------------------------------------------

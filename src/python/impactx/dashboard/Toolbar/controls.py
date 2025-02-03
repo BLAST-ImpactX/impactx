@@ -8,7 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import html, vuetify
 
+from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.generalFunctions import generalFunctions
+from ..Run.controls import execute_impactx_sim
 from ..trame_setup import setup_server
 from .exportTemplate import input_file
 from .importParser import DashboardParser
@@ -121,6 +123,13 @@ class RunToolbar:
     Contains toolbar elements for the Run page.
     """
 
+    @ctrl.add("begin_sim")
+    def run():
+        state.plot_options = available_plot_options(simulationClicked=True)
+        execute_impactx_sim()
+        update_plot()
+        load_dataTable_data()
+
     @staticmethod
     def run_simulation_button() -> vuetify.VBtn:
         """
@@ -131,7 +140,7 @@ class RunToolbar:
         return vuetify.VBtn(
             "Run Simulation",
             style="background-color: #00313C; color: white; margin: 0 20px;",
-            click=ctrl.run_simulation,
+            click=ctrl.begin_sim,
             disabled=("disableRunSimulationButton", True),
         )
 

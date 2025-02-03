@@ -352,6 +352,10 @@ namespace impactx {
     {
         // TODO: move whole body out in separate file
 
+        BL_PROFILE("ImpactX::track_envelope");
+
+        //validate();  //double-check what this does
+
         // verbosity
         amrex::ParmParse pp_impactx("impactx");
         int verbose = 1;
@@ -374,9 +378,9 @@ namespace impactx {
         amrex::ParmParse pp_diag("diag");
         bool diag_enable = true;
         pp_diag.queryAdd("enable", diag_enable);
-        //if (verbose > 0) {
-        //    amrex::Print() << " Diagnostics: " << diag_enable << "\n";
-        //}
+        if (verbose > 0) {
+            amrex::Print() << " Diagnostics: " << diag_enable << "\n";
+        }
 
         int file_min_digits = 6;
         if (diag_enable)
@@ -391,40 +395,72 @@ namespace impactx {
 
         }
 
-        // loop over all beamline elements
-        for (auto & element_variant : m_lattice)
-        {
-            // TODO: later on, we can add element slicing and space charge kicking in this loop
-            step++;
+        // periods through the lattice
+        int num_periods = 1;
+        amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
 
-            std::visit([&ref, &cm](auto&& element){
-                // push reference particle in global coordinates
-                {
-                    BL_PROFILE("impactx::Push::RefPart");
-                    element(ref);
-                }
+        for (int period=0; period < num_periods; ++period) {
+            // loop over all beamline elements
+            for (auto &element_variant: m_lattice) {
+                // update element edge of the reference particle
+                amr_data->m_particle_container->SetRefParticleEdge();
 
-                // push Covariance Matrix
-                element(cm, ref);
+                // number of slices used for the application of space charge
+                int nslice = 1;
+                amrex::ParticleReal slice_ds; // in meters
+                std::visit([&nslice, &slice_ds](auto &&element) {
+                    nslice = element.nslice();
+                    slice_ds = element.ds() / nslice;
+                }, element_variant);
 
-            }, element_variant);
+                // sub-steps for space charge within the element
+                for (int slice_step = 0; slice_step < nslice; ++slice_step) {
+                    BL_PROFILE("ImpactX::evolve::slice_step");
+                    step++;
+                    if (verbose > 0) {
+                        amrex::Print() << " ++++ Starting step=" << step
+                                       << " slice_step=" << slice_step << "\n";
+                    }
 
-            // slice-step diagnostics
-            bool slice_step_diagnostics = false;
-            pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
+                    std::visit([&ref, &cm](auto&& element){
+                        // push reference particle in global coordinates
+                        {
+                            BL_PROFILE("impactx::Push::RefPart");
+                            element(ref);
+                        }
 
-            if (diag_enable && slice_step_diagnostics) {
-                // print slice step reference particle to file
-                diagnostics::DiagnosticOutput(ref, "diags/ref_particle", step, true);
+                        // push Covariance Matrix
+                        element(cm, ref);
 
-                // print slice step reduced beam characteristics to file
-                diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics", step, true);
+                    }, element_variant);
 
-            }
+                    // just prints an empty newline at the end of the slice_step
+                    if (verbose > 0) {
+                        amrex::Print() << "\n";
+                    }
 
-            // inputs: unused parameters (e.g. typos) check after step 1 has finished
-            if (!early_params_checked) { early_params_checked = early_param_check(); }
-        }
+                    // slice-step diagnostics
+                    bool slice_step_diagnostics = false;
+                    pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
+
+
+                    if (diag_enable && slice_step_diagnostics) {
+                        // print slice step reference particle to file
+                        diagnostics::DiagnosticOutput(ref, "diags/ref_particle", step, true);
+
+                        // print slice step reduced beam characteristics to file
+                        diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics", step, true);
+
+                    }
+
+                    // inputs: unused parameters (e.g. typos) check after step 1 has finished
+                    if (!early_params_checked) { early_params_checked = early_param_check(); }
+
+                } // end in-element space-charge slice-step loop
+
+            } // end beamline element loop
+
+        } // end periods though the lattice loop
 
         if (diag_enable)
         {
@@ -434,19 +470,10 @@ namespace impactx {
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics_final", step);
 
-            // output particles lost in apertures
-            if (amr_data->m_particles_lost->TotalNumberOfParticles() > 0)
-            {
-                std::string openpmd_backend = "default";
-                pp_diag.queryAdd("backend", openpmd_backend);
-
-                diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
-                output_lost(*amr_data->m_particles_lost, 0, 0);
-                output_lost.finalize();
-            }
         }
 
         // loop over all beamline elements & finalize them
         finalize_elements();
     }
+
 } // namespace impactx

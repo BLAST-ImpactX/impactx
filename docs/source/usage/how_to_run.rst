@@ -3,87 +3,89 @@
 Run ImpactX
 ===========
 
-In order to run a new simulation:
 
-#. create a **new directory**, where the simulation will be run
-#. make sure the ImpactX **executable** is either copied into this directory or in your ``PATH`` `environment variable <https://en.wikipedia.org/wiki/PATH_(variable)>`__
-#. add an **inputs file** and on :ref:`HPC systems <install-hpc>` a **submission script** to the directory
-#. run
+When to run: Physics Models
+---------------------------
 
-1. Run Directory
-----------------
+ImpactX most powerful and central physics model is its symplectic particle tracker with collective effects (space charge, CSR, wakefields, etc.).
+Additionally, ImpactX provides two simplified physics models to aid scientists through every step, from beamline inception to operation:
+tracking of the reference particle orbit, or tracking of the beam envelop (covariance matrix) through linearized transport maps.
 
-On Linux/macOS, this is as easy as this
+================== =============== =============== ==================
+Mode               Use Case        Generality      Collective Effects
+================== =============== =============== ==================
+Particle Tracking  Full Dynamics   Most general    Supported
+Reference Tracking Early Design    Reference orbit No
+Envelope Tracking  Rapid Scans     Linearized      Not yet
+================== =============== =============== ==================
 
-.. code-block:: bash
 
-   mkdir -p <run_directory>
+What to run: User Interfaces
+----------------------------
 
-Where ``<run_directory>`` by the actual path to the run directory.
+ImpactX can be run in three major interfaces:
 
-2. Executable
--------------
+#. As a Python module (script),
+#. As an executable application with a key-value input file, or
+#. From a :ref:`graphical user interface (dashboard) <usage-dashboard>`.
 
-If you installed ImpactX with a :ref:`package manager <install-users>`, a ``impactx``-prefixed executable will be available as a regular system command to you.
-Depending on the choosen build options, the name is suffixed with more details.
-Try it like this:
+While each of these interfaces provide access to the same physics models, you might pick one or the other for specific needs, experience and workflows:
 
-.. code-block:: bash
+==========  =================  ========================= =========== =========== ============== ===========
+Interface   Experience         Good For                  Interactive Extensible  Jupyter        HPC Support
+==========  =================  ========================= =========== =========== ============== ===========
+Python      Beginner-Advanced  Automation, AI/ML         Yes         Yes         Yes            Yes
+Application Advanced           Minimal requirements      No          No          Terminal       Yes
+Dashboard   Beginner           Learning, Control-Systems Yes         No          Yes            Not yet
+==========  =================  ========================= =========== =========== ============== ===========
 
-   impactx<TAB>
 
-Hitting the ``<TAB>`` key will suggest available ImpactX executables as found in your ``PATH`` `environment variable <https://en.wikipedia.org/wiki/PATH_(variable)>`__.
+How to run
+----------
 
-If you :ref:`compiled the code yourself <install-developers>`, the ImpactX executable is stored in the source folder under ``build/bin``.
-We also create a symbolic link that is just called ``impactx`` that points to the last executable you built, which can be copied, too.
-Copy the **executable** to this directory:
+After installing ImpactX, run :ref:`one of our examples <usage-examples>`, e.g., :ref:`a FODO cell <examples-fodo>`, like this:
 
-.. code-block:: bash
+.. tab-set::
 
-   cp build/bin/<impactx_executable> <run_directory>/
+   .. tab-item:: Python: Script
 
-where ``<impactx_executable>`` should be replaced by the actual name of the executable (see above) and ``<run_directory>`` by the actual path to the run directory.
+      .. code-block:: bash
 
-3. Inputs
----------
+         python run_fodo.py
 
-Add an **input file** in the directory (see :ref:`examples <usage-examples>` and :ref:`parameters <running-cpp-parameters>`).
-This file contains the numerical and physical parameters that define the situation to be simulated.
+   .. tab-item:: Executable: Input File
 
-On :ref:`HPC systems <install-hpc>`, also copy and adjust a submission script that allocated computing nodes for you.
-Please :ref:`reach out to us <contact>` if you need help setting up a template that runs with ideal performance.
+      .. code-block:: bash
 
-4. Run
-------
+         impactx input_fodo.in
 
-**Run** the executable, e.g. with MPI:
+   .. tab-item:: Graphical User Interface
 
-.. code-block:: bash
+      .. code-block:: bash
 
-   cd <run_directory>
+         impactx-dashboard
 
-   # run with an inputs file:
-   mpirun -np <n_ranks> ./impactx <input_file>
 
-or
+Where to run
+------------
 
-.. code-block:: bash
+ImpactX supports running on your laptop, alongside edge computers in control systems, in the browser as a dashboard or Jupyter application, on cloud computers, or supercomputers (HPC).
+This enables leveraging ImpactX through any stage of a particle accelerator's life cycle.
 
-   # run with a Python input script:
-   mpirun -np <n_ranks> python <python_script>
+==================== =================================
+Compute Location     Good for
+==================== =================================
+Local Computer       Initial designs
+Edge/Control System  Operations, Digital Twins
+Supercomputer        Large Design Studies, ML training
+==================== =================================
 
-Here, ``<n_ranks>`` is the number of MPI ranks used, and ``<input_file>`` is the name of the input file (``<python_script>`` is the name of the :ref:`Python <usage-python>` script).
-Note that the actual executable might have a longer name, depending on build options.
+Additionally, ImpactX runs on CPUs (from AMD, Intel, IBM, ARM, etc.) and modern hardware like GPUs (from Nvidia, AMD or Intel).
+As a rough guidance, they are best used for:
 
-We used the copied executable in the current directory (``./``); if you installed with a package manager, skip the ``./`` because ImpactX is in your ``PATH``.
-
-On an :ref:`HPC system <install-hpc>`, you would instead submit the :ref:`job script <install-hpc>` at this point, e.g. ``sbatch <submission_script>`` (SLURM on Perlmutter/NERSC) or ``bsub <submission_script>`` (LSF on Summit/OLCF).
-
-.. tip::
-
-   In the :ref:`next sections <running-cpp-parameters>`, we will explain parameters of the ``<input_file>``.
-   You can overwrite all parameters inside this file also from the command line, e.g.:
-
-   .. code-block:: bash
-
-      mpirun -np 4 ./impactx <input_file> max_step=10 amr.n_cell=64 64 128
+======== ========================================================= ======= =================
+Hardware Resolution needs                                          AI/ML   Energy Efficiency
+======== ========================================================= ======= =================
+CPUs     Small (<10M particles) runs and coarse collective effects Yes     Low
+GPUs     Many (>10M) particles and/or detailed collective effects  Fastest High
+======== ========================================================= ======= =================

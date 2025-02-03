@@ -31,13 +31,13 @@ ImpactX can be run in three major interfaces:
 
 While each of these interfaces provide access to the same physics models, you might pick one or the other for specific needs, experience and workflows:
 
-==========  =================  ========================= =========== =========== ============== ===========
-Interface   Experience         Good For                  Interactive Extensible  Jupyter        HPC Support
-==========  =================  ========================= =========== =========== ============== ===========
-Python      Beginner-Advanced  Automation, AI/ML         Yes         Yes         Yes            Yes
-Application Advanced           Minimal requirements      No          No          Terminal       Yes
-Dashboard   Beginner           Learning, Control-Systems Yes         No          Yes            Not yet
-==========  =================  ========================= =========== =========== ============== ===========
+=========== ================= ========================= =========== =========== ============== ===========
+Interface   Experience        Good For                  Interactive Extensible  Jupyter        HPC Support
+=========== ================= ========================= =========== =========== ============== ===========
+Python      Beginner-Advanced Automation, AI/ML         Yes         Yes         Yes            Yes
+Application Advanced          Minimal requirements      No          No          Terminal       Yes
+Dashboard   Beginner          Learning, Control-Systems Yes         No          Yes            Not yet
+=========== ================= ========================= =========== =========== ============== ===========
 
 
 How to run

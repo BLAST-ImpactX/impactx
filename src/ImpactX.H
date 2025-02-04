@@ -17,6 +17,8 @@
 
 #include <AMReX_REAL.H>
 
+#include <clad/Differentiator/Differentiator.h>
+
 #include <list>
 #include <memory>
 
@@ -160,6 +162,14 @@ namespace impactx
          */
         bool m_grids_initialized = false;
     };
+
+    amrex::ParticleReal
+    evaluate_lattice (amrex::ParticleReal q1_k, amrex::ParticleReal q2_k);
+
+    void my_run ();
+
+    // global var until functors work better
+    static ImpactX* active_sim = nullptr;
 
 } // namespace impactx
 

@@ -67,9 +67,11 @@ class LatticeVariableHandler:
         new_name = event
         names_except_current_index = [var["name"] for i, var in enumerate(state.variables) if i != index]
 
-        if new_name in names_except_current_index:
-            state.variable_error_message = "Repeated name"
-            return
+        if len(new_name) > 0 and not new_name[0].isalpha():
+            state.variable_error_message = "Must begin with an alphabetical letter."
+            if new_name in names_except_current_index:
+                state.variable_error_message = "Repeated name."
+                return
         else:
             generalFunctions.clear_error_message("variable")
 

@@ -136,8 +136,27 @@ namespace impactx
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            // edge focusing matrix elements (zero gap)
+            amrex::ParticleReal const R21 = std::tan(m_psi)/m_rc;
+            amrex::ParticleReal R43 = -R21;
+            amrex::ParticleReal vf = 0;
+            
+            // first-order effect of nonzero gap
+            auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
+            vf = (1.0_prt + std::pow(sin_psi, 2)) / std::pow(cos_psi, 3);
+            vf *= m_g * m_K2/(std::pow(m_rc,2));
+            R43 += vf;
+         
+            // set non-identity matrix elements
+            R(2,1) = R21;
+            R(4,3) = R43;
+
+            return R;
         }
 
         amrex::ParticleReal m_psi; //! pole face angle in rad

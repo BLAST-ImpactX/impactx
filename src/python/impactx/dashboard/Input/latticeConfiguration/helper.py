@@ -40,8 +40,8 @@ def on_delete_change(index) -> None:
 @ctrl.add("update_variable")
 def on_variable_change(key_name: str, index: int, event):
     if key_name == "name":
-        LatticeVariableHandler.validate_variable_name(event, index)
-
+        if LatticeVariableHandler.validate_variable_name(event, index):
+            return
     state.variables[index][key_name] = event
     print(state.variables)
 
@@ -69,9 +69,10 @@ class LatticeVariableHandler:
 
         if len(new_name) > 0 and not new_name[0].isalpha():
             state.variable_error_message = "Must begin with an alphabetical letter."
-            if new_name in names_except_current_index:
-                state.variable_error_message = "Repeated name."
-                return
+            return True
+        elif new_name in names_except_current_index:
+            state.variable_error_message = "Repeated name."
+            return True
         else:
             generalFunctions.clear_error_message("variable")
 

@@ -17,9 +17,21 @@
 #   include <mpi.h>
 #endif
 
+#include <clad/Differentiator/Differentiator.h>
+
+#include <iostream>
+
+
+double fn(double x, double y) {
+    return x*x*y + y*y;
+}
 
 int main(int argc, char* argv[])
 {
+    auto fn_dx = clad::differentiate(fn, "x");
+    fn_dx.dump();
+    fn_dx.execute(5, 3);
+
 #if defined(AMREX_USE_MPI)
     AMREX_ALWAYS_ASSERT(MPI_SUCCESS == MPI_Init(&argc, &argv));
 #endif

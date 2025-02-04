@@ -141,6 +141,7 @@ class LatticeVariableHandler:
                                     with LatticeVariableHandler.variable_btn(
                                         color="primary",
                                         click=ctrl.add_variable,
+                                        v_show="index === variables.length - 1"
                                     ):
                                         LatticeVariableHandler.variable_btn_icon("mdi-plus")
                                 with html.Div():

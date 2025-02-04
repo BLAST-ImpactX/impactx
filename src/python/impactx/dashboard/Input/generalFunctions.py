@@ -25,22 +25,6 @@ server, state, ctrl = setup_server()
 class generalFunctions:
 
     @staticmethod
-    def clear_error_message(name) -> None:
-        """
-        Witth the provided name, clears the state's error message.
-        Typically, the name is the inputs state name.
-
-        :param name: The name of the error_message state.
-        """
-
-        clear_message = ""
-        setattr(state,f"{name}_error_message", clear_message)
-        state.dirty(f"{name}_error_message")
-        print(getattr(state, f"{name}_error_message"))
-
-
-
-    @staticmethod
     def documentation(section_name):
         """
         Opens a tab to the specified section link in the documentation.

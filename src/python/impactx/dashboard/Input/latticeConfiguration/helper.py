@@ -6,13 +6,9 @@ from .. import generalFunctions, InputComponents, NavigationComponents, setup_se
 server, state, ctrl = setup_server()
 
 
-state.variables = [
-    {"name": "", "value": 0}
-    ]
-state.is_only_variable = True if len(state.variables) == 1 else False
-
-state.new_variable_name = ""
-state.new_variable_value = ""
+init_value = ""
+state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
+state.is_only_variable = len(state.variables) == 1
 state.toolbar_settings = False
 
 
@@ -63,18 +59,38 @@ class LatticeVariableHandler:
         state.dirty("is_only_variable")
 
     @staticmethod
-    def validate_variable_name(event, index):
-        new_name = event
-        names_except_current_index = [var["name"] for i, var in enumerate(state.variables) if i != index]
+    def get_duplicate_indexes(new_name, current_index):
+        duplicates = [
+            index
+            for index, var in enumerate(state.variables)
+            if var["name"] == new_name and index != current_index
+        ]
 
-        if len(new_name) > 0 and not new_name[0].isalpha():
-            state.variable_error_message = "Must begin with an alphabetical letter."
+        if duplicates:
+            duplicates.append(current_index)
+        return duplicates
+
+
+    @staticmethod
+    def validate_variable_name(new_name, index):
+
+        def set_var_error_message(message):
+            state.variables[index]["error_message"] = message
+            state.dirty("variables")
+
+        alpha = new_name and new_name[0].isalpha()
+        duplicate_indexes = LatticeVariableHandler.get_duplicate_indexes(new_name, index)
+        send_error = set_var_error_message("error")
+
+        if not alpha: 
+            send_error
             return True
-        elif new_name in names_except_current_index:
-            state.variable_error_message = "Repeated name."
+        elif duplicate_indexes:
+            for index in duplicate_indexes:
+                send_error
             return True
         else:
-            generalFunctions.clear_error_message("variable")
+           set_var_error_message("")
 
     @staticmethod
     def determine_if_variable(var_name):
@@ -121,7 +137,7 @@ class LatticeVariableHandler:
                                     dense=True,
                                     background_color="grey lighten-4",
                                     input=(ctrl.update_variable, "['name', index, $event]"),
-                                    error_messages=("variable_error_message", []),
+                                    error_messages=("variable.error_message", []),
                                     hide_details=True,
                                 )
                             with vuetify.VCol(cols=1, classes="px-0 text-center"):

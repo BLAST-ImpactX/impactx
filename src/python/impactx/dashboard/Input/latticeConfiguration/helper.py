@@ -41,6 +41,14 @@ def on_variable_change(key_name: str, index: int, event):
     state.variables[index][key_name] = event
     print(state.variables)
 
+@ctrl.add("reset_variables")
+def on_reset_variables():
+    """
+    Resets the variables list.
+    """
+    state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
+    state.dirty("variables")
+    LatticeVariableHandler.update_delete_availability()
 
 class LatticeVariableHandler:
     """
@@ -167,7 +175,14 @@ class LatticeVariableHandler:
                                         disabled=("is_only_variable",)
                                     ):
                                         LatticeVariableHandler.variable_btn_icon("mdi-delete")
-
+                        with vuetify.VRow(classes="mt-2"):
+                            with vuetify.VCol():
+                                vuetify.VBtn(
+                                    "Reset Variables",
+                                    color="accent",
+                                    click=ctrl.reset_variables,
+                                    block=True,
+                                )
             with vuetify.VTabItem():
                 with vuetify.VCardText():
                     with vuetify.VRow():

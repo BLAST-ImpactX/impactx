@@ -20,6 +20,15 @@ cmake --build build -j 6
 
 cd build
 ninja check-enzyme
+
+# linker and lld and lto enforcement in CMake is hard...
+cd ..
+mkdir mylld
+cd mylld
+ln -s /usr/lib/llvm-16/bin/lld-link lld
+ln -s $(which ld.lld-16) ld.lld  # note: not sufficient yet... somehow hard-coded in compiler detection... use docker
+                                 # manually linking /usr/bin/ld.lld-16 as /usr/bin/ld.lld works...
+export PATH=$PWD:$PATH
 ```
 
 
@@ -43,11 +52,6 @@ export CXX="clang++-16"
 
 # one TU: Clang Plugin
 export CXXFLAGS="-fplugin=$HOME/src/Enzyme/build/Enzyme/ClangEnzyme-16.so"
-
-# many TU: LDD Plugin
-# https://github.com/EnzymeAD/Enzyme/blob/main/enzyme/Enzyme/CMakeLists.txt
-#export CXXFLAGS=""  # -flto
-#export LDFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto -Wl,-mllvm -Wl,-load=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so -Wl,--load-pass-plugin=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so"
 ```
 
 With the active developer env above, inside the ImpactX source dir:
@@ -68,6 +72,8 @@ cmake --build build -j 6
 
 ## Compile (LLDEnzyme, multiple TUs)
 
+TODO: redo this part using https://github.com/EnzymeAD/enzyme-dev-docker because ld, lld, ld.ldd with the non-system default is too tricky to get right in CMake (i.e. compiler detection).
+
 ### Always
 
 ```bash
@@ -77,7 +83,7 @@ export CXX="clang++-16"
 
 # many TU: LDD Plugin
 # https://github.com/EnzymeAD/Enzyme/blob/main/enzyme/Enzyme/CMakeLists.txt
-export CXXFLAGS=""  # -flto
+export CXXFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto"
 export LDFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto -Wl,-mllvm -Wl,-load=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so -Wl,--load-pass-plugin=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so"
 ```
 

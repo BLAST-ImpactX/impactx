@@ -1,154 +1,108 @@
-# ImpactX
+# Differentiable ImpactX
 
-[![CI Status](https://github.com/BLAST-ImpactX/impactx/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/BLAST-ImpactX/impactx/actions/workflows/ubuntu.yml)
-[![Documentation Status](https://readthedocs.org/projects/impactx/badge/?version=latest)](https://impactx.readthedocs.io)
-[![License ImpactX](https://img.shields.io/badge/license-BSD--3--Clause--LBNL-blue.svg)](https://spdx.org/licenses/BSD-3-Clause-LBNL.html)
-[![Supported Platforms](https://img.shields.io/badge/platforms-linux%20|%20osx%20|%20win-blue)](https://impactx.readthedocs.io/en/latest/install/users.html)  
-[![DOI (source)](https://img.shields.io/badge/DOI%20(source)-10.5281/zenodo.6954922-blue.svg)](https://doi.org/10.5281/zenodo.6954922)
-[![DOI (paper)](https://img.shields.io/badge/DOI%20(paper)-10.18429%2FJACoW--NAPAC2022--TUYE2-blue.svg)](https://doi.org/10.18429/JACoW-NAPAC2022-TUYE2)  
-[![Language: C++17](https://img.shields.io/badge/language-C%2B%2B17-orange.svg)](https://isocpp.org/)
-[![Language: Python](https://img.shields.io/badge/language-Python-orange.svg)](https://python.org/)
+## Prepare Developer Environment (Ubuntu 24.02 w/ Clang/LLVM 16)
 
-ImpactX: an s-based beam dynamics code including space charge effects.
-This is the next generation of the [IMPACT-Z](https://github.com/impact-lbl/IMPACT-Z) code.
+### Once
+```bash
+# Ref: https://github.com/EnzymeAD/enzyme-dev-docker/blob/main/Dockerfile
+sudo apt install llvm-dev clang-16 lld-16 zlib1g-dev libzstd-dev git automake autoconf cmake make lldb-16 ninja-build build-essential libtool llvm-16-dev libclang-16-dev libomp-16-dev libblas-dev libeigen3-dev libboost-dev python3
+python3 -m pip install --break-system-package pipx pathlib2
+python3 -m pipx install lit cmake
 
-## Documentation
+export CC="clang-16"
+export CXX="clang++-16"
 
-In order to learn how to install and run the code, please see the online documentation:
-https://impactx.readthedocs.io
+# Ref: https://enzyme.mit.edu/Installation/
+git clone https://github.com/EnzymeAD/Enzyme ~/src/Enzyme
+cd ~/src/Enzyme
+cmake --fresh -G Ninja -S enzyme -B build -DLLVM_DIR=/usr/lib/llvm-16/lib/cmake/llvm -DLLVM_EXTERNAL_LIT=$(which lit)
+cmake --build build -j 6
 
-* ImpactX Doxygen: https://impactx.readthedocs.io/en/latest/_static/doxyhtml
-* AMReX Doxygen: https://amrex-codes.github.io/amrex/doxygen
-* WarpX Doxygen: https://warpx.readthedocs.io/en/latest/_static/doxyhtml
+cd build
+ninja check-enzyme
+```
 
-## Contributing
 
-[![AMReX](https://img.shields.io/static/v1?label="runs%20on"&message="AMReX"&color="blueviolet")](https://amrex-codes.github.io/)
+## Compile Options
 
-Our workflow is described in [CONTRIBUTING.rst](CONTRIBUTING.rst).
+From the [homepage](https://enzyme.mit.edu/getting_started/UsingEnzyme/):
+> Enzyme supports differentiating C/C++ code through ClangEnzyme and LLDEnzyme as compiler and linker plugins, respectively.
+> Clang gives our plugin more flexibility in adding and ordering optimization passes than LLD and therefore using ClangEnzyme could result in better performance than LLDEnzyme.
+> However, ClangEnzyme can only differentiate one compilation unit at a time and will therefore fail if the function which you try to differentiate calls functions in other compilation units (generally other .c or .cpp files).
+> In these cases we recommend the use of LLDEnzyme in combination with LTO.
 
-## Developer Environment
 
-Please see our [developer installation section](https://impactx.readthedocs.io/en/latest/install/dependencies.html#install-dependencies) of the documentation for an easy install of our software dependencies.
+## Compile (ClangEnzyme, one TU)
 
-## Get the Source Code
-
-Before you start, you will need a copy of the ImpactX source code:
+### Always
 
 ```bash
-git clone git@github.com:BLAST-ImpactX/impactx.git
-cd impactx
+export PATH=$HOME/.local/pipx/venvs/cmake/bin:$PATH
+export CC="clang-16"
+export CXX="clang++-16"
+
+# one TU: Clang Plugin
+export CXXFLAGS="-fplugin=$HOME/src/Enzyme/build/Enzyme/ClangEnzyme-16.so"
+
+# many TU: LDD Plugin
+# https://github.com/EnzymeAD/Enzyme/blob/main/enzyme/Enzyme/CMakeLists.txt
+#export CXXFLAGS=""  # -flto
+#export LDFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto -Wl,-mllvm -Wl,-load=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so -Wl,--load-pass-plugin=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so"
 ```
 
-## Compile
+With the active developer env above, inside the ImpactX source dir:
+```bash
+cmake --fresh \
+  -S .        \
+  -B build    \
+  -DImpactX_UNITY_BUILD=ON  \
+  -DImpactX_MPI=OFF       \
+  -DImpactX_COMPUTE=NOACC \
+  -DImpactX_OPENPMD=OFF   \
+  -DCMAKE_LINKER_TYPE=LLD \
+  -DCMAKE_LINKER=/usr/lib/llvm-16/bin/lld-link
+
+cmake --build build -j 6
+```
+
+
+## Compile (LLDEnzyme, multiple TUs)
+
+### Always
 
 ```bash
-# find dependencies & configure
-cmake -S . -B build
+export PATH=$HOME/.local/pipx/venvs/cmake/bin:$PATH
+export CC="clang-16"
+export CXX="clang++-16"
 
-# compile
-cmake --build build -j 4
+# many TU: LDD Plugin
+# https://github.com/EnzymeAD/Enzyme/blob/main/enzyme/Enzyme/CMakeLists.txt
+export CXXFLAGS=""  # -flto
+export LDFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto -Wl,-mllvm -Wl,-load=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so -Wl,--load-pass-plugin=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so"
 ```
 
-That's all!
-ImpactX binaries are now in `build/bin/`.
-Most people execute these binaries directly or copy them out.
-
-You can inspect and modify build options after running `cmake -S . -B` build with either
-
+With the active developer env above, inside the ImpactX source dir:
 ```bash
-ccmake build
+cmake --fresh \
+  -S .        \
+  -B build    \
+  -DImpactX_UNITY_BUILD=ON  \
+  -DImpactX_MPI=OFF       \
+  -DImpactX_COMPUTE=NOACC \
+  -DImpactX_OPENPMD=OFF   \
+  -DCMAKE_LINKER_TYPE=LLD \
+  -DCMAKE_LINKER=/usr/lib/llvm-16/bin/lld-link
+
+# note: -DCMAKE_LINKER_TYPE=LLD appends general lld not necessarily the right version
+# -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+
+cmake --build build -j 6
 ```
 
-or by adding arguments with `-D<OPTION>=<VALUE>` to the first CMake call, e.g.:
 
+## Test/Run
+
+With the active developer env above:
 ```bash
-cmake -S . -B build -DImpactX_COMPUTE=CUDA -DImpactX_MPI=OFF
+./build/bin/impactx examples/fodo/input_fodo.in
 ```
-
-### Python Compile
-
-```bash
-# find dependencies & configure
-cmake -S . -B build -DImpactX_PYTHON=ON
-
-# compile & install
-cmake --build build -j 4 --target pip_install
-```
-
-## Run
-
-An executable ImpactX binary with the current compile-time options encoded in its file name will be created in `build/bin/`.
-
-Additionally, a symbolic link named `impactx` can be found in that directory, which points to the last built ImpactX executable.
-
-The command-line syntax for this executable is:
-```console
-Usage: impactx <inputs-file> [some.overwritten.option=value]...
-
-Mandatory arguments (remove the <>):
-  inputs-file     the path to an input file; can be relative to the current
-                  working directory or absolute.
-                  Example: input_fodo.in
-
-Optional arguments (remove the []):
-  options         this can overwrite any line in an inputs-file
-                  Example: quad1.ds=0.5 sbend1.rc=1.5
-
-Examples:
-  In the current working directory, there is a file "input_fodo.in" and the
-  "impactx" executable.
-  The line to execute would look like this:
-    ./impactx input_fodo.in
-
-  In the current working directory, there is a file "input_fodo.in" and the
-  executable "impactx" is in a directory that is listed in the "PATH"
-  environment variable.
-  The line to execute would look like this:
-    impactx input_fodo.in
-
-  In the current working directory, there is a file "input_fodo.in" and the
-  "impactx" executable. We want to overwrite the segment length of the beamline
-  element "quad1" that is already defined in it. We also want to change the
-  radius of curvature of the bending magnet "sbend1" to a different value than
-  in the file "input_fodo.in".
-  The line to execute would look like this:
-    ./impactx input_fodo.in quad1.ds=0.5 sbend1.rc=1.5
-```
-
-## Test
-
-In order to run our tests, you need to have a few Python packages installed:
-```console
-python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade build packaging setuptools[core] wheel pytest pytest-benchmark
-python3 -m pip install --upgrade -r tests/python/requirements.txt
-```
-
-You can run all our tests with:
-
-```console
-ctest --test-dir build --output-on-failure
-```
-
-Further options:
-* help: `ctest --test-dir build --help`
-* list all tests: `ctest --test-dir build -N`
-* only run tests that have "FODO" in their name: `ctest --test-dir build -R FODO`
-
-## Acknowledgements
-
-This work was supported by the Laboratory Directed Research and Development Program of Lawrence Berkeley National Laboratory under U.S. Department of Energy Contract No. DE-AC02-05CH11231.
-
-ImpactX is supported by the CAMPA collaboration, a project of the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research and Office of High Energy Physics, Scientific Discovery through Advanced Computing (SciDAC) program.
-
-## Copyright Notice
-
-ImpactX Copyright (c) 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
-All rights reserved.
-
-If you have questions about your rights to use or distribute this software, please contact Berkeley Lab's Intellectual Property Office at IPO@lbl.gov.
-
-Please see the full license agreement in [LICENSE.txt](LICENSE.txt).  
-Please see the notices in [NOTICE.txt](NOTICE.txt).  
-The SPDX license identifier is `BSD-3-Clause-LBNL`.

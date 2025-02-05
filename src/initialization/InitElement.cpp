@@ -555,8 +555,8 @@ element_name) );
                 pp_element.queryAddWithParser("cn", cn);
             }
 
-            using impactx::elements::diagnostics::BeamMonitor;
-            m_lattice.emplace_back(BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
+            // using impactx::elements::diagnostics::BeamMonitor;
+            // m_lattice.emplace_back(BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
         } else if (element_type == "source")
         {
             std::string distribution, openpmd_path;
@@ -567,7 +567,7 @@ element_name) );
                 pp_element.get("openpmd_path", openpmd_path);
             }
 
-            m_lattice.emplace_back( Source(distribution, openpmd_path, element_name) );
+            // m_lattice.emplace_back( Source(distribution, openpmd_path, element_name) );
         } else if (element_type == "line")
         {
             // Parse the lattice elements for the sub-lattice in the line

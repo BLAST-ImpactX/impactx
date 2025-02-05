@@ -155,6 +155,14 @@ namespace impactx {
     {
         // ns = 10  // TODO: number of slices per ds in the element
 
+        auto dr1 = Drift{2.7};
+        auto q1 = Quad{0.1, q1_k};
+        auto dr2 = Drift{1.4};
+        auto q2 = Quad{0.2, q2_k};
+        auto dr3 = Drift{1.4};
+        auto q3 = Quad{0.1, q1_k};
+        auto dr4 = Drift{2.7};
+        /*
         // quadrupole triplet
         // https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
         active_sim->m_lattice = {
@@ -167,15 +175,23 @@ namespace impactx {
             Drift{2.7}
         };
 
+
         // int ns = 25;  // number of slices per ds in the element
         // for (auto & e : sim.m_lattice) { e.m_nslice = ns; }
+        */
 
-        active_sim->evolve();
+        //active_sim->evolve();
+        auto & pc = *active_sim->amr_data->m_particle_container;
 
+        dr1(pc, 0, 0);
+
+        /*
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
                 diagnostics::reduced_beam_characteristics(*active_sim->amr_data->m_particle_container);
 
         return rbc.at("alpha_x");  // TOOD: alpha_x, alpha_y, beta_x, beta_y
+        */
+        return 0.0;
     }
 
     void my_run ()
@@ -201,7 +217,7 @@ namespace impactx {
         amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
 
         // differentiable run:
-        //auto fn_dx = clad::differentiate(evaluate_lattice, "q1_k");  // TODO: this fails with a Clad ICE
+        auto fn_dx = clad::differentiate(evaluate_lattice, "q1_k");  // TODO: this fails with a Clad ICE
         //fn_dx.dump();
         //fn_dx.execute(5, 3);
 

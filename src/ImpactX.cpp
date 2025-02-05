@@ -169,6 +169,7 @@ namespace impactx {
             Quad{0.1, q1_k},
             Drift{2.7}
         };
+        /*
 
         // int ns = 25;  // number of slices per ds in the element
         // for (auto & e : sim.m_lattice) { e.m_nslice = ns; }
@@ -179,6 +180,8 @@ namespace impactx {
                 diagnostics::reduced_beam_characteristics(*active_sim->amr_data->m_particle_container);
 
         return rbc.at("alpha_x");  // TOOD: alpha_x, alpha_y, beta_x, beta_y
+        */
+        return 0.0;
     }
 
     void my_run ()

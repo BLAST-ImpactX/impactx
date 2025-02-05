@@ -61,6 +61,8 @@ macro(find_ablastr)
         set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
 
+        set(AMReX_TINY_PROFILE OFF CACHE BOOL "")
+
         set(WarpX_APP OFF CACHE BOOL "" FORCE)
         set(WarpX_LIB OFF CACHE BOOL "" FORCE)
         set(WarpX_QED OFF CACHE BOOL "" FORCE)

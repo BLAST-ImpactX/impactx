@@ -161,6 +161,16 @@ namespace impactx
         bool m_grids_initialized = false;
     };
 
+    extern amrex::ParticleReal __enzyme_autodiff(void*, amrex::ParticleReal);
+
+    amrex::ParticleReal
+    evaluate_lattice (amrex::ParticleReal q1_k);  //, amrex::ParticleReal q2_k);
+
+    void my_run ();
+
+    // global var until functors work better
+    static ImpactX* active_sim = nullptr;
+
 } // namespace impactx
 
 #endif // IMPACT_X_H

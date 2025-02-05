@@ -11,7 +11,9 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
+#include "particles/elements/All.H"
 #include "diagnostics/DiagnosticOutput.H"
+#include "particles/diagnostics/ReducedBeamCharacteristics.H"
 #include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>
@@ -149,4 +151,62 @@ namespace impactx {
         }
     }
 
+    amrex::ParticleReal
+    evaluate_lattice (amrex::ParticleReal q1_k)  //, amrex::ParticleReal q2_k)
+    {
+        amrex::ParticleReal q2_k = 3.0;
+
+        // ns = 10  // TODO: number of slices per ds in the element
+
+        // quadrupole triplet
+        // https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
+        active_sim->m_lattice = {
+            Drift{2.7},
+            Quad{0.1, q1_k},
+            Drift{1.4},
+            Quad{0.2, q2_k},
+            Drift{1.4},
+            Quad{0.1, q1_k},
+            Drift{2.7}
+        };
+
+        // int ns = 25;  // number of slices per ds in the element
+        // for (auto & e : sim.m_lattice) { e.m_nslice = ns; }
+
+        active_sim->evolve();
+
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
+                diagnostics::reduced_beam_characteristics(*active_sim->amr_data->m_particle_container);
+
+        return rbc.at("alpha_x");  // TOOD: alpha_x, alpha_y, beta_x, beta_y
+    }
+
+    void my_run ()
+    {
+        ImpactX sim;
+
+        sim.init_grids();
+
+        // TODO: replace with beam params from https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
+        sim.initBeamDistributionFromInputs();
+
+        // design the accelerator lattice
+        // sim.initLatticeElementsFromInputs();
+
+        // initial quad strengths
+        amrex::ParticleReal q1_k = -3.0;
+        //amrex::ParticleReal q2_k = 3.0;
+
+        active_sim = &sim;
+
+        // non-differentiable run:
+        amrex::ParticleReal const alpha_x = evaluate_lattice(q1_k);
+        amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
+
+        // differentiable run:
+        double ddx = __enzyme_autodiff((void*) evaluate_lattice, q1_k);
+        amrex::Print() << "ddx = " << ddx << std::endl;
+
+        sim.finalize();
+    }
 } // namespace impactx

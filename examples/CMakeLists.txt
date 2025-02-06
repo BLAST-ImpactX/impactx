@@ -1201,3 +1201,36 @@ add_impactx_test(examples-scraping.py
     examples/scraping_beam/analysis_scraping.py
     OFF  # no plot script yet
 )
+
+    
+# FODO channel using envelope tracking ##############################
+#
+# w/o space charge
+add_impactx_test(examples-fodo-envelope
+    examples/fodo/input_fodo_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo/analysis_fodo_envelope.py
+    OFF  # no plot script yet
+)
+#add_impactx_test(examples-fodo-envelope.py
+#    examples/fodo/run_fodo_envelope.py
+#    OFF   # ImpactX MPI-parallel
+#    examples/fodo/analysis_fodo_envelope.py
+#    OFF  # no plot script yet
+#)
+
+# IOTA linear lattice using envelope tracking ############################
+#
+add_impactx_test(iotalattice-envelope
+    examples/iota_lattice/input_iotalattice_envelope.in
+      ON   # ImpactX MPI-parallel
+    examples/iota_lattice/analysis_iotalattice_envelope.py
+    OFF  # no plot script yet
+)
+#add_impactx_test(iotalattice-envelope.py
+#    examples/iota_lattice/run_iotalattice_envelope.py
+#      ON   # ImpactX MPI-parallel
+#    examples/iota_lattice/analysis_iotalattice_envelope.py
+#    OFF  # no plot script yet
+#)
+

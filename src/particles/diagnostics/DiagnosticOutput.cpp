@@ -35,8 +35,7 @@ namespace
     void
     write_column_header (
         amrex::AllPrintToFile & file_handler,
-        OutputType otype,
-        bool has_charge
+        OutputType otype
     )
     {
         if (otype == OutputType::PrintRefParticle)
@@ -70,11 +69,8 @@ namespace
                 file_handler << " "
                              << "emittance_xn" << " " << "emittance_yn" << " " << "emittance_tn";
             }
-            if (has_charge)
-            {
-                file_handler << " " << "charge_C";
-            }
-            file_handler << "\n";
+            file_handler << " " << "charge_C"
+                         << "\n";
         }
     }
 
@@ -82,7 +78,6 @@ namespace
     prepare_header (
         amrex::AllPrintToFile & file_handler,
         OutputType otype,
-        bool has_charge,
         bool append
     )
     {
@@ -91,7 +86,7 @@ namespace
         // write file header per MPI RANK
         if (!append)
         {
-            write_column_header(file_handler, otype, has_charge);
+            write_column_header(file_handler, otype);
         }
     }
 
@@ -179,7 +174,7 @@ namespace impactx::diagnostics
 
         // keep file open as we add more and more lines
         amrex::AllPrintToFile file_handler(std::move(file_name));
-        prepare_header(file_handler, otype, true, append);
+        prepare_header(file_handler, otype, append);
 
         amrex::ParticleReal const s = pc.GetRefParticle().s;
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
@@ -200,7 +195,7 @@ namespace impactx::diagnostics
 
         // keep file open as we add more and more lines
         amrex::AllPrintToFile file_handler(std::move(file_name));
-        prepare_header(file_handler, OutputType::PrintReducedBeamCharacteristics, false, append);
+        prepare_header(file_handler, OutputType::PrintReducedBeamCharacteristics, append);
 
         amrex::ParticleReal const s = ref_part.s;
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
@@ -222,7 +217,7 @@ namespace impactx::diagnostics
 
         // keep file open as we add more and more lines
         amrex::AllPrintToFile file_handler(std::move(file_name));
-        prepare_header(file_handler, otype, true, append);
+        prepare_header(file_handler, otype, append);
         write_ref(file_handler, ref_part, step);
     }
 

@@ -5,7 +5,7 @@ Run ImpactX
 
 
 How to select a tracking mode
----------------------------
+-----------------------------
 
 ImpactX can be run using any of three distinct tracking modes.  ImpactX's most powerful tracking mode makes use of symplectic particle tracking with collective effects included (space charge, CSR, wakefields, etc.).
 Additionally, ImpactX provides two simplified tracking modes to aid scientists through every step, from beamline inception to operation:
@@ -21,7 +21,7 @@ Envelope Tracking  Rapid Scans     Linearized      Not yet
 
 
 How to select a user interface
-----------------------------
+------------------------------
 
 ImpactX can be run in three major interfaces:
 
@@ -67,7 +67,7 @@ After installing ImpactX, run :ref:`one of our examples <usage-examples>`, e.g.,
 
 
 How to select a computing system
-------------
+--------------------------------
 
 ImpactX supports running on your laptop, alongside edge computers in control systems, in the browser as a dashboard or Jupyter application, on cloud computers, or supercomputers (HPC).
 This enables leveraging ImpactX through any stage of a particle accelerator's life cycle.

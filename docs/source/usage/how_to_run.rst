@@ -4,12 +4,12 @@ Run ImpactX
 ===========
 
 
-When to run: Physics Models
+How to select a tracking mode
 ---------------------------
 
-ImpactX most powerful and central physics model is its symplectic particle tracker with collective effects (space charge, CSR, wakefields, etc.).
-Additionally, ImpactX provides two simplified physics models to aid scientists through every step, from beamline inception to operation:
-only tracking of the reference particle orbit, or tracking of the beam envelope (covariance matrix) through linearized transport maps.
+ImpactX can be run using any of three distinct tracking modes.  ImpactX's most powerful tracking mode makes use of symplectic particle tracking with collective effects included (space charge, CSR, wakefields, etc.).
+Additionally, ImpactX provides two simplified tracking modes to aid scientists through every step, from beamline inception to operation:
+only tracking of the reference particle orbit, or tracking of the beam envelope (6x6 covariance matrix) through linearized transport maps.
 
 ================== =============== =============== ==================
 Mode               Use Case        Generality      Collective Effects
@@ -20,7 +20,7 @@ Envelope Tracking  Rapid Scans     Linearized      Not yet
 ================== =============== =============== ==================
 
 
-What to run: User Interfaces
+How to select a user interface
 ----------------------------
 
 ImpactX can be run in three major interfaces:
@@ -66,7 +66,7 @@ After installing ImpactX, run :ref:`one of our examples <usage-examples>`, e.g.,
          impactx-dashboard
 
 
-Where to run
+How to select a computing system
 ------------
 
 ImpactX supports running on your laptop, alongside edge computers in control systems, in the browser as a dashboard or Jupyter application, on cloud computers, or supercomputers (HPC).

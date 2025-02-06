@@ -13,12 +13,12 @@ This documents how to use ImpactX with an input file (``impactx input_file.in``)
 
 .. _running-cpp-parameters-mode:
 
-Physics Models
+Tracking Modes
 --------------
 
 * ``algo.track`` (``string``)
 
-  Physical tracking model to run:
+  Mode that specifies how the beam is tracked:
 
   * ``particles`` (default): symplectic particle tracking
   * ``reference_orbit``: *not yet implemented*, only tracking of the reference particle orbit

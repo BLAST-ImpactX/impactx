@@ -96,10 +96,10 @@ The matched Twiss parameters at entry are:
 
 We use a 2 GeV electron beam with initial unnormalized rms emittance of 2 nm.
 
-The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected 
+The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected
 due to$
 
-In this test, the initial and final values of :math:`\lambda_x`, :math:`\lambda_y`, :math:`\lambda_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal 
+In this test, the initial and final values of :math:`\lambda_x`, :math:`\lambda_y`, :math:`\lambda_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal
 valu$
 
 
@@ -130,7 +130,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
 Analyze
 -------
-   
+
 We run the following script to analyze correctness:
 
 .. dropdown:: Script ``analysis_fodo_envelope.py``
@@ -138,5 +138,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_fodo_envelope.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo/analysis_fodo_envelope.py``.
-
-

@@ -114,11 +114,11 @@ The linear lattice of the IOTA storage ring, configured for operation with a 2.5
 
 The drift regions available for insertion of the special nonlinear magnetic element for integrable optics experiments are denoted ``dnll``.
 
-The second moments of the particle distribution after a single turn should coincide with the initial section moments of the particle distribution, to within the level expected due to 
+The second moments of the particle distribution after a single turn should coincide with the initial section moments of the particle distribution, to within the level expected due to
 numerical p$
 The example runs 5 turns.
 
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal 
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal
 values.
 
 
@@ -151,11 +151,9 @@ Analyze
 -------
 
 We run the following script to analyze correctness:
-          
+
 .. dropdown:: Script ``analysis_iotalattice_envelope.py``
 
    .. literalinclude:: analysis_iotalattice_envelope.py
       :language: python3
       :caption: You can copy this file from ``examples/iota_lattice/analysis_iotalattice_envelope.py``.
-   
-

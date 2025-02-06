@@ -1202,7 +1202,7 @@ add_impactx_test(examples-scraping.py
     OFF  # no plot script yet
 )
 
-    
+
 # FODO channel using envelope tracking ##############################
 #
 # w/o space charge
@@ -1233,4 +1233,3 @@ add_impactx_test(iotalattice-envelope
 #    examples/iota_lattice/analysis_iotalattice_envelope.py
 #    OFF  # no plot script yet
 #)
-

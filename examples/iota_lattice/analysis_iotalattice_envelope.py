@@ -5,11 +5,9 @@
 # License: BSD-3-Clause-LBNL
 #
 
-import argparse
 import glob
 import re
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -66,7 +64,7 @@ emittance_xf = emittance_x.iloc[length]
 emittance_yf = emittance_y.iloc[length]
 emittance_tf = emittance_t.iloc[length]
 
-    
+
 print("Initial Beam:")
 print(f"  sigx={sig_xi:e} sigy={sig_yi:e} sigt={sig_ti:e}")
 print(
@@ -77,7 +75,7 @@ atol = 0.0  # ignored
 rtol = 1.0e-2  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-assert np.allclose(  
+assert np.allclose(
     [sig_xi, sig_yi, sig_ti, emittance_xi, emittance_yi, emittance_ti],
     [
         1.595934e-03,
@@ -91,21 +89,21 @@ assert np.allclose(
     atol=atol,
 )
 
-        
+
 print("")
 print("Final Beam:")
 print(f"  sigx={sig_xf:e} sigy={sig_yf:e} sigt={sig_tf:e}")
 print(
     f"  emittance_x={emittance_xf:e} emittance_y={emittance_yf:e} emittance_t={emittance_tf:e}"
-)   
-     
+)
+
 atol = 0.0  # ignored
 rtol = 1.0e-2  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
-        
+
 assert np.allclose(
     [sig_xf, sig_yf, sig_tf, emittance_xf, emittance_yf, emittance_tf],
-    [ 
+    [
         1.579848e-03,
         2.510900e-03,
         4.490897e-06,
@@ -115,4 +113,3 @@ assert np.allclose(
     rtol=rtol,
     atol=atol,
 )
-

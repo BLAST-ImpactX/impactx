@@ -80,7 +80,7 @@ namespace
         using Element = typename T_PyClass::type;  // py::class<T, options...>
 
         cl.def("push",
-               [](Element & el, Map6x6 & cm, RefPart const & AMREX_RESTRICT ref) {
+               [](Element & el, Map6x6 & cm, RefPart const & ref) {
                    el(cm, ref);
                },
                py::arg("cm"), py::arg("ref"),

@@ -25,15 +25,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ThinDipole
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ThinDipole>,
-      public elements::mixin::LinearTransport<ThinDipole>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ThinDipole>,
+      public mixin::LinearTransport<ThinDipole>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ThinDipole";
         using PType = ImpactXParticleContainer::ParticleType;

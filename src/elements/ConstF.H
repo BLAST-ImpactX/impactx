@@ -26,16 +26,16 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ConstF
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ConstF>,
-      public elements::mixin::LinearTransport<ConstF>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ConstF>,
+      public mixin::LinearTransport<ConstF>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ConstF";
         using PType = ImpactXParticleContainer::ParticleType;

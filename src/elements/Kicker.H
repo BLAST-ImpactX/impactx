@@ -26,15 +26,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Kicker
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Kicker>,
-      public elements::mixin::LinearTransport<Kicker>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Kicker>,
+      public mixin::LinearTransport<Kicker>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Kicker";
         using PType = ImpactXParticleContainer::ParticleType;

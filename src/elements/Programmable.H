@@ -23,11 +23,11 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Programmable
-    : public elements::mixin::Named,
-      public elements::mixin::LinearTransport<Programmable>
+    : public mixin::Named,
+      public mixin::LinearTransport<Programmable>
     {
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;

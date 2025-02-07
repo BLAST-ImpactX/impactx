@@ -22,7 +22,7 @@
 #include <utility>
 
 
-namespace impactx::diagnostics
+namespace impactx::elements::diagnostics
 {
     void
     add_optional_properties (
@@ -50,6 +50,7 @@ namespace impactx::diagnostics
         amrex::ParticleReal cn = 0.01;
         pp_element.queryAddWithParser("cn", cn);
 
+        using impactx::diagnostics::NonlinearLensInvariants;
         NonlinearLensInvariants const nonlinear_lens_invariants(alpha, beta, tn, cn);
 
         // profile time spent here

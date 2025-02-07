@@ -28,7 +28,7 @@ namespace io = openPMD;
 #include <vector>
 
 
-namespace impactx::diagnostics
+namespace impactx::elements::diagnostics
 {
 namespace detail
 {
@@ -333,7 +333,7 @@ namespace detail
 
         // optional: calculate total particle bunch information
         m_rbc.clear();
-        m_rbc = diagnostics::reduced_beam_characteristics(pc);
+        m_rbc = impactx::diagnostics::reduced_beam_characteristics(pc);
 
         // component names
         std::vector<std::string> real_soa_names = pc.GetRealSoANames();

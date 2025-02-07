@@ -22,22 +22,21 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
-#include <AMReX_Print.H>      // for PrintToFile
 
 #include <cmath>
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ExactSbend
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ExactSbend>,
-      public elements::mixin::LinearTransport<ExactSbend>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ExactSbend>,
+      public mixin::LinearTransport<ExactSbend>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ExactSbend";
         static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;

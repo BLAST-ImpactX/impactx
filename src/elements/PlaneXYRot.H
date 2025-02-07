@@ -28,15 +28,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct PlaneXYRot
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<PlaneXYRot>,
-      public elements::mixin::LinearTransport<PlaneXYRot>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<PlaneXYRot>,
+      public mixin::LinearTransport<PlaneXYRot>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "PlaneXYRot";
         using PType = ImpactXParticleContainer::ParticleType;

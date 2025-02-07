@@ -27,16 +27,16 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Sol
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Sol>,
-      public elements::mixin::LinearTransport<Sol>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Sol>,
+      public mixin::LinearTransport<Sol>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Sol";
         using PType = ImpactXParticleContainer::ParticleType;

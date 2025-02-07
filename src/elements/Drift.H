@@ -27,16 +27,16 @@
 #include <utility>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Drift
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Drift>,
-      public elements::mixin::LinearTransport<Drift>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Drift>,
+      public mixin::LinearTransport<Drift>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Drift";
         using PType = ImpactXParticleContainer::ParticleType;

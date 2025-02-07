@@ -26,14 +26,13 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
-#include <array>
 #include <cmath>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
 
 
-namespace impactx
+namespace impactx::elements
 {
    /** Default Fourier coefficients
     *
@@ -114,12 +113,12 @@ namespace SoftQuadrupoleData
 } // namespace SoftQuadrupoleData
 
     struct SoftQuadrupole
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<SoftQuadrupole>,
-      public elements::mixin::LinearTransport<SoftQuadrupole>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture
+    : public mixin::Named,
+      public mixin::BeamOptic<SoftQuadrupole>,
+      public mixin::LinearTransport<SoftQuadrupole>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture
     {
         static constexpr auto type = "SoftQuadrupole";
         using PType = ImpactXParticleContainer::ParticleType;

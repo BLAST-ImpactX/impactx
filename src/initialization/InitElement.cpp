@@ -130,10 +130,12 @@ namespace detail
      * @param[in] mapsteps_default
      */
     void read_element (std::string const & element_name,
-                       std::list<KnownElements> & m_lattice,
+                       std::list<elements::KnownElements> & m_lattice,
                        int nslice_default,
                        int mapsteps_default)
     {
+        using namespace elements;
+;
         // Check the element type
         amrex::ParmParse pp_element(element_name);
         std::string element_type;

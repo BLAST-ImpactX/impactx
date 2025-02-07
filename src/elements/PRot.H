@@ -27,14 +27,14 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct PRot
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<PRot>,
-      public elements::mixin::LinearTransport<PRot>,
-      public elements::mixin::Thin,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<PRot>,
+      public mixin::LinearTransport<PRot>,
+      public mixin::Thin,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "PRot";
         using PType = ImpactXParticleContainer::ParticleType;

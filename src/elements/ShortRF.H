@@ -24,15 +24,15 @@
 #include <cmath>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ShortRF
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ShortRF>,
-      public elements::mixin::LinearTransport<ShortRF>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ShortRF>,
+      public mixin::LinearTransport<ShortRF>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ShortRF";
         using PType = ImpactXParticleContainer::ParticleType;

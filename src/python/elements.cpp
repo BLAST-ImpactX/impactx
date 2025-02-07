@@ -158,6 +158,8 @@ namespace
 
 void init_elements(py::module& m)
 {
+    using namespace elements;
+
     m.attr("Map6x6") = py::type::of<Map6x6>();
 
     py::module_ me = m.def_submodule(

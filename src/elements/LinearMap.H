@@ -24,14 +24,14 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct LinearMap
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<LinearMap>,
-      public elements::mixin::LinearTransport<LinearMap>,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<LinearMap>,
+      public mixin::LinearTransport<LinearMap>,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "LinearMap";
         using PType = ImpactXParticleContainer::ParticleType;

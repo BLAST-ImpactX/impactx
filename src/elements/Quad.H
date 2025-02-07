@@ -25,16 +25,16 @@
 #include <cmath>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Quad
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Quad>,
-      public elements::mixin::LinearTransport<Quad>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Quad>,
+      public mixin::LinearTransport<Quad>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Quad";
         using PType = ImpactXParticleContainer::ParticleType;

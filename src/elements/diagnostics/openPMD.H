@@ -24,7 +24,7 @@
 #include <vector>
 
 
-namespace impactx::diagnostics
+namespace impactx::elements::diagnostics
 {
 namespace detail
 {
@@ -65,8 +65,8 @@ namespace detail
      * same series name as an existing instance.
      */
     struct BeamMonitor
-    : public elements::mixin::LinearTransport<BeamMonitor>,
-      public elements::mixin::Thin
+    : public mixin::LinearTransport<BeamMonitor>,
+      public mixin::Thin
     {
         static constexpr auto type = "BeamMonitor";
         using PType = typename ImpactXParticleContainer::ParticleType;

@@ -45,7 +45,7 @@
 #include <variant>
 
 
-namespace impactx
+namespace impactx::elements
 {
     using KnownElements = std::variant<
         Empty, /* must be first, so KnownElements creates a default constructor */

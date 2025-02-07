@@ -26,16 +26,16 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ChrPlasmaLens
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ChrPlasmaLens>,
-      public elements::mixin::LinearTransport<ChrPlasmaLens>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ChrPlasmaLens>,
+      public mixin::LinearTransport<ChrPlasmaLens>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ChrPlasmaLens";
         using PType = ImpactXParticleContainer::ParticleType;

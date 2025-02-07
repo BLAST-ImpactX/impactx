@@ -27,15 +27,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Aperture
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Aperture>,
-      public elements::mixin::LinearTransport<Aperture>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Aperture>,
+      public mixin::LinearTransport<Aperture>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Aperture";
         using PType = ImpactXParticleContainer::ParticleType;

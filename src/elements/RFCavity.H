@@ -26,14 +26,13 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
-#include <array>
 #include <cmath>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
 
 
-namespace impactx
+namespace impactx::elements
 {
     /** Default Fourier coefficients
      *
@@ -105,12 +104,12 @@ namespace RFCavityData
 } // namespace RFCavityData
 
     struct RFCavity
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<RFCavity>,
-      public elements::mixin::LinearTransport<RFCavity>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture
+    : public mixin::Named,
+      public mixin::BeamOptic<RFCavity>,
+      public mixin::LinearTransport<RFCavity>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture
     {
         static constexpr auto type = "RFCavity";
         using PType = ImpactXParticleContainer::ParticleType;

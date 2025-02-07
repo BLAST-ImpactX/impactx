@@ -26,16 +26,16 @@
 #include <cmath>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Sbend
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Sbend>,
-      public elements::mixin::LinearTransport<Sbend>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Sbend>,
+      public mixin::LinearTransport<Sbend>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Sbend";
         using PType = ImpactXParticleContainer::ParticleType;

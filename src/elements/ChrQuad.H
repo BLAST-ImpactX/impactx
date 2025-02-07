@@ -21,22 +21,21 @@
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
-#include <AMReX_Print.H>      // for PrintToFile
 
 #include <cmath>
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ChrQuad
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ChrQuad>,
-      public elements::mixin::LinearTransport<ChrQuad>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ChrQuad>,
+      public mixin::LinearTransport<ChrQuad>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ChrQuad";
         using PType = ImpactXParticleContainer::ParticleType;

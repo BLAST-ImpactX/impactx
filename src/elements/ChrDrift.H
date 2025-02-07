@@ -26,16 +26,16 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ChrDrift
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ChrDrift>,
-      public elements::mixin::LinearTransport<ChrDrift>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ChrDrift>,
+      public mixin::LinearTransport<ChrDrift>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ChrDrift";
         using PType = ImpactXParticleContainer::ParticleType;

@@ -14,7 +14,7 @@
 
 
 std::string
-impactx::Aperture::shape_name (Shape const & shape)
+impactx::elements::Aperture::shape_name (Shape const & shape)
 {
     switch (shape)
     {
@@ -28,7 +28,7 @@ impactx::Aperture::shape_name (Shape const & shape)
 }
 
 std::string
-impactx::Aperture::action_name (Action const & action)
+impactx::elements::Aperture::action_name (Action const & action)
 {
     switch (action)
     {

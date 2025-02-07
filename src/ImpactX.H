@@ -134,7 +134,7 @@ namespace impactx
         void ResizeMesh ();
 
         /** these are elements defining the accelerator lattice */
-        std::list<KnownElements> m_lattice;
+        std::list<elements::KnownElements> m_lattice;
 
         /** Was init_grids already called?
          *

@@ -20,13 +20,13 @@
 #include <AMReX_REAL.H>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Marker
-    : public elements::mixin::Named,
-      public elements::mixin::LinearTransport<Marker>,
-      public elements::mixin::Thin,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::LinearTransport<Marker>,
+      public mixin::Thin,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Marker";
         using PType = ImpactXParticleContainer::ParticleType;

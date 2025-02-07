@@ -25,15 +25,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct DipEdge
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<DipEdge>,
-      public elements::mixin::LinearTransport<DipEdge>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<DipEdge>,
+      public mixin::LinearTransport<DipEdge>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "DipEdge";
         using PType = ImpactXParticleContainer::ParticleType;

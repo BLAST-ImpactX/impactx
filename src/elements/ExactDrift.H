@@ -26,16 +26,16 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct ExactDrift
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<ExactDrift>,
-      public elements::mixin::LinearTransport<ExactDrift>,
-      public elements::mixin::Thick,
-      public elements::mixin::Alignment,
-      public elements::mixin::PipeAperture,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<ExactDrift>,
+      public mixin::LinearTransport<ExactDrift>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "ExactDrift";
         using PType = ImpactXParticleContainer::ParticleType;

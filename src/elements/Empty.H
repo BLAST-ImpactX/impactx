@@ -20,12 +20,12 @@
 #include <AMReX_REAL.H>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Empty
-    : public elements::mixin::Thin,
-      public elements::mixin::LinearTransport<Empty>,
-      public elements::mixin::NoFinalize
+    : public mixin::Thin,
+      public mixin::LinearTransport<Empty>,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "None";
         using PType = ImpactXParticleContainer::ParticleType;

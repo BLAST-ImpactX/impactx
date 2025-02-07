@@ -26,15 +26,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct NonlinearLens
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<NonlinearLens>,
-      public elements::mixin::LinearTransport<NonlinearLens>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<NonlinearLens>,
+      public mixin::LinearTransport<NonlinearLens>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "NonlinearLens";
         using PType = ImpactXParticleContainer::ParticleType;

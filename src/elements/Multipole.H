@@ -26,15 +26,15 @@
 #include <stdexcept>
 
 
-namespace impactx
+namespace impactx::elements
 {
     struct Multipole
-    : public elements::mixin::Named,
-      public elements::mixin::BeamOptic<Multipole>,
-      public elements::mixin::LinearTransport<Multipole>,
-      public elements::mixin::Thin,
-      public elements::mixin::Alignment,
-      public elements::mixin::NoFinalize
+    : public mixin::Named,
+      public mixin::BeamOptic<Multipole>,
+      public mixin::LinearTransport<Multipole>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
     {
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;

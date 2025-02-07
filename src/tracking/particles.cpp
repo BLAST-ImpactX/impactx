@@ -236,7 +236,7 @@ namespace impactx
                 std::string openpmd_backend = "default";
                 pp_diag.queryAdd("backend", openpmd_backend);
 
-                diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
+                elements::diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
                 output_lost(*amr_data->track_particles.m_particles_lost, 0, 0);
                 output_lost.finalize();
             }

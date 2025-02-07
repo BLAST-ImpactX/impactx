@@ -14,7 +14,7 @@
 #include <AMReX_BLProfiler.H>
 
 
-namespace impactx
+namespace impactx::elements
 {
     void
     Programmable::operator() (

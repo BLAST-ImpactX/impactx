@@ -73,6 +73,13 @@ namespace impactx::initialization
             /** former beam particles that got lost in apertures, the wall, etc. */
             std::unique_ptr<impactx::ImpactXParticleContainer> m_particles_lost;
 
+            /** charge density per level */
+            std::unordered_map<int, amrex::MultiFab> m_rho;
+            /** scalar potential per level */
+            std::unordered_map<int, amrex::MultiFab> m_phi;
+            /** space charge field (vector) per level */
+            std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > m_space_charge_field;
+
         } track_particles;
 
         /** Data needed for the beam envelop (covariance matrix) tracking mode */
@@ -85,13 +92,6 @@ namespace impactx::initialization
             std::optional<CovarianceMatrix> m_cm;
 
         } track_envelope;
-
-        /** charge density per level */
-        std::unordered_map<int, amrex::MultiFab> m_rho;
-        /** scalar potential per level */
-        std::unordered_map<int, amrex::MultiFab> m_phi;
-        /** space charge field (vector) per level */
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > m_space_charge_field;
 
         void ErrorEst (
             [[maybe_unused]] int lev,

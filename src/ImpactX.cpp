@@ -248,27 +248,41 @@ namespace impactx {
                         amr_data->track_particles.m_particle_container->Redistribute();
 
                         // charge deposition
-                        amr_data->track_particles.m_particle_container->DepositCharge(amr_data->m_rho, amr_data->refRatio());
+                        amr_data->track_particles.m_particle_container->DepositCharge(
+                            amr_data->track_particles.m_rho,
+                            amr_data->refRatio()
+                        );
 
                         // poisson solve in x,y,z
-                        spacecharge::PoissonSolve(*amr_data->track_particles.m_particle_container, amr_data->m_rho, amr_data->m_phi, amr_data->refRatio());
+                        spacecharge::PoissonSolve(
+                            *amr_data->track_particles.m_particle_container,
+                            amr_data->track_particles.m_rho,
+                            amr_data->track_particles.m_phi,
+                            amr_data->refRatio()
+                        );
 
                         // calculate force in x,y,z
-                        spacecharge::ForceFromSelfFields(amr_data->m_space_charge_field,
-                                                         amr_data->m_phi,
-                                                         amr_data->Geom());
+                        spacecharge::ForceFromSelfFields(
+                            amr_data->track_particles.m_space_charge_field,
+                            amr_data->track_particles.m_phi,
+                            amr_data->Geom()
+                        );
 
                         // gather and space-charge push in x,y,z , assuming the space-charge
                         // field is the same before/after transformation
                         // TODO: This is currently using linear order.
-                        spacecharge::GatherAndPush(*amr_data->track_particles.m_particle_container,
-                                                   amr_data->m_space_charge_field,
-                                                   amr_data->Geom(),
-                                                   slice_ds);
+                        spacecharge::GatherAndPush(
+                            *amr_data->track_particles.m_particle_container,
+                            amr_data->track_particles.m_space_charge_field,
+                            amr_data->Geom(),
+                            slice_ds
+                        );
 
                         // transform from x,y,z to x',y',t
-                        transformation::CoordinateTransformation(*amr_data->track_particles.m_particle_container,
-                                                                 CoordSystem::s);
+                        transformation::CoordinateTransformation(
+                            *amr_data->track_particles.m_particle_container,
+                            CoordSystem::s
+                        );
                     }
 
                     // for later: original Impact implementation as an option

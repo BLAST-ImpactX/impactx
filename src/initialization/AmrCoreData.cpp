@@ -140,7 +140,7 @@ namespace impactx::initialization
         else  // odd shape orders
             num_guards_rho = (particle_shape + 1) / 2;
 
-        m_rho.emplace(
+        track_particles.m_rho.emplace(
                 lev,
                 amrex::MultiFab{amrex::convert(cba, rho_nodal_flag), dm, num_components_rho, num_guards_rho, tag("rho")});
 
@@ -148,7 +148,7 @@ namespace impactx::initialization
         auto const phi_nodal_flag = rho_nodal_flag;
         int const num_components_phi = 1;
         int const num_guards_phi = num_guards_rho + 1; // todo: I think this just depends on max(MLMG, force calc)
-        m_phi.emplace(
+        track_particles.m_phi.emplace(
                 lev,
                 amrex::MultiFab{amrex::convert(cba, phi_nodal_flag), dm, num_components_phi, num_guards_phi, tag("phi")});
 
@@ -168,7 +168,7 @@ namespace impactx::initialization
                     }
             );
         }
-        m_space_charge_field.emplace(lev, std::move(f_comp));
+        track_particles.m_space_charge_field.emplace(lev, std::move(f_comp));
     }
 
     void
@@ -194,8 +194,8 @@ namespace impactx::initialization
     void
     AmrCoreData::ClearLevel ([[maybe_unused]] int lev)
     {
-        m_rho.erase(lev);
-        m_phi.erase(lev);
-        m_space_charge_field.erase(lev);
+        track_particles.m_rho.erase(lev);
+        track_particles.m_phi.erase(lev);
+        track_particles.m_space_charge_field.erase(lev);
     }
 } // namespace impactx::initialization

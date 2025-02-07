@@ -415,11 +415,15 @@ void init_ImpactX (py::module& m)
                 ix.amr_data->track_particles.m_particle_container->Redistribute();
 
                 // charge deposition
-                ix.amr_data->track_particles.m_particle_container->DepositCharge(ix.amr_data->m_rho, ix.amr_data->refRatio());
+                ix.amr_data->track_particles.m_particle_container->DepositCharge(
+                    ix.amr_data->track_particles.m_rho,
+                    ix.amr_data->refRatio());
 
                 // transform from x,y,z to x',y',t
-                transformation::CoordinateTransformation(*(ix.amr_data)->track_particles.m_particle_container,
-                                                         CoordSystem::s);
+                transformation::CoordinateTransformation(
+                    *(ix.amr_data)->track_particles.m_particle_container,
+            CoordSystem::s
+                );
             },
             "Deposit charge in x,y,z."
         )
@@ -480,14 +484,14 @@ void init_ImpactX (py::module& m)
         )
         .def(
             "rho",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->m_rho.at(lev); },
+            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_rho.at(lev); },
             py::arg("lev"),
             py::return_value_policy::reference_internal,
             "charge density per level"
         )
         .def(
             "phi",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->m_phi.at(lev); },
+            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_phi.at(lev); },
             py::arg("lev"),
             py::return_value_policy::reference_internal,
             "scalar potential per level"
@@ -495,7 +499,7 @@ void init_ImpactX (py::module& m)
         .def(
             "space_charge_field",
             [](ImpactX & ix, int lev, std::string const & comp) {
-                return &ix.amr_data->m_space_charge_field.at(lev).at(comp);
+                return &ix.amr_data->track_particles.m_space_charge_field.at(lev).at(comp);
             },
             py::arg("lev"), py::arg("comp"),
             py::return_value_policy::reference_internal,

@@ -191,6 +191,7 @@ class LatticeVariableHandler:
                             with vuetify.VCol(cols=5, classes="pr-0"):
                                 vuetify.VTextField(
                                     placeholder="Name",
+                                    v_model=("variable.name",),
                                     outlined=True,
                                     dense=True,
                                     background_color="grey lighten-4",

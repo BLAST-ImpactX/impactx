@@ -23,7 +23,6 @@ server, state, ctrl = setup_server()
 
 
 class generalFunctions:
-
     @staticmethod
     def documentation(section_name):
         """
@@ -207,7 +206,9 @@ class generalFunctions:
             Return true if yes, false if no. Needed to not allow sim. to run
             if there is an error.
             """
-            results = any(variable.get("error_message", "") for variable in state.variables)
+            results = any(
+                variable.get("error_message", "") for variable in state.variables
+            )
             return results
 
         if has_error_in_variables():

@@ -14,8 +14,8 @@ from .. import (
     setup_server,
     vuetify,
 )
-
 from .helper import LatticeVariableHandler
+
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
@@ -95,9 +95,7 @@ def parameter_input_checker_for_lattice(latticeElement):
                     f"'{parameter['sim_value']}'"
                 )
             else:
-                parameter_input[parameter["parameter_name"]] = parameter[
-                    "sim_value"
-                ]
+                parameter_input[parameter["parameter_name"]] = parameter["sim_value"]
         else:
             parameter_input[parameter["parameter_name"]] = 0
 
@@ -154,15 +152,19 @@ def on_add_lattice_element_click():
 
 
 @ctrl.add("updateLatticeElementParameters")
-def on_lattice_element_parameter_change(index, parameter_name, ui_value, parameter_type):
-    lattice_variable, variable_index = LatticeVariableHandler.determine_if_variable(ui_value)
+def on_lattice_element_parameter_change(
+    index, parameter_name, ui_value, parameter_type
+):
+    lattice_variable, variable_index = LatticeVariableHandler.determine_if_variable(
+        ui_value
+    )
     if lattice_variable:
         sim_value = state.variables[variable_index]["value"]
     else:
         sim_value, input_type = generalFunctions.determine_input_type(ui_value)
 
     error_message = generalFunctions.validate_against(sim_value, parameter_type)
-    
+
     for param in state.selected_lattice_list[index]["parameters"]:
         if param["parameter_name"] == parameter_name:
             param["ui_value"] = ui_value
@@ -296,7 +298,6 @@ class LatticeConfiguration:
                     vuetify.VIcon("mdi-close")
             vuetify.VDivider()
             LatticeConfiguration.configuration_list()
-
 
     # -----------------------------------------------------------------------------
     # lattice_configuration_lsit

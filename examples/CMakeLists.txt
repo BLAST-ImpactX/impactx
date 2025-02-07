@@ -1218,18 +1218,18 @@ add_impactx_test(IOTA_nll_aperture.py
 
 # IOTA linear lattice using envelope tracking ############################
 #
-add_impactx_test(iotalattice-envelope
-        examples/iota_lattice/input_iotalattice_envelope.in
-        ON   # ImpactX MPI-parallel
-        examples/iota_lattice/analysis_iotalattice_envelope.py
-        OFF  # no plot script yet
+add_impactx_test(iotalattice.envelope
+    examples/iota_lattice/input_iotalattice_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/iota_lattice/analysis_iotalattice_envelope.py
+    OFF  # no plot script yet
 )
-#add_impactx_test(iotalattice-envelope.py
-#    examples/iota_lattice/run_iotalattice_envelope.py
-#    ON   # ImpactX MPI-parallel
-#    examples/iota_lattice/analysis_iotalattice_envelope.py
-#    OFF  # no plot script yet
-#)
+add_impactx_test(iotalattice.envelope.py
+    examples/iota_lattice/run_iotalattice_envelope.py
+    ON   # ImpactX MPI-parallel
+    examples/iota_lattice/analysis_iotalattice_envelope.py
+    OFF  # no plot script yet
+)
 
 
 # Expanding beam scraping against a vacuum pipe ##############################

@@ -237,12 +237,12 @@ add_impactx_test(FODO.envelope
     examples/fodo/analysis_fodo_envelope.py
     OFF  # no plot script yet
 )
-#add_impactx_test(FODO.envelope.py
-#    examples/fodo/run_fodo_envelope.py
-#    OFF   # ImpactX MPI-parallel
-#    examples/fodo/analysis_fodo_envelope.py
-#    OFF  # no plot script yet
-#)
+add_impactx_test(FODO.envelope.py
+    examples/fodo/run_fodo_envelope.py
+    OFF   # ImpactX MPI-parallel
+    examples/fodo/analysis_fodo_envelope.py
+    OFF  # no plot script yet
+)
 
 
 # Python: FODO Cell w/ programmed element for the Drifts ######################

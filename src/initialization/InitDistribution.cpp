@@ -467,5 +467,9 @@ namespace impactx
             auto dist = initialization::read_distribution(pp_dist);
             amr_data->track_envelope.m_cm = impactx::initialization::create_covariance_matrix(dist);
         }
+        else if (track == "reference_orbit")
+        {
+            amr_data->track_reference.m_ref = initialization::read_reference_particle(pp_dist);
+        }
     }
 } // namespace impactx

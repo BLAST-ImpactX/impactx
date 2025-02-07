@@ -233,6 +233,10 @@ Collective Effects & Overall Simulation Parameters
 
       Run the envelope tracking simulation loop.
 
+   .. py:method:: track_reference()
+
+      Run the reference orbit tracking simulation loop.
+
    .. py:method:: resize_mesh()
 
       Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.

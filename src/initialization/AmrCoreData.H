@@ -93,6 +93,14 @@ namespace impactx::initialization
 
         } track_envelope;
 
+        /** Data needed for the reference orbit tracking mode */
+        struct TrackModeReference
+        {
+            /** The reference particle */
+            std::optional<RefPart> m_ref;
+
+        } track_reference;
+
         void ErrorEst (
             [[maybe_unused]] int lev,
             [[maybe_unused]] amrex::TagBoxArray& tags,

@@ -136,7 +136,16 @@ namespace impactx {
         else if (track == "envelope") {
             track_envelope();
         }
-        // TODO: reference_orbit only tracking
+        else if (track == "reference_orbit") {
+            if (!amr_data->track_reference.m_ref.has_value())
+            {
+                throw std::runtime_error("evolve: Reference particle not set.");
+            }
+            track_reference(amr_data->track_reference.m_ref.value());
+        }
+        else {
+            throw std::runtime_error("Unknown tracking algorithm: algo.track=" + track);
+        }
     }
 
 } // namespace impactx

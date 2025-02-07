@@ -21,8 +21,8 @@ Tracking Modes
   Mode that specifies how the beam is tracked:
 
   * ``particles`` (default): symplectic particle tracking
-  * ``reference_orbit``: *not yet implemented*, only tracking of the reference particle orbit
   * ``envelope``: beam envelop (covariance matrix) tracking, through linearized transport maps
+  * ``reference_orbit``: only tracking of the reference particle orbit
 
 
 .. _running-cpp-parameters-particle:

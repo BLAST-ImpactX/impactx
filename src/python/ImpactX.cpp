@@ -470,6 +470,9 @@ void init_ImpactX (py::module& m)
         .def("track_envelope", &ImpactX::track_envelope,
              "Run the envelope tracking simulation loop."
         )
+        .def("track_reference", &ImpactX::track_reference,
+             "Run the reference orbit tracking simulation loop."
+        )
 
         .def("resize_mesh", &ImpactX::ResizeMesh,
              "Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters."

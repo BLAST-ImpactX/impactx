@@ -114,6 +114,10 @@ namespace impactx
          */
         void track_envelope ();
 
+        /** Run the reference orbit tracking simulation loop
+         */
+        void track_reference (RefPart & ref);
+
         /** Query input for warning logger variables and set up warning logger accordingly
          *
          * Input variables are: ``always_warn_immediately`` and ``abort_on_warning_threshold``.

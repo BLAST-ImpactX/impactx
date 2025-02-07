@@ -96,7 +96,7 @@ namespace impactx
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
-                amr_data->track_particles.m_particle_container->SetRefParticleEdge();
+                ref.sedge = ref.s;
 
                 // number of slices used for the application of space charge
                 int nslice = 1;

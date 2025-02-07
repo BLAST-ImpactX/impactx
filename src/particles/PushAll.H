@@ -31,11 +31,11 @@ namespace impactx
      */
     template<typename T_Element>
     void push_all (
-            ImpactXParticleContainer & pc,
-            T_Element & element,
-            [[maybe_unused]] int step,
-            [[maybe_unused]] int period,
-            [[maybe_unused]] bool omp_parallel = true
+        ImpactXParticleContainer & pc,
+        T_Element & element,
+        [[maybe_unused]] int step,
+        [[maybe_unused]] int period,
+        [[maybe_unused]] bool omp_parallel = true
     )
     {
         // performance profiling per element
@@ -50,10 +50,6 @@ namespace impactx
             BL_PROFILE("impactx::Push::RefPart");
             element(ref_part);
         }
-
-        // push covariance matrix
-        // TODO ?
-        // note: decide what to do for elements that have no covariance matrix
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();

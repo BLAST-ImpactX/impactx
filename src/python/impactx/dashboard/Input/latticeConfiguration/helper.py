@@ -12,48 +12,56 @@ state.is_only_variable = len(state.variables) == 1
 state.toolbar_settings = False
 
 
-@ctrl.add("add_variable")
-def on_add_change():
-    new_variable = { key: "" for key in state.variables[0] }
-    state.variables.append(new_variable)
-    state.dirty("variables")
-    LatticeVariableHandler.update_delete_availability()
-
-@ctrl.add("delete_variable")
-def on_delete_change(index) -> None:
-    """
-    Deleted the variable defined by the user
-    provided the index
-
-    :param index: The index of the variable
-    """
-    print(f"index is {index}")
-    state.variables.pop(index)
-    state.dirty("variables")
-    LatticeVariableHandler.update_delete_availability()
-    print(f"Deleted variable at index {index}. Updated list: {state.variables}")
-
-@ctrl.add("update_variable")
-def on_variable_change(key_name: str, index: int, event):
-    if key_name == "name":
-        if LatticeVariableHandler.validate_variable_name(event, index):
-            return
-    state.variables[index][key_name] = event
-    print(state.variables)
-
-@ctrl.add("reset_variables")
-def on_reset_variables():
-    """
-    Resets the variables list.
-    """
-    state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
-    state.dirty("variables")
-    LatticeVariableHandler.update_delete_availability()
-
 class LatticeVariableHandler:
     """
     Stores all functionality for dashboard variable referencing.
     """
+
+    # -----------------------------------------------------------------------------
+    # Controllers
+    # -----------------------------------------------------------------------------
+
+    @ctrl.add("add_variable")
+    def on_add_change():
+        new_variable = { key: "" for key in state.variables[0] }
+        state.variables.append(new_variable)
+        state.dirty("variables")
+        LatticeVariableHandler.update_delete_availability()
+
+    @ctrl.add("delete_variable")
+    def on_delete_change(index) -> None:
+        """
+        Deleted the variable defined by the user
+        provided the index
+
+        :param index: The index of the variable
+        """
+        print(f"index is {index}")
+        state.variables.pop(index)
+        state.dirty("variables")
+        LatticeVariableHandler.update_delete_availability()
+        print(f"Deleted variable at index {index}. Updated list: {state.variables}")
+
+    @ctrl.add("update_variable")
+    def on_variable_change(key_name: str, index: int, event):
+        if key_name == "name":
+            if LatticeVariableHandler.validate_variable_name(event, index):
+                return
+        state.variables[index][key_name] = event
+        print(state.variables)
+
+    @ctrl.add("reset_variables")
+    def on_reset_variables():
+        """
+        Resets the variables list.
+        """
+        state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
+        state.dirty("variables")
+        LatticeVariableHandler.update_delete_availability()
+
+    # -----------------------------------------------------------------------------
+    # Methods
+    # -----------------------------------------------------------------------------
 
     @staticmethod
     def update_delete_availability() -> None:
@@ -67,7 +75,10 @@ class LatticeVariableHandler:
         state.dirty("is_only_variable")
 
     @staticmethod
-    def get_duplicate_indexes(new_name, current_index):
+    def get_duplicate_indexes(new_name: str, current_index: int) -> list:
+        """
+        Returns the indexes of duplivate variable names.
+        """
         duplicates = [
             index
             for index, var in enumerate(state.variables)
@@ -124,6 +135,10 @@ class LatticeVariableHandler:
         """
         return vuetify.VIcon(mdi_name,small=True)
 
+    # -----------------------------------------------------------------------------
+    # UI
+    # -----------------------------------------------------------------------------
+
     @staticmethod
     def dialog_settings():
         dialog_name = "lattice_configuration_dialog"
@@ -145,6 +160,7 @@ class LatticeVariableHandler:
                                     dense=True,
                                     background_color="grey lighten-4",
                                     input=(ctrl.update_variable, "['name', index, $event]"),
+                                    change="flushState('variables')",
                                     error_messages=("variable.error_message", []),
                                     hide_details=True,
                                 )

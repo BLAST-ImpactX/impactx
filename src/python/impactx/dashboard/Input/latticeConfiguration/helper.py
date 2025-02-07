@@ -1,13 +1,20 @@
 from trame.widgets import html
 
-
-from .. import generalFunctions, InputComponents, NavigationComponents, setup_server, vuetify
+from .. import (
+    InputComponents,
+    NavigationComponents,
+    generalFunctions,
+    setup_server,
+    vuetify,
+)
 
 server, state, ctrl = setup_server()
 
 
 init_value = ""
-state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
+state.variables = [
+    {"name": init_value, "value": init_value, "error_message": init_value}
+]
 state.is_only_variable = len(state.variables) == 1
 state.toolbar_settings = False
 
@@ -16,9 +23,6 @@ class LatticeVariableHandler:
     """
     Stores all functionality for dashboard variable referencing.
     """
-    @state.change("variables")
-    def on_variable_change(variables, **kwargs):
-        print(f"updated to {state.variables}")
 
     # -----------------------------------------------------------------------------
     # Controllers
@@ -31,7 +35,8 @@ class LatticeVariableHandler:
         with empty values and updates UI.
         Stored in a state which contains a list with dictionaries.
         """
-        new_variable = { key: "" for key in state.variables[0] }
+
+        new_variable = {key: "" for key in state.variables[0]}
         state.variables.append(new_variable)
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
@@ -44,16 +49,15 @@ class LatticeVariableHandler:
 
         :param index: The index of the variable
         """
-        print(f"index is {index}")
+
         state.variables.pop(index)
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
-        print(f"Deleted variable at index {index}. Updated list: {state.variables}")
 
     @ctrl.add("update_variable")
     def on_variable_change(key_name: str, index: int, event) -> None:
         """
-        Called when a variable name or value changes. 
+        Called when a variable name or value changes.
         Validates the value and updates it's stored value.
 
         :param key_name: The name of the variable.
@@ -66,7 +70,6 @@ class LatticeVariableHandler:
             state.variables[index]["value"] = init_value
             return
         state.variables[index][key_name] = event
-        print(state.variables)
 
     @ctrl.add("reset_variables")
     def on_reset_variables() -> None:
@@ -74,7 +77,9 @@ class LatticeVariableHandler:
         Resets the dashboard's variables to default.
         """
 
-        state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
+        state.variables = [
+            {"name": init_value, "value": init_value, "error_message": init_value}
+        ]
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
 
@@ -112,7 +117,6 @@ class LatticeVariableHandler:
             duplicates.append(current_index)
         return duplicates
 
-
     @staticmethod
     def validate_variable_name(new_name, index) -> None:
         """
@@ -127,23 +131,25 @@ class LatticeVariableHandler:
             state.dirty("variables")
 
         alpha = new_name and new_name[0].isalpha()
-        duplicate_indexes = LatticeVariableHandler.get_duplicate_indexes(new_name, index)
+        duplicate_indexes = LatticeVariableHandler.get_duplicate_indexes(
+            new_name, index
+        )
         send_error = set_var_error_message("error")
 
-        if not alpha: 
+        if not alpha:
             send_error
-            generalFunctions.update_simulation_validation_status() # need to optimize function later
+            generalFunctions.update_simulation_validation_status()  # need to optimize function later
             state.dirty("variables")
             return True
         elif duplicate_indexes:
             for index in duplicate_indexes:
                 send_error
-            generalFunctions.update_simulation_validation_status() # need to optimize function later
+            generalFunctions.update_simulation_validation_status()  # need to optimize function later
             state.dirty("variables")
             return True
         else:
-           set_var_error_message("")
-           generalFunctions.update_simulation_validation_status() # need to optimize function later
+            set_var_error_message("")
+            generalFunctions.update_simulation_validation_status()  # need to optimize function later
 
     @staticmethod
     def determine_if_variable(var_name):
@@ -154,8 +160,11 @@ class LatticeVariableHandler:
         :param: var_name: The name of the variable.
         :return: A bool and [if found] the index of the variable.
         """
-        
-        found_index = next((i for i, var in enumerate(state.variables) if var["name"] == var_name), None)
+
+        found_index = next(
+            (i for i, var in enumerate(state.variables) if var["name"] == var_name),
+            None,
+        )
         return (found_index is not None, found_index)
 
     @staticmethod
@@ -177,7 +186,7 @@ class LatticeVariableHandler:
         Creates a templated icon for the button.
         """
 
-        return vuetify.VIcon(mdi_name,small=True)
+        return vuetify.VIcon(mdi_name, small=True)
 
     # -----------------------------------------------------------------------------
     # UI
@@ -187,7 +196,9 @@ class LatticeVariableHandler:
     def dialog_settings():
         dialog_name = "lattice_configuration_dialog"
 
-        NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Variables", "Defaults"])
+        NavigationComponents.create_dialog_tabs(
+            dialog_name, 2, ["Variables", "Defaults"]
+        )
 
         with vuetify.VTabsItems(v_model=(dialog_name, 0)):
             with vuetify.VTabItem():
@@ -204,7 +215,10 @@ class LatticeVariableHandler:
                                     outlined=True,
                                     dense=True,
                                     background_color="grey lighten-4",
-                                    input=(ctrl.update_variable, "['name', index, $event]"),
+                                    input=(
+                                        ctrl.update_variable,
+                                        "['name', index, $event]",
+                                    ),
                                     change="flushState('variables')",
                                     error_messages=("variable.error_message", []),
                                     hide_details=True,
@@ -214,11 +228,15 @@ class LatticeVariableHandler:
                             with vuetify.VCol(cols=4, classes="pl-0"):
                                 vuetify.VTextField(
                                     placeholder="Value",
+                                    v_model=("variable.value",),
                                     outlined=True,
                                     dense=True,
                                     type="number",
                                     background_color="grey lighten-4",
-                                    change=(ctrl.update_variable, "['value', index, $event]"),
+                                    change=(
+                                        ctrl.update_variable,
+                                        "['value', index, $event]",
+                                    ),
                                     hide_details=True,
                                 )
                             with vuetify.VCol(cols=2, classes="d-flex"):
@@ -226,16 +244,20 @@ class LatticeVariableHandler:
                                     with LatticeVariableHandler.variable_btn(
                                         color="primary",
                                         click=ctrl.add_variable,
-                                        v_show="index === variables.length - 1"
+                                        v_show="index === variables.length - 1",
                                     ):
-                                        LatticeVariableHandler.variable_btn_icon("mdi-plus")
+                                        LatticeVariableHandler.variable_btn_icon(
+                                            "mdi-plus"
+                                        )
                                 with html.Div():
                                     with LatticeVariableHandler.variable_btn(
                                         color="secondary",
                                         click=(ctrl.delete_variable, "[index]"),
-                                        disabled=("is_only_variable",)
+                                        disabled=("is_only_variable",),
                                     ):
-                                        LatticeVariableHandler.variable_btn_icon("mdi-delete")
+                                        LatticeVariableHandler.variable_btn_icon(
+                                            "mdi-delete"
+                                        )
                         with vuetify.VRow(classes="mt-2"):
                             with vuetify.VCol():
                                 vuetify.VBtn(

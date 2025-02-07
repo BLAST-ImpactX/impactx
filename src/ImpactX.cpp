@@ -368,9 +368,15 @@ namespace impactx {
         // check typos in inputs after step 1
         bool early_params_checked = false;
 
-        // data
-        auto ref = amr_data->track_envelope.m_ref;
-        auto cm = amr_data->track_envelope.m_cm;
+        // access beam data
+        if (!amr_data->track_envelope.m_ref.has_value()) {
+            throw std::runtime_error("track_envelope: Reference particle not set.");
+        }
+        if (!amr_data->track_envelope.m_cm.has_value()) {
+            throw std::runtime_error("track_envelope: Envelope (covariance matrix) not set.");
+        }
+        auto & ref = amr_data->track_envelope.m_ref.value();
+        auto & cm = amr_data->track_envelope.m_cm.value();
 
         // output of init state
         amrex::ParmParse pp_diag("diag");

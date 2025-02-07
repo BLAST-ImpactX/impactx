@@ -23,6 +23,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_TagBox.H>
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -78,10 +79,10 @@ namespace impactx::initialization
         struct TrackModeEnvelope
         {
             /** The reference particle */
-            RefPart m_ref;
+            std::optional<RefPart> m_ref;
 
             /** The 6x6 covariance matrix for the beam envelope, relative to the reference particle */
-            CovarianceMatrix m_cm;
+            std::optional<CovarianceMatrix> m_cm;
 
         } track_envelope;
 

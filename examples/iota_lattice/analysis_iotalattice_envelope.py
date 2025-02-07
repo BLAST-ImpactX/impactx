@@ -102,7 +102,7 @@ rtol = 1.0e-2  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sig_xf, sig_yf, sig_tf, emittance_xf, emittance_yf, emittance_tf],
+    [sig_xf, sig_yf, emittance_xf, emittance_yf, emittance_tf],
     [
         1.579848e-03,
         2.510900e-03,

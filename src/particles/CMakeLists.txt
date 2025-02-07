@@ -6,8 +6,6 @@ target_sources(lib
     Push.cpp
 )
 
-add_subdirectory(diagnostics)
-add_subdirectory(elements)
 add_subdirectory(spacecharge)
 add_subdirectory(transformation)
 add_subdirectory(wakefields)

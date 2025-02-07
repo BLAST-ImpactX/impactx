@@ -11,7 +11,7 @@
 #define IMPACT_X_H
 
 #include "particles/distribution/All.H"
-#include "particles/elements/All.H"
+#include "elements/All.H"
 
 #include "initialization/AmrCoreData.H"
 

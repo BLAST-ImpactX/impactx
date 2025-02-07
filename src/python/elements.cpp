@@ -6,8 +6,8 @@
 #include "pyImpactX.H"
 
 #include <particles/Push.H>
-#include <particles/elements/All.H>
-#include <particles/elements/mixin/lineartransport.H>
+#include <elements/All.H>
+#include <elements/mixin/lineartransport.H>
 #include <AMReX.H>
 
 #include <optional>

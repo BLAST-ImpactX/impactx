@@ -6,7 +6,7 @@
 #include "pyImpactX.H"
 
 #include <particles/ImpactXParticleContainer.H>
-#include <particles/diagnostics/ReducedBeamCharacteristics.H>
+#include <diagnostics/ReducedBeamCharacteristics.H>
 
 #include <AMReX.H>
 #include <AMReX_MFIter.H>

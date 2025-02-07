@@ -12,7 +12,7 @@
 #include "particles/CollectLost.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "particles/diagnostics/DiagnosticOutput.H"
+#include "diagnostics/DiagnosticOutput.H"
 #include "particles/spacecharge/ForceFromSelfFields.H"
 #include "particles/spacecharge/GatherAndPush.H"
 #include "particles/spacecharge/PoissonSolve.H"

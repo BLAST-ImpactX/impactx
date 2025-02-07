@@ -10,10 +10,10 @@
 #ifndef IMPACTX_ELEMENTS_DIAGS_OPENPMD_H
 #define IMPACTX_ELEMENTS_DIAGS_OPENPMD_H
 
-#include "particles/elements/mixin/thin.H"
+#include "elements/mixin/thin.H"
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
-#include "particles/elements/mixin/lineartransport.H"
+#include "elements/mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>

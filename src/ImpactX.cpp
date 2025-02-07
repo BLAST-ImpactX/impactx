@@ -9,15 +9,9 @@
  */
 #include "ImpactX.H"
 #include "initialization/InitAmrCore.H"
-#include "initialization/InitDistribution.H"
-#include "particles/CollectLost.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "particles/diagnostics/DiagnosticOutput.H"
-#include "particles/spacecharge/ForceFromSelfFields.H"
-#include "particles/spacecharge/GatherAndPush.H"
-#include "particles/spacecharge/PoissonSolve.H"
-#include "particles/transformation/CoordinateTransformation.H"
+#include "diagnostics/DiagnosticOutput.H"
 #include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>

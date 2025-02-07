@@ -11,7 +11,7 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "particles/diagnostics/DiagnosticOutput.H"
+#include "diagnostics/DiagnosticOutput.H"
 #include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>

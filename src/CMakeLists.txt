@@ -8,6 +8,8 @@ target_sources(lib
     ImpactX.cpp
 )
 
+add_subdirectory(diagnostics)
+add_subdirectory(elements)
 add_subdirectory(initialization)
 add_subdirectory(particles)
 add_subdirectory(tracking)

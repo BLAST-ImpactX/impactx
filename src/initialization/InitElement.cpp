@@ -8,8 +8,8 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
-#include "particles/elements/All.H"
-#include "particles/elements/mixin/lineartransport.H"
+#include "elements/All.H"
+#include "elements/mixin/lineartransport.H"
 
 #include <ablastr/warn_manager/WarnManager.H>
 

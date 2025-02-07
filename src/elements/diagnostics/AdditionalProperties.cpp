@@ -9,7 +9,7 @@
  */
 
 #include "openPMD.H"
-#include "particles/diagnostics/NonlinearLensInvariants.H"
+#include "diagnostics/NonlinearLensInvariants.H"
 #include "particles/ImpactXParticleContainer.H"
 
 #include <AMReX.H>

@@ -22,14 +22,19 @@ class LatticeVariableHandler:
     # -----------------------------------------------------------------------------
 
     @ctrl.add("add_variable")
-    def on_add_change():
+    def on_add_change() -> None:
+        """
+        Adds a new variable to the dashboard's variable
+        with empty values and updates UI.
+        Stored in a state which contains a list with dictionaries.
+        """
         new_variable = { key: "" for key in state.variables[0] }
         state.variables.append(new_variable)
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
 
     @ctrl.add("delete_variable")
-    def on_delete_change(index) -> None:
+    def on_delete_change(index: int) -> None:
         """
         Deleted the variable defined by the user
         provided the index
@@ -43,7 +48,16 @@ class LatticeVariableHandler:
         print(f"Deleted variable at index {index}. Updated list: {state.variables}")
 
     @ctrl.add("update_variable")
-    def on_variable_change(key_name: str, index: int, event):
+    def on_variable_change(key_name: str, index: int, event) -> None:
+        """
+        Called when a variable name or value changes. 
+        Validates the value and updates it's stored value.
+
+        :param key_name: The name of the variable.
+        :param index: The index of the variable.
+        :param event: Either the variable's new name or value.
+        """
+
         if key_name == "name":
             if LatticeVariableHandler.validate_variable_name(event, index):
                 return
@@ -51,10 +65,11 @@ class LatticeVariableHandler:
         print(state.variables)
 
     @ctrl.add("reset_variables")
-    def on_reset_variables():
+    def on_reset_variables() -> None:
         """
-        Resets the variables list.
+        Resets the dashboard's variables to default.
         """
+
         state.variables = [{"name": init_value, "value": init_value, "error_message": init_value}]
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
@@ -77,8 +92,12 @@ class LatticeVariableHandler:
     @staticmethod
     def get_duplicate_indexes(new_name: str, current_index: int) -> list:
         """
-        Returns the indexes of duplivate variable names.
+        Returns the indexes of duplicate variable names.
+
+        :param new_name: The name of the variable.
+        :current_index: The index of the variable.
         """
+
         duplicates = [
             index
             for index, var in enumerate(state.variables)
@@ -91,7 +110,13 @@ class LatticeVariableHandler:
 
 
     @staticmethod
-    def validate_variable_name(new_name, index):
+    def validate_variable_name(new_name, index) -> None:
+        """
+        Validates the variable name and outputs an error message if any.
+
+        :param new_name: The name of the variable.
+        :index: The index of the variable.
+        """
 
         def set_var_error_message(message):
             state.variables[index]["error_message"] = message
@@ -113,6 +138,14 @@ class LatticeVariableHandler:
 
     @staticmethod
     def determine_if_variable(var_name):
+        """
+        Determines if var_name is already a variable in the current
+        list of variables.
+
+        :param: var_name: The name of the variable.
+        :return: A bool and [if found] the index of the variable.
+        """
+        
         found_index = next((i for i, var in enumerate(state.variables) if var["name"] == var_name), None)
         return (found_index is not None, found_index)
 
@@ -121,6 +154,7 @@ class LatticeVariableHandler:
         """
         Creates a templated button.
         """
+
         return vuetify.VBtn(
             icon=True,
             small=True,
@@ -133,6 +167,7 @@ class LatticeVariableHandler:
         """
         Creates a templated icon for the button.
         """
+
         return vuetify.VIcon(mdi_name,small=True)
 
     # -----------------------------------------------------------------------------

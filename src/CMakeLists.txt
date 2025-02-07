@@ -10,6 +10,7 @@ target_sources(lib
 
 add_subdirectory(initialization)
 add_subdirectory(particles)
+add_subdirectory(tracking)
 
 
 ###############################################################################

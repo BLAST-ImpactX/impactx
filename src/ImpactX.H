@@ -90,7 +90,7 @@ namespace impactx
             int npart
         );
 
-        /** Validate the simulation is ready to run via @see evolve
+        /** Validate the simulation is ready to run the particle tracking loop via @see track_particles
          */
         void validate ();
 

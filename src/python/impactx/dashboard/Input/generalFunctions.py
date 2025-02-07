@@ -200,6 +200,19 @@ class generalFunctions:
                         f"prob_relative[{index}]: {field['error_message']}"
                     )
 
+        @staticmethod
+        def has_error_in_variables() -> bool:
+            """
+            Determines if state.variables contains an error message.
+            Return true if yes, false if no. Needed to not allow sim. to run
+            if there is an error.
+            """
+            results = any(variable.get("error_message", "") for variable in state.variables)
+            return results
+
+        if has_error_in_variables():
+            error_details.append("error")
+
         state.disableRunSimulationButton = bool(error_details)
 
     # -----------------------------------------------------------------------------

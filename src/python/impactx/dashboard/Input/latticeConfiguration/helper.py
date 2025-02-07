@@ -16,6 +16,9 @@ class LatticeVariableHandler:
     """
     Stores all functionality for dashboard variable referencing.
     """
+    @state.change("variables")
+    def on_variable_change(variables, **kwargs):
+        print(f"updated to {state.variables}")
 
     # -----------------------------------------------------------------------------
     # Controllers
@@ -59,8 +62,9 @@ class LatticeVariableHandler:
         """
 
         if key_name == "name":
-            if LatticeVariableHandler.validate_variable_name(event, index):
-                return
+            LatticeVariableHandler.validate_variable_name(event, index)
+            state.variables[index]["value"] = init_value
+            return
         state.variables[index][key_name] = event
         print(state.variables)
 
@@ -128,13 +132,18 @@ class LatticeVariableHandler:
 
         if not alpha: 
             send_error
+            generalFunctions.update_simulation_validation_status() # need to optimize function later
+            state.dirty("variables")
             return True
         elif duplicate_indexes:
             for index in duplicate_indexes:
                 send_error
+            generalFunctions.update_simulation_validation_status() # need to optimize function later
+            state.dirty("variables")
             return True
         else:
            set_var_error_message("")
+           generalFunctions.update_simulation_validation_status() # need to optimize function later
 
     @staticmethod
     def determine_if_variable(var_name):

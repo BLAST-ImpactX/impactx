@@ -1,10 +1,7 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-beam.npart = 10000
-beam.units = static
 beam.kin_energy = 2.5
-beam.charge = 1.0e-9
 beam.particle = proton
 beam.distribution = waterbag
 beam.lambdaX = 1.588960728035e-3
@@ -221,7 +218,6 @@ monitor.nonlinear_lens_invariants = true
 # Algorithms
 ###############################################################################
 algo.particle_shape = 2
-algo.space_charge = false
 algo.track = "envelope"
 
 

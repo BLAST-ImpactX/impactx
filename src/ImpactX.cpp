@@ -78,8 +78,8 @@ namespace impactx {
         BL_PROFILE("ImpactX::init_grids");
 
         amr_data = std::make_unique<initialization::AmrCoreData>(initialization::init_amr_core());
-        amr_data->m_particle_container = std::make_unique<ImpactXParticleContainer>(amr_data.get());
-        amr_data->m_particles_lost = std::make_unique<ImpactXParticleContainer>(amr_data.get());
+        amr_data->track_particles.m_particle_container = std::make_unique<ImpactXParticleContainer>(amr_data.get());
+        amr_data->track_particles.m_particles_lost = std::make_unique<ImpactXParticleContainer>(amr_data.get());
 
         // query input for warning logger variables and set up warning logger accordingly
         init_warning_logger();
@@ -95,7 +95,7 @@ namespace impactx {
 
         // this is the earliest point that we need to know the particle shape,
         // so that we can initialize the guard size of our MultiFabs
-        amr_data->m_particle_container->SetParticleShape();
+        amr_data->track_particles.m_particle_container->SetParticleShape();
 
         // init blocks / grids & MultiFabs
         amr_data->InitFromScratch(0.0);
@@ -103,13 +103,13 @@ namespace impactx {
         // alloc particle containers
         //   have to resize here, not in the constructor because grids have not
         //   been built when constructor was called.
-        amr_data->m_particle_container->reserveData();
-        amr_data->m_particle_container->resizeData();
-        amr_data->m_particles_lost->reserveData();
-        amr_data->m_particles_lost->resizeData();
+        amr_data->track_particles.m_particle_container->reserveData();
+        amr_data->track_particles.m_particle_container->resizeData();
+        amr_data->track_particles.m_particles_lost->reserveData();
+        amr_data->track_particles.m_particles_lost->resizeData();
 
         // register shortcut
-        amr_data->m_particle_container->SetLostParticleContainer(amr_data->m_particles_lost.get());
+        amr_data->track_particles.m_particle_container->SetLostParticleContainer(amr_data->track_particles.m_particles_lost.get());
 
         // print AMReX grid summary
         if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -176,12 +176,12 @@ namespace impactx {
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            diagnostics::DiagnosticOutput(amr_data->m_particle_container->GetRefParticle(),
+            diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
                                           "diags/ref_particle",
                                           step);
 
             // print the initial values of reduced beam characteristics
-            diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
+            diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
                                           "diags/reduced_beam_characteristics");
 
         }
@@ -207,7 +207,7 @@ namespace impactx {
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
-                amr_data->m_particle_container->SetRefParticleEdge();
+                amr_data->track_particles.m_particle_container->SetRefParticleEdge();
 
                 // number of slices used for the application of space charge
                 int nslice = 1;
@@ -227,15 +227,15 @@ namespace impactx {
                     }
 
                     // Wakefield calculation: call wakefield function to apply wake effects
-                    particles::wakefields::HandleWakefield(*amr_data->m_particle_container, element_variant, slice_ds);
+                    particles::wakefields::HandleWakefield(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
 
                     // Space-charge calculation: turn off if there is only 1 particle
                     if (space_charge &&
-                        amr_data->m_particle_container->TotalNumberOfParticles(true, false)) {
+                        amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false)) {
 
                         // transform from x',y',t to x,y,z
                         transformation::CoordinateTransformation(
-                                *amr_data->m_particle_container,
+                                *amr_data->track_particles.m_particle_container,
                                 CoordSystem::t);
 
                         // Note: The following operation assume that
@@ -245,13 +245,13 @@ namespace impactx {
                         ResizeMesh();
 
                         // Redistribute particles in the new mesh in x, y, z
-                        amr_data->m_particle_container->Redistribute();
+                        amr_data->track_particles.m_particle_container->Redistribute();
 
                         // charge deposition
-                        amr_data->m_particle_container->DepositCharge(amr_data->m_rho, amr_data->refRatio());
+                        amr_data->track_particles.m_particle_container->DepositCharge(amr_data->m_rho, amr_data->refRatio());
 
                         // poisson solve in x,y,z
-                        spacecharge::PoissonSolve(*amr_data->m_particle_container, amr_data->m_rho, amr_data->m_phi, amr_data->refRatio());
+                        spacecharge::PoissonSolve(*amr_data->track_particles.m_particle_container, amr_data->m_rho, amr_data->m_phi, amr_data->refRatio());
 
                         // calculate force in x,y,z
                         spacecharge::ForceFromSelfFields(amr_data->m_space_charge_field,
@@ -261,13 +261,13 @@ namespace impactx {
                         // gather and space-charge push in x,y,z , assuming the space-charge
                         // field is the same before/after transformation
                         // TODO: This is currently using linear order.
-                        spacecharge::GatherAndPush(*amr_data->m_particle_container,
+                        spacecharge::GatherAndPush(*amr_data->track_particles.m_particle_container,
                                                    amr_data->m_space_charge_field,
                                                    amr_data->Geom(),
                                                    slice_ds);
 
                         // transform from x,y,z to x',y',t
-                        transformation::CoordinateTransformation(*amr_data->m_particle_container,
+                        transformation::CoordinateTransformation(*amr_data->track_particles.m_particle_container,
                                                                  CoordSystem::s);
                     }
 
@@ -282,10 +282,10 @@ namespace impactx {
                     // assuming that the distribution did not change
 
                     // push all particles with external maps
-                    Push(*amr_data->m_particle_container, element_variant, step, period);
+                    Push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
 
                     // move "lost" particles to another particle container
-                    collect_lost_particles(*amr_data->m_particle_container);
+                    collect_lost_particles(*amr_data->track_particles.m_particle_container);
 
                     // just prints an empty newline at the end of the slice_step
                     if (verbose > 0) {
@@ -298,13 +298,13 @@ namespace impactx {
 
                     if (diag_enable && slice_step_diagnostics) {
                         // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(amr_data->m_particle_container->GetRefParticle(),
+                        diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
                                                       "diags/ref_particle",
                                                       step,
                                                       true);
 
                         // print slice step reduced beam characteristics to file
-                        diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
+                        diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
                                                       "diags/reduced_beam_characteristics",
                                                       step,
                                                       true);
@@ -322,23 +322,23 @@ namespace impactx {
         if (diag_enable)
         {
             // print final reference particle to file
-            diagnostics::DiagnosticOutput(amr_data->m_particle_container->GetRefParticle(),
+            diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
                                           "diags/ref_particle_final",
                                           step);
 
             // print the final values of the reduced beam characteristics
-            diagnostics::DiagnosticOutput(*amr_data->m_particle_container,
+            diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
                                           "diags/reduced_beam_characteristics_final",
                                           step);
 
             // output particles lost in apertures
-            if (amr_data->m_particles_lost->TotalNumberOfParticles() > 0)
+            if (amr_data->track_particles.m_particles_lost->TotalNumberOfParticles() > 0)
             {
                 std::string openpmd_backend = "default";
                 pp_diag.queryAdd("backend", openpmd_backend);
 
                 diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
-                output_lost(*amr_data->m_particles_lost, 0, 0);
+                output_lost(*amr_data->track_particles.m_particles_lost, 0, 0);
                 output_lost.finalize();
             }
         }
@@ -368,11 +368,9 @@ namespace impactx {
         // check typos in inputs after step 1
         bool early_params_checked = false;
 
-        // TODO: init done?
-        amrex::ParmParse const pp_dist = amrex::ParmParse("beam");
-        auto ref = initialization::read_reference_particle(pp_dist);
-        auto dist = initialization::read_distribution(pp_dist);
-        auto cm = impactx::initialization::create_covariance_matrix(dist);
+        // data
+        auto ref = amr_data->track_envelope.m_ref;
+        auto cm = amr_data->track_envelope.m_cm;
 
         // output of init state
         amrex::ParmParse pp_diag("diag");
@@ -395,6 +393,21 @@ namespace impactx {
 
         }
 
+        amrex::ParmParse pp_algo("algo");
+        bool space_charge = false;
+        pp_algo.query("space_charge", space_charge);
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!space_charge, "Space charge not yet implemented for envelope tracking.");
+        if (verbose > 0) {
+            amrex::Print() << " Space Charge effects: " << space_charge << "\n";
+        }
+
+        bool csr = false;
+        pp_algo.query("csr", csr);
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR not yet implemented for envelope tracking.");
+        if (verbose > 0) {
+            amrex::Print() << " CSR effects: " << csr << "\n";
+        }
+
         // periods through the lattice
         int num_periods = 1;
         amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
@@ -403,7 +416,7 @@ namespace impactx {
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
-                amr_data->m_particle_container->SetRefParticleEdge();
+                amr_data->track_particles.m_particle_container->SetRefParticleEdge();
 
                 // number of slices used for the application of space charge
                 int nslice = 1;

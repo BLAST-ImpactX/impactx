@@ -133,7 +133,7 @@ namespace impactx::initialization
         int const num_components_rho = 1;
 
         // guard cells for charge deposition
-        int const particle_shape = m_particle_container->GetParticleShape();
+        int const particle_shape = track_particles.m_particle_container->GetParticleShape();
         int num_guards_rho = 0;
         if (particle_shape % 2 == 0)  // even shape orders
             num_guards_rho = particle_shape / 2 + 1;

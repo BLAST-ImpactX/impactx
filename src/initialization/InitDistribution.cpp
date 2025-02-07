@@ -239,7 +239,7 @@ namespace impactx
     {
         BL_PROFILE("ImpactX::add_particles");
 
-        auto const & ref = amr_data->m_particle_container->GetRefParticle();
+        auto const & ref = amr_data->track_particles.m_particle_container->GetRefParticle();
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(ref.charge_qe() != 0.0,
             "add_particles: Reference particle charge not yet set!");
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(ref.mass_MeV() != 0.0,
@@ -303,7 +303,7 @@ namespace impactx
             distribution.finalize();
         }, distr);
 
-        amr_data->m_particle_container->AddNParticles(x, y, t, px, py, pt,
+        amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
                                                       ref.qm_ratio_SI(),
                                             bunch_charge * rel_part_this_proc);
 
@@ -318,7 +318,7 @@ namespace impactx
             // redistribute particles, so they reside on the MPI rank that is
             // responsible for the respective spatial particle position.
             this->ResizeMesh();
-            amr_data->m_particle_container->Redistribute();
+            amr_data->track_particles.m_particle_container->Redistribute();
         }
     }
 
@@ -413,47 +413,59 @@ namespace impactx
 
         // Parse the beam distribution parameters
         amrex::ParmParse const pp_dist("beam");
+        amrex::ParmParse pp_algo("algo");
+        std::string track = "particles";
+        pp_algo.queryAdd("track", track);
 
-        // set charge and mass and energy of ref particle
-        RefPart const ref = initialization::read_reference_particle(pp_dist);
-        amr_data->m_particle_container->SetRefParticle(ref);
-
-        amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
-        pp_dist.getWithParser("charge", bunch_charge);
-
-        int npart = 1;  // Number of simulation particles
-        pp_dist.getWithParser("npart", npart);
-
-        std::string unit_type;  // System of units
-        pp_dist.get("units", unit_type);
-
-        distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
-        add_particles(bunch_charge, dist, npart);
-
-        // print information on the initialized beam
-        amrex::Print() << "Beam kinetic energy (MeV): " << ref.kin_energy_MeV() << std::endl;
-        amrex::Print() << "Bunch charge (C): " << bunch_charge << std::endl;
+        if (track == "particles")
         {
-            std::string particle_type;  // Particle type
-            pp_dist.get("particle", particle_type);
-            amrex::Print() << "Particle type: " << particle_type << std::endl;
+            // set charge and mass and energy of ref particle
+            RefPart const ref = initialization::read_reference_particle(pp_dist);
+            amr_data->track_particles.m_particle_container->SetRefParticle(ref);
+
+            amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
+            pp_dist.getWithParser("charge", bunch_charge);
+
+            int npart = 1;  // Number of simulation particles
+            pp_dist.getWithParser("npart", npart);
+
+            std::string unit_type;  // System of units
+            pp_dist.get("units", unit_type);
+
+            distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
+            add_particles(bunch_charge, dist, npart);
+
+            // print information on the initialized beam
+            amrex::Print() << "Beam kinetic energy (MeV): " << ref.kin_energy_MeV() << std::endl;
+            amrex::Print() << "Bunch charge (C): " << bunch_charge << std::endl;
+            {
+                std::string particle_type;  // Particle type
+                pp_dist.get("particle", particle_type);
+                amrex::Print() << "Particle type: " << particle_type << std::endl;
+            }
+            amrex::Print() << "Number of particles: " << npart << std::endl;
+            {
+                std::string distribution_type;  // Beam distribution type
+                pp_dist.get("distribution", distribution_type);
+                amrex::Print() << "Beam distribution type: " << distribution_type << std::endl;
+            }
+
+            if (unit_type == "static") {
+                amrex::Print() << "Static units" << std::endl;
+            } else if (unit_type == "dynamic") {
+                amrex::Print() << "Dynamic units" << std::endl;
+            } else {
+                throw std::runtime_error("Unknown units (static/dynamic): " + unit_type);
+            }
+
+            amrex::Print() << "Initialized beam distribution parameters" << std::endl;
+            amrex::Print() << "# of particles: " << amr_data->track_particles.m_particle_container->TotalNumberOfParticles() << std::endl;
         }
-        amrex::Print() << "Number of particles: " << npart << std::endl;
+        else if (track == "envelope")
         {
-            std::string distribution_type;  // Beam distribution type
-            pp_dist.get("distribution", distribution_type);
-            amrex::Print() << "Beam distribution type: " << distribution_type << std::endl;
+            amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
+            auto dist = initialization::read_distribution(pp_dist);
+            amr_data->track_envelope.m_cm = impactx::initialization::create_covariance_matrix(dist);
         }
-
-        if (unit_type == "static") {
-            amrex::Print() << "Static units" << std::endl;
-        } else if (unit_type == "dynamic") {
-            amrex::Print() << "Dynamic units" << std::endl;
-        } else {
-            throw std::runtime_error("Unknown units (static/dynamic): " + unit_type);
-        }
-
-        amrex::Print() << "Initialized beam distribution parameters" << std::endl;
-        amrex::Print() << "# of particles: " << amr_data->m_particle_container->TotalNumberOfParticles() << std::endl;
     }
 } // namespace impactx

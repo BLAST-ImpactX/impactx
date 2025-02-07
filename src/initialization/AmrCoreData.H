@@ -12,6 +12,7 @@
 
 #include "AmrCoreData_fwd.H"
 #include "particles/ImpactXParticleContainer.H"
+#include "particles/CovarianceMatrix.H"
 
 #include <AMReX_AmrCore.H>
 #include <AMReX_AmrMesh.H>
@@ -62,11 +63,27 @@ namespace impactx::initialization
 
         ~AmrCoreData() = default;
 
-        /** these are the physical/beam particles of the simulation */
-        std::unique_ptr<impactx::ImpactXParticleContainer> m_particle_container;
+        /** Data needed for the symplectic particle tracking mode */
+        struct TrackModeParticles
+        {
+            /** these are the physical/beam particles of the simulation */
+            std::unique_ptr<impactx::ImpactXParticleContainer> m_particle_container;
 
-        /** former beam particles that got lost in apertures, the wall, etc. */
-        std::unique_ptr<impactx::ImpactXParticleContainer> m_particles_lost;
+            /** former beam particles that got lost in apertures, the wall, etc. */
+            std::unique_ptr<impactx::ImpactXParticleContainer> m_particles_lost;
+
+        } track_particles;
+
+        /** Data needed for the beam envelop (covariance matrix) tracking mode */
+        struct TrackModeEnvelope
+        {
+            /** The reference particle */
+            RefPart m_ref;
+
+            /** The 6x6 covariance matrix for the beam envelope, relative to the reference particle */
+            CovarianceMatrix m_cm;
+
+        } track_envelope;
 
         /** charge density per level */
         std::unordered_map<int, amrex::MultiFab> m_rho;

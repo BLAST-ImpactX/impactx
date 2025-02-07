@@ -6,6 +6,7 @@
 #include "pyImpactX.H"
 
 #include <particles/distribution/All.H>
+#include <initialization/InitDistribution.H>
 
 #include <AMReX.H>
 #include <AMReX_REAL.H>
@@ -129,4 +130,6 @@ void init_distribution(py::module& m)
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
              "A 6D Waterbag distribution"
         );
+
+    m.def("create_covariance_matrix", &initialization::create_covariance_matrix);
 }

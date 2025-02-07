@@ -171,7 +171,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:method:: add_particles(charge_C, distr, npart)
 
-      Generate and add n particles to the particle container.
+      Particle tracking mode: Generate and add n particles to the particle container.
       Note: Set the reference particle properties (charge, mass, energy) first.
 
       Will also resize the geometry based on the updated particle distribution's extent and then redistribute particles in according AMReX grid boxes.
@@ -179,6 +179,14 @@ Collective Effects & Overall Simulation Parameters
       :param float charge_C: bunch charge (C)
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
+
+   .. py:method:: init_envelope(ref, distr)
+
+      Envelope tracking mode:
+      Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+      :param distr: distribution function (object from :py:mod:`impactx.distribution`)
 
    .. py:method:: particle_container()
 

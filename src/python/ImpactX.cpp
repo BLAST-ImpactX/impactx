@@ -6,6 +6,7 @@
 #include "pyImpactX.H"
 
 #include <ImpactX.H>
+#include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
 
 #include <AMReX.H>
@@ -401,7 +402,7 @@ void init_ImpactX (py::module& m)
             [](ImpactX & ix) {
                 // transform from x',y',t to x,y,z
                 transformation::CoordinateTransformation(
-                        *(ix.amr_data)->m_particle_container,
+                        *(ix.amr_data)->track_particles.m_particle_container,
                         CoordSystem::t);
 
                 // Note: The following operation assume that
@@ -411,13 +412,13 @@ void init_ImpactX (py::module& m)
                 ix.ResizeMesh();
 
                 // Redistribute particles in the new mesh in x, y, z
-                ix.amr_data->m_particle_container->Redistribute();
+                ix.amr_data->track_particles.m_particle_container->Redistribute();
 
                 // charge deposition
-                ix.amr_data->m_particle_container->DepositCharge(ix.amr_data->m_rho, ix.amr_data->refRatio());
+                ix.amr_data->track_particles.m_particle_container->DepositCharge(ix.amr_data->m_rho, ix.amr_data->refRatio());
 
                 // transform from x,y,z to x',y',t
-                transformation::CoordinateTransformation(*(ix.amr_data)->m_particle_container,
+                transformation::CoordinateTransformation(*(ix.amr_data)->track_particles.m_particle_container,
                                                          CoordSystem::s);
             },
             "Deposit charge in x,y,z."
@@ -432,9 +433,20 @@ void init_ImpactX (py::module& m)
         )
         .def("init_beam_distribution_from_inputs", &ImpactX::initBeamDistributionFromInputs)
         .def("init_lattice_elements_from_inputs", &ImpactX::initLatticeElementsFromInputs)
+        .def("init_envelope",
+            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr) {
+                ix.amr_data->track_envelope.m_ref = ref;
+                ix.amr_data->track_envelope.m_cm = initialization::create_covariance_matrix(distr);
+            },
+            py::arg("ref"), py::arg("distr"),
+            "Envelope tracking mode:"
+            "Create a 6x6 covariance matrix from a distribution and then initialize "
+            "the the simulation for envelope tracking relative to a reference particle."
+        )
         .def("add_particles", &ImpactX::add_particles,
              py::arg("bunch_charge"),
              py::arg("distr"), py::arg("npart"),
+             "Particle tracking mode:"
              "Generate and add n particles to the particle container.\n\n"
              "Will also resize the geometry based on the updated particle\n"
              "distribution's extent and then redistribute particles in according\n"
@@ -461,7 +473,7 @@ void init_ImpactX (py::module& m)
 
         .def("particle_container",
              [](ImpactX & ix) -> ImpactXParticleContainer & {
-                return *ix.amr_data->m_particle_container;
+                return *ix.amr_data->track_particles.m_particle_container;
              },
              py::return_value_policy::reference_internal,
              "Access the beam particle container."

@@ -76,10 +76,11 @@ rtol = 1.9 * num_particles**-0.5  # from random sampling of a smooth distributio
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sigx, sigy, emittance_x, emittance_y, emittance_t],
+    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
         1.579848e-03,
         2.510900e-03,
+        1.494251e-02,
         4.490897e-06,
         4.539378e-06,
         0.0,

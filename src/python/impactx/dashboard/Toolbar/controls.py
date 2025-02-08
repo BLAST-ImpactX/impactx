@@ -24,52 +24,33 @@ state.import_file_error = False
 state.importing_file = False
 
 
-<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
-# -----------------------------------------------------------------------------
-# Triggers/Controllers
-# -----------------------------------------------------------------------------
-def reset_importing_states():
-    state.import_file_error = None
-    state.import_file_details = None
-    state.import_file = None
-    state.importing_file = False
+class ToolbarImport:
+    @state.change("import_file")
+    def on_import_file_change(import_file, **kwargs):
+        if import_file:
+            try:
+                state.importing_file = True
+                DashboardParser.file_details(import_file)
+                DashboardParser.populate_impactx_simulation_file_to_ui(import_file)
+            except Exception:
+                state.import_file_error = True
+                state.import_file_error_message = "Unable to parse"
+            finally:
+                state.importing_file = False
 
+    @staticmethod
+    def reset_importing_states():
+        """
+        Resets import related states to default.
+        """
 
-@ctrl.add("reset_all")
-def reset_all():
-    reset_importing_states()
-    generalFunctions.reset_inputs("all")
+        state.import_file_error = None
+        state.import_file_details = None
+        state.import_file = None
+        state.importing_file = False
 
-
-@ctrl.trigger("export")
-def on_export_click():
-    return input_file()
-
-
-@state.change("import_file")
-def on_import_file_change(import_file, **kwargs):
-    if import_file:
-        try:
-            state.importing_file = True
-            DashboardParser.file_details(import_file)
-            DashboardParser.populate_impactx_simulation_file_to_ui(import_file)
-        except Exception:
-            state.import_file_error = True
-            state.import_file_error_message = "Unable to parse"
-        finally:
-            state.importing_file = False
-
-
-# -----------------------------------------------------------------------------
-# Common toolbar elements
-# -----------------------------------------------------------------------------
-
-
-class ToolbarElements:
-=======
 
 class InputToolbar:
->>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py
     """
     Contains toolbar elements for the Input page.
     """
@@ -78,21 +59,19 @@ class InputToolbar:
     def on_export_click():
         return input_file()
 
+    @ctrl.add("reset_all")
+    def reset_all():
+        ToolbarImport.reset_importing_states()
+        generalFunctions.reset_inputs("all")
+
     @staticmethod
-<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
-    def export_button():
-        with vuetify.VBtn(
-=======
-    def export_input_data() -> vuetify.VIcon:
+    def export_button() -> vuetify.VBtn:
         """
         Creates an export button to download a .py file
         containing the user's current input values.
         """
 
-        return vuetify.VIcon(
-            "mdi-download",
-            style="color: #00313C;",
->>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py
+        with vuetify.VBtn(
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
             outlined=True,
             small=True,
@@ -103,6 +82,55 @@ class InputToolbar:
             html.Span("Export")
 
     @staticmethod
+    def import_button() -> None:
+        """
+        Displays the 'import' button on the input section
+        of the dashboard.
+        """
+
+        vuetify.VFileInput(
+            v_model=("import_file",),
+            accept=".py",
+            __properties=["accept"],
+            style="display: none;",
+            ref="fileInput",
+        )
+        with html.Div(
+            style="position: relative",
+        ):
+            with vuetify.VBtn(
+                click="$refs.fileInput.$refs.input.click()",
+                outlined=True,
+                small=True,
+                disabled=("(import_file_details)",),
+                color=("import_file_error ? 'error' : ''",),
+            ):
+                vuetify.VIcon(
+                    "mdi-upload",
+                    left=True,
+                    small=True,
+                )
+                html.Span("Import")
+            with html.Div(
+                style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
+            ):
+                html.Span(
+                    "{{ import_file_error ? import_file_error_message : import_file_details }}",
+                    style="text-overflow: ellipsis; overflow: hidden;",
+                    classes=(
+                        "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
+                    ),
+                )
+                vuetify.VIcon(
+                    "mdi-close",
+                    x_small=True,
+                    style="cursor: pointer;",
+                    click=ctrl.reset_all,
+                    v_if="import_file_details || import_file_error",
+                    color=("import_file_error ? 'error' : 'grey darken-1'",),
+                )
+
+    @staticmethod
     def reset_inputs_button() -> vuetify.VBtn:
         """
         Creates a button to reset all input fields to
@@ -110,7 +138,7 @@ class InputToolbar:
         """
 
         with vuetify.VBtn(
-            click=lambda: generalFunctions.reset_inputs("all"),
+            click=ctrl.reset_all,
             outlined=True,
             small=True,
         ):
@@ -174,65 +202,7 @@ class GeneralToolbar:
     """
 
     @staticmethod
-<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
-    def import_button():
-        vuetify.VFileInput(
-            v_model=("import_file",),
-            accept=".py",
-            __properties=["accept"],
-            style="display: none;",
-            ref="fileInput",
-        )
-        with html.Div(
-            style="position: relative",
-        ):
-            with vuetify.VBtn(
-                click="$refs.fileInput.$refs.input.click()",
-                outlined=True,
-                small=True,
-                disabled=("(import_file_details)",),
-                color=("import_file_error ? 'error' : ''",),
-            ):
-                vuetify.VIcon(
-                    "mdi-upload",
-                    left=True,
-                    small=True,
-                )
-                html.Span("Import")
-            with html.Div(
-                style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
-            ):
-                html.Span(
-                    "{{ import_file_error ? import_file_error_message : import_file_details }}",
-                    style="text-overflow: ellipsis; overflow: hidden;",
-                    classes=(
-                        "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
-                    ),
-                )
-                vuetify.VIcon(
-                    "mdi-close",
-                    x_small=True,
-                    style="cursor: pointer;",
-                    click=ctrl.reset_all,
-                    v_if="import_file_details || import_file_error",
-                    color=("import_file_error ? 'error' : 'grey darken-1'",),
-                )
-
-    @staticmethod
-    def reset_inputs_button():
-        with vuetify.VBtn(
-            click=ctrl.reset_all,
-            outlined=True,
-            small=True,
-        ):
-            vuetify.VIcon("mdi-refresh", left=True)
-            html.Span("Reset")
-
-    @staticmethod
-    def dashboard_info():
-=======
     def dashboard_toolbar(toolbar_name: str) -> None:
->>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py
         """
         Builds and displays the appropriate toolbar
         based on the selected dashboard section.
@@ -245,8 +215,9 @@ class GeneralToolbar:
         if toolbar_name == "input":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
+            InputToolbar.import_button()
+            InputToolbar.export_button()
             InputToolbar.reset_inputs_button()
-            InputToolbar.export_input_data()
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
@@ -274,31 +245,3 @@ class GeneralToolbar:
             v_model=("show_dashboard_alert", True),
             classes="mt-4",
         )
-<<<<<<< HEAD:src/python/impactx/dashboard/Toolbar/toolbarMain.py
-
-
-class Toolbars:
-    """
-    Builds toolbar for dashboard.
-    """
-
-    @staticmethod
-    def dashboard_toolbar(toolbar_name: str) -> None:
-        toolbar_name = toolbar_name.lower()
-        if toolbar_name == "input":
-            (ToolbarElements.dashboard_info(),)
-            vuetify.VSpacer()
-            ToolbarElements.import_button()
-            ToolbarElements.export_button()
-            ToolbarElements.reset_inputs_button()
-
-        elif toolbar_name == "run":
-            (ToolbarElements.dashboard_info(),)
-            (vuetify.VSpacer(),)
-            (ToolbarElements.run_simulation_button(),)
-        elif toolbar_name == "analyze":
-            (ToolbarElements.dashboard_info(),)
-            vuetify.VSpacer()
-            ToolbarElements.plot_options()
-=======
->>>>>>> 75cc926 (Organize main toolbar file):src/python/impactx/dashboard/Toolbar/controls.py

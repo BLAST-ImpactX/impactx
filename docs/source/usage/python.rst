@@ -738,6 +738,15 @@ This module provides elements for the accelerator lattice.
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
 
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, name)
+
+   A particle source.
+   Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
+
+   :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
+   :param openpmd_path: path to the openPMD series
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
 
    A programmable beam optics element.

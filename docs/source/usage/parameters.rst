@@ -627,6 +627,20 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
+``source``
+^^^^^^^^^^^
+
+``source`` for a particle source.
+Typically at the beginning of a beam line.
+
+Currently, this only supports openPMD files from our ``beam_monitor``.
+
+* ``<element_name>.distribution`` (``string``)
+  Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
+* ``<element_name>.openpmd_path`` (``string``)
+  path to the openPMD series
+
+
 ``tapered_pl``
 ^^^^^^^^^^^^^^
 

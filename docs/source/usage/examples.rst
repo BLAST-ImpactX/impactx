@@ -83,6 +83,7 @@ Channels & Rings
    :maxdepth: 1
 
    examples/fodo_channel/README.rst
+   examples/fodo_channel_restart/README.rst
 
 
 Lattice Design & Optimization

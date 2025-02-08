@@ -4,6 +4,8 @@ Run ImpactX
 ===========
 
 
+.. _usage_run-tracking-mode:
+
 How to select a tracking mode
 -----------------------------
 
@@ -19,6 +21,8 @@ Envelope Tracking  Rapid Scans     Linearized      `Soon <https://github.com/ECP
 Reference Tracking Early Design    Reference orbit No
 ================== =============== =============== ==================
 
+
+.. _usage_run-user-interface:
 
 How to select a user interface
 ------------------------------
@@ -39,6 +43,8 @@ Application Advanced          Minimal requirements      No          No          
 Dashboard   Beginner          Learning, Control-Systems Yes         No          Yes            Not yet
 =========== ================= ========================= =========== =========== ============== ===========
 
+
+.. _usage_run-user-interface-how:
 
 How to run
 ----------
@@ -66,6 +72,8 @@ After installing ImpactX, run :ref:`one of our examples <usage-examples>`, e.g.,
          impactx-dashboard
 
 
+.. _usage_run-computing-system:
+
 How to select a computing system
 --------------------------------
 
@@ -86,6 +94,6 @@ As a rough guidance, they are best used for:
 ======== ========================================================= ======= =================
 Hardware Resolution needs                                          AI/ML   Energy Efficiency
 ======== ========================================================= ======= =================
-CPUs     Small (<10M particles) runs and coarse collective effects Yes     Low
-GPUs     Many (>10M) particles and/or detailed collective effects  Fastest High
+CPUs     Small (<10M particles) runs and coarse collective effects Yes     Lower
+GPUs     Many (>10M) particles and/or detailed collective effects  Fastest Higher
 ======== ========================================================= ======= =================

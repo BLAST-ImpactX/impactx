@@ -191,7 +191,7 @@ Use the following :ref:`cmake commands <building-cmake>` to compile the applicat
          cmake --fresh -S . -B build_lumi_cpu_py -DImpactX_FFT=ON -DImpactX_PYTHON=ON
          cmake --build build_lumi_cpu_py -j 16 --target pip_install
 
-Now, you can :ref:`submit LUMI compute jobs <running-cpp-lumi>` for ImpactX :ref:`Python scripts <usage-picmi>` (:ref:`example scripts <usage-examples>`).
+Now, you can :ref:`submit LUMI compute jobs <running-cpp-lumi>` for ImpactX :ref:`Python scripts <usage_run-user-interface>` (:ref:`example scripts <usage-examples>`).
 Or, you can use the ImpactX executables to submit LUMI jobs (:ref:`example inputs <usage-examples>`).
 For executables, you can reference their location in your :ref:`job script <running-cpp-lumi>` or copy them to a location in ``/project/$proj`` or ``/scratch/$proj``.
 

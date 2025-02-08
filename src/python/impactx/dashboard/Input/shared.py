@@ -11,15 +11,13 @@ INPUT_DEFAULTS = input_parameters_defaults + space_charge_defaults
 
 
 class SharedUtilities:
+    
     @staticmethod
     @state.change(*INPUT_DEFAULTS)
     def on_input_state_change(**_):
         state_changes = state.modified_keys & set(INPUT_DEFAULTS)
         for state_name in state_changes:
             if type(state[state_name]) is str:
-                print(
-                    f"{state_name} = {state[state_name]} and type: {type(state[state_name])}"
-                )
                 value = getattr(state, state_name)
                 desired_type = DashboardDefaults.TYPES.get(state_name, None)
                 validation_name = f"{state_name}_error_message"

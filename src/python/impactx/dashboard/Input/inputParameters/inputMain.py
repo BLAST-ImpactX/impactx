@@ -17,12 +17,14 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 
-DEFAULTS = list(DashboardDefaults.INPUT_PARAMETERS.keys())
+input_parameters_defaults = list(DashboardDefaults.INPUT_PARAMETERS.keys())
+space_charge_defaults = list(DashboardDefaults.CSR.keys())
+INPUT_DEFAULTS = input_parameters_defaults + space_charge_defaults
 
 
-@state.change(*DEFAULTS)
+@state.change(*INPUT_DEFAULTS)
 def on_input_state_change(**_):
-    state_changes = state.modified_keys & set(DEFAULTS)
+    state_changes = state.modified_keys & set(INPUT_DEFAULTS)
     for state_name in state_changes:
         if type(state[state_name]) is str:
             print(

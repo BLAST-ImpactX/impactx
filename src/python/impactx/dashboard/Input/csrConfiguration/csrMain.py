@@ -23,5 +23,4 @@ class csrConfiguration:
                     with vuetify.VCol(classes="py-0"):
                         InputComponents.text_field(
                             label="CSR Bins",
-                            input=(ctrl.input_change, "['csr_bins']"),
                         )

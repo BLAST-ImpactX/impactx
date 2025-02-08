@@ -28,9 +28,9 @@ from .start import main
 
 server, state, ctrl = setup_server()
 
-# -----------------------------------------------------------------------------
-# Router Views
-# -----------------------------------------------------------------------------
+from .Input.shared import SharedUtilities
+
+shared_utilities = SharedUtilities()
 
 inputParameters = InputParameters()
 

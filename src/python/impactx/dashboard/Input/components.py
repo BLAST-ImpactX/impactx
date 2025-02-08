@@ -104,8 +104,14 @@ class InputComponents:
         label: str, v_model_name: Optional[str] = None, **kwargs
     ) -> vuetify.VTextField:
         """
-        Creates a Vuetify VTextField component with
-        pre-filled components.
+        Creates a Vuetify VTextField component with the following default components:
+        - error_message state: It's init value is an empty list.
+        - step: The step value of the input (either set in defaults.py), or
+          by default is set to 1.
+        - suffix: The unit of the input (either set in defauts.py), or
+          by default is empty.
+        - type: set to 'number' to only allow a numeric input.
+        - dense: set to 'true' to minimize space usage.
 
         :param label: Display label
         :param v_model_name: v_model binding name. Optional, as default name

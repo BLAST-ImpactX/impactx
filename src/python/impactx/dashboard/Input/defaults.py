@@ -36,6 +36,7 @@ class DashboardDefaults:
     }
 
     INPUT_PARAMETERS = {
+        "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
         "npart": 1000,
@@ -85,6 +86,11 @@ class DashboardDefaults:
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
         "max_level_list": [0, 1, 2, 3, 4],
+        "tracking_mode_list": [
+            "Particle Tracking",
+            "Envelope Tracking",
+            "Reference Tracking",
+        ],
     }
 
     # -------------------------------------------------------------------------

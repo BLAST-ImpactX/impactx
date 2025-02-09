@@ -33,6 +33,10 @@ class InputParameters(CardBase):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(cols=5.5):
+                        InputComponents.select(
+                            label="Tracking Mode",
+                        )
                     with vuetify.VCol(cols="auto"):
                         vuetify.VCheckbox(
                             label="Space Charge",

@@ -71,11 +71,16 @@ def run_simulation():
     sim.add_particles(bunch_charge_C, distribution, npart)
 
     lattice_configuration = lattice_elements()
-
     sim.lattice.extend(lattice_configuration)
 
+    tracking_modes = {
+        "Particle Tracking": sim.track_particles,
+        "Envelope Tracking": sim.track_envelope,
+        "Reference Tracking": sim.track_reference,
+    }
+
     # simulate
-    sim.evolve()
+    tracking_modes[state.tracking_mode]()
 
     generate_phase_space(pc)
 

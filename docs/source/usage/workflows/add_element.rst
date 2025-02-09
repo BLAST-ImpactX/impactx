@@ -16,7 +16,7 @@ Linear Map
 ----------
 
 A custom linear element can be provided by specifying the 6x6 linear transport matrix :math:`R` as an input.
-See the :ref:` example <examples-fodo-userdef>` for Python and inputs file syntax to specify a custom linear element.
+See the :ref:`example <examples-fodo-userdef>` for Python and inputs file syntax to specify a custom linear element.
 
 The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`.
 
@@ -62,7 +62,7 @@ Adding a new beamline element directly to the C++ code base of ImpactX is straig
 We store all beamline elements under `src/elements/ <https://github.com/ECP-WarpX/impactx/tree/development/src/elements>`__.
 
 Let's take a look at an example, the `Drift <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/structimpactx_1_1_drift.html>`__ implementation.
-To simplify the logic, we use so-called `mixin classes <https://en.wikipedia.org/wiki/Mixin>`__, which provide commonly used logic for `parallelization, thin/thick elements, alignment error support, etc <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/namespaceimpactx_1_1elements.html>`__.
+To simplify the logic, we use so-called `mixin classes <https://en.wikipedia.org/wiki/Mixin>`__, which provide commonly used logic for `parallelization, thin/thick elements, alignment error support, etc <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/structimpactx_1_1elements_1_1_drift.html>`__.
 
 .. literalinclude:: ../../../../src/elements/Drift.H
    :language: cpp
@@ -70,11 +70,12 @@ To simplify the logic, we use so-called `mixin classes <https://en.wikipedia.org
    :start-at: struct Drift
    :end-at: static constexpr auto type = "Drift";
 
-After this brief boilerplate, our beamline elements implement three simple parts:
+After this brief boilerplate, our beamline elements implement these parts:
 
 * a constructor: storing element options
 * a single-particle operator: pushing the beam particles
 * a reference-particle operator: pushing the reference particle
+* a linear transport map for the envelope tracking mode
 
 .. dropdown:: Example Element: Drift.H
    :color: light

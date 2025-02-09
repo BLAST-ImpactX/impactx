@@ -61,8 +61,8 @@ Adding a new beamline element directly to the C++ code base of ImpactX is straig
 
 We store all beamline elements under `src/elements/ <https://github.com/ECP-WarpX/impactx/tree/development/src/elements>`__.
 
-Let's take a look at an example, the `Drift <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/structimpactx_1_1_drift.html>`__ implementation.
-To simplify the logic, we use so-called `mixin classes <https://en.wikipedia.org/wiki/Mixin>`__, which provide commonly used logic for `parallelization, thin/thick elements, alignment error support, etc <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/structimpactx_1_1elements_1_1_drift.html>`__.
+Let's take a look at an example, the `Drift <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/structimpactx_1_1elements_1_1_drift.html>`__ implementation.
+To simplify the logic, we use so-called `mixin classes <https://en.wikipedia.org/wiki/Mixin>`__, which provide commonly used logic for `parallelization, thin/thick elements, alignment error support, etc <https://impactx.readthedocs.io/en/latest/_static/doxyhtml/namespaceimpactx_1_1elements_1_1mixin.html>`__.
 
 .. literalinclude:: ../../../../src/elements/Drift.H
    :language: cpp

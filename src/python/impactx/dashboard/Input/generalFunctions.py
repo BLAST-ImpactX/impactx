@@ -7,10 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 import inspect
-import os
 import re
-import subprocess
-import webbrowser
 
 from .. import setup_server
 from .defaults import DashboardDefaults
@@ -23,29 +20,6 @@ server, state, ctrl = setup_server()
 
 
 class generalFunctions:
-    @staticmethod
-    def documentation(section_name):
-        """
-        Opens a tab to the specified section link in the documentation.
-        :param section_name (str): The name of the documentation section to open.
-        """
-        url_dict = {
-            "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#general",
-            "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
-            "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
-            "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
-            "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
-        }
-
-        url = url_dict.get(section_name)
-        if url is None:
-            raise ValueError(f"Invalid section name: {section_name}")
-
-        if "WSL_DISTRO_NAME" in os.environ:
-            subprocess.run(["explorer.exe", url])
-        else:
-            webbrowser.open_new_tab(url)
-
     @staticmethod
     def get_default(parameter, type):
         parameter_type_dictionary = getattr(DashboardDefaults, f"{type.upper()}", None)

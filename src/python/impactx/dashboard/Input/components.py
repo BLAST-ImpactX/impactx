@@ -1,10 +1,13 @@
 from typing import Optional
 
 from .. import html, setup_server, vuetify
-from .defaults import TooltipDefaults
+from .defaults import DashboardDefaults, TooltipDefaults
 from .generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
+
+state.documentation_drawer_open = False
+state.documentation_url = ""
 
 
 class CardComponents:
@@ -38,10 +41,18 @@ class CardComponents:
         :param section_name: The name for the input section.
         """
 
+        def open_documentation():
+            new_url = DashboardDefaults.DOCUMENTATION.get(section_name)
+            if state.documentation_drawer_open and state.documentation_url == new_url:
+                state.documentation_drawer_open = False
+            else:
+                state.documentation_url = new_url
+                state.documentation_drawer_open = True
+
         return vuetify.VIcon(
             "mdi-information",
             style="color: #00313C;",
-            click=lambda: generalFunctions.documentation(section_name),
+            click=open_documentation,
         )
 
     @staticmethod
@@ -187,3 +198,21 @@ class NavigationComponents:
                 for tab_name in tab_names:
                     vuetify.VTab(tab_name)
             vuetify.VDivider()
+
+    @staticmethod
+    def create_documentation_drawer():
+        with vuetify.VNavigationDrawer(
+            v_model=("documentation_drawer_open",),
+            absolute=True,
+            right=True,
+            hide_overlay=True,
+            style="width: 30vw; top: 64px !important; height: calc(100vh - 64px) !important; position: fixed;",
+        ):
+            with vuetify.VContainer(
+                fluid=True,
+                classes="pa-0 fill-height",
+            ):
+                html.Iframe(
+                    src=("documentation_url",),
+                    style="width: 100%; height: 100%; border: none;",
+                )

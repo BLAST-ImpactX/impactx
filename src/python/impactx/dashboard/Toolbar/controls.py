@@ -6,8 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import html, vuetify
+from trame.widgets import html
 
+from .. import vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.generalFunctions import generalFunctions
 from ..Run.controls import execute_impactx_sim

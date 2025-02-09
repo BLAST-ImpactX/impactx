@@ -1,4 +1,5 @@
-from .. import CardComponents, InputComponents, setup_server, vuetify
+from ... import vuetify
+from .. import CardComponents, InputComponents, setup_server
 
 server, state, ctrl = setup_server()
 

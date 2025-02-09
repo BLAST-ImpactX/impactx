@@ -1,10 +1,10 @@
+from ... import vuetify
 from .. import (
     CardComponents,
     InputComponents,
     NavigationComponents,
     generalFunctions,
     setup_server,
-    vuetify,
 )
 from .spaceChargeFunctions import SpaceChargeFunctions
 

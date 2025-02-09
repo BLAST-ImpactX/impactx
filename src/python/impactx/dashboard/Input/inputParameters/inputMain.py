@@ -6,13 +6,13 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+from ... import vuetify
 from .. import (
     CardComponents,
     DashboardDefaults,
     InputComponents,
     generalFunctions,
     setup_server,
-    vuetify,
 )
 from .inputFunctions import InputFunctions
 

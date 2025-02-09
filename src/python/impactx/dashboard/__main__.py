@@ -10,8 +10,9 @@ import sys
 
 from trame.ui.router import RouterViewLayout
 from trame.ui.vuetify import SinglePageWithDrawerLayout
-from trame.widgets import router, vuetify, xterm
+from trame.widgets import router, xterm
 
+from . import vuetify
 from .Analyze.plotsMain import AnalyzeSimulation
 from .Input.components import NavigationComponents
 from .Input.csrConfiguration.csrMain import csrConfiguration

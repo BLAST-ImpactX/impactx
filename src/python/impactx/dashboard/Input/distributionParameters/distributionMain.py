@@ -12,13 +12,13 @@ from distribution_input_helpers import twiss
 
 from impactx import distribution
 
+from ... import vuetify
 from .. import (
     CardComponents,
     DashboardDefaults,
     InputComponents,
     generalFunctions,
     setup_server,
-    vuetify,
 )
 from .distributionFunctions import DistributionFunctions
 

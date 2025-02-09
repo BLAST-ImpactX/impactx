@@ -12,7 +12,7 @@ import re
 import subprocess
 import webbrowser
 
-from ..trame_setup import setup_server
+from .. import setup_server
 from .defaults import DashboardDefaults
 
 server, state, ctrl = setup_server()

@@ -8,11 +8,10 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import html
 
-from .. import vuetify
+from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.generalFunctions import generalFunctions
 from ..Run.controls import execute_impactx_sim
-from ..trame_setup import setup_server
 from .exportTemplate import input_file
 from .importParser import DashboardParser
 

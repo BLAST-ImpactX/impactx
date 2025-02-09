@@ -12,7 +12,7 @@ from trame.ui.router import RouterViewLayout
 from trame.ui.vuetify import SinglePageWithDrawerLayout
 from trame.widgets import router, xterm
 
-from . import vuetify
+from . import setup_server, vuetify
 from .Analyze.plotsMain import AnalyzeSimulation
 from .Input.components import NavigationComponents
 from .Input.csrConfiguration.csrMain import csrConfiguration
@@ -22,7 +22,6 @@ from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
 from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
 from .start import main
 from .Toolbar.controls import GeneralToolbar
-from .trame_setup import setup_server
 
 server, state, ctrl = setup_server()
 

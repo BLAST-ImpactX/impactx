@@ -6,14 +6,8 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from ... import vuetify
-from .. import (
-    CardComponents,
-    DashboardDefaults,
-    InputComponents,
-    generalFunctions,
-    setup_server,
-)
+from ... import setup_server, vuetify
+from .. import CardComponents, DashboardDefaults, InputComponents, generalFunctions
 from .inputFunctions import InputFunctions
 
 server, state, ctrl = setup_server()

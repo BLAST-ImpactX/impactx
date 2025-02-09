@@ -1,4 +1,4 @@
-from ...trame_setup import setup_server
+from ... import setup_server
 
 server, state, ctrl = setup_server()
 

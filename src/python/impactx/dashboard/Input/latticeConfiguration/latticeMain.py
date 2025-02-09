@@ -8,14 +8,8 @@ License: BSD-3-Clause-LBNL
 
 from impactx import elements
 
-from ... import vuetify
-from .. import (
-    CardComponents,
-    InputComponents,
-    NavigationComponents,
-    generalFunctions,
-    setup_server,
-)
+from ... import setup_server, vuetify
+from .. import CardComponents, InputComponents, NavigationComponents, generalFunctions
 
 server, state, ctrl = setup_server()
 

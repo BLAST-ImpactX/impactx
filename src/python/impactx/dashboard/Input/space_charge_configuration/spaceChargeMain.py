@@ -1,11 +1,5 @@
-from ... import vuetify
-from .. import (
-    CardComponents,
-    InputComponents,
-    NavigationComponents,
-    generalFunctions,
-    setup_server,
-)
+from ... import setup_server, vuetify
+from .. import CardComponents, InputComponents, NavigationComponents, generalFunctions
 from .spaceChargeFunctions import SpaceChargeFunctions
 
 server, state, ctrl = setup_server()

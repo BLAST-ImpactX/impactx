@@ -3,8 +3,8 @@ import io
 
 from wurlitzer import pipes
 
+from .. import setup_server
 from ..simulation import run_simulation
-from ..trame_setup import setup_server
 
 server, state, ctrl = setup_server()
 

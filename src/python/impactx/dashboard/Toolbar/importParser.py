@@ -1,3 +1,4 @@
+from .. import setup_server
 from ..Input.distributionParameters.distributionMain import (
     on_distribution_parameter_change,
     populate_distribution_parameters,
@@ -6,7 +7,6 @@ from ..Input.latticeConfiguration.latticeMain import (
     add_lattice_element,
     on_lattice_element_parameter_change,
 )
-from ..trame_setup import setup_server
 from .importParserHelper import DashboardParserHelper
 
 server, state, ctrl = setup_server()

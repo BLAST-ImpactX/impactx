@@ -1,6 +1,6 @@
+from .. import setup_server
 from ..Input.distributionParameters.distributionFunctions import DistributionFunctions
 from ..Input.latticeConfiguration.latticeMain import parameter_input_checker_for_lattice
-from ..trame_setup import setup_server
 
 server, state, ctrl = setup_server()
 

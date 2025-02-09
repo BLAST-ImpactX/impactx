@@ -12,16 +12,19 @@ from trame.ui.router import RouterViewLayout
 from trame.ui.vuetify import SinglePageWithDrawerLayout
 from trame.widgets import router, xterm
 
-from . import setup_server, vuetify
-from .Analyze.plotsMain import AnalyzeSimulation
-from .Input.components import NavigationComponents
-from .Input.csrConfiguration.csrMain import csrConfiguration
-from .Input.distributionParameters.distributionMain import DistributionParameters
-from .Input.inputParameters.inputMain import InputParameters
-from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
-from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
+from . import (
+    AnalyzeSimulation,
+    DistributionParameters,
+    GeneralToolbar,
+    InputParameters,
+    LatticeConfiguration,
+    NavigationComponents,
+    SpaceChargeConfiguration,
+    csrConfiguration,
+    setup_server,
+    vuetify,
+)
 from .start import main
-from .Toolbar.controls import GeneralToolbar
 
 server, state, ctrl = setup_server()
 

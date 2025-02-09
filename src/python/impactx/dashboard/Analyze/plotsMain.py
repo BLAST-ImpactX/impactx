@@ -12,8 +12,7 @@ import os
 from trame.widgets import matplotlib, plotly
 
 from .. import setup_server, vuetify
-from .analyzeFunctions import AnalyzeFunctions
-from .plot_ParameterEvolutionOverS.overS import line_plot_1d
+from . import AnalyzeFunctions, line_plot_1d
 
 server, state, ctrl = setup_server()
 

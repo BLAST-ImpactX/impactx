@@ -14,7 +14,7 @@ from impactx import distribution
 
 from ... import setup_server, vuetify
 from .. import CardComponents, DashboardDefaults, InputComponents, generalFunctions
-from .distributionFunctions import DistributionFunctions
+from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
 

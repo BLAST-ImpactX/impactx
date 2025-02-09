@@ -1,5 +1,5 @@
 from ... import setup_server
-from ..generalFunctions import generalFunctions
+from .. import generalFunctions
 
 server, state, ctrl = setup_server()
 

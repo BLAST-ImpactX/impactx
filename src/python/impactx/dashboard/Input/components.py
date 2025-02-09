@@ -206,7 +206,7 @@ class NavigationComponents:
             absolute=True,
             right=True,
             hide_overlay=True,
-            style="width: 30vw; top: 64px !important; height: calc(100vh - 64px) !important; position: fixed;",
+            style="width: 30vw; top: 64px !important;  position: fixed;",
         ):
             with vuetify.VContainer(
                 fluid=True,

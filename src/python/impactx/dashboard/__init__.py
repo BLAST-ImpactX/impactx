@@ -1,5 +1,6 @@
 from trame.widgets import html
 from trame.widgets import vuetify as vuetify
+from trame.widgets import html
 
 # isort: off
 
@@ -22,6 +23,7 @@ __all__ = [
     "html",
     "JupyterApp",
     "setup_server",
+    "html",
     "vuetify",
     "AnalyzeSimulation",
     "NavigationComponents",

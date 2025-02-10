@@ -1,7 +1,7 @@
 from typing import Optional
 
+from .defaults import TooltipDefaults
 from .. import html, setup_server, vuetify
-from .defaults import DashboardDefaults, TooltipDefaults
 from .generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
@@ -42,7 +42,21 @@ class CardComponents:
         """
 
         def open_documentation():
-            new_url = DashboardDefaults.DOCUMENTATION.get(section_name)
+            """
+            Retrieves the documentation link with the provided section_name
+            and opens the documentation sidebar on the dashoard.
+            """
+           
+            DOCUMENTATION = {
+                "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
+                "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
+                "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
+                "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
+                "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+            }
+
+
+            new_url = DOCUMENTATION.get(section_name)
             if state.documentation_drawer_open and state.documentation_url == new_url:
                 state.documentation_drawer_open = False
             else:

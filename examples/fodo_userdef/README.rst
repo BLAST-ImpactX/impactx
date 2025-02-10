@@ -10,7 +10,7 @@ However, in the example here we define *additional user-defined, custom linear e
 
    Note that generally, if a user-provided linear map is used, the beam transport may not be symplectic.
    For an even more general, user-defined element, see :ref:`the FODO Cell example that uses a Programmable Element <examples-fodo-programmable>`.
-   For more details, see :ref:`this section <usage-workflows-add-element>`.
+   For more details, see :ref:`this section <usage-howto-add-element>`.
 
 The matched Twiss parameters at entry are:
 

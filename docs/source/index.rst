@@ -80,7 +80,7 @@ Usage
    usage/python
    usage/parameters
    usage/dashboard
-   usage/workflows
+   usage/howto
 
 Data Analysis
 -------------

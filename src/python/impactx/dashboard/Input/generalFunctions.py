@@ -21,6 +21,22 @@ server, state, ctrl = setup_server()
 
 class generalFunctions:
     @staticmethod
+    def open_documentation(section_name):
+        """
+        Retrieves the documentation link with the provided section_name
+        and opens the documentation sidebar on the dashoard.
+
+        :param section_name: The name for the input section.
+        """
+
+        new_url = DashboardDefaults.DOCUMENTATION.get(section_name)
+        if state.documentation_drawer_open and state.documentation_url == new_url:
+            state.documentation_drawer_open = False
+        else:
+            state.documentation_url = new_url
+            state.documentation_drawer_open = True
+
+    @staticmethod
     def get_default(parameter, type):
         parameter_type_dictionary = getattr(DashboardDefaults, f"{type.upper()}", None)
         parameter_default = parameter_type_dictionary.get(parameter)

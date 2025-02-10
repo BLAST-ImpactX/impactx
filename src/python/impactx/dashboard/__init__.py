@@ -1,5 +1,5 @@
 from trame.widgets import vuetify as vuetify
-
+from trame.widgets import html
 # isort: off
 
 from .trame_setup import setup_server
@@ -18,6 +18,7 @@ from .jupyterApplication import JupyterMainApplication as JupyterApp
 
 
 __all__ = [
+    "html",
     "JupyterApp",
     "setup_server",
     "vuetify",

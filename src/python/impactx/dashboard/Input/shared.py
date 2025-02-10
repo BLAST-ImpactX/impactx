@@ -11,7 +11,6 @@ INPUT_DEFAULTS = input_parameters_defaults + space_charge_defaults
 
 
 class SharedUtilities:
-    
     @staticmethod
     @state.change(*INPUT_DEFAULTS)
     def on_input_state_change(**_):

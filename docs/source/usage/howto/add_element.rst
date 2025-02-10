@@ -1,4 +1,4 @@
-.. _usage-workflows-add-element:
+.. _usage-howto-add-element:
 
 Add New Beamline Elements
 =========================
@@ -10,27 +10,27 @@ The workflows described here apply both for thin kicks or thick elements.
 Thick elements can also use soft-edged fringe fields (see `existing soft-edged elements for implementation details <https://github.com/ECP-WarpX/impactx/tree/development/src/elements>`__).
 
 
-.. _usage-workflows-add-element-linmap:
+.. _usage-howto-add-element-linmap:
 
 Linear Map
 ----------
 
 A custom linear element can be provided by specifying the 6x6 linear transport matrix :math:`R` as an input.
-See the :ref:`example <examples-fodo-userdef>` for Python and inputs file syntax to specify a custom linear element.
+See the :ref:`FODO cell example <examples-fodo-userdef>` for a demonstration of the custom linear element.
 
 The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`.
 
-The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
-and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
+The matrix :math:`R` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`, where coordinates :math:`(x,y,t)` have units of m and momenta :math:`(p_x,p_y,p_t)` are dimensionless.
+So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
 
 
 .. note::
 
    If a user-provided linear map is used, it is up to the user to ensure that the 6x6 transport matrix is symplectic.
-   If a more general form of user-defined transport is needed, the :ref:`Python Programmable Element <usage-workflows-add-element-python>` and the :ref:`C++ Element <usage-workflows-add-element-cxx>` provide a more general approach.
+   If a more general form of user-defined transport is needed, the :ref:`Python Programmable Element <usage-howto-add-element-python>` and the :ref:`C++ Element <usage-howto-add-element-cxx>` provide a more general approach.
 
 
-.. _usage-workflows-add-element-python:
+.. _usage-howto-add-element-python:
 
 Python Programmable Element
 ---------------------------
@@ -52,7 +52,7 @@ Detailed examples that show usage of the programmable element are:
 Detailed particle computing interfaces are presented in the `pyAMReX examples <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
 
 
-.. _usage-workflows-add-element-cxx:
+.. _usage-howto-add-element-cxx:
 
 C++ Element
 -----------
@@ -72,10 +72,12 @@ To simplify the logic, we use so-called `mixin classes <https://en.wikipedia.org
 
 After this brief boilerplate, our beamline elements implement these parts:
 
-* a constructor: storing element options
-* a single-particle operator: pushing the beam particles
-* a reference-particle operator: pushing the reference particle
-* a linear transport map for the envelope tracking mode
+#. a constructor: storing element options
+#. for particle tracking:
+
+   * a single-particle operator: pushing the beam particles
+   * a reference-particle operator: pushing the reference particle
+#. for envelope tracking: a linear transport map
 
 .. dropdown:: Example Element: Drift.H
    :color: light

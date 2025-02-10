@@ -44,11 +44,11 @@ namespace detail
         return make_pair(record_name, component_name);
     }
 
-    // TODO: move to ablastr
     io::RecordComponent get_component_record (
             io::ParticleSpecies & species,
             std::string comp_name
-    ) {
+    )
+    {
         // handle scalar and non-scalar records by name
         const auto [record_name, component_name] = name2openPMD(std::move(comp_name));
         return species[record_name][component_name];
@@ -63,7 +63,7 @@ namespace impactx::elements
         ImpactXParticleContainer & pc,
         int,
         int
-        )
+    )
     {
 #ifdef ImpactX_USE_OPENPMD
         auto series = io::Series(m_series_name, io::Access::READ_ONLY

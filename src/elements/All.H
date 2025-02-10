@@ -41,7 +41,7 @@
 #include "Source.H"
 #include "TaperedPL.H"
 #include "ThinDipole.H"
-#include "diagnostics/openPMD.H"
+#include "diagnostics/BeamMonitor.H"
 
 #include <variant>
 

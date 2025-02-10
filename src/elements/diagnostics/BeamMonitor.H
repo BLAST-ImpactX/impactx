@@ -7,8 +7,8 @@
  * Authors: Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_ELEMENTS_DIAGS_OPENPMD_H
-#define IMPACTX_ELEMENTS_DIAGS_OPENPMD_H
+#ifndef IMPACTX_ELEMENTS_DIAGS_BEAMMONITOR_H
+#define IMPACTX_ELEMENTS_DIAGS_BEAMMONITOR_H
 
 #include "elements/mixin/thin.H"
 #include "particles/CovarianceMatrix.H"
@@ -207,4 +207,4 @@ namespace detail
 
 } // namespace impactx::diagnostics
 
-#endif // IMPACTX_ELEMENTS_DIAGS_OPENPMD_H
+#endif // IMPACTX_ELEMENTS_DIAGS_BEAMMONITOR_H

@@ -8,7 +8,8 @@
  * License: BSD-3-Clause-LBNL
  */
 
-#include "openPMD.H"
+#include "BeamMonitor.H"
+
 #include "ImpactXVersion.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"

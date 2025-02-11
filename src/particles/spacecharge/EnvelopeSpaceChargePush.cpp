@@ -21,7 +21,7 @@ namespace impactx::spacecharge
          *  reduced 2D space charge model, based on the beam covariance matrix.
          *
          * @param[in] refpart reference particle
-         * @param[in] cm covariance matrix
+         * @param[in,out] cm covariance matrix
          * @param[in] current beam current [A]
          * @param[in] ds step size [m]
          * @returns 6x6 transport matrix

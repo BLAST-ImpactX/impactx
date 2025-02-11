@@ -42,6 +42,7 @@ __all__ = [
     "SoftQuadrupole",
     "SoftSolenoid",
     "Sol",
+    "Source",
     "TaperedPL",
     "ThinDipole",
     "mixin",
@@ -882,6 +883,7 @@ class KnownElementsList:
         | SoftSolenoid
         | SoftQuadrupole
         | Sol
+        | Source
         | TaperedPL
         | ThinDipole,
     ) -> None: ...
@@ -919,6 +921,7 @@ class KnownElementsList:
         | SoftSolenoid
         | SoftQuadrupole
         | Sol
+        | Source
         | TaperedPL
         | ThinDipole
     ]: ...
@@ -957,6 +960,7 @@ class KnownElementsList:
         | SoftSolenoid
         | SoftQuadrupole
         | Sol
+        | Source
         | TaperedPL
         | ThinDipole,
     ) -> None:
@@ -1709,6 +1713,50 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     @ks.setter
     def ks(self, arg1: float) -> None: ...
+
+class Source(mixin.Named, mixin.Thin):
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
+    def __init__(
+        self, distribution: str, openpmd_path: str, name: str | None = None
+    ) -> None:
+        """
+        A particle source.
+        """
+    def __repr__(self) -> str: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: int = 0,
+        period: int = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    @property
+    def distribution(self) -> str:
+        """
+        Distribution type of particles in the source
+        """
+    @distribution.setter
+    def distribution(self, arg1: str) -> None: ...
+    @property
+    def series_name(self) -> str:
+        """
+        Path to openPMD series as accepted by openPMD_api.Series
+        """
+    @series_name.setter
+    def series_name(self, arg1: str) -> None: ...
 
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     @staticmethod

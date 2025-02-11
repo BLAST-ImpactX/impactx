@@ -17,21 +17,11 @@
 
 namespace impactx::spacecharge
 {
-        /** This function returns the linear transport map associated with a
-         *  reduced 2D space charge model, based on the beam covariance matrix.
-         *
-         * @param[in] refpart reference particle
-         * @param[in,out] cm covariance matrix
-         * @param[in] current beam current [A]
-         * @param[in] ds step size [m]
-         * @returns 6x6 transport matrix
-         */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
         void
         envelope_space_charge2D_push (
-        RefPart const & refpart,
-        Map6x6 & cm,
-        amrex::ParticleReal current,
+        [[maybe_unused]] RefPart const & refpart,
+        [[maybe_unused]] Map6x6 & cm,
+        [[maybe_unused]] amrex::ParticleReal current,
         amrex::ParticleReal ds
     )
     {
@@ -41,8 +31,8 @@ namespace impactx::spacecharge
         Map6x6 R = Map6x6::Identity();
 
         // access reference particle values to find beta*gamma^2
-        amrex::ParticleReal const pt_ref = refpart.pt;
-        amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+        //amrex::ParticleReal const pt_ref = refpart.pt;
+        //amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
 
         // evaluate the beam space charge perveance from current
         // TODO

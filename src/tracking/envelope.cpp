@@ -124,19 +124,19 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
-                    std::visit([&ref, &cm, &slice_ds, &space_charge](auto&& element)
+                    if (space_charge)
+                    {
+                        // push Covariance Matrix in 2D space charge fields
+                        amrex::ParticleReal current=0.0;  //TODO: This must be set.
+                        spacecharge::envelope_space_charge2D_push(ref,cm,current,slice_ds);
+                    }
+
+                    std::visit([&ref, &cm](auto&& element)
                     {
                         // push reference particle in global coordinates
                         {
                             BL_PROFILE("impactx::Push::RefPart");
                             element(ref);
-                        }
-
-                        if (space_charge)
-                        {
-                            // push Covariance Matrix in 2D space charge fields
-                            amrex::ParticleReal current=0.0;  //TODO: This must be set.
-                            spacecharge::envelope_space_charge2D_push(ref,cm,current,slice_ds);
                         }
 
                         // push Covariance Matrix in external fields

@@ -1,3 +1,4 @@
+from typing import List, Type, Dict
 import inspect
 
 
@@ -8,7 +9,7 @@ class InputDefaultsHelper:
     """
 
     @staticmethod
-    def get_docstrings(classes, default_list) -> dict:
+    def get_docstrings(class_names: List[Type], default_list: Dict[str, any]) -> Dict[str, str]:
         """
         Retrieves docstrings for each method and property
         in the provided clases.
@@ -19,7 +20,7 @@ class InputDefaultsHelper:
 
         docstrings = {}
 
-        for each_class in classes:
+        for each_class in class_names:
             for name, attribute in inspect.getmembers(each_class):
                 if name not in default_list:
                     continue

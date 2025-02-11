@@ -12,6 +12,7 @@
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SmallMatrix.H>
+#include <AMReX_ParmParse.H>
 
 #include <cmath>
 
@@ -30,6 +31,11 @@ namespace impactx::spacecharge
         // initialize the linear transport map
         Map6x6 R = Map6x6::Identity();
 
+        // added temporarily for benchmark testing
+        amrex::ParmParse pp_dist("dist");
+        amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
+        pp_algo.query("current", beam_current);
+
         // physical constants and reference quantities
         amrex::ParticleReal const c = ablastr::constant::SI::c;
         amrex::ParticleReal const ep0 = ablastr::constant::SI::ep0;
@@ -41,7 +47,7 @@ namespace impactx::spacecharge
 
         // evaluate the beam space charge perveance from current
         amrex::ParticleReal const IA = 4.0_prt*pi*ep0*mass*pow(c,3)/charge;
-        amrex::ParticleReal const Kpv = (current/IA) * 2.0_prt/betgam2;
+        amrex::ParticleReal const Kpv = (beam_current/IA) * 2.0_prt/betgam2;
 
         // evaluate the linear transfer map
         amrex::ParticleReal const sigma2 = cm(1,1)*cm(3,3)-cm(1,3)*cm(1,3);

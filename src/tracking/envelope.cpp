@@ -132,7 +132,7 @@ namespace impactx
                             element(ref);
                         }
 
-                        if (space_charge) 
+                        if (space_charge)
                         {
                             // push Covariance Matrix in 2D space charge fields
                             amrex::ParticleReal current=0.0;  //TODO: This must be set.

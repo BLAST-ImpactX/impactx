@@ -23,10 +23,10 @@
 namespace impactx::spacecharge
 {
      /** This function pushes the 6x6 beam covariance matrix for a slice
-      *  of length ds, using the linear space charge fields in an rms 
+      *  of length ds, using the linear space charge fields in an rms
       *  equivalent 2D ellipse, as determined from the beam covariance matrix.
       *  Note: This is a reduced model of 2D space charge.
-      *  
+      *
       * @param[in] refpart reference particle
       * @param[inout] cm covariance matrix
       * @param[in] current beam current [A]

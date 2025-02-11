@@ -92,13 +92,18 @@ class InputComponents:
                 generalFunctions.get_default(f"{v_model_name}_list", "default_values"),
             )
 
-        return vuetify.VSelect(
-            label=label,
-            v_model=(v_model_name,),
-            items=items,
-            dense=True,
-            **kwargs,
-        )
+        with vuetify.VTooltip(**TooltipDefaults.TOOLTIP_STYLE):
+            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                vuetify.VSelect(
+                    label=label,
+                    v_model=(v_model_name,),
+                    items=items,
+                    dense=True,
+                    **kwargs,
+                    v_on="on",
+                    v_bind="attrs",
+                )
+            html.Span(TooltipDefaults.TOOLTIP.get(v_model_name))
 
     @staticmethod
     def text_field(

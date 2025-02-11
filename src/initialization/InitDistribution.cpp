@@ -477,7 +477,7 @@ namespace impactx
 
             // For treating 2D space charge in unbunched beams
             amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
-            pp_dist.getWithParser("current", beam_current);
+            pp_dist.query("current", beam_current);
 
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);

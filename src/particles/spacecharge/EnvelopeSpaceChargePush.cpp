@@ -31,8 +31,8 @@ namespace impactx::spacecharge
         envelope_space_charge2D_push (
         RefPart const & refpart,
         Map6x6 & cm,
-        amrex::ParticleReal & current,
-        amrex::ParticleReal & ds
+        amrex::ParticleReal current,
+        amrex::ParticleReal ds
     )
     {
         using namespace amrex::literals;

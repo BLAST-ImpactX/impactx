@@ -452,10 +452,8 @@ namespace impactx
 
             if (unit_type == "static") {
                 amrex::Print() << "Static units" << std::endl;
-            } else if (unit_type == "dynamic") {
-                amrex::Print() << "Dynamic units" << std::endl;
             } else {
-                throw std::runtime_error("Unknown units (static/dynamic): " + unit_type);
+                throw std::runtime_error("Unknown units (use 'static'): " + unit_type);
             }
 
             amrex::Print() << "Initialized beam distribution parameters" << std::endl;

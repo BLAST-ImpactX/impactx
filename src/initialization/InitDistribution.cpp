@@ -471,6 +471,14 @@ namespace impactx
         }
         else if (track == "envelope")
         {
+            // For treating 3D space charge in bunched beams (not yet implemented in envelope mode)
+            //amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
+            //pp_dist.getWithParser("charge", bunch_charge);
+
+            // For treating 2D space charge in unbunched beams
+            amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
+            pp_dist.getWithParser("current", beam_current);
+
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);
             amr_data->track_envelope.m_cm = impactx::initialization::create_covariance_matrix(dist);

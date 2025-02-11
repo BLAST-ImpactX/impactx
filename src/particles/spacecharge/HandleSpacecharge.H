@@ -20,8 +20,8 @@
 
 namespace impactx::particles::spacecharge
 {
-    /** Function to handle CSR bending process including charge deposition,
-     * mean transverse position calculation, wakefield generation, and convolution.
+    /** Function to handle space charge including charge deposition, Poisson solve,
+     * field calculation, interpolation, and particle push.
      *
      * @param[in,out] amr_data AMR data like particle container and fields
      * @param[in] ResizeMesh function to call to resize the mesh

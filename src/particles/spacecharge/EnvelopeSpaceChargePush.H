@@ -13,11 +13,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/CovarianceMatrix.H"
 
-#include <AMReX_Geometry.H>
-#include <AMReX_MultiFab.H>
-#include <AMReX_Vector.H>
-
-#include <unordered_map>
+#include <AMReX_REAL.H>
 
 
 namespace impactx::spacecharge

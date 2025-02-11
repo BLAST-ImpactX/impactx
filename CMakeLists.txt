@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 25.01)
+project(ImpactX VERSION 25.02)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 

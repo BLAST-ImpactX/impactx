@@ -34,7 +34,7 @@ namespace impactx::spacecharge
         // added temporarily for benchmark testing
         amrex::ParmParse pp_dist("dist");
         amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
-        pp_algo.query("current", beam_current);
+        pp_dist.query("current", beam_current);
 
         // physical constants and reference quantities
         amrex::ParticleReal const c = ablastr::constant::SI::c;

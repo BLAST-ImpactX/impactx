@@ -1,3 +1,8 @@
+from impactx.impactx_pybind import ImpactX, RefPart
+
+from .defaults_helper import InputDefaultsHelper
+
+
 class DashboardDefaults:
     """
     Defaults for input parameters in the ImpactX dashboard.
@@ -113,3 +118,18 @@ class DashboardDefaults:
         "beta": "m",
         "emitt": "m",
     }
+
+
+class TooltipDefaults:
+    """
+    Defaults for input toolips in the ImpactX dashboard.
+    """
+
+    TOOLTIP_STYLE = {
+        "bottom": True,
+        "nudge_top": "20",
+    }
+
+    TOOLTIP = InputDefaultsHelper.get_docstrings(
+        [RefPart, ImpactX], DashboardDefaults.DEFAULT_VALUES
+    )

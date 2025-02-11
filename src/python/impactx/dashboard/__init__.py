@@ -1,3 +1,4 @@
+from trame.widgets import html
 from trame.widgets import vuetify as vuetify
 
 # isort: off
@@ -18,6 +19,7 @@ from .jupyterApplication import JupyterMainApplication as JupyterApp
 
 
 __all__ = [
+    "html",
     "JupyterApp",
     "setup_server",
     "vuetify",

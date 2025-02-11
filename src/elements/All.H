@@ -35,12 +35,13 @@
 #include "RFCavity.H"
 #include "Sbend.H"
 #include "ShortRF.H"
-#include "Sol.H"
 #include "SoftSol.H"
 #include "SoftQuad.H"
+#include "Sol.H"
+#include "Source.H"
 #include "TaperedPL.H"
 #include "ThinDipole.H"
-#include "diagnostics/openPMD.H"
+#include "diagnostics/BeamMonitor.H"
 
 #include <variant>
 
@@ -77,6 +78,7 @@ namespace impactx::elements
         SoftSolenoid,
         SoftQuadrupole,
         Sol,
+        Source,
         TaperedPL,
         ThinDipole
     >;

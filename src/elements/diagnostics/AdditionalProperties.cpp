@@ -8,7 +8,8 @@
  * License: BSD-3-Clause-LBNL
  */
 
-#include "openPMD.H"
+#include "BeamMonitor.H"
+
 #include "diagnostics/NonlinearLensInvariants.H"
 #include "particles/ImpactXParticleContainer.H"
 

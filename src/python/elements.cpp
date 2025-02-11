@@ -1455,6 +1455,41 @@ void init_elements(py::module& m)
     register_beamoptics_push(py_SoftSolenoid);
     register_envelope_push(py_SoftSolenoid);
 
+    py::class_<Source, elements::mixin::Named, elements::mixin::Thin> py_Source(me, "Source");
+    py_Source
+        .def("__repr__",
+             [](Source const & src) {
+                 return element_name(
+                     src,
+                     std::make_pair("distribution", src.m_distribution),
+                     std::make_pair("path", src.m_series_name)
+                 );
+             }
+        )
+        .def(py::init<
+             std::string,
+             std::string,
+             std::optional<std::string>
+         >(),
+             py::arg("distribution"),
+             py::arg("openpmd_path"),
+             py::arg("name") = py::none(),
+             "A particle source."
+        )
+        .def_property("distribution",
+            [](Source & src) { return src.m_distribution; },
+            [](Source & src, std::string distribution) { src.m_distribution = distribution; },
+            "Distribution type of particles in the source"
+        )
+        .def_property("series_name",
+            [](Source & src) { return src.m_series_name; },
+            [](Source & src, std::string series_name) { src.m_series_name = series_name; },
+            "Path to openPMD series as accepted by openPMD_api.Series"
+        )
+    ;
+    register_beamoptics_push(py_Source);
+    register_envelope_push(py_Source);
+
     py::class_<Sol, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sol(me, "Sol");
     py_Sol
         .def("__repr__",

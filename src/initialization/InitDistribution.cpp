@@ -154,13 +154,15 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt);
-            } else {
+            } else if (base_dist_type == "empty") {
+                dist = distribution::Empty();
+            } else
+            {
                 throw std::runtime_error("Unknown distribution: " + distribution_type);
             }
 
         }
-        else if (distribution_type == "thermal")
-        {
+        else if (distribution_type == "thermal") {
             amrex::ParticleReal k, kT, kT_halo, normalize, normalize_halo;
             amrex::ParticleReal halo = 0.0;
             pp_dist.getWithParser("k", k);
@@ -173,6 +175,10 @@ namespace impactx
             pp_dist.queryWithParser("halo", halo);
 
             dist = distribution::Thermal(k, kT, kT_halo, normalize, normalize_halo, halo);
+        }
+        else if (distribution_type == "empty")
+        {
+            dist = distribution::Empty();
         } else {
             throw std::runtime_error("Unknown distribution: " + distribution_type);
         }
@@ -266,9 +272,9 @@ namespace impactx
         // redistribute particles so that they reside on the correct MPI rank.
         int const myproc = amrex::ParallelDescriptor::MyProc();
         int const nprocs = amrex::ParallelDescriptor::NProcs();
-        int const navg = npart / nprocs;
+        int const navg = npart / nprocs;  // note: integer division
         int const nleft = npart - navg * nprocs;
-        int npart_this_proc = (myproc < nleft) ? navg+1 : navg;
+        int const npart_this_proc = (myproc < nleft) ? navg+1 : navg;  // add 1 to each proc until distributed
         auto const rel_part_this_proc =
             amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
@@ -412,13 +418,12 @@ namespace impactx
         using namespace amrex::literals;
 
         // Parse the beam distribution parameters
-        amrex::ParmParse const pp_dist("beam");
+        amrex::ParmParse pp_dist("beam");
         amrex::ParmParse pp_algo("algo");
         std::string track = "particles";
         pp_algo.queryAdd("track", track);
 
-        if (track == "particles")
-        {
+        if (track == "particles") {
             // set charge and mass and energy of ref particle
             RefPart const ref = initialization::read_reference_particle(pp_dist);
             amr_data->track_particles.m_particle_container->SetRefParticle(ref);
@@ -426,14 +431,19 @@ namespace impactx
             amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
             pp_dist.getWithParser("charge", bunch_charge);
 
-            int npart = 1;  // Number of simulation particles
-            pp_dist.getWithParser("npart", npart);
-
             std::string unit_type;  // System of units
             pp_dist.get("units", unit_type);
 
             distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
-            add_particles(bunch_charge, dist, npart);
+            std::string distribution;
+            pp_dist.get("distribution", distribution);
+
+            int npart = 0;  // Number of simulation particles
+            if (distribution != "empty")
+            {
+                pp_dist.getWithParser("npart", npart);
+                add_particles(bunch_charge, dist, npart);
+            }
 
             // print information on the initialized beam
             amrex::Print() << "Beam kinetic energy (MeV): " << ref.kin_energy_MeV() << std::endl;

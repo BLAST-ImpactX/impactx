@@ -13,6 +13,8 @@
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SmallMatrix.H>
 
+#include <cmath>
+
 namespace impactx::spacecharge
 {
         /** This function returns the linear transport map associated with a

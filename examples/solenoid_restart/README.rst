@@ -7,8 +7,8 @@ This is the same example as the :ref:`proton beam undergoing 90 deg X-Y rotation
 
 The solenoid magnetic field corresponds to B = 2 T.
 
-The second moments of the particle distribution after the solenoid channel are rotated by 90 (start) + 270 = 360 degrees:  the final horizontal moments should coincide with the
-initial vertical moments, and vice-versa, to within the level expected due to noise due to statistical sampling.
+The second moments of the transverse particle distribution after the solenoid channel are rotated by 90 (start) + 270 = 360 degrees:  the final transverse moments should coincide with the
+initial transverse moments to within the level expected due to noise due to statistical sampling.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 

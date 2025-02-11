@@ -11,6 +11,7 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
+#include "particles/spacecharge/EnvelopeSpaceChargePush.H"
 #include "diagnostics/DiagnosticOutput.H"
 
 #include <AMReX.H>
@@ -77,7 +78,7 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         bool space_charge = false;
         pp_algo.query("space_charge", space_charge);
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!space_charge, "Space charge not yet implemented for envelope tracking.");
+        //AMREX_ALWAYS_ASSERT_WITH_MESSAGE("2D space charge only is implemented for envelope tracking.");
         if (verbose > 0)
         {
             amrex::Print() << " Space Charge effects: " << space_charge << "\n";
@@ -123,7 +124,7 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
-                    std::visit([&ref, &cm](auto&& element)
+                    std::visit([&ref, &cm, &slice_ds, &space_charge](auto&& element)
                     {
                         // push reference particle in global coordinates
                         {
@@ -131,7 +132,14 @@ namespace impactx
                             element(ref);
                         }
 
-                        // push Covariance Matrix
+                        if (space_charge) 
+                        {
+                            // push Covariance Matrix in 2D space charge fields
+                            amrex::ParticleReal current=0.0;  //TODO: This must be set.
+                            spacecharge::envelope_space_charge2D_push(ref,cm,current,slice_ds);
+                        }
+
+                        // push Covariance Matrix in external fields
                         element(cm, ref);
 
                     }, element_variant);

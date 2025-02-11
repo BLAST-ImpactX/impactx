@@ -3,4 +3,5 @@ target_sources(lib
     ForceFromSelfFields.cpp
     GatherAndPush.cpp
     PoissonSolve.cpp
+    EnvelopeSpaceChargePush.cpp
 )

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from .defaults import TooltipDefaults
 from .. import html, setup_server, vuetify
+from .defaults import TooltipDefaults
 from .generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()

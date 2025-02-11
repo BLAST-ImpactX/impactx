@@ -118,7 +118,7 @@ class DashboardDefaults:
         "beta": "m",
         "emitt": "m",
     }
-    
+
     DOCUMENTATION = {
         "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
         "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
@@ -141,4 +141,3 @@ class TooltipDefaults:
     TOOLTIP = InputDefaultsHelper.get_docstrings(
         [RefPart, ImpactX], DashboardDefaults.DEFAULT_VALUES
     )
-

@@ -1,6 +1,5 @@
 from trame.widgets import html
 from trame.widgets import vuetify as vuetify
-from trame.widgets import html
 
 # isort: off
 

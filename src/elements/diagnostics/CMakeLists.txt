@@ -3,3 +3,10 @@ target_sources(lib
     AdditionalProperties.cpp
     BeamMonitor.cpp
 )
+
+if(ImpactX_OPENPMD)
+    target_sources(lib
+      PRIVATE
+        openPMD.cpp
+    )
+endif()

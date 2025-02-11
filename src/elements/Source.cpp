@@ -12,49 +12,13 @@
 #include <AMReX_REAL.H>
 
 #ifdef ImpactX_USE_OPENPMD
+#   include "elements/diagnostics/openPMD.H"
 #   include <openPMD/openPMD.hpp>
 namespace io = openPMD;
 #else
 #  include <stdexcept>
 #endif
 
-
-namespace detail
-{
-#ifdef ImpactX_USE_OPENPMD
-    /** Unclutter a real_names to openPMD record
-     *
-     * TODO: move to ABLASTR
-     *
-     * @param fullName name as in real_names variable
-     * @return pair of openPMD record and component name
-     */
-    inline std::pair< std::string, std::string >
-    name2openPMD ( const std::string& fullName )
-    {
-        std::string record_name = fullName;
-        std::string component_name = io::RecordComponent::SCALAR;
-
-        // we use "_" as separator in names to group vector records
-        std::size_t const startComp = fullName.find_last_of('_');
-        if( startComp != std::string::npos ) {  // non-scalar
-            record_name = fullName.substr(0, startComp);
-            component_name = fullName.substr(startComp + 1u);
-        }
-        return make_pair(record_name, component_name);
-    }
-
-    io::RecordComponent get_component_record (
-            io::ParticleSpecies & species,
-            std::string comp_name
-    )
-    {
-        // handle scalar and non-scalar records by name
-        const auto [record_name, component_name] = name2openPMD(std::move(comp_name));
-        return species[record_name][component_name];
-    }
-#endif
-} // namespace detail
 
 namespace impactx::elements
 {
@@ -85,7 +49,7 @@ namespace impactx::elements
 
         auto const scalar = openPMD::RecordComponent::SCALAR;
         auto const getComponentRecord = [&beam](std::string comp_name) {
-            return detail::get_component_record(beam, std::move(comp_name));
+            return diagnostics::detail::get_component_record(beam, std::move(comp_name));
         };
 
         int const npart = beam["id"][scalar].getExtent()[0];  // how many particles to read total

@@ -20,6 +20,7 @@
 #include <AMReX_ParmParse.H>
 
 #ifdef ImpactX_USE_OPENPMD
+#   include "elements/diagnostics/openPMD.H"
 #   include <openPMD/openPMD.hpp>
 namespace io = openPMD;
 #endif
@@ -31,8 +32,7 @@ namespace io = openPMD;
 
 namespace impactx::elements::diagnostics
 {
-namespace detail
-{
+namespace detail {
     ImpactXParticleCounter::ImpactXParticleCounter (ParticleContainer & pc)
     {
         m_MPISize = amrex::ParallelDescriptor::NProcs();
@@ -68,17 +68,16 @@ namespace detail
         }
     }
 
-
-// get the offset in the overall particle id collection
-//
-// note: this is a MPI-collective operation
-//
-// input: num of particles  of from each   processor
-//
-// output:
-//     offset within <all> the particles in the comm
-//     sum of all particles in the comm
-//
+    // get the offset in the overall particle id collection
+    //
+    // note: this is a MPI-collective operation
+    //
+    // input: num of particles  of from each   processor
+    //
+    // output:
+    //     offset within <all> the particles in the comm
+    //     sum of all particles in the comm
+    //
     void
     ImpactXParticleCounter::GetParticleOffsetOfProcessor (
             const long& numParticles,
@@ -103,39 +102,6 @@ namespace detail
 #endif
     }
 
-#ifdef ImpactX_USE_OPENPMD
-    /** Unclutter a real_names to openPMD record
-     *
-     * TODO: move to ABLASTR
-     *
-     * @param fullName name as in real_names variable
-     * @return pair of openPMD record and component name
-     */
-    inline std::pair< std::string, std::string >
-    name2openPMD ( const std::string& fullName )
-    {
-        std::string record_name = fullName;
-        std::string component_name = io::RecordComponent::SCALAR;
-
-        // we use "_" as separator in names to group vector records
-        std::size_t const startComp = fullName.find_last_of('_');
-        if( startComp != std::string::npos ) {  // non-scalar
-            record_name = fullName.substr(0, startComp);
-            component_name = fullName.substr(startComp + 1u);
-        }
-        return make_pair(record_name, component_name);
-    }
-
-    // TODO: move to ablastr
-    io::RecordComponent get_component_record (
-        io::ParticleSpecies & species,
-        std::string comp_name
-    ) {
-        // handle scalar and non-scalar records by name
-        const auto [record_name, component_name] = name2openPMD(std::move(comp_name));
-        return species[record_name][component_name];
-    }
-#endif
 } // namespace detail
 
     void BeamMonitor::finalize ()

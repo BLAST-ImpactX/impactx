@@ -1,6 +1,7 @@
 from typing import Optional
 
-from .. import setup_server, vuetify
+from .. import html, setup_server, vuetify
+from .defaults import TooltipDefaults
 from .generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
@@ -121,17 +122,22 @@ class InputComponents:
         if v_model_name is None:
             v_model_name = label.lower().replace(" ", "_")
 
-        return vuetify.VTextField(
-            label=label,
-            v_model=(v_model_name,),
-            error_messages=(f"{v_model_name}_error_message", []),
-            type="number",
-            step=generalFunctions.get_default(f"{v_model_name}", "steps"),
-            suffix=generalFunctions.get_default(f"{v_model_name}", "units"),
-            __properties=["step"],
-            dense=True,
-            **kwargs,
-        )
+        with vuetify.VTooltip(**TooltipDefaults.TOOLTIP_STYLE):
+            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                vuetify.VTextField(
+                    label=label,
+                    v_model=(v_model_name,),
+                    error_messages=(f"{v_model_name}_error_message", []),
+                    type="number",
+                    step=generalFunctions.get_default(f"{v_model_name}", "steps"),
+                    suffix=generalFunctions.get_default(f"{v_model_name}", "units"),
+                    __properties=["step"],
+                    dense=True,
+                    v_on="on",
+                    v_bind="attrs",
+                    **kwargs,
+                )
+            html.Span(TooltipDefaults.TOOLTIP.get(v_model_name))
 
 
 class NavigationComponents:

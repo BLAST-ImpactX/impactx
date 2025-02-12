@@ -37,21 +37,21 @@ inputParameters = InputParameters()
 card_padding = {"classes": "pa-2"}
 
 with RouterViewLayout(server, "/Input"):
-    with vuetify.VContainer(fluid=True):
-        with vuetify.VRow():
-            with vuetify.VCol(cols="auto", **card_padding):
+    with vuetify.VContainer(fluid=True, classes="fill-height"):
+        with vuetify.VRow(classes="fill-height"):
+            with vuetify.VCol(cols=6, **card_padding):
                 with vuetify.VRow(no_gutters=True):
-                    with vuetify.VCol(cols="auto", **card_padding):
+                    with vuetify.VCol(cols=12, md=6, **card_padding):
                         inputParameters.card()
-                    with vuetify.VCol(cols="auto", **card_padding):
+                    with vuetify.VCol(cols=12, md=6, **card_padding):
                         SpaceChargeConfiguration.card()
-                    with vuetify.VCol(cols="auto", **card_padding):
+                    with vuetify.VCol(cols=12, md=6, **card_padding):
                         csrConfiguration.card()
                 with vuetify.VRow(no_gutters=True):
-                    with vuetify.VCol(cols="auto", **card_padding):
+                    with vuetify.VCol(cols=12, md=6, **card_padding):
                         DistributionParameters.card()
                 with vuetify.VRow(no_gutters=True):
-                    with vuetify.VCol(cols="auto", **card_padding):
+                    with vuetify.VCol(cols=12, md=12, **card_padding):
                         LatticeConfiguration.card()
 
 with RouterViewLayout(server, "/Analyze"):

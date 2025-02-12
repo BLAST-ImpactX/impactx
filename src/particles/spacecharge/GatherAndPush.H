@@ -20,7 +20,7 @@
 #include <string>
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     /** Gather force fields and push particles in x,y,z
      *
@@ -41,6 +41,6 @@ namespace impactx::spacecharge
         amrex::ParticleReal slice_ds
     );
 
-} // namespace impactx
+}  // namespace impactx::particles::spacecharge
 
 #endif // IMPACTX_GATHER_AND_PUSH_H

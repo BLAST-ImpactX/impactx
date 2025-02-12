@@ -17,7 +17,7 @@
 #include <unordered_map>
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     /** Calculate the electric potential from charge density
      *
@@ -36,6 +36,6 @@ namespace impactx::spacecharge
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     );
 
-} // namespace impactx
+} // namespace impactx::particles::spacecharge
 
 #endif // IMPACTX_POISSONSOLVE_H

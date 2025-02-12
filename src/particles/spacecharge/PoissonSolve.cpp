@@ -21,7 +21,7 @@
 #include <cmath>
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     void PoissonSolve (
         ImpactXParticleContainer const & pc,
@@ -121,4 +121,4 @@ namespace impactx::spacecharge
             phi_at_level.FillBoundary(pc.GetParGDB()->Geom()[lev].periodicity());
         }
     }
-} // impactx::spacecharge
+}  // impactx::particles::spacecharge

@@ -185,7 +185,7 @@ class SpaceChargeConfiguration:
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard(v_show="space_charge", style="width: 340px;"):
+        with vuetify.VCard(style="width: 340px;"):
             CardComponents.input_header(
                 "Space Charge", additional_components=multigrid_settings
             )

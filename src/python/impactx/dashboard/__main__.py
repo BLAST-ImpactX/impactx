@@ -41,19 +41,18 @@ with RouterViewLayout(server, "/Input"):
     with vuetify.VContainer(fluid=True, classes="fill-height"):
         with vuetify.VRow(classes="fill-height"):
             with vuetify.VCol(cols=6):
-                with vuetify.VRow(card_row_padding):
+                with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(cols=12, md=6, **card_column_padding):
                         inputParameters.card()
                     with vuetify.VCol(cols=12, md=6, **card_column_padding):
                         SpaceChargeConfiguration.card()
                     with vuetify.VCol(cols=12, md=6, **card_column_padding):
-                        csrConfiguration.card()
-                with vuetify.VRow(card_row_padding):
-                    with vuetify.VCol(cols=12, md=6, **card_column_padding):
                         DistributionParameters.card()
-                with vuetify.VRow(card_row_padding):
+                    with vuetify.VCol(cols=12, md=6, **card_column_padding):
+                        csrConfiguration.card()
+                with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(cols=12, md=12, **card_column_padding):
-                        LatticeConfiqguration.card()
+                        LatticeConfiguration.card()
 
 with RouterViewLayout(server, "/Analyze"):
     with vuetify.VContainer(fluid=True):

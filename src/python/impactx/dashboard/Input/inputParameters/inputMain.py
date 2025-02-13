@@ -13,10 +13,13 @@ from . import InputFunctions
 server, state, ctrl = setup_server()
 
 
-class InputParameters:
+class InputParameters(UIDefaults):
     """
     User-Input section for beam properties.
     """
+
+    def __init__(self):
+        super().__init__()
 
     @state.change("kin_energy_unit")
     def on_kin_energy_unit_change(**kwargs) -> None:
@@ -30,8 +33,8 @@ class InputParameters:
 
         with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("Input Parameters")
-            with vuetify.VCardText(**UIDefaults.card_text_overflow):
-                with vuetify.VRow(**UIDefaults.row_style):
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols="auto"):
                         vuetify.VCheckbox(
                             label="Space Charge",
@@ -44,7 +47,7 @@ class InputParameters:
                             v_model=("csr", False),
                             dense=True,
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):
                         InputComponents.text_field(
                             label="Ref. Particle Charge",
@@ -55,13 +58,13 @@ class InputParameters:
                             label="Ref. Particle Mass",
                             v_model_name="mass_MeV",
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=12):
                         InputComponents.text_field(
                             label="Number of Particles",
                             v_model_name="npart",
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=8):
                         InputComponents.text_field(
                             label="Kinetic Energy",
@@ -72,7 +75,7 @@ class InputParameters:
                             label="Unit",
                             v_model_name="kin_energy_unit",
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=12):
                         InputComponents.text_field(
                             label="Bunch Charge",

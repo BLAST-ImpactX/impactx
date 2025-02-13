@@ -167,21 +167,24 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
 # -----------------------------------------------------------------------------
 
 
-class DistributionParameters:
+class DistributionParameters(UIDefaults):
     """
     User-Input section for beam distribution.
     """
 
-    @staticmethod
-    def card():
+    def __init__(self):
+        super().__init__()
+
+    def card(self):
         """
         Creates UI content for beam distribution.
         """
 
         with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("Distribution Parameters")
-            with vuetify.VCardText(**UIDefaults.card_text_overflow):
-                with vuetify.VRow(**UIDefaults.row_style):
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
+
                     with vuetify.VCol(cols=6):
                         InputComponents.select(
                             label="Select Distribution",
@@ -194,13 +197,13 @@ class DistributionParameters:
                             v_model_name="distribution_type",
                             disabled=("distribution_type_disable",),
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     for i in range(3):
                         with vuetify.VCol(cols=4):
                             with vuetify.VRow(
                                 v_for="(parameter, index) in selected_distribution_parameters",
                                 v_if=f"index % 3 == {i}",
-                                **UIDefaults.row_style,
+                                **self.ROW_STYLE,
                             ):
                                 with vuetify.VCol():
                                     vuetify.VTextField(

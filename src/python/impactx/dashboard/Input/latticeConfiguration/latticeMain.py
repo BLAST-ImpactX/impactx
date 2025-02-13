@@ -224,13 +224,15 @@ def update_default_value(parameter_name, new_value):
 # -----------------------------------------------------------------------------
 
 
-class LatticeConfiguration:
+class LatticeConfiguration(UIDefaults):
     """
     User-Input section for configuring lattice elements.
     """
 
-    @staticmethod
-    def card():
+    def __init__(self):
+        super().__init__()
+
+    def card(self):
         """
         Creates UI content for lattice configuration.
         """
@@ -245,8 +247,8 @@ class LatticeConfiguration:
 
         with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("Lattice Configuration")
-            with vuetify.VCardText(**UIDefaults.card_text_overflow):
-                with vuetify.VRow(**UIDefaults.row_style):
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=10):
                         vuetify.VCombobox(
                             label="Select Accelerator Lattice",
@@ -269,7 +271,7 @@ class LatticeConfiguration:
                             "mdi-cog",
                             click="lattice_configuration_dialog_settings = true",
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol():
                         with vuetify.VCard(style="height: 100%; overflow-y: auto;"):
                             with vuetify.VCardTitle(

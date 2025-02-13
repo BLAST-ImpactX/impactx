@@ -12,22 +12,24 @@ from .. import CardComponents, InputComponents, UIDefaults
 server, state, ctrl = setup_server()
 
 
-class csrConfiguration:
-    @staticmethod
-    def card():
+class csrConfiguration(UIDefaults):
+    def __init__(self):
+        super().__init__()
+
+    def card(self):
         """
         Creates UI content for CSR.
         """
 
-        with vuetify.VCard(**UIDefaults.card_sizing):
+        with vuetify.VCard(style=("card_style",)):
             CardComponents.input_header("CSR")
-            with vuetify.VCardText(**UIDefaults.card_text_overflow):
-                with vuetify.VRow(**UIDefaults.row_style):
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol():
                         InputComponents.select(
                             label="Particle Shape",
                         )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol():
                         InputComponents.text_field(
                             label="CSR Bins",

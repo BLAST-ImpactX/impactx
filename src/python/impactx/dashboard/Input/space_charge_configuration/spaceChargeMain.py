@@ -179,9 +179,11 @@ def multigrid_settings():
     )
 
 
-class SpaceChargeConfiguration:
-    @staticmethod
-    def card():
+class SpaceChargeConfiguration(UIDefaults):
+    def __init__(self):
+        super().__init__()
+
+    def card(self):
         """
         Creates UI content for space charge configuration
         """
@@ -195,8 +197,8 @@ class SpaceChargeConfiguration:
             CardComponents.input_header(
                 "Space Charge", additional_components=multigrid_settings
             )
-            with vuetify.VCardText(**UIDefaults.card_text_overflow):
-                with vuetify.VRow(**UIDefaults.row_style):
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Poisson Solver",
@@ -210,7 +212,7 @@ class SpaceChargeConfiguration:
                             label="Max Level",
                         )
                 for field in ["n_cell", "blocking_factor"]:
-                    with vuetify.VRow(**UIDefaults.row_style):
+                   with vuetify.VRow(**self.ROW_STYLE):
                         for direction in ["x", "y", "z"]:
                             with vuetify.VCol(cols=4):
                                 InputComponents.text_field(
@@ -218,13 +220,13 @@ class SpaceChargeConfiguration:
                                     v_model_name=f"{field}_{direction}",
                                     prefix=f"{direction}:",
                                 )
-                with vuetify.VRow(**UIDefaults.row_style):
+                with vuetify.VRow(**self.ROW_STYLE):
                     for i in range(3):
                         with vuetify.VCol(cols=4):
                             with vuetify.VRow(
                                 v_for="(field, index) in prob_relative_fields",
                                 v_if=f"index % 3 == {i}",
-                                **UIDefaults.row_style,
+                                **self.ROW_STYLE,
                             ):
                                 with vuetify.VCol():
                                     vuetify.VTextField(

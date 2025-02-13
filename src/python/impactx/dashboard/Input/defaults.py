@@ -161,6 +161,23 @@ class ToolbarDefaults:
     FOOTER_SIZE = 8
 
 class UIDefaults:
-    row_style = {"dense": True}
-    card_sizing = {"style": "max-height: 40vh; display: flex; flex-direction: column"}
-    card_text_overflow = {"style": "flex: 1; overflow-y: auto; overflow-x: auto;"}
+    """
+    Default UI which the input cards reply on in the ImpactX dashboard.    
+    """
+
+    ROW_STYLE = {
+        "dense": True
+    }
+
+    CARD_TEXT_OVERFLOW = {
+        "style": {
+            "flex": "1",
+            "overflow-y": "auto",
+            "overflow-x": "auto"
+        }
+    }
+
+    CARD_STYLE = {
+        "display": "flex",
+        "flex-direction": "column"
+    }

@@ -33,6 +33,10 @@ from .Input.shared import SharedUtilities
 shared_utilities = SharedUtilities()
 
 inputParameters = InputParameters()
+distribution = DistributionParameters()
+lattice_config = LatticeConfiguration()
+space_charge = SpaceChargeConfiguration()
+csr = csrConfiguration()
 
 card_column_padding = {"classes": "pa-2"}
 card_row_padding = {"classes": "ma-2"}
@@ -44,15 +48,19 @@ with RouterViewLayout(server, "/Input"):
                 with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(cols=12, md=6, **card_column_padding):
                         inputParameters.card()
-                    with vuetify.VCol(cols=12, md=6, **card_column_padding, v_show="space_charge"):
-                        SpaceChargeConfiguration.card()
+                    with vuetify.VCol(
+                        cols=12, md=6, **card_column_padding, v_show="space_charge"
+                    ):
+                        space_charge.card()
                     with vuetify.VCol(cols=12, md=6, **card_column_padding):
-                        DistributionParameters.card()
-                    with vuetify.VCol(cols=12, md=6, **card_column_padding, v_show="csr"):
-                        csrConfiguration.card()
+                        distribution.card()
+                    with vuetify.VCol(
+                        cols=12, md=6, **card_column_padding, v_show="csr"
+                    ):
+                        csr.card()
                 with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(cols=12, md=12, **card_column_padding):
-                        LatticeConfiguration.card()
+                        lattice_config.card()
 
 with RouterViewLayout(server, "/Analyze"):
     with vuetify.VContainer(fluid=True):

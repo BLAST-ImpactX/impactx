@@ -110,8 +110,6 @@ class InputComponents:
                     v_model=(v_model_name,),
                     items=items,
                     dense=True,
-                    hide_details=True,
-                    classes="mt-2",
                     **kwargs,
                     v_on="on",
                     v_bind="attrs",

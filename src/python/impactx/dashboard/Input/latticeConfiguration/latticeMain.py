@@ -9,7 +9,13 @@ License: BSD-3-Clause-LBNL
 from impactx import elements
 
 from ... import setup_server, vuetify
-from .. import CardComponents, InputComponents, NavigationComponents, generalFunctions
+from .. import (
+    CardComponents,
+    InputComponents,
+    NavigationComponents,
+    UIDefaults,
+    generalFunctions,
+)
 
 server, state, ctrl = setup_server()
 
@@ -237,10 +243,10 @@ class LatticeConfiguration:
         ):
             LatticeConfiguration.dialog_settings()
 
-        with vuetify.VCard(style="width: 696px;"):
+        with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("Lattice Configuration")
-            with vuetify.VCardText():
-                with vuetify.VRow(align="center", no_gutters=True):
+            with vuetify.VCardText(**UIDefaults.card_text_overflow):
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=10):
                         vuetify.VCombobox(
                             label="Select Accelerator Lattice",
@@ -263,11 +269,9 @@ class LatticeConfiguration:
                             "mdi-cog",
                             click="lattice_configuration_dialog_settings = true",
                         )
-                with vuetify.VRow():
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol():
-                        with vuetify.VCard(
-                            style="height: 300px; width: 700px; overflow-y: auto;"
-                        ):
+                        with vuetify.VCard(style="height: 100%; overflow-y: auto;"):
                             with vuetify.VCardTitle(
                                 "Elements", classes="text-subtitle-2 pa-3"
                             ):

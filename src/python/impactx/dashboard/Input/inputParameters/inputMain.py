@@ -28,9 +28,9 @@ class InputParameters:
         Creates UI content for beam properties.
         """
 
-        with vuetify.VCard():
+        with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("Input Parameters")
-            with vuetify.VCardText():
+            with vuetify.VCardText(**UIDefaults.card_text_overflow):
                 with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols="auto"):
                         vuetify.VCheckbox(

@@ -151,6 +151,15 @@ class TooltipDefaults:
     )
 
 
+class ToolbarDefaults:
+    """
+    Default styling and states for the toolbar
+    section in the ImpactX dashboard.
+    """
+
+    TOOLBAR_SIZE = 64
+    FOOTER_SIZE = 8
+
 class UIDefaults:
     row_style = {"dense": True}
     card_sizing = {"style": "max-height: 40vh; display: flex; flex-direction: column"}

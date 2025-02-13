@@ -13,7 +13,13 @@ from distribution_input_helpers import twiss
 from impactx import distribution
 
 from ... import setup_server, vuetify
-from .. import CardComponents, DashboardDefaults, InputComponents, generalFunctions
+from .. import (
+    CardComponents,
+    DashboardDefaults,
+    InputComponents,
+    UIDefaults,
+    generalFunctions,
+)
 from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
@@ -172,10 +178,10 @@ class DistributionParameters:
         Creates UI content for beam distribution.
         """
 
-        with vuetify.VCard(style="width: 340px; height: 300px"):
+        with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("Distribution Parameters")
-            with vuetify.VCardText():
-                with vuetify.VRow():
+            with vuetify.VCardText(**UIDefaults.card_text_overflow):
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=6):
                         InputComponents.select(
                             label="Select Distribution",
@@ -188,14 +194,15 @@ class DistributionParameters:
                             v_model_name="distribution_type",
                             disabled=("distribution_type_disable",),
                         )
-                with vuetify.VRow(classes="my-2"):
+                with vuetify.VRow(**UIDefaults.row_style):
                     for i in range(3):
-                        with vuetify.VCol(cols=4, classes="py-0"):
+                        with vuetify.VCol(cols=4):
                             with vuetify.VRow(
                                 v_for="(parameter, index) in selected_distribution_parameters",
                                 v_if=f"index % 3 == {i}",
+                                **UIDefaults.row_style,
                             ):
-                                with vuetify.VCol(classes="py-1"):
+                                with vuetify.VCol():
                                     vuetify.VTextField(
                                         label=("parameter.parameter_name",),
                                         v_model=("parameter.parameter_default_value",),

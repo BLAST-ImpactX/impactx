@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardComponents, InputComponents
+from .. import CardComponents, InputComponents, UIDefaults
 from . import InputFunctions
 
 server, state, ctrl = setup_server()
@@ -31,7 +31,7 @@ class InputParameters:
         with vuetify.VCard():
             CardComponents.input_header("Input Parameters")
             with vuetify.VCardText():
-                with vuetify.VRow():
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=6):
                         vuetify.VCheckbox(
                             label="Space Charge",
@@ -44,7 +44,7 @@ class InputParameters:
                             v_model=("csr", False),
                             dense=True,
                         )
-                with vuetify.VRow():
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=6):
                         InputComponents.text_field(
                             label="Ref. Particle Charge",
@@ -55,13 +55,13 @@ class InputParameters:
                             label="Ref. Particle Mass",
                             v_model_name="mass_MeV",
                         )
-                with vuetify.VRow():
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=12):
                         InputComponents.text_field(
                             label="Number of Particles",
                             v_model_name="npart",
                         )
-                with vuetify.VRow():
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=8):
                         InputComponents.text_field(
                             label="Kinetic Energy",
@@ -72,7 +72,7 @@ class InputParameters:
                             label="Unit",
                             v_model_name="kin_energy_unit",
                         )
-                with vuetify.VRow():
+                with vuetify.VRow(**UIDefaults.row_style):
                     with vuetify.VCol(cols=12):
                         InputComponents.text_field(
                             label="Bunch Charge",

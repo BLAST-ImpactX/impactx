@@ -32,13 +32,13 @@ class InputParameters:
             CardComponents.input_header("Input Parameters")
             with vuetify.VCardText():
                 with vuetify.VRow(**UIDefaults.row_style):
-                    with vuetify.VCol(cols=6):
+                    with vuetify.VCol(cols="auto"):
                         vuetify.VCheckbox(
                             label="Space Charge",
                             v_model=("space_charge", False),
                             dense=True,
                         )
-                    with vuetify.VCol(cols=6):
+                    with vuetify.VCol(cols="auto"):
                         vuetify.VCheckbox(
                             label="CSR",
                             v_model=("csr", False),

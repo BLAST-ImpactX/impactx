@@ -119,6 +119,14 @@ class DashboardDefaults:
         "emitt": "m",
     }
 
+    DOCUMENTATION = {
+        "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
+        "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
+        "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
+        "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
+        "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+    }
+
 
 class TooltipDefaults:
     """

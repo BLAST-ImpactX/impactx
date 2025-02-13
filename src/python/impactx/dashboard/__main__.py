@@ -90,6 +90,7 @@ def application():
             NavigationComponents.create_route("Analyze", "mdi-chart-box-multiple")
 
         with layout.content:
+            NavigationComponents.create_documentation_drawer()
             router.RouterView()
             init_terminal()
     return layout

@@ -19,7 +19,7 @@
 #include <unordered_map>
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     /** Calculate the space charge force field from the electric potential
      *
@@ -36,6 +36,6 @@ namespace impactx::spacecharge
         const amrex::Vector<amrex::Geometry>& geom
     );
 
-} // namespace impactx
+}  // namespace impactx::particles::spacecharge
 
 #endif // IMPACTX_FORCEFROMSELFFIELDS_H

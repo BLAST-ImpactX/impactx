@@ -6,6 +6,9 @@ from .generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 
+state.documentation_drawer_open = False
+state.documentation_url = ""
+
 
 class CardComponents:
     """
@@ -41,7 +44,7 @@ class CardComponents:
         return vuetify.VIcon(
             "mdi-information",
             style="color: #00313C;",
-            click=lambda: generalFunctions.documentation(section_name),
+            click=lambda: generalFunctions.open_documentation(section_name),
         )
 
     @staticmethod
@@ -187,3 +190,21 @@ class NavigationComponents:
                 for tab_name in tab_names:
                     vuetify.VTab(tab_name)
             vuetify.VDivider()
+
+    @staticmethod
+    def create_documentation_drawer():
+        with vuetify.VNavigationDrawer(
+            v_model=("documentation_drawer_open",),
+            absolute=True,
+            right=True,
+            hide_overlay=True,
+            style="width: 30vw; top: 64px !important;  position: fixed;",
+        ):
+            with vuetify.VContainer(
+                fluid=True,
+                classes="pa-0 fill-height",
+            ):
+                html.Iframe(
+                    src=("documentation_url",),
+                    style="width: 100%; height: 100%; border: none;",
+                )

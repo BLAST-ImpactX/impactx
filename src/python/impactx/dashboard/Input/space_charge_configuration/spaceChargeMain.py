@@ -7,7 +7,13 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardComponents, InputComponents, NavigationComponents, generalFunctions
+from .. import (
+    CardComponents,
+    InputComponents,
+    NavigationComponents,
+    UIDefaults,
+    generalFunctions,
+)
 from . import SpaceChargeFunctions
 
 server, state, ctrl = setup_server()
@@ -185,74 +191,55 @@ class SpaceChargeConfiguration:
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard(style="width: 340px;"):
+        with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header(
                 "Space Charge", additional_components=multigrid_settings
             )
-            with vuetify.VCardText():
-                with vuetify.VRow(classes="my-0"):
-                    with vuetify.VCol(cols=5, classes="py-0"):
+            with vuetify.VCardText(**UIDefaults.card_text_overflow):
+                with vuetify.VRow(**UIDefaults.row_style):
+                    with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Poisson Solver",
-                            hide_details=True,
                         )
-                    with vuetify.VCol(cols=4, classes="py-0"):
+                    with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Particle Shape",
                         )
-                    with vuetify.VCol(cols=3, classes="py-0"):
+                    with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Max Level",
                         )
-                with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "nCell",
-                        classes="font-weight-bold black--text",
-                    )
-                with vuetify.VRow(classes="my-0"):
-                    for direction in ["x", "y", "z"]:
-                        with vuetify.VCol(cols=4, classes="py-0"):
-                            InputComponents.text_field(
-                                label="",
-                                v_model_name=f"n_cell_{direction}",
-                                prefix=f"{direction}:",
-                                style="margin-top: -5px",
-                            )
-                with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "Blocking Factor",
-                        classes="font-weight-bold black--text mt-2",
-                    )
-                with vuetify.VRow(classes="my-0"):
-                    for direction in ["x", "y", "z"]:
-                        with vuetify.VCol(cols=4, classes="py-0"):
-                            InputComponents.text_field(
-                                label="",
-                                prefix=f"{direction}:",
-                                v_model_name=f"blocking_factor_{direction}",
-                                style="margin-top: -5px",
-                            )
-                with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "prob_relative",
-                        classes="font-weight-bold black--text mt-2",
-                    )
-                with vuetify.VRow(classes="my-0"):
-                    with vuetify.VCol(
-                        v_for=("(field, index) in prob_relative_fields",),
-                        classes="py-0",
-                    ):
-                        vuetify.VTextField(
-                            placeholder=("val."),
-                            v_model=("field.value",),
-                            input=(ctrl.update_prob_relative, "[index, $event]"),
-                            error_messages=("field.error_message",),
-                            type="number",
-                            step=("field.step",),
-                            __properties=["step"],
-                            dense=True,
-                            style="margin-top: -5px",
-                        )
+                for field in ["n_cell", "blocking_factor"]:
+                    with vuetify.VRow(**UIDefaults.row_style):
+                        for direction in ["x", "y", "z"]:
+                            with vuetify.VCol(cols=4):
+                                InputComponents.text_field(
+                                    label=field if direction == "x" else "",
+                                    v_model_name=f"{field}_{direction}",
+                                    prefix=f"{direction}:",
+                                )
+                with vuetify.VRow(**UIDefaults.row_style):
+                    for i in range(3):
+                        with vuetify.VCol(cols=4):
+                            with vuetify.VRow(
+                                v_for="(field, index) in prob_relative_fields",
+                                v_if=f"index % 3 == {i}",
+                                **UIDefaults.row_style,
+                            ):
+                                with vuetify.VCol():
+                                    vuetify.VTextField(
+                                        label=("index === 0 ? 'prob_relative' : ''",),
+                                        v_model=("field.value",),
+                                        input=(
+                                            ctrl.update_prob_relative,
+                                            "[index, $event]",
+                                        ),
+                                        error_messages=("field.error_message",),
+                                        type="number",
+                                        step=("field.step",),
+                                        __properties=["step"],
+                                        dense=True,
+                                    )
 
     @staticmethod
     def dialog_settings():

@@ -1,11 +1,12 @@
 from .components import CardComponents, InputComponents, NavigationComponents
-from .defaults import DashboardDefaults
+from .defaults import DashboardDefaults, UIDefaults
 from .generalFunctions import generalFunctions
 
 __all__ = [
-    "InputComponents",
     "CardComponents",
     "DashboardDefaults",
-    "NavigationComponents",
     "generalFunctions",
+    "InputComponents",
+    "NavigationComponents",
+    "UIDefaults",
 ]

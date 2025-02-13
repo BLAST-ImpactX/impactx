@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardComponents, InputComponents
+from .. import CardComponents, InputComponents, UIDefaults
 
 server, state, ctrl = setup_server()
 
@@ -19,16 +19,16 @@ class csrConfiguration:
         Creates UI content for CSR.
         """
 
-        with vuetify.VCard(style="width: 170px;"):
+        with vuetify.VCard(**UIDefaults.card_sizing):
             CardComponents.input_header("CSR")
-            with vuetify.VCardText():
-                with vuetify.VRow(classes="my-0"):
-                    with vuetify.VCol(classes="py-0"):
+            with vuetify.VCardText(**UIDefaults.card_text_overflow):
+                with vuetify.VRow(**UIDefaults.row_style):
+                    with vuetify.VCol():
                         InputComponents.select(
                             label="Particle Shape",
                         )
-                with vuetify.VRow(classes="my-0"):
-                    with vuetify.VCol(classes="py-0"):
+                with vuetify.VRow(**UIDefaults.row_style):
+                    with vuetify.VCol():
                         InputComponents.text_field(
                             label="CSR Bins",
                         )

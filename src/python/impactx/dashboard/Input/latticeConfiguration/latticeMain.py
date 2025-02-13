@@ -245,7 +245,7 @@ class LatticeConfiguration(UIDefaults):
         ):
             LatticeConfiguration.dialog_settings()
 
-        with vuetify.VCard(**UIDefaults.card_sizing):
+        with vuetify.VCard(style=("card_style",)):
             CardComponents.input_header("Lattice Configuration")
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

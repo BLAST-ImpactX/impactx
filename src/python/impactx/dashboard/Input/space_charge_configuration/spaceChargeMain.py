@@ -193,7 +193,7 @@ class SpaceChargeConfiguration(UIDefaults):
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard(**UIDefaults.card_sizing):
+        with vuetify.VCard(style=("card_style",)):
             CardComponents.input_header(
                 "Space Charge", additional_components=multigrid_settings
             )
@@ -212,7 +212,7 @@ class SpaceChargeConfiguration(UIDefaults):
                             label="Max Level",
                         )
                 for field in ["n_cell", "blocking_factor"]:
-                   with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VRow(**self.ROW_STYLE):
                         for direction in ["x", "y", "z"]:
                             with vuetify.VCol(cols=4):
                                 InputComponents.text_field(

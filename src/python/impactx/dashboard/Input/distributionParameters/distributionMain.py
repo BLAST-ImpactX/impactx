@@ -179,12 +179,10 @@ class DistributionParameters(UIDefaults):
         """
         Creates UI content for beam distribution.
         """
-
-        with vuetify.VCard(**UIDefaults.card_sizing):
+        with vuetify.VCard(style=("card_style",)):
             CardComponents.input_header("Distribution Parameters")
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
-
                     with vuetify.VCol(cols=6):
                         InputComponents.select(
                             label="Select Distribution",

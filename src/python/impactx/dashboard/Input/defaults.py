@@ -9,7 +9,9 @@ License: BSD-3-Clause-LBNL
 from impactx.impactx_pybind import ImpactX, RefPart
 
 from .defaults_helper import InputDefaultsHelper
+from .. import setup_server
 
+server, state, ctrl = setup_server()
 
 class DashboardDefaults:
     """
@@ -160,24 +162,36 @@ class ToolbarDefaults:
     TOOLBAR_SIZE = 64
     FOOTER_SIZE = 8
 
+
 class UIDefaults:
     """
-    Default UI which the input cards reply on in the ImpactX dashboard.    
+    Default UI which the input cards reply on in the ImpactX dashboard.
     """
 
     ROW_STYLE = {
-        "dense": True
+        "dense": True,
     }
 
     CARD_TEXT_OVERFLOW = {
         "style": {
             "flex": "1",
             "overflow-y": "auto",
-            "overflow-x": "auto"
+            "overflow-x": "auto",
         }
     }
 
     CARD_STYLE = {
         "display": "flex",
-        "flex-direction": "column"
+        "flex-direction": "column",
     }
+
+    @staticmethod
+    def adjust_card_height(space_charge, csr):
+        state.card_height = "33.33vh" if (space_charge or csr) else "40vh"
+
+        CARD_SIZING = {
+            "max-height": f"calc({state.card_height} - {ToolbarDefaults.TOOLBAR_SIZE + ToolbarDefaults.FOOTER_SIZE}px)",
+            "transition": "max-height 0.5s",
+        }
+
+        state.card_style = UIDefaults.CARD_STYLE | CARD_SIZING

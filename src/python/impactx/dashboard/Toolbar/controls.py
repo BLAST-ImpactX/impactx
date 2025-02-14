@@ -243,5 +243,6 @@ class GeneralToolbar:
             dense=True,
             dismissible=True,
             v_model=("show_dashboard_alert", True),
-            classes="mt-4",
+            classes="text-body-2 hidden-md-and-down",
+            style="width: 50vw; overflow: hidden; margin: auto;"
         )

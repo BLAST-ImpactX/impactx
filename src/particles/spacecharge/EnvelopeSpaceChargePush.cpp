@@ -13,7 +13,7 @@
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SmallMatrix.H>
 #include <AMReX_ParmParse.H>
-#include <AMReX_Print.H> 
+#include <AMReX_Print.H>
 
 #include <cmath>
 

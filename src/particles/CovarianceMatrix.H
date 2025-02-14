@@ -40,16 +40,16 @@ namespace impactx
         set_beam_current_A (amrex::ParticleReal const beam_current_A)
         {
             using namespace amrex::literals;
-         
+
             beam_current = beam_current_A;
-            
+
             return *this;
          }
 
         /** Get envelope beam current for 2D space charge
          *
          * @returns beam current in A
-         */ 
+         */
         amrex::ParticleReal
         beam_current_A ()
         {
@@ -66,7 +66,7 @@ namespace impactx
         set_covariance_matrix (CovarianceMatrix const covariance_matrix)
         {
             cm = covariance_matrix;
-    
+
             return *this;
          }
 

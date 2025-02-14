@@ -1285,4 +1285,3 @@ add_impactx_test(fodo-envelope-sc.py
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py
     OFF  # no plot script yet
 )
-

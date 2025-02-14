@@ -69,6 +69,9 @@ namespace detail
               m_part_idcpu(part_idcpu),
               m_ref_part(std::move(ref_part))
         {
+            // pre-compute and cache constants that are independent of the
+            // individually tracked particle
+            m_element.compute_constants(m_ref_part);
         }
 
         PushSingleParticle () = delete;
@@ -100,7 +103,7 @@ namespace detail
         }
 
     private:
-        T_Element const m_element;
+        T_Element m_element;
         amrex::ParticleReal* const AMREX_RESTRICT m_part_x;
         amrex::ParticleReal* const AMREX_RESTRICT m_part_y;
         amrex::ParticleReal* const AMREX_RESTRICT m_part_t;
@@ -108,7 +111,7 @@ namespace detail
         amrex::ParticleReal* const AMREX_RESTRICT m_part_py;
         amrex::ParticleReal* const AMREX_RESTRICT m_part_pt;
         uint64_t* const AMREX_RESTRICT m_part_idcpu;
-        RefPart const m_ref_part;
+        RefPart m_ref_part;
     };
 
     /** This pushes all particles on a particle iterator tile/box
@@ -133,7 +136,8 @@ namespace detail
         uint64_t* const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
         detail::PushSingleParticle<T_Element> const pushSingleParticle(
-                element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
+            element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
+
         //   loop over beam particles in the box
         amrex::ParallelFor(np, pushSingleParticle);
     }

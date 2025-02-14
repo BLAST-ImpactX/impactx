@@ -52,6 +52,7 @@ Space Charge
    examples/cfchannel/README.rst
    examples/kurth/README.rst
    examples/epac2004_benchmarks/README.rst
+   examples/fodo_space_charge/README.rst
 
 Coherent Synchrotron Radiation (CSR)
 """"""""""""""""""""""""""""""""""""

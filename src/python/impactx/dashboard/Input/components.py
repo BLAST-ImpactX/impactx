@@ -42,33 +42,37 @@ class CardComponents:
         vuetify.VDivider()
 
     @staticmethod
-    def documentation_icon(section_name: str) -> vuetify.VIcon:
+    def documentation_icon(section_name: str) -> vuetify.VBtn:
         """
         Takes user to input section's documentation.
 
         :param section_name: The name for the input section.
         """
 
-        return vuetify.VIcon(
-            "mdi-information",
+        with vuetify.VBtn(
             style="color: #00313C;",
             click=lambda: generalFunctions.open_documentation(section_name),
-        )
+            icon=True,
+            small=True,
+        ):
+            vuetify.VIcon("mdi-information",)
+
 
     @staticmethod
-    def refresh_icon(section_name: str) -> vuetify.VIcon:
+    def refresh_icon(section_name: str) -> vuetify.VBtn:
         """
         Resets input values to default.
 
         :param section_name: The name for the input section.
         """
 
-        return vuetify.VIcon(
-            "mdi-refresh",
+        with vuetify.VBtn(
             style="color: #00313C;",
             click=lambda: generalFunctions.reset_inputs(section_name),
-        )
-
+            icon=True,
+            small=True,
+        ):
+            vuetify.VIcon("mdi-refresh")
 
 class InputComponents:
     """

@@ -40,26 +40,28 @@ csr = csrConfiguration()
 
 card_column_padding = {"classes": "pa-2"}
 card_row_padding = {"classes": "ma-2"}
+input_section_breakpoints = {"cols": 12, "md" : 6}
+card_breakpoints = {"cols": 12, "lg": 6, "md": 12, "sm": 6}
 
 with RouterViewLayout(server, "/Input"):
-    with vuetify.VContainer(fluid=True, classes="fill-height"):
-        with vuetify.VRow(classes="fill-height"):
-            with vuetify.VCol(cols=6):
+    with vuetify.VContainer(fluid=True):
+        with vuetify.VRow():
+            with vuetify.VCol(cols=12, md=6):
                 with vuetify.VRow(**card_row_padding):
-                    with vuetify.VCol(cols=12, md=6, **card_column_padding):
+                    with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
                         inputParameters.card()
                     with vuetify.VCol(
-                        cols=12, md=6, **card_column_padding, v_show="space_charge"
+                        **{**card_breakpoints, **card_column_padding}, v_show="space_charge"
                     ):
                         space_charge.card()
-                    with vuetify.VCol(cols=12, md=6, **card_column_padding):
+                    with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
                         distribution.card()
                     with vuetify.VCol(
-                        cols=12, md=6, **card_column_padding, v_show="csr"
+                        **{**card_breakpoints, **card_column_padding}, v_show="csr"
                     ):
                         csr.card()
                 with vuetify.VRow(**card_row_padding):
-                    with vuetify.VCol(cols=12, md=12, **card_column_padding):
+                    with vuetify.VCol(cols=12, **card_column_padding):
                         lattice_config.card()
 
 with RouterViewLayout(server, "/Analyze"):

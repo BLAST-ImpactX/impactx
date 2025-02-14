@@ -93,6 +93,18 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle (unused)
+         */
+        void compute_constants ([[maybe_unused]] RefPart const & refpart)
+        {
+            Alignment::compute_constants(refpart);
+        }
+
         /** This is an aperture functor, so that a variable of this type can be used like an
          *  aperture function.
          *
@@ -114,7 +126,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt

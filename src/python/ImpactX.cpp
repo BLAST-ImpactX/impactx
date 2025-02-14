@@ -438,11 +438,11 @@ void init_ImpactX (py::module& m)
         .def("init_beam_distribution_from_inputs", &ImpactX::initBeamDistributionFromInputs)
         .def("init_lattice_elements_from_inputs", &ImpactX::initLatticeElementsFromInputs)
         .def("init_envelope",
-            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr) {
+            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr, amrex::Real current) {
                 ix.amr_data->track_envelope.m_ref = ref;
-                ix.amr_data->track_envelope.m_cm = initialization::create_covariance_matrix(distr);
+                ix.amr_data->track_envelope.m_env = initialization::create_envelope(current,distr);
             },
-            py::arg("ref"), py::arg("distr"),
+            py::arg("ref"), py::arg("distr"), py::arg("current"),
             "Envelope tracking mode:"
             "Create a 6x6 covariance matrix from a distribution and then initialize "
             "the the simulation for envelope tracking relative to a reference particle."

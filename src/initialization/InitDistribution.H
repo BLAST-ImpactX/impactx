@@ -40,8 +40,9 @@ namespace impactx::initialization
 
     /** Ignore the shape of a distribution and use the 2nd moments to create a covariance matrix
      */
-    CovarianceMatrix
-    create_covariance_matrix (
+    Envelope
+    create_envelope (
+        amrex::ParticleReal const current,
         distribution::KnownDistributions const & distr
     );
 

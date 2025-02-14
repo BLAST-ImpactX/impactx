@@ -2,6 +2,7 @@
 # Particle Beam(s)
 ###############################################################################
 beam.kin_energy = 6.7
+beam.current = 0.5
 beam.particle = proton
 beam.distribution = kvdist_from_twiss
 beam.alphaX = 2.4685083

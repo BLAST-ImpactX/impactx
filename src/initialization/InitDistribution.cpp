@@ -185,8 +185,9 @@ namespace impactx
         return dist;
     }
 
-    CovarianceMatrix
-    initialization::create_covariance_matrix (
+    Envelope
+    initialization::create_envelope (
+        amrex::ParticleReal const current,
         distribution::KnownDistributions const & distr
     )
     {
@@ -233,7 +234,11 @@ namespace impactx
             }
         }, distr);
 
-        return cv;
+        Envelope env;
+        env.set_beam_current_A(current);
+        env.set_covariance_matrix(cv);
+
+        return env;
     }
 
     void
@@ -471,17 +476,17 @@ namespace impactx
         }
         else if (track == "envelope")
         {
-            // For treating 3D space charge in bunched beams (not yet implemented in envelope mode)
-            //amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
-            //pp_dist.getWithParser("charge", bunch_charge);
+            // relevant for envelope tracking with 3D space charge
+            amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
+            pp_dist.query("charge", bunch_charge);
 
-            // For treating 2D space charge in unbunched beams
+            // relevant for envelope tracking with 2D space charge
             amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
             pp_dist.query("current", beam_current);
 
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);
-            amr_data->track_envelope.m_cm = impactx::initialization::create_covariance_matrix(dist);
+            amr_data->track_envelope.m_env = impactx::initialization::create_envelope(beam_current,dist);
         }
         else if (track == "reference_orbit")
         {

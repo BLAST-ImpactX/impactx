@@ -27,6 +27,9 @@ kin_energy_MeV = 6.7  # reference energy
 ref = sim.particle_container().ref_particle()
 ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
 
+#  beam current in A
+beam_current_A = 0.5
+
 #   particle bunch
 distr = distribution.KVdist(
     **twiss(
@@ -42,7 +45,7 @@ distr = distribution.KVdist(
     )
 )
 
-sim.init_envelope(ref, distr)
+sim.init_envelope(ref, distr, beam_current_A)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")

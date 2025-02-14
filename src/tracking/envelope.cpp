@@ -47,12 +47,14 @@ namespace impactx
         {
             throw std::runtime_error("track_envelope: Reference particle not set.");
         }
-        if (!amr_data->track_envelope.m_cm.has_value())
+        if (!amr_data->track_envelope.m_env.has_value())
         {
             throw std::runtime_error("track_envelope: Envelope (covariance matrix) not set.");
         }
         auto & ref = amr_data->track_envelope.m_ref.value();
-        auto & cm = amr_data->track_envelope.m_cm.value();
+        auto & env = amr_data->track_envelope.m_env.value();
+        auto & cm = env.cm;
+        auto & current = env.beam_current;
 
         // output of init state
         amrex::ParmParse pp_diag("diag");
@@ -127,7 +129,6 @@ namespace impactx
                     if (space_charge)
                     {
                         // push Covariance Matrix in 2D space charge fields
-                        amrex::ParticleReal current=0.5;  //TODO: This must be set.
                         spacecharge::envelope_space_charge2D_push(ref,cm,current,slice_ds);
                     }
 

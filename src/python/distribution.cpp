@@ -131,5 +131,5 @@ void init_distribution(py::module& m)
              "A 6D Waterbag distribution"
         );
 
-    m.def("create_covariance_matrix", &initialization::create_covariance_matrix);
+    m.def("create_covariance_matrix", &initialization::create_envelope);
 }

@@ -28,6 +28,12 @@ from .start import main
 
 server, state, ctrl = setup_server()
 
+from pathlib import Path
+
+from trame.widgets import client
+
+CSS_FILE = Path(__file__).with_name("Input").joinpath("style.css")
+
 from .Input.shared import SharedUtilities
 
 shared_utilities = SharedUtilities()
@@ -85,6 +91,9 @@ def application():
     init_terminal()
     with SinglePageWithDrawerLayout(server) as layout:
         layout.title.hide()
+        with layout:
+            client.Style(CSS_FILE.read_text())
+
         with layout.toolbar:
             with vuetify.Template(v_if="$route.path == '/Analyze'"):
                 GeneralToolbar.dashboard_toolbar("analyze")

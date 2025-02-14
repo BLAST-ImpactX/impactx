@@ -173,11 +173,12 @@ class UIDefaults:
     }
 
     CARD_TEXT_OVERFLOW = {
+        "classes": "custom-scrollbar",
         "style": {
             "flex": "1",
             "overflow-y": "auto",
             "overflow-x": "auto",
-        }
+        },
     }
 
     CARD_STYLE = {

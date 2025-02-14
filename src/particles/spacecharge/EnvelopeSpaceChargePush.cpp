@@ -13,6 +13,7 @@
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SmallMatrix.H>
 #include <AMReX_ParmParse.H>
+#include <AMReX_Print.H> 
 
 #include <cmath>
 
@@ -22,7 +23,7 @@ namespace impactx::spacecharge
         envelope_space_charge2D_push (
         [[maybe_unused]] RefPart const & refpart,
         Map6x6 & cm,
-        [[maybe_unused]] amrex::ParticleReal current,
+        amrex::ParticleReal current,
         amrex::ParticleReal ds
     )
     {
@@ -30,11 +31,6 @@ namespace impactx::spacecharge
 
         // initialize the linear transport map
         Map6x6 R = Map6x6::Identity();
-
-        // added temporarily for benchmark testing
-        amrex::ParmParse pp_dist("dist");
-        amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
-        pp_dist.query("current", beam_current);
 
         // physical constants and reference quantities
         amrex::ParticleReal const c = ablastr::constant::SI::c;
@@ -44,10 +40,12 @@ namespace impactx::spacecharge
         amrex::ParticleReal const charge = refpart.charge;
         amrex::ParticleReal const pt_ref = refpart.pt;
         amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+        amrex::ParticleReal const betgam = std::sqrt(betgam2);
+        amrex::ParticleReal const betgam3 = std::pow(betgam,3);
 
         // evaluate the beam space charge perveance from current
         amrex::ParticleReal const IA = 4.0_prt*pi*ep0*mass*pow(c,3)/charge;
-        amrex::ParticleReal const Kpv = (beam_current/IA) * 2.0_prt/betgam2;
+        amrex::ParticleReal const Kpv = std::abs(current/IA) * 2.0_prt/betgam3;
 
         // evaluate the linear transfer map
         amrex::ParticleReal const sigma2 = cm(1,1)*cm(3,3)-cm(1,3)*cm(1,3);

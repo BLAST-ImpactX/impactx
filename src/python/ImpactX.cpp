@@ -442,7 +442,7 @@ void init_ImpactX (py::module& m)
                 ix.amr_data->track_envelope.m_ref = ref;
                 ix.amr_data->track_envelope.m_env = initialization::create_envelope(current,distr);
             },
-            py::arg("ref"), py::arg("distr"), py::arg("current"),
+            py::arg("ref"), py::arg("distr"), py::arg("current") = 0.0,
             "Envelope tracking mode:"
             "Create a 6x6 covariance matrix from a distribution and then initialize "
             "the the simulation for envelope tracking relative to a reference particle."

@@ -97,6 +97,33 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // angle of arc for the current slice
+            m_slice_phi = m_phi / nslice();
+            auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
+            m_sin_phi = sin_phi;
+            m_cos_phi = cos_phi;
+
+            // access reference particle values to find beta
+            m_ibeta = 1_prt / refpart.beta();
+
+            // reference particle's orbital radius
+            m_rc = this->rc(refpart);
+        }
+
         /** This is an ExactSbend functor, so that a variable of this type can be used like an ExactSbend function.
          *
          * @param x particle position in x
@@ -106,7 +133,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -117,7 +144,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -130,50 +157,44 @@ namespace impactx::elements
             amrex::ParticleReal const yout = y;
             amrex::ParticleReal const tout = t;
 
-            // angle of arc for the current slice
-            amrex::ParticleReal const slice_phi = m_phi / nslice();
-
-            // access reference particle values to find beta
-            amrex::ParticleReal const bet = refpart.beta();
-
-            // reference particle's orbital radius
-            amrex::ParticleReal const rc = this->rc(refpart);
-
             // intialize output values of momenta
             amrex::ParticleReal pxout = px;
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal ptout = pt;
 
             // assign intermediate quantities
-            amrex::ParticleReal const pperp2 = std::pow(pt,2)-2.0_prt/bet*pt-pow(py,2)+1.0_prt;
+            amrex::ParticleReal const pperp2 = std::pow(pt,2)-2.0_prt * m_ibeta * pt - std::pow(py,2)+1.0_prt;
             amrex::ParticleReal const px2 = std::pow(px,2);
             // determine if particle lies within the domain of map definition
-            if (pperp2 <= px2) {
+            if (pperp2 <= px2)
+            {
                 amrex::ParticleIDWrapper{idcpu}.make_invalid();
-            } else {
+            } else
+            {
                 amrex::ParticleReal const pperp = std::sqrt(pperp2);
                 amrex::ParticleReal const pzi = std::sqrt(std::pow(pperp,2) - std::pow(px,2));
-                amrex::ParticleReal const rho = rc + xout;
-                auto const [sin_phi, cos_phi] = amrex::Math::sincos(slice_phi);
+                amrex::ParticleReal const rho = m_rc + xout;
 
                 // update momenta
-                pxout = px*cos_phi + (pzi - rho/rc)*sin_phi;
+                pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
                 pyout = py;
                 ptout = pt;
 
                 // angle of momentum rotation
                 amrex::ParticleReal const px2f = std::pow(pxout,2);
                 // determine if particle lies within domain of map definition
-                if (pperp2 <= px2f) {
+                if (pperp2 <= px2f)
+                {
                     amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                } else {
-                    amrex::ParticleReal const pzf = std::sqrt(std::pow(pperp,2)-pow(pxout,2));
-                    amrex::ParticleReal const theta = slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
+                } else
+                {
+                    amrex::ParticleReal const pzf = std::sqrt(std::pow(pperp,2)-std::pow(pxout,2));
+                    amrex::ParticleReal const theta = m_slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
 
                     // update position coordinates
-                    x = -rc + rho*cos_phi + rc*(pzf + px*sin_phi - pzi*cos_phi);
-                    y = yout + theta * rc * py;
-                    t = tout - theta * rc * (pt - 1.0_prt / bet) - m_phi * rc / bet;
+                    x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);
+                    y = yout + theta * m_rc * py;
+                    t = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - m_phi * m_rc * m_ibeta;
 
                     // assign updated momenta
                     px = pxout;
@@ -233,7 +254,6 @@ namespace impactx::elements
 
             // advance integrated path length
             refpart.s = s + slice_ds;
-
         }
 
         /** This pushes the covariance matrix. */
@@ -254,6 +274,11 @@ namespace impactx::elements
 
         amrex::ParticleReal m_phi; //! bend angle in radians
         amrex::ParticleReal m_B;  //! magnetic field in T
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_phi, m_ibeta, m_rc, m_sin_phi, m_cos_phi;
     };
 
 } // namespace impactx

@@ -75,12 +75,39 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle (unused)
+         */
+        void compute_constants ([[maybe_unused]] RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // edge focusing matrix elements (zero gap)
+            m_R21 = std::tan(m_psi) / m_rc;
+
+            // first-order effect of nonzero gap
+            auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
+            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
+                / std::pow(cos_psi, 3)
+                * m_g * m_K2 / std::pow(m_rc, 2);
+
+            m_R43 = vf - m_R21;
+        }
+
         /** This is a dipedge functor, so that a variable of this type can be used like a
          *  dipedge function.
          *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t
+         * @param t particle position in t (unchanged)
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t (unchanged)
@@ -89,33 +116,25 @@ namespace impactx::elements
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-                amrex::ParticleReal & AMREX_RESTRICT x,
-                amrex::ParticleReal & AMREX_RESTRICT y,
-                [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
-                amrex::ParticleReal & AMREX_RESTRICT px,
-                amrex::ParticleReal & AMREX_RESTRICT py,
-                [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
-                [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-                [[maybe_unused]] RefPart const & refpart) const {
+            amrex::ParticleReal & AMREX_RESTRICT x,
+            amrex::ParticleReal & AMREX_RESTRICT y,
+            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
+            amrex::ParticleReal & AMREX_RESTRICT px,
+            amrex::ParticleReal & AMREX_RESTRICT py,
+            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
+            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
 
             using namespace amrex::literals; // for _rt and _prt
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // edge focusing matrix elements (zero gap)
-            amrex::ParticleReal const R21 = std::tan(m_psi)/m_rc;
-            amrex::ParticleReal R43 = -R21;
-            amrex::ParticleReal vf = 0;
-
-            // first-order effect of nonzero gap
-            vf = (1.0_prt + std::pow(sin(m_psi),2))/(std::pow(cos(m_psi),3));
-            vf *= m_g * m_K2/(std::pow(m_rc,2));
-            R43 += vf;
-
             // apply edge focusing
-            px = px + R21*x;
-            py = py + R43*y;
+            px = px + m_R21 * x;
+            py = py + m_R43 * y;
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -163,6 +182,11 @@ namespace impactx::elements
         amrex::ParticleReal m_rc; //! bend radius in m
         amrex::ParticleReal m_g; //! gap parameter in m
         amrex::ParticleReal m_K2; //! fringe field integral
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_R21, m_R43;
     };
 
 } // namespace impactx

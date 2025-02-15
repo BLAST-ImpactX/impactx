@@ -60,7 +60,7 @@ namespace impactx
 
         /** Set 6x6 covariance matrix for envelope tracking
          *
-         * @param Map6x6 beam 6x6 covariance matrix
+         * @param CovarianceMatrix beam 6x6 covariance matrix
          */
         Envelope &
         set_covariance_matrix (const CovarianceMatrix& covariance_matrix)

@@ -34,7 +34,7 @@ namespace impactx
 
         /** Set envelope beam current for 2D space charge
          *
-         * @param beam_current beam current (A)
+         * @param beam_current_A beam current (A)
          */
         Envelope &
         set_beam_current_A (amrex::ParticleReal const beam_current_A)

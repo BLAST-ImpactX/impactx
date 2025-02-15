@@ -28,9 +28,9 @@ namespace impactx
      */
     struct Envelope
     {
-        amrex::ParticleReal bunch_charge = 0.0; /// total charge in C (for 3D space charge)
-        amrex::ParticleReal beam_current = 0.0; /// current in A (for 2D space charge)
-        CovarianceMatrix cm; /// the 6x6 beam covariance matrix
+        amrex::ParticleReal bunch_charge = 0.0; ///< total charge in C (for 3D space charge)
+        amrex::ParticleReal beam_current = 0.0; ///< current in A (for 2D space charge)
+        CovarianceMatrix cm; ///< the 6x6 beam covariance matrix
 
         /** Set envelope beam current for 2D space charge
          *

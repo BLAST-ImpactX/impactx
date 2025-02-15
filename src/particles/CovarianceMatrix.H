@@ -63,7 +63,7 @@ namespace impactx
          * @param Map6x6 beam 6x6 covariance matrix
          */
         Envelope &
-        set_covariance_matrix (CovarianceMatrix const covariance_matrix)
+        set_covariance_matrix (const CovarianceMatrix& covariance_matrix)
         {
             cm = covariance_matrix;
 

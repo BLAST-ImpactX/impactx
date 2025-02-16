@@ -13,7 +13,7 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = True
-# sim.diagnostics = False  # benchmarking
+sim.space_charge_model = "2D"
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh

@@ -44,6 +44,7 @@ quad2.k = -quad1.k
 algo.particle_shape = 2
 algo.track = "envelope"
 algo.space_charge = true
+algo.space_charge_model = 2D
 
 ###############################################################################
 # Diagnostics

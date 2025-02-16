@@ -236,6 +236,20 @@ void init_ImpactX (py::module& m)
              },
              "Enable or disable space charge calculations (default: enabled)."
         )
+        .def_property("space_charge_model",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<std::string>("algo", "space_charge_model");
+            },
+            [](ImpactX & /* ix */, std::string const space_charge_model) {
+                if (space_charge_model != "2D" && space_charge_model != "3D") {
+                    throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge_model);
+                }
+                
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("space_charge_model", space_charge_model);
+            },
+            "The model to be used when calculating space charge effects. Either 2D or 3D."
+        )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<std::string>("algo", "poisson_solver");

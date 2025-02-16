@@ -476,17 +476,22 @@ namespace impactx
         }
         else if (track == "envelope")
         {
-            // relevant for envelope tracking with 3D space charge
-            amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
-            pp_dist.query("charge", bunch_charge);
+            std::string space_charge_model = "2D"; // 2D space charge as existing default
+            pp_algo.query("space_charge_model", space_charge_model);
+            amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
 
-            // relevant for envelope tracking with 2D space charge
-            amrex::ParticleReal beam_current = 0.0;  // Beam current (A)
-            pp_dist.query("current", beam_current);
+            if (space_charge_model == "3D") {
+                pp_dist.query("charge", intensity);
+                throw std::runtime_error("3D space charge model not yet implemented in envelope mode.");
+            } else if (space_charge_model == "2D") {
+                pp_dist.query("current", intensity);
+            } else {
+                throw std::runtime_error("Unknown space_charge_model (use '2D' or '3D') ");
+            }
 
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);
-            amr_data->track_envelope.m_env = impactx::initialization::create_envelope(beam_current,dist);
+            amr_data->track_envelope.m_env = impactx::initialization::create_envelope(intensity,dist);
         }
         else if (track == "reference_orbit")
         {

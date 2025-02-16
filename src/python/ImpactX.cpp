@@ -244,7 +244,7 @@ void init_ImpactX (py::module& m)
                 if (space_charge_model != "2D" && space_charge_model != "3D") {
                     throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge_model);
                 }
-                
+
                 amrex::ParmParse pp_algo("algo");
                 pp_algo.add("space_charge_model", space_charge_model);
             },

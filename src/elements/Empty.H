@@ -45,6 +45,12 @@ namespace impactx::elements
             // nothing to do
         }
 
+        /** Compute and cache the constants for the push - nothing to do here */
+        void compute_constants (RefPart const & /* refpart */)
+        {
+            // nothing to do
+        }
+
         /** Push all particles - nothing to do here */
         void operator() (
             ImpactXParticleContainer::iterator & /* pti */,
@@ -96,7 +102,7 @@ namespace impactx::elements
             [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT py,
             [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             // nothing to do

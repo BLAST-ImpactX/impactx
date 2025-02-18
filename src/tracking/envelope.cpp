@@ -11,7 +11,7 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "particles/spacecharge/EnvelopeSpaceChargePush.H"
+#include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "diagnostics/DiagnosticOutput.H"
 
 #include <AMReX.H>

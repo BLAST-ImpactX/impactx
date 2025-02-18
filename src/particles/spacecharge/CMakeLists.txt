@@ -4,5 +4,4 @@ target_sources(lib
     GatherAndPush.cpp
     HandleSpacecharge.cpp
     PoissonSolve.cpp
-    EnvelopeSpaceChargePush.cpp
 )

@@ -187,7 +187,7 @@ Collective Effects & Overall Simulation Parameters
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :param distr: distribution function (object from :py:mod:`impactx.distribution`)
-      :param float intensity: the beam intensity, given as bunch charge (C) or beam current (A) 
+      :param float intensity: the beam intensity, given as bunch charge (C) or beam current (A)
 
    .. py:method:: particle_container()
 

@@ -44,7 +44,7 @@ Initial Beam Distributions
 
 * ``beam.current`` (``float``, in A)
   beam current, used only if space_charge_model = "2D"
-     
+
 * ``beam.particle`` (``string``)
   particle type: currently either ``electron``, ``positron`` or ``proton``
 
@@ -834,13 +834,13 @@ Multigrid-specific numerical options:
   Options:
 
   * ``2D``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
-  
+
     Currently, this model is supported only in evelope mode (when algo.track = "envelope").
-  
+
   * ``3D``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
     Currently, this model is supported only in particle mode (when algo.track = "particles").
- 
+
 
 .. _running-cpp-parameters-collective-csr:
 

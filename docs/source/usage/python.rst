@@ -180,13 +180,14 @@ Collective Effects & Overall Simulation Parameters
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
 
-   .. py:method:: init_envelope(ref, distr)
+   .. py:method:: init_envelope(ref, distr, intensity)
 
       Envelope tracking mode:
       Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :param distr: distribution function (object from :py:mod:`impactx.distribution`)
+      :param float intensity: the beam intensity, given as bunch charge (C) or beam current (A) 
 
    .. py:method:: particle_container()
 

@@ -72,8 +72,31 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // access reference particle to find relativistic beta
+            m_beta = refpart.beta();
+
+            // compute the effective (equivalent) arc length and curvature
+            m_ds = m_theta * m_rc;
+            m_kx = 1.0_prt / m_rc;
+        }
+
         /** This is a multipole functor, so that a variable of this type can be used like a
          *  multipole function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -82,7 +105,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index (unused)
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -93,7 +116,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -106,30 +129,23 @@ namespace impactx::elements
             amrex::ParticleReal const yout = y;
             amrex::ParticleReal const tout = t;
 
-            // access reference particle to find relativistic beta
-            amrex::ParticleReal const beta_ref = refpart.beta();
-
             // intialize output values of momenta
             amrex::ParticleReal pxout = px;
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal ptout = pt;
 
             // compute the function expressing dp/p in terms of pt (labeled f in Ripken etc.)
-            amrex::ParticleReal f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt*pt/beta_ref + std::pow(pt,2));
-            amrex::ParticleReal fprime = (1.0_prt - beta_ref*pt)/(beta_ref*(1.0_prt + f));
-
-            // compute the effective (equivalent) arc length and curvature
-            amrex::ParticleReal ds = m_theta*m_rc;
-            amrex::ParticleReal kx = 1.0_prt/m_rc;
+            amrex::ParticleReal const f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt * pt / m_beta + std::pow(pt, 2));
+            amrex::ParticleReal const fprime = (1.0_prt - m_beta*pt) / (m_beta * (1.0_prt + f));
 
             // advance position and momentum
             x = xout;
-            pxout = px - std::pow(kx,2) * ds * xout + kx * ds * f; //eq (3.2b)
+            pxout = px - std::pow(m_kx, 2) * m_ds * xout + m_kx * m_ds * f; //eq (3.2b)
 
             y = yout;
             pyout = py;
 
-            t = tout + kx * xout * ds * fprime; //eq (3.2e)
+            t = tout + m_kx * xout * m_ds * fprime; //eq (3.2e)
             ptout = pt;
 
             // assign updated momenta
@@ -179,9 +195,15 @@ namespace impactx::elements
             return Map6x6::Identity();
         }
 
-        amrex::ParticleReal m_theta; //! dipole bending angle (rad)
-        amrex::ParticleReal m_rc; //! curvature radius (m)
+        amrex::ParticleReal m_theta;  //! dipole bending angle (rad)
+        amrex::ParticleReal m_rc;     //! curvature radius (m)
 
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_beta;  //! beta of the reference particle
+        amrex::ParticleReal m_ds;    //! effective (equivalent) arc length
+        amrex::ParticleReal m_kx;    //! effective (equivalent) curvature
     };
 
 } // namespace impactx

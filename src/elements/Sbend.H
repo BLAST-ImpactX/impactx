@@ -74,7 +74,44 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // access reference particle values
+            amrex::ParticleReal const ibet = 1.0_prt / refpart.beta();
+
+            // calculate expensive terms once
+            amrex::ParticleReal const theta = slice_ds / m_rc;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+            m_R11 = cos_theta;
+            m_R12 = m_rc * sin_theta;
+            m_R16 = -m_rc * ibet * (1.0_prt - cos_theta);
+            m_R21 = -sin_theta / m_rc;
+            // m_R22 = m_R11
+            m_R26 = -sin_theta * ibet;
+            m_R34 = m_rc * theta;
+            // m_R51 = -m_R26
+            // m_R52 = -m_R16
+            m_R56 = m_rc * (-theta + sin_theta * ibet * ibet);
+        }
+
         /** This is a sbend functor, so that a variable of this type can be used like a sbend function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -83,7 +120,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -94,7 +131,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -112,30 +149,28 @@ namespace impactx::elements
             amrex::ParticleReal const pyout = py;
             amrex::ParticleReal const ptout = pt;
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-            amrex::ParticleReal const bet = std::sqrt(betgam2/(1.0_prt + betgam2));
-
-            // calculate expensive terms once
-            amrex::ParticleReal const theta = slice_ds/m_rc;
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-
             // advance position and momentum (sector bend)
-            xout = cos_theta*x + m_rc*sin_theta*px
-                       - (m_rc/bet)*(1.0_prt - cos_theta)*pt;
+            amrex::ParticleReal const R22 =  m_R11;
+            amrex::ParticleReal const R51 = -m_R26;
+            amrex::ParticleReal const R52 = -m_R16;
 
-            pxout = -sin_theta/m_rc*x + cos_theta*px - sin_theta/bet*pt;
+            xout = m_R11 * x
+                 + m_R12 * px
+                 + m_R16 * pt;
 
-            yout = y + m_rc*theta*py;
+            pxout = m_R21 * x
+                  +   R22 * px
+                  + m_R26 * pt;
+
+            yout =         y
+                 + m_R34 * py;
 
             // pyout = py;
 
-            tout = sin_theta/bet*x + m_rc/bet*(1.0_prt - cos_theta)*px + t
-                       + m_rc*(-theta+sin_theta/(bet*bet))*pt;
+            tout =   R51 * x
+                 +   R52 * px
+                 +         t
+                 + m_R56 * pt;
 
             // ptout = pt;
 
@@ -244,6 +279,11 @@ namespace impactx::elements
         }
 
         amrex::ParticleReal m_rc; //! bend radius in m
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_R11, m_R12, m_R16, m_R21, m_R26, m_R34, m_R56;
     };
 
 } // namespace impactx

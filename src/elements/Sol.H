@@ -76,7 +76,41 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+
+            // compute phase advance per unit length (in rad/m) and
+            // rotation angle (in rad)
+            amrex::ParticleReal const alpha = m_ks / 2.0_prt;
+            amrex::ParticleReal const theta = alpha*slice_ds;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+            m_sin_theta = sin_theta;
+            m_cos_theta = cos_theta;
+            m_sin_theta_ialpha = sin_theta / alpha;
+            m_neg_alpha_sin_theta = -alpha * sin_theta;
+            m_ds_bg2 = slice_ds / betgam2;
+        }
+
         /** This is a sol functor, so that a variable of this type can be used like a sol function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -85,7 +119,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -96,25 +130,13 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-
-            // compute phase advance per unit length (in rad/m) and
-            // rotation angle (in rad)
-            amrex::ParticleReal const alpha = m_ks / 2.0_prt;
-            amrex::ParticleReal const theta = alpha*slice_ds;
 
             // intialize output values
             amrex::ParticleReal xout = x;
@@ -125,14 +147,17 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             // advance positions and momenta using map for focusing
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-            xout = cos_theta*x + sin_theta/alpha*px;
-            pxout = -alpha*sin_theta*x + cos_theta*px;
+            xout = m_cos_theta        * x
+                 + m_sin_theta_ialpha * px;
+            pxout = m_neg_alpha_sin_theta * x
+                  + m_cos_theta           * px;
 
-            yout = cos_theta*y + sin_theta/alpha*py;
-            pyout = -alpha*sin_theta*y + cos_theta*py;
+            yout = m_cos_theta        * y
+                 + m_sin_theta_ialpha * py;
+            pyout = m_neg_alpha_sin_theta * y
+                  + m_cos_theta           * py;
 
-            tout = t + (slice_ds/betgam2)*pt;
+            tout = t + m_ds_bg2 * pt;
             ptout = pt;
 
             // assign intermediate momenta
@@ -141,11 +166,15 @@ namespace impactx::elements
             pt = ptout;
 
             // advance positions and momenta using map for rotation
-            x = cos_theta*xout + sin_theta*yout;
-            pxout = cos_theta*px + sin_theta*py;
+            x = m_cos_theta * xout
+              + m_sin_theta * yout;
+            pxout = m_cos_theta * px
+                  + m_sin_theta * py;
 
-            y = -sin_theta*xout + cos_theta*yout;
-            pyout = -sin_theta*px + cos_theta*py;
+            y = -m_sin_theta * xout
+               + m_cos_theta * yout;
+            pyout = -m_sin_theta * px
+                   + m_cos_theta * py;
 
             t = tout;
             ptout = pt;
@@ -215,6 +244,11 @@ namespace impactx::elements
         }
 
         amrex::ParticleReal m_ks; //! solenoid strength in 1/m
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_ds_bg2, m_cos_theta, m_sin_theta, m_sin_theta_ialpha, m_neg_alpha_sin_theta;
     };
 
 } // namespace impactx

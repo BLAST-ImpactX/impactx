@@ -141,7 +141,7 @@ namespace impactx::elements
                 x = cosx*xout + sinx/omegax*px - (1.0_prt - cosx)/(gx*bet*m_rc)*pt;
                 pxout = -omegax*sinx*xout + cosx*px - sinx/(omegax*bet*m_rc)*pt;
 
-                y = sinx/(omegax*bet*m_rc)*xout + (1.0_prt - cosx)/(gx*bet*m_rc)*px
+                t = sinx/(omegax*bet*m_rc)*xout + (1.0_prt - cosx)/(gx*bet*m_rc)*px
                     + tout + r56*pt;
                 ptout = pt;
             } else {

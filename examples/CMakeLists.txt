@@ -1273,13 +1273,13 @@ add_impactx_test(examples-scraping.py
 # FODO cell with 2D space charge using envelope tracking ######################
 #
 # with space charge
-add_impactx_test(fodo-envelope-sc
+add_impactx_test(FODO.envelope.sc
     examples/fodo_space_charge/input_fodo_envelope_sc.in
     ON   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py
     OFF  # no plot script yet
 )
-add_impactx_test(fodo-envelope-sc.py
+add_impactx_test(FODO.envelope.sc.py
     examples/fodo_space_charge/run_fodo_envelope_sc.py
     OFF   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py

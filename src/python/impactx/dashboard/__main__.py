@@ -56,7 +56,8 @@ with RouterViewLayout(server, "/Input"):
                     with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
                         inputParameters.card()
                     with vuetify.VCol(
-                        **{**card_breakpoints, **card_column_padding}, v_show="space_charge"
+                        **{**card_breakpoints, **card_column_padding},
+                        v_show="space_charge",
                     ):
                         space_charge.card()
                     with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):

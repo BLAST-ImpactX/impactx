@@ -244,5 +244,5 @@ class GeneralToolbar:
             dismissible=True,
             v_model=("show_dashboard_alert", True),
             classes="text-body-2 hidden-md-and-down",
-            style="width: 50vw; overflow: hidden; margin: auto;"
+            style="width: 50vw; overflow: hidden; margin: auto;",
         )

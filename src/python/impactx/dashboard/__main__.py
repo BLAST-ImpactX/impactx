@@ -46,7 +46,6 @@ csr = csrConfiguration()
 
 card_column_padding = {"classes": "pa-2"}
 card_row_padding = {"classes": "ma-2"}
-input_section_breakpoints = {"cols": 12, "md" : 6}
 card_breakpoints = {"cols": 12, "lg": 6, "md": 12, "sm": 6}
 
 with RouterViewLayout(server, "/Input"):

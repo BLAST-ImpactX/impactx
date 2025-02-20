@@ -187,8 +187,8 @@ namespace impactx
 
     Envelope
     initialization::create_envelope (
-        amrex::ParticleReal const current,
-        distribution::KnownDistributions const & distr
+        distribution::KnownDistributions const & distr,
+        std::optional<amrex::ParticleReal> intensity
     )
     {
         // zero out the 6x6 matrix
@@ -235,7 +235,7 @@ namespace impactx
         }, distr);
 
         Envelope env;
-        env.set_beam_current_A(current);
+        if (intensity) { env.set_beam_intensity(intensity.value()); }
         env.set_covariance_matrix(cv);
 
         return env;
@@ -491,7 +491,7 @@ namespace impactx
 
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);
-            amr_data->track_envelope.m_env = impactx::initialization::create_envelope(intensity,dist);
+            amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
         }
         else if (track == "reference_orbit")
         {

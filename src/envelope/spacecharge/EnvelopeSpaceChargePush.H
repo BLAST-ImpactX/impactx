@@ -13,10 +13,11 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/CovarianceMatrix.H"
 
+#include <AMReX_Extension.H>  // for AMREX_RESTRICT
 #include <AMReX_REAL.H>
 
 
-namespace impactx::spacecharge
+namespace impactx::envelope::spacecharge
 {
      /** This function pushes the 6x6 beam covariance matrix for a slice
       *  of length ds, using the linear space charge fields in an rms
@@ -29,9 +30,9 @@ namespace impactx::spacecharge
       * @param[in] ds step size [m]
       */
      void
-     envelope_space_charge2D_push (
-         RefPart const & refpart,
-         Map6x6 & cm,
+     space_charge2D_push (
+         RefPart const & AMREX_RESTRICT refpart,
+         Map6x6 & AMREX_RESTRICT cm,
          amrex::ParticleReal current,
          amrex::ParticleReal ds
     );

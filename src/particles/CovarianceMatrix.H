@@ -28,34 +28,31 @@ namespace impactx
      */
     struct Envelope
     {
-        amrex::ParticleReal bunch_charge = 0.0; ///< total charge in C (for 3D space charge)
-        amrex::ParticleReal beam_current = 0.0; ///< current in A (for 2D space charge)
-        CovarianceMatrix cm; ///< the 6x6 beam covariance matrix
+        CovarianceMatrix m_env; ///< the 6x6 beam covariance matrix
+        amrex::ParticleReal m_beam_intensity = 0.0; ///< optional: charge in A (for 3D space charge) or current in A (for 2D space charge)
 
-        /** Set envelope beam current for 2D space charge
+        /** Set envelope beam charge/current for 3D/2D space charge
          *
-         * @param beam_current_A beam current (A)
+         * @param intensity beam charge (C) in 3D or beam current (A) in 2D
          */
         Envelope &
-        set_beam_current_A (amrex::ParticleReal const beam_current_A)
+        set_beam_intensity (amrex::ParticleReal const intensity)
         {
-            using namespace amrex::literals;
-
-            beam_current = beam_current_A;
+            m_beam_intensity = intensity;
 
             return *this;
          }
 
-        /** Get envelope beam current for 2D space charge
+        /** Get envelope beam charge/current for 3D/2D space charge
          *
-         * @returns beam current in A
+         * @returns 3D: beam charge in C; 2D: beam current in A
          */
         amrex::ParticleReal
-        beam_current_A ()
+        beam_intensity () const
         {
             using namespace amrex::literals;
 
-            return beam_current;
+            return m_beam_intensity;
         }
 
         /** Set 6x6 covariance matrix for envelope tracking
@@ -63,9 +60,9 @@ namespace impactx
          * @param covariance_matrix beam 6x6 covariance matrix
          */
         Envelope &
-        set_covariance_matrix (const CovarianceMatrix& covariance_matrix)
+        set_covariance_matrix (CovarianceMatrix const & covariance_matrix)
         {
-            cm = covariance_matrix;
+            m_env = covariance_matrix;
 
             return *this;
          }

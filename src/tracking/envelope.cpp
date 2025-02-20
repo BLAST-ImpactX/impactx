@@ -53,8 +53,8 @@ namespace impactx
         }
         auto & ref = amr_data->track_envelope.m_ref.value();
         auto & env = amr_data->track_envelope.m_env.value();
-        auto & cm = env.cm;
-        auto & current = env.beam_current;
+        auto & cm = env.m_env;
+        auto & current = env.m_beam_intensity;
 
         // output of init state
         amrex::ParmParse pp_diag("diag");
@@ -129,7 +129,7 @@ namespace impactx
                     if (space_charge)
                     {
                         // push Covariance Matrix in 2D space charge fields
-                        spacecharge::envelope_space_charge2D_push(ref,cm,current,slice_ds);
+                        envelope::spacecharge::space_charge2D_push(ref,cm,current,slice_ds);
                     }
 
                     std::visit([&ref, &cm](auto&& element)

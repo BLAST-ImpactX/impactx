@@ -195,7 +195,7 @@ class SpaceChargeConfiguration(UIDefaults):
 
         with vuetify.VCard(style=("card_style",)):
             CardComponents.input_header(
-                "Space Charge", additional_components=multigrid_settings
+                "Space Charge", additional_components={"start": multigrid_settings}
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

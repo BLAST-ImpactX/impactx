@@ -188,7 +188,7 @@ class UIDefaults:
 
     @staticmethod
     def adjust_card_height(space_charge, csr):
-        state.card_height = "33.33vh" if (space_charge or csr) else "40vh"
+        state.card_height = "33.33vh" if (space_charge or csr) else "50vh"
 
         CARD_SIZING = {
             "max-height": f"calc({state.card_height} - {ToolbarDefaults.TOOLBAR_SIZE + ToolbarDefaults.FOOTER_SIZE}px)",

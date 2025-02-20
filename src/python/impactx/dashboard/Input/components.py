@@ -33,12 +33,17 @@ class CardComponents:
         """
 
         documentation_name = section_name.lower().replace(" ", "_")
+
+        def render_components(position: str):
+            if additional_components and position in additional_components:
+                additional_components[position]()
+
         with vuetify.VCardTitle(section_name):
             vuetify.VSpacer()
-            if additional_components:
-                additional_components()
+            render_components("start")
             CardComponents.refresh_icon(documentation_name)
             CardComponents.documentation_icon(documentation_name)
+            render_components("end")
         vuetify.VDivider()
 
     @staticmethod
@@ -55,8 +60,9 @@ class CardComponents:
             icon=True,
             small=True,
         ):
-            vuetify.VIcon("mdi-information",)
-
+            vuetify.VIcon(
+                "mdi-information",
+            )
 
     @staticmethod
     def refresh_icon(section_name: str) -> vuetify.VBtn:
@@ -73,6 +79,7 @@ class CardComponents:
             small=True,
         ):
             vuetify.VIcon("mdi-refresh")
+
 
 class InputComponents:
     """

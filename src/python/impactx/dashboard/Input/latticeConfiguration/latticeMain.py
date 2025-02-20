@@ -16,6 +16,7 @@ from .. import (
     UIDefaults,
     generalFunctions,
 )
+from . import LatticeConfigurationHelper
 
 server, state, ctrl = setup_server()
 
@@ -232,78 +233,28 @@ class LatticeConfiguration(UIDefaults):
     def __init__(self):
         super().__init__()
 
-    def card(self):
-        """
-        Creates UI content for lattice configuration.
-        """
-
-        with vuetify.VDialog(v_model=("showDialog", False)):
-            LatticeConfiguration.dialog_configuration_list()
-
+    def init_dialogs(self):
+        with vuetify.VDialog(
+            v_model=("expand_configuration", False), width="fit-content"
+        ):
+            with vuetify.VCard():
+                self.configuration_list()
         with vuetify.VDialog(
             v_model=("lattice_configuration_dialog_settings", False), width="500px"
         ):
             LatticeConfiguration.dialog_settings()
 
-        with vuetify.VCard(style=("card_style",)):
-            CardComponents.input_header("Lattice Configuration")
-            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
-                with vuetify.VRow(**self.ROW_STYLE):
-                    with vuetify.VCol(cols=10):
-                        vuetify.VCombobox(
-                            label="Select Accelerator Lattice",
-                            v_model=("selected_lattice", None),
-                            items=("listOfLatticeElements",),
-                            error_messages=("isSelectedLatticeListEmpty",),
-                            dense=True,
-                            classes="mr-2 pt-6",
-                        )
-                    with vuetify.VCol(cols="auto"):
-                        vuetify.VBtn(
-                            "ADD",
-                            color="primary",
-                            dense=True,
-                            classes="mr-2",
-                            click=ctrl.add_latticeElement,
-                        )
-                    with vuetify.VCol(cols="auto"):
-                        vuetify.VIcon(
-                            "mdi-cog",
-                            click="lattice_configuration_dialog_settings = true",
-                        )
-                with vuetify.VRow(**self.ROW_STYLE):
-                    with vuetify.VCol():
-                        with vuetify.VCard(style="height: 100%; overflow-y: auto;"):
-                            with vuetify.VCardTitle(
-                                "Elements", classes="text-subtitle-2 pa-3"
-                            ):
-                                vuetify.VSpacer()
-                                vuetify.VIcon(
-                                    "mdi-arrow-expand",
-                                    color="primary",
-                                    click="showDialog = true",
-                                )
-                            vuetify.VDivider()
-                            LatticeConfiguration.configuration_list()
+    def card(self):
+        """
+        Creates UI content for lattice configuration.
+        """
+
+        self.init_dialogs()
+        self.configuration_list()
 
     # -----------------------------------------------------------------------------
     # Dialogs
     # -----------------------------------------------------------------------------
-
-    @staticmethod
-    def dialog_configuration_list():
-        """
-        Displays the configuration for lattice elements
-        shown in a dialog box.
-        """
-
-        with vuetify.VCard():
-            with vuetify.VCardTitle("Elements", classes="headline d-flex align-center"):
-                vuetify.VSpacer()
-                with vuetify.VBtn(icon=True, click="showDialog = false"):
-                    vuetify.VIcon("mdi-close")
-            vuetify.VDivider()
-            LatticeConfiguration.configuration_list()
 
     @staticmethod
     def dialog_settings():
@@ -332,50 +283,67 @@ class LatticeConfiguration(UIDefaults):
     # lattice_configuration_lsit
     # -----------------------------------------------------------------------------
 
-    @staticmethod
-    def configuration_list():
+    def configuration_list(self):
         """
         Displays the configuration for lattice elements.
         """
-        with vuetify.VContainer(fluid=True):
-            with vuetify.VRow(
-                v_for="(latticeElement, index) in selected_lattice_list",
-                align="center",
-                no_gutters=True,
-                style="min-width: 1500px;",
-            ):
-                with vuetify.VCol(cols="auto", classes="pa-2"):
-                    vuetify.VIcon(
-                        "mdi-menu-up",
-                        click=(ctrl.move_latticeElementIndex_up, "[index]"),
-                    )
-                    vuetify.VIcon(
-                        "mdi-menu-down",
-                        click=(ctrl.move_latticeElementIndex_down, "[index]"),
-                    )
-                    vuetify.VIcon(
-                        "mdi-delete",
-                        click=(ctrl.deleteLatticeElement, "[index]"),
-                    )
-                    vuetify.VChip(
-                        v_text=("latticeElement.name",),
-                        dense=True,
-                        classes="mr-2",
-                        style="justify-content: center",
-                    )
-                with vuetify.VCol(
-                    v_for="(parameter, parameterIndex) in latticeElement.parameters",
-                    cols="auto",
-                    classes="pa-2",
+        with vuetify.VCard(
+            style=("expand_configuration ? 'height: 100%' : card_style",)
+        ):
+            CardComponents.input_header(
+                "Lattice Configuration",
+                additional_components={
+                    "start": LatticeConfigurationHelper.settings,
+                    "end": LatticeConfigurationHelper.expand_configuration,
+                },
+            )
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(cols=True):
+                        vuetify.VCombobox(
+                            label="Select Accelerator Lattice",
+                            v_model=("selected_lattice", None),
+                            items=("listOfLatticeElements",),
+                            error_messages=("isSelectedLatticeListEmpty",),
+                            dense=True,
+                        )
+                    with vuetify.VCol(cols="auto"):
+                        vuetify.VBtn(
+                            "ADD",
+                            color="primary",
+                            dense=True,
+                            click=ctrl.add_latticeElement,
+                        )
+                with vuetify.VRow(
+                    **self.ROW_STYLE,
+                    v_for="(latticeElement, index) in selected_lattice_list",
+                    align="center",
+                    style="flex-wrap: nowrap;",
                 ):
-                    vuetify.VTextField(
-                        label=("parameter.parameter_name",),
-                        v_model=("parameter.parameter_default_value",),
-                        change=(
-                            ctrl.updateLatticeElementParameters,
-                            "[index, parameter.parameter_name, $event, parameter.parameter_type]",
-                        ),
-                        error_messages=("parameter.parameter_error_message",),
-                        dense=True,
-                        style="width: 100px;",
-                    )
+                    with vuetify.VCol(cols="auto"):
+                        LatticeConfigurationHelper.move_element_up()
+                        LatticeConfigurationHelper.move_element_down()
+                        LatticeConfigurationHelper.delete_element()
+                    with vuetify.VCol(cols="auto"):
+                        vuetify.VChip(
+                            v_text=("latticeElement.name",),
+                            dense=True,
+                            classes="mr-2",
+                            style="justify-content: center",
+                        )
+                    with vuetify.VCol(
+                        v_for="(parameter, parameterIndex) in latticeElement.parameters",
+                        cols="auto",
+                        classes="pa-2",
+                    ):
+                        vuetify.VTextField(
+                            label=("parameter.parameter_name",),
+                            v_model=("parameter.parameter_default_value",),
+                            change=(
+                                ctrl.updateLatticeElementParameters,
+                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
+                            ),
+                            error_messages=("parameter.parameter_error_message",),
+                            dense=True,
+                            style="width: 100px;",
+                        )

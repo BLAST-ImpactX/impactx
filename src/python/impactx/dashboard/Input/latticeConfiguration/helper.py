@@ -8,6 +8,7 @@ class LatticeConfigurationHelper:
     Helper class to build the Lattice Configuration section of the dashboard
     """
 
+    @staticmethod
     def expand_configuration() -> vuetify.VBtn:
         """
         A button which expands/closes the lattice configuration.
@@ -23,6 +24,7 @@ class LatticeConfigurationHelper:
                 v_text=("expand_configuration ? 'mdi-close' : 'mdi-arrow-expand'",),
             )
 
+    @staticmethod
     def settings() -> vuetify.VBtn:
         """
         A button which opens the lattice configuration settings.
@@ -35,6 +37,7 @@ class LatticeConfigurationHelper:
         ):
             vuetify.VIcon("mdi-cog")
 
+    @staticmethod
     def move_element_up() -> vuetify.VBtn:
         """
         A button which allows the dashboard user to
@@ -50,6 +53,7 @@ class LatticeConfigurationHelper:
                 "mdi-menu-up",
             )
 
+    @staticmethod
     def move_element_down() -> vuetify.VBtn:
         """
         A button which allows the dashboard user to
@@ -65,6 +69,7 @@ class LatticeConfigurationHelper:
                 "mdi-menu-down",
             )
 
+    @staticmethod
     def delete_element() -> vuetify.VBtn:
         """
         A button which allows the dashboard user to

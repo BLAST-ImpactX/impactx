@@ -1,12 +1,12 @@
 .. _examples-fodo-envelope-sc:
 
 FODO Cell with 2D Space Charge using Envelope Tracking
-=======================================================
+======================================================
 
 This example illustrates a 0.5 A proton beam with a kinetic energy of 6.7 MeV in a FODO cell,
 with 2D space charge included.  The parameters are those described in:
 
-R.D. Ryne et al, "A Test Suite of Space-Charge Problems for Code Benchmarking,"
+R.D. Ryne et al, `"A Test Suite of Space-Charge Problems for Code Benchmarking," <https://accelconf.web.cern.ch/e04/PAPERS/WEPLT047.PDF>`__
 in Proc. EPAC 2004, Lucerne, Switzerland:  KV Beam in a FODO Channel
 
 The purpose of this example is to illustrate the use of envelope tracking mode with 2D space charge.

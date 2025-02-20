@@ -13,13 +13,13 @@ ImpactX can be run using any of three distinct tracking modes.  ImpactX's most p
 Additionally, ImpactX provides two simplified tracking modes to aid scientists through every step, from beamline inception to operation:
 tracking of the beam envelope (6x6 covariance matrix) through linearized transport maps, or only tracking of the reference particle orbit.
 
-================== =============== =============== ==================
+================== =============== =============== ===================
 Mode               Use Case        Generality      Collective Effects
-================== =============== =============== ==================
-Particle Tracking  Full Dynamics   Most general    Supported
-Envelope Tracking  Rapid Scans     Linearized      `Soon <https://github.com/ECP-WarpX/impactx/issues/826>`__
+================== =============== =============== ===================
+Particle Tracking  Full Dynamics   Most general    Supported (3D only)
+Envelope Tracking  Rapid Scans     Linearized      Supported (2D only)
 Reference Tracking Early Design    Reference orbit No
-================== =============== =============== ==================
+================== =============== =============== ===================
 
 
 .. _usage_run-user-interface:

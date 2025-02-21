@@ -10,6 +10,7 @@
 #include "initialization/InitDistribution.H"
 
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
@@ -318,13 +319,11 @@ namespace impactx
                                                       ref.qm_ratio_SI(),
                                             bunch_charge * rel_part_this_proc);
 
-        bool space_charge = false;
-        amrex::ParmParse pp_algo("algo");
-        pp_algo.queryAdd("space_charge", space_charge);
+        auto space_charge = get_space_charge_algo();
 
         // For pure tracking simulations, we keep the particles split equally
         // on all MPI ranks, and ignore spatial "RealBox" extents of grids.
-        if (space_charge) {
+        if (space_charge != SpaceChargeAlgo::False) {
             // Resize the mesh to fit the spatial extent of the beam and then
             // redistribute particles, so they reside on the MPI rank that is
             // responsible for the respective spatial particle position.
@@ -476,22 +475,26 @@ namespace impactx
         }
         else if (track == "envelope")
         {
-            std::string space_charge_model = "2D"; // 2D space charge as existing default
-            pp_algo.query("space_charge_model", space_charge_model);
-            amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
-
-            if (space_charge_model == "3D") {
-                pp_dist.query("charge", intensity);
-                throw std::runtime_error("3D space charge model not yet implemented in envelope mode.");
-            } else if (space_charge_model == "2D") {
-                pp_dist.query("current", intensity);
-            } else {
-                throw std::runtime_error("Unknown space_charge_model (use '2D' or '3D') ");
-            }
-
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);
-            amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
+
+
+            amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
+
+            auto space_charge = get_space_charge_algo();
+            if (space_charge == SpaceChargeAlgo::True_3D)
+            {
+                //pp_dist.get("charge", intensity);
+                //amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
+                throw std::runtime_error("3D space charge model not yet implemented in envelope mode.");
+            } else if (space_charge == SpaceChargeAlgo::True_2D)
+            {
+                pp_dist.get("current", intensity);
+                amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
+            } else
+            {
+                amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist);
+            }
         }
         else if (track == "reference_orbit")
         {

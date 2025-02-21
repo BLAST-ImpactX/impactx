@@ -62,9 +62,19 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      The physical model of space charge used.
 
-      Whether to calculate space charge effects.
+      Options:
+
+      * ``False`` (default): space charge effects are not calculated.
+
+      * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
+
+        Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
+
+      * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
+
+        Currently, this model is supported only in particle mode (when ``algo.track = "particles"``).
 
    .. py:property:: poisson_solver
 

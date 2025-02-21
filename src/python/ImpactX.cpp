@@ -18,6 +18,8 @@
 #endif
 #include <optional>
 #include <string>
+#include <type_traits>
+#include <variant>
 
 
 namespace py = pybind11;
@@ -228,28 +230,32 @@ void init_ImpactX (py::module& m)
             "Enable or disable eigenemittance diagnostic calculations (default: disabled)."
         )
         .def_property("space_charge",
-             [](ImpactX & /* ix */) {
-                 return detail::get_or_throw<bool>("algo", "space_charge");
-             },
-             [](ImpactX & /* ix */, bool const enable) {
-                 amrex::ParmParse pp_algo("algo");
-                 pp_algo.add("space_charge", enable);
-             },
-             "Enable or disable space charge calculations (default: enabled)."
-        )
-        .def_property("space_charge_model",
-            [](ImpactX & /* ix */) {
-                return detail::get_or_throw<std::string>("algo", "space_charge_model");
+            [](ImpactX & /* ix */) -> std::string {
+                return detail::get_or_throw<std::string>("algo", "space_charge");
             },
-            [](ImpactX & /* ix */, std::string const space_charge_model) {
-                if (space_charge_model != "2D" && space_charge_model != "3D") {
-                    throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge_model);
+            [](ImpactX & /* ix */, std::variant<bool, std::string> space_charge_v) {
+                if (std::holds_alternative<bool>(space_charge_v)) {
+                    amrex::ParmParse pp_algo("algo");
+                    if (std::get<bool>(space_charge_v)) {
+                        // TODO: boolean True is deprecated since 25.03, remove some time after
+                        py::print("sim.space_charge = True is deprecated, please use space_charge = \"3D\"");
+                        pp_algo.add("space_charge", std::string("3D"));
+                    } else {
+                        // map boolean False to "false" / off
+                        pp_algo.add("space_charge", std::string("false"));
+                    }
                 }
-
-                amrex::ParmParse pp_algo("algo");
-                pp_algo.add("space_charge_model", space_charge_model);
+                else
+                {
+                    std::string const space_charge = std::get<std::string>(space_charge_v);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D") {
+                        throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge);
+                    }
+                    amrex::ParmParse pp_algo("algo");
+                    pp_algo.add("space_charge", space_charge);
+                }
             },
-            "The model to be used when calculating space charge effects. Either 2D or 3D."
+            "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {

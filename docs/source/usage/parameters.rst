@@ -43,7 +43,7 @@ Initial Beam Distributions
   bunch charge
 
 * ``beam.current`` (``float``, in A)
-  beam current, used only if ``algo.space_charge_model = "2D"``
+  beam current, used only if ``algo.space_charge = "2D"``
 
 * ``beam.particle`` (``string``)
   particle type: currently either ``electron``, ``positron`` or ``proton``
@@ -717,12 +717,24 @@ Space Charge
 Space charge kicks are applied in between slices of thick :ref:`lattice elements <running-cpp-parameters-lattice>`.
 See there ``nslice`` option on lattice elements for slicing.
 
-* ``algo.space_charge`` (``boolean``, optional, default: ``false``)
+* ``algo.space_charge`` (``string``, optional)
 
-  Whether to calculate space charge effects.
+  The physical model of space charge used.
 
-ImpactX uses an AMReX grid of boxes to organize and parallelize space charge simulation domain.
-These boxes also contain a field mesh, if space charge calculations are enabled.
+  ImpactX uses an AMReX grid of boxes to organize and parallelize space charge simulation domain.
+  These boxes also contain a field mesh, if space charge calculations are enabled.
+
+  Options:
+
+  * ``"false"`` (default): space charge effects are not calculated.
+
+  * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
+
+    Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
+
+  * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
+
+    Currently, this model is supported only in particle mode (when ``algo.track = "particles"``).
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 
@@ -826,20 +838,6 @@ Multigrid-specific numerical options:
   The verbosity used for MLMG solver for space-charge fields calculation.
   Currently MLMG solver looks for verbosity levels from 0-5.
   A higher number results in more verbose output.
-
-* ``algo.space_charge_model`` (``string``, optional, default: ``3D``)
-
-  The physical model of space charge used.
-
-  Options:
-
-  * ``2D``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
-
-    Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
-
-  * ``3D``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
-
-    Currently, this model is supported only in particle mode (when ``algo.track = "particles"``).
 
 
 .. _running-cpp-parameters-collective-csr:

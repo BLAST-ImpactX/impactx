@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
@@ -78,21 +79,23 @@ namespace impactx
         }
 
         amrex::ParmParse const pp_algo("algo");
-        bool space_charge = false;
-        pp_algo.query("space_charge", space_charge);
-        //AMREX_ALWAYS_ASSERT_WITH_MESSAGE("2D space charge only is implemented for envelope tracking.");
+        auto space_charge = get_space_charge_algo();
         if (verbose > 0)
         {
-            amrex::Print() << " Space Charge effects: " << space_charge << "\n";
+            amrex::Print() << " Space Charge effects: " << amrex::getEnumNameString(space_charge) << "\n";
+        }
+        if (space_charge == SpaceChargeAlgo::True_3D)
+        {
+            throw std::runtime_error("3D space charge effects are not yet implemented for envelope tracking.");
         }
 
         bool csr = false;
         pp_algo.query("csr", csr);
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR not yet implemented for envelope tracking.");
         if (verbose > 0)
         {
             amrex::Print() << " CSR effects: " << csr << "\n";
         }
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR effects are not yet implemented for envelope tracking.");
 
         // periods through the lattice
         int num_periods = 1;
@@ -126,7 +129,7 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
-                    if (space_charge)
+                    if (space_charge != SpaceChargeAlgo::False)
                     {
                         // push Covariance Matrix in 2D space charge fields
                         envelope::spacecharge::space_charge2D_push(ref,cm,current,slice_ds);

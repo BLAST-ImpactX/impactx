@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/CollectLost.H"
 #include "particles/ImpactXParticleContainer.H"
@@ -68,13 +69,16 @@ namespace impactx
 
         }
 
-        amrex::ParmParse const pp_algo("algo");
-        bool space_charge = false;
-        pp_algo.query("space_charge", space_charge);
+        auto space_charge = get_space_charge_algo();
         if (verbose > 0) {
-            amrex::Print() << " Space Charge effects: " << space_charge << "\n";
+            amrex::Print() << " Space Charge effects: " << amrex::getEnumNameString(space_charge) << "\n";
+        }
+        if (space_charge == SpaceChargeAlgo::True_2D)
+        {
+            throw std::runtime_error("2D space charge effects are not yet implemented for particle tracking.");
         }
 
+        amrex::ParmParse const pp_algo("algo");
         bool csr = false;
         pp_algo.query("csr", csr);
         if (verbose > 0) {

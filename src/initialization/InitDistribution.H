@@ -47,7 +47,7 @@ namespace impactx::initialization
     Envelope
     create_envelope (
         distribution::KnownDistributions const & distr,
-        std::optional<amrex::ParticleReal> intensity
+        std::optional<amrex::ParticleReal> intensity = std::nullopt
     );
 
     /** Initialize a single particle's data using the given distribution

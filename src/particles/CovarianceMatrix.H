@@ -23,7 +23,7 @@ namespace impactx
     using CovarianceMatrix = Map6x6;
 
 
-    /** This struct stores the beam envelope attribues, including the 6x6 beam
+    /** This struct stores the beam envelope attributes, including the 6x6 beam
      *  covariance matrix.  Used during envelope tracking mode.
      */
     struct Envelope
@@ -50,8 +50,6 @@ namespace impactx
         amrex::ParticleReal
         beam_intensity () const
         {
-            using namespace amrex::literals;
-
             return m_beam_intensity;
         }
 
@@ -66,6 +64,14 @@ namespace impactx
 
             return *this;
          }
+
+        /** Get the 6x6 covariance matrix for envelope tracking
+         */
+        CovarianceMatrix
+        covariance_matrix () const
+        {
+            return m_env;
+        }
 
     };
 

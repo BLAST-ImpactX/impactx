@@ -68,20 +68,26 @@ def run_simulation():
     )
 
     distribution = distribution_parameters()
-    sim.add_particles(bunch_charge_C, distribution, npart)
 
     lattice_configuration = lattice_elements()
     sim.lattice.extend(lattice_configuration)
 
     tracking_modes = {
-        "Particle Tracking": sim.track_particles,
-        "Envelope Tracking": sim.track_envelope,
+        "Particle Tracking": lambda: (
+            sim.add_particles(bunch_charge_C, distribution, npart),
+            sim.track_particles(),
+        ),
+        "Envelope Tracking": lambda: (
+            sim.init_envelope(ref, distribution),
+            sim.track_envelope(),
+        ),
         "Reference Tracking": sim.track_reference,
     }
 
     # simulate
     tracking_modes[state.tracking_mode]()
 
-    generate_phase_space(pc)
+    if state.tracking_mode == "Particle Tracking":
+        generate_phase_space(pc)
 
     sim.finalize()

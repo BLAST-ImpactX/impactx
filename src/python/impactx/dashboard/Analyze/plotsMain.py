@@ -6,19 +6,31 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+import base64
 import glob
+import io
 import os
 
 from trame.widgets import matplotlib, plotly
 
 from .. import setup_server, vuetify
-from . import AnalyzeFunctions, line_plot_1d
+from . import AnalyzeFunctions, adjusted_settings_plot, line_plot_1d
 
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
 # Plotting
 # -----------------------------------------------------------------------------
+
+
+def fig_to_base64(fig):
+    """
+    Puts png in trame-compatible form
+    """
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode("utf-8")
 
 
 # Call plot_over_s
@@ -29,6 +41,17 @@ def plot_over_s():
 
     fig = line_plot_1d(state.selected_headers, state.filtered_data)
     ctrl.plotly_figure_update(fig)
+
+
+def generate_phase_space(pc):
+    fig = adjusted_settings_plot(pc)
+    ctrl.matplotlib_figure_update(fig)
+
+    fig_original = pc.plot_phasespace()
+
+    if fig_original is not None:
+        image_base64 = fig_to_base64(fig_original)
+        state.phase_space_png = f"data:image/png;base64, {image_base64}"
 
 
 PLOTS = {

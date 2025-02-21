@@ -26,16 +26,12 @@ class InputParameters(UIDefaults):
         if state.kin_energy_on_ui != 0:
             InputFunctions.update_kin_energy_sim_value()
 
-    @state.change("space_charge", "csr")
-    def update_card_height(space_charge, csr, **kwargs):
-        UIDefaults.adjust_card_height(space_charge, csr)
-
     def card(self):
         """
         Creates UI content for beam properties.
         """
 
-        with vuetify.VCard(style=("card_style",)):
+        with vuetify.VCard():
             CardComponents.input_header("Input Parameters")
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

@@ -287,9 +287,7 @@ class LatticeConfiguration(UIDefaults):
         """
         Displays the configuration for lattice elements.
         """
-        with vuetify.VCard(
-            style=("expand_configuration ? 'height: 100%' : card_style",)
-        ):
+        with vuetify.VCard():
             CardComponents.input_header(
                 "Lattice Configuration",
                 additional_components={

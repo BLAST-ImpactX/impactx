@@ -185,14 +185,3 @@ class UIDefaults:
         "display": "flex",
         "flex-direction": "column",
     }
-
-    @staticmethod
-    def adjust_card_height(space_charge, csr):
-        state.card_height = "33.33vh" if (space_charge or csr) else "50vh"
-
-        CARD_SIZING = {
-            "max-height": f"calc({state.card_height} - {ToolbarDefaults.TOOLBAR_SIZE + ToolbarDefaults.FOOTER_SIZE}px)",
-            "transition": "max-height 0.5s",
-        }
-
-        state.card_style = UIDefaults.CARD_STYLE | CARD_SIZING

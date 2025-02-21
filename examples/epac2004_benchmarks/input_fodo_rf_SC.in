@@ -117,7 +117,7 @@ gapb1.sin_coefficients = 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  \
 # Algorithms
 ###############################################################################
 algo.particle_shape = 2
-algo.space_charge = true
+algo.space_charge = 3D
 
 amr.n_cell = 56 56 64
 geometry.prob_relative = 4.0

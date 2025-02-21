@@ -106,7 +106,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                         amrex.throw_exception = 1
                         amrex.signal_handling = 0
                         impactx.always_warn_immediately=1
-                        #impactx.abort_on_warning_threshold=low
+                        impactx.abort_on_warning_threshold=low
                         ${INPUTS_ARGS}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )

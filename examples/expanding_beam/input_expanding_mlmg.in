@@ -32,7 +32,7 @@ monitor.backend = h5
 # Algorithms
 ###############################################################################
 algo.particle_shape = 2
-algo.space_charge = true
+algo.space_charge = 3D
 
 # Space charge solver with one MR level
 amr.max_level = 1

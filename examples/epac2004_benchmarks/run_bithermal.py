@@ -14,7 +14,7 @@ sim = ImpactX()
 # sim.n_cell = [128, 128, 128]  # full resolution
 sim.n_cell = [64, 64, 64]
 sim.particle_shape = 2  # B-spline order
-sim.space_charge = True
+sim.space_charge = "3D"
 sim.dynamic_size = True
 sim.prob_relative = [3.0]
 

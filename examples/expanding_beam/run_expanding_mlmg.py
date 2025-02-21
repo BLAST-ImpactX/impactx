@@ -18,7 +18,7 @@ sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]
 
 sim.particle_shape = 2  # B-spline order
-sim.space_charge = True
+sim.space_charge = "3D"
 sim.dynamic_size = True
 sim.prob_relative = [3.0, 1.1]
 

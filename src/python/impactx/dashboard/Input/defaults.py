@@ -18,6 +18,13 @@ class DashboardDefaults:
     Defaults for input parameters in the ImpactX dashboard.
     """
 
+    COLLAPSABLE_SECTIONS = [
+        "collapse_input_parameters",
+        "collapse_csr",
+        "collapse_distribution_parameters",
+        "collapse_space_charge",
+        "collapse_lattice_configuration",
+    ]
     # -------------------------------------------------------------------------
     # Inputs by section
     # -------------------------------------------------------------------------

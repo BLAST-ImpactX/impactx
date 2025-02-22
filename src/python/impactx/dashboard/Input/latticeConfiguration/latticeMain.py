@@ -239,7 +239,7 @@ class LatticeConfiguration(CardBase):
 
     def card_content(self):
         self.init_settings_dialog()
-        with vuetify.VCard():
+        with vuetify.VCard(style=self.collapsable):
             CardComponents.input_header(
                 self.HEADER_NAME,
                 additional_components={

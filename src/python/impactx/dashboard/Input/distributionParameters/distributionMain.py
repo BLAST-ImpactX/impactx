@@ -181,7 +181,7 @@ class DistributionParameters(CardBase):
         """
         Creates UI content for beam distribution.
         """
-        with vuetify.VCard():
+        with vuetify.VCard(style=self.collapsable):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

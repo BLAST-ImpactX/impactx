@@ -191,7 +191,7 @@ class SpaceChargeConfiguration(CardBase):
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard():
+        with vuetify.VCard(style=self.collapsable):
             CardComponents.input_header(
                 self.HEADER_NAME, additional_components={"start": multigrid_settings}
             )

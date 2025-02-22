@@ -19,7 +19,7 @@ class csrConfiguration(CardBase):
         super().__init__()
 
     def card_content(self):
-        with vuetify.VCard():
+        with vuetify.VCard(style=self.collapsable):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

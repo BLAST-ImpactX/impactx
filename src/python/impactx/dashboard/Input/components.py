@@ -25,6 +25,10 @@ def clean_name(section_name):
 class CardBase(UIDefaults):
     HEADER_NAME = "Base Section"
 
+    def __init__(self):
+        self.header = self.HEADER_NAME.lower().replace(" ", "_")
+        self.collapsable = (f"collapse_{self.header}_height",)
+
     def card(self):
         """
         Creates UI content for a section.
@@ -76,9 +80,10 @@ class CardComponents:
         with vuetify.VCardTitle(section_name):
             vuetify.VSpacer()
             render_components("start")
-            CardComponents.expand_button(section_name_cleaned)
             CardComponents.refresh_icon(section_name_cleaned)
             CardComponents.documentation_icon(section_name_cleaned)
+            CardComponents.collapse_button(section_name_cleaned)
+            CardComponents.expand_button(section_name_cleaned)
             render_components("end")
         vuetify.VDivider()
 
@@ -132,6 +137,30 @@ class CardComponents:
         ):
             vuetify.VIcon(
                 v_text=(f"expand_{section_name} ? 'mdi-close' : 'mdi-arrow-expand'",)
+            )
+
+    @staticmethod
+    def collapse_button(section_name: str) -> vuetify.VBtn:
+        """
+        A button which collapses the given cards inputs.
+
+        :param section_name: The name for the input section.
+        """
+        section_name_cleaned = clean_name(section_name)
+        collapsed_state_name = f"collapse_{section_name_cleaned}"
+
+        setattr(state, collapsed_state_name, False)
+
+        with vuetify.VBtn(
+            color="primary",
+            click=f"collapse_{section_name_cleaned} = !collapse_{section_name_cleaned}",
+            icon=True,
+            small=True,
+        ):
+            vuetify.VIcon(
+                v_text=(
+                    f"collapse_{section_name_cleaned} ? 'mdi-chevron-down' : 'mdi-chevron-up'",
+                )
             )
 
 

@@ -7,22 +7,20 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardComponents, InputComponents, UIDefaults
+from .. import CardBase, CardComponents, InputComponents
 
 server, state, ctrl = setup_server()
 
 
-class csrConfiguration(UIDefaults):
+class csrConfiguration(CardBase):
+    HEADER_NAME = "CSR"
+
     def __init__(self):
         super().__init__()
 
-    def card(self):
-        """
-        Creates UI content for CSR.
-        """
-
+    def card_content(self):
         with vuetify.VCard():
-            CardComponents.input_header("CSR")
+            CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol():

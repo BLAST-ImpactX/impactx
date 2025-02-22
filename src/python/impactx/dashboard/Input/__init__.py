@@ -1,5 +1,5 @@
-from .components import CardComponents, InputComponents, NavigationComponents
-from .defaults import DashboardDefaults, UIDefaults
+from .components import CardBase, CardComponents, InputComponents, NavigationComponents
+from .defaults import DashboardDefaults
 from .generalFunctions import generalFunctions
 
 __all__ = [
@@ -8,5 +8,5 @@ __all__ = [
     "generalFunctions",
     "InputComponents",
     "NavigationComponents",
-    "UIDefaults",
+    "CardBase",
 ]

@@ -7,16 +7,18 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardComponents, InputComponents, UIDefaults
+from .. import CardBase, CardComponents, InputComponents
 from . import InputFunctions
 
 server, state, ctrl = setup_server()
 
 
-class InputParameters(UIDefaults):
+class InputParameters(CardBase):
     """
     User-Input section for beam properties.
     """
+
+    HEADER_NAME = "Input Parameters"
 
     def __init__(self):
         super().__init__()
@@ -26,13 +28,9 @@ class InputParameters(UIDefaults):
         if state.kin_energy_on_ui != 0:
             InputFunctions.update_kin_energy_sim_value()
 
-    def card(self):
-        """
-        Creates UI content for beam properties.
-        """
-
+    def card_content(self):
         with vuetify.VCard():
-            CardComponents.input_header("Input Parameters")
+            CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols="auto"):

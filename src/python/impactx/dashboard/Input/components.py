@@ -9,13 +9,48 @@ License: BSD-3-Clause-LBNL
 from typing import Optional
 
 from .. import html, setup_server, vuetify
-from .defaults import TooltipDefaults
+from .defaults import TooltipDefaults, UIDefaults
 from .generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 
 state.documentation_drawer_open = False
 state.documentation_url = ""
+
+
+def clean_name(section_name):
+    return section_name.lower().replace(" ", "_")
+
+
+class CardBase(UIDefaults):
+    HEADER_NAME = "Base Section"
+
+    def card(self):
+        """
+        Creates UI content for a section.
+        """
+
+        self.init_dialog(self.HEADER_NAME, self.card_content)
+        self.card_content()
+
+    def card_content(self):
+        raise NotImplementedError("Card must contain card_content.")
+
+    @staticmethod
+    def init_dialog(section_name: str, content_callback) -> None:
+        """
+        Renders the expansion dialog UI for the input sections card.
+        Only runs once, when the section's card is built.
+        """
+
+        section_name_cleaned = clean_name(section_name)
+        expand_state_name = f"expand_{section_name_cleaned}"
+
+        setattr(state, expand_state_name, False)
+
+        with vuetify.VDialog(v_model=(expand_state_name,), width="fit-content"):
+            with vuetify.VCard():
+                content_callback()
 
 
 class CardComponents:
@@ -32,7 +67,7 @@ class CardComponents:
         :param section_name: The name for the input section.
         """
 
-        documentation_name = section_name.lower().replace(" ", "_")
+        section_name_cleaned = clean_name(section_name)
 
         def render_components(position: str):
             if additional_components and position in additional_components:
@@ -41,8 +76,9 @@ class CardComponents:
         with vuetify.VCardTitle(section_name):
             vuetify.VSpacer()
             render_components("start")
-            CardComponents.refresh_icon(documentation_name)
-            CardComponents.documentation_icon(documentation_name)
+            CardComponents.expand_button(section_name_cleaned)
+            CardComponents.refresh_icon(section_name_cleaned)
+            CardComponents.documentation_icon(section_name_cleaned)
             render_components("end")
         vuetify.VDivider()
 
@@ -79,6 +115,24 @@ class CardComponents:
             small=True,
         ):
             vuetify.VIcon("mdi-refresh")
+
+    @staticmethod
+    def expand_button(section_name: str) -> vuetify.VBtn:
+        """
+        A button which expands/closes the given card configuration.
+
+        :param section_name: The name for the input section.
+        """
+
+        with vuetify.VBtn(
+            color="primary",
+            click=f"expand_{section_name} = !expand_{section_name}",
+            icon=True,
+            small=True,
+        ):
+            vuetify.VIcon(
+                v_text=(f"expand_{section_name} ? 'mdi-close' : 'mdi-arrow-expand'",)
+            )
 
 
 class InputComponents:

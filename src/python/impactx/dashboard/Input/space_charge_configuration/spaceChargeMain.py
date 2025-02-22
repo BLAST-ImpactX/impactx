@@ -8,10 +8,10 @@ License: BSD-3-Clause-LBNL
 
 from ... import setup_server, vuetify
 from .. import (
+    CardBase,
     CardComponents,
     InputComponents,
     NavigationComponents,
-    UIDefaults,
     generalFunctions,
 )
 from . import SpaceChargeFunctions
@@ -179,15 +179,13 @@ def multigrid_settings():
     )
 
 
-class SpaceChargeConfiguration(UIDefaults):
+class SpaceChargeConfiguration(CardBase):
+    HEADER_NAME = "Space Charge"
+
     def __init__(self):
         super().__init__()
 
-    def card(self):
-        """
-        Creates UI content for space charge configuration
-        """
-
+    def card_content(self):
         with vuetify.VDialog(
             v_model=("space_charge_dialog_settings", False), width="500px"
         ):
@@ -195,7 +193,7 @@ class SpaceChargeConfiguration(UIDefaults):
 
         with vuetify.VCard():
             CardComponents.input_header(
-                "Space Charge", additional_components={"start": multigrid_settings}
+                self.HEADER_NAME, additional_components={"start": multigrid_settings}
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

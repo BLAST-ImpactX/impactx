@@ -14,10 +14,10 @@ from impactx import distribution
 
 from ... import setup_server, vuetify
 from .. import (
+    CardBase,
     CardComponents,
     DashboardDefaults,
     InputComponents,
-    UIDefaults,
     generalFunctions,
 )
 from . import DistributionFunctions
@@ -167,20 +167,22 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
 # -----------------------------------------------------------------------------
 
 
-class DistributionParameters(UIDefaults):
+class DistributionParameters(CardBase):
     """
     User-Input section for beam distribution.
     """
 
+    HEADER_NAME = "Distribution Parameters"
+
     def __init__(self):
         super().__init__()
 
-    def card(self):
+    def card_content(self):
         """
         Creates UI content for beam distribution.
         """
         with vuetify.VCard():
-            CardComponents.input_header("Distribution Parameters")
+            CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):

@@ -10,10 +10,10 @@ from impactx import elements
 
 from ... import setup_server, vuetify
 from .. import (
+    CardBase,
     CardComponents,
     InputComponents,
     NavigationComponents,
-    UIDefaults,
     generalFunctions,
 )
 from . import LatticeConfigurationHelper
@@ -225,74 +225,25 @@ def update_default_value(parameter_name, new_value):
 # -----------------------------------------------------------------------------
 
 
-class LatticeConfiguration(UIDefaults):
-    """
-    User-Input section for configuring lattice elements.
-    """
+class LatticeConfiguration(CardBase):
+    HEADER_NAME = "Lattice Configuration"
 
     def __init__(self):
         super().__init__()
 
-    def init_dialogs(self):
-        with vuetify.VDialog(
-            v_model=("expand_configuration", False), width="fit-content"
-        ):
-            with vuetify.VCard():
-                self.configuration_list()
+    def init_settings_dialog(self):
         with vuetify.VDialog(
             v_model=("lattice_configuration_dialog_settings", False), width="500px"
         ):
             LatticeConfiguration.dialog_settings()
 
-    def card(self):
-        """
-        Creates UI content for lattice configuration.
-        """
-
-        self.init_dialogs()
-        self.configuration_list()
-
-    # -----------------------------------------------------------------------------
-    # Dialogs
-    # -----------------------------------------------------------------------------
-
-    @staticmethod
-    def dialog_settings():
-        """
-        Provides controls for lattice element configuration,
-        allowing dashboard users to define parameter defaults.
-        """
-        dialog_name = "lattice_configuration_dialog_tab_settings"
-
-        NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"])
-        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol(cols=3):
-                            InputComponents.text_field(
-                                label="nslice",
-                                v_model_name="nslice",
-                                change=(
-                                    ctrl.nsliceDefaultChange,
-                                    "['nslice', $event]",
-                                ),
-                            )
-
-    # -----------------------------------------------------------------------------
-    # lattice_configuration_lsit
-    # -----------------------------------------------------------------------------
-
-    def configuration_list(self):
-        """
-        Displays the configuration for lattice elements.
-        """
+    def card_content(self):
+        self.init_settings_dialog()
         with vuetify.VCard():
             CardComponents.input_header(
-                "Lattice Configuration",
+                self.HEADER_NAME,
                 additional_components={
                     "start": LatticeConfigurationHelper.settings,
-                    "end": LatticeConfigurationHelper.expand_configuration,
                 },
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
@@ -345,3 +296,30 @@ class LatticeConfiguration(UIDefaults):
                             dense=True,
                             style="width: 100px;",
                         )
+
+    # -----------------------------------------------------------------------------
+    # Dialogs
+    # -----------------------------------------------------------------------------
+
+    @staticmethod
+    def dialog_settings():
+        """
+        Provides controls for lattice element configuration,
+        allowing dashboard users to define parameter defaults.
+        """
+        dialog_name = "lattice_configuration_dialog_tab_settings"
+
+        NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"])
+        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
+            with vuetify.VTabItem():
+                with vuetify.VCardText():
+                    with vuetify.VRow():
+                        with vuetify.VCol(cols=3):
+                            InputComponents.text_field(
+                                label="nslice",
+                                v_model_name="nslice",
+                                change=(
+                                    ctrl.nsliceDefaultChange,
+                                    "['nslice', $event]",
+                                ),
+                            )

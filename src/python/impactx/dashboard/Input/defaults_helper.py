@@ -1,3 +1,11 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
 import inspect
 from typing import Dict, List, Type
 

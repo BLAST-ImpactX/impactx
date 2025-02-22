@@ -1,3 +1,11 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
 from typing import Optional
 
 from .. import html, setup_server, vuetify

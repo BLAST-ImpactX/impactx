@@ -23,6 +23,8 @@ state.import_file_details = None
 state.import_file_error = False
 state.importing_file = False
 
+state.expand_all_sections = False
+
 
 class ToolbarImport:
     @state.change("import_file")
@@ -80,6 +82,18 @@ class InputToolbar:
         ):
             vuetify.VIcon("mdi-download", left=True, small=True)
             html.Span("Export")
+
+    @staticmethod
+    def collapse_all_sections_button():
+        with vuetify.VBtn(
+            click=ctrl.collapse_all_sections,
+            color="primary",
+            icon=True,
+            small=True,
+        ):
+            vuetify.VIcon(
+                v_text=("expand_all_sections ? 'mdi-collapse-all' : 'mdi-expand-all'",)
+            )
 
     @staticmethod
     def import_button() -> None:
@@ -141,6 +155,7 @@ class InputToolbar:
             click=ctrl.reset_all,
             outlined=True,
             small=True,
+            classes="mr-4",
         ):
             vuetify.VIcon("mdi-refresh", left=True)
             html.Span("Reset")
@@ -218,6 +233,8 @@ class GeneralToolbar:
             InputToolbar.import_button()
             InputToolbar.export_button()
             InputToolbar.reset_inputs_button()
+            vuetify.VDivider(vertical=True, classes="mr-2")
+            InputToolbar.collapse_all_sections_button()
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)

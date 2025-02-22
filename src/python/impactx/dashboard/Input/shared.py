@@ -48,6 +48,12 @@ class SharedUtilities:
                         if state_name == "kin_energy_on_ui":
                             InputParameters.on_kin_energy_unit_change()
 
+    @ctrl.add("collapse_all_sections")
+    def on_collapse_all_sections_click():
+        state.expand_all_sections = not state.expand_all_sections
+        for collapsable_section in DashboardDefaults.COLLAPSABLE_SECTIONS:
+            setattr(state, collapsable_section, state.expand_all_sections)
+
     @state.change(*DashboardDefaults.COLLAPSABLE_SECTIONS)
     def on_collapsable_section_change(**kwargs):
         max_height = "1000px"

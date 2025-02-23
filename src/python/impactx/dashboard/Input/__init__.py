@@ -1,4 +1,4 @@
-from .components import CardBase, CardComponents, InputComponents, NavigationComponents
+from .components.components import CardBase, CardComponents, InputComponents, NavigationComponents
 from .defaults import DashboardDefaults
 from .generalFunctions import generalFunctions
 

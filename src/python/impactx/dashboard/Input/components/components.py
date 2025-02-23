@@ -8,9 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from typing import Optional
 
-from .. import html, setup_server, vuetify
-from .defaults import TooltipDefaults, UIDefaults
-from .generalFunctions import generalFunctions
+from ... import html, setup_server, vuetify
+from ..defaults import TooltipDefaults, UIDefaults
+from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 

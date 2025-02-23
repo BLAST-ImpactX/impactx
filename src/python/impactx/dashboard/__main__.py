@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import sys
 
 from trame.ui.router import RouterViewLayout
-from trame.ui.vuetify import SinglePageWithDrawerLayout
+from trame.ui.vuetify3 import SinglePageWithDrawerLayout
 from trame.widgets import router, xterm
 
 from . import (

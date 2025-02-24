@@ -116,6 +116,10 @@ option(ImpactX_PYTHON_IPO
     ${_ImpactX_PYTHON_IPO_DEFAULT}
 )
 
+# Unity builds combine all .cpp files into a single one (a single translation
+# unit, TU).
+option(ImpactX_UNITY_BUILD          "ImpactX library as unity build" OFF)
+
 if(ImpactX_FFT)
     set(ABLASTR_FFT ON CACHE STRING "FFT-based solvers" FORCE)
 endif()
@@ -164,6 +168,16 @@ set_target_properties(lib PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
+
+# Optional: build only a single TU
+if(ImpactX_UNITY_BUILD)
+    set_target_properties(lib PROPERTIES
+        UNITY_BUILD ON
+        UNITY_BUILD_MODE BATCH
+        # Number must be more than the number of .cpp files in ImpactX
+        UNITY_BUILD_BATCH_SIZE 10000
+    )
+endif()
 
 # executable application
 #   note: we currently avoid a dependency on a core library

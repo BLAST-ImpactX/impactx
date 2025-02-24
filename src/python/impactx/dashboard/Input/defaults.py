@@ -8,7 +8,10 @@ License: BSD-3-Clause-LBNL
 
 from impactx.impactx_pybind import ImpactX, RefPart
 
+from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
+
+server, state, ctrl = setup_server()
 
 
 class DashboardDefaults:
@@ -16,6 +19,13 @@ class DashboardDefaults:
     Defaults for input parameters in the ImpactX dashboard.
     """
 
+    COLLAPSABLE_SECTIONS = [
+        "collapse_input_parameters",
+        "collapse_csr",
+        "collapse_distribution_parameters",
+        "collapse_space_charge",
+        "collapse_lattice_configuration",
+    ]
     # -------------------------------------------------------------------------
     # Inputs by section
     # -------------------------------------------------------------------------
@@ -149,3 +159,37 @@ class TooltipDefaults:
     TOOLTIP = InputDefaultsHelper.get_docstrings(
         [RefPart, ImpactX], DashboardDefaults.DEFAULT_VALUES
     )
+
+
+class ToolbarDefaults:
+    """
+    Default styling and states for the toolbar
+    section in the ImpactX dashboard.
+    """
+
+    TOOLBAR_SIZE = 64
+    FOOTER_SIZE = 8
+
+
+class UIDefaults:
+    """
+    Default UI which the input cards reply on in the ImpactX dashboard.
+    """
+
+    ROW_STYLE = {
+        "dense": True,
+    }
+
+    CARD_TEXT_OVERFLOW = {
+        "classes": "custom-scrollbar",
+        "style": {
+            "flex": "1",
+            "overflow-y": "auto",
+            "overflow-x": "auto",
+        },
+    }
+
+    CARD_STYLE = {
+        "display": "flex",
+        "flex-direction": "column",
+    }

@@ -28,29 +28,47 @@ from .start import main
 
 server, state, ctrl = setup_server()
 
+from pathlib import Path
+
+from trame.widgets import client
+
+CSS_FILE = Path(__file__).with_name("Input").joinpath("style.css")
+
 from .Input.shared import SharedUtilities
 
 shared_utilities = SharedUtilities()
 
 inputParameters = InputParameters()
+distribution = DistributionParameters()
+lattice_config = LatticeConfiguration()
+space_charge = SpaceChargeConfiguration()
+csr = csrConfiguration()
+
+card_column_padding = {"classes": "pa-2"}
+card_row_padding = {"classes": "ma-2"}
+card_breakpoints = {"cols": 12, "lg": 6, "md": 12, "sm": 6}
 
 with RouterViewLayout(server, "/Input"):
     with vuetify.VContainer(fluid=True):
         with vuetify.VRow():
-            with vuetify.VCol(cols="auto", classes="pa-2"):
-                with vuetify.VRow(no_gutters=True):
-                    with vuetify.VCol(cols="auto", classes="pa-2"):
+            with vuetify.VCol(cols=12, md=6):
+                with vuetify.VRow(**card_row_padding):
+                    with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
                         inputParameters.card()
-                    with vuetify.VCol(cols="auto", classes="pa-2"):
-                        SpaceChargeConfiguration.card()
-                    with vuetify.VCol(cols="auto", classes="pa-2"):
-                        csrConfiguration.card()
-                with vuetify.VRow(no_gutters=True):
-                    with vuetify.VCol(cols="auto", classes="pa-2"):
-                        DistributionParameters.card()
-                with vuetify.VRow(no_gutters=True):
-                    with vuetify.VCol(cols="auto", classes="pa-2"):
-                        LatticeConfiguration.card()
+                    with vuetify.VCol(
+                        **{**card_breakpoints, **card_column_padding},
+                        v_show="space_charge",
+                    ):
+                        space_charge.card()
+                    with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
+                        distribution.card()
+                    with vuetify.VCol(
+                        **{**card_breakpoints, **card_column_padding}, v_show="csr"
+                    ):
+                        csr.card()
+                with vuetify.VRow(**card_row_padding):
+                    with vuetify.VCol(cols=12, **card_column_padding):
+                        lattice_config.card()
 
 with RouterViewLayout(server, "/Analyze"):
     with vuetify.VContainer(fluid=True):
@@ -73,6 +91,9 @@ def application():
     init_terminal()
     with SinglePageWithDrawerLayout(server) as layout:
         layout.title.hide()
+        with layout:
+            client.Style(CSS_FILE.read_text())
+
         with layout.toolbar:
             with vuetify.Template(v_if="$route.path == '/Analyze'"):
                 GeneralToolbar.dashboard_toolbar("analyze")

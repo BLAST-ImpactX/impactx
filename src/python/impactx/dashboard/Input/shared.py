@@ -47,3 +47,30 @@ class SharedUtilities:
                         setattr(state, state_name, converted_value)
                         if state_name == "kin_energy_on_ui":
                             InputParameters.on_kin_energy_unit_change()
+
+    @ctrl.add("collapse_all_sections")
+    def on_collapse_all_sections_click():
+        state.expand_all_sections = not state.expand_all_sections
+        for collapsable_section in DashboardDefaults.COLLAPSABLE_SECTIONS:
+            setattr(state, collapsable_section, state.expand_all_sections)
+
+    @state.change(*DashboardDefaults.COLLAPSABLE_SECTIONS)
+    def on_collapsable_section_change(**kwargs):
+        max_height = "1000px"
+        min_height = "64px"
+
+        state_changes = state.modified_keys & set(
+            DashboardDefaults.COLLAPSABLE_SECTIONS
+        )
+        for state_name in state_changes:
+            new_height = min_height if getattr(state, state_name) else max_height
+
+            setattr(
+                state,
+                f"{state_name}_height",
+                {
+                    "max-height": new_height,
+                    "overflow": "hidden",
+                    "transition": "max-height 0.5s",
+                },
+            )

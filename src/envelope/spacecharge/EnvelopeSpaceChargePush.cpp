@@ -9,6 +9,8 @@
  */
 #include "EnvelopeSpaceChargePush.H"
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SmallMatrix.H>
 #include <AMReX_Print.H>
@@ -27,6 +29,9 @@ namespace impactx::envelope::spacecharge
     )
     {
         using namespace amrex::literals;
+
+        // skip calculations for trivial case
+        if (current == 0_prt) { return; }
 
         // initialize the linear transport map
         Map6x6 R = Map6x6::Identity();

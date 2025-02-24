@@ -15,13 +15,17 @@
 #include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "diagnostics/DiagnosticOutput.H"
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
+#include <AMReX_REAL.H>
 
 #include <memory>
+#include <stdexcept>
 
 
 namespace impactx
@@ -30,6 +34,8 @@ namespace impactx
     ImpactX::track_envelope ()
     {
         BL_PROFILE("ImpactX::track_envelope");
+
+        using namespace amrex::literals;
 
         // verbosity
         amrex::ParmParse pp_impactx("impactx");
@@ -88,6 +94,14 @@ namespace impactx
         {
             throw std::runtime_error("3D space charge effects are not yet implemented for envelope tracking.");
         }
+        if (space_charge != SpaceChargeAlgo::False && current == 0_prt) {
+            ablastr::warn_manager::WMRecordWarning(
+                "algo.space_charge",
+                "Space charge calculations are enabled but zero beam current was provided. "
+                "Skipping space charge calculations.",
+                ablastr::warn_manager::WarnPriority::high
+            );
+        }
 
         bool csr = false;
         pp_algo.query("csr", csr);
@@ -132,7 +146,7 @@ namespace impactx
                     if (space_charge != SpaceChargeAlgo::False)
                     {
                         // push Covariance Matrix in 2D space charge fields
-                        envelope::spacecharge::space_charge2D_push(ref,cm,current,slice_ds);
+                        envelope::spacecharge::space_charge2D_push(ref, cm, current, slice_ds);
                     }
 
                     std::visit([&ref, &cm](auto&& element)

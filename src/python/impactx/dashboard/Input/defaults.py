@@ -1,3 +1,11 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
 from impactx.impactx_pybind import ImpactX, RefPart
 
 from .defaults_helper import InputDefaultsHelper

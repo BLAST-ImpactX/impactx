@@ -126,6 +126,7 @@ CMake Option                  Default & Values                               Des
 ============================= ============================================== ===========================================================
 ``BUILD_SHARED_LIBS``         ON/**OFF**                                     Build shared libraries for dependencies
 ``ImpactX_CCACHE``            **ON**/OFF                                     Search and use CCache to speed up rebuilds.
+``ImpactX_UNITY_BUILD``       ON/**OFF**                                     ImpactX library as unity build (single TU)
 ``ImpactX_ablastr_src``       *None*                                         Path to ABLASTR source directory (preferred if set)
 ``ImpactX_ablastr_repo``      ``https://github.com/ECP-WarpX/WarpX.git``     Repository URI to pull and build ABLASTR from
 ``ImpactX_ablastr_branch``    *we set and maintain a compatible commit*      Repository branch for ``ImpactX_ablastr_repo``

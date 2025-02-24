@@ -502,7 +502,8 @@ namespace detail
                 pp_element.queryAddWithParser("cn", cn);
             }
 
-            m_lattice.emplace_back(diagnostics::BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
+            using impactx::elements::diagnostics::BeamMonitor;
+            m_lattice.emplace_back(BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
         } else if (element_type == "source")
         {
             std::string distribution, openpmd_path;

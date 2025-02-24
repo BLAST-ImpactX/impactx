@@ -10,30 +10,15 @@ from . import setup_server
 
 server, state, ctrl = setup_server()
 
-import base64
-import io
-
 from impactx import Config, ImpactX
 
-from .Analyze.plot_PhaseSpaceProjections.phaseSpaceSettings import (
-    adjusted_settings_plot,
-)
+from .Analyze.plotsMain import generate_phase_space
 from .Input.distributionParameters.distributionMain import distribution_parameters
 from .Input.latticeConfiguration.latticeMain import lattice_elements
 
 # Call MPI_Init and MPI_Finalize only once:
 if Config.have_mpi:
     from mpi4py import MPI  # noqa
-
-
-def fig_to_base64(fig):
-    """
-    Puts png in trame-compatible form
-    """
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png")
-    buf.seek(0)
-    return base64.b64encode(buf.read()).decode("utf-8")
 
 
 def run_simulation():
@@ -92,15 +77,6 @@ def run_simulation():
     # simulate
     sim.evolve()
 
-    fig = adjusted_settings_plot(pc)
-    ctrl.matplotlib_figure_update(fig)
-
-    fig_original = pc.plot_phasespace()
-
-    if fig_original is not None:
-        image_base64 = fig_to_base64(fig_original)
-        state.phase_space_png = f"data:image/png;base64, {image_base64}"
+    generate_phase_space(pc)
 
     sim.finalize()
-
-    return fig

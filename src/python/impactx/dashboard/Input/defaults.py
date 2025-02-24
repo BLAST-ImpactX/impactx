@@ -8,10 +8,11 @@ License: BSD-3-Clause-LBNL
 
 from impactx.impactx_pybind import ImpactX, RefPart
 
-from .defaults_helper import InputDefaultsHelper
 from .. import setup_server
+from .defaults_helper import InputDefaultsHelper
 
 server, state, ctrl = setup_server()
+
 
 class DashboardDefaults:
     """

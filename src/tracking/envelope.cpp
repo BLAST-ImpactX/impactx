@@ -82,7 +82,7 @@ namespace impactx
         auto space_charge = get_space_charge_algo();
         if (verbose > 0)
         {
-            amrex::Print() << " Space Charge effects: " << amrex::getEnumNameString(space_charge) << "\n";
+            amrex::Print() << " Space Charge effects: " << to_string(space_charge) << "\n";
         }
         if (space_charge == SpaceChargeAlgo::True_3D)
         {

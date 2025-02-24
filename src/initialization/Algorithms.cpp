@@ -33,7 +33,7 @@ namespace impactx
         std::string space_charge_lower = space_charge;
         std::transform(space_charge.begin(), space_charge.end(), space_charge_lower.begin(),
                [](unsigned char c){ return std::tolower(c); });
-        if (space_charge_lower == "1" || space_charge_lower == "true" || space_charge_lower == "on")
+        if (space_charge == "1" || space_charge_lower == "true" || space_charge_lower == "on")
         {
             ablastr::warn_manager::WMRecordWarning(
                 "algo.space_charge",
@@ -43,7 +43,7 @@ namespace impactx
             );
             return SpaceChargeAlgo::True_3D;
         }
-        if (space_charge_lower == "0")
+        if (space_charge == "0")
         {
             ablastr::warn_manager::WMRecordWarning(
                 "algo.space_charge",
@@ -54,7 +54,7 @@ namespace impactx
             return SpaceChargeAlgo::False;
         }
 
-        if (space_charge == "false" || space_charge == "off")
+        if (space_charge_lower == "false" || space_charge_lower == "off")
         {
             return SpaceChargeAlgo::False;
         }
@@ -70,6 +70,22 @@ namespace impactx
         {
             throw std::runtime_error("algo.space_charge = " + space_charge + " is not a valid option");
         }
+    }
+
+    std::string
+    to_string (SpaceChargeAlgo sca)
+    {
+        std::string const str = amrex::getEnumNameString(sca);
+
+        // strip True_ prefix, which we only added because var names / enum member names
+        // cannot start with a number
+        std::string const true_prefix = "True_";
+        if (str.find(true_prefix) == 0)
+        {
+            return str.substr(true_prefix.length());
+        }
+
+        return str;
     }
 
 } // namespace impactx

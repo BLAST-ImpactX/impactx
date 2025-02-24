@@ -12,17 +12,28 @@
 
 #include <AMReX_Enum.H>
 
+#include <string>
+
 
 namespace impactx
 {
+    /** Space Charge: Implemented algorithms */
     AMREX_ENUM(SpaceChargeAlgo,
-        False,
-        True_3D,
-        True_2D
+        False,    /**< Disabled: no space charge calculation */
+        True_3D,  /**< 3D beam distribution */
+        True_2D   /**< averaged 2D transverse beam distribution with a current along s */
     );
 
+    /** Return the currently active space charge algorithm */
     SpaceChargeAlgo
     get_space_charge_algo ();
+
+    /** A user-friendly string
+     *
+     * Returns a string that is similar to the spelling in user input options.
+     */
+    std::string
+    to_string (SpaceChargeAlgo sca);
 
 } // namespace impactx
 

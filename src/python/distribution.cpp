@@ -131,5 +131,12 @@ void init_distribution(py::module& m)
              "A 6D Waterbag distribution"
         );
 
-    m.def("create_covariance_matrix", &initialization::create_covariance_matrix);
+    py::class_<Envelope>(m, "Envelope")
+        .def(py::init<>())
+        .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
+        .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
+        .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
+    ;
+
+    m.def("create_envelope", &initialization::create_envelope);
 }

@@ -12,7 +12,6 @@
 
 
 #include "particles/ImpactXParticleContainer.H"
-#include "particles/CovarianceMatrix.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"

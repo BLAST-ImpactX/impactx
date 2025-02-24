@@ -359,7 +359,7 @@ RF1b.sin_coefficients =             \
 # Algorithms
 ###############################################################################
 algo.particle_shape = 2
-algo.space_charge = true
+algo.space_charge = 3D
 
 # Space charge using IGF solver
 algo.poisson_solver = "fft"

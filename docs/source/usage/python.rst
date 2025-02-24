@@ -62,9 +62,19 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      The physical model of space charge used.
 
-      Whether to calculate space charge effects.
+      Options:
+
+      * ``False`` (default): space charge effects are not calculated.
+
+      * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
+
+        Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
+
+      * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
+
+        Currently, this model is supported only in particle mode (when ``algo.track = "particles"``).
 
    .. py:property:: poisson_solver
 
@@ -180,13 +190,14 @@ Collective Effects & Overall Simulation Parameters
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
 
-   .. py:method:: init_envelope(ref, distr)
+   .. py:method:: init_envelope(ref, distr, intensity=None)
 
       Envelope tracking mode:
       Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :param distr: distribution function (object from :py:mod:`impactx.distribution`)
+      :param float intensity: the beam intensity, given as bunch charge (C) for 3D or beam current (A) for 2D space charge
 
    .. py:method:: particle_container()
 

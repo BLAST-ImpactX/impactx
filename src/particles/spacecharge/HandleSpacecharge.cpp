@@ -9,6 +9,7 @@
  */
 #include "HandleSpacecharge.H"
 
+#include "initialization/Algorithms.H"
 #include "initialization/AmrCoreData.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/spacecharge/ForceFromSelfFields.H"
@@ -32,12 +33,10 @@ namespace impactx::particles::spacecharge
     {
         BL_PROFILE("impactx::particles::wakefields::HandleSpacecharge")
 
-        amrex::ParmParse const pp_algo("algo");
-        bool space_charge = false;
-        pp_algo.query("space_charge", space_charge);
+        auto space_charge = get_space_charge_algo();
 
         // turn off if disabled by user
-        if (!space_charge) { return; }
+        if (space_charge == SpaceChargeAlgo::False) { return; }
 
         // turn off if less than 2 particles
         if (amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false) < 2) { return; }

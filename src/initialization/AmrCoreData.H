@@ -89,7 +89,7 @@ namespace impactx::initialization
             std::optional<RefPart> m_ref;
 
             /** The 6x6 covariance matrix for the beam envelope, relative to the reference particle */
-            std::optional<CovarianceMatrix> m_cm;
+            std::optional<Envelope> m_env;
 
         } track_envelope;
 

@@ -9,6 +9,8 @@
  */
 #pragma once
 
+#include "initialization/Algorithms.H"
+
 #include <ablastr/warn_manager/WarnManager.H>
 
 #include <AMReX.H>
@@ -32,8 +34,7 @@ namespace impactx::initialization
         amrex::ParmParse pp_amr("amr");
         amrex::ParmParse pp_geometry("geometry");
 
-        bool space_charge = false;
-        pp_algo.queryAdd("space_charge", space_charge);
+        auto space_charge = get_space_charge_algo();
 
         std::string poisson_solver = "multigrid";
         pp_algo.queryAdd("poisson_solver", poisson_solver);
@@ -41,7 +42,7 @@ namespace impactx::initialization
         int max_level = 0;
         pp_amr.queryWithParser("max_level", max_level);
 
-        if (max_level > 1 && !space_charge)
+        if (max_level > 1 && space_charge != SpaceChargeAlgo::False)
             throw std::runtime_error(
                 "Mesh-refinement (amr.max_level>=0) is only supported with "
                 "space charge modeling (algo.space_charge=1).");
@@ -51,7 +52,7 @@ namespace impactx::initialization
         prob_relative[0] = 3.0;  // top/bottom pad the beam on the lowest level by default by its width
         pp_geometry.queryarr("prob_relative", prob_relative);
 
-        if (prob_relative[0] < 3.0 && space_charge && poisson_solver == "multigrid")
+        if (prob_relative[0] < 3.0 && space_charge != SpaceChargeAlgo::False && poisson_solver == "multigrid")
             ablastr::warn_manager::WMRecordWarning(
                     "ImpactX::read_mr_prob_relative",
                     "Dynamic resizing of the mesh uses a geometry.prob_relative "

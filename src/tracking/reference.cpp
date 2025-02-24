@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
@@ -20,6 +21,7 @@
 #include <AMReX_Print.H>
 
 #include <memory>
+#include <stdexcept>
 
 
 namespace impactx
@@ -58,6 +60,20 @@ namespace impactx
             // print initial reference particle to file
             diagnostics::DiagnosticOutput(ref, "diags/ref_particle");
 
+        }
+
+        auto space_charge = get_space_charge_algo();
+        if (space_charge != SpaceChargeAlgo::False)
+        {
+            throw std::runtime_error("Space charge effects cannot be modeled for single particle tracking.");
+        }
+
+        amrex::ParmParse const pp_algo("algo");
+        bool csr = false;
+        pp_algo.query("csr", csr);
+        if (!csr)
+        {
+            throw std::runtime_error("CSR effects cannot be modeled for single particle tracking.");
         }
 
         // periods through the lattice

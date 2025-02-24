@@ -16,7 +16,10 @@
 #if defined(AMREX_DEBUG) || defined(DEBUG)
 #   include <cstdio>
 #endif
+#include <optional>
 #include <string>
+#include <type_traits>
+#include <variant>
 
 
 namespace py = pybind11;
@@ -227,14 +230,32 @@ void init_ImpactX (py::module& m)
             "Enable or disable eigenemittance diagnostic calculations (default: disabled)."
         )
         .def_property("space_charge",
-             [](ImpactX & /* ix */) {
-                 return detail::get_or_throw<bool>("algo", "space_charge");
-             },
-             [](ImpactX & /* ix */, bool const enable) {
-                 amrex::ParmParse pp_algo("algo");
-                 pp_algo.add("space_charge", enable);
-             },
-             "Enable or disable space charge calculations (default: enabled)."
+            [](ImpactX & /* ix */) -> std::string {
+                return detail::get_or_throw<std::string>("algo", "space_charge");
+            },
+            [](ImpactX & /* ix */, std::variant<bool, std::string> space_charge_v) {
+                if (std::holds_alternative<bool>(space_charge_v)) {
+                    amrex::ParmParse pp_algo("algo");
+                    if (std::get<bool>(space_charge_v)) {
+                        // TODO: boolean True is deprecated since 25.03, remove some time after
+                        py::print("sim.space_charge = True is deprecated, please use space_charge = \"3D\"");
+                        pp_algo.add("space_charge", std::string("3D"));
+                    } else {
+                        // map boolean False to "false" / off
+                        pp_algo.add("space_charge", std::string("false"));
+                    }
+                }
+                else
+                {
+                    std::string const space_charge = std::get<std::string>(space_charge_v);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D") {
+                        throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge);
+                    }
+                    amrex::ParmParse pp_algo("algo");
+                    pp_algo.add("space_charge", space_charge);
+                }
+            },
+            "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
@@ -438,11 +459,11 @@ void init_ImpactX (py::module& m)
         .def("init_beam_distribution_from_inputs", &ImpactX::initBeamDistributionFromInputs)
         .def("init_lattice_elements_from_inputs", &ImpactX::initLatticeElementsFromInputs)
         .def("init_envelope",
-            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr) {
+            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr, std::optional<amrex::Real> intensity) {
                 ix.amr_data->track_envelope.m_ref = ref;
-                ix.amr_data->track_envelope.m_cm = initialization::create_covariance_matrix(distr);
+                ix.amr_data->track_envelope.m_env = initialization::create_envelope(distr, intensity);
             },
-            py::arg("ref"), py::arg("distr"),
+            py::arg("ref"), py::arg("distr"), py::arg("intensity") = py::none(),
             "Envelope tracking mode:"
             "Create a 6x6 covariance matrix from a distribution and then initialize "
             "the the simulation for envelope tracking relative to a reference particle."

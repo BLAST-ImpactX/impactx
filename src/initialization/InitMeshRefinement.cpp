@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/Waterbag.H"
@@ -82,10 +83,8 @@ namespace detail
         BL_PROFILE("ImpactX::ResizeMesh");
 
         {
-            amrex::ParmParse pp_algo("algo");
-            bool space_charge = false;
-            pp_algo.query("space_charge", space_charge);
-            if (!space_charge)
+            auto space_charge = get_space_charge_algo();
+            if (space_charge == SpaceChargeAlgo::False)
                 ablastr::warn_manager::WMRecordWarning(
                     "ImpactX::ResizeMesh",
                     "This is a simulation without space charge. "

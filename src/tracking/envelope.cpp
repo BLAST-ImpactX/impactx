@@ -8,18 +8,24 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
+#include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "diagnostics/DiagnosticOutput.H"
+
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
+#include <AMReX_REAL.H>
 
 #include <memory>
+#include <stdexcept>
 
 
 namespace impactx
@@ -28,6 +34,8 @@ namespace impactx
     ImpactX::track_envelope ()
     {
         BL_PROFILE("ImpactX::track_envelope");
+
+        using namespace amrex::literals;
 
         // verbosity
         amrex::ParmParse pp_impactx("impactx");
@@ -46,12 +54,14 @@ namespace impactx
         {
             throw std::runtime_error("track_envelope: Reference particle not set.");
         }
-        if (!amr_data->track_envelope.m_cm.has_value())
+        if (!amr_data->track_envelope.m_env.has_value())
         {
             throw std::runtime_error("track_envelope: Envelope (covariance matrix) not set.");
         }
         auto & ref = amr_data->track_envelope.m_ref.value();
-        auto & cm = amr_data->track_envelope.m_cm.value();
+        auto & env = amr_data->track_envelope.m_env.value();
+        auto & cm = env.m_env;
+        auto & current = env.m_beam_intensity;
 
         // output of init state
         amrex::ParmParse pp_diag("diag");
@@ -75,21 +85,31 @@ namespace impactx
         }
 
         amrex::ParmParse const pp_algo("algo");
-        bool space_charge = false;
-        pp_algo.query("space_charge", space_charge);
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!space_charge, "Space charge not yet implemented for envelope tracking.");
+        auto space_charge = get_space_charge_algo();
         if (verbose > 0)
         {
-            amrex::Print() << " Space Charge effects: " << space_charge << "\n";
+            amrex::Print() << " Space Charge effects: " << to_string(space_charge) << "\n";
+        }
+        if (space_charge == SpaceChargeAlgo::True_3D)
+        {
+            throw std::runtime_error("3D space charge effects are not yet implemented for envelope tracking.");
+        }
+        if (space_charge != SpaceChargeAlgo::False && current == 0_prt) {
+            ablastr::warn_manager::WMRecordWarning(
+                "algo.space_charge",
+                "Space charge calculations are enabled but zero beam current was provided. "
+                "Skipping space charge calculations.",
+                ablastr::warn_manager::WarnPriority::high
+            );
         }
 
         bool csr = false;
         pp_algo.query("csr", csr);
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR not yet implemented for envelope tracking.");
         if (verbose > 0)
         {
             amrex::Print() << " CSR effects: " << csr << "\n";
         }
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR effects are not yet implemented for envelope tracking.");
 
         // periods through the lattice
         int num_periods = 1;
@@ -123,6 +143,12 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
+                    if (space_charge != SpaceChargeAlgo::False)
+                    {
+                        // push Covariance Matrix in 2D space charge fields
+                        envelope::spacecharge::space_charge2D_push(ref, cm, current, slice_ds);
+                    }
+
                     std::visit([&ref, &cm](auto&& element)
                     {
                         // push reference particle in global coordinates
@@ -131,7 +157,7 @@ namespace impactx
                             element(ref);
                         }
 
-                        // push Covariance Matrix
+                        // push Covariance Matrix in external fields
                         element(cm, ref);
 
                     }, element_variant);

@@ -1,7 +1,5 @@
-from typing import Optional
-
-from ... import html, setup_server, vuetify
-from ..defaults import TooltipDefaults, UIDefaults
+from ... import setup_server, vuetify
+from ..defaults import UIDefaults
 from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
@@ -80,6 +78,33 @@ class CardComponents:
         vuetify.VDivider()
 
     @staticmethod
+    def card_button(
+        icon_name, color="primary", dynamic_condition=None, **kwargs
+    ) -> vuetify.VBtn:
+        """
+        Create a Vuetify VBtn containing an icon.
+
+        :param icon_name: A string for a static icon, or a list/tuple of two strings for conditional rendering.
+        :param color: The button color.
+        :param dynamic_condition: A Vue expression that determines which icon to display when `icon_name` is a list/tuple.
+        :param kwargs: Extra keyword arguments for the VBtn component.
+        """
+
+        with vuetify.VBtn(
+            color=color,
+            icon=True,
+            small=True,
+            **kwargs,
+        ):
+            if isinstance(icon_name, (list, tuple)):
+                with vuetify.Template(v_if=dynamic_condition):
+                    vuetify.VIcon(icon_name[1])
+                with vuetify.Template(v_else=True):
+                    vuetify.VIcon(icon_name[0])
+            else:
+                vuetify.VIcon(icon_name)
+
+    @staticmethod
     def documentation_icon(section_name: str) -> vuetify.VBtn:
         """
         Takes user to input section's documentation.
@@ -87,15 +112,11 @@ class CardComponents:
         :param section_name: The name for the input section.
         """
 
-        with vuetify.VBtn(
-            style="color: #00313C;",
+        CardComponents.card_button(
+            "mdi-information",
+            color="#00313C",
             click=lambda: generalFunctions.open_documentation(section_name),
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                "mdi-information",
-            )
+        )
 
     @staticmethod
     def refresh_icon(section_name: str) -> vuetify.VBtn:
@@ -105,13 +126,11 @@ class CardComponents:
         :param section_name: The name for the input section.
         """
 
-        with vuetify.VBtn(
-            style="color: #00313C;",
+        CardComponents.card_button(
+            "mdi-refresh",
+            color="#00313C",
             click=lambda: generalFunctions.reset_inputs(section_name),
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon("mdi-refresh")
+        )
 
     @staticmethod
     def expand_button(section_name: str) -> vuetify.VBtn:
@@ -121,15 +140,13 @@ class CardComponents:
         :param section_name: The name for the input section.
         """
 
-        with vuetify.VBtn(
-            color="primary",
-            click=f"expand_{section_name} = !expand_{section_name}",
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                v_text=(f"expand_{section_name} ? 'mdi-close' : 'mdi-arrow-expand'",)
-            )
+        expand_state = f"expand_{section_name}"
+
+        CardComponents.card_button(
+            ["mdi-arrow-expand", "mdi-close"],
+            click=f"{expand_state} = !{expand_state}",
+            dynamic_condition=expand_state,
+        )
 
     @staticmethod
     def collapse_button(section_name: str) -> vuetify.VBtn:
@@ -143,14 +160,8 @@ class CardComponents:
 
         setattr(state, collapsed_state_name, False)
 
-        with vuetify.VBtn(
-            color="primary",
-            click=f"collapse_{section_name_cleaned} = !collapse_{section_name_cleaned}",
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                v_text=(
-                    f"collapse_{section_name_cleaned} ? 'mdi-chevron-down' : 'mdi-chevron-up'",
-                )
-            )
+        CardComponents.card_button(
+            ["mdi-chevron-up", "mdi-chevron-down"],
+            click=f"{collapsed_state_name} = !{collapsed_state_name}",
+            dynamic_condition=collapsed_state_name,
+        )

@@ -1,4 +1,5 @@
 from ... import setup_server, vuetify
+from .. import CardComponents
 
 server, state, ctrl = setup_server()
 
@@ -8,18 +9,19 @@ class LatticeConfigurationHelper:
     Helper class to build the Lattice Configuration section of the dashboard
     """
 
+    BUTTON_COLOR = "secondary"
+
     @staticmethod
     def settings() -> vuetify.VBtn:
         """
         A button which opens the lattice configuration settings.
         """
 
-        with vuetify.VBtn(
+        CardComponents.card_button(
+            "mdi-cog",
+            color=LatticeConfigurationHelper.BUTTON_COLOR,
             click="lattice_configuration_dialog_settings = true",
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon("mdi-cog")
+        )
 
     @staticmethod
     def move_element_up() -> vuetify.VBtn:
@@ -28,14 +30,11 @@ class LatticeConfigurationHelper:
         move a lattice element's index upward.
         """
 
-        with vuetify.VBtn(
+        CardComponents.card_button(
+            "mdi-menu-up",
+            color=LatticeConfigurationHelper.BUTTON_COLOR,
             click=(ctrl.move_latticeElementIndex_up, "[index]"),
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                "mdi-menu-up",
-            )
+        )
 
     @staticmethod
     def move_element_down() -> vuetify.VBtn:
@@ -44,14 +43,11 @@ class LatticeConfigurationHelper:
         move a lattice element's index downward.
         """
 
-        with vuetify.VBtn(
+        CardComponents.card_button(
+            "mdi-menu-down",
+            color=LatticeConfigurationHelper.BUTTON_COLOR,
             click=(ctrl.move_latticeElementIndex_down, "[index]"),
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                "mdi-menu-down",
-            )
+        )
 
     @staticmethod
     def delete_element() -> vuetify.VBtn:
@@ -60,11 +56,8 @@ class LatticeConfigurationHelper:
         move a lattice element's index downward.
         """
 
-        with vuetify.VBtn(
+        CardComponents.card_button(
+            "mdi-delete",
+            color=LatticeConfigurationHelper.BUTTON_COLOR,
             click=(ctrl.deleteLatticeElement, "[index]"),
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                "mdi-delete",
-            )
+        )

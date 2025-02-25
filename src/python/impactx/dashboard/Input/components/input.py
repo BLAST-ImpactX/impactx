@@ -6,6 +6,7 @@ from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 
+
 class InputComponents:
     """
     Class contains staticmethod to create
@@ -84,6 +85,31 @@ class InputComponents:
                     step=generalFunctions.get_default(f"{v_model_name}", "steps"),
                     suffix=generalFunctions.get_default(f"{v_model_name}", "units"),
                     __properties=["step"],
+                    dense=True,
+                    v_on="on",
+                    v_bind="attrs",
+                    **kwargs,
+                )
+            html.Span(TooltipDefaults.TOOLTIP.get(v_model_name))
+
+    @staticmethod
+    def checkbox(
+        label: str, v_model_name: Optional[str] = None, **kwargs
+    ) -> vuetify.VCheckbox:
+        """
+        Creates a Vuetify VCheckbox component with the following default components:
+        - dense: set to 'true' to minimize space usage.
+
+        :param label: Display label
+        """
+        if v_model_name is None:
+            v_model_name = label.lower().replace(" ", "_")
+
+        with vuetify.VTooltip(**TooltipDefaults.TOOLTIP_STYLE):
+            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                vuetify.VCheckbox(
+                    label=label,
+                    v_model=(v_model_name,),
                     dense=True,
                     v_on="on",
                     v_bind="attrs",

@@ -70,8 +70,8 @@ class CardComponents:
         with vuetify.VCardTitle(section_name):
             vuetify.VSpacer()
             render_components("start")
-            CardComponents.refresh_icon(section_name_cleaned)
-            CardComponents.documentation_icon(section_name_cleaned)
+            CardComponents.refresh_button(section_name_cleaned)
+            CardComponents.documentation_button(section_name_cleaned)
             CardComponents.collapse_button(section_name_cleaned)
             CardComponents.expand_button(section_name_cleaned)
             render_components("end")
@@ -105,7 +105,7 @@ class CardComponents:
                 vuetify.VIcon(icon_name)
 
     @staticmethod
-    def documentation_icon(section_name: str) -> vuetify.VBtn:
+    def documentation_button(section_name: str) -> vuetify.VBtn:
         """
         Takes user to input section's documentation.
 
@@ -119,7 +119,7 @@ class CardComponents:
         )
 
     @staticmethod
-    def refresh_icon(section_name: str) -> vuetify.VBtn:
+    def refresh_button(section_name: str) -> vuetify.VBtn:
         """
         Resets input values to default.
 

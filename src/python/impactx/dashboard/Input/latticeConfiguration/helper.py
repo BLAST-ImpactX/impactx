@@ -9,22 +9,6 @@ class LatticeConfigurationHelper:
     """
 
     @staticmethod
-    def expand_configuration() -> vuetify.VBtn:
-        """
-        A button which expands/closes the lattice configuration.
-        """
-
-        with vuetify.VBtn(
-            color="primary",
-            click="expand_configuration = !expand_configuration",
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                v_text=("expand_configuration ? 'mdi-close' : 'mdi-arrow-expand'",),
-            )
-
-    @staticmethod
     def settings() -> vuetify.VBtn:
         """
         A button which opens the lattice configuration settings.

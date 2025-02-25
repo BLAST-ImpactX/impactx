@@ -29,8 +29,8 @@ class InputParameters(CardBase):
             InputFunctions.update_kin_energy_sim_value()
 
     @state.change("tracking_mode")
-    def on_tracking_mode_change(tracking_mode, **kwargs) -> None:
-        if tracking_mode in ("Envelope Tracking", "Reference Tracking"):
+    def on_tracking_mode_change(**kwargs) -> None:
+        if state.tracking_mode in ("Envelope Tracking", "Reference Tracking"):
             state.space_charge = False
             state.csr = False
 

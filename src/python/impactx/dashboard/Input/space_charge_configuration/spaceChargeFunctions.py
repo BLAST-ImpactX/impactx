@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from ... import setup_server
 from .. import generalFunctions
-
+from .. import CardComponents
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
@@ -17,6 +17,16 @@ server, state, ctrl = setup_server()
 
 
 class SpaceChargeFunctions:
+
+    @staticmethod
+    def multigrid_settings():
+        CardComponents.card_button(
+            "mdi-cog",
+            color="secondary",
+            click="space_charge_dialog_settings = true",
+            v_if="poisson_solver == 'multigrid'",
+        )
+
     @staticmethod
     def validate_prob_relative_fields(index, prob_relative_value):
         """

@@ -81,7 +81,7 @@ def run_simulation():
             sim.init_envelope(ref, distribution),
             sim.track_envelope(),
         ),
-        "Reference Tracking": sim.track_reference,
+        "Reference Tracking": lambda: sim.track_reference(ref),
     }
 
     # simulate

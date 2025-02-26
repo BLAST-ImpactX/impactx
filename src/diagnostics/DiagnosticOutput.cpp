@@ -67,7 +67,7 @@ namespace
             if (compute_eigenemittances)
             {
                 file_handler << " "
-                             << "emittance_xn" << " " << "emittance_yn" << " " << "emittance_tn";
+                             << "emittance_1" << " " << "emittance_2" << " " << "emittance_3";
             }
             file_handler << " " << "charge_C"
                          << "\n";

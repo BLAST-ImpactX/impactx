@@ -41,11 +41,13 @@ class NavigationComponents:
         if len(tab_names) != num_tabs:
             raise ValueError("Number of tab names must match number of tabs_names")
 
-        with vuetify.VCard():
+        card = vuetify.VCard()
+        with card:
             with vuetify.VTabs(v_model=(f"{name}", 0)):
                 for tab_name in tab_names:
                     vuetify.VTab(tab_name)
             vuetify.VDivider()
+        return card
 
     @staticmethod
     def create_documentation_drawer():

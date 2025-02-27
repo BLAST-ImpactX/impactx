@@ -242,27 +242,27 @@ class SpaceChargeConfiguration(CardBase):
         settings.
         """
         dialog_name = "space_charge_dialog_tab_settings"
-        NavigationComponents.create_dialog_tabs(
+        with NavigationComponents.create_dialog_tabs(
             dialog_name, 1, ["Advanced Multigrid Settings"]
-        )
-        with vuetify.VTabsItems(v_model=("dialog_name", 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Relative Tolerance",
-                            )
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Absolute Tolerance",
-                            )
-                    with vuetify.VRow():
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Max Iters",
-                            )
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Verbosity",
-                            )
+        ):
+            with vuetify.VTabsWindow(v_model=("dialog_name", 0)):
+                with vuetify.VTabsWindowItem():
+                    with vuetify.VCardText():
+                        with vuetify.VRow():
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Relative Tolerance",
+                                )
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Absolute Tolerance",
+                                )
+                        with vuetify.VRow():
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Max Iters",
+                                )
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Verbosity",
+                                )

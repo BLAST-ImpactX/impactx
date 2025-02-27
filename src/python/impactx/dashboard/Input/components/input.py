@@ -116,3 +116,33 @@ class InputComponents:
                     **kwargs,
                 )
             html.Span(TooltipDefaults.TOOLTIP.get(v_model_name))
+
+    @staticmethod
+    def combobox(
+        label: str,
+        v_model_name: Optional[str] = None,
+        items: Optional[list] = None,
+        **kwargs,
+        ) -> vuetify.VCombobox:
+
+        """
+        Creates a Vuetify VCombobox component with the following default components:
+        - dense: set to 'true' to minimize space usage.
+
+        :param label: Display label
+        """
+        if v_model_name is None:
+            v_model_name = label.lower().replace(" ", "_")
+
+        with vuetify.VTooltip(**TooltipDefaults.TOOLTIP_STYLE):
+            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+                vuetify.VCombobox(
+                    label=label,
+                    v_model=(v_model_name,),
+                    items=items,
+                    dense=True,
+                    **kwargs,
+                    v_on="on",
+                    v_bind="attrs",
+                )
+            html.Span(TooltipDefaults.TOOLTIP.get(v_model_name))

@@ -214,27 +214,26 @@ class SpaceChargeConfiguration(CardBase):
                                     prefix=f"{direction}:",
                                 )
                 with vuetify.VRow(**self.ROW_STYLE):
-                    for i in range(3):
-                        with vuetify.VCol(cols=4):
-                            with vuetify.VRow(
-                                v_for="(field, index) in prob_relative_fields",
-                                v_if=f"index % 3 == {i}",
-                                **self.ROW_STYLE,
-                            ):
-                                with vuetify.VCol():
-                                    vuetify.VTextField(
-                                        label=("index === 0 ? 'prob_relative' : ''",),
-                                        v_model=("field.value",),
-                                        input=(
-                                            ctrl.update_prob_relative,
-                                            "[index, $event]",
-                                        ),
-                                        error_messages=("field.error_message",),
-                                        type="number",
-                                        step=("field.step",),
-                                        __properties=["step"],
-                                        dense=True,
-                                    )
+                    with vuetify.VCol(
+                        cols=4,
+                        v_for="(field, index) in prob_relative_fields",
+                        **self.ROW_STYLE,
+                    ):  
+                        vuetify.VTextField(
+                            label=("index === 0 ? 'prob_relative' : ''",),
+                            v_model=("field.value",),
+                            update_modelValue=(
+                                ctrl.update_prob_relative,
+                                "[index, $event]",
+                            ),
+                            error_messages=("field.error_message",),
+                            type="number",
+                            step=("field.step",),
+                            __properties=["step"],
+                            density="compact",
+                            variant="underlined",
+                            hide_details="auto",
+                        )
 
     @staticmethod
     def dialog_settings():

@@ -35,7 +35,8 @@ class InputComponents:
         common_props = {
             "label": label,
             "v_model": (v_model_name,),
-            "dense": True,
+            "density": "compact",
+            "variant": "underlined",
             "v_on": "on",
             "v_bind": "attrs",
         }

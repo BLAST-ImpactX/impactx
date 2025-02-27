@@ -274,25 +274,23 @@ class LatticeConfiguration(CardBase):
                         LatticeConfigurationHelper.delete_element()
                     with vuetify.VCol(cols="auto"):
                         vuetify.VChip(
-                            v_text=("latticeElement.name",),
-                            dense=True,
-                            classes="mr-2",
+                            text=("latticeElement.name",),
                             style="justify-content: center",
                         )
                     with vuetify.VCol(
                         v_for="(parameter, parameterIndex) in latticeElement.parameters",
                         cols="auto",
-                        classes="pa-2",
                     ):
                         vuetify.VTextField(
                             label=("parameter.parameter_name",),
                             v_model=("parameter.parameter_default_value",),
-                            change=(
+                            update_modelValue=(
                                 ctrl.updateLatticeElementParameters,
                                 "[index, parameter.parameter_name, $event, parameter.parameter_type]",
                             ),
                             error_messages=("parameter.parameter_error_message",),
-                            dense=True,
+                            density="comfortable",
+                            variant="underlined",
                             style="width: 100px;",
                         )
 

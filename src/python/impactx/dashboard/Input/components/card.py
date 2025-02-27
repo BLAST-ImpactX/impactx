@@ -98,7 +98,8 @@ class CardComponents:
         with vuetify.VBtn(
             color=color,
             icon=True,
-            small=True,
+            density="compact",
+            variant="text",
             **kwargs,
         ):
             if isinstance(icon_name, (list, tuple)):

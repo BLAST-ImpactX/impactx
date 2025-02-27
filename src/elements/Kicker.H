@@ -74,8 +74,27 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // normalize quad units to MAD-X convention if needed
+            m_p_scale = m_unit == UnitSystem::Tm ? 1.0_prt / refpart.rigidity_Tm() : 1.0_prt;
+        }
+
         /** This is a transverse kicker functor, so that a variable of this type can be
          * used like a function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -95,7 +114,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -109,12 +128,8 @@ namespace impactx::elements
             amrex::ParticleReal const tout = t;
 
             // normalize quad units to MAD-X convention if needed
-            amrex::ParticleReal dpx = m_xkick;
-            amrex::ParticleReal dpy = m_ykick;
-            if (m_unit == UnitSystem::Tm) {
-                  dpx /= refpart.rigidity_Tm();
-                  dpy /= refpart.rigidity_Tm();
-            }
+            amrex::ParticleReal const dpx = m_xkick * m_p_scale;
+            amrex::ParticleReal const dpy = m_ykick * m_p_scale;
 
             // intialize output values of momenta
             amrex::ParticleReal pxout = px;
@@ -162,6 +177,11 @@ namespace impactx::elements
         amrex::ParticleReal m_xkick; //! horizontal kick strength
         amrex::ParticleReal m_ykick; //! vertical kick strength
         UnitSystem m_unit; //! Kicks are for 0 dimensionless, or for 1 in T-m."
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_p_scale;  // either 1 or the inverse rigidity
     };
 
 } // namespace impactx

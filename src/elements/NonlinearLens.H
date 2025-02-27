@@ -70,8 +70,27 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            m_inv_cnll = 1.0_prt / m_cnll;
+            m_kick = -m_knll * m_inv_cnll;
+        }
+
         /** This is a nonlinear lens functor, so that a variable of this type
          *  can be used like a nonlinear lens function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -91,7 +110,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -116,7 +135,7 @@ namespace impactx::elements
 
             // assign complex position zeta = (x + iy)/cnll
             Complex zeta(x, y);
-            zeta = zeta/m_cnll;
+            zeta = zeta * m_inv_cnll;
             Complex const re1(1.0_prt, 0.0_prt);
             Complex const im1(0.0_prt, 1.0_prt);
 
@@ -134,9 +153,8 @@ namespace impactx::elements
             dF = dF + carcsin / amrex::pow(croot, 3);
 
             // compute momentum kick
-            amrex::ParticleReal const kick = -m_knll/m_cnll;
-            amrex::ParticleReal const dpx = kick*dF.m_real;
-            amrex::ParticleReal const dpy = -kick*dF.m_imag;
+            amrex::ParticleReal const dpx = +m_kick * dF.m_real;
+            amrex::ParticleReal const dpy = -m_kick * dF.m_imag;
 
             // advance position and momentum
             // xout = x;
@@ -181,6 +199,12 @@ namespace impactx::elements
 
         amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)
         amrex::ParticleReal m_cnll; //! distance of singularities from the origin (m)
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_inv_cnll;  //! 1 / m_cnll
+        amrex::ParticleReal m_kick;
     };
 
 } // namespace impactx

@@ -69,8 +69,27 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            Alignment::compute_constants(refpart);
+
+            // store sin(phi) and cos(phi)
+            auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_phi);
+            m_sin_phi = sin_phi;
+            m_cos_phi = cos_phi;
+        }
+
         /** This is a prot functor, so that a variable of this type can be used like a
          *  prot function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -90,11 +109,9 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-            using namespace amrex::literals; // for _rt and _prt
-
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
@@ -106,15 +123,12 @@ namespace impactx::elements
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal ptout = pt;
 
-            // store sin(phi) and cos(phi)
-            auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_phi);
-
             // advance position and momentum
-            xout = x*cos_phi - y*sin_phi;
-            pxout = px*cos_phi - py*sin_phi;
+            xout = x * m_cos_phi - y * m_sin_phi;
+            pxout = px * m_cos_phi - py * m_sin_phi;
 
-            yout = x*sin_phi + y*cos_phi;
-            pyout = px*sin_phi + py*cos_phi;
+            yout = x * m_sin_phi + y * m_cos_phi;
+            pyout = px * m_sin_phi + py * m_cos_phi;
 
             // tout = t;
             // ptout = pt;
@@ -151,6 +165,11 @@ namespace impactx::elements
         }
 
         amrex::ParticleReal m_phi; //! angle of rotation (rad)
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_sin_phi, m_cos_phi;
     };
 
 } // namespace impactx

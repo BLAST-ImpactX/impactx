@@ -71,8 +71,31 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            m_slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta, 1/(beta*gamma)**2
+            m_ibeta = 1_prt / refpart.beta();
+            m_ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
+        }
+
         /** This is an exactdrift functor, so that a variable of this type can be used like
          *  an exactdrift function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -81,18 +104,18 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-                amrex::ParticleReal & AMREX_RESTRICT x,
-                amrex::ParticleReal & AMREX_RESTRICT y,
-                amrex::ParticleReal & AMREX_RESTRICT t,
-                amrex::ParticleReal & AMREX_RESTRICT px,
-                amrex::ParticleReal & AMREX_RESTRICT py,
-                amrex::ParticleReal & AMREX_RESTRICT pt,
-                uint64_t & AMREX_RESTRICT idcpu,
-                RefPart const & refpart
+            amrex::ParticleReal & AMREX_RESTRICT x,
+            amrex::ParticleReal & AMREX_RESTRICT y,
+            amrex::ParticleReal & AMREX_RESTRICT t,
+            amrex::ParticleReal & AMREX_RESTRICT px,
+            amrex::ParticleReal & AMREX_RESTRICT py,
+            amrex::ParticleReal & AMREX_RESTRICT pt,
+            uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -110,23 +133,20 @@ namespace impactx::elements
             amrex::ParticleReal const pyout = py;
             amrex::ParticleReal const ptout = pt;
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values to find beta, beta*gamma
-            amrex::ParticleReal const bet = refpart.beta();
-            amrex::ParticleReal const betgam = refpart.beta_gamma();
-
             // compute the radical in the denominator (= pz):
-            amrex::ParticleReal const pzden = std::sqrt(std::pow(pt-1_prt/bet,2) -
-                                1_prt / std::pow(betgam,2) - std::pow(px,2) - std::pow(py,2));
+            amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
+                std::pow(pt - m_ibeta, 2) -
+                m_ibetagam2 -
+                std::pow(px, 2) -
+                std::pow(py, 2)
+            );
 
             // advance position and momentum (exact drift)
-            x = xout + slice_ds * px / pzden;
+            x = xout + m_slice_ds * px * inv_pzden;
             // pxout = px;
-            y = yout + slice_ds * py / pzden;
+            y = yout + m_slice_ds * py * inv_pzden;
             // pyout = py;
-            t = tout - slice_ds * (1_prt / bet + (pt-1_prt/bet)/pzden);
+            t = tout - m_slice_ds * (m_ibeta + (pt - m_ibeta) * inv_pzden);
             // ptout = pt;
 
             // assign updated momenta
@@ -175,7 +195,6 @@ namespace impactx::elements
 
             // advance integrated path length
             refpart.s = s + slice_ds;
-
         }
 
         /** This pushes the covariance matrix. */
@@ -193,6 +212,12 @@ namespace impactx::elements
             throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
             return Map6x6::Identity();
         }
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
+        amrex::ParticleReal m_ibeta, m_ibetagam2;
     };
 
 } // namespace impactx

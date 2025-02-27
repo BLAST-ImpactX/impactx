@@ -64,8 +64,34 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // access reference particle values to find 1/beta
+            m_inv_beta = 1.0_prt / refpart.beta();
+
+            // store rotation angle and initial, final values of pz
+            amrex::ParticleReal const theta = m_phi_out - m_phi_in;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            m_sin_theta = sin_theta;
+            m_cos_theta = cos_theta;
+            auto const [sin_phi_in, cos_phi_in] = amrex::Math::sincos(m_phi_in);
+            m_sin_phi_in = sin_phi_in;
+            m_cos_phi_in = cos_phi_in;
+        }
+
         /** This is a prot functor, so that a variable of this type can be used like a
          *  prot function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -74,7 +100,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index (unused)
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -85,13 +111,10 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // access reference particle values to find beta:
-            amrex::ParticleReal const beta = refpart.beta();
 
             // intialize output values
             amrex::ParticleReal xout = x;
@@ -101,23 +124,23 @@ namespace impactx::elements
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal ptout = pt;
 
-            // store rotation angle and initial, final values of pz
-            amrex::ParticleReal const theta = m_phi_out - m_phi_in;
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-            auto const [sin_phi_in, cos_phi_in] = amrex::Math::sincos(m_phi_in);
-
-            amrex::ParticleReal const pz = std::sqrt(1.0_prt - 2.0_prt*pt/beta
-               + std::pow(pt,2) - std::pow(py,2) - std::pow(px + sin_phi_in,2));
-            amrex::ParticleReal const pzf = pz*cos_theta - (px + sin_phi_in)*sin_theta;
+            amrex::ParticleReal const pz = std::sqrt(
+                1.0_prt -
+                2.0_prt * pt * m_inv_beta +
+                std::pow(pt, 2) -
+                std::pow(py, 2) -
+                std::pow(px + m_sin_phi_in, 2)
+            );
+            amrex::ParticleReal const pzf = pz * m_cos_theta - (px + m_sin_phi_in) * m_sin_theta;
 
             // advance position and momentum
-            xout = x*pz/pzf;
-            pxout = px*cos_theta + (pz - cos_phi_in)*sin_theta;
+            xout = x * pz / pzf;
+            pxout = px * m_cos_theta + (pz - m_cos_phi_in) * m_sin_theta;
 
-            yout = y + py*x*sin_theta/pzf;
+            yout = y + py * x * m_sin_theta / pzf;
             pyout = py;
 
-            tout = t - (pt - 1.0_prt/beta)*x*sin_theta/pzf;
+            tout = t - (pt - m_inv_beta) * x * m_sin_theta / pzf;
             ptout = pt;
 
             // assign updated values
@@ -150,6 +173,11 @@ namespace impactx::elements
 
         amrex::ParticleReal m_phi_in; //! normalized (max) RF voltage drop.
         amrex::ParticleReal m_phi_out; //! RF wavenumber in 1/m.
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_inv_beta, m_sin_theta, m_cos_theta, m_sin_phi_in, m_cos_phi_in;
     };
 
 } // namespace impactx

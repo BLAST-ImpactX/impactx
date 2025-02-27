@@ -85,6 +85,33 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            m_slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta and gamma
+            m_beta = refpart.beta();
+            m_gamma = refpart.gamma();
+
+            // normalize quad units to MAD-X convention if needed
+            m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
+            m_const1 = 1_prt / (2_prt * std::pow(m_beta, 3) * std::pow(m_gamma, 2));
+        }
+
         /** This is a chrquad functor, so that a variable of this type can be used like a chrquad function.
          *
          * @param x particle position in x
@@ -94,7 +121,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -105,7 +132,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -118,27 +145,13 @@ namespace impactx::elements
             amrex::ParticleReal const yout = y;
             amrex::ParticleReal const tout = t;
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values to find beta and gamma
-            amrex::ParticleReal const bet = refpart.beta();
-            amrex::ParticleReal const gam = refpart.gamma();
-
-            // normalize quad units to MAD-X convention if needed
-            amrex::ParticleReal g = m_k;
-            if (m_unit == 1) {
-                  g = m_k / refpart.rigidity_Tm();
-            }
-
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal delta1;
-            delta1 = std::sqrt(1_prt - 2_prt*pt/bet + std::pow(pt,2));
+            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + std::pow(pt,2));
             amrex::ParticleReal const delta = delta1 - 1_prt;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
-            amrex::ParticleReal const omega = std::sqrt(std::abs(g)/delta1);
+            amrex::ParticleReal const omega = std::sqrt(std::abs(m_g)/delta1);
 
             // intialize output values of momenta
             amrex::ParticleReal pxout = px;
@@ -151,67 +164,72 @@ namespace impactx::elements
             amrex::ParticleReal p1 = px;
             amrex::ParticleReal p2 = py;
 
-            if(g > 0.0) {
+            if (m_g > 0_prt)
+            {
                // advance transverse position and momentum (focusing quad)
-               x = std::cos(omega*slice_ds) * xout +
-                                  std::sin(omega*slice_ds)/(omega*delta1)*px;
-               pxout = -omega * delta1 *std::sin(omega*slice_ds) * xout + std::cos(omega * slice_ds) * px;
+               x = std::cos(omega*m_slice_ds) * xout +
+                   std::sin(omega*m_slice_ds) / (omega*delta1)*px;
+               pxout = -omega * delta1 *std::sin(omega*m_slice_ds) * xout + std::cos(omega * m_slice_ds) * px;
 
-               y = std::cosh(omega*slice_ds) * yout +
-                                   std::sinh(omega*slice_ds)/(omega*delta1)*py;
-               pyout = omega * delta1 * std::sinh(omega*slice_ds) * yout + std::cosh(omega * slice_ds) * py;
+               y = std::cosh(omega*m_slice_ds) * yout +
+                   std::sinh(omega*m_slice_ds) / (omega*delta1)*py;
+               pyout = omega * delta1 * std::sinh(omega*m_slice_ds) * yout + std::cosh(omega * m_slice_ds) * py;
 
-            } else if (g < 0.0) {
+            } else if (m_g < 0_prt)
+            {
                // advance transverse position and momentum (defocusing quad)
-               x = std::cosh(omega*slice_ds) * xout +
-                                   std::sinh(omega*slice_ds)/(omega*delta1)*px;
-               pxout = omega * delta1 * std::sinh(omega*slice_ds) * xout + std::cosh(omega * slice_ds) * px;
+               x = std::cosh(omega*m_slice_ds) * xout +
+                   std::sinh(omega*m_slice_ds) / (omega*delta1)*px;
+               pxout = omega * delta1 * std::sinh(omega*m_slice_ds) * xout + std::cosh(omega * m_slice_ds) * px;
 
-               y = std::cos(omega*slice_ds) * yout +
-                                  std::sin(omega*slice_ds)/(omega*delta1)*py;
-               pyout = -omega * delta1 *std::sin(omega*slice_ds) * yout + std::cos(omega * slice_ds) * py;
+               y = std::cos(omega*m_slice_ds) * yout +
+                   std::sin(omega*m_slice_ds) / (omega*delta1) * py;
+               pyout = -omega * delta1 * std::sin(omega*m_slice_ds) * yout + std::cos(omega * m_slice_ds) * py;
 
                q1 = yout;
                q2 = xout;
                p1 = py;
                p2 = px;
-            } else {
+            } else
+            {
                // advance transverse position and momentum (zero focusing strength = drift)
-               x = xout + slice_ds * px / delta1;
+               x = xout + m_slice_ds * px / delta1;
                // pxout = px;
-               y = yout + slice_ds * py / delta1;
+               y = yout + m_slice_ds * py / delta1;
                // pyout = py;
             }
 
 
             // advance longitudinal position and momentum
 
-            if (g == 0.0) {
+            if (m_g == 0.0)
+            {
                // the corresponding symplectic update to t (zero strength = drift)
                amrex::ParticleReal term = 2_prt * std::pow(pt,2) + std::pow(px,2) + std::pow(py,2);
-               term = 2_prt - 4_prt*bet*pt + std::pow(bet,2)*term;
-               term = -2_prt + std::pow(gam,2)*term;
-               term = (-1_prt+bet*pt)*term;
-               term = term/(2_prt * std::pow(bet,3) * std::pow(gam,2));
-               t = tout - slice_ds * (1_prt / bet + term /std::pow(delta1, 3));
+               term = 2_prt - 4_prt * m_beta * pt + std::pow(m_beta,2) * term;
+               term = -2_prt + std::pow(m_gamma, 2)*term;
+               term = (-1_prt + m_beta * pt) * term;
+               term = term * m_const1;
+               t = tout - m_slice_ds * (1_prt / m_beta + term / std::pow(delta1, 3));
                // ptout = pt;
 
-            } else {
-               // the corresponding symplectic update to t (nonzero strength)
-               amrex::ParticleReal const term = pt + delta/bet;
-               amrex::ParticleReal const t0 = tout - term * slice_ds / delta1;
+            } else
+            {
+                // the corresponding symplectic update to t (nonzero strength)
+                amrex::ParticleReal const term = pt + delta / m_beta;
+                amrex::ParticleReal const t0 = tout - term * m_slice_ds / delta1;
 
-               amrex::ParticleReal const w = omega*delta1;
-               amrex::ParticleReal const term1 = -(std::pow(p2,2) + std::pow(q2,2) * std::pow(w,2))*std::sinh(2_prt*slice_ds*omega);
-               amrex::ParticleReal const term2 = -(std::pow(p1,2)-pow(q1,2) * std::pow(w,2)) * std::sin(2_prt*slice_ds*omega);
-               amrex::ParticleReal const term3 = -2_prt*q2*p2*w*std::cosh(2_prt*slice_ds*omega);
-               amrex::ParticleReal const term4 = -2_prt*q1*p1*w * std::cos(2_prt*slice_ds*omega);
-               amrex::ParticleReal const term5 = 2_prt*omega*(q1*p1*delta1 + q2*p2*delta1
-                                           -(std::pow(p1,2) + std::pow(p2,2))*slice_ds - (std::pow(q1,2)-pow(q2,2)) * std::pow(w,2)*slice_ds);
-               t = t0 + (-1_prt+bet*pt)/(8_prt*bet * std::pow(delta1,3)*omega)
-                        *(term1+term2+term3+term4+term5);
+                amrex::ParticleReal const w = omega * delta1;
+                amrex::ParticleReal const term1 = -(std::pow(p2,2) + std::pow(q2,2) * std::pow(w,2)) * std::sinh(2_prt*m_slice_ds*omega);
+                amrex::ParticleReal const term2 = -(std::pow(p1,2) - std::pow(q1,2) * std::pow(w,2)) * std::sin(2_prt*m_slice_ds*omega);
+                amrex::ParticleReal const term3 = -2_prt * q2 * p2 * w * std::cosh(2_prt*m_slice_ds*omega);
+                amrex::ParticleReal const term4 = -2_prt * q1 * p1 * w * std::cos(2_prt*m_slice_ds*omega);
+                amrex::ParticleReal const term5 =  2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
+                    -(std::pow(p1,2) + std::pow(p2,2))*m_slice_ds - (std::pow(q1,2)-std::pow(q2,2)) * std::pow(w,2)*m_slice_ds);
+                t = t0 + (-1_prt+m_beta*pt)
+                       / (8_prt*m_beta * std::pow(delta1,3)*omega)
+                       * (term1+term2+term3+term4+term5);
                // ptout = pt;
-
              }
 
             // assign updated momenta
@@ -250,7 +268,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt,2)-1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -280,6 +298,15 @@ namespace impactx::elements
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
         int m_unit; //! unit specification for quad strength
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
+        amrex::ParticleReal m_beta;
+        amrex::ParticleReal m_gamma;
+        amrex::ParticleReal m_g;
+        amrex::ParticleReal m_const1;
     };
 
 } // namespace impactx

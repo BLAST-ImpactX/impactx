@@ -64,8 +64,30 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // find beta*gamma^2
+            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+
+            m_neg_kV = -m_k * m_V;
+            m_kV_r2bg2 = -m_neg_kV / (2.0_prt * betgam2);
+        }
+
         /** This is a buncher functor, so that a variable of this type can be used like a
          *  buncher function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -74,27 +96,24 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index (unused)
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-                amrex::ParticleReal & AMREX_RESTRICT x,
-                amrex::ParticleReal & AMREX_RESTRICT y,
-                amrex::ParticleReal & AMREX_RESTRICT t,
-                amrex::ParticleReal & AMREX_RESTRICT px,
-                amrex::ParticleReal & AMREX_RESTRICT py,
-                amrex::ParticleReal & AMREX_RESTRICT pt,
-                [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-                RefPart const & refpart) const {
-
+            amrex::ParticleReal & AMREX_RESTRICT x,
+            amrex::ParticleReal & AMREX_RESTRICT y,
+            amrex::ParticleReal & AMREX_RESTRICT t,
+            amrex::ParticleReal & AMREX_RESTRICT px,
+            amrex::ParticleReal & AMREX_RESTRICT py,
+            amrex::ParticleReal & AMREX_RESTRICT pt,
+            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
             using namespace amrex::literals; // for _rt and _prt
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
-
-            // access reference particle values to find (beta*gamma)^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
 
             // intialize output values of momenta
             amrex::ParticleReal pxout = px;
@@ -102,9 +121,9 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             // advance position and momentum
-            pxout = px + m_k*m_V/(2.0_prt*betgam2)*x;
-            pyout = py + m_k*m_V/(2.0_prt*betgam2)*y;
-            ptout = pt - m_k*m_V*t;
+            pxout = px + m_kV_r2bg2 * x;
+            pyout = py + m_kV_r2bg2 * y;
+            ptout = pt + m_neg_kV   * t;
 
             // assign updated momenta
             px = pxout;
@@ -136,6 +155,12 @@ namespace impactx::elements
 
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.
         amrex::ParticleReal m_k; //! RF wavenumber in 1/m.
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_neg_kV;    //! -m_k*m_V
+        amrex::ParticleReal m_kV_r2bg2;  //! m_k*m_V/(2.0_prt*betgam2)
     };
 
 } // namespace impactx

@@ -76,7 +76,38 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            m_slice_ds = m_ds / nslice();
+
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            // find beta*gamma^2
+            m_betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            m_slice_bg = m_slice_ds / m_betgam2;
+
+            // compute phase advance per unit length in s (in rad/m)
+            m_omega = std::sqrt(std::abs(m_k));
+            m_sin_omega_ds = std::sin(m_omega*m_slice_ds);
+            m_cos_omega_ds = std::cos(m_omega*m_slice_ds);
+            m_sinh_omega_ds = std::sinh(m_omega*m_slice_ds);
+            m_cosh_omega_ds = std::cosh(m_omega*m_slice_ds);
+        }
+
         /** This is a quad functor, so that a variable of this type can be used like a quad function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -85,7 +116,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -96,23 +127,13 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-
-            // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
 
             // intialize output values
             amrex::ParticleReal xout = x;
@@ -122,35 +143,36 @@ namespace impactx::elements
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal const ptout = pt;
 
-            if (m_k > 0.0) {
+            if (m_k > 0.0_prt)
+            {
                 // advance position and momentum (focusing quad)
-                xout = std::cos(omega*slice_ds)*x + std::sin(omega*slice_ds)/omega*px;
-                pxout = -omega*std::sin(omega*slice_ds)*x + std::cos(omega*slice_ds)*px;
+                xout = m_cos_omega_ds*x + m_sin_omega_ds/m_omega*px;
+                pxout = -m_omega*m_sin_omega_ds*x + m_cos_omega_ds*px;
 
-                yout = std::cosh(omega*slice_ds)*y + std::sinh(omega*slice_ds)/omega*py;
-                pyout = omega*std::sinh(omega*slice_ds)*y + std::cosh(omega*slice_ds)*py;
+                yout = m_cosh_omega_ds*y + m_sinh_omega_ds/m_omega*py;
+                pyout = m_omega*m_sinh_omega_ds*y + m_cosh_omega_ds*py;
 
-                tout = t + (slice_ds/betgam2)*pt;
+                tout = t + (m_slice_bg)*pt;
                 // ptout = pt;
-            } else if (m_k < 0.0) {
+            } else if (m_k < 0.0_prt)
+            {
                 // advance position and momentum (defocusing quad)
-                xout = std::cosh(omega*slice_ds)*x + std::sinh(omega*slice_ds)/omega*px;
-                pxout = omega*std::sinh(omega*slice_ds)*x + std::cosh(omega*slice_ds)*px;
+                xout = m_cosh_omega_ds*x + m_sinh_omega_ds/m_omega*px;
+                pxout = m_omega*m_sinh_omega_ds*x + m_cosh_omega_ds*px;
 
-                yout = std::cos(omega*slice_ds)*y + std::sin(omega*slice_ds)/omega*py;
-                pyout = -omega*std::sin(omega*slice_ds)*y + std::cos(omega*slice_ds)*py;
+                yout = m_cos_omega_ds*y + m_sin_omega_ds/m_omega*py;
+                pyout = -m_omega*m_sin_omega_ds*y + m_cos_omega_ds*py;
 
-                tout = t + (slice_ds/betgam2)*pt;
+                tout = t + m_slice_bg*pt;
                 // ptout = pt;
             } else {
                 // advance position and momentum (zero strength = drift)
-                xout = x + slice_ds * px;
+                xout = x + m_slice_ds * px;
                 // pxout = px;
-                yout = y + slice_ds * py;
+                yout = y + m_slice_ds * py;
                 // pyout = py;
-                tout = t + (slice_ds/betgam2) * pt;
+                tout = t + m_slice_bg * pt;
                 // ptout = pt;
-
             }
 
             // assign updated values
@@ -173,7 +195,7 @@ namespace impactx::elements
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {
+        void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
 
             using namespace amrex::literals; // for _rt and _prt
 
@@ -210,7 +232,7 @@ namespace impactx::elements
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map (RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
         {
             using namespace amrex::literals; // for _rt and _prt
 
@@ -248,9 +270,9 @@ namespace impactx::elements
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
             } else {
-                R(1,2) = slice_ds;
-                R(3,4) = slice_ds;
-                R(5,6) = slice_ds / betgam2;
+                R(1,2) = m_slice_ds;
+                R(3,4) = m_slice_ds;
+                R(5,6) = m_slice_ds / betgam2;
             }
 
             return R;
@@ -260,6 +282,18 @@ namespace impactx::elements
         using LinearTransport::operator();
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m
+
+    private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
+        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
+        amrex::ParticleReal m_slice_bg;       //! m_slice_ds / m_betgam2
+        amrex::ParticleReal m_omega;          //! std::sqrt(std::abs(m_k)) compute phase advance per unit length in s (in rad/m)
+        amrex::ParticleReal m_sin_omega_ds;   //! std::sin(omega*slice_ds)
+        amrex::ParticleReal m_cos_omega_ds;   //! std::cos(omega*slice_ds)
+        amrex::ParticleReal m_sinh_omega_ds;  //! std::sinh(omega*slice_ds)
+        amrex::ParticleReal m_cosh_omega_ds;  //! std::cosh(omega*slice_ds)
     };
 
 } // namespace impactx

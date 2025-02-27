@@ -81,7 +81,36 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            m_slice_ds = m_ds / nslice();
+
+            // access reference particle values (final, initial):
+            m_ptf_ref = refpart.pt;
+            m_pti_ref = m_ptf_ref + m_ez * m_slice_ds;
+            m_bgf = std::sqrt(std::pow(m_ptf_ref, 2) - 1.0_prt);
+            m_bgi = std::sqrt(std::pow(m_pti_ref, 2) - 1.0_prt);
+
+            // compute focusing constant (1/m) and rotation angle (in rad)
+            m_alpha = m_bz / 2.0_prt;
+            m_alpha_iez = m_alpha / m_ez;
+        }
+
         /** This is a chracc functor, so that a variable of this type can be used like a chracc function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -90,7 +119,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -101,7 +130,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -109,41 +138,32 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values (final, initial):
-            amrex::ParticleReal const ptf_ref = refpart.pt;
-            amrex::ParticleReal const pti_ref = ptf_ref + m_ez*slice_ds;
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
-
             // initial conversion from static to dynamic units:
-            px = px*bgi;
-            py = py*bgi;
-            pt = pt*bgi;
+            px = px * m_bgi;
+            py = py * m_bgi;
+            pt = pt * m_bgi;
 
             // compute intermediate quantities related to acceleration
-            amrex::ParticleReal const pti_tot = pti_ref + pt;
-            amrex::ParticleReal const ptf_tot = ptf_ref + pt;
-            amrex::ParticleReal const pti_tot2 = std::pow(pti_tot,2);
-            amrex::ParticleReal const ptf_tot2 = std::pow(ptf_tot,2);
+            amrex::ParticleReal const pti_tot = m_pti_ref + pt;
+            amrex::ParticleReal const ptf_tot = m_ptf_ref + pt;
+            amrex::ParticleReal const pti_tot2 = std::pow(pti_tot, 2);
+            amrex::ParticleReal const ptf_tot2 = std::pow(ptf_tot, 2);
 
             // check whether particle lies within the domain of map definition
             if (pti_tot2 <= 1_prt || ptf_tot2 <= 1_prt) {
                 amrex::ParticleIDWrapper{idcpu}.make_invalid();
             } else {
-                amrex::ParticleReal const pzi_tot = std::sqrt(std::pow(pti_tot,2)-1_prt);
-                amrex::ParticleReal const pzf_tot = std::sqrt(std::pow(ptf_tot,2)-1_prt);
-                amrex::ParticleReal const pzi_ref = std::sqrt(std::pow(pti_ref,2)-1_prt);
-                amrex::ParticleReal const pzf_ref = std::sqrt(std::pow(ptf_ref,2)-1_prt);
+                amrex::ParticleReal const pzi_tot = std::sqrt(std::pow(pti_tot, 2) - 1_prt);
+                amrex::ParticleReal const pzf_tot = std::sqrt(std::pow(ptf_tot, 2) - 1_prt);
+                amrex::ParticleReal const pzi_ref = std::sqrt(std::pow(m_pti_ref, 2) - 1_prt);
+                amrex::ParticleReal const pzf_ref = std::sqrt(std::pow(m_ptf_ref, 2) - 1_prt);
 
                 amrex::ParticleReal const numer = -ptf_tot + pzf_tot;
                 amrex::ParticleReal const denom = -pti_tot + pzi_tot;
 
                 // compute focusing constant (1/m) and rotation angle (in rad)
-                amrex::ParticleReal const alpha = m_bz/2.0_prt;
-                amrex::ParticleReal const theta = alpha/m_ez*std::log(numer/denom);
+                amrex::ParticleReal const theta = m_alpha_iez * std::log(numer / denom);
+                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
                 // intialize output values
                 amrex::ParticleReal xout = x;
@@ -154,15 +174,18 @@ namespace impactx::elements
                 amrex::ParticleReal ptout = pt;
 
                 // advance positions and momenta using map for focusing
-                xout = std::cos(theta)*x + std::sin(theta)/alpha*px;
-                pxout = -alpha * std::sin(theta)*x + std::cos(theta)*px;
+                xout = cos_theta * x + sin_theta / m_alpha * px;
+                pxout = -m_alpha * sin_theta * x + cos_theta * px;
 
-                yout = std::cos(theta)*y + std::sin(theta)/alpha*py;
-                pyout = -alpha * std::sin(theta)*y + std::cos(theta)*py;
+                yout = cos_theta * y + sin_theta / m_alpha * py;
+                pyout = -m_alpha * sin_theta * y + cos_theta * py;
 
                 // the correct symplectic update for t
-                tout = t + (pzf_tot - pzf_ref - pzi_tot + pzi_ref)/m_ez;
-                tout = tout + (1_prt/pzi_tot - 1_prt/pzf_tot)*(std::pow(py-alpha*x,2) + std::pow(px+alpha*y,2))/(2_prt*m_ez);
+                tout = t + (pzf_tot - pzf_ref - pzi_tot + pzi_ref) / m_ez;
+                tout += (1_prt/pzi_tot - 1_prt/pzf_tot)
+                      * (std::pow(py - m_alpha * x, 2) +
+                         std::pow(px + m_alpha * y, 2))
+                      / (2_prt * m_ez);
                 ptout = pt;
 
                 // assign intermediate momenta
@@ -171,11 +194,11 @@ namespace impactx::elements
                 pt = ptout;
 
                 // advance positions and momenta using map for rotation
-                x = std::cos(theta)*xout + std::sin(theta)*yout;
-                pxout = std::cos(theta)*px + std::sin(theta)*py;
+                x = cos_theta * xout + sin_theta * yout;
+                pxout = cos_theta * px + sin_theta * py;
 
-                y = -std::sin(theta)*xout + std::cos(theta)*yout;
-                pyout = -std::sin(theta)*px + std::cos(theta)*py;
+                y = -sin_theta * xout + cos_theta * yout;
+                pyout = -sin_theta * px + cos_theta * py;
 
                 t = tout;
                 ptout = pt;
@@ -188,9 +211,9 @@ namespace impactx::elements
             }
 
             // final conversion from dynamic to static units:
-            px = px/bgf;
-            py = py/bgf;
-            pt = pt/bgf;
+            px = px / m_bgf;
+            py = py / m_bgf;
+            pt = pt / m_bgf;
 
             // apply transverse aperture
             apply_aperture(x, y, idcpu);
@@ -267,6 +290,13 @@ namespace impactx::elements
 
         amrex::ParticleReal m_ez; //! electric field strength in 1/m
         amrex::ParticleReal m_bz; //! magnetic field strength in 1/m
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
+        amrex::ParticleReal m_ptf_ref, m_pti_ref, m_bgf, m_bgi;
+        amrex::ParticleReal m_alpha, m_alpha_iez;
     };
 
 } // namespace impactx

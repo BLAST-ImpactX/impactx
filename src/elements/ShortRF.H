@@ -68,8 +68,37 @@ namespace impactx::elements
         /** Push all particles */
         using BeamOptic::operator();
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // Define parameters and intermediate constants
+            using ablastr::constant::math::pi;
+            using ablastr::constant::SI::c;
+            m_k = 2.0_prt * pi / c * m_freq;
+            m_phi = m_phase * pi / 180.0_prt;
+
+            // access reference particle values (final, initial):
+            amrex::ParticleReal const ptf_ref = refpart.pt;
+            m_V_cos_phi = m_V * std::cos(m_phi);
+            amrex::ParticleReal const pti_ref = ptf_ref + m_V_cos_phi;
+            m_bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
+            m_bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
+        }
+
         /** This is a shortrf functor, so that a variable of this type can be used like a
          *  shortrf function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -78,7 +107,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index (unused)
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -89,7 +118,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
-            RefPart const & refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
 
@@ -98,22 +127,10 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // Define parameters and intermediate constants
-            using ablastr::constant::math::pi;
-            using ablastr::constant::SI::c;
-            amrex::ParticleReal const k = (2.0_prt*pi/c)*m_freq;
-            amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
-
-            // access reference particle values (final, initial):
-            amrex::ParticleReal const ptf_ref = refpart.pt;
-            amrex::ParticleReal const pti_ref = ptf_ref + m_V * std::cos(phi);
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
-
             // initial conversion from static to dynamic units:
-            px = px*bgi;
-            py = py*bgi;
-            pt = pt*bgi;
+            px = px * m_bgi;
+            py = py * m_bgi;
+            pt = pt * m_bgi;
 
             // intialize output values
             amrex::ParticleReal xout = x;
@@ -131,7 +148,7 @@ namespace impactx::elements
             pyout = py;
 
             // tout = t;
-            ptout = pt - m_V * std::cos(k*t + phi) + m_V * std::cos(phi);
+            ptout = pt - m_V * std::cos(m_k * t + m_phi) + m_V_cos_phi;
 
             // assign updated values
             x = xout;
@@ -142,9 +159,9 @@ namespace impactx::elements
             pt = ptout;
 
             // final conversion from dynamic to static units:
-            px = px/bgf;
-            py = py/bgf;
-            pt = pt/bgf;
+            px = px / m_bgf;
+            py = py / m_bgf;
+            pt = pt / m_bgf;
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -241,6 +258,11 @@ namespace impactx::elements
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.
         amrex::ParticleReal m_freq; //! RF frequency in Hz.
         amrex::ParticleReal m_phase; //! reference RF phase in degrees.
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_k, m_phi, m_V_cos_phi, m_bgi, m_bgf;
     };
 
 } // namespace impactx

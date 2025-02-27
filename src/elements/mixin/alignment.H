@@ -50,7 +50,23 @@ namespace impactx::elements::mixin
 
         ~Alignment () = default;
 
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants ([[maybe_unused]] RefPart const & refpart)
+        {
+            auto const [sin_rotation, cos_rotation] = amrex::Math::sincos(m_rotation);
+            m_sin_rotation = sin_rotation;
+            m_cos_rotation = cos_rotation;
+        }
+
         /** Shift the particle into the alignment error frame
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param[inout] x horizontal position relative to reference particle
          * @param[inout] y vertical position relative to reference particle
@@ -65,22 +81,22 @@ namespace impactx::elements::mixin
             amrex::ParticleReal & AMREX_RESTRICT py
         ) const
         {
-            auto const [sin_rotation, cos_rotation] = amrex::Math::sincos(m_rotation);
-
             // position
             amrex::ParticleReal const xc = x - m_dx;
             amrex::ParticleReal const yc = y - m_dy;
-            x =  xc * cos_rotation + yc * sin_rotation;
-            y = -xc * sin_rotation + yc * cos_rotation;
+            x =  xc * m_cos_rotation + yc * m_sin_rotation;
+            y = -xc * m_sin_rotation + yc * m_cos_rotation;
 
             // momentum
             amrex::ParticleReal const pxc = px;
             amrex::ParticleReal const pyc = py;
-            px =  pxc * cos_rotation + pyc * sin_rotation;
-            py = -pxc * sin_rotation + pyc * cos_rotation;
+            px =  pxc * m_cos_rotation + pyc * m_sin_rotation;
+            py = -pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
 
         /** Shift the particle out of the alignment error frame
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param[inout] x horizontal position relative to reference particle
          * @param[inout] y vertical position relative to reference particle
@@ -95,21 +111,19 @@ namespace impactx::elements::mixin
             amrex::ParticleReal & AMREX_RESTRICT py
         ) const
         {
-            auto const [sin_rotation, cos_rotation] = amrex::Math::sincos(m_rotation);
-
             // position
             amrex::ParticleReal const xc = x;
             amrex::ParticleReal const yc = y;
-            x = xc * cos_rotation - yc * sin_rotation;
-            y = xc * sin_rotation + yc * cos_rotation;
+            x = xc * m_cos_rotation - yc * m_sin_rotation;
+            y = xc * m_sin_rotation + yc * m_cos_rotation;
             x += m_dx;
             y += m_dy;
 
             // momentum
             amrex::ParticleReal const pxc = px;
             amrex::ParticleReal const pyc = py;
-            px = pxc * cos_rotation - pyc * sin_rotation;
-            py = pxc * sin_rotation + pyc * cos_rotation;
+            px = pxc * m_cos_rotation - pyc * m_sin_rotation;
+            py = pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
 
         /** Horizontal translation error
@@ -145,6 +159,12 @@ namespace impactx::elements::mixin
         amrex::ParticleReal m_dx = 0; //! horizontal translation error [m]
         amrex::ParticleReal m_dy = 0; //! vertical translation error [m]
         amrex::ParticleReal m_rotation = 0; //! rotation error in the transverse plane [rad]
+
+    private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_sin_rotation;  //! std::sin(m_rotation)
+        amrex::ParticleReal m_cos_rotation;  //! std::cos(m_rotation)
     };
 
 } // namespace impactx::elements::mixin

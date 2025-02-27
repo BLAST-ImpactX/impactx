@@ -50,14 +50,14 @@ class NavigationComponents:
     @staticmethod
     def create_documentation_drawer():
         with vuetify.VNavigationDrawer(
-            v_model=("documentation_drawer_open",),
-            absolute=True,
-            right=True,
-            hide_overlay=True,
-            style="width: 30vw; top: 64px !important;  position: fixed;",
+            model_value=("documentation_drawer_open",),
+            location="right",
+            temporary=True,
+            scrim=False,
+            style="z-index: 10",
+            width=500,
         ):
             with vuetify.VContainer(
-                fluid=True,
                 classes="pa-0 fill-height",
             ):
                 html.Iframe(

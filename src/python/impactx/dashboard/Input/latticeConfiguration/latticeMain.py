@@ -249,12 +249,11 @@ class LatticeConfiguration(CardBase):
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=True):
-                        vuetify.VCombobox(
+                        InputComponents.combobox(
                             label="Select Accelerator Lattice",
-                            v_model=("selected_lattice", None),
+                            v_model_name="selected_lattice",
                             items=("listOfLatticeElements",),
                             error_messages=("isSelectedLatticeListEmpty",),
-                            dense=True,
                         )
                     with vuetify.VCol(cols="auto"):
                         vuetify.VBtn(

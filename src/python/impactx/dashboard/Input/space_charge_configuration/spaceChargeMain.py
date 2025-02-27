@@ -171,14 +171,6 @@ def on_update_prob_relative_call(index, value):
 # -----------------------------------------------------------------------------
 
 
-def multigrid_settings():
-    vuetify.VIcon(
-        "mdi-cog",
-        v_if="poisson_solver == 'multigrid'",
-        click="space_charge_dialog_settings = true",
-    )
-
-
 class SpaceChargeConfiguration(CardBase):
     HEADER_NAME = "Space Charge"
 
@@ -193,7 +185,10 @@ class SpaceChargeConfiguration(CardBase):
 
         with vuetify.VCard(style=self.collapsable):
             CardComponents.input_header(
-                self.HEADER_NAME, additional_components={"start": multigrid_settings}
+                self.HEADER_NAME,
+                additional_components={
+                    "start": SpaceChargeFunctions.multigrid_settings
+                },
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

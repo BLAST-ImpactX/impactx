@@ -5,6 +5,7 @@ server, state, ctrl = setup_server()
 state.documentation_drawer_open = False
 state.documentation_url = ""
 
+
 class NavigationComponents:
     """
     Class contains staticmethods to create

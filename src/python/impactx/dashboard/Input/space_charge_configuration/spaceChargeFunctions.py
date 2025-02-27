@@ -7,8 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server
-from .. import generalFunctions
-from .. import CardComponents
+from .. import CardComponents, generalFunctions
+
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
@@ -17,7 +17,6 @@ server, state, ctrl = setup_server()
 
 
 class SpaceChargeFunctions:
-
     @staticmethod
     def multigrid_settings():
         CardComponents.card_button(

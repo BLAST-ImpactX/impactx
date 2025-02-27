@@ -185,7 +185,10 @@ class SpaceChargeConfiguration(CardBase):
 
         with vuetify.VCard(style=self.collapsable):
             CardComponents.input_header(
-                self.HEADER_NAME, additional_components={"start": SpaceChargeFunctions.multigrid_settings}
+                self.HEADER_NAME,
+                additional_components={
+                    "start": SpaceChargeFunctions.multigrid_settings
+                },
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

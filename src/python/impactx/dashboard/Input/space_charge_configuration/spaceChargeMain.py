@@ -183,7 +183,7 @@ class SpaceChargeConfiguration(CardBase):
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard(style=self.collapsable):
+        with vuetify.VCard(**self.card_props):
             CardComponents.input_header(
                 self.HEADER_NAME,
                 additional_components={

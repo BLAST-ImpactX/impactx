@@ -19,6 +19,11 @@ class CardBase(UIDefaults):
         self.header = self.HEADER_NAME.lower().replace(" ", "_")
         self.collapsable = (f"collapse_{self.header}_height",)
 
+        self.card_props = {
+            "elevation": 2,
+            "style": self.collapsable
+        }
+
     def card(self):
         """
         Creates UI content for a section.

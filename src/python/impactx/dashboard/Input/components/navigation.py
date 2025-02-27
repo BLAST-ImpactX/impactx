@@ -13,7 +13,7 @@ class NavigationComponents:
     """
 
     @staticmethod
-    def create_route(route_title: str, mdi_icon: str) -> None:
+    def create_route(route_title: str, mdi_icon: str) -> vuetify.VListItem:
         """
         Creates a route with specified title and icon.
 
@@ -25,11 +25,9 @@ class NavigationComponents:
         to = f"/{route_title}"
         click = f"{route_title} = true"
 
-        with vuetify.VListItem(to=to, click=click):
-            with vuetify.VListItemIcon():
-                vuetify.VIcon(mdi_icon)
-            with vuetify.VListItemContent():
-                vuetify.VListItemTitle(route_title)
+        return vuetify.VListItem(
+            to=to, click=click, prepend_icon=mdi_icon, title=route_title, style="height: 3rem;"
+        )
 
     @staticmethod
     def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]) -> None:

@@ -105,7 +105,7 @@ def application():
         with layout.drawer as drawer:
             drawer.width = 200
             with vuetify.VList():
-                vuetify.VSubheader("Simulation")
+                vuetify.VListSubheader("Simulation")
             NavigationComponents.create_route("Input", "mdi-file-edit")
             NavigationComponents.create_route("Run", "mdi-play")
             NavigationComponents.create_route("Analyze", "mdi-chart-box-multiple")

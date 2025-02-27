@@ -23,6 +23,7 @@ class InputComponents:
         """
         Helper to build a component with common properties and tooltip/template wrappers.
         """
+
         if v_model_name is None:
             v_model_name = label.lower().replace(" ", "_")
 
@@ -53,14 +54,15 @@ class InputComponents:
         **kwargs,
     ) -> vuetify.VSelect:
         """
-        Creates a Vuetify VSelect component with
-        pre-filled components.
+        Creates a Vuetify Vselect component with default properties.
 
-        :param label: Display label
-        :param v_model_name: v_model binding name. Optional, as default name
-        created otherwise with label name.
-        :param items: Items list override
+        :param label: The label to display.
+        :param v_model_name: Optional binding name for v_model. Defaults to a lowercase version
+        of the label with spaces replaced by underscores if not provided.
+        :param items: Optional list of items. If None, default items from defaults.py will be used.
+        :param kwargs: Additional keyword arguments to pass to the component.
         """
+
         InputComponents._build_component(
             vuetify.VSelect, label, v_model_name, items=items, **kwargs
         )
@@ -70,19 +72,14 @@ class InputComponents:
         label: str, v_model_name: Optional[str] = None, **kwargs
     ) -> vuetify.VTextField:
         """
-        Creates a Vuetify VTextField component with the following default components:
-        - error_message state: It's init value is an empty list.
-        - step: The step value of the input (either set in defaults.py), or
-          by default is set to 1.
-        - suffix: The unit of the input (either set in defauts.py), or
-          by default is empty.
-        - type: set to 'number' to only allow a numeric input.
-        - dense: set to 'true' to minimize space usage.
+        Creates a Vuetify VTextField component with default properties.
 
-        :param label: Display label
-        :param v_model_name: v_model binding name. Optional, as default name
-        created otherwise with label name.
+        :param label: The label to display.
+        :param v_model_name: Optional binding name for v_model. Defaults to a lowercase version
+        of the label with spaces replaced by underscores if not provided.
+        :param kwargs: Additional keyword arguments to pass to the component.
         """
+
         computed_v_model = (
             v_model_name
             if v_model_name is not None
@@ -105,11 +102,14 @@ class InputComponents:
         label: str, v_model_name: Optional[str] = None, **kwargs
     ) -> vuetify.VCheckbox:
         """
-        Creates a Vuetify VCheckbox component with the following default components:
-        - dense: set to 'true' to minimize space usage.
+        Creates a Vuetify VCheckbox component with default properties.
 
-        :param label: Display label
+        :param label: The label to display.
+        :param v_model_name: Optional binding name for v_model. Defaults to a lowercase version
+        of the label with spaces replaced by underscores if not provided.
+        :param kwargs: Additional keyword arguments to pass to the component.
         """
+
         InputComponents._build_component(
             vuetify.VCheckbox, label, v_model_name, **kwargs
         )
@@ -122,11 +122,15 @@ class InputComponents:
         **kwargs,
     ) -> vuetify.VCombobox:
         """
-        Creates a Vuetify VCombobox component with the following default components:
-        - dense: set to 'true' to minimize space usage.
+        Creates a Vuetify VCombobox component with default properties.
 
-        :param label: Display label
+        :param label: The label to display.
+        :param v_model_name: Optional binding name for v_model. Defaults to a lowercase version
+        of the label with spaces replaced by underscores if not provided.
+        :param items: Optional list of items. If None, default items from defaults.py will be used.
+        :param kwargs: Additional keyword arguments to pass to the component.
         """
+
         InputComponents._build_component(
             vuetify.VCombobox, label, v_model_name, items=items, **kwargs
         )

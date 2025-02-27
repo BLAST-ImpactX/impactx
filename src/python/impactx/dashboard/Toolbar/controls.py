@@ -205,7 +205,8 @@ class AnalyzeToolbar:
             items=("plot_options",),
             label="Select plot to view",
             hide_details=True,
-            dense=True,
+            density="compact",
+            variant="underlined",
             style="max-width: 250px",
             disabled=("disableRunSimulationButton", True),
         )

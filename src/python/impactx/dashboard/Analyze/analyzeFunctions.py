@@ -50,7 +50,7 @@ class AnalyzeFunctions:
         dictionary = combined_data.to_dict(orient="records")
         columns = combined_data.columns
         headers = [
-            {"text": column.strip(), "value": column.strip()} for column in columns
+            {"title": column.strip(), "key": column.strip()} for column in columns
         ]
         return dictionary, headers
 
@@ -78,7 +78,7 @@ class AnalyzeFunctions:
 
         filtered_headers = []
         for selectedHeader in allHeaders:
-            if selectedHeader["value"] in selected_headers:
+            if selectedHeader["key"] in selected_headers:
                 filtered_headers.append(selectedHeader)
         return filtered_headers
 

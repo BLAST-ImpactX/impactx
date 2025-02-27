@@ -74,27 +74,24 @@ class InputToolbar:
         containing the user's current input values.
         """
 
-        with vuetify.VBtn(
+        return vuetify.VBtn(
+            "Export",
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
-            outlined=True,
-            small=True,
+            variant="outlined",
+            size="small",
             disabled=("disableRunSimulationButton", True),
             classes="mx-2",
-        ):
-            vuetify.VIcon("mdi-download", left=True, small=True)
-            html.Span("Export")
+            prepend_icon="mdi-download",
+            color="#00313C",
+        )
 
     @staticmethod
     def collapse_all_sections_button():
-        with vuetify.VBtn(
+        CardComponents.card_button(
+            ["mdi-collapse-all", "mdi-expand-all"],
             click=ctrl.collapse_all_sections,
-            color="primary",
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                v_text=("expand_all_sections ? 'mdi-collapse-all' : 'mdi-expand-all'",)
-            )
+            dynamic_condition="expand_all_sections",
+        )
 
     @staticmethod
     def import_button() -> None:
@@ -114,36 +111,32 @@ class InputToolbar:
             style="position: relative",
         ):
             with vuetify.VBtn(
+                "Import",
                 click="$refs.fileInput.$refs.input.click()",
-                outlined=True,
-                small=True,
+                size="small",
+                variant="outlined",
+                prepend_icon="mdi-upload",
                 disabled=("(import_file_details)",),
-                color=("import_file_error ? 'error' : ''",),
+                color=("import_file_error ? 'error' : '#00313C'",),
             ):
-                vuetify.VIcon(
-                    "mdi-upload",
-                    left=True,
-                    small=True,
-                )
-                html.Span("Import")
-            with html.Div(
-                style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
-            ):
-                html.Span(
-                    "{{ import_file_error ? import_file_error_message : import_file_details }}",
-                    style="text-overflow: ellipsis; overflow: hidden;",
-                    classes=(
-                        "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
-                    ),
-                )
-                vuetify.VIcon(
-                    "mdi-close",
-                    x_small=True,
-                    style="cursor: pointer;",
-                    click=ctrl.reset_all,
-                    v_if="import_file_details || import_file_error",
-                    color=("import_file_error ? 'error' : 'grey darken-1'",),
-                )
+                with html.Div(
+                    style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
+                ):
+                    html.Span(
+                        "{{ import_file_error ? import_file_error_message : import_file_details }}",
+                        style="text-overflow: ellipsis; overflow: hidden;",
+                        classes=(
+                            "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
+                        ),
+                    )
+                    vuetify.VIcon(
+                        "mdi-close",
+                        x_small=True,
+                        style="cursor: pointer;",
+                        click=ctrl.reset_all,
+                        v_if="import_file_details || import_file_error",
+                        color=("import_file_error ? 'error' : 'grey darken-1'",),
+                    )
 
     @staticmethod
     def reset_inputs_button() -> vuetify.VBtn:
@@ -152,14 +145,15 @@ class InputToolbar:
         default values.
         """
 
-        with vuetify.VBtn(
+        return vuetify.VBtn(
+            "Reset",
             click=ctrl.reset_all,
-            outlined=True,
-            small=True,
+            variant="outlined",
+            size="small",
+            prepend_icon="mdi-refresh",
             classes="mr-4",
-        ):
-            vuetify.VIcon("mdi-refresh", left=True)
-            html.Span("Reset")
+            color="#00313C",
+        )
 
 
 class RunToolbar:

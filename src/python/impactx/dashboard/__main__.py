@@ -28,6 +28,10 @@ from .start import main
 
 server, state, ctrl = setup_server()
 
+server.enable_module({
+    "styles":["https://fonts.googleapis.com/css?family=Roboto:300,400,500"]
+})
+
 from pathlib import Path
 
 from trame.widgets import client

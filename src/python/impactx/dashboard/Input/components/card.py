@@ -72,7 +72,7 @@ class CardComponents:
             if additional_components and position in additional_components:
                 additional_components[position]()
 
-        with vuetify.VCardTitle(section_name):
+        with vuetify.VCardTitle(section_name, classes="d-flex align-center flex-wrap", style="min-height: 3.75rem;"):
             vuetify.VSpacer()
             render_components("start")
             CardComponents.refresh_button(section_name_cleaned)

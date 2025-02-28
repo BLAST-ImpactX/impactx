@@ -37,15 +37,15 @@ class InputComponents:
             "v_model": (v_model_name,),
             "density": "compact",
             "variant": "underlined",
-            "v_on": "on",
-            "v_bind": "attrs",
+            "v_bind": "props",
+            "hide_details": "auto",
         }
         props = {**common_props, **component_kwargs}
 
-        with vuetify.VTooltip(**TooltipDefaults.TOOLTIP_STYLE):
-            with vuetify.Template(v_slot_activator="{ on, attrs }"):
+
+        with vuetify.VTooltip(location="bottom", text=TooltipDefaults.TOOLTIP.get(v_model_name)):
+            with vuetify.Template(v_slot_activator="{ props }"):
                 vuetify_component(**props)
-            html.Span(TooltipDefaults.TOOLTIP.get(v_model_name))
 
     @staticmethod
     def select(

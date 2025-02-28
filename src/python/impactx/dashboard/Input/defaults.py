@@ -151,11 +151,6 @@ class TooltipDefaults:
     Defaults for input toolips in the ImpactX dashboard.
     """
 
-    TOOLTIP_STYLE = {
-        "bottom": True,
-        "nudge_top": "20",
-    }
-
     TOOLTIP = InputDefaultsHelper.get_docstrings(
         [RefPart, ImpactX], DashboardDefaults.DEFAULT_VALUES
     )

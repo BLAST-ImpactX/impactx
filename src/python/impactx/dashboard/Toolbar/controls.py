@@ -14,6 +14,7 @@ from ..Input.generalFunctions import generalFunctions
 from ..Run.controls import execute_impactx_sim
 from .exportTemplate import input_file
 from .importParser import DashboardParser
+from ..Input.components.card import CardComponents
 
 server, state, ctrl = setup_server()
 

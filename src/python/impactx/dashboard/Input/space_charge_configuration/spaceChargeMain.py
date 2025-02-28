@@ -187,7 +187,7 @@ class SpaceChargeConfiguration(CardBase):
             CardComponents.input_header(
                 self.HEADER_NAME,
                 additional_components={
-                    "start": SpaceChargeFunctions.multigrid_settings
+                    "end": SpaceChargeFunctions.multigrid_settings
                 },
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):

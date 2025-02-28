@@ -1,4 +1,4 @@
-from ... import setup_server, vuetify
+from ... import html, setup_server, vuetify
 from ..defaults import UIDefaults
 from ..generalFunctions import generalFunctions
 
@@ -74,12 +74,13 @@ class CardComponents:
 
         with vuetify.VCardTitle(section_name, classes="d-flex align-center flex-wrap", style="min-height: 3.75rem;"):
             vuetify.VSpacer()
-            render_components("start")
-            CardComponents.refresh_button(section_name_cleaned)
-            CardComponents.documentation_button(section_name_cleaned)
-            CardComponents.collapse_button(section_name_cleaned)
-            CardComponents.expand_button(section_name_cleaned)
-            render_components("end")
+            with html.Div(classes="d-flex", gap="2px"):
+                render_components("start")
+                CardComponents.documentation_button(section_name_cleaned)
+                CardComponents.refresh_button(section_name_cleaned)
+                CardComponents.collapse_button(section_name_cleaned)
+                CardComponents.expand_button(section_name_cleaned)
+                render_components("end")
         vuetify.VDivider()
 
     @staticmethod
@@ -100,6 +101,7 @@ class CardComponents:
             icon=True,
             density="compact",
             variant="text",
+            # classes="mx-1",
             **kwargs,
         ):
             if isinstance(icon_name, (list, tuple)):

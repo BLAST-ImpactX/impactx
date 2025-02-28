@@ -243,7 +243,7 @@ class LatticeConfiguration(CardBase):
             CardComponents.input_header(
                 self.HEADER_NAME,
                 additional_components={
-                    "start": LatticeConfigurationHelper.settings,
+                    "end": LatticeConfigurationHelper.settings,
                 },
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):

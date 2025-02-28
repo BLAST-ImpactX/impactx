@@ -216,4 +216,5 @@ class DistributionParameters(CardBase):
                             __properties=["step"],
                             density="compact",
                             variant="underlined",
+                            hide_details="auto",
                         )

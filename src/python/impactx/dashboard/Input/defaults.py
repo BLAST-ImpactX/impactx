@@ -172,7 +172,7 @@ class UIDefaults:
     """
 
     ROW_STYLE = {
-        "dense": True,
+        "dense": False,
     }
 
     CARD_TEXT_OVERFLOW = {

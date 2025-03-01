@@ -259,7 +259,7 @@ class GeneralToolbar:
             "ImpactX Dashboard is provided as a preview and continues to be developed. "
             "Thus, it may not yet include all the features available in ImpactX.",
             type="info",
-            dense=True,
+            density="compact",
             dismissible=True,
             v_model=("show_dashboard_alert", True),
             classes="text-body-2 hidden-md-and-down",

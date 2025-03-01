@@ -85,7 +85,7 @@ class CardComponents:
 
     @staticmethod
     def card_button(
-        icon_name, color="primary", dynamic_condition=None, **kwargs
+        icon_name, color="primary", dynamic_condition=None, description=None, **kwargs
     ) -> vuetify.VBtn:
         """
         Create a Vuetify VBtn containing an icon.
@@ -96,21 +96,23 @@ class CardComponents:
         :param kwargs: Extra keyword arguments for the VBtn component.
         """
 
-        with vuetify.VBtn(
-            color=color,
-            icon=True,
-            density="compact",
-            variant="text",
-            # classes="mx-1",
-            **kwargs,
-        ):
-            if isinstance(icon_name, (list, tuple)):
-                with vuetify.Template(v_if=dynamic_condition):
-                    vuetify.VIcon(icon_name[1])
-                with vuetify.Template(v_else=True):
-                    vuetify.VIcon(icon_name[0])
-            else:
-                vuetify.VIcon(icon_name)
+        with vuetify.VTooltip(location="bottom", text=description):
+            with vuetify.Template(v_slot_activator="{ props }"):
+                with vuetify.VBtn(
+                    color=color,
+                    icon=True,
+                    density="compact",
+                    variant="text",
+                    v_bind="props",
+                    **kwargs,
+                ):
+                    if isinstance(icon_name, (list, tuple)):
+                        with vuetify.Template(v_if=dynamic_condition):
+                            vuetify.VIcon(icon_name[1])
+                        with vuetify.Template(v_else=True):
+                            vuetify.VIcon(icon_name[0])
+                    else:
+                        vuetify.VIcon(icon_name)
 
     @staticmethod
     def documentation_button(section_name: str) -> vuetify.VBtn:
@@ -124,6 +126,7 @@ class CardComponents:
             "mdi-information",
             color="#00313C",
             click=lambda: generalFunctions.open_documentation(section_name),
+            description="Documentation",
         )
 
     @staticmethod
@@ -138,6 +141,7 @@ class CardComponents:
             "mdi-refresh",
             color="#00313C",
             click=lambda: generalFunctions.reset_inputs(section_name),
+            description="Reset",
         )
 
     @staticmethod
@@ -154,6 +158,7 @@ class CardComponents:
             ["mdi-arrow-expand", "mdi-close"],
             click=f"{expand_state} = !{expand_state}",
             dynamic_condition=expand_state,
+            description="Expand",
         )
 
     @staticmethod
@@ -172,4 +177,5 @@ class CardComponents:
             ["mdi-chevron-up", "mdi-chevron-down"],
             click=f"{collapsed_state_name} = !{collapsed_state_name}",
             dynamic_condition=collapsed_state_name,
+            description="Collapse",
         )

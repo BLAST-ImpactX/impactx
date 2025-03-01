@@ -10,11 +10,11 @@ from trame.widgets import html
 
 from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
+from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
 from ..Run.controls import execute_impactx_sim
 from .exportTemplate import input_file
 from .importParser import DashboardParser
-from ..Input.components.card import CardComponents
 
 server, state, ctrl = setup_server()
 
@@ -91,6 +91,7 @@ class InputToolbar:
             ["mdi-collapse-all", "mdi-expand-all"],
             click=ctrl.collapse_all_sections,
             dynamic_condition="expand_all_sections",
+            description="Collapse all",
         )
 
     @staticmethod

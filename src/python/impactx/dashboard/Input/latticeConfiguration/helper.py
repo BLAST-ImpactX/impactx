@@ -22,6 +22,7 @@ class LatticeConfigurationHelper:
             "mdi-cog",
             color=LatticeConfigurationHelper.BUTTON_COLOR,
             click="lattice_configuration_dialog_settings = true",
+            documentation="Settings",
         )
 
     @staticmethod

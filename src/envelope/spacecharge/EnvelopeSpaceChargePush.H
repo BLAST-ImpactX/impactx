@@ -51,7 +51,7 @@ namespace impactx::envelope::spacecharge
      space_charge3D_push (
          RefPart const & AMREX_RESTRICT refpart,
          Map6x6 & AMREX_RESTRICT cm,
-         amrex::ParticleReal current,
+         amrex::ParticleReal bunch_charge,
          amrex::ParticleReal ds
     );
 

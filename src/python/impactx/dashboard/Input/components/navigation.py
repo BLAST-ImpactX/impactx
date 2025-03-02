@@ -26,7 +26,11 @@ class NavigationComponents:
         click = f"{route_title} = true"
 
         return vuetify.VListItem(
-            to=to, click=click, prepend_icon=mdi_icon, title=route_title, style="height: 3rem;"
+            to=to,
+            click=click,
+            prepend_icon=mdi_icon,
+            title=route_title,
+            style="height: 3rem;",
         )
 
     @staticmethod

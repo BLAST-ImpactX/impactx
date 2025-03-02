@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ... import html, setup_server, vuetify
+from ... import setup_server, vuetify
 from ..defaults import TooltipDefaults
 from ..generalFunctions import generalFunctions
 
@@ -42,8 +42,9 @@ class InputComponents:
         }
         props = {**common_props, **component_kwargs}
 
-
-        with vuetify.VTooltip(location="bottom", text=TooltipDefaults.TOOLTIP.get(v_model_name)):
+        with vuetify.VTooltip(
+            location="bottom", text=TooltipDefaults.TOOLTIP.get(v_model_name)
+        ):
             with vuetify.Template(v_slot_activator="{ props }"):
                 vuetify_component(**props)
 

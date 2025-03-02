@@ -186,9 +186,7 @@ class SpaceChargeConfiguration(CardBase):
         with vuetify.VCard(**self.card_props):
             CardComponents.input_header(
                 self.HEADER_NAME,
-                additional_components={
-                    "end": SpaceChargeFunctions.multigrid_settings
-                },
+                additional_components={"end": SpaceChargeFunctions.multigrid_settings},
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
@@ -218,7 +216,7 @@ class SpaceChargeConfiguration(CardBase):
                         cols=4,
                         v_for="(field, index) in prob_relative_fields",
                         **self.ROW_STYLE,
-                    ):  
+                    ):
                         vuetify.VTextField(
                             label=("index === 0 ? 'prob_relative' : ''",),
                             v_model=("field.value",),

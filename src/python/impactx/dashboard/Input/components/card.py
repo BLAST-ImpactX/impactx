@@ -19,10 +19,7 @@ class CardBase(UIDefaults):
         self.header = self.HEADER_NAME.lower().replace(" ", "_")
         self.collapsable = (f"collapse_{self.header}_height",)
 
-        self.card_props = {
-            "elevation": 2,
-            "style": self.collapsable
-        }
+        self.card_props = {"elevation": 2, "style": self.collapsable}
 
     def card(self):
         """
@@ -72,7 +69,11 @@ class CardComponents:
             if additional_components and position in additional_components:
                 additional_components[position]()
 
-        with vuetify.VCardTitle(section_name, classes="d-flex align-center flex-wrap", style="min-height: 3.75rem;"):
+        with vuetify.VCardTitle(
+            section_name,
+            classes="d-flex align-center flex-wrap",
+            style="min-height: 3.75rem;",
+        ):
             vuetify.VSpacer()
             with html.Div(classes="d-flex", gap="2px"):
                 render_components("start")

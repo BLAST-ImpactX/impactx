@@ -1,8 +1,8 @@
 import asyncio
 
 from .. import setup_server
-from ..Toolbar.exportTemplate import input_file
 from . import SimulationHelper, SimulationProgress
+from .simulation import input_file
 
 server, state, ctrl = setup_server()
 

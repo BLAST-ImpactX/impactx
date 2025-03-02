@@ -220,15 +220,29 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+
+            // assign linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+            R(1,1) = m_cos_kxds;
+            R(1,2) = m_sincx;
+            R(2,1) = m_const_x;
+            R(2,2) = m_cos_kxds;
+            R(3,3) = m_cos_kyds;
+            R(3,4) = m_sincy;
+            R(4,3) = m_const_y;
+            R(4,4) = m_cos_kyds;
+            R(5,5) = m_cos_ktds;
+            R(5,6) = m_const_pt;
+            R(6,5) = m_const_t;
+            R(6,6) = m_cos_ktds;            
+
+            return R;
         }
 
         amrex::ParticleReal m_kx; //! focusing x strength in 1/m

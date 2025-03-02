@@ -20,7 +20,7 @@
 
 namespace impactx::envelope::spacecharge
 {
-        
+
     /** Function to return the Carlson elliptic integral denoted
      *  by RD(x,y,z).  This is a slight modification of
      *  the C++ function written by John Burkardt (GNU LGPL license):
@@ -34,12 +34,12 @@ namespace impactx::envelope::spacecharge
      * Computing Elliptic Integrals by Duplication,
      * Numerische Mathematik,
      * Volume 33, 1979, pages 1-16.
-     *    
+     *
      * Bille Carlson, Elaine Notis,
      * Algorithm 577, Algorithms for Incomplete Elliptic Integrals,
      * ACM Transactions on Mathematical Software,
      * Volume 7, Number 3, pages 398-403, September 1981.
-     * 
+     *
      * @param[in] x first argument
      * @param[in] y second argument
      * @param[in] z third argument
@@ -48,7 +48,7 @@ namespace impactx::envelope::spacecharge
      */
     amrex::ParticleReal
     Elliptic_RD (
-        amrex::ParticleReal x,   
+        amrex::ParticleReal x,
         amrex::ParticleReal y,
         amrex::ParticleReal z,
         amrex::ParticleReal errtol
@@ -92,13 +92,13 @@ namespace impactx::envelope::spacecharge
       //   IN THE FOLLOWING TABLE IT IS ASSUMED THAT ERRTOL WILL
       //   NEVER BE CHOSEN SMALLER THAN 1.D-5.
       //
-        if ( 
-          x < 0.0 || 
-          y < 0.0 || 
-          x + y < lolim || 
-          z < lolim || 
-          uplim < x || 
-          uplim < y || 
+        if (
+          x < 0.0 ||
+          y < 0.0 ||
+          x + y < lolim ||
+          z < lolim ||
+          uplim < x ||
+          uplim < y ||
           uplim < z )
         {
           amrex::Print() << "\n";
@@ -124,7 +124,7 @@ namespace impactx::envelope::spacecharge
           xndev = ( mu - xn ) / mu;
           yndev = ( mu - yn ) / mu;
           zndev = ( mu - zn ) / mu;
-          epslon = std::max ( std::abs ( xndev ), 
+          epslon = std::max ( std::abs ( xndev ),
             std::max ( std::abs ( yndev ), std::abs ( zndev ) ) );
 
           if ( epslon < errtol )
@@ -156,7 +156,7 @@ namespace impactx::envelope::spacecharge
         }
 
       }
-        
+
 } // namespace impactx::envelope::spacecharge
 
 #endif // ELLIPTIC_INTEGRAL_H

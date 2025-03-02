@@ -77,10 +77,10 @@ namespace impactx::envelope::spacecharge
     )
     {
         using namespace amrex::literals;
-  
+
         // skip calculations for trivial case
         if (bunch_charge == 0_prt) { return; }
-   
+
         // initialize the linear transport map
         Map6x6 R = Map6x6::Identity();
 
@@ -93,11 +93,11 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const pt_ref = refpart.pt;
         amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1_prt;
         amrex::ParticleReal const betgam = std::sqrt(betgam2);
- 
+
         // evaluate the 3D space charge intensity parameter from bunch charge
         amrex::ParticleReal const rcN = charge * bunch_charge / (4_prt * pi * ep0 * mass * std::pow(c,2));
         amrex::ParticleReal const coeff = ds * rcN / betgam2 * (1_prt/(5_prt * std::sqrt(5_prt)));
-        
+
         // set parameters for elliptic integrals
         amrex::ParticleReal const errtol = 1.0e-3;
         amrex::ParticleReal const x = cm(1,1);
@@ -105,21 +105,21 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const z = betgam * cm(5,5);
 
         // evaluate the off-identity elements of the linear transfer map
-        R(2,1) = coeff * Elliptic_RD(y,z,x,errtol);  
+        R(2,1) = coeff * Elliptic_RD(y,z,x,errtol);
         R(4,3) = coeff * Elliptic_RD(z,x,y,errtol);
         R(6,5) = coeff * Elliptic_RD(x,y,z,errtol);
-        
+
         // update the beam covariance matrix
         cm = R * cm * R.transpose();
 
-        // test of elliptic integral evaluation only   
+        // test of elliptic integral evaluation only
         //amrex::ParticleReal const x = 1.0;
         //amrex::ParticleReal const y = 5.0;
         //amrex::ParticleReal const z = 0.02;
         //amrex::ParticleReal const errtol = 1.0e-3;
         //amrex::ParticleReal rd = Elliptic_RD(x,y,z,errtol);
         //amrex::Print() << "RD( " << x << "," << y << "," << z << " ) = " << rd << "\n";
-        
+
     }
 
 

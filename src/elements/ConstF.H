@@ -240,7 +240,7 @@ namespace impactx::elements
             R(5,5) = m_cos_ktds;
             R(5,6) = m_const_pt;
             R(6,5) = m_const_t;
-            R(6,6) = m_cos_ktds;            
+            R(6,6) = m_cos_ktds;
 
             return R;
         }

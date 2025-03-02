@@ -334,7 +334,7 @@ namespace RFCavityData
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
-         
+
         /** This function returns the linear transport map.
          *
          * @returns 6x6 transport matrix
@@ -343,12 +343,12 @@ namespace RFCavityData
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-        
+
             Map6x6 R = Map6x6::Identity();
             R = refpart.map;
 
             return R;
-        }  
+        }
 
         /** This evaluates the on-axis RF electric field at a fixed location
          *  z, together with certain required integrals and derivatives.

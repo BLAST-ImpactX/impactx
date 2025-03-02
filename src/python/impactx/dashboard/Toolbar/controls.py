@@ -108,36 +108,35 @@ class InputToolbar:
             style="display: none;",
             ref="fileInput",
         )
-        with html.Div(
-            style="position: relative",
-        ):
+        with html.Div(style="position: relative;"):
             with vuetify.VBtn(
                 "Import",
-                click="$refs.fileInput.$refs.input.click()",
+                click="trame.refs.fileInput.click()",
                 size="small",
                 variant="outlined",
                 prepend_icon="mdi-upload",
                 disabled=("(import_file_details)",),
                 color=("import_file_error ? 'error' : '#00313C'",),
             ):
-                with html.Div(
-                    style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
-                ):
-                    html.Span(
-                        "{{ import_file_error ? import_file_error_message : import_file_details }}",
-                        style="text-overflow: ellipsis; overflow: hidden;",
-                        classes=(
-                            "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
-                        ),
-                    )
-                    vuetify.VIcon(
-                        "mdi-close",
-                        x_small=True,
-                        style="cursor: pointer;",
-                        click=ctrl.reset_all,
-                        v_if="import_file_details || import_file_error",
-                        color=("import_file_error ? 'error' : 'grey darken-1'",),
-                    )
+                pass
+            with html.Div(
+                style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
+            ):
+                html.Span(
+                    "{{ import_file_error ? import_file_error_message : import_file_details }}",
+                    style="text-overflow: ellipsis; overflow: hidden;",
+                    classes=(
+                        "import_file_error ? 'error--text' : 'grey--text text--darken-1'",
+                    ),
+                )
+                vuetify.VIcon(
+                    "mdi-close",
+                    x_small=True,
+                    style="cursor: pointer;",
+                    click=ctrl.reset_all,
+                    v_if="import_file_details || import_file_error",
+                    color=("import_file_error ? 'error' : 'grey darken-1'",),
+                )
 
     @staticmethod
     def reset_inputs_button() -> vuetify.VBtn:

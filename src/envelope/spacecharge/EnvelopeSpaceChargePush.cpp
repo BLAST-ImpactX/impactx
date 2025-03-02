@@ -95,19 +95,19 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const betgam = std::sqrt(betgam2);
 
         // evaluate the 3D space charge intensity parameter from bunch charge
-        amrex::ParticleReal const rcN = charge * bunch_charge / (4_prt * pi * ep0 * mass * std::pow(c,2));
+        amrex::ParticleReal const rcN = std::abs(charge * bunch_charge) / (4_prt * pi * ep0 * mass * std::pow(c,2));
         amrex::ParticleReal const coeff = ds * rcN / betgam2 * (1_prt/(5_prt * std::sqrt(5_prt)));
 
         // set parameters for elliptic integrals
         amrex::ParticleReal const errtol = 1.0e-3;
         amrex::ParticleReal const x = cm(1,1);
         amrex::ParticleReal const y = cm(3,3);
-        amrex::ParticleReal const z = betgam * cm(5,5);
+        amrex::ParticleReal const z = betgam2 * cm(5,5);
 
         // evaluate the off-identity elements of the linear transfer map
         R(2,1) = coeff * Elliptic_RD(y,z,x,errtol);
         R(4,3) = coeff * Elliptic_RD(z,x,y,errtol);
-        R(6,5) = coeff * Elliptic_RD(x,y,z,errtol);
+        R(6,5) = coeff * betgam2 * Elliptic_RD(x,y,z,errtol);
 
         // update the beam covariance matrix
         cm = R * cm * R.transpose();

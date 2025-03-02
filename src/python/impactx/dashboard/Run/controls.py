@@ -1,35 +1,35 @@
-"""
-This file is part of ImpactX
-
-Copyright 2025 ImpactX contributors
-Authors: Parthib Roy
-License: BSD-3-Clause-LBNL
-"""
-
 import asyncio
-import io
-
-from wurlitzer import pipes
 
 from .. import setup_server
-from ..simulation import run_simulation
+from ..Toolbar.exportTemplate import input_file
+from . import SimulationHelper, SimulationProgress
 
 server, state, ctrl = setup_server()
 
 
-def execute_impactx_sim():
-    buf = io.StringIO()
+def run_execute_impactx_sim():
+    asyncio.get_running_loop().create_task(execute_impactx_sim())
 
-    with pipes(stdout=buf, stderr=buf):
-        run_simulation()
 
-    buf.seek(0)
-    lines = [line.strip() for line in buf.getvalue().splitlines()]
+async def execute_impactx_sim() -> None:
+    """
+    Executes an ImpactX simulation based on the dashboard inputs.
 
-    # Use $nextTick to ensure the terminal is fully rendered before printing
-    async def print_lines():
-        for line in lines:
-            ctrl.terminal_print(line)
-        ctrl.terminal_print("Simulation complete.")
+    Upon call, gathers dashboard inputs, launches the simulation as
+    an async subprocess, and streams its output to the dashboard terminal
+    in real time.
+    """
 
-    asyncio.create_task(print_lines())
+    simulation_contents = input_file()
+    simulation_process = await SimulationHelper.run_simulation_in_subprocess(
+        simulation_contents
+    )
+
+    while True:
+        sim_output_line = await simulation_process.stdout.readline()
+        if not sim_output_line:
+            break
+        SimulationProgress.print_to_xterm(sim_output_line)
+
+    await simulation_process.wait()
+    SimulationHelper.complete_simulation()

@@ -12,7 +12,7 @@ from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
-from ..Run.controls import execute_impactx_sim
+from ..Run.controls import run_execute_impactx_sim
 from .exportTemplate import input_file
 from .importParser import DashboardParser
 
@@ -164,7 +164,7 @@ class RunToolbar:
     @ctrl.add("begin_sim")
     def run():
         state.plot_options = available_plot_options(simulationClicked=True)
-        execute_impactx_sim()
+        run_execute_impactx_sim()
         update_plot()
         load_dataTable_data()
 

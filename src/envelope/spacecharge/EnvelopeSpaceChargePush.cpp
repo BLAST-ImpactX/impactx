@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "EnvelopeSpaceChargePush.H"
+#include "Elliptic_Integral.H"
 
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -65,6 +66,60 @@ namespace impactx::envelope::spacecharge
         // update the beam covariance matrix
         cm = R * cm * R.transpose();
 
+    }
+
+    void
+    space_charge3D_push (
+        RefPart const & AMREX_RESTRICT refpart,
+        Map6x6 & AMREX_RESTRICT cm,
+        amrex::ParticleReal bunch_charge,
+        amrex::ParticleReal ds
+    )
+    {
+        using namespace amrex::literals;
+  
+        // skip calculations for trivial case
+        if (bunch_charge == 0_prt) { return; }
+   
+        // initialize the linear transport map
+        Map6x6 R = Map6x6::Identity();
+
+        // physical constants and reference quantities
+        using ablastr::constant::SI::c;
+        using ablastr::constant::SI::ep0;
+        using ablastr::constant::math::pi;
+        amrex::ParticleReal const mass = refpart.mass;
+        amrex::ParticleReal const charge = refpart.charge;
+        amrex::ParticleReal const pt_ref = refpart.pt;
+        amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1_prt;
+        amrex::ParticleReal const betgam = std::sqrt(betgam2);
+ 
+        // evaluate the 3D space charge intensity parameter from bunch charge
+        amrex::ParticleReal const rcN = charge * bunch_charge / (4_prt * pi * ep0 * mass * std::pow(c,2));
+        amrex::ParticleReal const coeff = ds * rcN / betgam2 * (1_prt/(5_prt * std::sqrt(5_prt)));
+        
+        // set parameters for elliptic integrals
+        amrex::ParticleReal const errtol = 1.0e-3;
+        amrex::ParticleReal const x = cm(1,1);
+        amrex::ParticleReal const y = cm(3,3);
+        amrex::ParticleReal const z = betgam * cm(5,5);
+
+        // evaluate the off-identity elements of the linear transfer map
+        R(2,1) = coeff * Elliptic_RD(y,z,x,errtol);  
+        R(4,3) = coeff * Elliptic_RD(z,x,y,errtol);
+        R(6,5) = coeff * Elliptic_RD(x,y,z,errtol);
+        
+        // update the beam covariance matrix
+        cm = R * cm * R.transpose();
+
+        // test of elliptic integral evaluation only   
+        //amrex::ParticleReal const x = 1.0;
+        //amrex::ParticleReal const y = 5.0;
+        //amrex::ParticleReal const z = 0.02;
+        //amrex::ParticleReal const errtol = 1.0e-3;
+        //amrex::ParticleReal rd = Elliptic_RD(x,y,z,errtol);
+        //amrex::Print() << "RD( " << x << "," << y << "," << z << " ) = " << rd << "\n";
+        
     }
 
 

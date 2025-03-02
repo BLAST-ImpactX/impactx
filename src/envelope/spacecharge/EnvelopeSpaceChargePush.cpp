@@ -92,7 +92,6 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const charge = refpart.charge;
         amrex::ParticleReal const pt_ref = refpart.pt;
         amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1_prt;
-        amrex::ParticleReal const betgam = std::sqrt(betgam2);
 
         // evaluate the 3D space charge intensity parameter from bunch charge
         amrex::ParticleReal const rcN = std::abs(charge * bunch_charge) / (4_prt * pi * ep0 * mass * std::pow(c,2));

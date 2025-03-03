@@ -235,7 +235,7 @@ class GeneralToolbar:
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
             html.Div(
-                " {{ simulation_elapsed_time }}s",
+                "Step {{ current_step }} • {{ simulation_elapsed_time }}s",
                 style="margin-right: 8px;"
             )
             (RunToolbar.run_simulation_button(),)

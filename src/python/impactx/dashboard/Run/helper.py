@@ -39,6 +39,8 @@ class SimulationHelper:
         ctrl.terminal_print("Simulation complete.")
         state.dirty("filtered_data")
         state.flush()
+        state.sim_status_color = "success"
+
 
 
 class SimulationProgress:

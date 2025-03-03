@@ -174,11 +174,11 @@ class RunToolbar:
         Creates a button to run an ImpactX simulation
         with the current user-provided inputs.
         """
-
-        return vuetify.VBtn(
-            "Run Simulation",
-            style="background-color: #00313C; color: white; margin: 0 20px;",
+        CardComponents.card_button(
+            "mdi-play-circle",
+            color=("sim_status_color",),
             click=ctrl.begin_sim,
+            description="Run Simulation",
             disabled=("disableRunSimulationButton", True),
         )
 

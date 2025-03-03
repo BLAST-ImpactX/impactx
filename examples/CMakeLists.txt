@@ -596,7 +596,7 @@ add_impactx_test(kurth_10nC_periodic.py
 
 # Kurth Beam in a Periodic Channel with Envelope Tracking ######################
 #
-w/ space charge
+# with space charge
 add_impactx_test(kurth_10nC_periodic_envelope
     examples/kurth/input_kurth_10nC_periodic_envelope.in
     OFF  # ImpactX MPI-parallel

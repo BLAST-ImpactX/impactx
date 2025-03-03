@@ -6,7 +6,6 @@ from .. import setup_server
 
 server, state, ctrl = setup_server()
 
-state.simulation_elapsed_time = "0.0"
 
 class SimulationHelper:
     """
@@ -35,12 +34,11 @@ class SimulationHelper:
         Marks the simulation as complete and updates the dashboard.
         """
 
-        state.simulation_running = False
+        state.sim_is_running = False
         ctrl.terminal_print("Simulation complete.")
         state.dirty("filtered_data")
-        state.flush()
         state.sim_status_color = "success"
-
+        state.flush()
 
 
 class SimulationProgress:
@@ -63,6 +61,6 @@ class SimulationProgress:
 
         while True:
             elapsed = time.monotonic() - start_time
-            state.simulation_elapsed_time = f"{elapsed:.1f}"
+            state.sim_elapsed_time = f"{elapsed:.1f}"
             state.flush()
             await asyncio.sleep(0.1)

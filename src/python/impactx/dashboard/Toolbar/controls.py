@@ -182,6 +182,17 @@ class RunToolbar:
             disabled=("disableRunSimulationButton", True),
         )
 
+    @staticmethod
+    def run_simulation_progress_details() -> html.Div:
+        """
+        Provides dashboard users with simulation progress details,
+        such as the current step and the time elapsed in the simulation.
+        """
+        
+        return html.Div(
+            "Step {{ sim_current_step }} • {{ sim_elapsed_time }}s",
+            style="margin-right: 8px;"
+        )
 
 class AnalyzeToolbar:
     """
@@ -234,10 +245,6 @@ class GeneralToolbar:
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
-            html.Div(
-                "Step {{ current_step }} • {{ simulation_elapsed_time }}s",
-                style="margin-right: 8px;"
-            )
             (RunToolbar.run_simulation_button(),)
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)

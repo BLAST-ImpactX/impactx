@@ -7,8 +7,10 @@ from .simulation import input_file
 
 server, state, ctrl = setup_server()
 
+state.sim_elapsed_time = "0.0"
+state.sim_is_running = False
+state.sim_current_step = 0
 start_timer = 0
-state.current_step = 0
 
 def run_execute_impactx_sim():
     asyncio.get_running_loop().create_task(execute_impactx_sim())
@@ -30,6 +32,7 @@ async def execute_impactx_sim() -> None:
     )
 
     while True:
+        state.sim_is_running = True
         sim_output_line = await simulation_process.stdout.readline()
         sim_output_line_decoded = sim_output_line.decode()
 
@@ -41,7 +44,7 @@ async def execute_impactx_sim() -> None:
         if "++++ Starting step=" in sim_output_line_decoded:
             match = re.search(r"\+\+\+\+ Starting step=(\d+)", sim_output_line_decoded)
             if match:
-                state.current_step = int(match.group(1))
+                state.sim_current_step = int(match.group(1))
 
         SimulationProgress.print_to_xterm(sim_output_line)
 

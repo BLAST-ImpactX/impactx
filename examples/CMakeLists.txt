@@ -518,7 +518,7 @@ if(ImpactX_FFT)
 endif()
 
 # Expanding Beam Test Using Envelope Tracking ##################################
-# 
+#
 add_impactx_test(expanding_beam_envelope
     examples/expanding_beam/input_expanding_envelope.in
     OFF  # ImpactX MPI-parallel
@@ -875,7 +875,7 @@ add_impactx_test(FODO.rf.sc.envelope.py
     examples/epac2004_benchmarks/run_fodo_rf_SC_envelope.py
     OFF  # ImpactX MPI-parallel
     examples/epac2004_benchmarks/analysis_fodo_rf_SC_envelope.py
-    OFF  # no plot script yet  
+    OFF  # no plot script yet
 )
 
 # Thermal Beam EPAC2004 #######################################################

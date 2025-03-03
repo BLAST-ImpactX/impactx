@@ -45,5 +45,4 @@ algo.space_charge = 3D
 ###############################################################################
 # Diagnostics
 ###############################################################################
-diag.slice_step_diagnostics = true   
-
+diag.slice_step_diagnostics = true

@@ -84,7 +84,7 @@ assert np.allclose(
 
 atol = 4.0e-8
 print(f"  atol={atol}")
-    
+
 assert np.allclose(
     [emittance_xi, emittance_yi, emittance_ti],
     [0.0, 0.0, 0.0],

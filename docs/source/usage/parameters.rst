@@ -734,7 +734,7 @@ See there ``nslice`` option on lattice elements for slicing.
 
   * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
-    Currently, this model is supported only in particle mode (when ``algo.track = "particles"``).
+    When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 

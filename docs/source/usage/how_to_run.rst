@@ -13,13 +13,16 @@ ImpactX can be run using any of three distinct tracking modes.  ImpactX's most p
 Additionally, ImpactX provides two simplified tracking modes to aid scientists through every step, from beamline inception to operation:
 tracking of the beam envelope (6x6 covariance matrix) through linearized transport maps, or only tracking of the reference particle orbit.
 
-================== =============== =============== ===================
-Mode               Use Case        Generality      Collective Effects
-================== =============== =============== ===================
+================== =============== =============== ====================
+Mode               Use Case        Generality      Space Charge Effects
+================== =============== =============== ====================
 Particle Tracking  Full Dynamics   Most general    Supported (3D only)
-Envelope Tracking  Rapid Scans     Linearized      Supported (2D only)
+Envelope Tracking  Rapid Scans     Linearized      Supported (2D or 3D)
 Reference Tracking Early Design    Reference orbit No
-================== =============== =============== ===================
+================== =============== =============== ====================
+
+The 3D space charge model used during envelope tracking currently assumes that the spatial block of the 6x6 beam covariance matrix is diagonal--that is, ``<xy> = <yt> = <tx> = 0``.
+Support for 3D space charge during envelope tracking with nonzero correlations ``<xy>``, ``<yt>``, or ``<tx>`` will be added in the near future.
 
 
 .. _usage_run-user-interface:

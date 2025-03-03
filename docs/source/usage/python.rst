@@ -74,7 +74,7 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
-        Currently, this model is supported only in particle mode (when ``algo.track = "particles"``).
+        When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
    .. py:property:: poisson_solver
 

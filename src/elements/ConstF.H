@@ -231,18 +231,18 @@ namespace impactx::elements
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
-          
+
             // find beta*gamma^2
             amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
-           
+
             // trigo
             auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);
-            amrex::ParticleReal const_x = -m_kx * sin_kxds; 
+            amrex::ParticleReal const_x = -m_kx * sin_kxds;
             auto const [sin_kyds, cos_kyds] = amrex::Math::sincos(m_ky * slice_ds);
-            amrex::ParticleReal const_y = -m_ky * sin_kyds;  
+            amrex::ParticleReal const_y = -m_ky * sin_kyds;
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
-            amrex::ParticleReal const_t = -m_kt * betgam2 * sin_ktds;  
-           
+            amrex::ParticleReal const_t = -m_kt * betgam2 * sin_ktds;
+
             // intermediate quantities - to avoid division by zero
             amrex::ParticleReal sincx = m_kx > 0 ? std::sin(m_kx * slice_ds) / m_kx : slice_ds;
             amrex::ParticleReal sincy = m_ky > 0 ? std::sin(m_ky * slice_ds) / m_ky : slice_ds;

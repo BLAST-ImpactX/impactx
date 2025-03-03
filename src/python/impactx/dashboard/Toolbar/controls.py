@@ -234,6 +234,10 @@ class GeneralToolbar:
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
+            html.Div(
+                " {{ simulation_elapsed_time }}s",
+                style="margin-right: 8px;"
+            )
             (RunToolbar.run_simulation_button(),)
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)

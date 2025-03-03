@@ -1,10 +1,12 @@
 import asyncio
 import sys
+import time
 
 from .. import setup_server
 
 server, state, ctrl = setup_server()
 
+state.simulation_elapsed_time = "0.0"
 
 class SimulationHelper:
     """
@@ -52,3 +54,13 @@ class SimulationProgress:
         """
 
         ctrl.terminal_print(content.strip())
+
+    @staticmethod
+    async def dashboard_timer():
+        start_time = time.monotonic()
+
+        while True:
+            elapsed = time.monotonic() - start_time
+            state.simulation_elapsed_time = f"{elapsed:.1f}"
+            state.flush()
+            await asyncio.sleep(0.1)

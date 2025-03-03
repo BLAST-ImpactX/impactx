@@ -6,6 +6,7 @@ from .simulation import input_file
 
 server, state, ctrl = setup_server()
 
+start_timer = 0
 
 def run_execute_impactx_sim():
     asyncio.get_running_loop().create_task(execute_impactx_sim())
@@ -29,7 +30,12 @@ async def execute_impactx_sim() -> None:
         sim_output_line = await simulation_process.stdout.readline()
         if not sim_output_line:
             break
+        
+        if "Initializing AMReX" in sim_output_line.decode():
+            start_timer = asyncio.create_task(SimulationProgress.dashboard_timer())
+
         SimulationProgress.print_to_xterm(sim_output_line)
 
     await simulation_process.wait()
+    start_timer.cancel()
     SimulationHelper.complete_simulation()

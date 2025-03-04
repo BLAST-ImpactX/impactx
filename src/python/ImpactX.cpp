@@ -96,6 +96,7 @@ void init_ImpactX (py::module& m)
     for (int dir : {0, 1, 2}) {
         std::string const dir_str = std::vector<std::string>{"x", "y", "z"}.at(dir);
         std::string const bf_str = "blocking_factor_" + dir_str;
+        std::string const mgs_str = "max_grid_size_" + dir_str;
         impactx
             .def_property(bf_str.c_str(),
                   [bf_str](ImpactX & /* ix */) {
@@ -105,12 +106,13 @@ void init_ImpactX (py::module& m)
 
                       return blocking_factor_dir;
                   },
-                  [bf_str](ImpactX &ix, std::vector<int> blocking_factor_dir) {
+                  [bf_str, mgs_str](ImpactX &ix, std::vector<int> blocking_factor_dir) {
                       if (ix.initialized())
                           throw std::runtime_error("Read-only parameter after init_grids was called.");
 
                       amrex::ParmParse pp_amr("amr");
                       pp_amr.addarr(bf_str.c_str(), blocking_factor_dir);
+                      pp_amr.addarr(mgs_str.c_str(), blocking_factor_dir);
                   },
                   "AMReX blocking factor for a direction, per MR level."
             );

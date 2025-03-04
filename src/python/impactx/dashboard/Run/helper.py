@@ -7,6 +7,7 @@ from .. import setup_server
 
 server, state, ctrl = setup_server()
 
+state.sim_progress_status = ""
 
 class SimulationHelper:
     """
@@ -55,6 +56,19 @@ class SimulationProgress:
     Methods which facilitate providing the dashboard user
     simulation progress
     """
+
+    @state.change("sim_current_step", "sim_total_steps", "sim_is_running", "sim_progress")
+    def _update_status(**kwargs):
+        if state.sim_progress == 100:
+            state.sim_progress_status = "Complete!"
+        elif state.sim_is_running:
+            if state.sim_current_step == 0:
+                state.sim_progress_status = "Starting..."
+            else:
+                progress_percent = int(state.sim_progress)
+                state.sim_progress_status = f"Running... ({progress_percent}%)"
+        else:
+            state.sim_progress_status = ""
 
     @staticmethod
     def print_to_xterm(content: str) -> None:

@@ -188,13 +188,18 @@ class RunToolbar:
         Displays and updates a progress bar to the dashboard user
         while running a simulation.
         """
-        vuetify.VProgressLinear(
-            height=5,
-            striped=True,
-            style="width: 7vw",
-            color=("sim_status_color",),
-            v_model=("sim_progress",),
-        )
+        with html.Div(style="position: relative; margin: 0 8px;"):
+            vuetify.VProgressLinear(
+                height=5,
+                striped=True,
+                style="width: 7vw",
+                color=("sim_status_color",),
+                v_model=("sim_progress",),
+            )
+            html.Div(
+                "{{ sim_progress_status }}",
+                style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; color: grey; margin-top: 4px;"
+            )
 
     @staticmethod
     def run_simulation_progress_details() -> html.Div:

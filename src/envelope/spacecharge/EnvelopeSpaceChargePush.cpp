@@ -103,6 +103,22 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const y = cm(3,3);
         amrex::ParticleReal const z = betgam2 * cm(5,5);
 
+        // the existing model assumes <xy> = <yt> = <tx> = 0
+        amrex::ParticleReal const xy = x*y;
+        amrex::ParticleReal const yz = y*z;
+        amrex::ParticleReal const zx = z*x;
+        amrex::ParticleReal const corr_xy = (xy==0.0)? 0.0 : std::abs(cm(1,3)/std::sqrt(xy));
+        amrex::ParticleReal const corr_yz = (yz==0.0)? 0.0 : std::abs(cm(3,5)/std::sqrt(yz));
+        amrex::ParticleReal const corr_zx = (zx==0.0)? 0.0 : std::abs(cm(5,1)/std::sqrt(zx));
+        if (corr_xy > errtol || corr_yz > errtol || corr_zx > errtol) {
+            ablastr::warn_manager::WMRecordWarning(
+                "algo.space_charge",
+                "Space charge 3D model in envelope tracking assumes <xy> = <yt> = <tx> = 0 "
+                 "but nonzero correlations are present.",
+                ablastr::warn_manager::WarnPriority::high
+            );
+        }
+
         // evaluate the off-identity elements of the linear transfer map
         R(2,1) = coeff * Elliptic_RD(y,z,x,errtol);
         R(4,3) = coeff * Elliptic_RD(z,x,y,errtol);
@@ -110,14 +126,6 @@ namespace impactx::envelope::spacecharge
 
         // update the beam covariance matrix
         cm = R * cm * R.transpose();
-
-        // test of elliptic integral evaluation only
-        //amrex::ParticleReal const x = 1.0;
-        //amrex::ParticleReal const y = 5.0;
-        //amrex::ParticleReal const z = 0.02;
-        //amrex::ParticleReal const errtol = 1.0e-3;
-        //amrex::ParticleReal rd = Elliptic_RD(x,y,z,errtol);
-        //amrex::Print() << "RD( " << x << "," << y << "," << z << " ) = " << rd << "\n";
 
     }
 

@@ -133,8 +133,10 @@ kin_energy_MeV = {state.kin_energy_MeV}
 bunch_charge_C = {state.bunch_charge_C}
 npart = {state.npart}
 
+pc = sim.particle_container()
+
 # Reference particle
-ref = sim.particle_container().ref_particle()
+ref = pc.ref_particle()
 ref.set_charge_qe({state.charge_qe}).set_mass_MeV({state.mass_MeV}).set_kin_energy_MeV(kin_energy_MeV)
 
 {build_distribution_list()}

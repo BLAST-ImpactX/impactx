@@ -49,6 +49,7 @@ class SimulationHelper:
         state.sim_progress = 0
         state.sim_current_step = 0
         state.sim_elapsed_time = "0.0"
+        state.sim_status_color = "primary"
         state.flush()
 
 class SimulationProgress:

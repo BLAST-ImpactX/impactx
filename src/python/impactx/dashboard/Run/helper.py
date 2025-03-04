@@ -1,4 +1,5 @@
 import asyncio
+import re
 import sys
 import time
 
@@ -35,6 +36,7 @@ class SimulationHelper:
         """
 
         state.sim_is_running = False
+        state.sim_progress = 100
         ctrl.terminal_print("Simulation complete.")
         state.dirty("filtered_data")
         state.sim_status_color = "success"
@@ -64,3 +66,18 @@ class SimulationProgress:
             state.sim_elapsed_time = f"{elapsed:.1f}"
             state.flush()
             await asyncio.sleep(0.1)
+
+    @staticmethod
+    def determine_sim_total_steps(simulation_content_file) -> int:
+        """
+        Determines the total step count for the given input file.
+
+        Sum of nslices is sim_total_step
+        """
+
+        nslice_matches = re.findall(r'nslice=(\d+)', simulation_content_file)
+
+        if nslice_matches:
+            state.sim_total_steps = sum(int(match) for match in nslice_matches)
+
+        return state.sim_total_steps

@@ -10,6 +10,8 @@ server, state, ctrl = setup_server()
 state.sim_elapsed_time = "0.0"
 state.sim_is_running = False
 state.sim_current_step = 0
+state.sim_total_steps = 0
+state.sim_progress = 0
 start_timer = 0
 
 def run_execute_impactx_sim():
@@ -27,6 +29,7 @@ async def execute_impactx_sim() -> None:
     """
 
     simulation_contents = input_file()
+    state.sim_total_steps = SimulationProgress.determine_sim_total_steps(simulation_contents)
     simulation_process = await SimulationHelper.run_simulation_in_subprocess(
         simulation_contents
     )
@@ -45,6 +48,7 @@ async def execute_impactx_sim() -> None:
             match = re.search(r"\+\+\+\+ Starting step=(\d+)", sim_output_line_decoded)
             if match:
                 state.sim_current_step = int(match.group(1))
+                state.sim_progress = (state.sim_current_step / state.sim_total_steps) * 100
 
         SimulationProgress.print_to_xterm(sim_output_line)
 

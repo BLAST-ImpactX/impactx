@@ -183,6 +183,20 @@ class RunToolbar:
         )
 
     @staticmethod
+    def run_simulation_progress_bar() -> vuetify.VBtn:
+        """
+        Displays and updates a progress bar to the dashboard user
+        while running a simulation.
+        """
+        vuetify.VProgressLinear(
+            height=5,
+            striped=True,
+            style="width: 7vw",
+            color=("sim_status_color",),
+            v_model=("sim_progress",),
+        )
+
+    @staticmethod
     def run_simulation_progress_details() -> html.Div:
         """
         Provides dashboard users with simulation progress details,
@@ -245,6 +259,8 @@ class GeneralToolbar:
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
+            (RunToolbar.run_simulation_progress_details(),)
+            (RunToolbar.run_simulation_progress_bar(),)
             (RunToolbar.run_simulation_button(),)
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)

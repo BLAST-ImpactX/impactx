@@ -28,6 +28,8 @@ async def execute_impactx_sim() -> None:
     in real time.
     """
 
+    SimulationHelper.reset()
+
     simulation_contents = input_file()
     state.sim_total_steps = SimulationProgress.determine_sim_total_steps(simulation_contents)
     simulation_process = await SimulationHelper.run_simulation_in_subprocess(
@@ -35,7 +37,6 @@ async def execute_impactx_sim() -> None:
     )
 
     while True:
-        state.sim_is_running = True
         sim_output_line = await simulation_process.stdout.readline()
         sim_output_line_decoded = sim_output_line.decode()
 

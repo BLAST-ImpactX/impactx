@@ -143,6 +143,13 @@ namespace impactx
         //! Destruct a particle container
         virtual ~ImpactXParticleContainer() = default;
 
+        /** Prepares the container for use.
+         *
+         * This sets the tile size to a sensible default and resizes the
+         * underlying data structures.
+         */
+        void prepare ();
+
         /** Add new particles to the container for fixed s.
          *
          * Note: This can only be used *after* the initialization (grids) have

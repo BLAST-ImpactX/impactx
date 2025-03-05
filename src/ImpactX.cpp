@@ -94,13 +94,11 @@ namespace impactx {
         // init blocks / grids & MultiFabs
         amr_data->InitFromScratch(0.0);
 
-        // alloc particle containers
-        //   have to resize here, not in the constructor because grids have not
+        // prepare particle containers
+        //   have to do this here, not in the constructor because grids have not
         //   been built when constructor was called.
-        amr_data->track_particles.m_particle_container->reserveData();
-        amr_data->track_particles.m_particle_container->resizeData();
-        amr_data->track_particles.m_particles_lost->reserveData();
-        amr_data->track_particles.m_particles_lost->resizeData();
+        amr_data->track_particles.m_particle_container->prepare();
+        amr_data->track_particles.m_particles_lost->prepare();
 
         // register shortcut
         amr_data->track_particles.m_particle_container->SetLostParticleContainer(amr_data->track_particles.m_particles_lost.get());

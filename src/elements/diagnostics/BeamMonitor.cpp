@@ -126,11 +126,11 @@ namespace detail {
     {
 #ifdef ImpactX_USE_OPENPMD
         // pick first available backend if default is chosen
-        if( m_OpenPMDFileType == "default" )
+        if (m_OpenPMDFileType == "default")
 #   if openPMD_HAVE_ADIOS2==1
-        m_OpenPMDFileType = "bp";
+        m_OpenPMDFileType = "bp4";
 #   elif openPMD_HAVE_ADIOS1==1
-        m_OpenPMDFileType = "bp";
+        m_OpenPMDFileType = "bp";  // bp3
 #   elif openPMD_HAVE_HDF5==1
         m_OpenPMDFileType = "h5";
 #   else
@@ -139,12 +139,19 @@ namespace detail {
 
         // encoding of iterations in the series
         openPMD::IterationEncoding series_encoding = openPMD::IterationEncoding::groupBased;
-        if ( "v" == encoding )
+        if ("v" == encoding)
             series_encoding = openPMD::IterationEncoding::variableBased;
-        else if ( "g" == encoding )
+        else if ("g" == encoding)
             series_encoding = openPMD::IterationEncoding::groupBased;
-        else if ( "f" == encoding )
+        else if ("f" == encoding)
             series_encoding = openPMD::IterationEncoding::fileBased;
+
+        // BP5 does not support groupBased (metadata explosion)
+        if ((m_OpenPMDFileType == "bp5" || m_OpenPMDFileType == "bp") &&
+            (series_encoding == openPMD::IterationEncoding::groupBased))
+        {
+            throw std::runtime_error("BeamMonitor: groupBased encoding not supported for BP5.");
+        }
 
         amrex::ParmParse pp_diag("diag");
         // turn filter

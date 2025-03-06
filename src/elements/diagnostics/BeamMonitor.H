@@ -77,7 +77,7 @@ namespace detail
          * Elements with the same series name are identical.
          *
          * @param series_name name of the data series, usually the element name
-         * @param backend file format backend for openPMD, e.g., "bp" or "h5"
+         * @param backend file format backend for openPMD, e.g., "bp5", "bp4", or "h5"
          * @param encoding openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
          * @param period_sample_intervals for periodic lattice, only output every Nth period (turn)
          */

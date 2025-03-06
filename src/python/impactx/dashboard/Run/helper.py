@@ -1,4 +1,6 @@
 import asyncio
+import base64
+import os
 import re
 import sys
 import time
@@ -8,6 +10,7 @@ from .. import setup_server
 server, state, ctrl = setup_server()
 
 state.sim_progress_status = ""
+
 
 class SimulationHelper:
     """
@@ -52,6 +55,22 @@ class SimulationHelper:
         state.sim_status_color = "primary"
         state.flush()
 
+    @staticmethod
+    def display_phase_space_plots():
+        """
+        Loads the ImpactX generated phase space plots
+        to the dashboard.
+        """
+
+        if os.path.exists("phase_space_plot.png"):
+            with open("phase_space_plot.png", "rb") as f:
+                image_data = f.read()
+                image_base64 = base64.b64encode(image_data).decode()
+                state.phase_space_png = f"data:image/png;base64, {image_base64}"
+                state.flush()
+            
+            os.remove("phase_space_plot.png")
+
 class SimulationProgress:
     """
     Methods which facilitate providing the dashboard user
@@ -60,16 +79,16 @@ class SimulationProgress:
 
     @state.change("sim_current_step", "sim_total_steps", "sim_is_running", "sim_progress")
     def _update_status(**kwargs):
-        if state.sim_progress == 100:
-            state.sim_progress_status = "Complete!"
-        elif state.sim_is_running:
+        if state.sim_is_running:
             if state.sim_current_step == 0:
                 state.sim_progress_status = "Starting..."
+            elif state.sim_current_step >= state.sim_total_steps:
+                state.sim_progress_status = "Generating plots..."
             else:
                 progress_percent = int(state.sim_progress)
                 state.sim_progress_status = f"Running... ({progress_percent}%)"
-        else:
-            state.sim_progress_status = ""
+        elif state.sim_progress == 100:
+            state.sim_progress_status = "Complete!"
 
     @staticmethod
     def print_to_xterm(content: str) -> None:

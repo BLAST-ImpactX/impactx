@@ -120,6 +120,7 @@ def input_file():
     """
     script = f"""
 from impactx import ImpactX, distribution, elements, twiss
+import matplotlib.pyplot as plt
 
 sim = ImpactX()
 
@@ -147,6 +148,10 @@ sim.lattice.extend(lattice_configuration)
 
 # Simulate
 sim.track_particles()
+
+fig = pc.plot_phasespace()
+if fig is not None:
+    fig.savefig("phase_space_plot.png")
 
 # Clean Shutdown
 sim.finalize()

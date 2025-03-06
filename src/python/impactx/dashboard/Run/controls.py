@@ -34,7 +34,9 @@ async def execute_impactx_sim() -> None:
     SimulationHelper.reset()
 
     simulation_contents = input_file()
-    state.sim_total_steps = SimulationProgress.determine_sim_total_steps(simulation_contents)
+    state.sim_total_steps = SimulationProgress.determine_sim_total_steps(
+        simulation_contents
+    )
     simulation_process = await SimulationHelper.run_simulation_in_subprocess(
         simulation_contents
     )

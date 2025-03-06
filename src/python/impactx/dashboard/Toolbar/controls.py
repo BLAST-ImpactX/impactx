@@ -169,18 +169,24 @@ class RunToolbar:
         load_dataTable_data()
 
     @staticmethod
+    def run_simulation():
+        (RunToolbar.run_simulation_progress_details(),)
+        (RunToolbar.run_simulation_progress_bar(),)
+        (RunToolbar.run_simulation_button(),)
+
+    @staticmethod
     def run_simulation_button() -> vuetify.VBtn:
         """
         Creates a button to run an ImpactX simulation
         with the current user-provided inputs.
         """
         CardComponents.card_button(
-            ["mdi-play-circle","mdi-stop-circle"],
+            ["mdi-play-circle", "mdi-stop-circle"],
             color=("sim_status_color",),
             click=ctrl.begin_sim,
             description="Run Simulation",
             dynamic_condition="sim_is_running",
-            disabled=("disableRunSimulationButton || sim_is_running", True)
+            disabled=("disableRunSimulationButton || sim_is_running", True),
         )
 
     @staticmethod
@@ -199,7 +205,7 @@ class RunToolbar:
             )
             html.Div(
                 "{{ sim_progress_status }}",
-                style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; color: grey; margin-top: 4px;"
+                style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; color: grey; margin-top: 4px;",
             )
 
     @staticmethod
@@ -208,11 +214,12 @@ class RunToolbar:
         Provides dashboard users with simulation progress details,
         such as the current step and the time elapsed in the simulation.
         """
-        
+
         return html.Div(
             "Step {{ sim_current_step }} • {{ sim_elapsed_time }}s",
-            style="margin-right: 8px;"
+            style="margin-right: 8px;",
         )
+
 
 class AnalyzeToolbar:
     """
@@ -265,9 +272,7 @@ class GeneralToolbar:
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
-            (RunToolbar.run_simulation_progress_details(),)
-            (RunToolbar.run_simulation_progress_bar(),)
-            (RunToolbar.run_simulation_button(),)
+            (RunToolbar.run_simulation(),)
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()

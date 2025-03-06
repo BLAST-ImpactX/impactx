@@ -68,8 +68,9 @@ class SimulationHelper:
                 image_base64 = base64.b64encode(image_data).decode()
                 state.phase_space_png = f"data:image/png;base64, {image_base64}"
                 state.flush()
-            
+
             os.remove("phase_space_plot.png")
+
 
 class SimulationProgress:
     """
@@ -77,7 +78,9 @@ class SimulationProgress:
     simulation progress
     """
 
-    @state.change("sim_current_step", "sim_total_steps", "sim_is_running", "sim_progress")
+    @state.change(
+        "sim_current_step", "sim_total_steps", "sim_is_running", "sim_progress"
+    )
     def _update_status(**kwargs):
         if state.sim_is_running:
             if state.sim_current_step == 0:
@@ -116,7 +119,7 @@ class SimulationProgress:
         Sum of nslices is sim_total_step
         """
 
-        nslice_matches = re.findall(r'nslice=(\d+)', simulation_content_file)
+        nslice_matches = re.findall(r"nslice=(\d+)", simulation_content_file)
 
         if nslice_matches:
             state.sim_total_steps = sum(int(match) for match in nslice_matches)

@@ -239,11 +239,11 @@ class LatticeConfiguration(CardBase):
 
     def card_content(self):
         self.init_settings_dialog()
-        with vuetify.VCard(style=self.collapsable):
+        with vuetify.VCard(**self.card_props):
             CardComponents.input_header(
                 self.HEADER_NAME,
                 additional_components={
-                    "start": LatticeConfigurationHelper.settings,
+                    "end": LatticeConfigurationHelper.settings,
                 },
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
@@ -274,25 +274,23 @@ class LatticeConfiguration(CardBase):
                         LatticeConfigurationHelper.delete_element()
                     with vuetify.VCol(cols="auto"):
                         vuetify.VChip(
-                            v_text=("latticeElement.name",),
-                            dense=True,
-                            classes="mr-2",
+                            text=("latticeElement.name",),
                             style="justify-content: center",
                         )
                     with vuetify.VCol(
                         v_for="(parameter, parameterIndex) in latticeElement.parameters",
                         cols="auto",
-                        classes="pa-2",
                     ):
                         vuetify.VTextField(
                             label=("parameter.parameter_name",),
                             v_model=("parameter.parameter_default_value",),
-                            change=(
+                            update_modelValue=(
                                 ctrl.updateLatticeElementParameters,
                                 "[index, parameter.parameter_name, $event, parameter.parameter_type]",
                             ),
                             error_messages=("parameter.parameter_error_message",),
-                            dense=True,
+                            density="comfortable",
+                            variant="underlined",
                             style="width: 100px;",
                         )
 
@@ -308,17 +306,17 @@ class LatticeConfiguration(CardBase):
         """
         dialog_name = "lattice_configuration_dialog_tab_settings"
 
-        NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"])
-        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol(cols=3):
-                            InputComponents.text_field(
-                                label="nslice",
-                                v_model_name="nslice",
-                                change=(
-                                    ctrl.nsliceDefaultChange,
-                                    "['nslice', $event]",
-                                ),
-                            )
+        with NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"]):
+            with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+                with vuetify.VTabsWindowItem():
+                    with vuetify.VCardText():
+                        with vuetify.VRow():
+                            with vuetify.VCol(cols=3):
+                                InputComponents.text_field(
+                                    label="nslice",
+                                    v_model_name="nslice",
+                                    change=(
+                                        ctrl.nsliceDefaultChange,
+                                        "['nslice', $event]",
+                                    ),
+                                )

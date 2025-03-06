@@ -29,7 +29,7 @@ class InputParameters(CardBase):
             InputFunctions.update_kin_energy_sim_value()
 
     def card_content(self):
-        with vuetify.VCard(style=self.collapsable):
+        with vuetify.VCard(**self.card_props):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):

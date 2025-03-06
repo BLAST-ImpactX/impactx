@@ -183,12 +183,10 @@ class SpaceChargeConfiguration(CardBase):
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard(style=self.collapsable):
+        with vuetify.VCard(**self.card_props):
             CardComponents.input_header(
                 self.HEADER_NAME,
-                additional_components={
-                    "start": SpaceChargeFunctions.multigrid_settings
-                },
+                additional_components={"end": SpaceChargeFunctions.multigrid_settings},
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
@@ -214,27 +212,26 @@ class SpaceChargeConfiguration(CardBase):
                                     prefix=f"{direction}:",
                                 )
                 with vuetify.VRow(**self.ROW_STYLE):
-                    for i in range(3):
-                        with vuetify.VCol(cols=4):
-                            with vuetify.VRow(
-                                v_for="(field, index) in prob_relative_fields",
-                                v_if=f"index % 3 == {i}",
-                                **self.ROW_STYLE,
-                            ):
-                                with vuetify.VCol():
-                                    vuetify.VTextField(
-                                        label=("index === 0 ? 'prob_relative' : ''",),
-                                        v_model=("field.value",),
-                                        input=(
-                                            ctrl.update_prob_relative,
-                                            "[index, $event]",
-                                        ),
-                                        error_messages=("field.error_message",),
-                                        type="number",
-                                        step=("field.step",),
-                                        __properties=["step"],
-                                        dense=True,
-                                    )
+                    with vuetify.VCol(
+                        cols=4,
+                        v_for="(field, index) in prob_relative_fields",
+                        **self.ROW_STYLE,
+                    ):
+                        vuetify.VTextField(
+                            label=("index === 0 ? 'prob_relative' : ''",),
+                            v_model=("field.value",),
+                            update_modelValue=(
+                                ctrl.update_prob_relative,
+                                "[index, $event]",
+                            ),
+                            error_messages=("field.error_message",),
+                            type="number",
+                            step=("field.step",),
+                            __properties=["step"],
+                            density="compact",
+                            variant="underlined",
+                            hide_details="auto",
+                        )
 
     @staticmethod
     def dialog_settings():
@@ -243,27 +240,27 @@ class SpaceChargeConfiguration(CardBase):
         settings.
         """
         dialog_name = "space_charge_dialog_tab_settings"
-        NavigationComponents.create_dialog_tabs(
+        with NavigationComponents.create_dialog_tabs(
             dialog_name, 1, ["Advanced Multigrid Settings"]
-        )
-        with vuetify.VTabsItems(v_model=("dialog_name", 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Relative Tolerance",
-                            )
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Absolute Tolerance",
-                            )
-                    with vuetify.VRow():
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Max Iters",
-                            )
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Verbosity",
-                            )
+        ):
+            with vuetify.VTabsWindow(v_model=("dialog_name", 0)):
+                with vuetify.VTabsWindowItem():
+                    with vuetify.VCardText():
+                        with vuetify.VRow():
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Relative Tolerance",
+                                )
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Absolute Tolerance",
+                                )
+                        with vuetify.VRow():
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Max Iters",
+                                )
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Verbosity",
+                                )

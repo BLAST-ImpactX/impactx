@@ -21,9 +21,10 @@ class SpaceChargeFunctions:
     def multigrid_settings():
         CardComponents.card_button(
             "mdi-cog",
-            color="secondary",
+            color="grey-darken-2",
             click="space_charge_dialog_settings = true",
             v_if="poisson_solver == 'multigrid'",
+            documentation="Settings",
         )
 
     @staticmethod

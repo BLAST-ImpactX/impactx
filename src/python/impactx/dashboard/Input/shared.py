@@ -57,7 +57,7 @@ class SharedUtilities:
     @state.change(*DashboardDefaults.COLLAPSABLE_SECTIONS)
     def on_collapsable_section_change(**kwargs):
         max_height = "1000px"
-        min_height = "64px"
+        min_height = "3.75rem"
 
         state_changes = state.modified_keys & set(
             DashboardDefaults.COLLAPSABLE_SECTIONS

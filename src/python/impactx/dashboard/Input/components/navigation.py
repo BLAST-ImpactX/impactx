@@ -13,7 +13,7 @@ class NavigationComponents:
     """
 
     @staticmethod
-    def create_route(route_title: str, mdi_icon: str) -> None:
+    def create_route(route_title: str, mdi_icon: str) -> vuetify.VListItem:
         """
         Creates a route with specified title and icon.
 
@@ -25,11 +25,13 @@ class NavigationComponents:
         to = f"/{route_title}"
         click = f"{route_title} = true"
 
-        with vuetify.VListItem(to=to, click=click):
-            with vuetify.VListItemIcon():
-                vuetify.VIcon(mdi_icon)
-            with vuetify.VListItemContent():
-                vuetify.VListItemTitle(route_title)
+        return vuetify.VListItem(
+            to=to,
+            click=click,
+            prepend_icon=mdi_icon,
+            title=route_title,
+            style="height: 3rem;",
+        )
 
     @staticmethod
     def create_dialog_tabs(name: str, num_tabs: int, tab_names: list[str]) -> None:
@@ -43,23 +45,25 @@ class NavigationComponents:
         if len(tab_names) != num_tabs:
             raise ValueError("Number of tab names must match number of tabs_names")
 
-        with vuetify.VCard():
+        card = vuetify.VCard()
+        with card:
             with vuetify.VTabs(v_model=(f"{name}", 0)):
                 for tab_name in tab_names:
                     vuetify.VTab(tab_name)
             vuetify.VDivider()
+        return card
 
     @staticmethod
     def create_documentation_drawer():
         with vuetify.VNavigationDrawer(
-            v_model=("documentation_drawer_open",),
-            absolute=True,
-            right=True,
-            hide_overlay=True,
-            style="width: 30vw; top: 64px !important;  position: fixed;",
+            model_value=("documentation_drawer_open",),
+            location="right",
+            temporary=True,
+            scrim=False,
+            style="z-index: 10",
+            width=500,
         ):
             with vuetify.VContainer(
-                fluid=True,
                 classes="pa-0 fill-height",
             ):
                 html.Iframe(

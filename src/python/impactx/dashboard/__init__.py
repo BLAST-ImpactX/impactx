@@ -1,5 +1,5 @@
 from trame.widgets import html
-from trame.widgets import vuetify as vuetify
+from trame.widgets import vuetify3 as vuetify
 
 # isort: off
 

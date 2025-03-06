@@ -181,7 +181,7 @@ class DistributionParameters(CardBase):
         """
         Creates UI content for beam distribution.
         """
-        with vuetify.VCard(style=self.collapsable):
+        with vuetify.VCard(**self.card_props):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
@@ -198,27 +198,23 @@ class DistributionParameters(CardBase):
                             disabled=("distribution_type_disable",),
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
-                    for i in range(3):
-                        with vuetify.VCol(cols=4):
-                            with vuetify.VRow(
-                                v_for="(parameter, index) in selected_distribution_parameters",
-                                v_if=f"index % 3 == {i}",
-                                **self.ROW_STYLE,
-                            ):
-                                with vuetify.VCol():
-                                    vuetify.VTextField(
-                                        label=("parameter.parameter_name",),
-                                        v_model=("parameter.parameter_default_value",),
-                                        suffix=("parameter.parameter_units",),
-                                        change=(
-                                            ctrl.updateDistributionParameters,
-                                            "[parameter.parameter_name, $event, parameter.parameter_type]",
-                                        ),
-                                        error_messages=(
-                                            "parameter.parameter_error_message",
-                                        ),
-                                        type="number",
-                                        step=("parameter.parameter_step",),
-                                        __properties=["step"],
-                                        dense=True,
-                                    )
+                    with vuetify.VCol(
+                        v_for="(parameter, index) in selected_distribution_parameters",
+                        cols=4,
+                    ):
+                        vuetify.VTextField(
+                            label=("parameter.parameter_name",),
+                            v_model=("parameter.parameter_default_value",),
+                            suffix=("parameter.parameter_units",),
+                            update_modelValue=(
+                                ctrl.updateDistributionParameters,
+                                "[parameter.parameter_name, $event, parameter.parameter_type]",
+                            ),
+                            error_messages=("parameter.parameter_error_message",),
+                            type="number",
+                            step=("parameter.parameter_step",),
+                            __properties=["step"],
+                            density="compact",
+                            variant="underlined",
+                            hide_details="auto",
+                        )

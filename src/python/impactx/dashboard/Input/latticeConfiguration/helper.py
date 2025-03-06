@@ -9,7 +9,8 @@ class LatticeConfigurationHelper:
     Helper class to build the Lattice Configuration section of the dashboard
     """
 
-    BUTTON_COLOR = "secondary"
+    BUTTON_COLOR = "grey-darken-2"
+    BUTTON_COLOR_LIGHTER = "grey-darken-1"
 
     @staticmethod
     def settings() -> vuetify.VBtn:
@@ -21,6 +22,7 @@ class LatticeConfigurationHelper:
             "mdi-cog",
             color=LatticeConfigurationHelper.BUTTON_COLOR,
             click="lattice_configuration_dialog_settings = true",
+            documentation="Settings",
         )
 
     @staticmethod
@@ -32,7 +34,7 @@ class LatticeConfigurationHelper:
 
         CardComponents.card_button(
             "mdi-menu-up",
-            color=LatticeConfigurationHelper.BUTTON_COLOR,
+            color=LatticeConfigurationHelper.BUTTON_COLOR_LIGHTER,
             click=(ctrl.move_latticeElementIndex_up, "[index]"),
         )
 
@@ -45,7 +47,7 @@ class LatticeConfigurationHelper:
 
         CardComponents.card_button(
             "mdi-menu-down",
-            color=LatticeConfigurationHelper.BUTTON_COLOR,
+            color=LatticeConfigurationHelper.BUTTON_COLOR_LIGHTER,
             click=(ctrl.move_latticeElementIndex_down, "[index]"),
         )
 

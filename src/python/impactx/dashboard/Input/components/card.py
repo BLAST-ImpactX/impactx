@@ -1,4 +1,4 @@
-from ... import setup_server, vuetify
+from ... import html, setup_server, vuetify
 from ..defaults import UIDefaults
 from ..generalFunctions import generalFunctions
 
@@ -18,6 +18,8 @@ class CardBase(UIDefaults):
     def __init__(self):
         self.header = self.HEADER_NAME.lower().replace(" ", "_")
         self.collapsable = (f"collapse_{self.header}_height",)
+
+        self.card_props = {"elevation": 2, "style": self.collapsable}
 
     def card(self):
         """
@@ -67,19 +69,24 @@ class CardComponents:
             if additional_components and position in additional_components:
                 additional_components[position]()
 
-        with vuetify.VCardTitle(section_name):
+        with vuetify.VCardTitle(
+            section_name,
+            classes="d-flex align-center flex-wrap",
+            style="min-height: 3.75rem;",
+        ):
             vuetify.VSpacer()
-            render_components("start")
-            CardComponents.refresh_button(section_name_cleaned)
-            CardComponents.documentation_button(section_name_cleaned)
-            CardComponents.collapse_button(section_name_cleaned)
-            CardComponents.expand_button(section_name_cleaned)
-            render_components("end")
+            with html.Div(classes="d-flex", gap="2px"):
+                render_components("start")
+                CardComponents.documentation_button(section_name_cleaned)
+                CardComponents.refresh_button(section_name_cleaned)
+                CardComponents.collapse_button(section_name_cleaned)
+                CardComponents.expand_button(section_name_cleaned)
+                render_components("end")
         vuetify.VDivider()
 
     @staticmethod
     def card_button(
-        icon_name, color="primary", dynamic_condition=None, **kwargs
+        icon_name, color="primary", dynamic_condition=None, description=None, **kwargs
     ) -> vuetify.VBtn:
         """
         Create a Vuetify VBtn containing an icon.
@@ -90,19 +97,23 @@ class CardComponents:
         :param kwargs: Extra keyword arguments for the VBtn component.
         """
 
-        with vuetify.VBtn(
-            color=color,
-            icon=True,
-            small=True,
-            **kwargs,
-        ):
-            if isinstance(icon_name, (list, tuple)):
-                with vuetify.Template(v_if=dynamic_condition):
-                    vuetify.VIcon(icon_name[1])
-                with vuetify.Template(v_else=True):
-                    vuetify.VIcon(icon_name[0])
-            else:
-                vuetify.VIcon(icon_name)
+        with vuetify.VTooltip(location="bottom", text=description):
+            with vuetify.Template(v_slot_activator="{ props }"):
+                with vuetify.VBtn(
+                    color=color,
+                    icon=True,
+                    density="compact",
+                    variant="text",
+                    v_bind="props",
+                    **kwargs,
+                ):
+                    if isinstance(icon_name, (list, tuple)):
+                        with vuetify.Template(v_if=dynamic_condition):
+                            vuetify.VIcon(icon_name[1])
+                        with vuetify.Template(v_else=True):
+                            vuetify.VIcon(icon_name[0])
+                    else:
+                        vuetify.VIcon(icon_name)
 
     @staticmethod
     def documentation_button(section_name: str) -> vuetify.VBtn:
@@ -116,6 +127,7 @@ class CardComponents:
             "mdi-information",
             color="#00313C",
             click=lambda: generalFunctions.open_documentation(section_name),
+            description="Documentation",
         )
 
     @staticmethod
@@ -130,6 +142,7 @@ class CardComponents:
             "mdi-refresh",
             color="#00313C",
             click=lambda: generalFunctions.reset_inputs(section_name),
+            description="Reset",
         )
 
     @staticmethod
@@ -146,6 +159,7 @@ class CardComponents:
             ["mdi-arrow-expand", "mdi-close"],
             click=f"{expand_state} = !{expand_state}",
             dynamic_condition=expand_state,
+            description="Expand",
         )
 
     @staticmethod
@@ -164,4 +178,5 @@ class CardComponents:
             ["mdi-chevron-up", "mdi-chevron-down"],
             click=f"{collapsed_state_name} = !{collapsed_state_name}",
             dynamic_condition=collapsed_state_name,
+            description="Collapse",
         )

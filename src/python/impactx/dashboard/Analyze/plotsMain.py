@@ -197,13 +197,17 @@ class AnalyzeSimulation:
                         items=("headers_without_step_or_s",),
                         label="Select data to view",
                         multiple=True,
+                        item_title="title",
+                        item_value="key",
+                        density="compact",
+                        variant="underlined",
                     )
                     vuetify.VDivider()
                     vuetify.VDataTable(
                         headers=("filtered_headers",),
                         items=("filtered_data",),
                         header_class="centered-header",
-                        dense=True,
+                        density="compact",
                         height="325px",
                     )
 
@@ -222,13 +226,13 @@ class AnalyzeSimulation:
                         vuetify.VTab("Plot")
                         vuetify.VTab("Interact")
                     vuetify.VDivider()
-                    with vuetify.VTabsItems(v_model="active_tab"):
-                        with vuetify.VTabItem():
+                    with vuetify.VTabsWindow(v_model="active_tab"):
+                        with vuetify.VTabsWindowItem():
                             vuetify.VImg(
                                 v_if=("phase_space_png",), src=("phase_space_png",)
                             )
 
-                        with vuetify.VTabItem():
+                        with vuetify.VTabsWindowItem():
                             with vuetify.VContainer(
                                 style="height: 37vh; width: 147vh;"
                             ):

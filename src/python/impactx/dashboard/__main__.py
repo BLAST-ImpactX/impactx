@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import sys
 
 from trame.ui.router import RouterViewLayout
-from trame.ui.vuetify import SinglePageWithDrawerLayout
+from trame.ui.vuetify3 import SinglePageWithDrawerLayout
 from trame.widgets import router, xterm
 
 from . import (
@@ -27,6 +27,10 @@ from . import (
 from .start import main
 
 server, state, ctrl = setup_server()
+
+server.enable_module(
+    {"styles": ["https://fonts.googleapis.com/css?family=Roboto:300,400,500"]}
+)
 
 from pathlib import Path
 
@@ -105,7 +109,7 @@ def application():
         with layout.drawer as drawer:
             drawer.width = 200
             with vuetify.VList():
-                vuetify.VSubheader("Simulation")
+                vuetify.VListSubheader("Simulation")
             NavigationComponents.create_route("Input", "mdi-file-edit")
             NavigationComponents.create_route("Run", "mdi-play")
             NavigationComponents.create_route("Analyze", "mdi-chart-box-multiple")

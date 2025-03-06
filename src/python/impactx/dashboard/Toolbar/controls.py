@@ -10,6 +10,7 @@ from trame.widgets import html
 
 from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
+from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
 from ..Run.controls import execute_impactx_sim
 from .exportTemplate import input_file
@@ -73,27 +74,25 @@ class InputToolbar:
         containing the user's current input values.
         """
 
-        with vuetify.VBtn(
+        return vuetify.VBtn(
+            "Export",
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
-            outlined=True,
-            small=True,
+            variant="outlined",
+            size="small",
             disabled=("disableRunSimulationButton", True),
             classes="mx-2",
-        ):
-            vuetify.VIcon("mdi-download", left=True, small=True)
-            html.Span("Export")
+            prepend_icon="mdi-download",
+            color="#00313C",
+        )
 
     @staticmethod
     def collapse_all_sections_button():
-        with vuetify.VBtn(
+        CardComponents.card_button(
+            ["mdi-collapse-all", "mdi-expand-all"],
             click=ctrl.collapse_all_sections,
-            color="primary",
-            icon=True,
-            small=True,
-        ):
-            vuetify.VIcon(
-                v_text=("expand_all_sections ? 'mdi-collapse-all' : 'mdi-expand-all'",)
-            )
+            dynamic_condition="expand_all_sections",
+            description="Collapse all",
+        )
 
     @staticmethod
     def import_button() -> None:
@@ -109,22 +108,17 @@ class InputToolbar:
             style="display: none;",
             ref="fileInput",
         )
-        with html.Div(
-            style="position: relative",
-        ):
+        with html.Div(style="position: relative;"):
             with vuetify.VBtn(
-                click="$refs.fileInput.$refs.input.click()",
-                outlined=True,
-                small=True,
+                "Import",
+                click="trame.refs.fileInput.click()",
+                size="small",
+                variant="outlined",
+                prepend_icon="mdi-upload",
                 disabled=("(import_file_details)",),
-                color=("import_file_error ? 'error' : ''",),
+                color=("import_file_error ? 'error' : '#00313C'",),
             ):
-                vuetify.VIcon(
-                    "mdi-upload",
-                    left=True,
-                    small=True,
-                )
-                html.Span("Import")
+                pass
             with html.Div(
                 style="position: absolute; font-size: 10px; width: 100%; padding-top: 2px; display: flex; justify-content: center; white-space: nowrap;"
             ):
@@ -151,14 +145,15 @@ class InputToolbar:
         default values.
         """
 
-        with vuetify.VBtn(
+        return vuetify.VBtn(
+            "Reset",
             click=ctrl.reset_all,
-            outlined=True,
-            small=True,
+            variant="outlined",
+            size="small",
+            prepend_icon="mdi-refresh",
             classes="mr-4",
-        ):
-            vuetify.VIcon("mdi-refresh", left=True)
-            html.Span("Reset")
+            color="#00313C",
+        )
 
 
 class RunToolbar:
@@ -205,7 +200,8 @@ class AnalyzeToolbar:
             items=("plot_options",),
             label="Select plot to view",
             hide_details=True,
-            dense=True,
+            density="compact",
+            variant="underlined",
             style="max-width: 250px",
             disabled=("disableRunSimulationButton", True),
         )
@@ -257,7 +253,7 @@ class GeneralToolbar:
             "ImpactX Dashboard is provided as a preview and continues to be developed. "
             "Thus, it may not yet include all the features available in ImpactX.",
             type="info",
-            dense=True,
+            density="compact",
             dismissible=True,
             v_model=("show_dashboard_alert", True),
             classes="text-body-2 hidden-md-and-down",

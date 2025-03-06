@@ -677,8 +677,9 @@ This module provides elements for the accelerator lattice.
    A general thin multipole element.
 
    :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
-   :param K_normal: Integrated normal multipole coefficient (1/meter^m)
-   :param K_skew: Integrated skew multipole coefficient (1/meter^m)
+   :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
+                    = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
+   :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

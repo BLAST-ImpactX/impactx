@@ -179,8 +179,5 @@ namespace impactx
                 output_lost.finalize();
             }
         }
-
-        // loop over all beamline elements & finalize them
-        finalize_elements();
     }
 } // namespace impactx

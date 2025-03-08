@@ -210,8 +210,5 @@ namespace impactx
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(cm, ref, "diags/reduced_beam_characteristics_final", step);
         }
-
-        // loop over all beamline elements & finalize them
-        finalize_elements();
     }
 } // namespace impactx

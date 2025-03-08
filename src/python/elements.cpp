@@ -8,6 +8,9 @@
 #include <particles/Push.H>
 #include <elements/All.H>
 #include <elements/mixin/lineartransport.H>
+#include <elements/transformation/Insert.H>
+
+#include <AMReX.H>
 
 #include <AMReX_REAL.H>
 
@@ -18,6 +21,7 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <particles/transformation/CoordinateTransformation.H>
 
 namespace py = pybind11;
 using namespace impactx;
@@ -390,6 +394,7 @@ void init_elements(py::module& m)
             },
             "Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I."
         )
+        .def("finalize", &diagnostics::BeamMonitor::finalize)
     ;
     register_push(py_BeamMonitor);
 
@@ -2107,4 +2112,20 @@ void init_elements(py::module& m)
             return py::make_iterator(v.begin(), v.end());
         }, py::keep_alive<0, 1>()) /* Keep list alive while iterator is used */
     ;
+
+
+    // lattice transformations
+    py::module_ met = me.def_submodule(
+        "transformation",
+        "Transform and modify lattices"
+    );
+
+    met.def(
+        "insert_element_every_ds",
+        &impactx::elements::transformation::insert_element_every_ds,
+        py::arg("list"),
+        py::arg("ds"),
+        py::arg("element"),
+        "Insert an element every s into an element list"
+    );
 }

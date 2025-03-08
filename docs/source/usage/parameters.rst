@@ -382,9 +382,9 @@ This requires these additional parameters:
 * ``<element_name>.multipole`` (``integer``, dimensionless) order of multipole
   (m = 1) dipole, (m = 2) quadrupole, (m = 3) sextupole, etc.
 
-* ``<element_name>.k_normal`` (``float``, in 1/meters^m) integrated normal multipole coefficient (MAD-X convention)
-  = 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
-* ``<element_name>.k_skew`` (``float``, in 1/meters^m) integrated skew multipole strength (MAD-X convention)
+* ``<element_name>.k_normal`` (``float``, in meters^(-m+1)) integrated normal multipole coefficient (MAD-X convention)
+  = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
+* ``<element_name>.k_skew`` (``float``, in 1/meters^(-m+1)) integrated skew multipole strength (MAD-X convention)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

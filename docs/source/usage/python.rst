@@ -536,6 +536,8 @@ This module provides elements for the accelerator lattice.
       :param madx_file: file name to MAD-X file with beamline elements
       :param nslice: number of slices used for the application of space charge
 
+Every lattice element provides a ``.to_dict()`` method, which can be used to serialize its configuration.
+
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.

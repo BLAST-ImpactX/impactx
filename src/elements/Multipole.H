@@ -39,6 +39,20 @@ namespace impactx::elements
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        /** compute factorial of multipole index
+         *
+         * Needs to be called whenever m_multipole is changed.
+         */
+        void
+        compute_factorial ()
+        {
+            int const m = m_multipole - 1;
+            m_mfactorial = 1;
+            for( int n = 1; n < m + 1; n = n + 1 ) {
+                m_mfactorial *= n;
+            }
+        }
+
         /** A general thin multipole element
          *
          * @param multipole index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
@@ -62,12 +76,7 @@ namespace impactx::elements
           Alignment(dx, dy, rotation_degree),
           m_multipole(multipole), m_Kn(K_normal), m_Ks(K_skew)
         {
-            // compute factorial of multipole index
-            int const m = m_multipole - 1;
-            m_mfactorial = 1;
-            for( int n = 1; n < m + 1; n = n + 1 ) {
-               m_mfactorial *= n;
-            }
+            compute_factorial();
         }
 
         /** Push all particles */
@@ -189,12 +198,13 @@ namespace impactx::elements
         }
 
         int m_multipole; //! multipole index
-        int m_mfactorial; //! factorial of multipole index
         amrex::ParticleReal m_Kn; //! integrated normal multipole coefficient
         amrex::ParticleReal m_Ks; //! integrated skew multipole coefficient
 
       private:
-        // constants that are independent of the individually tracked particle,
+        // constants that are independent of the individually tracked particle
+        // see: compute_factorial() to refresh
+        int m_mfactorial;  //! factorial of multipole index
         // see: compute_constants() to refresh
         amrex::GpuComplex<amrex::ParticleReal> m_alpha;
         amrex::ParticleReal m_inv_factorial;

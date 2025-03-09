@@ -25,6 +25,8 @@
 namespace io = openPMD;
 #endif
 
+#include <filesystem>
+#include <fstream>  // for std::ofstream
 #include <string>
 #include <utility>
 #include <vector>
@@ -162,21 +164,21 @@ namespace detail {
         // Ensure m_series is the same for the same names.
         if (m_unique_series.count(m_series_name) == 0u) {
             std::string filepath = "diags/openPMD/";
-            filepath.append(m_series_name);
+            std::string filename = m_series_name;
 
             if (series_encoding == openPMD::IterationEncoding::fileBased)
             {
                 std::string const fileSuffix = std::string("_%0") + std::to_string(m_file_min_digits) + std::string("T");
-                filepath.append(fileSuffix);
+                filename.append(fileSuffix);
             }
-            filepath.append(".").append(m_OpenPMDFileType);
+            filename.append(".").append(m_OpenPMDFileType);
 
             // transform paths for Windows
 #   ifdef _WIN32
             filepath = openPMD::auxiliary::replace_all(filepath, "/", "\\");
 #   endif
 
-            auto series = io::Series(filepath, io::Access::CREATE
+            auto series = io::Series(filepath + filename, io::Access::CREATE
 #   if openPMD_HAVE_MPI==1
                 , amrex::ParallelDescriptor::Communicator()
 #   endif
@@ -186,6 +188,16 @@ namespace detail {
             series.setIterationEncoding( series_encoding );
             m_series = series;
             m_unique_series[m_series_name] = series;
+
+            // create a little helper file for ParaView 5.9+
+            if (amrex::ParallelDescriptor::IOProcessor())
+            {
+                std::filesystem::create_directories(filepath);
+                std::ofstream pv_helper_file(filepath + "paraview.pmd");
+                AMREX_ALWAYS_ASSERT_WITH_MESSAGE(pv_helper_file.is_open(), "Could not open paraview.pmd file.");
+                pv_helper_file << filename << "\n";
+                pv_helper_file.close();
+            }
         }
         else {
             m_series = m_unique_series[m_series_name];
@@ -231,6 +243,9 @@ namespace detail {
         io::Datatype const dtype_ui = io::determineDatatype<uint64_t>();
         auto d_fl = io::Dataset(dtype_fl, {np});
         auto d_ui = io::Dataset(dtype_ui, {np});
+
+        // openPMD 1.* needs "seconds" here, but we fake it as "s"
+        iteration.setTime(ref_part.s);
 
         // reference particle information
         beam.setAttribute( "beta_ref", ref_part.beta() );

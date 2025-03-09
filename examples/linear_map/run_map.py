@@ -98,7 +98,7 @@ sim.lattice.extend(map)
 sim.periods = 4
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

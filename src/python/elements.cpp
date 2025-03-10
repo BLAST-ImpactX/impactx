@@ -8,9 +8,12 @@
 #include <particles/Push.H>
 #include <elements/All.H>
 #include <elements/mixin/lineartransport.H>
-#include <AMReX.H>
 
+#include <AMReX_REAL.H>
+
+#include <map>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <variant>

@@ -128,7 +128,7 @@ def plot_beam_df(
     axT,
     unit=1e6,
     unit_z=1e3,
-    unit_label="$\mu$m",
+    unit_label=r"$\mu$m",
     unit_z_label="mm",
     alpha=1.0,
     cmap=None,

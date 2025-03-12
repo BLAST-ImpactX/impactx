@@ -22,7 +22,7 @@ namespace impactx::envelope::spacecharge
 {
 
     /** Function to return the Carlson elliptic integral denoted
-     *  by RD(x,y,z).  This is a slight modification of
+     *  by RD(x,y,z).  This is a reimplementation of
      *  the C++ function written by John Burkardt (GNU LGPL license):
      *
      *  https://people.math.sc.edu/Burkardt/cpp_src

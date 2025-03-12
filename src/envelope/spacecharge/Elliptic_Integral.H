@@ -87,7 +87,7 @@ namespace impactx::envelope::spacecharge
       //
       //  `lolim` and `uplim` determine the range of valid arguments.
       //  `lolim` is not less than 2 / (machine machimum) ^ (2/3).
-      //  `uplim` is not greater than (0.1 * errtol / machine minimum)^(2/3), 
+      //  `uplim` is not greater than (0.1 * errtol / machine minimum)^(2/3),
       //
         if (
           x < 0.0_prt ||
@@ -101,7 +101,7 @@ namespace impactx::envelope::spacecharge
           ablastr::warn_manager::WMRecordWarning(
               "algo.space_charge",
               "Invalid input arguments in function Elliptic_RD.",
-              ablastr::warn_manager::WarnPriority::high); 
+              ablastr::warn_manager::WarnPriority::high);
           value = 0.0_prt;
         }
 

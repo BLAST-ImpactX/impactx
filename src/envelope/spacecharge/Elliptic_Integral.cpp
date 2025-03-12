@@ -17,6 +17,7 @@
 #include <AMReX_Print.H>
 
 #include <cmath>
+#include <type_traits>
 
 namespace impactx::envelope::spacecharge
 {
@@ -42,13 +43,13 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal ef;
         amrex::ParticleReal epslon;
         amrex::ParticleReal lamda;
-        amrex::ParticleReal const lolim = 6.0E-51;
+        amrex::ParticleReal const lolim = std::is_same_v<amrex::ParticleReal, float> ? 1.0E-30 : 6.0E-51;
         amrex::ParticleReal mu;
         amrex::ParticleReal power4;
         amrex::ParticleReal sigma;
         amrex::ParticleReal s1;
         amrex::ParticleReal s2;
-        amrex::ParticleReal const uplim = 1.0E+48;
+        amrex::ParticleReal const uplim = std::is_same_v<amrex::ParticleReal, float> ? 1.0E+30 : 1.0E+48;
         amrex::ParticleReal value;
         amrex::ParticleReal xn;
         amrex::ParticleReal xndev;

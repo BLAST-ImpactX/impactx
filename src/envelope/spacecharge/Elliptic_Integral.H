@@ -27,7 +27,7 @@ namespace impactx::envelope::spacecharge
      *
      * Bille Carlson,
      * Computing Elliptic Integrals by Duplication,
-     * Numerische Mathematik,  
+     * Numerische Mathematik,
      * Volume 33, 1979, pages 1-16.
      *
      * Bille Carlson, Elaine Notis,
@@ -43,7 +43,7 @@ namespace impactx::envelope::spacecharge
      */
     amrex::ParticleReal
     Elliptic_RD (
-        amrex::ParticleReal x, 
+        amrex::ParticleReal x,
         amrex::ParticleReal y,
         amrex::ParticleReal z,
         amrex::ParticleReal errtol

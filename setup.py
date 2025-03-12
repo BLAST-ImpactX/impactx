@@ -94,9 +94,8 @@ class CMakeBuild(build_ext):
             #'-DImpactX_PARTICLES_PRECISION=' + ImpactX_PARTICLES_PRECISION,
             "-DImpactX_PYTHON:BOOL=ON",
             ## dependency control (developers & package managers)
-            #'-DImpactX_pyamrex_internal=' + ImpactX_pyamrex_internal,
-            #'-DImpactX_pyamrex_repo=' + ImpactX_pyamrex_repo,
-            #'-DImpactX_pyamrex_branch=' + ImpactX_pyamrex_branch,
+            "-DImpactX_amrex_internal=" + ImpactX_amrex_internal,
+            "-DImpactX_pyamrex_internal=" + ImpactX_pyamrex_internal,
             # PEP-440 conformant version from package
             "-DpyImpactX_VERSION_INFO=" + self.distribution.get_version(),
             #        see PICSAR and openPMD below
@@ -111,8 +110,16 @@ class CMakeBuild(build_ext):
         # further dependency control (developers & package managers)
         if ImpactX_amrex_src:
             cmake_args.append("-DImpactX_amrex_src=" + ImpactX_amrex_src)
-        # if ImpactX_pyamrex_src:
-        #    cmake_args.append('-DImpactX_pyamrex_src=' + ImpactX_pyamrex_src)
+        if ImpactX_pyamrex_src:
+            cmake_args.append("-DImpactX_pyamrex_src=" + ImpactX_pyamrex_src)
+        if ImpactX_amrex_repo:
+            cmake_args.append("-DImpactX_amrex_repo=" + ImpactX_amrex_repo)
+        if ImpactX_pyamrex_repo:
+            cmake_args.append("-DImpactX_pyamrex_repo=" + ImpactX_pyamrex_repo)
+        if ImpactX_amrex_branch:
+            cmake_args.append("-DImpactX_amrex_branch=" + ImpactX_amrex_branch)
+        if ImpactX_pyamrex_branch:
+            cmake_args.append("-DImpactX_pyamrex_branch=" + ImpactX_pyamrex_branch)
 
         if CMAKE_INTERPROCEDURAL_OPTIMIZATION is not None:
             cmake_args.append(
@@ -181,15 +188,13 @@ CMAKE_INTERPROCEDURAL_OPTIMIZATION = os.environ.get(
 # CMake dependency control (developers & package managers)
 ImpactX_amrex_src = os.environ.get("IMPACTX_AMREX_SRC")
 ImpactX_amrex_internal = os.environ.get("IMPACTX_AMREX_INTERNAL", "ON")
-ImpactX_amrex_repo = os.environ.get(
-    "IMPACTX_AMREX_REPO", "https://github.com/AMReX-Codes/amrex.git"
-)
+ImpactX_amrex_repo = os.environ.get("IMPACTX_AMREX_REPO")
 ImpactX_amrex_branch = os.environ.get("IMPACTX_AMREX_BRANCH")
-# ImpactX_pyamrex_src = os.environ.get('IMPACTX_PYAMREX_SRC')
-# ImpactX_pyamrex_internal = os.environ.get('IMPACTX_PYAMREX_INTERNAL', 'ON')
-# ImpactX_pyamrex_repo = os.environ.get('IMPACTX_PYAMREX_REPO',
-#    'https://github.com/AMReX-Codes/pyamrex.git')
-# ImpactX_pyamrex_branch = os.environ.get('IMPACTX_PYAMREX_BRANCH')
+
+ImpactX_pyamrex_src = os.environ.get("IMPACTX_PYAMREX_SRC")
+ImpactX_pyamrex_internal = os.environ.get("IMPACTX_PYAMREX_INTERNAL", "ON")
+ImpactX_pyamrex_repo = os.environ.get("IMPACTX_PYAMREX_REPO")
+ImpactX_pyamrex_branch = os.environ.get("IMPACTX_PYAMREX_BRANCH")
 
 # extra CMake arguments
 extra_cmake_args = []

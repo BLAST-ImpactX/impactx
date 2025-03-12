@@ -153,11 +153,16 @@ namespace detail
             return Map6x6::Identity();
         }
 
-        /** Get the name of the series
+        /** Get the name of the series (and element)
          *
          * Elements with the same series name are identical.
          */
-        std::string series_name () const { return m_series_name; }
+        AMREX_FORCE_INLINE
+        std::string name () const { return m_series_name; }
+
+        /** Provide impactx::elements::mixin::Named::has_name */
+        AMREX_FORCE_INLINE
+        bool has_name () const { return true; }
 
         /** track all m_series_name instances
          *

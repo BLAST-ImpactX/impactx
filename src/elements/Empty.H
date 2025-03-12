@@ -13,11 +13,13 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+
+#include <stdexcept>
+#include <string>
 
 
 namespace impactx::elements
@@ -113,6 +115,14 @@ namespace impactx::elements
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
+
+        /** Provide impactx::elements::mixin::Named::name */
+        AMREX_FORCE_INLINE
+        std::string name () const { throw std::runtime_error("Name not set on element!"); }
+
+        /** Provide impactx::elements::mixin::Named::has_name */
+        AMREX_FORCE_INLINE
+        bool has_name () const { return false; }
     };
 
 } // namespace impactx

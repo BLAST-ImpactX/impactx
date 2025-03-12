@@ -14,10 +14,9 @@
 #include <particles/ImpactXParticleContainer.H>
 #include <initialization/InitDistribution.H>
 
-#include <pybind11/numpy.h>  //Include pybind11 numpy header
-
 namespace py = pybind11;
 using namespace impactx;
+
 
 void init_wakeconvolution(py::module &m)
 {

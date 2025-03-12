@@ -85,31 +85,24 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal zndev;
         amrex::ParticleReal znroot;
       //
-      //   LOLIM and UPLIM determine the range of valid arguments.
-      //   LOLIM IS NOT LESS THAN 2 / (MACHINE MAXIMUM) ^ (2/3).
-      //   UPLIM IS NOT GREATER THAN (0.1 * ERRTOL / MACHINE
-      //   MINIMUM) ^ (2/3), WHERE ERRTOL IS DESCRIBED BELOW.
-      //   IN THE FOLLOWING TABLE IT IS ASSUMED THAT ERRTOL WILL
-      //   NEVER BE CHOSEN SMALLER THAN 1.D-5.
+      //  `lolim` and `uplim` determine the range of valid arguments.
+      //  `lolim` is not less than 2 / (machine machimum) ^ (2/3).
+      //  `uplim` is not greater than (0.1 * errtol / machine minimum)^(2/3), 
       //
         if (
-          x < 0.0 ||
-          y < 0.0 ||
+          x < 0.0_prt ||
+          y < 0.0_prt ||
           x + y < lolim ||
           z < lolim ||
           uplim < x ||
           uplim < y ||
           uplim < z )
         {
-          amrex::Print() << "\n";
-          amrex::Print() << "RD - Error!\n";
-          amrex::Print() << "  Invalid input arguments.\n";
-          amrex::Print() << "  X = " << x << "\n";
-          amrex::Print() << "  Y = " << y << "\n";
-          amrex::Print() << "  Z = " << z << "\n";
-          amrex::Print() << "\n";
+          ablastr::warn_manager::WMRecordWarning(
+              "algo.space_charge",
+              "Invalid input arguments in function Elliptic_RD.",
+              ablastr::warn_manager::WarnPriority::high); 
           value = 0.0_prt;
-          return value;
         }
 
         xn = x;
@@ -118,7 +111,8 @@ namespace impactx::envelope::spacecharge
         sigma = 0.0_prt;
         power4 = 1.0_prt;
 
-        while ( true )
+        int max_iterations = 100;
+        for ( int i = 0; i < max_iterations; ++i )
         {
           mu = ( xn + yn + 3.0_prt * zn ) * 0.2_prt;
           xndev = ( mu - xn ) / mu;
@@ -154,6 +148,13 @@ namespace impactx::envelope::spacecharge
           yn = ( yn + lamda ) * 0.25_prt;
           zn = ( zn + lamda ) * 0.25_prt;
         }
+
+        ablastr::warn_manager::WMRecordWarning(
+            "algo.space_charge",
+            "Exceeded maximum number of iterations in function Elliptic_RD.",
+            ablastr::warn_manager::WarnPriority::medium);
+        value = 0.0_prt;
+        return value;
 
       }
 

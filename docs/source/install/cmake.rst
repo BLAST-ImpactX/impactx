@@ -16,7 +16,7 @@ Before you start, you will need a copy of the ImpactX source code:
 
 .. code-block:: bash
 
-   git clone https://github.com/ECP-WarpX/impactx.git $HOME/src/impactx
+   git clone https://github.com/BLAST-ImpactX/impactx.git $HOME/src/impactx
    cd $HOME/src/impact
 
 ImpactX depends on popular third party software.
@@ -128,7 +128,7 @@ CMake Option                  Default & Values                               Des
 ``ImpactX_CCACHE``            **ON**/OFF                                     Search and use CCache to speed up rebuilds.
 ``ImpactX_UNITY_BUILD``       ON/**OFF**                                     ImpactX library as unity build (single TU)
 ``ImpactX_ablastr_src``       *None*                                         Path to ABLASTR source directory (preferred if set)
-``ImpactX_ablastr_repo``      ``https://github.com/ECP-WarpX/WarpX.git``     Repository URI to pull and build ABLASTR from
+``ImpactX_ablastr_repo``      ``https://github.com/BLAST-WarpX/warpx.git``     Repository URI to pull and build ABLASTR from
 ``ImpactX_ablastr_branch``    *we set and maintain a compatible commit*      Repository branch for ``ImpactX_ablastr_repo``
 ``ImpactX_ablastr_internal``  **ON**/OFF                                     Needs a pre-installed ABLASTR library if set to ``OFF``
 ``ImpactX_amrex_src``         *None*                                         Path to AMReX source directory (preferred if set)

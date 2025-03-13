@@ -98,9 +98,9 @@ namespace detail
         auto const [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->track_particles.m_particle_container->MinAndMaxPositions();
 
         // guard for flat beams:
-        //   https://github.com/ECP-WarpX/impactx/issues/44
+        //   https://github.com/BLAST-ImpactX/impactx/issues/44
         if (x_min == x_max || y_min == y_max || z_min == z_max)
-            throw std::runtime_error("Flat beam detected. This is not yet supported: https://github.com/ECP-WarpX/impactx/issues/44");
+            throw std::runtime_error("Flat beam detected. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
 
         amrex::ParmParse pp_geometry("geometry");
         bool dynamic_size = true;

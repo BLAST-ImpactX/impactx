@@ -103,7 +103,7 @@ download_and_unzip(data_url, "models.zip")
 # It was found that the PyTorch multithreaded defaults interfere with AMReX OpenMP
 # when initializing the models or iterating elements:
 # https://github.com/AMReX-Codes/pyamrex/issues/322
-# https://github.com/ECP-WarpX/impactx/issues/773#issuecomment-2585043099
+# https://github.com/BLAST-ImpactX/impactx/issues/773#issuecomment-2585043099
 # So we manually set the number of threads to serial (1).
 # Torch threading is not a problem with GPUs and might work when MPI is disabled.
 # Could also just be a mixing of OpenMP libraries (gomp and llvm omp) when using the

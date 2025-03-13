@@ -32,4 +32,4 @@ HPC Systems
    Your HPC system is not in the list?
    Our instructions are nearly identical to `installing WarpX, documented here <https://warpx.readthedocs.io/en/latest/install/hpc.html#hpc-machines>`__.
 
-   Also, please do not hesitate to `open an issue <https://github.com/ECP-WarpX/impactx/issues>`__ and together we can document how to run on your preferred system!
+   Also, please do not hesitate to `open an issue <https://github.com/BLAST-ImpactX/impactx/issues>`__ and together we can document how to run on your preferred system!

@@ -17,7 +17,7 @@ Please add the following sentence to your publications, it helps contributors ke
 
 **Plain text:**
 
-  This research used the open-source particle-in-cell code ImpactX https://github.com/ECP-WarpX/impactx.
+  This research used the open-source particle-in-cell code ImpactX https://github.com/BLAST-ImpactX/impactx.
   We acknowledge all ImpactX contributors.
 
 **Latex:**
@@ -25,7 +25,7 @@ Please add the following sentence to your publications, it helps contributors ke
 .. code-block:: latex
 
   \usepackage{hyperref}
-  This research used the open-source particle-in-cell code ImpactX \url{https://github.com/ECP-WarpX/impactx}.
+  This research used the open-source particle-in-cell code ImpactX \url{https://github.com/BLAST-ImpactX/impactx}.
   We acknowledge all ImpactX contributors.
 
 Main ImpactX Reference

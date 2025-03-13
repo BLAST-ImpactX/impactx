@@ -10,7 +10,7 @@ Please see installation instructions below.
 - `CMake 3.24.0+ <https://cmake.org>`__
 - `Git 2.18+ <https://git-scm.com>`__
 - `AMReX <https://amrex-codes.github.io>`__: we automatically download and compile a copy
-- `ABLASTR/WarpX <https://github.com/ECP-WarpX/warpx>`__: we automatically download and compile a copy
+- `ABLASTR/WarpX <https://github.com/BLAST-WarpX/warpx>`__: we automatically download and compile a copy
 
 Optional dependencies include:
 
@@ -117,7 +117,7 @@ Spack (Linux/macOS)
 `Spack <https://spack.readthedocs.io>`__ is a user-level package manager.
 It is primarily written for Linux, with slightly less support for macOS, and future support for Windows.
 
-First, download a `WarpX Spack desktop development environment <https://github.com/ECP-WarpX/WarpX/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
+First, download a `WarpX Spack desktop development environment <https://github.com/BLAST-WarpX/warpx/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
 For most desktop developments, pick the OpenMP environment for CPUs unless you have a supported GPU.
 
 * **Debian/Ubuntu** Linux:
@@ -142,7 +142,7 @@ Now install the WarpX/ImpactX dependencies in a new development environment:
 .. code-block:: bash
 
    # download environment file
-   curl -sLO https://raw.githubusercontent.com/ECP-WarpX/WarpX/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
+   curl -sLO https://raw.githubusercontent.com/BLAST-WarpX/warpx/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
 
    # create new development environment
    spack env create impactx-${compute}-dev spack-${system}-${compute}.yaml

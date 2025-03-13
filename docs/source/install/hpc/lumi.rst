@@ -39,7 +39,7 @@ Use the following commands to download the ImpactX source code:
 
 .. code-block:: bash
 
-   git clone https://github.com/ECP-WarpX/impactx.git $HOME/src/impactx
+   git clone https://github.com/BLAST-ImpactX/impactx.git $HOME/src/impactx
 
 On LUMI, you can run either with fast MI250X GPUs (LUMI-G, recommended) or CPU nodes (LUMI-C).
 

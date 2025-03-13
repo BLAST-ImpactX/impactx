@@ -17,7 +17,7 @@ Users
    </style>
 
 Our community is here to help.
-Please `report installation problems <https://github.com/ECP-WarpX/impactx/issues/new>`_ in case you should get stuck.
+Please `report installation problems <https://github.com/BLAST-ImpactX/impactx/issues/new>`_ in case you should get stuck.
 
 Choose **one** of the installation methods below to get started:
 
@@ -124,7 +124,7 @@ After installing the :ref:`ImpactX dependencies <install-dependencies>`, you can
 .. code-block:: bash
 
    # get the source code
-   git clone https://github.com/ECP-WarpX/impactx.git $HOME/src/impactx
+   git clone https://github.com/BLAST-ImpactX/impactx.git $HOME/src/impactx
    cd $HOME/src/impactx
 
    # configure

@@ -170,7 +170,7 @@ set(ImpactX_openpmd_src ""
     "Local path to openPMD-api source directory (preferred if set)")
 
 # Git fetcher
-set(ImpactX_ablastr_repo "https://github.com/ECP-WarpX/WarpX.git"
+set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
 set(ImpactX_ablastr_branch "25.02"

@@ -517,6 +517,20 @@ if(ImpactX_FFT)
     )
 endif()
 
+# Expanding Beam Test Using Envelope Tracking ##################################
+#
+add_impactx_test(expanding_beam_envelope
+    examples/expanding_beam/input_expanding_envelope.in
+    OFF  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(expanding_beam_envelope.py
+    examples/expanding_beam/run_expanding_envelope.py
+    OFF  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_envelope.py
+    OFF  # no plot script yet
+)
 
 # IOTA Nonlinear Focusing Channel Test ########################################
 #
@@ -580,6 +594,21 @@ add_impactx_test(kurth_10nC_periodic.py
     OFF  # no plot script yet
 )
 
+# Kurth Beam in a Periodic Channel with Envelope Tracking ######################
+#
+# with space charge
+add_impactx_test(kurth_10nC_periodic_envelope
+    examples/kurth/input_kurth_10nC_periodic_envelope.in
+    OFF  # ImpactX MPI-parallel
+    examples/kurth/analysis_kurth_10nC_periodic_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kurth_10nC_periodic_envelope.py
+    examples/kurth/run_kurth_10nC_periodic_envelope.py
+    OFF  # ImpactX MPI-parallel
+    examples/kurth/analysis_kurth_10nC_periodic_envelope.py
+    OFF  # no plot script yet
+)
 
 # Acceleration by RF Cavities #################################################
 #
@@ -833,6 +862,21 @@ add_impactx_test(FODO.rf.sc.py
     OFF  # no plot script yet
 )
 
+# FODO + RF EPAC2004 Using Envelope Tracking ##################################
+#
+# with space charge
+add_impactx_test(FODO.rf.sc.envelope
+    examples/epac2004_benchmarks/input_fodo_rf_SC_envelope.in
+    ON  # ImpactX MPI-parallel
+    examples/epac2004_benchmarks/analysis_fodo_rf_SC_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO.rf.sc.envelope.py
+    examples/epac2004_benchmarks/run_fodo_rf_SC_envelope.py
+    OFF  # ImpactX MPI-parallel
+    examples/epac2004_benchmarks/analysis_fodo_rf_SC_envelope.py
+    OFF  # no plot script yet
+)
 
 # Thermal Beam EPAC2004 #######################################################
 #

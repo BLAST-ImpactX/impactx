@@ -220,15 +220,51 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+
+            using namespace amrex::literals; // for _rt and _prt
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // find beta*gamma^2
+            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+
+            // trigo
+            auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);
+            amrex::ParticleReal const_x = -m_kx * sin_kxds;
+            auto const [sin_kyds, cos_kyds] = amrex::Math::sincos(m_ky * slice_ds);
+            amrex::ParticleReal const_y = -m_ky * sin_kyds;
+            auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
+            amrex::ParticleReal const_t = -m_kt * betgam2 * sin_ktds;
+
+            // intermediate quantities - to avoid division by zero
+            amrex::ParticleReal sincx = m_kx > 0 ? std::sin(m_kx * slice_ds) / m_kx : slice_ds;
+            amrex::ParticleReal sincy = m_ky > 0 ? std::sin(m_ky * slice_ds) / m_ky : slice_ds;
+            amrex::ParticleReal const sinct = m_kt > 0 ? std::sin(m_kt * slice_ds) / m_kt : slice_ds;
+            amrex::ParticleReal const_pt = sinct / betgam2;
+
+            // assign linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+            R(1,1) = cos_kxds;
+            R(1,2) = sincx;
+            R(2,1) = const_x;
+            R(2,2) = cos_kxds;
+            R(3,3) = cos_kyds;
+            R(3,4) = sincy;
+            R(4,3) = const_y;
+            R(4,4) = cos_kyds;
+            R(5,5) = cos_ktds;
+            R(5,6) = const_pt;
+            R(6,5) = const_t;
+            R(6,6) = cos_ktds;
+
+            return R;
         }
 
         amrex::ParticleReal m_kx; //! focusing x strength in 1/m

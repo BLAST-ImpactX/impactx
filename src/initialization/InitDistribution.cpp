@@ -484,9 +484,8 @@ namespace impactx
             auto space_charge = get_space_charge_algo();
             if (space_charge == SpaceChargeAlgo::True_3D)
             {
-                //pp_dist.get("charge", intensity);
-                //amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
-                throw std::runtime_error("3D space charge model not yet implemented in envelope mode.");
+                pp_dist.get("charge", intensity);
+                amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
             } else if (space_charge == SpaceChargeAlgo::True_2D)
             {
                 pp_dist.get("current", intensity);

@@ -37,6 +37,24 @@ namespace impactx::envelope::spacecharge
          amrex::ParticleReal ds
     );
 
+     /** This function pushes the 6x6 beam covariance matrix for a slice
+      *  of length ds, using the linear space charge fields in an rms
+      *  equivalent 3D ellipsoid, as determined from the beam covariance matrix.
+      *  Note: This is a reduced model of 3D space charge.
+      *
+      * @param[in] refpart reference particle
+      * @param[inout] cm covariance matrix
+      * @param[in] bunch_charge bunch charge [C]
+      * @param[in] ds step size [m]
+      */
+     void
+     space_charge3D_push (
+         RefPart const & AMREX_RESTRICT refpart,
+         Map6x6 & AMREX_RESTRICT cm,
+         amrex::ParticleReal bunch_charge,
+         amrex::ParticleReal ds
+    );
+
 } // namespace impactx
 
 #endif // IMPACTX_ENVELOPESPACECHARGEPUSH_H

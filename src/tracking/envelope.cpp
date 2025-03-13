@@ -61,7 +61,7 @@ namespace impactx
         auto & ref = amr_data->track_envelope.m_ref.value();
         auto & env = amr_data->track_envelope.m_env.value();
         auto & cm = env.m_env;
-        auto & current = env.m_beam_intensity;
+        auto & intensity = env.m_beam_intensity;
 
         // output of init state
         amrex::ParmParse pp_diag("diag");
@@ -90,11 +90,15 @@ namespace impactx
         {
             amrex::Print() << " Space Charge effects: " << to_string(space_charge) << "\n";
         }
-        if (space_charge == SpaceChargeAlgo::True_3D)
-        {
-            throw std::runtime_error("3D space charge effects are not yet implemented for envelope tracking.");
+        if (space_charge == SpaceChargeAlgo::True_3D && intensity == 0_prt) {
+            ablastr::warn_manager::WMRecordWarning(
+                "algo.space_charge",
+                "Space charge calculations are enabled but zero bunch charge was provided. "
+                "Skipping space charge calculations.",
+                ablastr::warn_manager::WarnPriority::high
+            );
         }
-        if (space_charge != SpaceChargeAlgo::False && current == 0_prt) {
+        if (space_charge == SpaceChargeAlgo::True_2D && intensity == 0_prt) {
             ablastr::warn_manager::WMRecordWarning(
                 "algo.space_charge",
                 "Space charge calculations are enabled but zero beam current was provided. "
@@ -143,10 +147,16 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
-                    if (space_charge != SpaceChargeAlgo::False)
+                    if (space_charge == SpaceChargeAlgo::True_2D)
                     {
                         // push Covariance Matrix in 2D space charge fields
-                        envelope::spacecharge::space_charge2D_push(ref, cm, current, slice_ds);
+                        envelope::spacecharge::space_charge2D_push(ref, cm, intensity, slice_ds);
+                    } else if (space_charge == SpaceChargeAlgo::True_3D)
+                    {
+                        // push Covariance Matrix in 3D space charge fields
+                        envelope::spacecharge::space_charge3D_push(ref, cm, intensity, slice_ds);
+                    } else {
+                        amrex::Print() << "Warning: Space charge is off by default." << "\n";
                     }
 
                     std::visit([&ref, &cm](auto&& element)

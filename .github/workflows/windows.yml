@@ -39,10 +39,6 @@ jobs:
         7z.exe x -r hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar
     - name: Install Dependencies
-      env:
-        # Work-around for windows-latest GH runner issue, see
-        # https://github.com/actions/runner-images/issues/10004
-        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
       run: |
         cmake -S fftw-3.3.10                     `
               -B build_fftw                      `
@@ -89,9 +85,6 @@ jobs:
         python3 -m pip install -U openPMD-validator
     - name: Build
       env:
-        # Work-around for windows-latest GH runner issue, see
-        # https://github.com/actions/runner-images/issues/10004
-        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
         # FFTW3 install prefix path
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"

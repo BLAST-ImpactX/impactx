@@ -25,11 +25,11 @@ Contact us
 
 We organize support as an open community, helping each other.
 
-The `ImpactX GitHub repository <https://github.com/ECP-WarpX/impactx>`__ is our open communication platform.
+The `ImpactX GitHub repository <https://github.com/BLAST-ImpactX/impactx>`__ is our open communication platform.
 Have a look at the action icons on the top right of the web page: feel free to watch the repo if you want to receive updates, or to star the repo to support the project.
-For bug reports or to request new features, you can also open a new `issue <https://github.com/ECP-WarpX/impactx/issues>`__.
+For bug reports or to request new features, you can also open a new `issue <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
-If you are starting to use ImpactX and have questions not answered by this documentation, have a look on our `discussion page <https://github.com/ECP-WarpX/impactx/discussions>`__.
+If you are starting to use ImpactX and have questions not answered by this documentation, have a look on our `discussion page <https://github.com/BLAST-ImpactX/impactx/discussions>`__.
 There, you can find already answered questions, add your own, get help with installation procedures, help others and share ideas.
 
 .. raw:: html

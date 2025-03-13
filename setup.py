@@ -256,10 +256,10 @@ setup(
         "Documentation": "https://impactx.readthedocs.io",
         # 'Tutorials': 'https://impactx-codes.github.io/impactx/tutorials_html/',
         "Doxygen": "https://impactx.readthedocs.io/en/latest/_static/doxyhtml",
-        "Source": "https://github.com/ECP-WarpX/impactx",
+        "Source": "https://github.com/BLAST-ImpactX/impactx",
         "DOI (source)": "https://doi.org/10.5281/zenodo.6954922",
         "DOI (paper)": "https://doi.org/10.48550/arXiv.2208.02382",
-        "Tracker": "https://github.com/ECP-WarpX/impactx/issues",
+        "Tracker": "https://github.com/BLAST-ImpactX/impactx/issues",
     },
     # CMake: self-built as extension module
     ext_modules=cxx_modules,

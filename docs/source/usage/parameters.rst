@@ -792,7 +792,7 @@ See there ``nslice`` option on lattice elements for slicing.
 
   The numerical solver to solve the Poisson equation when calculating space charge effects.
   Currently, this is a 3D solver.
-  An additional `2D/2.5D solver <https://github.com/ECP-WarpX/impactx/issues/401>`__ will be added in the near future.
+  An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
   Options:
 

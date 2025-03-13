@@ -82,7 +82,7 @@ Collective Effects & Overall Simulation Parameters
       Either ``"multigrid"`` (default) or ``"fft"``.
 
       Currently, this is a 3D solver.
-      An additional `2D/2.5D solver <https://github.com/ECP-WarpX/impactx/issues/401>`__ will be added in the near future.
+      An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).
@@ -267,7 +267,7 @@ Collective Effects & Overall Simulation Parameters
       .. note::
 
          Particle beam particles are not yet dynamically load balanced.
-         Please see the progress in `issue 198 <https://github.com/ECP-WarpX/impactx/issues/198>`__.
+         Please see the progress in `issue 198 <https://github.com/BLAST-ImpactX/impactx/issues/198>`__.
 
    .. py:property:: have_gpu
 

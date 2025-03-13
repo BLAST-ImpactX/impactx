@@ -49,7 +49,7 @@ namespace impactx
             }
             else if (nParticles == 1)
             {
-                throw std::runtime_error("Only one particle found. This is not yet supported: https://github.com/ECP-WarpX/impactx/issues/44");
+                throw std::runtime_error("Only one particle found. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
             }
         }
 

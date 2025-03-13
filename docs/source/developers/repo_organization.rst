@@ -9,7 +9,7 @@ Repo Organization
 All the ImpactX source code is located in ``src/``.
 All sub-directories have a pretty straightforward name.
 
-Here is a `visual representation <https://octo-repo-visualization.vercel.app/?repo=ECP-WarpX%2Fimpactx>`__ of the repository structure.
+Here is a `visual representation <https://octo-repo-visualization.vercel.app/?repo=BLAST-ImpactX%2Fimpactx>`__ of the repository structure.
 
 
 Code organization

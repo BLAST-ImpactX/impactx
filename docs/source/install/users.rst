@@ -60,8 +60,8 @@ A package for ImpactX is available via `Conda-Forge <https://conda-forge.org/dow
 
 .. code-block:: bash
 
-   mamba create -n impactx -c conda-forge impactx
-   mamba activate impactx
+   conda create -n impactx -c conda-forge impactx
+   conda activate impactx
 
 .. note::
 

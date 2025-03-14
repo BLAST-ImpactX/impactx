@@ -39,6 +39,10 @@ jobs:
         7z.exe x -r hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar
     - name: Install Dependencies
+      env:
+        # Work-around for windows-latest GH runner issue, see
+        # https://github.com/actions/runner-images/issues/10004
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
       run: |
         cmake -S fftw-3.3.10                     `
               -B build_fftw                      `

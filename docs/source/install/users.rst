@@ -60,8 +60,8 @@ A package for ImpactX is available via `Conda-Forge <https://conda-forge.org/dow
 
 .. code-block:: bash
 
-   mamba create -n impactx -c conda-forge impactx
-   mamba activate impactx
+   conda create -n impactx -c conda-forge impactx
+   conda activate impactx
 
 .. note::
 
@@ -91,9 +91,19 @@ Using the Spack Package
 Using the PyPI Package
 ----------------------
 
-.. note::
+Because of limitations of ``pip``, we limit our PyPI package to be a **sequential CPU build**, i.e., it does not make use of *any* of the accelerated features of ImpactX.
 
-   Coming soon.
+If you need advanced features such as:
+
+* multi-core CPU support (OpenMP)
+* GPU support (CUDA/HIP/SYCL)
+* multi-node support (MPI)
+
+then use *another installation method* listed here or in the :ref:`HPC system-specific section <install-hpc>`.
+
+.. code-block:: bash
+
+   python -m pip install impactx-noacc
 
 
 .. _install-brew:

@@ -232,6 +232,23 @@ Collective Effects & Overall Simulation Parameters
       Controls how much information is printed to the terminal, when running ImpactX.
       ``0`` for silent, higher is more verbose. Default is ``1``.
 
+   .. py:property:: tiny_profiler
+
+      This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
+      Default is ``True``.
+
+   .. py:property:: memory_profiler
+
+      This parameter can be used to disable tiny profiler's memory arena profiling at runtime.
+      If ```tiny_profiler`` is ``False``, this parameter has no effects.
+      Default is ``True``.
+
+   .. py:property:: tiny_profiler_file
+
+      If this parameter is empty (default), the output of tiny profiling is dumped on the default out stream of AMReX.
+      If it's not empty, it specifies the file name for the output.
+      Note that ``"/dev/null"`` is a special name that mean no output.
+
    .. py:method:: evolve()
 
       Run the main simulation loop (deprecated, use ``track_particles``)

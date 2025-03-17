@@ -421,6 +421,40 @@ void init_ImpactX (py::module& m)
             "``0`` for silent, higher is more verbose. Default is ``1``."
         )
 
+        .def_property("tiny_profiler",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<bool>("tiny_profiler", "enabled");
+            },
+            [](ImpactX & /* ix */, bool enabled) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("enabled", enabled);
+            },
+            "This parameter can be used to disable tiny profiling including CArena memory profiling at runtime."
+        )
+        .def_property("memory_profiler",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<bool>("tiny_profiler", "memprof_enabled");
+            },
+            [](ImpactX & /* ix */, bool memprof_enabled) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("memprof_enabled", memprof_enabled);
+            },
+            "This parameter can be used to disable tiny profiler's memory arena profiling at runtime. "
+            "If tiny_profiler.enabled is false, this parameter has no effects."
+        )
+        .def_property("tiny_profiler_file",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<std::string>("tiny_profiler", "output_file");
+            },
+            [](ImpactX & /* ix */, std::string output_file) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("output_file", output_file);
+            },
+            "If this parameter is empty, the output of tiny profiling is dumped on the default out stream of AMReX. "
+            "If it's not empty, it specifies the file name for the output. "
+            "Note that /dev/null is a special name that mean a null file."
+        )
+
         .def("deposit_charge",
             [](ImpactX & ix) {
                 // transform from x',y',t to x,y,z

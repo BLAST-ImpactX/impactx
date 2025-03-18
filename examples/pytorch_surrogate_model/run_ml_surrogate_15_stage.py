@@ -359,4 +359,3 @@ sim.lattice.extend([monitor])
 
 sim.track_particles()
 sim.finalize()
-del sim

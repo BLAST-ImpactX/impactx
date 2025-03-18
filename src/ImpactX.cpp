@@ -41,6 +41,9 @@ namespace impactx {
 
     void ImpactX::finalize ()
     {
+        // loop over all beamline elements & finalize them
+        finalize_elements();
+
         if (m_grids_initialized)
         {
             m_lattice.clear();

@@ -528,7 +528,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 Lattice Elements
 ----------------
 
-This module provides elements for the accelerator lattice.
+This module provides elements and methods for the accelerator lattice.
 
 .. py:class:: impactx.elements.KnownElementsList
 
@@ -552,8 +552,6 @@ This module provides elements for the accelerator lattice.
 
       :param madx_file: file name to MAD-X file with beamline elements
       :param nslice: number of slices used for the application of space charge
-
-Every lattice element provides a ``.to_dict()`` method, which can be used to serialize its configuration.
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
@@ -1150,6 +1148,23 @@ Every lattice element provides a ``.to_dict()`` method, which can be used to ser
    .. py:property:: unit
 
       unit specification for plasma lens focusing strength
+
+
+Methods
+"""""""
+
+Each lattice element provides a ``.to_dict()`` method, which can be used to serialize its configuration.
+
+
+.. py:function:: elements.transformation.insert_element_every_ds(list, ds, element)
+
+   Insert an element every s into an element list.
+
+   Splits up every element that is on s = N * ds for N>0.
+
+   :param list: element lattice list
+   :param ds: spacing in meters along s to add an element
+   :param element: the extra element to add every s
 
 
 Coordinate Transformation

@@ -144,8 +144,5 @@ namespace impactx
             // print final reference particle to file
             diagnostics::DiagnosticOutput(ref, "diags/ref_particle_final", step);
         }
-
-        // loop over all beamline elements & finalize them
-        finalize_elements();
     }
 } // namespace impactx

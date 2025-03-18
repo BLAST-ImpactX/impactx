@@ -6,3 +6,4 @@ target_sources(lib
 )
 
 add_subdirectory(diagnostics)
+add_subdirectory(transformation)

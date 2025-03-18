@@ -6,7 +6,6 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
 from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
@@ -67,5 +66,4 @@ sim.periods = 100
 sim.track_particles()
 
 # clean shutdown
-del sim
-amr.finalize()
+sim.finalize()

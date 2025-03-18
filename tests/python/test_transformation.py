@@ -73,7 +73,6 @@ def test_transformation():
 
     # finalize simulation
     sim.finalize()
-    del sim
 
     # assert that forward-inverse transformation of the beam leaves beam unchanged
     atol = 1e-14

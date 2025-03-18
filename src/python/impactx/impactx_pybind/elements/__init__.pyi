@@ -9,7 +9,7 @@ import typing
 import amrex.space3d.amrex_3d_pybind
 import impactx.impactx_pybind
 
-from . import mixin
+from . import mixin, transformation
 
 __all__ = [
     "Aperture",
@@ -46,11 +46,10 @@ __all__ = [
     "TaperedPL",
     "ThinDipole",
     "mixin",
+    "transformation",
 ]
 
 class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         aperture_x: float,
@@ -87,6 +86,20 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def action(self) -> str:
         """
@@ -131,8 +144,6 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def shape(self, arg1: str) -> None: ...
 
 class BeamMonitor(mixin.Thin):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         name: str,
@@ -143,6 +154,8 @@ class BeamMonitor(mixin.Thin):
         """
         This element writes the particle beam out to openPMD data.
         """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -162,6 +175,20 @@ class BeamMonitor(mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def alpha(self) -> float:
         """
@@ -206,8 +233,6 @@ class BeamMonitor(mixin.Thin):
     def tn(self, arg1: float) -> None: ...
 
 class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         V: float,
@@ -240,6 +265,20 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def V(self) -> float:
         """
@@ -256,8 +295,6 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
     def k(self, arg1: float) -> None: ...
 
 class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -294,6 +331,20 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def k(self) -> float:
         """
@@ -310,8 +361,6 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def rc(self, arg1: float) -> None: ...
 
 class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -348,6 +397,20 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def bz(self) -> float:
         """
@@ -364,8 +427,6 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
     def ez(self, arg1: float) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -400,10 +461,22 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
 
 class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -440,6 +513,20 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def k(self) -> float:
         """
@@ -456,8 +543,6 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
     def unit(self, arg1: int) -> None: ...
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -494,6 +579,20 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def k(self) -> float:
         """
@@ -510,8 +609,6 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def unit(self, arg1: int) -> None: ...
 
 class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -549,6 +646,20 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def kt(self) -> float:
         """
@@ -572,8 +683,6 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def ky(self, arg1: float) -> None: ...
 
 class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         psi: float,
@@ -608,6 +717,20 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def K2(self) -> float:
         """
@@ -638,8 +761,6 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def rc(self, arg1: float) -> None: ...
 
 class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -674,10 +795,22 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
 
 class Empty(mixin.Thin):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self) -> None:
         """
         This element does nothing.
@@ -702,10 +835,22 @@ class Empty(mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -740,10 +885,22 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
 
 class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -780,6 +937,20 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def B(self) -> float:
         """
@@ -796,8 +967,6 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def phi(self, arg1: float) -> None: ...
 
 class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         xkick: float,
@@ -831,6 +1000,20 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def xkick(self) -> float:
         """
@@ -847,8 +1030,6 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def ykick(self, arg1: float) -> None: ...
 
 class KnownElementsList:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @typing.overload
     def __init__(self) -> None: ...
     @typing.overload
@@ -988,8 +1169,6 @@ class KnownElementsList:
         """
 
 class LinearMap(mixin.Named, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
@@ -1022,6 +1201,20 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def R(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
         """
@@ -1045,8 +1238,6 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
 
 class Marker(mixin.Named, mixin.Thin):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self, arg0: str) -> None:
         """
         This named element does nothing.
@@ -1071,10 +1262,22 @@ class Marker(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
 
 class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         multipole: int,
@@ -1108,6 +1311,20 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def K_normal(self) -> float:
         """
@@ -1131,8 +1348,6 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def multipole(self, arg1: float) -> None: ...
 
 class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         knll: float,
@@ -1165,6 +1380,20 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def cnll(self) -> float:
         """
@@ -1181,8 +1410,6 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
     def knll(self, arg1: float) -> None: ...
 
 class PRot(mixin.Named, mixin.Thin):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(self, phi_in: float, phi_out: float, name: str | None = None) -> None:
         """
         An exact pole-face rotation in the x-z plane. Both angles are in degrees.
@@ -1207,6 +1434,20 @@ class PRot(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def phi_in(self) -> float:
         """
@@ -1223,8 +1464,6 @@ class PRot(mixin.Named, mixin.Thin):
     def phi_out(self, arg1: float) -> None: ...
 
 class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         angle: float,
@@ -1256,6 +1495,20 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def angle(self) -> float:
         """
@@ -1267,8 +1520,6 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
 class Programmable(mixin.Named):
     ds: float
     nslice: int
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self, ds: float = 0.0, nslice: int = 1, name: str | None = None
     ) -> None:
@@ -1276,6 +1527,20 @@ class Programmable(mixin.Named):
         A programmable beam optics element.
         """
     def __repr__(self) -> str: ...
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def beam_particles(
         self,
@@ -1327,8 +1592,6 @@ class Programmable(mixin.Named):
     def threadsafe(self, arg1: bool) -> None: ...
 
 class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1364,6 +1627,20 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def k(self) -> float:
         """
@@ -1373,8 +1650,6 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def k(self, arg1: float) -> None: ...
 
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1415,6 +1690,20 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def escale(self) -> float:
         """
@@ -1445,8 +1734,6 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def phase(self, arg1: float) -> None: ...
 
 class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1482,6 +1769,20 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def rc(self) -> float:
         """
@@ -1491,8 +1792,6 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def rc(self, arg1: float) -> None: ...
 
 class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         V: float,
@@ -1526,6 +1825,20 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def V(self) -> float:
         """
@@ -1549,8 +1862,6 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def phase(self, arg1: float) -> None: ...
 
 class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1589,6 +1900,20 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def gscale(self) -> float:
         """
@@ -1605,8 +1930,6 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     def mapsteps(self, arg1: int) -> None: ...
 
 class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1646,6 +1969,20 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def bscale(self) -> float:
         """
@@ -1669,8 +2006,6 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
     def unit(self, arg1: float) -> None: ...
 
 class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         ds: float,
@@ -1706,6 +2041,20 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def ks(self) -> float:
         """
@@ -1715,8 +2064,6 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def ks(self, arg1: float) -> None: ...
 
 class Source(mixin.Named, mixin.Thin):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self, distribution: str, openpmd_path: str, name: str | None = None
     ) -> None:
@@ -1743,6 +2090,20 @@ class Source(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def distribution(self) -> str:
         """
@@ -1759,8 +2120,6 @@ class Source(mixin.Named, mixin.Thin):
     def series_name(self, arg1: str) -> None: ...
 
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         k: float,
@@ -1800,6 +2159,20 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def k(self) -> float:
         """
@@ -1823,8 +2196,6 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def unit(self, arg1: int) -> None: ...
 
 class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __init__(
         self,
         theta: float,
@@ -1857,6 +2228,20 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def rc(self) -> float:
         """

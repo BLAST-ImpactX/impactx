@@ -25,13 +25,14 @@ from impactx.extensions.ImpactXParticleContainer import (
 from impactx.impactx_pybind import (
     Config,
     CoordSystem,
+    Envelope,
     ImpactX,
     ImpactXParConstIter,
     ImpactXParIter,
     ImpactXParticleContainer,
     RefPart,
     coordinate_transformation,
-    create_covariance_matrix,
+    create_envelope,
     distribution,
     elements,
     push,
@@ -50,6 +51,7 @@ from . import (
 __all__ = [
     "Config",
     "CoordSystem",
+    "Envelope",
     "ImpactX",
     "ImpactXParConstIter",
     "ImpactXParIter",
@@ -59,7 +61,7 @@ __all__ = [
     "RefPart",
     "amr",
     "coordinate_transformation",
-    "create_covariance_matrix",
+    "create_envelope",
     "cxx",
     "distribution",
     "distribution_input_helpers",
@@ -81,7 +83,7 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.02"
+__version__: str = "25.03"
 s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
 t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>
 cxx = impactx_pybind

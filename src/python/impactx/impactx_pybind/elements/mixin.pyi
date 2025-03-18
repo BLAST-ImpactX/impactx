@@ -7,8 +7,6 @@ from __future__ import annotations
 __all__ = ["Alignment", "Named", "PipeAperture", "Thick", "Thin"]
 
 class Alignment:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def dx(self) -> float:
         """
@@ -32,8 +30,6 @@ class Alignment:
     def rotation(self, arg1: float) -> None: ...
 
 class Named:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def has_name(self) -> bool: ...
     @property
@@ -45,8 +41,6 @@ class Named:
     def name(self, arg1: str) -> None: ...
 
 class PipeAperture:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def aperture_x(self) -> float:
         """
@@ -59,8 +53,6 @@ class PipeAperture:
         """
 
 class Thick:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def ds(self) -> float:
         """
@@ -77,8 +69,6 @@ class Thick:
     def nslice(self, arg1: int) -> None: ...
 
 class Thin:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @property
     def ds(self) -> float:
         """

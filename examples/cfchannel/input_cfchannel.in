@@ -24,7 +24,6 @@ beam.mutpt = 0.0
 lattice.elements = monitor constf1 monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 constf1.type = constf
 constf1.ds = 2.0

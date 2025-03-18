@@ -42,7 +42,7 @@ distr = distribution.Kurth6D(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # design the accelerator lattice
 constf1 = elements.ConstF(name="constf1", ds=2.0, kx=0.7, ky=0.7, kt=0.7)

@@ -24,7 +24,6 @@ lattice.elements = monitor dr1 q1 q2 q3 dr2 q4 q5 dr2 q6 q7 q8 dr1 monitor
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 dr1.type = drift_chromatic
 dr1.ds = 1.0

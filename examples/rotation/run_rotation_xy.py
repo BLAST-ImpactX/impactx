@@ -41,7 +41,7 @@ distr = distribution.Waterbag(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # 90 degree rotation
 rotation = elements.PlaneXYRot(name="rotation1", angle=90.0)

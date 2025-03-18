@@ -332,7 +332,7 @@ for i in range(N_stage):
     lpa.threadsafe = False
     lpa_stages.append(lpa)
 
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 for i in range(N_stage):
     sim.lattice.extend(
         [

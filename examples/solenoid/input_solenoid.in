@@ -25,7 +25,6 @@ lattice.elements = monitor sol1 monitor
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 sol1.type = solenoid
 sol1.ds = 3.820395

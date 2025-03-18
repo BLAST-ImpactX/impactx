@@ -47,7 +47,7 @@ distr = distribution.KVdist(
 sim.init_envelope(ref, distr, beam_current_A)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # design the accelerator lattice)
 ns = 50  # number of slices per ds in the element

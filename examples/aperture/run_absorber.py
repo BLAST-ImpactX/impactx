@@ -15,7 +15,6 @@ sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
-sim.particle_lost_diagnostics_backend = "h5"
 
 # domain decomposition & space charge mesh
 sim.init_grids()
@@ -43,7 +42,7 @@ distr = distribution.Waterbag(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # design the accelerator lattice
 sim.lattice.extend(

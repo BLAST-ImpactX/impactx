@@ -18,10 +18,9 @@ lattice.nslice = 1
 
 source.type = source
 source.distribution = openPMD
-source.openpmd_path = "../solenoid/diags/openPMD/monitor.h5"
+source.openpmd_path = "../solenoid/diags/openPMD/monitor.%E"
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 sol1.type = solenoid
 sol1.ds = 3.820395

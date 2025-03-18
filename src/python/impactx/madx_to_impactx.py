@@ -110,7 +110,7 @@ def lattice(parsed_beamline, nslice=1):
                         )
                     )
                 impactx_beamline.append(
-                    elements.BeamMonitor(name="monitor", backend="h5")
+                    elements.BeamMonitor(name="monitor")
                 )  # TODO: use name=d["name"] ?
         else:
             raise NotImplementedError(

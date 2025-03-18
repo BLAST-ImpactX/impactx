@@ -24,7 +24,6 @@ beam.mutpt = 0.0
 lattice.elements = monitor shortrf1 drift1 monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 shortrf1.type = shortrf
 shortrf1.V = 1000.0

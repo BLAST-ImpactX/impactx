@@ -34,7 +34,6 @@ drift1.aperture_x = 3.5e-3
 drift1.aperture_y = 3.5e-3
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 
 ###############################################################################

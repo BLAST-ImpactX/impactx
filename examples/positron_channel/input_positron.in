@@ -26,7 +26,6 @@ lattice.elements = monitor quad1 drift1 quad2 drift1 quad1 drift2 unifacc drift2
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 quad1.type = quad_chromatic
 quad1.ds = 0.1

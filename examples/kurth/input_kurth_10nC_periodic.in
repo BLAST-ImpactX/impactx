@@ -24,7 +24,6 @@ lattice.nslice = 20
 #lattice.nslice = 30  # optional for increased precision
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 drift1.type = drift
 drift1.ds = 1.0

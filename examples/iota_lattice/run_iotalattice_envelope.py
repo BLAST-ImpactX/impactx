@@ -39,7 +39,7 @@ distr = distribution.Waterbag(
 sim.init_envelope(ref, distr)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # init accelerator lattice
 ns = 10  # number of slices per ds in the element

@@ -24,7 +24,6 @@ beam.mutpt = 0.0
 lattice.elements = monitor hkick vkick monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 hkick.type = kicker
 hkick.xkick = 2.0e-3      # 2 mrad horizontal kick

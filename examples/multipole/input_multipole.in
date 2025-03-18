@@ -24,7 +24,6 @@ beam.mutpt = 0.0
 lattice.elements = monitor thin_quadrupole thin_sextupole thin_octupole monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 thin_quadrupole.type = multipole
 thin_quadrupole.multipole = 2      # Thin quadrupole

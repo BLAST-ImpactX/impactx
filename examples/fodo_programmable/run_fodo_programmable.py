@@ -127,7 +127,7 @@ pge2.ref_particle = lambda refpart: my_ref_drift(pge2, refpart)
 pge2.ds = 0.5
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # design the accelerator lattice
 fodo = [

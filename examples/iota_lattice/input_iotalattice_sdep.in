@@ -270,7 +270,6 @@ qe3.k = -6.69148177
 
 # Beam Monitor: Diagnostics
 monitor.type = beam_monitor
-monitor.backend = h5
 monitor.nonlinear_lens_invariants = true
 monitor.alpha = 1.376381920471173
 monitor.beta = 1.892632003628881

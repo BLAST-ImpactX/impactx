@@ -25,7 +25,6 @@ lattice.periods = 5
 lattice.elements = monitor map1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 map1.type = linear_map
 # horizontal plane

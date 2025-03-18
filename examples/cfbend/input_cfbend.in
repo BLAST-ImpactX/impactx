@@ -31,7 +31,6 @@ cfbend1.rc = 7.613657587094493   # bending radius [m]
 cfbend1.k = -7.057403   # (upright) quadrupole component [m^(-2)]
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 
 ###############################################################################

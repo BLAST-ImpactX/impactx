@@ -21,7 +21,6 @@ beam.lambdaPt = 2.0e-3
 lattice.elements = monitor rotation1 monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 rotation1.type = plane_xyrotation
 rotation1.angle = 90.0

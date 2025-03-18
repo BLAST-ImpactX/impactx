@@ -25,7 +25,6 @@ lattice.elements = monitor quad_err monitor
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 quad_err.type = quad
 quad_err.ds = 1.0

@@ -9,6 +9,8 @@
  */
 #include "ForceFromSelfFields.H"
 
+#include "initialization/Algorithms.H"
+
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
@@ -25,6 +27,8 @@ namespace impactx::particles::spacecharge
         BL_PROFILE("impactx::spacecharge::ForceFromSelfFields");
 
         using namespace amrex::literals;
+
+        auto space_charge = get_space_charge_algo();
 
         // loop over refinement levels
         int const finest_level = phi.size() - 1u;
@@ -52,11 +56,22 @@ namespace impactx::particles::spacecharge
                 auto scf_arr_y = space_charge_field[lev]["y"][mfi].array();
                 auto scf_arr_z = space_charge_field[lev]["z"][mfi].array();
 
-                amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept {
-                    scf_arr_x(i, j, k) = inv2dr[0] * (phi_arr(i-1, j, k) - phi_arr(i+1, j, k));
-                    scf_arr_y(i, j, k) = inv2dr[1] * (phi_arr(i, j-1, k) - phi_arr(i, j+1, k));
-                    scf_arr_z(i, j, k) = inv2dr[2] * (phi_arr(i, j, k-1) - phi_arr(i, j, k+1));
-                });
+                if (space_charge == SpaceChargeAlgo::True_2D) {
+                    AMREX_ALWAYS_ASSERT_WITH_MESSAGE(bx.size()[2] == 1,
+                                                     "2D space charge requires exactly 1 slice in z");
+                    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int ) noexcept {
+                        scf_arr_x(i, j, 0) = inv2dr[0] * (phi_arr(i-1, j, 0) - phi_arr(i+1, j, 0));
+                        scf_arr_y(i, j, 0) = inv2dr[1] * (phi_arr(i, j-1, 0) - phi_arr(i, j+1, 0));
+                    });
+                }
+
+                if (space_charge == SpaceChargeAlgo::True_3D) {
+                    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept {
+                        scf_arr_x(i, j, k) = inv2dr[0] * (phi_arr(i-1, j, k) - phi_arr(i+1, j, k));
+                        scf_arr_y(i, j, k) = inv2dr[1] * (phi_arr(i, j-1, k) - phi_arr(i, j+1, k));
+                        scf_arr_z(i, j, k) = inv2dr[2] * (phi_arr(i, j, k-1) - phi_arr(i, j, k+1));
+                    });
+                }
             }
         }
     }

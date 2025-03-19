@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import openpmd_api as io
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
-from scipy.stats import moment
 
 
 def read_file(file_pattern):
@@ -57,7 +56,7 @@ ref_particle = read_time_series("diags/ref_particle.*")
 
 # steps & corresponding z
 steps = list(series.iterations)
-    
+
 z = list(
     map(lambda step: ref_particle[ref_particle["step"] == step].z.values[0], steps)
 )
@@ -65,19 +64,19 @@ z = list(
 # scaling to units
 millimeter = 1.0e3  # m->mm
 mrad = 1.0e3  # ImpactX uses "static units": momenta are normalized by the magnitude of the momentum of the reference particle p0: px/p0 (rad)
-#mm_mrad = 1.e6
+# mm_mrad = 1.e6
 nm_rad = 1.0e9
 
 # read reduced diagnostics
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
-        
+
 s = rbc["s"]
-sig_x = rbc["sig_x"]*millimeter
-sig_y = rbc["sig_y"]*millimeter
-sig_t = rbc["sig_t"]*millimeter
-emittance_x = rbc["emittance_x"]*nm_rad
-emittance_y = rbc["emittance_y"]*nm_rad
-emittance_t = rbc["emittance_t"]*nm_rad
+sig_x = rbc["sig_x"] * millimeter
+sig_y = rbc["sig_y"] * millimeter
+sig_t = rbc["sig_t"] * millimeter
+emittance_x = rbc["emittance_x"] * nm_rad
+emittance_y = rbc["emittance_y"] * nm_rad
+emittance_t = rbc["emittance_t"] * nm_rad
 
 length = len(s) - 1
 

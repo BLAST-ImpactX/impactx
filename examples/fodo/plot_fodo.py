@@ -16,29 +16,6 @@ from matplotlib.ticker import MaxNLocator
 from scipy.stats import moment
 
 
-def get_moments(beam):
-    """Calculate standard deviations of beam position & momenta
-    and emittance values
-
-    Returns
-    -------
-    sigx, sigy, sigt, emittance_x, emittance_y, emittance_t
-    """
-    sigx = moment(beam["position_x"], moment=2) ** 0.5  # variance -> std dev.
-    sigpx = moment(beam["momentum_x"], moment=2) ** 0.5
-    sigy = moment(beam["position_y"], moment=2) ** 0.5
-    sigpy = moment(beam["momentum_y"], moment=2) ** 0.5
-    sigt = moment(beam["position_t"], moment=2) ** 0.5
-    sigpt = moment(beam["momentum_t"], moment=2) ** 0.5
-
-    epstrms = beam.cov(ddof=0)
-    emittance_x = (sigx**2 * sigpx**2 - epstrms["position_x"]["momentum_x"] ** 2) ** 0.5
-    emittance_y = (sigy**2 * sigpy**2 - epstrms["position_y"]["momentum_y"] ** 2) ** 0.5
-    emittance_t = (sigt**2 * sigpt**2 - epstrms["position_t"]["momentum_t"] ** 2) ** 0.5
-
-    return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
-
-
 def read_file(file_pattern):
     for filename in glob.glob(file_pattern):
         df = pd.read_csv(filename, delimiter=r"\s+")
@@ -78,73 +55,65 @@ initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 ref_particle = read_time_series("diags/ref_particle.*")
 
+# steps & corresponding z
+steps = list(series.iterations)
+    
+z = list(
+    map(lambda step: ref_particle[ref_particle["step"] == step].z.values[0], steps)
+)
+
 # scaling to units
 millimeter = 1.0e3  # m->mm
 mrad = 1.0e3  # ImpactX uses "static units": momenta are normalized by the magnitude of the momentum of the reference particle p0: px/p0 (rad)
-# mm_mrad = 1.e6
+#mm_mrad = 1.e6
 nm_rad = 1.0e9
 
+# read reduced diagnostics
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
+        
+s = rbc["s"]
+sig_x = rbc["sig_x"]*millimeter
+sig_y = rbc["sig_y"]*millimeter
+sig_t = rbc["sig_t"]*millimeter
+emittance_x = rbc["emittance_x"]*nm_rad
+emittance_y = rbc["emittance_y"]*nm_rad
+emittance_t = rbc["emittance_t"]*nm_rad
+
+length = len(s) - 1
 
 # select a single particle by id
 # particle_42 = beam[beam["id"] == 42]
 # print(particle_42)
 
-
 # steps & corresponding z
 steps = list(series.iterations)
 
-z = list(
-    map(lambda step: ref_particle[ref_particle["step"] == step].z.values[0], steps)
-)
-# print(f"z={z}")
-
-
-# beam transversal size & emittance over steps
-moments = list(
-    map(
-        lambda step: (
-            step,
-            get_moments(series.iterations[step].particles["beam"].to_df()),
-        ),
-        steps,
-    )
-)
-# print(moments)
-sigx = list(map(lambda step_val: step_val[1][0] * millimeter, moments))
-sigy = list(map(lambda step_val: step_val[1][1] * millimeter, moments))
-emittance_x = list(map(lambda step_val: step_val[1][3] * nm_rad, moments))
-emittance_y = list(map(lambda step_val: step_val[1][4] * nm_rad, moments))
-
-# print(sigx, sigy)
-
-
-# print beam transversal size over steps
+# print beam transverse size over steps
 f = plt.figure(figsize=(9, 4.8))
 ax1 = f.gca()
-im_sigx = ax1.plot(z, sigx, label=r"$\lambda_x$")
-im_sigy = ax1.plot(z, sigy, label=r"$\lambda_y$")
+im_sigx = ax1.plot(s, sig_x, label=r"$\sigma_x$")
+im_sigy = ax1.plot(s, sig_y, label=r"$\sigma_y$")
 ax2 = ax1.twinx()
 ax2.set_prop_cycle(None)  # reset color cycle
-im_emittance_x = ax2.plot(z, emittance_x, ":", label=r"$\epsilon_x$")
-im_emittance_y = ax2.plot(z, emittance_y, ":", label=r"$\epsilon_y$")
+im_emittance_x = ax2.plot(s, emittance_x, ":", label=r"$\epsilon_x$")
+im_emittance_y = ax2.plot(s, emittance_y, ":", label=r"$\epsilon_y$")
 
 ax1.legend(
     handles=im_sigx + im_sigy + im_emittance_x + im_emittance_y, loc="lower center"
 )
 ax1.set_xlabel(r"$z$ [m]")
-ax1.set_ylabel(r"$\lambda_{x,y}$ [mm]")
-# ax2.set_ylabel(r"$\epsilon_{x,y}$ [mm-mrad]")
+ax1.set_ylabel(r"$\sigma_{x,y}$ [mm]")
 ax2.set_ylabel(r"$\epsilon_{x,y}$ [nm]")
 ax2.set_ylim([1.5, 2.5])
 ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 plt.tight_layout()
 if args.save_png:
-    plt.savefig("fodo_lambda.png")
+    plt.savefig("fodo_sigma.png")
 else:
     plt.show()
 
 
-# beam transversal scatter plot over steps
+# beam transverse scatter plot over steps
 num_plots_per_row = len(steps)
 fig, axs = plt.subplots(
     3, num_plots_per_row, figsize=(9, 4.8), sharex="row", sharey="row"
@@ -164,7 +133,7 @@ for step in steps:
         s=0.01,
     )
 
-    ax.set_title(f"$z={z[ncol_ax]}$ [m]")
+    ax.set_title(f"$z={z[ncol_ax]:.2f}$ [m]")
     ax.set_xlabel(r"$x$ [mm]")
 
     # x-px

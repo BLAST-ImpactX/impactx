@@ -103,17 +103,17 @@ namespace impactx::elements
 namespace SoftSolenoidData
 {
     //! last used id for a created soft solenoid
-    static inline int next_id = 0;
+    inline int next_id = 0;
 
     //! host: cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-    static inline std::map<int, std::vector<amrex::ParticleReal>> h_cos_coef = {};
+    inline std::map<int, std::vector<amrex::ParticleReal>> h_cos_coef = {};
     //! host: sine coefficients in Fourier expansion of on-axis magnetic field Bz
-    static inline std::map<int, std::vector<amrex::ParticleReal>> h_sin_coef = {};
+    inline std::map<int, std::vector<amrex::ParticleReal>> h_sin_coef = {};
 
     //! device: cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-    static inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_cos_coef = {};
+    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_cos_coef = {};
     //! device: sine coefficients in Fourier expansion of on-axis magnetic field Bz
-    static inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_sin_coef = {};
+    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_sin_coef = {};
 
 } // namespace SoftSolenoidData
 

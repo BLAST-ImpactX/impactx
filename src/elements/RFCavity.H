@@ -89,17 +89,17 @@ namespace impactx::elements
 namespace RFCavityData
 {
     //! last used id for a created RF cavity
-    static inline int next_id = 0;
+    inline int next_id = 0;
 
     //! host: cosine coefficients in Fourier expansion of on-axis electric field Ez
-    static inline std::map<int, std::vector<amrex::ParticleReal>> h_cos_coef = {};
+    inline std::map<int, std::vector<amrex::ParticleReal>> h_cos_coef = {};
     //! host: sine coefficients in Fourier expansion of on-axis electric field Ez
-    static inline std::map<int, std::vector<amrex::ParticleReal>> h_sin_coef = {};
+    inline std::map<int, std::vector<amrex::ParticleReal>> h_sin_coef = {};
 
     //! device: cosine coefficients in Fourier expansion of on-axis electric field Ez
-    static inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_cos_coef = {};
+    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_cos_coef = {};
     //! device: sine coefficients in Fourier expansion of on-axis electric field Ez
-    static inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_sin_coef = {};
+    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_sin_coef = {};
 
 } // namespace RFCavityData
 

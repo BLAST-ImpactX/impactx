@@ -87,6 +87,7 @@ jobs:
         python3 -m pip install -U -r examples/requirements.txt
         python3 -m pip install -U -r tests/python/requirements.txt
         python3 -m pip install -U openPMD-validator
+        python3 -c "import openpmd_api as io; print(io.__version__)"
     - name: Build
       env:
         # Work-around for windows-latest GH runner issue, see
@@ -209,6 +210,7 @@ jobs:
         python3 -m pip install -U -r examples/requirements.txt
         python3 -m pip install -U -r tests/python/requirements.txt
         python3 -m pip install -U openPMD-validator
+        python3 -c "import openpmd_api as io; print(io.__version__)"
     - name: Build
       shell: cmd
       env:

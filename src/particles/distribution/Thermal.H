@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <utility>
 #include <vector>
@@ -57,8 +58,8 @@ namespace distribution
         amrex::ParticleReal m_w;  ///< weight of the secondary (halo) population
 
         // GPU data
-        static inline amrex::Gpu::DeviceVector<amrex::ParticleReal> m_d_cdf1;
-        static inline amrex::Gpu::DeviceVector<amrex::ParticleReal> m_d_cdf2;
+        static inline std::unique_ptr<amrex::Gpu::DeviceVector<amrex::ParticleReal>> m_d_cdf1;
+        static inline std::unique_ptr<amrex::Gpu::DeviceVector<amrex::ParticleReal>> m_d_cdf2;
 
         ThermalData (
             amrex::ParticleReal kin,
@@ -142,14 +143,14 @@ namespace distribution
             }
 
             // copy CFD data to device
-            m_d_cdf1 = amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_nbins+1);
-            m_d_cdf2 = amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_nbins+1);
+            m_d_cdf1 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
+            m_d_cdf2 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
                                   cdf1.begin(), cdf1.end(),
-                                  m_d_cdf1.begin());
+                                  m_d_cdf1->begin());
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
                                   cdf2.begin(), cdf2.end(),
-                                  m_d_cdf2.begin());
+                                  m_d_cdf2->begin());
             amrex::Gpu::streamSynchronize();
         }
 
@@ -320,8 +321,8 @@ namespace distribution
             m_rmax = data.m_rmax;
             m_nbins = data.m_nbins;
             m_bg = data.m_bg;
-            m_cdf1 = data.m_d_cdf1.data();
-            m_cdf2 = data.m_d_cdf2.data();
+            m_cdf1 = data.m_d_cdf1->data();
+            m_cdf2 = data.m_d_cdf2->data();
         }
 
         /** Close and deallocate all data and handles.
@@ -330,8 +331,8 @@ namespace distribution
         finalize ()
         {
             // deallocate
-            ThermalData::m_d_cdf1.clear();
-            ThermalData::m_d_cdf2.clear();
+            ThermalData::m_d_cdf1.reset();
+            ThermalData::m_d_cdf2.reset();
         }
 
         /** Return 1 6D particle coordinate

@@ -13,7 +13,7 @@ from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, upd
 from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
 from ..Run.executor import run_execute_impactx_sim
-from ..Run.simulation import input_file
+from ..Run.simulation import dashboard_sim_inputs
 from .importParser import DashboardParser
 
 server, state, ctrl = setup_server()
@@ -60,7 +60,7 @@ class InputToolbar:
 
     @ctrl.trigger("export")
     def on_export_click():
-        return input_file(is_exporting=True)
+        return dashboard_sim_inputs(is_exporting=True)
 
     @ctrl.add("reset_all")
     def reset_all():

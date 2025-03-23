@@ -126,7 +126,7 @@ def generate_phase_space(is_exporting: bool) -> str:
         "    fig.savefig(\"phase_space_plot.png\")\n"
     )
 
-def input_file(is_exporting=False) -> str:
+def dashboard_sim_inputs(is_exporting=False) -> str:
     """
     This function creates the template to export
     dashboard user inputs into a python script.

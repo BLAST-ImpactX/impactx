@@ -3,7 +3,7 @@ import re
 
 from .. import setup_server
 from . import SimulationHelper, SimulationProgress
-from .simulation import input_file
+from .simulation import dashboard_sim_inputs
 
 server, state, ctrl = setup_server()
 
@@ -33,7 +33,7 @@ async def execute_impactx_sim() -> None:
 
     SimulationHelper.reset()
 
-    simulation_contents = input_file()
+    simulation_contents = dashboard_sim_inputs()
     state.sim_total_steps = SimulationProgress.determine_sim_total_steps(
         simulation_contents
     )

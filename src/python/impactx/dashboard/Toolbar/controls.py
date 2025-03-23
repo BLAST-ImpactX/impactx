@@ -12,7 +12,7 @@ from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
-from ..Run.controls import run_execute_impactx_sim
+from ..Run.executor import run_execute_impactx_sim
 from ..Run.simulation import input_file
 from .importParser import DashboardParser
 

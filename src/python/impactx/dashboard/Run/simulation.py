@@ -123,8 +123,9 @@ def generate_phase_space(is_exporting: bool) -> str:
         "import matplotlib.pyplot as plt\n"
         "fig = pc.plot_phasespace()\n"
         "if fig is not None:\n"
-        "    fig.savefig(\"phase_space_plot.png\")\n"
+        '    fig.savefig("phase_space_plot.png")\n'
     )
+
 
 def dashboard_sim_inputs(is_exporting=False) -> str:
     """

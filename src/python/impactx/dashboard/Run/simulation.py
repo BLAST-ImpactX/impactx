@@ -111,16 +111,28 @@ sim.particle_shape = {state.particle_shape}
 # -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
+def generate_phase_space(is_exporting: bool) -> str:
+    """
+    Returns the plotting section of the script as a string,
+    or an empty string if the script is being exported.
+    """
 
+    if is_exporting:
+        return ""
+    return (
+        "import matplotlib.pyplot as plt\n"
+        "fig = pc.plot_phasespace()\n"
+        "if fig is not None:\n"
+        "    fig.savefig(\"phase_space_plot.png\")\n"
+    )
 
-def input_file():
+def input_file(is_exporting=False) -> str:
     """
     This function creates the template to export
     dashboard user inputs into a python script.
     """
     script = f"""
 from impactx import ImpactX, distribution, elements, twiss
-import matplotlib.pyplot as plt
 
 sim = ImpactX()
 
@@ -149,10 +161,7 @@ sim.lattice.extend(lattice_configuration)
 # Simulate
 sim.track_particles()
 
-fig = pc.plot_phasespace()
-if fig is not None:
-    fig.savefig("phase_space_plot.png")
-
+{generate_phase_space(is_exporting)}
 # Clean Shutdown
 sim.finalize()
 """

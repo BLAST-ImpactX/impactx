@@ -60,7 +60,7 @@ class InputToolbar:
 
     @ctrl.trigger("export")
     def on_export_click():
-        return input_file()
+        return input_file(is_exporting=True)
 
     @ctrl.add("reset_all")
     def reset_all():

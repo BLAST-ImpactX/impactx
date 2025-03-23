@@ -20,7 +20,6 @@ from .. import (
     InputComponents,
     generalFunctions,
 )
-from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
 
@@ -92,29 +91,6 @@ def populate_distribution_parameters():
 
     generalFunctions.update_simulation_validation_status()
     return state.selected_distribution_parameters
-
-
-# -----------------------------------------------------------------------------
-# Write to file functions
-# -----------------------------------------------------------------------------
-
-
-def distribution_parameters():
-    """
-    :return: An instance of the selected distribution class,
-    initialized with the appropriate parameters provided by the user.
-    """
-
-    distribution_name = state.distribution
-    parameters = DistributionFunctions.convert_distribution_parameters_to_valid_type()
-
-    if state.distribution_type == "Twiss":
-        twiss_params = twiss(**parameters)
-        distr = getattr(distribution, distribution_name)(**twiss_params)
-    else:
-        distr = getattr(distribution, distribution_name)(**parameters)
-
-    return distr
 
 
 # -----------------------------------------------------------------------------

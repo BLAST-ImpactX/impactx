@@ -43,17 +43,6 @@ def plot_over_s():
     ctrl.plotly_figure_update(fig)
 
 
-def generate_phase_space(pc):
-    fig = adjusted_settings_plot(pc)
-    ctrl.matplotlib_figure_update(fig)
-
-    fig_original = pc.plot_phasespace()
-
-    if fig_original is not None:
-        image_base64 = fig_to_base64(fig_original)
-        state.phase_space_png = f"data:image/png;base64, {image_base64}"
-
-
 PLOTS = {
     "Plot Over S": plot_over_s,
     "Phase Space Plots": None,

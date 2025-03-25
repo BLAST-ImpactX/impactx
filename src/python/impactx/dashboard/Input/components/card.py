@@ -108,9 +108,10 @@ class CardComponents:
         """
         Create a Vuetify VBtn containing an icon.
 
-        :param icon_name: A string for a static icon, or a list/tuple of two strings for conditional rendering.
+        :param icon_name: A string or a list/tuple of two strings for conditional rendering of the button icon.
         :param color: The button color.
-        :param dynamic_condition: A Vue expression that determines which icon to display when `icon_name` is a list/tuple.
+        :param dynamic_condition: A Vue boolean expression used to toggle between the two values in 'icon_name' and 'description'.
+        :param description: A string or a list/tuple of two strings for conditional tooltip text.
         :param kwargs: Extra keyword arguments for the VBtn component.
         """
 

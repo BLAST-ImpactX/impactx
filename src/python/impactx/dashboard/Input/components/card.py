@@ -114,7 +114,28 @@ class CardComponents:
         :param kwargs: Extra keyword arguments for the VBtn component.
         """
 
-        with vuetify.VTooltip(location="bottom", text=description):
+        def validate_dynamic_condition(value, name):
+            """
+            Ensure dynamic_condition components are a list/tuple with exactly 2 strings for dynamic toggling (e.g., expand/collapse).
+            """
+
+            if not isinstance(value, (list, tuple)):
+                raise ValueError(f"When dynamic_condition is True, {name} must be a list or tuple of exactly 2 strings")
+            if len(value) != 2:
+                raise ValueError(f"When dynamic_condition is True, {name} must contain exactly 2 elements")
+            if not all(isinstance(item, str) for item in value):
+                raise ValueError(f"When dynamic_condition is True, all elements in {name} must be strings")
+
+        if dynamic_condition:
+            validate_dynamic_condition(icon_name, "icon_name")
+            validate_dynamic_condition(description, "description")
+
+        if dynamic_condition:
+            tooltip_text =  (f"{dynamic_condition} ? '{description[1]}' : '{description[0]}'",)
+        else:
+            tooltip_text = description
+
+        with vuetify.VTooltip(location="bottom", text=tooltip_text):
             with vuetify.Template(v_slot_activator="{ props }"):
                 with vuetify.VBtn(
                     color=color,
@@ -124,7 +145,7 @@ class CardComponents:
                     v_bind="props",
                     **kwargs,
                 ):
-                    if isinstance(icon_name, (list, tuple)):
+                    if dynamic_condition:
                         with vuetify.Template(v_if=dynamic_condition):
                             vuetify.VIcon(icon_name[1])
                         with vuetify.Template(v_else=True):
@@ -176,7 +197,7 @@ class CardComponents:
             ["mdi-arrow-expand", "mdi-close"],
             click=f"{expand_state} = !{expand_state}",
             dynamic_condition=expand_state,
-            description="Expand",
+            description=["Expand","Close"],
         )
 
     @staticmethod
@@ -195,5 +216,5 @@ class CardComponents:
             ["mdi-chevron-up", "mdi-chevron-down"],
             click=f"{collapsed_state_name} = !{collapsed_state_name}",
             dynamic_condition=collapsed_state_name,
-            description="Collapse",
+            description=["Minimize", "Show"],
         )

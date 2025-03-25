@@ -92,7 +92,7 @@ class InputToolbar:
             ["mdi-collapse-all", "mdi-expand-all"],
             click=ctrl.collapse_all_sections,
             dynamic_condition="expand_all_sections",
-            description="Collapse all",
+            description=["Minimize All", "Show All"],
         )
 
     @staticmethod

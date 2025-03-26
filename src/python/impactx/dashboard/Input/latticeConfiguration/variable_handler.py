@@ -66,9 +66,10 @@ class LatticeVariableHandler:
 
         if key_name == "name":
             LatticeVariableHandler.validate_variable_name(event, index)
-            state.variables[index]["value"] = init_value
-            return
-        state.variables[index][key_name] = event
+            state.variables[index]["name"] = event
+        else:
+            state.variables[index][key_name] = event
+        state.dirty("variables")
 
     @ctrl.add("reset_variables")
     def on_reset_variables() -> None:
@@ -198,6 +199,7 @@ class LatticeVariableHandler:
                                         ),
                                         error_messages=("variable.error_message", []),
                                         hide_details=True,
+                                        clearable=True,
                                     )
                                 with vuetify.VCol(cols=1, classes="px-0 text-center"):
                                     html.Span("=", classes="mx-0")
@@ -214,6 +216,7 @@ class LatticeVariableHandler:
                                             "['value', index, $event]",
                                         ),
                                         hide_details=True,
+                                        clearable=True,
                                     )
                                 with vuetify.VCol(cols=2, classes="d-flex"):
                                     with html.Div(classes="mr-2"):

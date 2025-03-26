@@ -6,7 +6,7 @@
 #include "pyImpactX.H"
 
 #include <ImpactX.H>
-#include <particles/elements/All.H>
+#include <elements/All.H>
 
 #ifndef PYIMPACTX_VERSION_INFO
 #   include <ImpactXVersion.H>

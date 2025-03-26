@@ -95,16 +95,20 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
         # TODO:
-        # amrex.throw_exception = 1
-        # amrex.signal_handling = 0
+        # amrex.throw_exception=1
+        # amrex.signal_handling=0
+        # amrex.the_arena_init_size=0
         impactx_test_set_pythonpath(${name}.run)
     else()
         add_test(NAME ${name}.run
                  COMMAND
                     ${THIS_MPI_TEST_EXE} $<TARGET_FILE:app> ${INPUTS_FILE}
                         amrex.abort_on_unused_inputs=1
-                        amrex.throw_exception = 1
-                        amrex.signal_handling = 0
+                        amrex.throw_exception=1
+                        amrex.signal_handling=0
+                        # allocate GPU memory on-demand instead of pre-allocating 3/4th
+                        # to enable parallel test runs on the same GPU
+                        amrex.the_arena_init_size=0
                         impactx.always_warn_immediately=1
                         impactx.abort_on_warning_threshold=low
                         ${INPUTS_ARGS}
@@ -517,6 +521,20 @@ if(ImpactX_FFT)
     )
 endif()
 
+# Expanding Beam Test Using Envelope Tracking ##################################
+#
+add_impactx_test(expanding_beam_envelope
+    examples/expanding_beam/input_expanding_envelope.in
+    OFF  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(expanding_beam_envelope.py
+    examples/expanding_beam/run_expanding_envelope.py
+    OFF  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_envelope.py
+    OFF  # no plot script yet
+)
 
 # IOTA Nonlinear Focusing Channel Test ########################################
 #
@@ -580,6 +598,21 @@ add_impactx_test(kurth_10nC_periodic.py
     OFF  # no plot script yet
 )
 
+# Kurth Beam in a Periodic Channel with Envelope Tracking ######################
+#
+# with space charge
+add_impactx_test(kurth_10nC_periodic_envelope
+    examples/kurth/input_kurth_10nC_periodic_envelope.in
+    OFF  # ImpactX MPI-parallel
+    examples/kurth/analysis_kurth_10nC_periodic_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kurth_10nC_periodic_envelope.py
+    examples/kurth/run_kurth_10nC_periodic_envelope.py
+    OFF  # ImpactX MPI-parallel
+    examples/kurth/analysis_kurth_10nC_periodic_envelope.py
+    OFF  # no plot script yet
+)
 
 # Acceleration by RF Cavities #################################################
 #
@@ -622,6 +655,28 @@ add_impactx_test(solenoid.MADX.py
     examples/solenoid/analysis_solenoid.py
     OFF  # no plot script yet
 )
+
+
+# Ideal, Hard-Edge Solenoid (Restart + 270 degrees) ###########################
+#
+# w/o space charge
+add_impactx_test(solenoid.restart
+    examples/solenoid_restart/input_solenoid.in
+    OFF  # ImpactX MPI-parallel
+    examples/solenoid_restart/analysis_solenoid.py
+    OFF  # no plot script yet
+)
+set_property(TEST solenoid.restart.run APPEND PROPERTY DEPENDS "solenoid.run")
+
+add_impactx_test(solenoid.restart.py
+    examples/solenoid_restart/run_solenoid.py
+    OFF  # ImpactX MPI-parallel
+    examples/solenoid_restart/analysis_solenoid.py
+    OFF  # no plot script yet
+)
+if(ImpactX_PYTHON)
+    set_property(TEST solenoid.restart.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
 
 
 # Pole-face rotation ##########################################################
@@ -811,6 +866,21 @@ add_impactx_test(FODO.rf.sc.py
     OFF  # no plot script yet
 )
 
+# FODO + RF EPAC2004 Using Envelope Tracking ##################################
+#
+# with space charge
+add_impactx_test(FODO.rf.sc.envelope
+    examples/epac2004_benchmarks/input_fodo_rf_SC_envelope.in
+    ON  # ImpactX MPI-parallel
+    examples/epac2004_benchmarks/analysis_fodo_rf_SC_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO.rf.sc.envelope.py
+    examples/epac2004_benchmarks/run_fodo_rf_SC_envelope.py
+    OFF  # ImpactX MPI-parallel
+    examples/epac2004_benchmarks/analysis_fodo_rf_SC_envelope.py
+    OFF  # no plot script yet
+)
 
 # Thermal Beam EPAC2004 #######################################################
 #
@@ -1245,5 +1315,21 @@ add_impactx_test(examples-scraping.py
     examples/scraping_beam/run_scraping.py
     OFF   # ImpactX MPI-parallel
     examples/scraping_beam/analysis_scraping.py
+    OFF  # no plot script yet
+)
+
+# FODO cell with 2D space charge using envelope tracking ######################
+#
+# with space charge
+add_impactx_test(FODO.envelope.sc
+    examples/fodo_space_charge/input_fodo_envelope_sc.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_envelope_sc.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO.envelope.sc.py
+    examples/fodo_space_charge/run_fodo_envelope_sc.py
+    OFF   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_envelope_sc.py
     OFF  # no plot script yet
 )

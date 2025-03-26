@@ -1,6 +1,7 @@
 macro(find_ablastr)
     # if pyAMReX is external, AMReX must be as well
-    if(DEFINED ImpactX_pyamrex_internal AND NOT ImpactX_pyamrex_internal)
+    if(ImpactX_amrex_internal AND NOT ImpactX_pyamrex_internal)
+        message(WARNING "AMReX requested as internal superbuild, but pyAMReX as external. Changing to both external.")
         set(ImpactX_amrex_internal OFF CACHE BOOL
             "Download & build AMReX" FORCE)
     endif()
@@ -92,10 +93,11 @@ macro(find_ablastr)
                 enable_language(CUDA)
             endif()
             add_subdirectory(${ImpactX_ablastr_src} _deps/localablastr-build/)
-            # TODO: this is a bit hacky, check if we find a variable like
-            #       fetchedamrex_SOURCE_DIR or FETCHCONTENT_SOURCE_DIR_FETCHEDAMREX
-            #       or AMReX_DIR or AMReX_MODULE_PATH that we could use for the named path instead
-            list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
+            if(DEFINED AMReX_DIR)
+                list(APPEND CMAKE_MODULE_PATH "${AMReX_DIR}/AMReXCMakeModules")
+            else()
+                list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
+            endif()
         else()
             if(ImpactX_COMPUTE STREQUAL CUDA)
                 enable_language(CUDA)
@@ -106,7 +108,11 @@ macro(find_ablastr)
                 BUILD_IN_SOURCE 0
             )
             FetchContent_MakeAvailable(fetchedablastr)
-            list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
+            if(DEFINED AMReX_DIR)
+                list(APPEND CMAKE_MODULE_PATH "${AMReX_DIR}/AMReXCMakeModules")
+            else()
+                list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
+            endif()
 
             # advanced fetch options
             mark_as_advanced(FETCHCONTENT_BASE_DIR)
@@ -128,12 +134,17 @@ macro(find_ablastr)
         set(COMPONENT_DIM 3D)
         set(COMPONENT_PRECISION ${ImpactX_PRECISION} P${ImpactX_PRECISION})
 
-        find_package(ABLASTR 25.01 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
+        find_package(ABLASTR 25.03 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
         message(STATUS "ABLASTR: Found version '${ABLASTR_VERSION}'")
     endif()
 
     # AMReX CMake helper scripts
     list(APPEND CMAKE_MODULE_PATH "${AMReX_DIR}/AMReXCMakeModules")
+
+    # ABLASTR's find_package(AMReX) might not re-export on ImpactX_amrex_internal==FALSE
+    if(NOT TARGET AMReX::amrex)
+        find_package(AMReX CONFIG REQUIRED)
+    endif()
 
     # transitive control for openPMD external
     if(NOT ImpactX_openpmd_src AND NOT ImpactX_openpmd_internal)
@@ -159,10 +170,10 @@ set(ImpactX_openpmd_src ""
     "Local path to openPMD-api source directory (preferred if set)")
 
 # Git fetcher
-set(ImpactX_ablastr_repo "https://github.com/ECP-WarpX/WarpX.git"
+set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "958a39463c9e3fea0bbe1da0306104ccf9a2164c"
+set(ImpactX_ablastr_branch "25.03"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 

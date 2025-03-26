@@ -4,6 +4,8 @@ Run ImpactX
 ===========
 
 
+.. _usage_run-tracking-mode:
+
 How to select a tracking mode
 -----------------------------
 
@@ -11,14 +13,19 @@ ImpactX can be run using any of three distinct tracking modes.  ImpactX's most p
 Additionally, ImpactX provides two simplified tracking modes to aid scientists through every step, from beamline inception to operation:
 tracking of the beam envelope (6x6 covariance matrix) through linearized transport maps, or only tracking of the reference particle orbit.
 
-================== =============== =============== ==================
-Mode               Use Case        Generality      Collective Effects
-================== =============== =============== ==================
-Particle Tracking  Full Dynamics   Most general    Supported
-Envelope Tracking  Rapid Scans     Linearized      `Soon <https://github.com/ECP-WarpX/impactx/issues/826>`__
+================== =============== =============== ====================
+Mode               Use Case        Generality      Space Charge Effects
+================== =============== =============== ====================
+Particle Tracking  Full Dynamics   Most general    Supported (3D only)
+Envelope Tracking  Rapid Scans     Linearized      Supported (2D or 3D)
 Reference Tracking Early Design    Reference orbit No
-================== =============== =============== ==================
+================== =============== =============== ====================
 
+The 3D space charge model used during envelope tracking currently assumes that the spatial block of the 6x6 beam covariance matrix is diagonal--that is, ``<xy> = <yt> = <tx> = 0``.
+Support for 3D space charge during envelope tracking with nonzero correlations ``<xy>``, ``<yt>``, or ``<tx>`` will be added in the near future.
+
+
+.. _usage_run-user-interface:
 
 How to select a user interface
 ------------------------------
@@ -39,6 +46,8 @@ Application Advanced          Minimal requirements      No          No          
 Dashboard   Beginner          Learning, Control-Systems Yes         No          Yes            Not yet
 =========== ================= ========================= =========== =========== ============== ===========
 
+
+.. _usage_run-user-interface-how:
 
 How to run
 ----------
@@ -66,6 +75,8 @@ After installing ImpactX, run :ref:`one of our examples <usage-examples>`, e.g.,
          impactx-dashboard
 
 
+.. _usage_run-computing-system:
+
 How to select a computing system
 --------------------------------
 
@@ -86,6 +97,6 @@ As a rough guidance, they are best used for:
 ======== ========================================================= ======= =================
 Hardware Resolution needs                                          AI/ML   Energy Efficiency
 ======== ========================================================= ======= =================
-CPUs     Small (<10M particles) runs and coarse collective effects Yes     Low
-GPUs     Many (>10M) particles and/or detailed collective effects  Fastest High
+CPUs     Small (<10M particles) runs and coarse collective effects Yes     Lower
+GPUs     Many (>10M) particles and/or detailed collective effects  Fastest Higher
 ======== ========================================================= ======= =================

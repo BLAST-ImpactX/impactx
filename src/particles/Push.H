@@ -27,7 +27,7 @@ namespace impactx
      */
     void Push (
         ImpactXParticleContainer & pc,
-        KnownElements & element_variant,
+        elements::KnownElements & element_variant,
         int step,
         int period
     );

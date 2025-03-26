@@ -128,7 +128,7 @@ def plot_beam_df(
     axT,
     unit=1e6,
     unit_z=1e3,
-    unit_label="$\mu$m",
+    unit_label=r"$\mu$m",
     unit_z_label="mm",
     alpha=1.0,
     cmap=None,
@@ -395,7 +395,7 @@ else:
 
 ######## plot phase spaces ###########
 beam_impactx_surrogate_series = io.Series(
-    "diags/openPMD/monitor.bp", io.Access.read_only
+    "diags/openPMD/monitor.h5", io.Access.read_only
 )
 impactx_surrogate_steps = list(beam_impactx_surrogate_series.iterations)
 

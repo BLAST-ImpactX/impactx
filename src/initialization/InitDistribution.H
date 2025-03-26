@@ -17,6 +17,7 @@
 #include <AMReX_Extension.H>  // for AMREX_RESTRICT
 #include <AMReX_REAL.H>
 
+#include <optional>  // for std::optional
 #include <utility>  // for std::move
 
 
@@ -39,10 +40,14 @@ namespace impactx::initialization
     read_distribution (amrex::ParmParse const & pp_dist);
 
     /** Ignore the shape of a distribution and use the 2nd moments to create a covariance matrix
+     *
+     * @param distr the distribution to draw from
+     * @param intensity the beam charge (in C, 3D space charge) or current (in A, 2D space charge)
      */
-    CovarianceMatrix
-    create_covariance_matrix (
-        distribution::KnownDistributions const & distr
+    Envelope
+    create_envelope (
+        distribution::KnownDistributions const & distr,
+        std::optional<amrex::ParticleReal> intensity = std::nullopt
     );
 
     /** Initialize a single particle's data using the given distribution

@@ -6,7 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from ...trame_setup import setup_server
+from ... import setup_server
 
 server, state, ctrl = setup_server()
 

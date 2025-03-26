@@ -6,7 +6,7 @@
 #include "pyImpactX.H"
 
 #include <particles/ImpactXParticleContainer.H>
-#include <particles/diagnostics/ReducedBeamCharacteristics.H>
+#include <diagnostics/ReducedBeamCharacteristics.H>
 
 #include <AMReX.H>
 #include <AMReX_MFIter.H>
@@ -118,10 +118,6 @@ void init_impactxparticlecontainer(py::module& m)
              "Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters."
         )
 
-        .def("redistribute",
-             &ImpactXParticleContainer::Redistribute,
-             "Redistribute particles in the current mesh in x, y, z"
-        )
         // TODO: cleverly pass the list of rho multifabs as references
         /*
         .def("deposit_charge",

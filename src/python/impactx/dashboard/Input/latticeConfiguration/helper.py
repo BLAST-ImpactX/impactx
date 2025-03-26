@@ -1,11 +1,11 @@
 from trame.widgets import html
 
+from ... import setup_server, vuetify
 from .. import (
+    CardComponents,
     InputComponents,
     NavigationComponents,
     generalFunctions,
-    setup_server,
-    vuetify,
 )
 
 server, state, ctrl = setup_server()
@@ -194,84 +194,147 @@ class LatticeVariableHandler:
 
     @staticmethod
     def dialog_settings():
-        dialog_name = "lattice_configuration_dialog"
+        dialog_name = "lattice_configuration_dialog_tab_settings"
 
-        NavigationComponents.create_dialog_tabs(
+        with NavigationComponents.create_dialog_tabs(
             dialog_name, 2, ["Variables", "Defaults"]
+        ):
+            with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+                with vuetify.VTabsWindowItem():
+                    with vuetify.VCardText():
+                        with vuetify.VContainer(fluid=True):
+                            with vuetify.VRow(
+                                v_for="(variable, index) in variables",
+                                classes="align-center justify-center py-0",
+                            ):
+                                with vuetify.VCol(cols=5, classes="pr-0"):
+                                    vuetify.VTextField(
+                                        placeholder="Name",
+                                        v_model=("variable.name",),
+                                        outlined=True,
+                                        dense=True,
+                                        background_color="grey lighten-4",
+                                        input=(
+                                            ctrl.update_variable,
+                                            "['name', index, $event]",
+                                        ),
+                                        change="flushState('variables')",
+                                        error_messages=("variable.error_message", []),
+                                        hide_details=True,
+                                    )
+                                with vuetify.VCol(cols=1, classes="px-0 text-center"):
+                                    html.Span("=", classes="mx-0")
+                                with vuetify.VCol(cols=4, classes="pl-0"):
+                                    vuetify.VTextField(
+                                        placeholder="Value",
+                                        v_model=("variable.value",),
+                                        outlined=True,
+                                        dense=True,
+                                        type="number",
+                                        background_color="grey lighten-4",
+                                        change=(
+                                            ctrl.update_variable,
+                                            "['value', index, $event]",
+                                        ),
+                                        hide_details=True,
+                                    )
+                                with vuetify.VCol(cols=2, classes="d-flex"):
+                                    with html.Div(classes="mr-2"):
+                                        with LatticeVariableHandler.variable_btn(
+                                            color="primary",
+                                            click=ctrl.add_variable,
+                                            v_show="index === variables.length - 1",
+                                        ):
+                                            LatticeVariableHandler.variable_btn_icon(
+                                                "mdi-plus"
+                                            )
+                                    with html.Div():
+                                        with LatticeVariableHandler.variable_btn(
+                                            color="secondary",
+                                            click=(ctrl.delete_variable, "[index]"),
+                                            disabled=("is_only_variable",),
+                                        ):
+                                            LatticeVariableHandler.variable_btn_icon(
+                                                "mdi-delete"
+                                            )
+                            with vuetify.VRow(classes="mt-2"):
+                                with vuetify.VCol():
+                                    vuetify.VBtn(
+                                        "Reset Variables",
+                                        color="accent",
+                                        click=ctrl.reset_variables,
+                                        block=True,
+                                    )
+                with vuetify.VTabsWindowItem():
+                    with vuetify.VCardText():
+                        with vuetify.VRow():
+                            with vuetify.VCol(cols=3):
+                                InputComponents.text_field(
+                                    label="nslice",
+                                    v_model_name="nslice",
+                                    change=(
+                                        ctrl.nsliceDefaultChange,
+                                        "['nslice', $event]",
+                                    ),
+                                )
+
+
+class LatticeConfigurationHelper:
+    """
+    Helper class to build the Lattice Configuration section of the dashboard
+    """
+
+    BUTTON_COLOR = "grey-darken-2"
+    BUTTON_COLOR_LIGHTER = "grey-darken-1"
+
+    @staticmethod
+    def settings() -> vuetify.VBtn:
+        """
+        A button which opens the lattice configuration settings.
+        """
+
+        CardComponents.card_button(
+            "mdi-cog",
+            color=LatticeConfigurationHelper.BUTTON_COLOR,
+            click="lattice_configuration_dialog_settings = true",
+            documentation="Settings",
         )
 
-        with vuetify.VTabsItems(v_model=(dialog_name, 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VContainer(fluid=True):
-                        with vuetify.VRow(
-                            v_for="(variable, index) in variables",
-                            classes="align-center justify-center py-0",
-                        ):
-                            with vuetify.VCol(cols=5, classes="pr-0"):
-                                vuetify.VTextField(
-                                    placeholder="Name",
-                                    v_model=("variable.name",),
-                                    outlined=True,
-                                    dense=True,
-                                    background_color="grey lighten-4",
-                                    input=(
-                                        ctrl.update_variable,
-                                        "['name', index, $event]",
-                                    ),
-                                    change="flushState('variables')",
-                                    error_messages=("variable.error_message", []),
-                                    hide_details=True,
-                                )
-                            with vuetify.VCol(cols=1, classes="px-0 text-center"):
-                                html.Span("=", classes="mx-0")
-                            with vuetify.VCol(cols=4, classes="pl-0"):
-                                vuetify.VTextField(
-                                    placeholder="Value",
-                                    v_model=("variable.value",),
-                                    outlined=True,
-                                    dense=True,
-                                    type="number",
-                                    background_color="grey lighten-4",
-                                    change=(
-                                        ctrl.update_variable,
-                                        "['value', index, $event]",
-                                    ),
-                                    hide_details=True,
-                                )
-                            with vuetify.VCol(cols=2, classes="d-flex"):
-                                with html.Div(classes="mr-2"):
-                                    with LatticeVariableHandler.variable_btn(
-                                        color="primary",
-                                        click=ctrl.add_variable,
-                                        v_show="index === variables.length - 1",
-                                    ):
-                                        LatticeVariableHandler.variable_btn_icon(
-                                            "mdi-plus"
-                                        )
-                                with html.Div():
-                                    with LatticeVariableHandler.variable_btn(
-                                        color="secondary",
-                                        click=(ctrl.delete_variable, "[index]"),
-                                        disabled=("is_only_variable",),
-                                    ):
-                                        LatticeVariableHandler.variable_btn_icon(
-                                            "mdi-delete"
-                                        )
-                        with vuetify.VRow(classes="mt-2"):
-                            with vuetify.VCol():
-                                vuetify.VBtn(
-                                    "Reset Variables",
-                                    color="accent",
-                                    click=ctrl.reset_variables,
-                                    block=True,
-                                )
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol(cols=3):
-                            InputComponents.text_field(
-                                label="nslice",
-                                v_model_name="nslice",
-                                change=(ctrl.nsliceDefaultChange, "['nslice', $event]"),
-                            )
+    @staticmethod
+    def move_element_up() -> vuetify.VBtn:
+        """
+        A button which allows the dashboard user to
+        move a lattice element's index upward.
+        """
+
+        CardComponents.card_button(
+            "mdi-menu-up",
+            color=LatticeConfigurationHelper.BUTTON_COLOR_LIGHTER,
+            click=(ctrl.move_latticeElementIndex_up, "[index]"),
+        )
+
+    @staticmethod
+    def move_element_down() -> vuetify.VBtn:
+        """
+        A button which allows the dashboard user to
+        move a lattice element's index downward.
+        """
+
+        CardComponents.card_button(
+            "mdi-menu-down",
+            color=LatticeConfigurationHelper.BUTTON_COLOR_LIGHTER,
+            click=(ctrl.move_latticeElementIndex_down, "[index]"),
+        )
+
+    @staticmethod
+    def delete_element() -> vuetify.VBtn:
+        """
+        A button which allows the dashboard user to
+        move a lattice element's index downward.
+        """
+
+        CardComponents.card_button(
+            "mdi-delete",
+            color=LatticeConfigurationHelper.BUTTON_COLOR,
+            click=(ctrl.deleteLatticeElement, "[index]"),
+        )

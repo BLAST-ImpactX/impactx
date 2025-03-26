@@ -1,16 +1,17 @@
-from trame.widgets import vuetify as vuetify
-
-from ..trame_setup import setup_server
-from .components import CardComponents, InputComponents, NavigationComponents
+from .components.card import CardBase, CardComponents
+from .components.input import InputComponents
+from .components.navigation import NavigationComponents
 from .defaults import DashboardDefaults
 from .generalFunctions import generalFunctions
 
 __all__ = [
-    "InputComponents",
+    "CardBase",
     "CardComponents",
-    "vuetify",
-    "DashboardDefaults",
+    "InputComponents",
     "NavigationComponents",
+    "DashboardDefaults",
     "generalFunctions",
-    "setup_server",
+    "InputComponents",
+    "NavigationComponents",
+    "CardBase",
 ]

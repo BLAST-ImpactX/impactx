@@ -1,12 +1,20 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
+from ... import setup_server, vuetify
 from .. import (
+    CardBase,
     CardComponents,
     InputComponents,
     NavigationComponents,
     generalFunctions,
-    setup_server,
-    vuetify,
 )
-from .spaceChargeFunctions import SpaceChargeFunctions
+from . import SpaceChargeFunctions
 
 server, state, ctrl = setup_server()
 
@@ -163,93 +171,66 @@ def on_update_prob_relative_call(index, value):
 # -----------------------------------------------------------------------------
 
 
-def multigrid_settings():
-    vuetify.VIcon(
-        "mdi-cog",
-        v_if="poisson_solver == 'multigrid'",
-        click="space_charge_dialog_settings = true",
-    )
+class SpaceChargeConfiguration(CardBase):
+    HEADER_NAME = "Space Charge"
 
+    def __init__(self):
+        super().__init__()
 
-class SpaceChargeConfiguration:
-    @staticmethod
-    def card():
-        """
-        Creates UI content for space charge configuration
-        """
-
+    def card_content(self):
         with vuetify.VDialog(
             v_model=("space_charge_dialog_settings", False), width="500px"
         ):
             SpaceChargeConfiguration.dialog_settings()
 
-        with vuetify.VCard(v_show="space_charge", style="width: 340px;"):
+        with vuetify.VCard(**self.card_props):
             CardComponents.input_header(
-                "Space Charge", additional_components=multigrid_settings
+                self.HEADER_NAME,
+                additional_components={"end": SpaceChargeFunctions.multigrid_settings},
             )
-            with vuetify.VCardText():
-                with vuetify.VRow(classes="my-0"):
-                    with vuetify.VCol(cols=5, classes="py-0"):
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Poisson Solver",
-                            hide_details=True,
                         )
-                    with vuetify.VCol(cols=4, classes="py-0"):
+                    with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Particle Shape",
                         )
-                    with vuetify.VCol(cols=3, classes="py-0"):
+                    with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Max Level",
                         )
-                with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "nCell",
-                        classes="font-weight-bold black--text",
-                    )
-                with vuetify.VRow(classes="my-0"):
-                    for direction in ["x", "y", "z"]:
-                        with vuetify.VCol(cols=4, classes="py-0"):
-                            InputComponents.text_field(
-                                label="",
-                                v_model_name=f"n_cell_{direction}",
-                                prefix=f"{direction}:",
-                                style="margin-top: -5px",
-                            )
-                with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "Blocking Factor",
-                        classes="font-weight-bold black--text mt-2",
-                    )
-                with vuetify.VRow(classes="my-0"):
-                    for direction in ["x", "y", "z"]:
-                        with vuetify.VCol(cols=4, classes="py-0"):
-                            InputComponents.text_field(
-                                label="",
-                                prefix=f"{direction}:",
-                                v_model_name=f"blocking_factor_{direction}",
-                                style="margin-top: -5px",
-                            )
-                with vuetify.VCol(classes="pa-0"):
-                    vuetify.VListItemSubtitle(
-                        "prob_relative",
-                        classes="font-weight-bold black--text mt-2",
-                    )
-                with vuetify.VRow(classes="my-0"):
+                for field in ["n_cell", "blocking_factor"]:
+                    with vuetify.VRow(**self.ROW_STYLE):
+                        for direction in ["x", "y", "z"]:
+                            with vuetify.VCol(cols=4):
+                                InputComponents.text_field(
+                                    label=field if direction == "x" else "",
+                                    v_model_name=f"{field}_{direction}",
+                                    prefix=f"{direction}:",
+                                )
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(
-                        v_for=("(field, index) in prob_relative_fields",),
-                        classes="py-0",
+                        cols=4,
+                        v_for="(field, index) in prob_relative_fields",
+                        **self.ROW_STYLE,
                     ):
                         vuetify.VTextField(
-                            placeholder=("val."),
+                            label=("index === 0 ? 'prob_relative' : ''",),
                             v_model=("field.value",),
-                            input=(ctrl.update_prob_relative, "[index, $event]"),
+                            update_modelValue=(
+                                ctrl.update_prob_relative,
+                                "[index, $event]",
+                            ),
                             error_messages=("field.error_message",),
                             type="number",
                             step=("field.step",),
                             __properties=["step"],
-                            dense=True,
-                            style="margin-top: -5px",
+                            density="compact",
+                            variant="underlined",
+                            hide_details="auto",
                         )
 
     @staticmethod
@@ -259,27 +240,27 @@ class SpaceChargeConfiguration:
         settings.
         """
         dialog_name = "space_charge_dialog_tab_settings"
-        NavigationComponents.create_dialog_tabs(
+        with NavigationComponents.create_dialog_tabs(
             dialog_name, 1, ["Advanced Multigrid Settings"]
-        )
-        with vuetify.VTabsItems(v_model=("dialog_name", 0)):
-            with vuetify.VTabItem():
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Relative Tolerance",
-                            )
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Absolute Tolerance",
-                            )
-                    with vuetify.VRow():
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Max Iters",
-                            )
-                        with vuetify.VCol():
-                            InputComponents.text_field(
-                                label="MLMG Verbosity",
-                            )
+        ):
+            with vuetify.VTabsWindow(v_model=("dialog_name", 0)):
+                with vuetify.VTabsWindowItem():
+                    with vuetify.VCardText():
+                        with vuetify.VRow():
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Relative Tolerance",
+                                )
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Absolute Tolerance",
+                                )
+                        with vuetify.VRow():
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Max Iters",
+                                )
+                            with vuetify.VCol():
+                                InputComponents.text_field(
+                                    label="MLMG Verbosity",
+                                )

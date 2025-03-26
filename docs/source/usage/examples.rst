@@ -52,6 +52,7 @@ Space Charge
    examples/cfchannel/README.rst
    examples/kurth/README.rst
    examples/epac2004_benchmarks/README.rst
+   examples/fodo_space_charge/README.rst
 
 Coherent Synchrotron Radiation (CSR)
 """"""""""""""""""""""""""""""""""""
@@ -83,6 +84,7 @@ Channels & Rings
    :maxdepth: 1
 
    examples/fodo_channel/README.rst
+   examples/solenoid_restart/README.rst
 
 
 Lattice Design & Optimization

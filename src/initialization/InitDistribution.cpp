@@ -10,6 +10,7 @@
 #include "initialization/InitDistribution.H"
 
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
@@ -154,13 +155,15 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt);
-            } else {
+            } else if (base_dist_type == "empty") {
+                dist = distribution::Empty();
+            } else
+            {
                 throw std::runtime_error("Unknown distribution: " + distribution_type);
             }
 
         }
-        else if (distribution_type == "thermal")
-        {
+        else if (distribution_type == "thermal") {
             amrex::ParticleReal k, kT, kT_halo, normalize, normalize_halo;
             amrex::ParticleReal halo = 0.0;
             pp_dist.getWithParser("k", k);
@@ -173,15 +176,20 @@ namespace impactx
             pp_dist.queryWithParser("halo", halo);
 
             dist = distribution::Thermal(k, kT, kT_halo, normalize, normalize_halo, halo);
+        }
+        else if (distribution_type == "empty")
+        {
+            dist = distribution::Empty();
         } else {
             throw std::runtime_error("Unknown distribution: " + distribution_type);
         }
         return dist;
     }
 
-    CovarianceMatrix
-    initialization::create_covariance_matrix (
-        distribution::KnownDistributions const & distr
+    Envelope
+    initialization::create_envelope (
+        distribution::KnownDistributions const & distr,
+        std::optional<amrex::ParticleReal> intensity
     )
     {
         // zero out the 6x6 matrix
@@ -227,7 +235,11 @@ namespace impactx
             }
         }, distr);
 
-        return cv;
+        Envelope env;
+        if (intensity) { env.set_beam_intensity(intensity.value()); }
+        env.set_covariance_matrix(cv);
+
+        return env;
     }
 
     void
@@ -266,9 +278,9 @@ namespace impactx
         // redistribute particles so that they reside on the correct MPI rank.
         int const myproc = amrex::ParallelDescriptor::MyProc();
         int const nprocs = amrex::ParallelDescriptor::NProcs();
-        int const navg = npart / nprocs;
+        int const navg = npart / nprocs;  // note: integer division
         int const nleft = npart - navg * nprocs;
-        int npart_this_proc = (myproc < nleft) ? navg+1 : navg;
+        int const npart_this_proc = (myproc < nleft) ? navg+1 : navg;  // add 1 to each proc until distributed
         auto const rel_part_this_proc =
             amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
@@ -307,13 +319,11 @@ namespace impactx
                                                       ref.qm_ratio_SI(),
                                             bunch_charge * rel_part_this_proc);
 
-        bool space_charge = false;
-        amrex::ParmParse pp_algo("algo");
-        pp_algo.queryAdd("space_charge", space_charge);
+        auto space_charge = get_space_charge_algo();
 
         // For pure tracking simulations, we keep the particles split equally
         // on all MPI ranks, and ignore spatial "RealBox" extents of grids.
-        if (space_charge) {
+        if (space_charge != SpaceChargeAlgo::False) {
             // Resize the mesh to fit the spatial extent of the beam and then
             // redistribute particles, so they reside on the MPI rank that is
             // responsible for the respective spatial particle position.
@@ -412,13 +422,12 @@ namespace impactx
         using namespace amrex::literals;
 
         // Parse the beam distribution parameters
-        amrex::ParmParse const pp_dist("beam");
+        amrex::ParmParse pp_dist("beam");
         amrex::ParmParse pp_algo("algo");
         std::string track = "particles";
         pp_algo.queryAdd("track", track);
 
-        if (track == "particles")
-        {
+        if (track == "particles") {
             // set charge and mass and energy of ref particle
             RefPart const ref = initialization::read_reference_particle(pp_dist);
             amr_data->track_particles.m_particle_container->SetRefParticle(ref);
@@ -426,14 +435,19 @@ namespace impactx
             amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
             pp_dist.getWithParser("charge", bunch_charge);
 
-            int npart = 1;  // Number of simulation particles
-            pp_dist.getWithParser("npart", npart);
-
             std::string unit_type;  // System of units
             pp_dist.get("units", unit_type);
 
             distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
-            add_particles(bunch_charge, dist, npart);
+            std::string distribution;
+            pp_dist.get("distribution", distribution);
+
+            int npart = 0;  // Number of simulation particles
+            if (distribution != "empty")
+            {
+                pp_dist.getWithParser("npart", npart);
+                add_particles(bunch_charge, dist, npart);
+            }
 
             // print information on the initialized beam
             amrex::Print() << "Beam kinetic energy (MeV): " << ref.kin_energy_MeV() << std::endl;
@@ -452,10 +466,8 @@ namespace impactx
 
             if (unit_type == "static") {
                 amrex::Print() << "Static units" << std::endl;
-            } else if (unit_type == "dynamic") {
-                amrex::Print() << "Dynamic units" << std::endl;
             } else {
-                throw std::runtime_error("Unknown units (static/dynamic): " + unit_type);
+                throw std::runtime_error("Unknown units (use 'static'): " + unit_type);
             }
 
             amrex::Print() << "Initialized beam distribution parameters" << std::endl;
@@ -465,7 +477,27 @@ namespace impactx
         {
             amr_data->track_envelope.m_ref = initialization::read_reference_particle(pp_dist);
             auto dist = initialization::read_distribution(pp_dist);
-            amr_data->track_envelope.m_cm = impactx::initialization::create_covariance_matrix(dist);
+
+
+            amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
+
+            auto space_charge = get_space_charge_algo();
+            if (space_charge == SpaceChargeAlgo::True_3D)
+            {
+                pp_dist.get("charge", intensity);
+                amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
+            } else if (space_charge == SpaceChargeAlgo::True_2D)
+            {
+                pp_dist.get("current", intensity);
+                amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);
+            } else
+            {
+                amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist);
+            }
+        }
+        else if (track == "reference_orbit")
+        {
+            amr_data->track_reference.m_ref = initialization::read_reference_particle(pp_dist);
         }
     }
 } // namespace impactx

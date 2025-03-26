@@ -27,6 +27,7 @@ from . import distribution, elements, wakeconvolution
 __all__ = [
     "Config",
     "CoordSystem",
+    "Envelope",
     "ImpactX",
     "ImpactXParConstIter",
     "ImpactXParIter",
@@ -35,7 +36,7 @@ __all__ = [
     "RefPart",
     "amr",
     "coordinate_transformation",
-    "create_covariance_matrix",
+    "create_envelope",
     "distribution",
     "elements",
     "push",
@@ -49,8 +50,6 @@ class Config:
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
 
 class CoordSystem:
     """
@@ -66,8 +65,6 @@ class CoordSystem:
     ]  # value = {'s': <CoordSystem.s: 0>, 't': <CoordSystem.t: 1>}
     s: typing.ClassVar[CoordSystem]  # value = <CoordSystem.s: 0>
     t: typing.ClassVar[CoordSystem]  # value = <CoordSystem.t: 1>
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def __eq__(self, other: typing.Any) -> bool: ...
     def __getstate__(self) -> int: ...
     def __hash__(self) -> int: ...
@@ -83,9 +80,19 @@ class CoordSystem:
     @property
     def value(self) -> int: ...
 
+class Envelope:
+    beam_intensity: float
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: float,
+    ) -> None: ...
+
 class ImpactX:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def DistributionMap(
         self, lev: int
     ) -> amrex.space3d.amrex_3d_pybind.DistributionMapping: ...
@@ -138,6 +145,7 @@ class ImpactX:
         | distribution.Triangle
         | distribution.Semigaussian
         | distribution.Waterbag,
+        intensity: float | None = None,
     ) -> None:
         """
         Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
@@ -179,6 +187,10 @@ class ImpactX:
     def track_particles(self) -> None:
         """
         Run the particle tracking simulation loop.
+        """
+    def track_reference(self, arg0: RefPart) -> None:
+        """
+        Run the reference orbit tracking simulation loop.
         """
     @property
     def abort_on_unused_inputs(self) -> int:
@@ -297,6 +309,13 @@ class ImpactX:
     @max_level.setter
     def max_level(self, arg1: int) -> None: ...
     @property
+    def memory_profiler(self) -> bool:
+        """
+        This parameter can be used to disable tiny profiler's memory arena profiling at runtime. If tiny_profiler.enabled is false, this parameter has no effects.
+        """
+    @memory_profiler.setter
+    def memory_profiler(self, arg1: bool) -> None: ...
+    @property
     def mlmg_absolute_tolerance(self) -> bool:
         """
         The absolute tolerance with which the space-charge fields should be calculated in units of V/m^2. More specifically, the acceptable residual with which the solution can be considered converged. In general this should be left as the default, but in cases where the simulation state changes very little between steps it can occur that the initial guess for the MLMG solver is so close to the converged value that it fails to improve that solution sufficiently to reach the mlmg_relative_tolerance value.
@@ -382,12 +401,26 @@ class ImpactX:
     @slice_step_diagnostics.setter
     def slice_step_diagnostics(self, arg1: bool) -> None: ...
     @property
-    def space_charge(self) -> bool:
+    def space_charge(self) -> str:
         """
-        Enable or disable space charge calculations (default: enabled).
+        The model to be used when calculating space charge effects. Either off, 2D, or 3D.
         """
     @space_charge.setter
-    def space_charge(self, arg1: bool) -> None: ...
+    def space_charge(self, arg1: bool | str) -> None: ...
+    @property
+    def tiny_profiler(self) -> bool:
+        """
+        This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
+        """
+    @tiny_profiler.setter
+    def tiny_profiler(self, arg1: bool) -> None: ...
+    @property
+    def tiny_profiler_file(self) -> str:
+        """
+        If this parameter is empty, the output of tiny profiling is dumped on the default out stream of AMReX. If it's not empty, it specifies the file name for the output. Note that /dev/null is a special name that mean a null file.
+        """
+    @tiny_profiler_file.setter
+    def tiny_profiler_file(self, arg1: str) -> None: ...
     @property
     def verbose(self) -> int:
         """
@@ -400,8 +433,6 @@ class ImpactX:
 class ImpactXParConstIter(
     amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_8_0_default
 ):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @typing.overload
     def __init__(
         self,
@@ -420,8 +451,6 @@ class ImpactXParConstIter(
     ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
 
 class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @typing.overload
     def __init__(
         self,
@@ -444,8 +473,6 @@ class ImpactXParticleContainer(
 ):
     const_iterator = ImpactXParConstIter
     iterator = ImpactXParIter
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     def add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -505,12 +532,6 @@ class ImpactXParticleContainer(
         For MPI-parallel ranks, the figure is only created on the root_rank.
 
         """
-    def redistribute(
-        self, arg0: int, arg1: int, arg2: int, arg3: int, arg4: bool
-    ) -> None:
-        """
-        Redistribute particles in the current mesh in x, y, z
-        """
     def reduced_beam_characteristics(self) -> dict[str, float]:
         """
         Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
@@ -530,8 +551,6 @@ class ImpactXParticleContainer(
         """
 
 class RefPart:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs): ...
     @staticmethod
     def load_file(ref: RefPart, madx_file):
         """
@@ -684,7 +703,7 @@ def coordinate_transformation(
     Transform coordinates from fixed s to fixed to or vice versa.
     """
 
-def create_covariance_matrix(
+def create_envelope(
     arg0: distribution.Empty
     | distribution.Gaussian
     | distribution.Kurth4D
@@ -694,7 +713,8 @@ def create_covariance_matrix(
     | distribution.Triangle
     | distribution.Semigaussian
     | distribution.Waterbag,
-) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double: ...
+    arg1: float | None,
+) -> Envelope: ...
 def push(
     pc: ImpactXParticleContainer,
     element: elements.Empty
@@ -726,6 +746,7 @@ def push(
     | elements.SoftSolenoid
     | elements.SoftQuadrupole
     | elements.Sol
+    | elements.Source
     | elements.TaperedPL
     | elements.ThinDipole,
     step: int = 0,
@@ -739,6 +760,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.01"
+__version__: str = "25.03"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

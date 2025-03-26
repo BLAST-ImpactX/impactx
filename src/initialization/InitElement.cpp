@@ -8,8 +8,8 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
-#include "particles/elements/All.H"
-#include "particles/elements/mixin/lineartransport.H"
+#include "elements/All.H"
+#include "elements/mixin/lineartransport.H"
 
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -130,10 +130,12 @@ namespace detail
      * @param[in] mapsteps_default
      */
     void read_element (std::string const & element_name,
-                       std::list<KnownElements> & m_lattice,
+                       std::list<elements::KnownElements> & m_lattice,
                        int nslice_default,
                        int mapsteps_default)
     {
+        using namespace elements;
+;
         // Check the element type
         amrex::ParmParse pp_element(element_name);
         std::string element_type;
@@ -500,7 +502,19 @@ namespace detail
                 pp_element.queryAddWithParser("cn", cn);
             }
 
-            m_lattice.emplace_back(diagnostics::BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
+            using impactx::elements::diagnostics::BeamMonitor;
+            m_lattice.emplace_back(BeamMonitor(openpmd_name, openpmd_backend, openpmd_encoding, period_sample_intervals));
+        } else if (element_type == "source")
+        {
+            std::string distribution, openpmd_path;
+            pp_element.get("distribution", distribution);
+
+            if (distribution == "openPMD")
+            {
+                pp_element.get("openpmd_path", openpmd_path);
+            }
+
+            m_lattice.emplace_back( Source(distribution, openpmd_path, element_name) );
         } else if (element_type == "line")
         {
             // Parse the lattice elements for the sub-lattice in the line

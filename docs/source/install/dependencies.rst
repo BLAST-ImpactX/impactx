@@ -10,7 +10,7 @@ Please see installation instructions below.
 - `CMake 3.24.0+ <https://cmake.org>`__
 - `Git 2.18+ <https://git-scm.com>`__
 - `AMReX <https://amrex-codes.github.io>`__: we automatically download and compile a copy
-- `ABLASTR/WarpX <https://github.com/ECP-WarpX/warpx>`__: we automatically download and compile a copy
+- `ABLASTR/WarpX <https://github.com/BLAST-WarpX/warpx>`__: we automatically download and compile a copy
 
 Optional dependencies include:
 
@@ -18,7 +18,7 @@ Optional dependencies include:
 - for on-node accelerated compute *one of either*:
 
   - `OpenMP 3.1+ <https://www.openmp.org>`__: for threaded CPU execution or
-  - `CUDA Toolkit 11.0+ (11.3+ recommended) <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
+  - `CUDA Toolkit 11.7+ <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
   - `ROCm 5.2+ (5.5+ recommended) <https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-rocm-installation-readme/>`__: for AMD GPU support
 - `FFTW3 <http://www.fftw.org>`__: for algorithms such as IGF space charge solver or CSR when running on CPU or with SYCL
 
@@ -117,7 +117,7 @@ Spack (Linux/macOS)
 `Spack <https://spack.readthedocs.io>`__ is a user-level package manager.
 It is primarily written for Linux, with slightly less support for macOS, and future support for Windows.
 
-First, download a `WarpX Spack desktop development environment <https://github.com/ECP-WarpX/WarpX/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
+First, download a `WarpX Spack desktop development environment <https://github.com/BLAST-WarpX/warpx/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
 For most desktop developments, pick the OpenMP environment for CPUs unless you have a supported GPU.
 
 * **Debian/Ubuntu** Linux:
@@ -142,7 +142,7 @@ Now install the WarpX/ImpactX dependencies in a new development environment:
 .. code-block:: bash
 
    # download environment file
-   curl -sLO https://raw.githubusercontent.com/ECP-WarpX/WarpX/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
+   curl -sLO https://raw.githubusercontent.com/BLAST-WarpX/warpx/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
 
    # create new development environment
    spack env create impactx-${compute}-dev spack-${system}-${compute}.yaml

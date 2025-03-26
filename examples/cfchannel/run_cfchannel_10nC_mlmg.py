@@ -13,7 +13,7 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.n_cell = [48, 48, 40]  # [72, 72, 64] for increased precision
 sim.particle_shape = 2  # B-spline order
-sim.space_charge = True
+sim.space_charge = "3D"
 sim.prob_relative = [3.0]
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True

@@ -16,7 +16,10 @@
 #if defined(AMREX_DEBUG) || defined(DEBUG)
 #   include <cstdio>
 #endif
+#include <optional>
 #include <string>
+#include <type_traits>
+#include <variant>
 
 
 namespace py = pybind11;
@@ -93,6 +96,7 @@ void init_ImpactX (py::module& m)
     for (int dir : {0, 1, 2}) {
         std::string const dir_str = std::vector<std::string>{"x", "y", "z"}.at(dir);
         std::string const bf_str = "blocking_factor_" + dir_str;
+        std::string const mgs_str = "max_grid_size_" + dir_str;
         impactx
             .def_property(bf_str.c_str(),
                   [bf_str](ImpactX & /* ix */) {
@@ -102,12 +106,13 @@ void init_ImpactX (py::module& m)
 
                       return blocking_factor_dir;
                   },
-                  [bf_str](ImpactX &ix, std::vector<int> blocking_factor_dir) {
+                  [bf_str, mgs_str](ImpactX &ix, std::vector<int> blocking_factor_dir) {
                       if (ix.initialized())
                           throw std::runtime_error("Read-only parameter after init_grids was called.");
 
                       amrex::ParmParse pp_amr("amr");
                       pp_amr.addarr(bf_str.c_str(), blocking_factor_dir);
+                      pp_amr.addarr(mgs_str.c_str(), blocking_factor_dir);
                   },
                   "AMReX blocking factor for a direction, per MR level."
             );
@@ -227,14 +232,32 @@ void init_ImpactX (py::module& m)
             "Enable or disable eigenemittance diagnostic calculations (default: disabled)."
         )
         .def_property("space_charge",
-             [](ImpactX & /* ix */) {
-                 return detail::get_or_throw<bool>("algo", "space_charge");
-             },
-             [](ImpactX & /* ix */, bool const enable) {
-                 amrex::ParmParse pp_algo("algo");
-                 pp_algo.add("space_charge", enable);
-             },
-             "Enable or disable space charge calculations (default: enabled)."
+            [](ImpactX & /* ix */) -> std::string {
+                return detail::get_or_throw<std::string>("algo", "space_charge");
+            },
+            [](ImpactX & /* ix */, std::variant<bool, std::string> space_charge_v) {
+                if (std::holds_alternative<bool>(space_charge_v)) {
+                    amrex::ParmParse pp_algo("algo");
+                    if (std::get<bool>(space_charge_v)) {
+                        // TODO: boolean True is deprecated since 25.03, remove some time after
+                        py::print("sim.space_charge = True is deprecated, please use space_charge = \"3D\"");
+                        pp_algo.add("space_charge", std::string("3D"));
+                    } else {
+                        // map boolean False to "false" / off
+                        pp_algo.add("space_charge", std::string("false"));
+                    }
+                }
+                else
+                {
+                    std::string const space_charge = std::get<std::string>(space_charge_v);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D") {
+                        throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge);
+                    }
+                    amrex::ParmParse pp_algo("algo");
+                    pp_algo.add("space_charge", space_charge);
+                }
+            },
+            "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
@@ -398,6 +421,40 @@ void init_ImpactX (py::module& m)
             "``0`` for silent, higher is more verbose. Default is ``1``."
         )
 
+        .def_property("tiny_profiler",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<bool>("tiny_profiler", "enabled");
+            },
+            [](ImpactX & /* ix */, bool enabled) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("enabled", enabled);
+            },
+            "This parameter can be used to disable tiny profiling including CArena memory profiling at runtime."
+        )
+        .def_property("memory_profiler",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<bool>("tiny_profiler", "memprof_enabled");
+            },
+            [](ImpactX & /* ix */, bool memprof_enabled) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("memprof_enabled", memprof_enabled);
+            },
+            "This parameter can be used to disable tiny profiler's memory arena profiling at runtime. "
+            "If tiny_profiler.enabled is false, this parameter has no effects."
+        )
+        .def_property("tiny_profiler_file",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<std::string>("tiny_profiler", "output_file");
+            },
+            [](ImpactX & /* ix */, std::string output_file) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("output_file", output_file);
+            },
+            "If this parameter is empty, the output of tiny profiling is dumped on the default out stream of AMReX. "
+            "If it's not empty, it specifies the file name for the output. "
+            "Note that /dev/null is a special name that mean a null file."
+        )
+
         .def("deposit_charge",
             [](ImpactX & ix) {
                 // transform from x',y',t to x,y,z
@@ -438,11 +495,11 @@ void init_ImpactX (py::module& m)
         .def("init_beam_distribution_from_inputs", &ImpactX::initBeamDistributionFromInputs)
         .def("init_lattice_elements_from_inputs", &ImpactX::initLatticeElementsFromInputs)
         .def("init_envelope",
-            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr) {
+            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr, std::optional<amrex::Real> intensity) {
                 ix.amr_data->track_envelope.m_ref = ref;
-                ix.amr_data->track_envelope.m_cm = initialization::create_covariance_matrix(distr);
+                ix.amr_data->track_envelope.m_env = initialization::create_envelope(distr, intensity);
             },
-            py::arg("ref"), py::arg("distr"),
+            py::arg("ref"), py::arg("distr"), py::arg("intensity") = py::none(),
             "Envelope tracking mode:"
             "Create a 6x6 covariance matrix from a distribution and then initialize "
             "the the simulation for envelope tracking relative to a reference particle."
@@ -469,6 +526,9 @@ void init_ImpactX (py::module& m)
         )
         .def("track_envelope", &ImpactX::track_envelope,
              "Run the envelope tracking simulation loop."
+        )
+        .def("track_reference", &ImpactX::track_reference,
+             "Run the reference orbit tracking simulation loop."
         )
 
         .def("resize_mesh", &ImpactX::ResizeMesh,

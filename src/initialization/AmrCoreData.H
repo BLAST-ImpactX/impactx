@@ -89,9 +89,17 @@ namespace impactx::initialization
             std::optional<RefPart> m_ref;
 
             /** The 6x6 covariance matrix for the beam envelope, relative to the reference particle */
-            std::optional<CovarianceMatrix> m_cm;
+            std::optional<Envelope> m_env;
 
         } track_envelope;
+
+        /** Data needed for the reference orbit tracking mode */
+        struct TrackModeReference
+        {
+            /** The reference particle */
+            std::optional<RefPart> m_ref;
+
+        } track_reference;
 
         void ErrorEst (
             [[maybe_unused]] int lev,

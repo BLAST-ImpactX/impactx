@@ -8,13 +8,14 @@ License: BSD-3-Clause-LBNL
 
 from impactx import elements
 
+from ... import setup_server, vuetify
 from .. import (
+    CardBase,
     CardComponents,
+    InputComponents,
     generalFunctions,
-    setup_server,
-    vuetify,
 )
-from .helper import LatticeVariableHandler
+from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
 
@@ -218,135 +219,98 @@ def update_default_value(parameter_name, new_value):
 # -----------------------------------------------------------------------------
 
 
-class LatticeConfiguration:
-    """
-    User-Input section for configuring lattice elements.
-    """
+class LatticeConfiguration(CardBase):
+    HEADER_NAME = "Lattice Configuration"
 
-    @staticmethod
-    def card():
-        """
-        Creates UI content for lattice configuration.
-        """
+    def __init__(self):
+        super().__init__()
 
-        with vuetify.VDialog(v_model=("showDialog", False)):
-            LatticeConfiguration.dialog_configuration_list()
-
+    def init_settings_dialog(self):
         with vuetify.VDialog(
             v_model=("lattice_configuration_dialog_settings", False), width="500px"
         ):
             LatticeVariableHandler.dialog_settings()
 
-        with vuetify.VCard(style="width: 696px;"):
-            CardComponents.input_header("Lattice Configuration")
-            with vuetify.VCardText():
-                with vuetify.VRow(align="center", no_gutters=True):
-                    with vuetify.VCol(cols=10):
-                        vuetify.VCombobox(
+    def card_content(self):
+        self.init_settings_dialog()
+        with vuetify.VCard(**self.card_props):
+            CardComponents.input_header(
+                self.HEADER_NAME,
+                additional_components={
+                    "end": LatticeConfigurationHelper.settings,
+                },
+            )
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(cols=True):
+                        InputComponents.combobox(
                             label="Select Accelerator Lattice",
-                            v_model=("selected_lattice", None),
+                            v_model_name="selected_lattice",
                             items=("listOfLatticeElements",),
                             error_messages=("isSelectedLatticeListEmpty",),
-                            dense=True,
-                            classes="mr-2 pt-6",
                         )
                     with vuetify.VCol(cols="auto"):
                         vuetify.VBtn(
                             "ADD",
                             color="primary",
                             dense=True,
-                            classes="mr-2",
                             click=ctrl.add_latticeElement,
                         )
+                with vuetify.VRow(
+                    **self.ROW_STYLE,
+                    v_for="(latticeElement, index) in selected_lattice_list",
+                    align="center",
+                    style="flex-wrap: nowrap;",
+                ):
                     with vuetify.VCol(cols="auto"):
-                        vuetify.VIcon(
-                            "mdi-cog",
-                            click="lattice_configuration_dialog_settings = true",
+                        LatticeConfigurationHelper.move_element_up()
+                        LatticeConfigurationHelper.move_element_down()
+                        LatticeConfigurationHelper.delete_element()
+                    with vuetify.VCol(cols="auto"):
+                        vuetify.VChip(
+                            text=("latticeElement.name",),
+                            style="justify-content: center",
                         )
-                with vuetify.VRow():
-                    with vuetify.VCol():
-                        with vuetify.VCard(
-                            style="height: 300px; width: 700px; overflow-y: auto;"
-                        ):
-                            with vuetify.VCardTitle(
-                                "Elements", classes="text-subtitle-2 pa-3"
-                            ):
-                                vuetify.VSpacer()
-                                vuetify.VIcon(
-                                    "mdi-arrow-expand",
-                                    color="primary",
-                                    click="showDialog = true",
-                                )
-                            vuetify.VDivider()
-                            LatticeConfiguration.configuration_list()
+                    with vuetify.VCol(
+                        v_for="(parameter, parameterIndex) in latticeElement.parameters",
+                        cols="auto",
+                    ):
+                        vuetify.VTextField(
+                            label=("parameter.parameter_name",),
+                            v_model=("parameter.parameter_default_value",),
+                            update_modelValue=(
+                                ctrl.updateLatticeElementParameters,
+                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
+                            ),
+                            error_messages=("parameter.parameter_error_message",),
+                            density="comfortable",
+                            variant="underlined",
+                            style="width: 100px;",
+                        )
 
     # -----------------------------------------------------------------------------
     # Dialogs
     # -----------------------------------------------------------------------------
 
-    @staticmethod
-    def dialog_configuration_list():
-        """
-        Displays the configuration for lattice elements
-        shown in a dialog box.
-        """
+    # @staticmethod
+    # def dialog_settings():
+    #     """
+    #     Provides controls for lattice element configuration,
+    #     allowing dashboard users to define parameter defaults.
+    #     """
+    #     dialog_name = "lattice_configuration_dialog_tab_settings"
 
-        with vuetify.VCard():
-            with vuetify.VCardTitle("Elements", classes="headline d-flex align-center"):
-                vuetify.VSpacer()
-                with vuetify.VBtn(icon=True, click="showDialog = false"):
-                    vuetify.VIcon("mdi-close")
-            vuetify.VDivider()
-            LatticeConfiguration.configuration_list()
-
-    # -----------------------------------------------------------------------------
-    # lattice_configuration_lsit
-    # -----------------------------------------------------------------------------
-
-    @staticmethod
-    def configuration_list():
-        """
-        Displays the configuration for lattice elements.
-        """
-        with vuetify.VContainer(fluid=True):
-            with vuetify.VRow(
-                v_for="(latticeElement, index) in selected_lattice_list",
-                align="center",
-                no_gutters=True,
-                style="min-width: 1500px;",
-            ):
-                with vuetify.VCol(cols="auto", classes="pa-2"):
-                    vuetify.VIcon(
-                        "mdi-menu-up",
-                        click=(ctrl.move_latticeElementIndex_up, "[index]"),
-                    )
-                    vuetify.VIcon(
-                        "mdi-menu-down",
-                        click=(ctrl.move_latticeElementIndex_down, "[index]"),
-                    )
-                    vuetify.VIcon(
-                        "mdi-delete",
-                        click=(ctrl.deleteLatticeElement, "[index]"),
-                    )
-                    vuetify.VChip(
-                        v_text=("latticeElement.name",),
-                        dense=True,
-                        classes="mr-2",
-                        style="justify-content: center",
-                    )
-                with vuetify.VCol(
-                    v_for="(parameter, parameterIndex) in latticeElement.parameters",
-                    cols="auto",
-                    classes="pa-2",
-                ):
-                    vuetify.VTextField(
-                        label=("parameter.parameter_name",),
-                        v_model=("parameter.ui_value",),
-                        change=(
-                            ctrl.updateLatticeElementParameters,
-                            "[index, parameter.parameter_name, $event, parameter.parameter_type]",
-                        ),
-                        error_messages=("parameter.parameter_error_message",),
-                        dense=True,
-                        style="width: 100px;",
-                    )
+    #     with NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"]):
+    #         with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+    #             with vuetify.VTabsWindowItem():
+    #                 with vuetify.VCardText():
+    #                     with vuetify.VRow():
+    #                         with vuetify.VCol(cols=3):
+    #                             InputComponents.text_field(
+    #                                 label="nslice",
+    #                                 v_model_name="nslice",
+    #                                 change=(
+    #                                     ctrl.nsliceDefaultChange,
+    #                                     "['nslice', $event]",
+    #                                 ),
+    #                             )

@@ -6,24 +6,31 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-import asyncio
+import base64
 import glob
 import io
 import os
 
-from trame.widgets import matplotlib, plotly, vuetify
-from wurlitzer import pipes
+from trame.widgets import matplotlib, plotly
 
-from ..simulation import run_simulation
-from ..trame_setup import setup_server
-from .analyzeFunctions import AnalyzeFunctions
-from .plot_ParameterEvolutionOverS.overS import line_plot_1d
+from .. import setup_server, vuetify
+from . import AnalyzeFunctions, adjusted_settings_plot, line_plot_1d
 
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
 # Plotting
 # -----------------------------------------------------------------------------
+
+
+def fig_to_base64(fig):
+    """
+    Puts png in trame-compatible form
+    """
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode("utf-8")
 
 
 # Call plot_over_s
@@ -34,6 +41,17 @@ def plot_over_s():
 
     fig = line_plot_1d(state.selected_headers, state.filtered_data)
     ctrl.plotly_figure_update(fig)
+
+
+def generate_phase_space(pc):
+    fig = adjusted_settings_plot(pc)
+    ctrl.matplotlib_figure_update(fig)
+
+    fig_original = pc.plot_phasespace()
+
+    if fig_original is not None:
+        image_base64 = fig_to_base64(fig_original)
+        state.phase_space_png = f"data:image/png;base64, {image_base64}"
 
 
 PLOTS = {
@@ -137,24 +155,6 @@ def update_plot():
         state.show_table = False
 
 
-def run_simulation_impactX():
-    buf = io.StringIO()
-
-    with pipes(stdout=buf, stderr=buf):
-        run_simulation()
-
-    buf.seek(0)
-    lines = [line.strip() for line in buf.getvalue().splitlines()]
-
-    # Use $nextTick to ensure the terminal is fully rendered before printing
-    async def print_lines():
-        for line in lines:
-            ctrl.terminal_print(line)
-        ctrl.terminal_print("Simulation complete.")
-
-    asyncio.create_task(print_lines())
-
-
 # -----------------------------------------------------------------------------
 # State changes
 # -----------------------------------------------------------------------------
@@ -171,14 +171,6 @@ def on_header_selection_change(selected_headers, **kwargs):
 @state.change("filtered_data", "active_plot")
 def on_filtered_data_change(**kwargs):
     update_plot()
-
-
-@ctrl.add("run_simulation")
-def run_simulation_and_store():
-    state.plot_options = available_plot_options(simulationClicked=True)
-    run_simulation_impactX()
-    update_plot()
-    load_dataTable_data()
 
 
 # -----------------------------------------------------------------------------
@@ -205,13 +197,17 @@ class AnalyzeSimulation:
                         items=("headers_without_step_or_s",),
                         label="Select data to view",
                         multiple=True,
+                        item_title="title",
+                        item_value="key",
+                        density="compact",
+                        variant="underlined",
                     )
                     vuetify.VDivider()
                     vuetify.VDataTable(
                         headers=("filtered_headers",),
                         items=("filtered_data",),
                         header_class="centered-header",
-                        dense=True,
+                        density="compact",
                         height="325px",
                     )
 
@@ -230,13 +226,13 @@ class AnalyzeSimulation:
                         vuetify.VTab("Plot")
                         vuetify.VTab("Interact")
                     vuetify.VDivider()
-                    with vuetify.VTabsItems(v_model="active_tab"):
-                        with vuetify.VTabItem():
+                    with vuetify.VTabsWindow(v_model="active_tab"):
+                        with vuetify.VTabsWindowItem():
                             vuetify.VImg(
                                 v_if=("phase_space_png",), src=("phase_space_png",)
                             )
 
-                        with vuetify.VTabItem():
+                        with vuetify.VTabsWindowItem():
                             with vuetify.VContainer(
                                 style="height: 37vh; width: 147vh;"
                             ):

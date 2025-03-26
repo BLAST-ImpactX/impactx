@@ -62,9 +62,19 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      The physical model of space charge used.
 
-      Whether to calculate space charge effects.
+      Options:
+
+      * ``False`` (default): space charge effects are not calculated.
+
+      * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
+
+        Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
+
+      * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
+
+        When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
    .. py:property:: poisson_solver
 
@@ -72,7 +82,7 @@ Collective Effects & Overall Simulation Parameters
       Either ``"multigrid"`` (default) or ``"fft"``.
 
       Currently, this is a 3D solver.
-      An additional `2D/2.5D solver <https://github.com/ECP-WarpX/impactx/issues/401>`__ will be added in the near future.
+      An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).
@@ -180,13 +190,14 @@ Collective Effects & Overall Simulation Parameters
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
 
-   .. py:method:: init_envelope(ref, distr)
+   .. py:method:: init_envelope(ref, distr, intensity=None)
 
       Envelope tracking mode:
       Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :param distr: distribution function (object from :py:mod:`impactx.distribution`)
+      :param float intensity: the beam intensity, given as bunch charge (C) for 3D or beam current (A) for 2D space charge
 
    .. py:method:: particle_container()
 
@@ -221,6 +232,23 @@ Collective Effects & Overall Simulation Parameters
       Controls how much information is printed to the terminal, when running ImpactX.
       ``0`` for silent, higher is more verbose. Default is ``1``.
 
+   .. py:property:: tiny_profiler
+
+      This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
+      Default is ``True``.
+
+   .. py:property:: memory_profiler
+
+      This parameter can be used to disable tiny profiler's memory arena profiling at runtime.
+      If ```tiny_profiler`` is ``False``, this parameter has no effects.
+      Default is ``True``.
+
+   .. py:property:: tiny_profiler_file
+
+      If this parameter is empty (default), the output of tiny profiling is dumped on the default out stream of AMReX.
+      If it's not empty, it specifies the file name for the output.
+      Note that ``"/dev/null"`` is a special name that mean no output.
+
    .. py:method:: evolve()
 
       Run the main simulation loop (deprecated, use ``track_particles``)
@@ -232,6 +260,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: track_envelope()
 
       Run the envelope tracking simulation loop.
+
+   .. py:method:: track_reference(ref)
+
+      Run the reference orbit tracking simulation loop.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
 
    .. py:method:: resize_mesh()
 
@@ -250,7 +284,7 @@ Collective Effects & Overall Simulation Parameters
       .. note::
 
          Particle beam particles are not yet dynamically load balanced.
-         Please see the progress in `issue 198 <https://github.com/ECP-WarpX/impactx/issues/198>`__.
+         Please see the progress in `issue 198 <https://github.com/BLAST-ImpactX/impactx/issues/198>`__.
 
    .. py:property:: have_gpu
 
@@ -494,7 +528,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 Lattice Elements
 ----------------
 
-This module provides elements for the accelerator lattice.
+This module provides elements and methods for the accelerator lattice.
 
 .. py:class:: impactx.elements.KnownElementsList
 
@@ -660,8 +694,9 @@ This module provides elements for the accelerator lattice.
    A general thin multipole element.
 
    :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
-   :param K_normal: Integrated normal multipole coefficient (1/meter^m)
-   :param K_skew: Integrated skew multipole coefficient (1/meter^m)
+   :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
+                    = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
+   :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -694,7 +729,7 @@ This module provides elements for the accelerator lattice.
    If the same element ``name`` is used multiple times, then an output series is created with multiple outputs.
 
    The `I/O backend <https://openpmd-api.readthedocs.io/en/latest/backends/overview.html>`_ for `openPMD <https://www.openPMD.org>`_ data dumps.
-   ``bp`` is the `ADIOS2 I/O library <https://csmd.ornl.gov/adios>`_, ``h5`` is the `HDF5 format <https://www.hdfgroup.org/solutions/hdf5/>`_, and ``json`` is a `simple text format <https://en.wikipedia.org/wiki/JSON>`_.
+   ``bp4``/``bp5`` is the `ADIOS2 I/O library <https://csmd.ornl.gov/adios>`_, ``h5`` is the `HDF5 format <https://www.hdfgroup.org/solutions/hdf5/>`_, and ``json`` is a `simple text format <https://en.wikipedia.org/wiki/JSON>`_.
    ``json`` only works with serial/single-rank jobs.
    By default, the first available backend in the order given above is taken.
 
@@ -731,6 +766,15 @@ This module provides elements for the accelerator lattice.
    .. py:property:: cn
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
+
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, name)
+
+   A particle source.
+   Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
+
+   :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
+   :param openpmd_path: path to the openPMD series
+   :param name: an optional name for the element
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
 
@@ -1104,6 +1148,23 @@ This module provides elements for the accelerator lattice.
    .. py:property:: unit
 
       unit specification for plasma lens focusing strength
+
+
+Methods
+"""""""
+
+Each lattice element provides a ``.to_dict()`` method, which can be used to serialize its configuration.
+
+
+.. py:function:: elements.transformation.insert_element_every_ds(list, ds, element)
+
+   Insert an element every s into an element list.
+
+   Splits up every element that is on s = N * ds for N>0.
+
+   :param list: element lattice list
+   :param ds: spacing in meters along s to add an element
+   :param element: the extra element to add every s
 
 
 Coordinate Transformation

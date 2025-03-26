@@ -103,7 +103,7 @@ download_and_unzip(data_url, "models.zip")
 # It was found that the PyTorch multithreaded defaults interfere with AMReX OpenMP
 # when initializing the models or iterating elements:
 # https://github.com/AMReX-Codes/pyamrex/issues/322
-# https://github.com/ECP-WarpX/impactx/issues/773#issuecomment-2585043099
+# https://github.com/BLAST-ImpactX/impactx/issues/773#issuecomment-2585043099
 # So we manually set the number of threads to serial (1).
 # Torch threading is not a problem with GPUs and might work when MPI is disabled.
 # Could also just be a mixing of OpenMP libraries (gomp and llvm omp) when using the
@@ -332,7 +332,7 @@ for i in range(N_stage):
     lpa.threadsafe = False
     lpa_stages.append(lpa)
 
-monitor = elements.BeamMonitor("monitor")
+monitor = elements.BeamMonitor("monitor", backend="h5")
 for i in range(N_stage):
     sim.lattice.extend(
         [
@@ -359,4 +359,3 @@ sim.lattice.extend([monitor])
 
 sim.track_particles()
 sim.finalize()
-del sim

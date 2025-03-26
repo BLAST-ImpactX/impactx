@@ -1,6 +1,6 @@
 # ImpactX
 
-[![CI Status](https://github.com/ECP-WarpX/impactx/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/ECP-WarpX/impactx/actions/workflows/ubuntu.yml)
+[![CI Status](https://github.com/BLAST-ImpactX/impactx/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/BLAST-ImpactX/impactx/actions/workflows/ubuntu.yml)
 [![Documentation Status](https://readthedocs.org/projects/impactx/badge/?version=latest)](https://impactx.readthedocs.io)
 [![License ImpactX](https://img.shields.io/badge/license-BSD--3--Clause--LBNL-blue.svg)](https://spdx.org/licenses/BSD-3-Clause-LBNL.html)
 [![Supported Platforms](https://img.shields.io/badge/platforms-linux%20|%20osx%20|%20win-blue)](https://impactx.readthedocs.io/en/latest/install/users.html)  
@@ -36,7 +36,7 @@ Please see our [developer installation section](https://impactx.readthedocs.io/e
 Before you start, you will need a copy of the ImpactX source code:
 
 ```bash
-git clone git@github.com:ECP-WarpX/impactx.git
+git clone git@github.com:BLAST-ImpactX/impactx.git
 cd impactx
 ```
 
@@ -121,7 +121,7 @@ Examples:
 In order to run our tests, you need to have a few Python packages installed:
 ```console
 python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade build packaging setuptools wheel pytest
+python3 -m pip install --upgrade build packaging setuptools[core] wheel pytest
 python3 -m pip install --upgrade -r tests/python/requirements.txt
 ```
 

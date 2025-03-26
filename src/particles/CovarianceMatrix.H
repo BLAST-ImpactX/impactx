@@ -19,8 +19,62 @@ namespace impactx
     /** this is a 6x6 matrix */
     using Map6x6 = amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1>;
 
-    /** the covariance matrix is 6x6 */
+    /** this is the 6x6 covariance matrix */
     using CovarianceMatrix = Map6x6;
+
+
+    /** This struct stores the beam envelope attributes, including the 6x6 beam
+     *  covariance matrix.  Used during envelope tracking mode.
+     */
+    struct Envelope
+    {
+        CovarianceMatrix m_env; ///< the 6x6 beam covariance matrix
+        amrex::ParticleReal m_beam_intensity = 0.0; ///< optional: charge in A (for 3D space charge) or current in A (for 2D space charge)
+
+        /** Set envelope beam charge/current for 3D/2D space charge
+         *
+         * @param intensity beam charge (C) in 3D or beam current (A) in 2D
+         */
+        Envelope &
+        set_beam_intensity (amrex::ParticleReal const intensity)
+        {
+            m_beam_intensity = intensity;
+
+            return *this;
+         }
+
+        /** Get envelope beam charge/current for 3D/2D space charge
+         *
+         * @returns 3D: beam charge in C; 2D: beam current in A
+         */
+        amrex::ParticleReal
+        beam_intensity () const
+        {
+            return m_beam_intensity;
+        }
+
+        /** Set 6x6 covariance matrix for envelope tracking
+         *
+         * @param covariance_matrix beam 6x6 covariance matrix
+         */
+        Envelope &
+        set_covariance_matrix (CovarianceMatrix const & covariance_matrix)
+        {
+            m_env = covariance_matrix;
+
+            return *this;
+         }
+
+        /** Get the 6x6 covariance matrix for envelope tracking
+         */
+        CovarianceMatrix
+        covariance_matrix () const
+        {
+            return m_env;
+        }
+
+    };
+
 
 } // namespace impactx::distribution
 

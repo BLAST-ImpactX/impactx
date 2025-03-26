@@ -12,15 +12,15 @@ from distribution_input_helpers import twiss
 
 from impactx import distribution
 
+from ... import setup_server, vuetify
 from .. import (
+    CardBase,
     CardComponents,
     DashboardDefaults,
     InputComponents,
     generalFunctions,
-    setup_server,
-    vuetify,
 )
-from .distributionFunctions import DistributionFunctions
+from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
 
@@ -124,6 +124,9 @@ def distribution_parameters():
 
 @state.change("distribution")
 def on_distribution_name_change(distribution, **kwargs):
+    if state.importing_file:
+        return
+
     if distribution == "Thermal" or distribution == "Empty":
         state.distribution_type = ""
         state.distribution_type_disable = True
@@ -140,6 +143,8 @@ def on_distribution_name_change(distribution, **kwargs):
 
 @state.change("distribution_type")
 def on_distribution_type_change(**kwargs):
+    if state.importing_file:
+        return
     populate_distribution_parameters()
 
 
@@ -162,21 +167,24 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
 # -----------------------------------------------------------------------------
 
 
-class DistributionParameters:
+class DistributionParameters(CardBase):
     """
     User-Input section for beam distribution.
     """
 
-    @staticmethod
-    def card():
+    HEADER_NAME = "Distribution Parameters"
+
+    def __init__(self):
+        super().__init__()
+
+    def card_content(self):
         """
         Creates UI content for beam distribution.
         """
-
-        with vuetify.VCard(style="width: 340px; height: 300px"):
-            CardComponents.input_header("Distribution Parameters")
-            with vuetify.VCardText():
-                with vuetify.VRow():
+        with vuetify.VCard(**self.card_props):
+            CardComponents.input_header(self.HEADER_NAME)
+            with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
+                with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):
                         InputComponents.select(
                             label="Select Distribution",
@@ -189,27 +197,24 @@ class DistributionParameters:
                             v_model_name="distribution_type",
                             disabled=("distribution_type_disable",),
                         )
-                with vuetify.VRow(classes="my-2"):
-                    for i in range(3):
-                        with vuetify.VCol(cols=4, classes="py-0"):
-                            with vuetify.VRow(
-                                v_for="(parameter, index) in selected_distribution_parameters",
-                                v_if=f"index % 3 == {i}",
-                            ):
-                                with vuetify.VCol(classes="py-1"):
-                                    vuetify.VTextField(
-                                        label=("parameter.parameter_name",),
-                                        v_model=("parameter.parameter_default_value",),
-                                        suffix=("parameter.parameter_units",),
-                                        change=(
-                                            ctrl.updateDistributionParameters,
-                                            "[parameter.parameter_name, $event, parameter.parameter_type]",
-                                        ),
-                                        error_messages=(
-                                            "parameter.parameter_error_message",
-                                        ),
-                                        type="number",
-                                        step=("parameter.parameter_step",),
-                                        __properties=["step"],
-                                        dense=True,
-                                    )
+                with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(
+                        v_for="(parameter, index) in selected_distribution_parameters",
+                        cols=4,
+                    ):
+                        vuetify.VTextField(
+                            label=("parameter.parameter_name",),
+                            v_model=("parameter.parameter_default_value",),
+                            suffix=("parameter.parameter_units",),
+                            update_modelValue=(
+                                ctrl.updateDistributionParameters,
+                                "[parameter.parameter_name, $event, parameter.parameter_type]",
+                            ),
+                            error_messages=("parameter.parameter_error_message",),
+                            type="number",
+                            step=("parameter.parameter_step",),
+                            __properties=["step"],
+                            density="compact",
+                            variant="underlined",
+                            hide_details="auto",
+                        )

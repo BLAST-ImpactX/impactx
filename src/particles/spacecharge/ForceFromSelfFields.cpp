@@ -14,7 +14,7 @@
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     void ForceFromSelfFields (
         std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > & space_charge_field,
@@ -60,4 +60,4 @@ namespace impactx::spacecharge
             }
         }
     }
-} // namespace impactx::spacecharge
+}  // namespace impactx::particles::spacecharge

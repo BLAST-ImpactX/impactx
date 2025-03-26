@@ -1,8 +1,31 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
+from impactx.impactx_pybind import ImpactX, RefPart
+
+from .. import setup_server
+from .defaults_helper import InputDefaultsHelper
+
+server, state, ctrl = setup_server()
+
+
 class DashboardDefaults:
     """
     Defaults for input parameters in the ImpactX dashboard.
     """
 
+    COLLAPSABLE_SECTIONS = [
+        "collapse_input_parameters",
+        "collapse_csr",
+        "collapse_distribution_parameters",
+        "collapse_space_charge",
+        "collapse_lattice_configuration",
+    ]
     # -------------------------------------------------------------------------
     # Inputs by section
     # -------------------------------------------------------------------------
@@ -112,4 +135,56 @@ class DashboardDefaults:
         "mlmg_absolute_tolerance": "V/m",
         "beta": "m",
         "emitt": "m",
+    }
+
+    DOCUMENTATION = {
+        "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
+        "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
+        "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
+        "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
+        "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+    }
+
+
+class TooltipDefaults:
+    """
+    Defaults for input toolips in the ImpactX dashboard.
+    """
+
+    TOOLTIP = InputDefaultsHelper.get_docstrings(
+        [RefPart, ImpactX], DashboardDefaults.DEFAULT_VALUES
+    )
+
+
+class ToolbarDefaults:
+    """
+    Default styling and states for the toolbar
+    section in the ImpactX dashboard.
+    """
+
+    TOOLBAR_SIZE = 64
+    FOOTER_SIZE = 8
+
+
+class UIDefaults:
+    """
+    Default UI which the input cards reply on in the ImpactX dashboard.
+    """
+
+    ROW_STYLE = {
+        "dense": False,
+    }
+
+    CARD_TEXT_OVERFLOW = {
+        "classes": "custom-scrollbar",
+        "style": {
+            "flex": "1",
+            "overflow-y": "auto",
+            "overflow-x": "auto",
+        },
+    }
+
+    CARD_STYLE = {
+        "display": "flex",
+        "flex-direction": "column",
     }

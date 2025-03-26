@@ -1,0 +1,189 @@
+/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+ *           Berkeley National Laboratory (subject to receipt of any required
+ *           approvals from the U.S. Dept. of Energy). All rights reserved.
+ *
+ * This file is part of ImpactX.
+ *
+ * Authors: Chad Mitchell, Axel Huebl
+ * License: BSD-3-Clause-LBNL
+ */
+#ifndef IMPACTX_KICKER_H
+#define IMPACTX_KICKER_H
+
+#include "particles/ImpactXParticleContainer.H"
+#include "mixin/alignment.H"
+#include "mixin/beamoptic.H"
+#include "mixin/thin.H"
+#include "mixin/lineartransport.H"
+#include "mixin/named.H"
+#include "mixin/nofinalize.H"
+
+#include <AMReX_Extension.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuComplex.H>
+
+#include <cmath>
+#include <stdexcept>
+
+
+namespace impactx::elements
+{
+    struct Kicker
+    : public mixin::Named,
+      public mixin::BeamOptic<Kicker>,
+      public mixin::LinearTransport<Kicker>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
+    {
+        static constexpr auto type = "Kicker";
+        using PType = ImpactXParticleContainer::ParticleType;
+
+        enum UnitSystem
+        {
+            dimensionless = 0, //! in units of the magnetic rigidity of the reference particle
+            Tm = 1  //! T-m
+        };
+
+        /** A thin transverse kicker element, inducing a transverse
+         *  momentum displacement from the reference orbit.
+         *
+         * @param xkick Strength of horizontal kick
+         * @param ykick Strength of vertical kick
+         * @param unit units of xkick and ykick
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param name a user defined and not necessarily unique name of the element
+         */
+        Kicker (
+            amrex::ParticleReal xkick,
+            amrex::ParticleReal ykick,
+            UnitSystem unit,
+            amrex::ParticleReal dx = 0,
+            amrex::ParticleReal dy = 0,
+            amrex::ParticleReal rotation_degree = 0,
+            std::optional<std::string> name = std::nullopt
+        )
+        : Named(std::move(name)),
+          Alignment(dx, dy, rotation_degree),
+          m_xkick(xkick), m_ykick(ykick), m_unit(unit)
+        {
+        }
+
+        /** Push all particles */
+        using BeamOptic::operator();
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // normalize quad units to MAD-X convention if needed
+            m_p_scale = m_unit == UnitSystem::Tm ? 1.0_prt / refpart.rigidity_Tm() : 1.0_prt;
+        }
+
+        /** This is a transverse kicker functor, so that a variable of this type can be
+         * used like a function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param idcpu particle global index (unused)
+         * @param refpart reference particle (unused)
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (
+            amrex::ParticleReal & AMREX_RESTRICT x,
+            amrex::ParticleReal & AMREX_RESTRICT y,
+            amrex::ParticleReal & AMREX_RESTRICT t,
+            amrex::ParticleReal & AMREX_RESTRICT px,
+            amrex::ParticleReal & AMREX_RESTRICT py,
+            amrex::ParticleReal & AMREX_RESTRICT pt,
+            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // shift due to alignment errors of the element
+            shift_in(x, y, px, py);
+
+            // access position data
+            amrex::ParticleReal const xout = x;
+            amrex::ParticleReal const yout = y;
+            amrex::ParticleReal const tout = t;
+
+            // normalize quad units to MAD-X convention if needed
+            amrex::ParticleReal const dpx = m_xkick * m_p_scale;
+            amrex::ParticleReal const dpy = m_ykick * m_p_scale;
+
+            // intialize output values of momenta
+            amrex::ParticleReal pxout = px;
+            amrex::ParticleReal pyout = py;
+            amrex::ParticleReal ptout = pt;
+
+            // advance position and momentum
+            x = xout;
+            pxout = px + dpx;
+
+            y = yout;
+            pyout = py + dpy;
+
+            t = tout;
+            ptout = pt;
+
+            // assign updated momenta
+            px = pxout;
+            py = pyout;
+            pt = ptout;
+
+            // undo shift due to alignment errors of the element
+            shift_out(x, y, px, py);
+        }
+
+        /** This pushes the reference particle. */
+        using Thin::operator();
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        {
+            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
+            return Map6x6::Identity();
+        }
+
+        amrex::ParticleReal m_xkick; //! horizontal kick strength
+        amrex::ParticleReal m_ykick; //! vertical kick strength
+        UnitSystem m_unit; //! Kicks are for 0 dimensionless, or for 1 in T-m."
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_p_scale;  // either 1 or the inverse rigidity
+    };
+
+} // namespace impactx
+
+#endif // IMPACTX_KICKER_H

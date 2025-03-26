@@ -92,21 +92,35 @@ namespace impactx::elements
 
             // access reference particle values
             amrex::ParticleReal const ibet = 1.0_prt / refpart.beta();
+            amrex::ParticleReal const ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
 
-            // calculate expensive terms once
-            amrex::ParticleReal const theta = slice_ds / m_rc;
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            // treat the special case of zero field (equivalent to a drift)
+            if (m_rc==0_prt) {
+               m_R11 = 1.0_prt;
+               m_R12 = slice_ds;
+               m_R16 = 0.0_prt;
+               m_R21 = 0.0_prt;
+               m_R26 = 0.0_prt;
+               m_R34 = slice_ds;
+               m_R56 = slice_ds * ibetagam2;
 
-            m_R11 = cos_theta;
-            m_R12 = m_rc * sin_theta;
-            m_R16 = -m_rc * ibet * (1.0_prt - cos_theta);
-            m_R21 = -sin_theta / m_rc;
-            // m_R22 = m_R11
-            m_R26 = -sin_theta * ibet;
-            m_R34 = m_rc * theta;
-            // m_R51 = -m_R26
-            // m_R52 = -m_R16
-            m_R56 = m_rc * (-theta + sin_theta * ibet * ibet);
+            } else {
+
+               // calculate expensive terms once
+               amrex::ParticleReal const theta = slice_ds / m_rc;
+               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+               m_R11 = cos_theta;
+               m_R12 = m_rc * sin_theta;
+               m_R16 = -m_rc * ibet * (1.0_prt - cos_theta);
+               m_R21 = -sin_theta / m_rc;
+               // m_R22 = m_R11
+               m_R26 = -sin_theta * ibet;
+               m_R34 = m_rc * theta;
+               // m_R51 = -m_R26
+               // m_R52 = -m_R16
+               m_R56 = m_rc * (-theta + sin_theta * ibet * ibet);
+           }
         }
 
         /** This is a sbend functor, so that a variable of this type can be used like a sbend function.
@@ -212,23 +226,36 @@ namespace impactx::elements
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
-            // assign intermediate parameter
-            amrex::ParticleReal const theta = slice_ds/m_rc;
-            amrex::ParticleReal const B = std::sqrt(std::pow(pt,2)-1.0_prt)/m_rc;
+            // treat the special case of zero field (drift)
+            if (m_rc == 0.0_prt) {
+               // advance position and momentum (drift)
+               amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);           
+               refpart.x = x + step*px;
+               refpart.y = y + step*py;
+               refpart.z = z + step*pz;
+               refpart.t = t - step*pt;
 
-            // calculate expensive terms once
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            } else {
 
-            // advance position and momentum (bend)
-            refpart.px = px*cos_theta - pz*sin_theta;
-            refpart.py = py;
-            refpart.pz = pz*cos_theta + px*sin_theta;
-            refpart.pt = pt;
+               // assign intermediate parameter
+               amrex::ParticleReal const theta = slice_ds/m_rc;
+               amrex::ParticleReal const B = std::sqrt(std::pow(pt,2)-1.0_prt)/m_rc;
 
-            refpart.x = x + (refpart.pz - pz)/B;
-            refpart.y = y + (theta/B)*py;
-            refpart.z = z - (refpart.px - px)/B;
-            refpart.t = t - (theta/B)*pt;
+               // calculate expensive terms once
+               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+               // advance position and momentum (bend)
+               refpart.px = px*cos_theta - pz*sin_theta;
+               refpart.py = py;
+               refpart.pz = pz*cos_theta + px*sin_theta;
+               refpart.pt = pt;
+
+               refpart.x = x + (refpart.pz - pz)/B;
+               refpart.y = y + (theta/B)*py;
+               refpart.z = z - (refpart.px - px)/B;
+               refpart.t = t - (theta/B)*pt;
+
+            }
 
             // advance integrated path length
             refpart.s = s + slice_ds;

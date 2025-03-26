@@ -111,14 +111,18 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
-            // angle of arc for the current slice
+            // arc length and angle of the current slice
+            m_slice_ds = m_ds / nslice();
             m_slice_phi = m_phi / nslice();
+
+            // trigonometric evaluations
             auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
             m_sin_phi = sin_phi;
             m_cos_phi = cos_phi;
 
-            // access reference particle values to find beta
+            // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
+            m_ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
 
             // reference particle's orbital radius
             m_rc = this->rc(refpart);
@@ -162,45 +166,71 @@ namespace impactx::elements
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal ptout = pt;
 
-            // assign intermediate quantities
-            amrex::ParticleReal const pperp2 = std::pow(pt,2)-2.0_prt * m_ibeta * pt - std::pow(py,2)+1.0_prt;
-            amrex::ParticleReal const px2 = std::pow(px,2);
-            // determine if particle lies within the domain of map definition
-            if (pperp2 <= px2)
-            {
-                amrex::ParticleIDWrapper{idcpu}.make_invalid();
-            } else
-            {
-                amrex::ParticleReal const pperp = std::sqrt(pperp2);
-                amrex::ParticleReal const pzi = std::sqrt(std::pow(pperp,2) - std::pow(px,2));
-                amrex::ParticleReal const rho = m_rc + xout;
+            // treat the special case of zero field
+            if (m_phi==0_prt && m_B==0_prt) {
+               // compute the radical in the denominator (= pz):
+               amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
+                   std::pow(pt - m_ibeta, 2) -
+                   m_ibetagam2 -
+                   std::pow(px, 2) -
+                   std::pow(py, 2)
+               );
+            
+               // advance position and momentum (exact drift)
+               x = xout + m_slice_ds * px * inv_pzden;
+               // pxout = px;
+               y = yout + m_slice_ds * py * inv_pzden;
+               // pyout = py;
+               t = tout - m_slice_ds * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+               // ptout = pt;
+            
+               // assign updated momenta
+               px = pxout;
+               py = pyout;
+               pt = ptout;
 
-                // update momenta
-                pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
-                pyout = py;
-                ptout = pt;
+            } else {
 
-                // angle of momentum rotation
-                amrex::ParticleReal const px2f = std::pow(pxout,2);
-                // determine if particle lies within domain of map definition
-                if (pperp2 <= px2f)
-                {
-                    amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                } else
-                {
-                    amrex::ParticleReal const pzf = std::sqrt(std::pow(pperp,2)-std::pow(pxout,2));
-                    amrex::ParticleReal const theta = m_slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
+               // assign intermediate quantities
+               amrex::ParticleReal const pperp2 = std::pow(pt,2)-2.0_prt * m_ibeta * pt - std::pow(py,2)+1.0_prt;
+               amrex::ParticleReal const px2 = std::pow(px,2);
+               // determine if particle lies within the domain of map definition
+               if (pperp2 <= px2)
+               {
+                   amrex::ParticleIDWrapper{idcpu}.make_invalid();
+               } else
+               {
+                   amrex::ParticleReal const pperp = std::sqrt(pperp2);
+                   amrex::ParticleReal const pzi = std::sqrt(std::pow(pperp,2) - std::pow(px,2));
+                   amrex::ParticleReal const rho = m_rc + xout;
 
-                    // update position coordinates
-                    x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);
-                    y = yout + theta * m_rc * py;
-                    t = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - m_phi * m_rc * m_ibeta;
+                   // update momenta
+                   pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
+                   pyout = py;
+                   ptout = pt;
 
-                    // assign updated momenta
-                    px = pxout;
-                    py = pyout;
-                    pt = ptout;
-                }
+                   // angle of momentum rotation
+                   amrex::ParticleReal const px2f = std::pow(pxout,2);
+                   // determine if particle lies within domain of map definition
+                   if (pperp2 <= px2f)
+                   {
+                       amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                   } else
+                   {
+                       amrex::ParticleReal const pzf = std::sqrt(std::pow(pperp,2)-std::pow(pxout,2));
+                       amrex::ParticleReal const theta = m_slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
+
+                       // update position coordinates
+                       x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);
+                       y = yout + theta * m_rc * py;
+                       t = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - m_phi * m_rc * m_ibeta;
+
+                       // assign updated momenta
+                       px = pxout;
+                       py = pyout;
+                       pt = ptout;
+                   }
+               }
             }
 
             // apply transverse aperture
@@ -233,24 +263,37 @@ namespace impactx::elements
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
-            // assign intermediate parameters
-            amrex::ParticleReal const theta = m_phi / nslice();
-            amrex::ParticleReal const rc = (m_B != 0_prt) ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
-            amrex::ParticleReal const B = refpart.beta_gamma() /rc;
+            // special case of zero field = an exact drift
+            if (m_phi==0_prt && m_B==0_prt) {
+               // advance position and momentum (drift)
+               amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+               refpart.x = x + step*px;
+               refpart.y = y + step*py;
+               refpart.z = z + step*pz;
+               refpart.t = t - step*pt;
 
-            // calculate expensive terms once
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            } else {
 
-            // advance position and momentum (bend)
-            refpart.px = px*cos_theta - pz*sin_theta;
-            refpart.py = py;
-            refpart.pz = pz*cos_theta + px*sin_theta;
-            refpart.pt = pt;
+               // assign intermediate parameters
+               amrex::ParticleReal const theta = m_phi / nslice();
+               amrex::ParticleReal const rc = (m_B != 0_prt) ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
+               amrex::ParticleReal const B = refpart.beta_gamma() /rc;
 
-            refpart.x = x + (refpart.pz - pz)/B;
-            refpart.y = y + (theta/B)*py;
-            refpart.z = z - (refpart.px - px)/B;
-            refpart.t = t - (theta/B)*pt;
+               // calculate expensive terms once
+               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+               // advance position and momentum (bend)
+               refpart.px = px*cos_theta - pz*sin_theta;
+               refpart.py = py;
+               refpart.pz = pz*cos_theta + px*sin_theta;
+               refpart.pt = pt;
+
+               refpart.x = x + (refpart.pz - pz)/B;
+               refpart.y = y + (theta/B)*py;
+               refpart.z = z - (refpart.px - px)/B;
+               refpart.t = t - (theta/B)*pt;
+
+            }
 
             // advance integrated path length
             refpart.s = s + slice_ds;
@@ -278,7 +321,7 @@ namespace impactx::elements
       private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_phi, m_ibeta, m_rc, m_sin_phi, m_cos_phi;
+        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_ibetagam2, m_rc, m_sin_phi, m_cos_phi;
     };
 
 } // namespace impactx

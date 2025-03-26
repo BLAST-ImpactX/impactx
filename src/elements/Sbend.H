@@ -229,7 +229,7 @@ namespace impactx::elements
             // treat the special case of zero field (drift)
             if (m_rc == 0.0_prt) {
                // advance position and momentum (drift)
-               amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);           
+               amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
                refpart.x = x + step*px;
                refpart.y = y + step*py;
                refpart.z = z + step*pz;

@@ -283,24 +283,34 @@ namespace impactx::elements
             amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
             amrex::ParticleReal const bet = std::sqrt(betgam2/(1.0_prt + betgam2));
 
-            // calculate expensive terms once
-            amrex::ParticleReal const theta = slice_ds/m_rc;
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            // assign linear map matrix elements
-            R(1,1) = cos_theta;
-            R(1,2) = m_rc*sin_theta;
-            R(1,6) = - (m_rc/bet)*(1.0_prt - cos_theta);
-            R(2,1) = -sin_theta/m_rc;
-            R(2,2) = cos_theta;
-            R(2,6) = - sin_theta/bet;
-            R(3,4) = m_rc*theta;
-            R(5,1) = sin_theta/bet;
-            R(5,2) = m_rc/bet*(1.0_prt - cos_theta);
-            R(5,6) = m_rc*(-theta+sin_theta/(bet*bet));
+            // treat the special case of zero field
+            if (m_rc==0.0_prt) {
+               R(1,2) = slice_ds;
+               R(3,4) = slice_ds;
+               R(5,6) = slice_ds / betgam2;
+
+            } else {
+
+               // calculate expensive terms once
+               amrex::ParticleReal const theta = slice_ds/m_rc;
+               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+               // assign linear map matrix elements
+               R(1,1) = cos_theta;
+               R(1,2) = m_rc*sin_theta;
+               R(1,6) = - (m_rc/bet)*(1.0_prt - cos_theta);
+               R(2,1) = -sin_theta/m_rc;
+               R(2,2) = cos_theta;
+               R(2,6) = - sin_theta/bet;
+               R(3,4) = m_rc*theta;
+               R(5,1) = sin_theta/bet;
+               R(5,2) = m_rc/bet*(1.0_prt - cos_theta);
+               R(5,6) = m_rc*(-theta+sin_theta/(bet*bet));
+
+            }
 
             return R;
         }

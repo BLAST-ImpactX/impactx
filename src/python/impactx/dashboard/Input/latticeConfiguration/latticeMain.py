@@ -277,7 +277,7 @@ class LatticeConfiguration(CardBase):
                     ):
                         vuetify.VTextField(
                             label=("parameter.parameter_name",),
-                            v_model=("parameter.parameter_default_value",),
+                            v_model=("parameter.ui_value",),
                             update_modelValue=(
                                 ctrl.updateLatticeElementParameters,
                                 "[index, parameter.parameter_name, $event, parameter.parameter_type]",

@@ -154,11 +154,11 @@ namespace impactx
                         {
                             BL_PROFILE("impactx::Push::RefPart");
                             element(ref);
-                        }  
-                    
+                        }
+
                         // push Covariance Matrix in external fields
                         element(cm, ref);
-                                       
+
                     }, element_variant);
 
                     if (space_charge == SpaceChargeAlgo::True_2D)

@@ -167,27 +167,6 @@ class LatticeVariableHandler:
         )
         return (found_index is not None, found_index)
 
-    @staticmethod
-    def variable_btn(**kwargs) -> vuetify.VBtn:
-        """
-        Creates a templated button.
-        """
-
-        return vuetify.VBtn(
-            icon=True,
-            small=True,
-            elevation=2,
-            **kwargs,
-        )
-
-    @staticmethod
-    def variable_btn_icon(mdi_name: str) -> vuetify.VIcon:
-        """
-        Creates a templated icon for the button.
-        """
-
-        return vuetify.VIcon(mdi_name, small=True)
-
     # -----------------------------------------------------------------------------
     # UI
     # -----------------------------------------------------------------------------
@@ -211,14 +190,13 @@ class LatticeVariableHandler:
                                     vuetify.VTextField(
                                         placeholder="Name",
                                         v_model=("variable.name",),
-                                        outlined=True,
-                                        dense=True,
+                                        variant="outlined",
+                                        density="compact",
                                         background_color="grey lighten-4",
-                                        input=(
+                                        update_modelValue=(
                                             ctrl.update_variable,
                                             "['name', index, $event]",
                                         ),
-                                        change="flushState('variables')",
                                         error_messages=("variable.error_message", []),
                                         hide_details=True,
                                     )
@@ -228,11 +206,11 @@ class LatticeVariableHandler:
                                     vuetify.VTextField(
                                         placeholder="Value",
                                         v_model=("variable.value",),
-                                        outlined=True,
-                                        dense=True,
+                                        variant="outlined",
+                                        density="compact",
                                         type="number",
                                         background_color="grey lighten-4",
-                                        change=(
+                                        update_modelValue=(
                                             ctrl.update_variable,
                                             "['value', index, $event]",
                                         ),
@@ -240,23 +218,27 @@ class LatticeVariableHandler:
                                     )
                                 with vuetify.VCol(cols=2, classes="d-flex"):
                                     with html.Div(classes="mr-2"):
-                                        with LatticeVariableHandler.variable_btn(
+                                        CardComponents.card_button(
+                                            "mdi-plus",
                                             color="primary",
+                                            description="Add Variable",
                                             click=ctrl.add_variable,
                                             v_show="index === variables.length - 1",
-                                        ):
-                                            LatticeVariableHandler.variable_btn_icon(
-                                                "mdi-plus"
-                                            )
+                                            density="default",
+                                            size="x-small",
+                                            variant="elevated",
+                                        )
                                     with html.Div():
-                                        with LatticeVariableHandler.variable_btn(
+                                        CardComponents.card_button(
+                                            "mdi-delete",
                                             color="secondary",
+                                            description="Delete Variable",
                                             click=(ctrl.delete_variable, "[index]"),
                                             disabled=("is_only_variable",),
-                                        ):
-                                            LatticeVariableHandler.variable_btn_icon(
-                                                "mdi-delete"
-                                            )
+                                            density="default",
+                                            size="x-small",
+                                            variant="elevated",
+                                        )
                             with vuetify.VRow(classes="mt-2"):
                                 with vuetify.VCol():
                                     vuetify.VBtn(

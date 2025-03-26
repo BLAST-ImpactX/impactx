@@ -1,4 +1,5 @@
-from .helper import LatticeConfigurationHelper, LatticeVariableHandler
+from .helper import LatticeConfigurationHelper
+from .variable_handler import LatticeVariableHandler
 
 __all__ = [
     "LatticeConfigurationHelper",

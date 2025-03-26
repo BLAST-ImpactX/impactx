@@ -66,7 +66,7 @@ namespace detail
         int nslice = nslice_default;
         pp_element.getWithParser("ds", ds);
         pp_element.queryAddWithParser("nslice", nslice);
-        nslice = std::floor(nslice/2.0)*2;  // ensure nslice is even
+        //nslice = std::floor(nslice/2.0)*2;  // ensure nslice is even
 
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(nslice > 0,
                                          pp_element.getPrefix() + ".nslice must be > 0.");

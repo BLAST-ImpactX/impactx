@@ -137,7 +137,8 @@ namespace impactx
                 }, element_variant);
 
                 // sub-steps for space charge within the element
-                for (int slice_step = 0; slice_step < nslice; ++slice_step)
+                int nsteps = std::floor(nslice/2.0);
+                for (int slice_step = 0; slice_step < nsteps; ++slice_step)
                 {
                     BL_PROFILE("ImpactX::track_envelope::slice_step");
                     step++;
@@ -147,14 +148,27 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
+                    std::visit([&ref, &cm](auto&& element)
+                    {
+                        // push reference particle in global coordinates
+                        {
+                            BL_PROFILE("impactx::Push::RefPart");
+                            element(ref);
+                        }  
+                    
+                        // push Covariance Matrix in external fields
+                        element(cm, ref);
+                                       
+                    }, element_variant);
+
                     if (space_charge == SpaceChargeAlgo::True_2D)
                     {
                         // push Covariance Matrix in 2D space charge fields
-                        envelope::spacecharge::space_charge2D_push(ref, cm, intensity, slice_ds);
+                        envelope::spacecharge::space_charge2D_push(ref, cm, intensity, 2*slice_ds);
                     } else if (space_charge == SpaceChargeAlgo::True_3D)
                     {
                         // push Covariance Matrix in 3D space charge fields
-                        envelope::spacecharge::space_charge3D_push(ref, cm, intensity, slice_ds);
+                        envelope::spacecharge::space_charge3D_push(ref, cm, intensity, 2*slice_ds);
                     } else {
                         amrex::Print() << "Warning: Space charge is off by default." << "\n";
                     }

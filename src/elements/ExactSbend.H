@@ -175,7 +175,7 @@ namespace impactx::elements
                    std::pow(px, 2) -
                    std::pow(py, 2)
                );
-            
+
                // advance position and momentum (exact drift)
                x = xout + m_slice_ds * px * inv_pzden;
                // pxout = px;
@@ -183,7 +183,7 @@ namespace impactx::elements
                // pyout = py;
                t = tout - m_slice_ds * (m_ibeta + (pt - m_ibeta) * inv_pzden);
                // ptout = pt;
-            
+
                // assign updated momenta
                px = pxout;
                py = pyout;

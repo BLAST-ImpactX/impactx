@@ -3,6 +3,7 @@ from .. import CardComponents
 
 server, state, ctrl = setup_server()
 
+
 class LatticeConfigurationHelper:
     """
     Helper class to build the Lattice Configuration section of the dashboard

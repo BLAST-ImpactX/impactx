@@ -341,18 +341,20 @@ namespace SoftSolenoidData
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
-
+            
         /** This function returns the linear transport map.
-         *
-         * @param[in] refpart reference particle
+         *  
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE   
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            
+            Map6x6 R = Map6x6::Identity();
+            R = refpart.map;
+            
+            return R;
         }
 
         /** This evaluates the on-axis magnetic field Bz at a fixed location

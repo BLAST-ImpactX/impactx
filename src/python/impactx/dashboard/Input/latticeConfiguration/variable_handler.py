@@ -1,6 +1,6 @@
-from trame.widgets import html
+from typing import Tuple, Optional
 
-from ... import setup_server, vuetify
+from ... import setup_server, html, vuetify
 from .. import (
     CardComponents,
     InputComponents,
@@ -23,6 +23,7 @@ class LatticeVariableHandler:
     Stores all functionality for dashboard variable referencing.
     """
 
+    @staticmethod
     @state.change("variables")
     def on_variables_list_change(variables, **kwargs):
         for lattice_element in state.lattice_params_bound_or_pending_variable.values():
@@ -37,6 +38,7 @@ class LatticeVariableHandler:
     # Controllers
     # -----------------------------------------------------------------------------
 
+    @staticmethod
     @ctrl.add("add_variable")
     def on_add_change() -> None:
         """
@@ -50,10 +52,11 @@ class LatticeVariableHandler:
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
 
+    @staticmethod
     @ctrl.add("delete_variable")
     def on_delete_change(index: int) -> None:
         """
-        Deleted the variable defined by the user
+        Deletes the variable defined by the user
         provided the index
 
         :param index: The index of the variable
@@ -66,8 +69,8 @@ class LatticeVariableHandler:
     @ctrl.add("update_variable")
     def on_variable_change(key_name: str, index: int, event) -> None:
         """
-        Called when a variable name or value changes.
-        Validates the value and updates it's stored value.
+        Called when any variable name or value changes.
+        Validates the new value and updates it's associated sim value.
 
         :param key_name: The name of the variable.
         :param index: The index of the variable.
@@ -101,8 +104,8 @@ class LatticeVariableHandler:
     def update_delete_availability() -> None:
         """
         Updates the state flag that controls whether the delete variable
-        functionality should be disabled. The delete functionality is disabled
-        when there is only one variable in the list.
+        functionality should be disabled.
+        The delete functionality is disabled when there is only one variable.
         """
 
         state.is_only_variable = True if len(state.variables) == 1 else False
@@ -166,10 +169,10 @@ class LatticeVariableHandler:
             generalFunctions.update_simulation_validation_status()  # need to optimize function later
 
     @staticmethod
-    def determine_if_variable(var_name):
+    def determine_if_existing_variable(var_name: str) -> Tuple[bool, Optional[int]]:
         """
-        Determines if var_name is already a variable in the current
-        list of variables.
+        Determines if the given 'var_name' is already a variable
+        in the current list of variables.
 
         :param: var_name: The name of the variable.
         :return: A bool and [if found] the index of the variable.
@@ -259,7 +262,7 @@ class LatticeVariableHandler:
                                 with vuetify.VCol():
                                     vuetify.VBtn(
                                         "Reset Variables",
-                                        color="accent",
+                                        color="primary",
                                         click=ctrl.reset_variables,
                                         block=True,
                                     )

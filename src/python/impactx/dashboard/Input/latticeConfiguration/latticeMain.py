@@ -166,7 +166,7 @@ def process_if_variable(index, parameter_name, ui_value, parameter_type):
     :param parameter_type: The lattice element parameters type.
     """
 
-    lattice_variable, variable_index = LatticeVariableHandler.determine_if_variable(
+    lattice_variable, variable_index = LatticeVariableHandler.determine_if_existing_variable(
         ui_value
     )
     potentially_lattice_variable = (

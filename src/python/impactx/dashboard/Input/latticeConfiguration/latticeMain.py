@@ -170,8 +170,8 @@ def process_if_variable(index, parameter_name, ui_value, parameter_type):
     lattice_variable, variable_index = (
         LatticeVariableHandler.determine_if_existing_variable(ui_value)
     )
-    potentially_lattice_variable = (
-        LatticeVariableHandler.is_valid_variable_name(ui_value)
+    potentially_lattice_variable = LatticeVariableHandler.is_valid_variable_name(
+        ui_value
     )
 
     if lattice_variable or potentially_lattice_variable:
@@ -343,7 +343,7 @@ class LatticeConfiguration(CardBase):
         Allows users to pre-determine default values for
         any parameter name. Example: user can set 'nslice' to 25
         and every element added thereafter will have the nslice value
-        of 25 as default.        
+        of 25 as default.
         """
         with vuetify.VCardText():
             with vuetify.VRow():

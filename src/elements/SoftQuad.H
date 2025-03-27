@@ -332,19 +332,19 @@ namespace SoftQuadrupoleData
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
-            
+
         /** This function returns the linear transport map.
-         *  
+         *
          * @returns 6x6 transport matrix
          */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE   
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            
+
             Map6x6 R = Map6x6::Identity();
             R = refpart.map;
-            
+
             return R;
         }
 

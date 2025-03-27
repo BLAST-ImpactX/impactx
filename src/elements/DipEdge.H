@@ -181,13 +181,13 @@ namespace impactx::elements
 */
             // edge focusing matrix elements (zero gap)
             amrex::ParticleReal const R21 = std::tan(m_psi) / m_rc;
-         
+
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
             amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
                 / std::pow(cos_psi, 3)
                 * m_g * m_K2 / std::pow(m_rc, 2);
-        
+
             amrex::ParticleReal const R43 = vf - R21;
 
             // set non-identity matrix elements

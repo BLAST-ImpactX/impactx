@@ -23,6 +23,16 @@ class LatticeVariableHandler:
     Stores all functionality for dashboard variable referencing.
     """
 
+    @state.change("variables")
+    def on_variables_list_change(variables, **kwargs):
+        for lattice_element in state.lattice_params_bound_or_pending_variable.values():
+            ctrl.updateLatticeElementParameters(
+                lattice_element["index"],
+                lattice_element["parameter_name"],
+                lattice_element["ui_value"],
+                lattice_element["parameter_type"],
+            )
+
     # -----------------------------------------------------------------------------
     # Controllers
     # -----------------------------------------------------------------------------
@@ -116,6 +126,10 @@ class LatticeVariableHandler:
         if duplicates:
             duplicates.append(current_index)
         return duplicates
+
+    @staticmethod
+    def element_potentially_using_element(ui_value, _dummy_index=None):
+        return bool(ui_value) and ui_value[0].isalpha()
 
     @staticmethod
     def validate_variable_name(new_name, index) -> None:

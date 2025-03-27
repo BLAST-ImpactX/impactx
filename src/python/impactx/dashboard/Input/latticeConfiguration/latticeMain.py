@@ -18,6 +18,7 @@ from .. import (
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
+state.lattice_params_bound_or_pending_variable = {}
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -152,17 +153,62 @@ def on_add_lattice_element_click():
         state.dirty("selected_lattice_list")
 
 
+def process_if_variable(index, parameter_name, ui_value, parameter_type):
+    """
+    If the updated lattice parameter value uses or potentially uses a variable, this
+    function returns the simulation value by lookup, adds the element to a dictionary
+    which contains current or potential variables, and also returns true or false if it
+    is a current or potential variable.
+
+    :param index: The index of the lattice element in the lattice list config.
+    :param parameter_name: The specific lattice element parameter name.
+    :param ui_value: The value present on the UI end..
+    :param parameter_type: The lattice element parameters type.
+    """
+
+    lattice_variable, variable_index = LatticeVariableHandler.determine_if_variable(
+        ui_value
+    )
+    potentially_lattice_variable = (
+        LatticeVariableHandler.element_potentially_using_element(ui_value, index)
+    )
+
+    if lattice_variable or potentially_lattice_variable:
+        if lattice_variable and variable_index is not None:
+            sim_value = state.variables[variable_index]["value"]
+        else:
+            sim_value = ui_value
+
+        binding = {
+            "index": index,
+            "parameter_name": parameter_name,
+            "ui_value": ui_value,
+            "parameter_type": parameter_type,
+            "variable_index": variable_index,
+        }
+    else:
+        sim_value, _ = generalFunctions.determine_input_type(ui_value)
+        binding = None
+
+    return sim_value, binding
+
+
 @ctrl.add("updateLatticeElementParameters")
 def on_lattice_element_parameter_change(
     index, parameter_name, ui_value, parameter_type
 ):
-    lattice_variable, variable_index = LatticeVariableHandler.determine_if_variable(
-        ui_value
+    sim_value, bounded_or_pending_variable = process_if_variable(
+        index, parameter_name, ui_value, parameter_type
     )
-    if lattice_variable:
-        sim_value = state.variables[variable_index]["value"]
+
+    if bounded_or_pending_variable is not None:
+        state.lattice_params_bound_or_pending_variable[(index, parameter_name)] = (
+            bounded_or_pending_variable
+        )
     else:
-        sim_value, input_type = generalFunctions.determine_input_type(ui_value)
+        state.lattice_params_bound_or_pending_variable.pop(
+            (index, parameter_name), None
+        )
 
     error_message = generalFunctions.validate_against(sim_value, parameter_type)
 
@@ -171,6 +217,13 @@ def on_lattice_element_parameter_change(
             param["ui_value"] = ui_value
             param["sim_value"] = sim_value
             param["parameter_error_message"] = error_message
+
+    print(
+        f"Updated lattice parameter '{parameter_name}' at index {index}: ui_value={ui_value}, sim_value={sim_value}, error={error_message}"
+    )
+    print(
+        f"# of elements using/potentially using variables: {len(state.lattice_params_bound_or_pending_variable)}"
+    )
 
     generalFunctions.update_simulation_validation_status()
     state.dirty("selected_lattice_list")

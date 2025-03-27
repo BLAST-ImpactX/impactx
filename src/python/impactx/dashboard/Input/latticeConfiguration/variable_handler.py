@@ -137,39 +137,38 @@ class LatticeVariableHandler:
         if var_name is None:
             return True
         return var_name.isidentifier() and not keyword.iskeyword(var_name)
-        
+
     @staticmethod
-    def validate_variable_name(new_name, index) -> None:
+    def validate_variable_name(new_name: str, index: int) -> None:
         """
         Validates the variable name and outputs an error message if any.
 
         :param new_name: The name of the variable.
-        :index: The index of the variable.
+        :param index: The index of the variable.
         """
 
-        def set_var_error_message(message):
-            state.variables[index]["error_message"] = message
+        def set_var_error_message(idx: int, message: str) -> None:
+            state.variables[idx]["error_message"] = message
             state.dirty("variables")
+
+        if not LatticeVariableHandler.is_valid_variable_name(new_name):
+            set_var_error_message(index, "Variable must be a valid python identifier.")
+            generalFunctions.update_simulation_validation_status()
+            state.dirty("variables")
+            return
 
         duplicate_indexes = LatticeVariableHandler.get_duplicate_indexes(
             new_name, index
         )
-        send_error = set_var_error_message("error")
-
-        if not LatticeVariableHandler.is_valid_variable_name(new_name):
-            set_var_error_message("Variable must be a valid python identifier.")
+        if duplicate_indexes:
+            for dup_index in duplicate_indexes:
+                set_var_error_message(dup_index, "error")
             generalFunctions.update_simulation_validation_status()
             state.dirty("variables")
-            return True
-        elif duplicate_indexes:
-            for index in duplicate_indexes:
-                send_error
-            generalFunctions.update_simulation_validation_status()  # need to optimize function later
-            state.dirty("variables")
-            return True
-        else:
-            set_var_error_message("")
-            generalFunctions.update_simulation_validation_status()  # need to optimize function later
+            return
+
+        set_var_error_message(index, "")
+        generalFunctions.update_simulation_validation_status()
 
     @staticmethod
     def determine_if_existing_variable(var_name: str) -> Tuple[bool, Optional[int]]:

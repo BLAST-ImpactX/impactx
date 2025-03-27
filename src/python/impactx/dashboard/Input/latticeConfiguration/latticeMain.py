@@ -335,6 +335,7 @@ class LatticeConfiguration(CardBase):
                             style="width: 100px;",
                         )
 
+    @staticmethod
     def defaults_handler():
         """
         Displays the content for the 'Defaults' tab

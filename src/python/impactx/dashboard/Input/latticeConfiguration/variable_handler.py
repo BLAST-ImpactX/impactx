@@ -65,6 +65,7 @@ class LatticeVariableHandler:
         state.dirty("variables")
         LatticeVariableHandler.update_delete_availability()
 
+    @staticmethod
     @ctrl.add("update_variable")
     def on_variable_change(key_name: str, index: int, event) -> None:
         """
@@ -83,6 +84,7 @@ class LatticeVariableHandler:
             state.variables[index][key_name] = event
         state.dirty("variables")
 
+    @staticmethod
     @ctrl.add("reset_variables")
     def on_reset_variables() -> None:
         """

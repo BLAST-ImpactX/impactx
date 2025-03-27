@@ -1,3 +1,4 @@
+import keyword
 from typing import Optional, Tuple
 
 from ... import html, setup_server, vuetify
@@ -129,12 +130,13 @@ class LatticeVariableHandler:
         return duplicates
 
     @staticmethod
-    def is_alphabetical(var_name: str) -> bool:
+    def is_valid_variable_name(var_name: str) -> bool:
         """
-        Check if the variable name starts with an alphabet character.
+        Check if the variable name is a valid Python variable name.
         """
-        
-        return bool(var_name) and var_name[0].isalpha()
+        if var_name is None:
+            return True
+        return var_name.isidentifier() and not keyword.iskeyword(var_name)
         
     @staticmethod
     def validate_variable_name(new_name, index) -> None:
@@ -154,8 +156,8 @@ class LatticeVariableHandler:
         )
         send_error = set_var_error_message("error")
 
-        if not LatticeVariableHandler.is_alphabetical(new_name):
-            set_var_error_message("Variable must began ith an alphabetical letter.")
+        if not LatticeVariableHandler.is_valid_variable_name(new_name):
+            set_var_error_message("Variable must be a valid python identifier.")
             generalFunctions.update_simulation_validation_status()
             state.dirty("variables")
             return True

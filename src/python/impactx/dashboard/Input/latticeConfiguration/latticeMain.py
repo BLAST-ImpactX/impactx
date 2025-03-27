@@ -219,13 +219,6 @@ def on_lattice_element_parameter_change(
             param["sim_value"] = sim_value
             param["parameter_error_message"] = error_message
 
-    print(
-        f"Updated lattice parameter '{parameter_name}' at index {index}: ui_value={ui_value}, sim_value={sim_value}, error={error_message}"
-    )
-    print(
-        f"# of elements using/potentially using variables: {len(state.lattice_params_bound_or_pending_variable)}"
-    )
-
     generalFunctions.update_simulation_validation_status()
     state.dirty("selected_lattice_list")
 

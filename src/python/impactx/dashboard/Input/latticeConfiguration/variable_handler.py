@@ -1,10 +1,8 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from ... import setup_server, html, vuetify
+from ... import html, setup_server, vuetify
 from .. import (
     CardComponents,
-    InputComponents,
-    NavigationComponents,
     generalFunctions,
 )
 
@@ -189,92 +187,78 @@ class LatticeVariableHandler:
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def dialog_settings():
-        dialog_name = "lattice_configuration_dialog_tab_settings"
+    def variable_handler():
+        """
+        Diaplays the lattice variable handler
+        on the dashboard.
+        """
 
-        with NavigationComponents.create_dialog_tabs(
-            dialog_name, 2, ["Variables", "Defaults"]
-        ):
-            with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
-                with vuetify.VTabsWindowItem():
-                    with vuetify.VCardText():
-                        with vuetify.VContainer(fluid=True):
-                            with vuetify.VRow(
-                                v_for="(variable, index) in variables",
-                                classes="align-center justify-center py-0",
-                            ):
-                                with vuetify.VCol(cols=5, classes="pr-0"):
-                                    vuetify.VTextField(
-                                        placeholder="Name",
-                                        v_model=("variable.name",),
-                                        variant="outlined",
-                                        density="compact",
-                                        background_color="grey lighten-4",
-                                        update_modelValue=(
-                                            ctrl.update_variable,
-                                            "['name', index, $event]",
-                                        ),
-                                        error_messages=("variable.error_message", []),
-                                        hide_details=True,
-                                        clearable=True,
-                                    )
-                                with vuetify.VCol(cols=1, classes="px-0 text-center"):
-                                    html.Span("=", classes="mx-0")
-                                with vuetify.VCol(cols=4, classes="pl-0"):
-                                    vuetify.VTextField(
-                                        placeholder="Value",
-                                        v_model=("variable.value",),
-                                        variant="outlined",
-                                        density="compact",
-                                        type="number",
-                                        background_color="grey lighten-4",
-                                        update_modelValue=(
-                                            ctrl.update_variable,
-                                            "['value', index, $event]",
-                                        ),
-                                        hide_details=True,
-                                        clearable=True,
-                                    )
-                                with vuetify.VCol(cols=2, classes="d-flex"):
-                                    with html.Div(classes="mr-2"):
-                                        CardComponents.card_button(
-                                            "mdi-plus",
-                                            color="primary",
-                                            description="Add Variable",
-                                            click=ctrl.add_variable,
-                                            v_show="index === variables.length - 1",
-                                            density="default",
-                                            size="x-small",
-                                            variant="elevated",
-                                        )
-                                    with html.Div():
-                                        CardComponents.card_button(
-                                            "mdi-delete",
-                                            color="secondary",
-                                            description="Delete Variable",
-                                            click=(ctrl.delete_variable, "[index]"),
-                                            disabled=("is_only_variable",),
-                                            density="default",
-                                            size="x-small",
-                                            variant="elevated",
-                                        )
-                            with vuetify.VRow(classes="mt-2"):
-                                with vuetify.VCol():
-                                    vuetify.VBtn(
-                                        "Reset Variables",
-                                        color="primary",
-                                        click=ctrl.reset_variables,
-                                        block=True,
-                                    )
-                with vuetify.VTabsWindowItem():
-                    with vuetify.VCardText():
-                        with vuetify.VRow():
-                            with vuetify.VCol(cols=3):
-                                InputComponents.text_field(
-                                    label="nslice",
-                                    v_model_name="nslice",
-                                    change=(
-                                        ctrl.nsliceDefaultChange,
-                                        "['nslice', $event]",
-                                    ),
-                                )
+        with vuetify.VCardText():
+            with vuetify.VContainer(fluid=True):
+                with vuetify.VRow(
+                    v_for="(variable, index) in variables",
+                    classes="align-center justify-center py-0",
+                ):
+                    with vuetify.VCol(cols=5, classes="pr-0"):
+                        vuetify.VTextField(
+                            placeholder="Name",
+                            v_model=("variable.name",),
+                            variant="outlined",
+                            density="compact",
+                            background_color="grey lighten-4",
+                            update_modelValue=(
+                                ctrl.update_variable,
+                                "['name', index, $event]",
+                            ),
+                            error_messages=("variable.error_message", []),
+                            hide_details=True,
+                            clearable=True,
+                        )
+                    with vuetify.VCol(cols=1, classes="px-0 text-center"):
+                        html.Span("=", classes="mx-0")
+                    with vuetify.VCol(cols=4, classes="pl-0"):
+                        vuetify.VTextField(
+                            placeholder="Value",
+                            v_model=("variable.value",),
+                            variant="outlined",
+                            density="compact",
+                            type="number",
+                            background_color="grey lighten-4",
+                            update_modelValue=(
+                                ctrl.update_variable,
+                                "['value', index, $event]",
+                            ),
+                            hide_details=True,
+                            clearable=True,
+                        )
+                    with vuetify.VCol(cols=2, classes="d-flex"):
+                        with html.Div(classes="mr-2"):
+                            CardComponents.card_button(
+                                "mdi-plus",
+                                color="primary",
+                                description="Add Variable",
+                                click=ctrl.add_variable,
+                                v_show="index === variables.length - 1",
+                                density="default",
+                                size="x-small",
+                                variant="elevated",
+                            )
+                        with html.Div():
+                            CardComponents.card_button(
+                                "mdi-delete",
+                                color="secondary",
+                                description="Delete Variable",
+                                click=(ctrl.delete_variable, "[index]"),
+                                disabled=("is_only_variable",),
+                                density="default",
+                                size="x-small",
+                                variant="elevated",
+                            )
+                with vuetify.VRow(classes="mt-2"):
+                    with vuetify.VCol():
+                        vuetify.VBtn(
+                            "Reset Variables",
+                            color="primary",
+                            click=ctrl.reset_variables,
+                            block=True,
+                        )

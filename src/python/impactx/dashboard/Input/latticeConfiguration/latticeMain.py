@@ -13,6 +13,7 @@ from .. import (
     CardBase,
     CardComponents,
     InputComponents,
+    NavigationComponents,
     generalFunctions,
 )
 from . import LatticeConfigurationHelper, LatticeVariableHandler
@@ -166,8 +167,8 @@ def process_if_variable(index, parameter_name, ui_value, parameter_type):
     :param parameter_type: The lattice element parameters type.
     """
 
-    lattice_variable, variable_index = LatticeVariableHandler.determine_if_existing_variable(
-        ui_value
+    lattice_variable, variable_index = (
+        LatticeVariableHandler.determine_if_existing_variable(ui_value)
     )
     potentially_lattice_variable = (
         LatticeVariableHandler.element_potentially_using_element(ui_value, index)
@@ -282,7 +283,7 @@ class LatticeConfiguration(CardBase):
         with vuetify.VDialog(
             v_model=("lattice_configuration_dialog_settings", False), width="500px"
         ):
-            LatticeVariableHandler.dialog_settings()
+            LatticeConfiguration.dialog_settings()
 
     def card_content(self):
         self.init_settings_dialog()
@@ -340,3 +341,46 @@ class LatticeConfiguration(CardBase):
                             variant="underlined",
                             style="width: 100px;",
                         )
+
+    def defaults_handler():
+        """
+        Displays the content for the 'Defaults' tab
+        in the lattice configuration settings.
+
+        Allows users to pre-determine default values for
+        any parameter name. Example: user can set 'nslice' to 25
+        and every element added thereafter will have the nslice value
+        of 25 as default.        
+        """
+        with vuetify.VCardText():
+            with vuetify.VRow():
+                with vuetify.VCol(cols=3):
+                    InputComponents.text_field(
+                        label="nslice",
+                        v_model_name="nslice",
+                        change=(
+                            ctrl.nsliceDefaultChange,
+                            "['nslice', $event]",
+                        ),
+                    )
+
+    # -----------------------------------------------------------------------------
+    # Dialogs
+    # -----------------------------------------------------------------------------
+
+    @staticmethod
+    def dialog_settings():
+        """
+        Provides controls for lattice element configuration,
+        allowing dashboard users to define parameter defaults.
+        """
+        dialog_name = "lattice_configuration_dialog_tab_settings"
+
+        with NavigationComponents.create_dialog_tabs(
+            dialog_name, 2, ["Variables", "Defaults"]
+        ):
+            with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+                with vuetify.VTabsWindowItem():
+                    LatticeVariableHandler.variable_handler()
+                with vuetify.VTabsWindowItem():
+                    LatticeConfiguration.defaults_handler()

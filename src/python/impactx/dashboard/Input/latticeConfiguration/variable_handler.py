@@ -129,9 +129,13 @@ class LatticeVariableHandler:
         return duplicates
 
     @staticmethod
-    def element_potentially_using_element(ui_value, _dummy_index=None):
-        return bool(ui_value) and ui_value[0].isalpha()
-
+    def is_alphabetical(var_name: str) -> bool:
+        """
+        Check if the variable name starts with an alphabet character.
+        """
+        
+        return bool(var_name) and var_name[0].isalpha()
+        
     @staticmethod
     def validate_variable_name(new_name, index) -> None:
         """
@@ -145,15 +149,14 @@ class LatticeVariableHandler:
             state.variables[index]["error_message"] = message
             state.dirty("variables")
 
-        alpha = new_name and new_name[0].isalpha()
         duplicate_indexes = LatticeVariableHandler.get_duplicate_indexes(
             new_name, index
         )
         send_error = set_var_error_message("error")
 
-        if not alpha:
-            send_error
-            generalFunctions.update_simulation_validation_status()  # need to optimize function later
+        if not LatticeVariableHandler.is_alphabetical(new_name):
+            set_var_error_message("Variable must began ith an alphabetical letter.")
+            generalFunctions.update_simulation_validation_status()
             state.dirty("variables")
             return True
         elif duplicate_indexes:

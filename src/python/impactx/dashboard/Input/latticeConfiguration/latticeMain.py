@@ -171,7 +171,7 @@ def process_if_variable(index, parameter_name, ui_value, parameter_type):
         LatticeVariableHandler.determine_if_existing_variable(ui_value)
     )
     potentially_lattice_variable = (
-        LatticeVariableHandler.element_potentially_using_element(ui_value, index)
+        LatticeVariableHandler.is_alphabetical(ui_value)
     )
 
     if lattice_variable or potentially_lattice_variable:

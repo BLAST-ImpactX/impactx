@@ -18,6 +18,7 @@ class SimulationHelper:
     excution on the dashboard.
     """
 
+    @staticmethod
     async def run_simulation_in_subprocess(simulation_contents):
         """
         Runs the simulation script as an asynchronous subprocess.

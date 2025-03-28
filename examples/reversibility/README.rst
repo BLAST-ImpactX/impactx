@@ -51,4 +51,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_zero_bend_inverse.py
       :language: python3
       :caption: You can copy this file from ``examples/reversibility/analysis_zero_bend_inverse.py``.
-

@@ -44,10 +44,10 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-ns=24
+ns = 24
 
-length1=10.0
-length2=5.0
+length1 = 10.0
+length2 = 5.0
 
 linear_segment = [
     monitor,

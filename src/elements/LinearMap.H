@@ -186,8 +186,10 @@ namespace impactx::elements
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            Map6x6 R = Map6x6::Identity();
+            R = m_transport_map;
+               
+            return R;
         }
 
         Map6x6 m_transport_map;  // 6x6 transport map

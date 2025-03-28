@@ -40,7 +40,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const rc_sqrt = std::sqrt(rc);
 
         amrex::ParticleReal const deterministic_coef = c1 * slice_ds / std::pow(rc,2);
-        amrex::ParticleReal const stochastic_coef = std::sqrt(c2 * slice_ds) / std::pow(rc_sqrt,3); 
+        amrex::ParticleReal const stochastic_coef = std::sqrt(c2 * slice_ds) / std::pow(rc_sqrt,3);
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();

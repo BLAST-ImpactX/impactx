@@ -149,8 +149,23 @@ namespace impactx::elements
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            // find beta*gamma^2
+            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+
+            amrex::ParticleReal const neg_kV = -m_k * m_V;
+            amrex::ParticleReal const kV_r2bg2 = -neg_kV / (2.0_prt * betgam2);
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            // off-identity matrix elements
+            R(2,1) = kV_r2bg2;
+            R(4,3) = kV_r2bg2;
+            R(6,5) = neg_kV;
+
+            return R;
         }
 
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.

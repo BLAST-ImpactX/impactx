@@ -161,15 +161,15 @@ namespace impactx::elements
             Map6x6 R = Map6x6::Identity();
 
             // edge focusing matrix elements (zero gap)
-            amrex::ParticleReal const R21 = std::tan(m_psi)/m_rc;
-            amrex::ParticleReal R43 = -R21;
-            amrex::ParticleReal vf = 0;
+            amrex::ParticleReal const R21 = std::tan(m_psi) / m_rc;
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            vf = (1.0_prt + std::pow(sin_psi, 2)) / std::pow(cos_psi, 3);
-            vf *= m_g * m_K2/(std::pow(m_rc,2));
-            R43 += vf;
+            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
+                / std::pow(cos_psi, 3)
+                * m_g * m_K2 / std::pow(m_rc, 2);
+
+            amrex::ParticleReal const R43 = vf - R21;
 
             // set non-identity matrix elements
             R(2,1) = R21;

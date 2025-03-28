@@ -170,8 +170,10 @@ namespace impactx::elements
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            // an ideal kick does not affect the linear map
+            Map6x6 R = Map6x6::Identity();
+
+            return R;
         }
 
         amrex::ParticleReal m_xkick; //! horizontal kick strength

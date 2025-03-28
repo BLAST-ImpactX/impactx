@@ -160,8 +160,21 @@ namespace impactx::elements
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            // store sin(phi) and cos(phi)
+            auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_phi);
+
+            // assign linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+            R(1,1) = cos_phi;
+            R(1,3) = -sin_phi;
+            R(2,2) = cos_phi;
+            R(2,4) = -sin_phi;
+            R(3,1) = sin_phi;
+            R(3,3) = cos_phi;
+            R(4,2) = sin_phi;
+            R(4,4) = cos_phi;
+
+            return R;
         }
 
         amrex::ParticleReal m_phi; //! angle of rotation (rad)

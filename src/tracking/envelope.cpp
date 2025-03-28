@@ -137,7 +137,7 @@ namespace impactx
                 }, element_variant);
 
                 // sub-steps for space charge within the element
-                int nsteps = std::floor(nslice/2.0);
+                int nsteps = std::round(nslice/2.0);
                 for (int slice_step = 0; slice_step < nsteps; ++slice_step)
                 {
                     BL_PROFILE("ImpactX::track_envelope::slice_step");

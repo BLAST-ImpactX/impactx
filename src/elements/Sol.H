@@ -240,7 +240,7 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
-                
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
@@ -251,14 +251,14 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
-        
+
             // compute phase advance per unit length (in rad/m) and
             // rotation angle (in rad)
             amrex::ParticleReal const alpha = m_ks / 2.0_prt;
             amrex::ParticleReal const theta = alpha*slice_ds;
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
-            amrex::ParticleReal const sin_theta_ialpha = sin_theta / alpha;            
+            amrex::ParticleReal const sin_theta_ialpha = sin_theta / alpha;
             amrex::ParticleReal const neg_alpha_sin_theta = -alpha * sin_theta;
             amrex::ParticleReal const ds_bg2 = slice_ds / betgam2;
 
@@ -271,7 +271,7 @@ namespace impactx::elements
             Rfocusing(4,3) = neg_alpha_sin_theta;
             Rfocusing(4,4) = cos_theta;
             Rfocusing(5,6) = ds_bg2;
-            
+
             Rrotation(1,1) = cos_theta;
             Rrotation(1,3) = sin_theta;
             Rrotation(2,2) = cos_theta;

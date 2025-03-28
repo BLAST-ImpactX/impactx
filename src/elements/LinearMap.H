@@ -188,7 +188,7 @@ namespace impactx::elements
         {
             Map6x6 R = Map6x6::Identity();
             R = m_transport_map;
-               
+
             return R;
         }
 

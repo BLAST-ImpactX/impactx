@@ -153,10 +153,10 @@ namespace impactx::elements
 
             // find beta*gamma^2
             amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
-            
+
             amrex::ParticleReal const neg_kV = -m_k * m_V;
             amrex::ParticleReal const kV_r2bg2 = -neg_kV / (2.0_prt * betgam2);
-         
+
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 

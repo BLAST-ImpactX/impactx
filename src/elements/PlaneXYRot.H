@@ -173,7 +173,7 @@ namespace impactx::elements
             R(3,3) = cos_phi;
             R(4,2) = sin_phi;
             R(4,4) = cos_phi;
-            
+
             return R;
         }
 

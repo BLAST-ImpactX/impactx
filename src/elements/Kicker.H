@@ -172,7 +172,7 @@ namespace impactx::elements
         {
             // an ideal kick does not affect the linear map
             Map6x6 R = Map6x6::Identity();
-            
+
             return R;
         }
 

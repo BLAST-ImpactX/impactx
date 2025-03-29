@@ -9,6 +9,7 @@ License: BSD-3-Clause-LBNL
 from pathlib import Path
 from datetime import datetime
 
+from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
 from .helper import SimulationHistoryDialogs
 
@@ -186,12 +187,12 @@ class SimulationHistory:
                                 with vuetify.Template(raw_attrs=['v-slot:item.name="{ item }"']):
                                     with html.Div(style="display: flex; align-items: center; gap: 6px;"):
                                         html.Span("{{ item.name }}")
-                                        vuetify.VBtn(
-                                            icon="mdi-pencil",
-                                            variant="text",
+                                        CardComponents.card_button(
+                                            "mdi-pencil",
                                             color="warning",
                                             size="small",
                                             click=(ctrl.rename_sim, "[item]"),
+                                            description="Rename"
                                         )
                                 with vuetify.Template(raw_attrs=['v-slot:item.created_at_time="{ item }"']):
                                     with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
@@ -210,11 +211,10 @@ class SimulationHistory:
                                         variant="elevated",
                                     )
                                 with vuetify.Template(raw_attrs=['v-slot:item.actions="{ item }"']):
-                                        vuetify.VBtn(
-                                            icon="mdi-eye",
-                                            variant="text",
-                                            color="primary",
+                                        CardComponents.card_button(
+                                            "mdi-eye",
                                             size="small",
                                             classes="mr-1",
                                             click=(ctrl.open_sim_details, "[item]"),
+                                            description="View Details"
                                         )

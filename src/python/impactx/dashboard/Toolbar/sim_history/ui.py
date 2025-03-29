@@ -50,7 +50,7 @@ class SimulationHistory:
         new_sim = {
             "name": new_sim_name,
             "created_at_time": current_time,
-            "time_elapsed": "2h 30m",
+            "time_elapsed": "",
             "status": "In Progress",
         }
 

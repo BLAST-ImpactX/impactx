@@ -111,6 +111,8 @@ class SimulationProgress:
         while True:
             elapsed = time.monotonic() - start_time
             state.sim_elapsed_time = f"{elapsed:.1f}"
+            state.sims[state.sim_index]["time_elapsed"] = state.sim_elapsed_time
+            state.dirty("sims")
             state.flush()
             await asyncio.sleep(0.1)
 

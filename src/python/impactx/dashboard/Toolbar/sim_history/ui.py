@@ -12,6 +12,7 @@ from datetime import datetime
 from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
 from .dialogs import SimulationHistoryDialogs
+from ...Run.simulation import dashboard_sim_inputs
 
 server, state, ctrl = setup_server()
 
@@ -95,6 +96,10 @@ class SimulationHistory:
         state.selected_sim_status = user_input
         SimulationHistory.filter_sim_history()
 
+    @ctrl.trigger("download_sim")
+    def download_sim(sim):
+        return sim.get("inputs", "")
+
     @ctrl.add("delete_sim")
     def delete_sim(sim_to_delete):
         state.sims = [sim for sim in state.sims if sim["name"] != sim_to_delete["name"]]
@@ -140,12 +145,14 @@ class SimulationHistory:
         curr_num_sims = len(state.sims)
         new_sim_name = f"Simulation_{curr_num_sims + 1}"
         current_time =  datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        sim_inputs = dashboard_sim_inputs(is_exporting=True)
 
         new_sim = {
             "name": new_sim_name,
             "created_at_time": current_time,
             "time_elapsed": "",
             "status": "In Progress",
+            "inputs": sim_inputs,
         }
 
         state.sims = state.sims + [new_sim]
@@ -244,6 +251,13 @@ class SimulationHistory:
                                             classes="mr-1",
                                             click=(ctrl.open_sim_details, "[item]"),
                                             description="View Details"
+                                        )
+                                        CardComponents.card_button(
+                                            "mdi-download",
+                                            density="default",
+                                            size="small",
+                                            click="utils.download(`${item.name}.py`, trigger('download_sim', [item]), 'text/plain')",
+                                            description="Download"
                                         )
                                         CardComponents.card_button(
                                             "mdi-trash-can-outline",

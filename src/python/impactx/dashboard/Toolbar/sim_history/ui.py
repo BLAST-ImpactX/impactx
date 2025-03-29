@@ -7,6 +7,15 @@ server, state, ctrl = setup_server()
 
 state.simulation_history_dialog = False
 
+state.sim_history_table_headers = [
+    {"title": "Simulation Name", "key": "name", "sortable": True},
+    {"title": "Created", "key": "created_at_time", "sortable": True, "align": "center"},
+    {"title": "Duration", "key": "time_elapsed", "sortable": True, "align": "center"},
+    {"title": "Status", "key": "status", "sortable": True, "align": "center"},
+    {"title": "Actions", "key": "actions", "sortable": False, "align": "center"},
+]
+
+
 # --------------------------------
 # Load custom JS
 # --------------------------------
@@ -74,6 +83,7 @@ class SimulationHistory:
                         with vuetify.VCol(cols=12):
                             with vuetify.VDataTable(
                                 classes="elevation-2",
+                                headers=("sim_history_table_headers",),
                             ):
                                 with vuetify.Template(raw_attrs=['v-slot:item.status="{ item }"']):
                                     vuetify.VChip(

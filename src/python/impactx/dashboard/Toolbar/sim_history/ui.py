@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 
 from ... import html, setup_server, vuetify
+from .helper import SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
 
@@ -45,6 +46,35 @@ class SimulationHistory:
     def open_sim_details(selected_sim):
         state.selected_sim = selected_sim
         state.sim_details_dialog = True
+
+    @ctrl.add("rename_sim")
+    def open_rename_dialog(sim):
+        state.rename_old_name = sim["name"]
+        state.rename_new_name = sim["name"]
+        state.sim_rename_dialog = True
+
+    @ctrl.add("confirm_rename")
+    def confirm_rename():
+        old = state.rename_old_name
+        new = state.rename_new_name
+
+        for sim in state.sims:
+            if sim["name"] == old:
+                sim["name"] = new
+                break
+
+        state.rename_dialog = False
+        state.dirty("sims")
+
+        SimulationHistory._close_rename_dialog()
+
+    @ctrl.add("close_rename_dialog")
+    def _close_rename_dialog():
+        state.sim_rename_dialog = False
+        
+    @staticmethod
+    def init_sim_history_dialogs():
+        SimulationHistoryDialogs.rename_dialog()
 
     @staticmethod
     def add_sim_to_history():
@@ -109,6 +139,16 @@ class SimulationHistory:
                                 headers=("sim_history_table_headers",),
                                 items=("sims",),
                             ):
+                                with vuetify.Template(raw_attrs=['v-slot:item.name="{ item }"']):
+                                    with html.Div(style="display: flex; align-items: center; gap: 6px;"):
+                                        html.Span("{{ item.name }}")
+                                        vuetify.VBtn(
+                                            icon="mdi-pencil",
+                                            variant="text",
+                                            color="warning",
+                                            size="small",
+                                            click=(ctrl.rename_sim, "[item]"),
+                                        )
                                 with vuetify.Template(raw_attrs=['v-slot:item.created_at_time="{ item }"']):
                                     with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
                                         html.Div(

@@ -309,7 +309,8 @@ class GeneralToolbar:
         components to the simulation history.
         """
         SimulationHistory.simulation_history()
-
+        SimulationHistory.init_sim_history_dialogs()
+        
         return vuetify.VBtn(
             "Simulation History",
             color="primary",

@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 
-from ... import setup_server, vuetify
+from ... import html, setup_server, vuetify
 
 server, state, ctrl = setup_server()
 
@@ -104,6 +104,16 @@ class SimulationHistory:
                                 headers=("sim_history_table_headers",),
                                 items=("sims",),
                             ):
+                                with vuetify.Template(raw_attrs=['v-slot:item.created_at_time="{ item }"']):
+                                    with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
+                                        html.Div(
+                                            "{{ new Date(item.created_at_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}",
+                                            classes="font-weight-bold"
+                                        )
+                                        html.Div(
+                                            "{{ new Date(item.created_at_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}",
+                                            classes="text-caption"
+                                        )
                                 with vuetify.Template(raw_attrs=['v-slot:item.status="{ item }"']):
                                     vuetify.VChip(
                                         "{{ item.status }}",

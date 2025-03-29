@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from ... import setup_server, vuetify
 
 server, state, ctrl = setup_server()
@@ -5,6 +7,22 @@ server, state, ctrl = setup_server()
 
 state.simulation_history_dialog = False
 
+# --------------------------------
+# Load custom JS
+# --------------------------------
+
+def load_my_js(server):
+    js_file = Path(__file__).with_name("custom.js").resolve()
+    server.enable_module(
+        {
+            "serve": {"my_code": str(js_file.parent)},
+            "scripts": [f"my_code/{js_file.name}"],
+        }
+    )
+
+# --------------------------------
+# Functionality
+# --------------------------------
 
 class SimulationHistory:
     """
@@ -54,6 +72,12 @@ class SimulationHistory:
                             )
                     with vuetify.VRow():
                         with vuetify.VCol(cols=12):
-                            vuetify.VDataTable(
+                            with vuetify.VDataTable(
                                 classes="elevation-2",
-                            )
+                            ):
+                                with vuetify.Template(raw_attrs=['v-slot:item.status="{ item }"']):
+                                    vuetify.VChip(
+                                        "{{ item.status }}",
+                                        color=("window.getSimStatusColor(item.status)",),
+                                        variant="elevated",
+                                    )

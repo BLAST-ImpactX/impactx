@@ -85,7 +85,6 @@ class SimulationHistory:
     def _close_rename_dialog():
         state.sim_rename_dialog = False
         
-
     @ctrl.add("update_search")
     def update_search(user_input):
         state.selected_sim_search = user_input
@@ -94,6 +93,11 @@ class SimulationHistory:
     @ctrl.add("update_status")
     def update_status(user_input):
         state.selected_sim_status = user_input
+        SimulationHistory.filter_sim_history()
+
+    @ctrl.add("delete_sim")
+    def delete_sim(sim_to_delete):
+        state.sims = [sim for sim in state.sims if sim["name"] != sim_to_delete["name"]]
         SimulationHistory.filter_sim_history()
 
     @staticmethod
@@ -211,6 +215,7 @@ class SimulationHistory:
                                         CardComponents.card_button(
                                             "mdi-pencil",
                                             color="warning",
+                                            density="default",
                                             size="small",
                                             click=(ctrl.rename_sim, "[item]"),
                                             description="Rename"
@@ -234,8 +239,17 @@ class SimulationHistory:
                                 with SimulationHistory._access_sim_history_slot("actions"):
                                         CardComponents.card_button(
                                             "mdi-eye",
+                                            density="default",
                                             size="small",
                                             classes="mr-1",
                                             click=(ctrl.open_sim_details, "[item]"),
                                             description="View Details"
+                                        )
+                                        CardComponents.card_button(
+                                            "mdi-trash-can-outline",
+                                            density="default",
+                                            size="small",
+                                            color="error",
+                                            click=(ctrl.delete_sim, "[item]"),
+                                            description="Delete"
                                         )

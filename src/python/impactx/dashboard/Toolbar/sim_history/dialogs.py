@@ -7,9 +7,21 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import html, setup_server, vuetify
-
+from .components import SimulationHistoryComponents
+from ...Input.components.navigation import NavigationComponents
 server, state, ctrl = setup_server()
 
+
+@staticmethod
+def sim_details_tabs():
+    dialog_name = "sim_details_tabs"
+    with NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Inputs"]):
+        with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+            with vuetify.VTabsWindowItem():
+                with vuetify.VCardText():
+                    with html.Div(classes="code-editor-style"):
+                        html.Div("{{ selected_sim?.inputs }}")
+                    
 class SimulationHistoryDialogs:
 
     @staticmethod
@@ -51,23 +63,37 @@ class SimulationHistoryDialogs:
                         click=ctrl.confirm_rename,
                     )
 
+    @staticmethod
     def sim_details_dialog():
         """
         Contains the UI and functionality for the
         simulation history 'View Details' action button.
         """
-
-        with vuetify.VDialog(v_model=("sim_details_dialog", False), style="width: 500px"):
-            with vuetify.VCard(elevation=6):
+        with vuetify.VDialog(v_model=("sim_details_dialog", False), max_width="700px"):
+            with vuetify.VCard(elevation=10, classes="rounded-lg"):
                 with vuetify.VToolbar(color="primary", classes="px-4"):
-                    vuetify.VToolbarTitle("Simulation Details")
+                    vuetify.VIcon("mdi-clipboard-text-clock")
+                    vuetify.VToolbarTitle("{{ selected_sim?.name }}")
                     vuetify.VSpacer()
-                    vuetify.VBtn(
-                        icon="mdi-close",
-                        click="sim_details_dialog = false",
-                    )
+                    vuetify.VBtn(icon="mdi-close", click="sim_details_dialog = false")
                 with vuetify.VCardText():
-                    html.P("Name: {{ selected_sim?.name }}")
-                    html.P("Status: {{ selected_sim?.status }}")
-                    html.P("Created At: {{ new Date(selected_sim?.created_at_time).toLocaleString() }}")
-                    html.P("Duration: {{ selected_sim?.time_elapsed }}")
+                    with html.Div(classes="ga-4 d-flex flex-wrap mb-2"):
+                        with SimulationHistoryComponents.sim_details_card(
+                            title="STATUS"
+                        ):
+                            with html.Div():
+                                SimulationHistoryComponents.status_chip("selected_sim?")
+                        with SimulationHistoryComponents.sim_details_card(
+                            title="CREATED",
+                            prepend_icon="mdi-calendar"
+                        ):
+                            with html.Div():
+                                html.Span("{{ new Date(selected_sim?.created_at_time).toLocaleString() }}", classes="font-weight-medium")
+                        with SimulationHistoryComponents.sim_details_card(title="DURATION", prepend_icon="mdi-clock-outline"):
+                            with html.Div():
+                                html.Span(
+                                    "{{ selected_sim?.time_elapsed || '—' }}",
+                                    classes="font-weight-medium"
+                            )
+                    with vuetify.VCard(elevation=2):
+                        sim_details_tabs()

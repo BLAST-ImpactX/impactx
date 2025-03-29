@@ -13,6 +13,7 @@ from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
 from .dialogs import SimulationHistoryDialogs
 from ...Run.simulation import dashboard_sim_inputs
+from .components import SimulationHistoryComponents
 
 server, state, ctrl = setup_server()
 
@@ -238,11 +239,7 @@ class SimulationHistory:
                                             classes="text-caption"
                                         )
                                 with SimulationHistory._access_sim_history_slot("status"):
-                                    vuetify.VChip(
-                                        "{{ item.status }}",
-                                        color=("window.getSimStatusColor(item.status)",),
-                                        variant="elevated",
-                                    )
+                                    SimulationHistoryComponents.status_chip("item")
                                 with SimulationHistory._access_sim_history_slot("actions"):
                                         CardComponents.card_button(
                                             "mdi-eye",

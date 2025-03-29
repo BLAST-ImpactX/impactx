@@ -75,6 +75,7 @@ class SimulationHistory:
     @staticmethod
     def init_sim_history_dialogs():
         SimulationHistoryDialogs.rename_dialog()
+        SimulationHistoryDialogs.sim_details_dialog()
 
     @staticmethod
     def add_sim_to_history():
@@ -174,18 +175,3 @@ class SimulationHistory:
                                             classes="mr-1",
                                             click=(ctrl.open_sim_details, "[item]"),
                                         )
-
-        with vuetify.VDialog(v_model=("sim_details_dialog", False), style="width: 500px"):
-            with vuetify.VCard(elevation=6):
-                with vuetify.VToolbar(color="primary", classes="px-4"):
-                    vuetify.VToolbarTitle("Simulation Details")
-                    vuetify.VSpacer()
-                    vuetify.VBtn(
-                        icon="mdi-close",
-                        click="sim_details_dialog = false",
-                    )
-                with vuetify.VCardText():
-                    html.P("Name: {{ selected_sim?.name }}")
-                    html.P("Status: {{ selected_sim?.status }}")
-                    html.P("Created At: {{ new Date(selected_sim?.created_at_time).toLocaleString() }}")
-                    html.P("Duration: {{ selected_sim?.time_elapsed }}")

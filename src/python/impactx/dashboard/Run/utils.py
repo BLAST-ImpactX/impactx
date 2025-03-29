@@ -45,6 +45,8 @@ class SimulationHelper:
         ctrl.terminal_print("Simulation complete.")
         state.dirty("filtered_data")
         state.sim_status_color = "success"
+        state.sims[state.sim_index]["status"] = "Completed"
+        state.dirty("sims")
         state.flush()
 
     @staticmethod

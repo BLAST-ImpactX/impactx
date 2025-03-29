@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime
 
 from ... import setup_server, vuetify
 
@@ -6,6 +7,7 @@ server, state, ctrl = setup_server()
 
 
 state.simulation_history_dialog = False
+state.sims = []
 
 state.sim_history_table_headers = [
     {"title": "Simulation Name", "key": "name", "sortable": True},
@@ -38,6 +40,22 @@ class SimulationHistory:
     Builds the UI and handles functionality to handle
     simulation history for the dashboard.
     """
+
+    @staticmethod
+    def add_sim_to_history():
+        curr_num_sims = len(state.sims)
+        new_sim_name = f"Simulation_{curr_num_sims + 1}"
+        current_time =  datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        new_sim = {
+            "name": new_sim_name,
+            "created_at_time": current_time,
+            "time_elapsed": "2h 30m",
+            "status": "In Progress",
+        }
+
+        state.sims = state.sims + [new_sim]
+        return curr_num_sims
 
     @staticmethod
     def simulation_history():
@@ -84,6 +102,7 @@ class SimulationHistory:
                             with vuetify.VDataTable(
                                 classes="elevation-2",
                                 headers=("sim_history_table_headers",),
+                                items=("sims",),
                             ):
                                 with vuetify.Template(raw_attrs=['v-slot:item.status="{ item }"']):
                                     vuetify.VChip(

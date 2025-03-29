@@ -15,6 +15,7 @@ from ..Input.generalFunctions import generalFunctions
 from ..Run.executor import run_execute_impactx_sim
 from ..Run.simulation import dashboard_sim_inputs
 from .importParser import DashboardParser
+from .sim_history.ui import SimulationHistory
 
 server, state, ctrl = setup_server()
 
@@ -300,18 +301,20 @@ class GeneralToolbar:
             classes="text-body-2 hidden-md-and-down",
             style="width: 50vw; overflow: hidden; margin: auto;",
         )
-    
+
     @staticmethod
     def simulation_history_button() -> vuetify.VBtn:
         """
-        Displays a button to the user which holds the 
+        Displays a button to the user which holds the
         components to the simulation history.
         """
-        
+        SimulationHistory.simulation_history()
+
         return vuetify.VBtn(
             "Simulation History",
             color="primary",
             classes="mx-2",
+            click="simulation_history_dialog = true",
             prepend_icon="mdi-clipboard-text-clock",
             size="small",
             variant="elevated",

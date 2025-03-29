@@ -267,16 +267,19 @@ class GeneralToolbar:
             InputToolbar.import_button()
             InputToolbar.export_button()
             InputToolbar.reset_inputs_button()
+            GeneralToolbar.simulation_history_button()
             vuetify.VDivider(vertical=True, classes="mr-2")
             InputToolbar.collapse_all_sections_button()
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
             (RunToolbar.run_simulation(),)
+            (GeneralToolbar.simulation_history_button())
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
             AnalyzeToolbar.plot_options()
+            (GeneralToolbar.simulation_history_button())
 
     @staticmethod
     def dashboard_info() -> vuetify.VAlert:
@@ -296,4 +299,20 @@ class GeneralToolbar:
             v_model=("show_dashboard_alert", True),
             classes="text-body-2 hidden-md-and-down",
             style="width: 50vw; overflow: hidden; margin: auto;",
+        )
+    
+    @staticmethod
+    def simulation_history_button() -> vuetify.VBtn:
+        """
+        Displays a button to the user which holds the 
+        components to the simulation history.
+        """
+        
+        return vuetify.VBtn(
+            "Simulation History",
+            color="primary",
+            classes="mx-2",
+            prepend_icon="mdi-clipboard-text-clock",
+            size="small",
+            variant="elevated",
         )

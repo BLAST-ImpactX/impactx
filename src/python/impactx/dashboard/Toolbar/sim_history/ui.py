@@ -17,6 +17,7 @@ server, state, ctrl = setup_server()
 
 state.simulation_history_dialog = False
 state.sims = []
+state.filtered_sims = []
 
 state.sim_history_table_headers = [
     {"title": "Simulation Name", "key": "name", "sortable": True},
@@ -72,7 +73,7 @@ class SimulationHistory:
                 break
 
         state.rename_dialog = False
-        state.dirty("sims")
+        state.dirty("filtered_sims")
 
         SimulationHistory._close_rename_dialog()
 
@@ -80,6 +81,34 @@ class SimulationHistory:
     def _close_rename_dialog():
         state.sim_rename_dialog = False
         
+
+    @ctrl.add("update_search")
+    def update_search(user_input):
+        state.selected_sim_search = user_input
+        SimulationHistory.filter_sim_history()
+
+    @ctrl.add("update_status")
+    def update_status(user_input):
+        state.selected_sim_status = user_input
+        SimulationHistory.filter_sim_history()
+
+    @staticmethod
+    def filter_sim_history():
+        filtered = state.sims
+
+        if state.selected_sim_search_status:
+            filtered = [sim for sim in filtered if sim["status"] == state.selected_sim_search_status]
+
+        if state.selected_sim_search:
+            search_query = state.selected_sim_search.lower()
+            filtered = [sim for sim in filtered if search_query in sim["name"].lower()]
+
+        state.filtered_sims = filtered
+
+    # --------------------------------
+    # Helper Functions
+    # --------------------------------
+
     @staticmethod
     def init_sim_history_dialogs():
         SimulationHistoryDialogs.rename_dialog()
@@ -99,6 +128,7 @@ class SimulationHistory:
         }
 
         state.sims = state.sims + [new_sim]
+        state.filtered_sims = state.sims
         return curr_num_sims
 
     @staticmethod
@@ -127,6 +157,8 @@ class SimulationHistory:
                         with vuetify.VCol(cols=12, sm=8):
                             vuetify.VTextField(
                                 label="Search simulations",
+                                v_model=("selected_sim_search", None),
+                                update_modelValue=(ctrl.update_status, "[$event]"),
                                 prepend_inner_icon="mdi-magnify",
                                 clearable=True,
                                 density="comfortable",
@@ -136,6 +168,9 @@ class SimulationHistory:
                         with vuetify.VCol(cols=12, sm=4):
                             vuetify.VSelect(
                                 label="Status",
+                                v_model=("selected_sim_search_status", None),
+                                update_modelValue=(ctrl.update_status, "[$event]"),
+                                items=(["Completed", "In Progress", "Failed"],),
                                 clearable=True,
                                 density="comfortable",
                                 hide_details=True,
@@ -146,7 +181,7 @@ class SimulationHistory:
                             with vuetify.VDataTable(
                                 classes="elevation-2",
                                 headers=("sim_history_table_headers",),
-                                items=("sims",),
+                                items=("filtered_sims",)
                             ):
                                 with vuetify.Template(raw_attrs=['v-slot:item.name="{ item }"']):
                                     with html.Div(style="display: flex; align-items: center; gap: 6px;"):

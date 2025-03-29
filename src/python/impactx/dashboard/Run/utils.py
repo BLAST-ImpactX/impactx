@@ -46,7 +46,7 @@ class SimulationHelper:
         state.dirty("filtered_data")
         state.sim_status_color = "success"
         state.sims[state.sim_index]["status"] = "Completed"
-        state.dirty("sims")
+        state.dirty("filtered_sims")
         state.flush()
 
     @staticmethod
@@ -112,7 +112,7 @@ class SimulationProgress:
             elapsed = time.monotonic() - start_time
             state.sim_elapsed_time = f"{elapsed:.1f}"
             state.sims[state.sim_index]["time_elapsed"] = state.sim_elapsed_time
-            state.dirty("sims")
+            state.dirty("filtered_sims")
             state.flush()
             await asyncio.sleep(0.1)
 

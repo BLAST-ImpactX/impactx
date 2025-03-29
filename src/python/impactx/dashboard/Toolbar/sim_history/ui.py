@@ -189,15 +189,12 @@ class SimulationHistory:
                 with vuetify.VCardText():
                     with vuetify.VRow():
                         with vuetify.VCol(cols=12, sm=8):
-                            vuetify.VTextField(
+                            SimulationHistoryComponents.text_field(
                                 label="Search simulations",
-                                v_model=("selected_sim_search", None),
+                                v_model_name="selected_sim_search",
                                 update_modelValue=(ctrl.update_status, "[$event]"),
                                 prepend_inner_icon="mdi-magnify",
                                 clearable=True,
-                                density="comfortable",
-                                hide_details=True,
-                                variant="outlined",
                             )
                         with vuetify.VCol(cols=12, sm=4):
                             vuetify.VSelect(

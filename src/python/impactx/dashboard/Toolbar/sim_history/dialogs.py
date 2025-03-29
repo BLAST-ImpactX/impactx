@@ -24,23 +24,17 @@ class SimulationHistoryDialogs:
                 with vuetify.VCardText():
                     with vuetify.VRow():
                         with vuetify.VCol():
-                            vuetify.VTextField(
+                            SimulationHistoryComponents.text_field(
                                 label="Current Name",
-                                v_model=("rename_old_name", ""),
+                                v_model_name="rename_old_name",
                                 readonly=True,
-                                hide_details=True,
-                                variant="outlined",
-                                density="comfortable",
                                 disabled=True,
                             )
                     with vuetify.VRow():
                         with vuetify.VCol():
-                            vuetify.VTextField(
+                            SimulationHistoryComponents.text_field(
                                 label="New Name",
-                                v_model=("rename_new_name", ""),
-                                hide_details=True,
-                                variant="outlined",
-                                density="comfortable",
+                                v_model_name="rename_new_name",
                                 clearable=True,
                             )
                 with vuetify.VCardActions():

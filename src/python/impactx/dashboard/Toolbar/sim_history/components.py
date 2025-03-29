@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
+from ...Input.components.input import InputComponents
 
 server, state, ctrl = setup_server()
 
@@ -25,4 +26,19 @@ class SimulationHistoryComponents:
             color=(f"window.getSimStatusColor({status_binding})",),
             variant="elevated",
             size="small",
+        )
+
+    @staticmethod
+    def text_field(**kwargs):
+        """
+        Creates a VTextField with default properties
+        specifically for the simulation history panels.
+        """
+        
+        return InputComponents.text_field(
+            density="comfortable",
+            hide_details=True,
+            variant="outlined",
+            input_type="text",
+            **kwargs,
         )

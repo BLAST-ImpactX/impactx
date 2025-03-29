@@ -117,6 +117,10 @@ class SimulationHistory:
     # --------------------------------
 
     @staticmethod
+    def _access_sim_history_slot(key):
+        return vuetify.Template(raw_attrs=[f'v-slot:item.{key}="{{ item }}"'])
+
+    @staticmethod
     def init_sim_history_dialogs():
         SimulationHistoryDialogs.rename_dialog()
         SimulationHistoryDialogs.sim_details_dialog()
@@ -201,7 +205,7 @@ class SimulationHistory:
                                 headers=("sim_history_table_headers",),
                                 items=("filtered_sims",)
                             ):
-                                with vuetify.Template(raw_attrs=['v-slot:item.name="{ item }"']):
+                                with SimulationHistory._access_sim_history_slot("name"):
                                     with html.Div(style="display: flex; align-items: center; gap: 6px;"):
                                         html.Span("{{ item.name }}")
                                         CardComponents.card_button(
@@ -211,7 +215,7 @@ class SimulationHistory:
                                             click=(ctrl.rename_sim, "[item]"),
                                             description="Rename"
                                         )
-                                with vuetify.Template(raw_attrs=['v-slot:item.created_at_time="{ item }"']):
+                                with SimulationHistory._access_sim_history_slot("created_at_time"):
                                     with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
                                         html.Div(
                                             "{{ new Date(item.created_at_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}",
@@ -221,13 +225,13 @@ class SimulationHistory:
                                             "{{ new Date(item.created_at_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}",
                                             classes="text-caption"
                                         )
-                                with vuetify.Template(raw_attrs=['v-slot:item.status="{ item }"']):
+                                with SimulationHistory._access_sim_history_slot("status"):
                                     vuetify.VChip(
                                         "{{ item.status }}",
                                         color=("window.getSimStatusColor(item.status)",),
                                         variant="elevated",
                                     )
-                                with vuetify.Template(raw_attrs=['v-slot:item.actions="{ item }"']):
+                                with SimulationHistory._access_sim_history_slot("actions"):
                                         CardComponents.card_button(
                                             "mdi-eye",
                                             size="small",

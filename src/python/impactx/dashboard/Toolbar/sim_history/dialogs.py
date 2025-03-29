@@ -14,6 +14,10 @@ class SimulationHistoryDialogs:
 
     @staticmethod
     def rename_dialog():
+        """
+        Contains the UI and functionality for the
+        simulation history 'Rename' action button.
+        """
         with vuetify.VDialog(v_model=("sim_rename_dialog", False), max_width=400, persistent=True):
             with vuetify.VCard():
                 vuetify.VCardTitle("Rename Simulation")
@@ -54,6 +58,11 @@ class SimulationHistoryDialogs:
                     )
 
     def sim_details_dialog():
+        """
+        Contains the UI and functionality for the
+        simulation history 'View Details' action button.
+        """
+
         with vuetify.VDialog(v_model=("sim_details_dialog", False), style="width: 500px"):
             with vuetify.VCard(elevation=6):
                 with vuetify.VToolbar(color="primary", classes="px-4"):

@@ -11,7 +11,7 @@ from datetime import datetime
 
 from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
-from .helper import SimulationHistoryDialogs
+from .dialogs import SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
 
@@ -34,6 +34,9 @@ state.sim_history_table_headers = [
 # --------------------------------
 
 def load_my_js(server):
+    """
+    Loads custom js file to the server.
+    """
     js_file = Path(__file__).with_name("custom.js").resolve()
     server.enable_module(
         {
@@ -95,6 +98,9 @@ class SimulationHistory:
 
     @staticmethod
     def filter_sim_history():
+        """
+        Handles the functionality to filter the sim history. 
+        """
         filtered = state.sims
 
         if state.selected_sim_search_status:
@@ -117,6 +123,12 @@ class SimulationHistory:
 
     @staticmethod
     def add_sim_to_history():
+        """
+        Called once a simulation is ran.
+
+        Adds a new simulation to the sim history.
+        """
+        
         curr_num_sims = len(state.sims)
         new_sim_name = f"Simulation_{curr_num_sims + 1}"
         current_time =  datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -134,6 +146,11 @@ class SimulationHistory:
 
     @staticmethod
     def simulation_history():
+        """
+        Contains the UI and functionality for the
+        dashboard's simulation history.
+        """
+        
         with vuetify.VDialog(
             v_model=("simulation_history_dialog",),
             style="width:75vw",

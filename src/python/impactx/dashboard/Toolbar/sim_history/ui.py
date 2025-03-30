@@ -9,7 +9,6 @@ License: BSD-3-Clause-LBNL
 from pathlib import Path
 from datetime import datetime
 
-from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
 from .dialogs import SimulationHistoryDialogs
 from ...Run.simulation import dashboard_sim_inputs
@@ -19,10 +18,10 @@ server, state, ctrl = setup_server()
 from ..importParser import DashboardParser
 
 
-state.simulation_history_dialog = False
 state.sims = []
 state.filtered_sims = []
 state.selected_sim_to_load = None
+state.sim_to_download = None
 
 state.sim_history_table_headers = [
     {"title": "Simulation Name", "key": "name", "sortable": True},
@@ -59,10 +58,10 @@ class SimulationHistory:
     simulation history for the dashboard.
     """
 
-    @ctrl.add("open_sim_details")
-    def open_sim_details(selected_sim):
+    @ctrl.add("open_view_details")
+    def open_view_details(selected_sim):
         state.selected_sim = selected_sim
-        state.sim_details_dialog = True
+        state.view_details_dialog = True
 
     @ctrl.add("rename_sim")
     def open_rename_dialog(sim):
@@ -158,7 +157,8 @@ class SimulationHistory:
     @staticmethod
     def init_sim_history_dialogs():
         SimulationHistoryDialogs.rename_dialog()
-        SimulationHistoryDialogs.sim_details_dialog()
+        SimulationHistoryDialogs.view_details_dialog()
+        SimulationHistoryDialogs.download_options_dialog()
 
     @staticmethod
     def add_sim_to_history():
@@ -250,12 +250,15 @@ class SimulationHistory:
                                     SimulationHistoryComponents.icon_button(
                                         icon_name="mdi-eye",
                                         classes="mr-1",
-                                        click=(ctrl.open_sim_details, "[item]"),
+                                        click=(ctrl.open_view_details, "[item]"),
                                         description="View Details"
                                     )
                                     SimulationHistoryComponents.icon_button(
                                         icon_name="mdi-download",
-                                        click="utils.download(`${item.name}.py`, trigger('download_sim', [item]), 'text/plain')",
+                                        click="""
+                                            sim_to_download = item;
+                                            sim_download_dialog = true;
+                                        """,
                                         description="Download"
                                     )
                                     SimulationHistoryComponents.icon_button(

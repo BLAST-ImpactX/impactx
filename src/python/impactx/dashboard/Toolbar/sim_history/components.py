@@ -58,7 +58,7 @@ class SimulationHistoryComponents:
         )
 
     @contextmanager
-    def sim_details_card(title: str = "", prepend_icon: str = None, **kwargs):
+    def view_details_card(title: str = "", prepend_icon: str = None, **kwargs):
         """
         Creates a card component used in the 'View Details'
         dialog of the simulation history.

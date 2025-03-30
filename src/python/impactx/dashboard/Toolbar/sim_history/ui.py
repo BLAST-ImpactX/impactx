@@ -191,117 +191,104 @@ class SimulationHistory:
         Contains the UI and functionality for the
         dashboard's simulation history.
         """
-        with vuetify.VDialog(
-            v_model=("simulation_history_dialog",),
-            style="width:75vw",
+        with SimulationHistoryComponents.dialog(
+            title="Simulation History",
+            prepend_icon="mdi-clipboard-text-clock",
+            dialog_var="simulation_history_dialog",
+            width="75vw",
         ):
-            with vuetify.VCard(
-                elevation=8,
-                classes="rounded-lg",
-            ):
-                with vuetify.VToolbar(
-                    classes="px-4",
-                    color="primary",
-                ):
-                    vuetify.VIcon("mdi-clipboard-text-clock")
-                    vuetify.VToolbarTitle("Simulation History")
-                    vuetify.VSpacer()
-                    vuetify.VBtn(
-                        icon="mdi-close",
-                        click="simulation_history_dialog = false",
-                    )
-                with vuetify.VCardText():
-                    with vuetify.VRow():
-                        with vuetify.VCol(cols=12, sm=8):
-                            SimulationHistoryComponents.text_field(
-                                label="Search simulations",
-                                v_model_name="selected_sim_search",
-                                update_modelValue=(ctrl.update_status, "[$event]"),
-                                prepend_inner_icon="mdi-magnify",
-                                clearable=True,
-                            )
-                        with vuetify.VCol(cols=12, sm=4):
-                            vuetify.VSelect(
-                                label="Status",
-                                v_model=("selected_sim_search_status", None),
-                                update_modelValue=(ctrl.update_status, "[$event]"),
-                                items=(["Completed", "In Progress", "Failed"],),
-                                clearable=True,
-                                density="comfortable",
-                                hide_details=True,
-                                variant="outlined",
-                            )
-                    with vuetify.VRow():
-                        with vuetify.VCol(cols=12):
-                            with vuetify.VDataTable(
-                                classes="elevation-2",
-                                headers=("sim_history_table_headers",),
-                                items=("filtered_sims",)
-                            ):
-                                with SimulationHistory._access_sim_history_slot("name"):
-                                    with html.Div(style="display: flex; align-items: center; gap: 6px;"):
-                                        html.Span("{{ item.name }}")
-                                        CardComponents.card_button(
-                                            "mdi-pencil",
-                                            color="warning",
-                                            density="default",
-                                            size="small",
-                                            click=(ctrl.rename_sim, "[item]"),
-                                            description="Rename"
-                                        )
-                                with SimulationHistory._access_sim_history_slot("created_at_time"):
-                                    with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
-                                        html.Div(
-                                            "{{ new Date(item.created_at_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}",
-                                            classes="font-weight-bold"
-                                        )
-                                        html.Div(
-                                            "{{ new Date(item.created_at_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}",
-                                            classes="text-caption"
-                                        )
-                                with SimulationHistory._access_sim_history_slot("status"):
-                                    SimulationHistoryComponents.status_chip("item")
-                                with SimulationHistory._access_sim_history_slot("actions"):
-                                        CardComponents.card_button(
-                                            "mdi-eye",
-                                            density="default",
-                                            size="small",
-                                            classes="mr-1",
-                                            click=(ctrl.open_sim_details, "[item]"),
-                                            description="View Details"
-                                        )
-                                        CardComponents.card_button(
-                                            "mdi-download",
-                                            density="default",
-                                            size="small",
-                                            click="utils.download(`${item.name}.py`, trigger('download_sim', [item]), 'text/plain')",
-                                            description="Download"
-                                        )
-                                        CardComponents.card_button(
-                                            "mdi-trash-can-outline",
-                                            density="default",
-                                            size="small",
-                                            color="error",
-                                            click=(ctrl.delete_sim, "[item]"),
-                                            description="Delete"
-                                        )
-                                        CardComponents.card_button(
-                                            ["mdi-circle-outline", "mdi-check-circle"],
-                                            density="default",
-                                            size="small",
-                                            dynamic_condition="selected_sim_to_load && selected_sim_to_load.name === item.name",
-                                            click=(ctrl.toggle_selected_sim, "[item]"),
-                                            description="Select",
-                                        )
+            with vuetify.VCardText():
+                with vuetify.VRow():
+                    with vuetify.VCol(cols=12, sm=8):
+                        SimulationHistoryComponents.text_field(
+                            label="Search simulations",
+                            v_model_name="selected_sim_search",
+                            update_modelValue=(ctrl.update_status, "[$event]"),
+                            prepend_inner_icon="mdi-magnify",
+                            clearable=True,
+                        )
+                    with vuetify.VCol(cols=12, sm=4):
+                        vuetify.VSelect(
+                            label="Status",
+                            v_model=("selected_sim_search_status", None),
+                            update_modelValue=(ctrl.update_status, "[$event]"),
+                            items=(["Completed", "In Progress", "Failed"],),
+                            clearable=True,
+                            density="comfortable",
+                            hide_details=True,
+                            variant="outlined",
+                        )
+                with vuetify.VRow():
+                    with vuetify.VCol(cols=12):
+                        with vuetify.VDataTable(
+                            classes="elevation-2",
+                            headers=("sim_history_table_headers",),
+                            items=("filtered_sims",)
+                        ):
+                            with SimulationHistory._access_sim_history_slot("name"):
+                                with html.Div(style="display: flex; align-items: center; gap: 6px;"):
+                                    html.Span("{{ item.name }}")
+                                    CardComponents.card_button(
+                                        "mdi-pencil",
+                                        color="warning",
+                                        density="default",
+                                        size="small",
+                                        click=(ctrl.rename_sim, "[item]"),
+                                        description="Rename"
+                                    )
+                            with SimulationHistory._access_sim_history_slot("created_at_time"):
+                                with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
+                                    html.Div(
+                                        "{{ new Date(item.created_at_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}",
+                                        classes="font-weight-bold"
+                                    )
+                                    html.Div(
+                                        "{{ new Date(item.created_at_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}",
+                                        classes="text-caption"
+                                    )
+                            with SimulationHistory._access_sim_history_slot("status"):
+                                SimulationHistoryComponents.status_chip("item")
+                            with SimulationHistory._access_sim_history_slot("actions"):
+                                    CardComponents.card_button(
+                                        "mdi-eye",
+                                        density="default",
+                                        size="small",
+                                        classes="mr-1",
+                                        click=(ctrl.open_sim_details, "[item]"),
+                                        description="View Details"
+                                    )
+                                    CardComponents.card_button(
+                                        "mdi-download",
+                                        density="default",
+                                        size="small",
+                                        click="utils.download(`${item.name}.py`, trigger('download_sim', [item]), 'text/plain')",
+                                        description="Download"
+                                    )
+                                    CardComponents.card_button(
+                                        "mdi-trash-can-outline",
+                                        density="default",
+                                        size="small",
+                                        color="error",
+                                        click=(ctrl.delete_sim, "[item]"),
+                                        description="Delete"
+                                    )
+                                    CardComponents.card_button(
+                                        ["mdi-circle-outline", "mdi-check-circle"],
+                                        density="default",
+                                        size="small",
+                                        dynamic_condition="selected_sim_to_load && selected_sim_to_load.name === item.name",
+                                        click=(ctrl.toggle_selected_sim, "[item]"),
+                                        description="Select",
+                                    )
 
-                with vuetify.VRow(v_show="selected_sim_to_load",):
-                    with vuetify.VCol():
-                        vuetify.VDivider()
-                        with vuetify.VCardActions():
-                            vuetify.VSpacer()
-                            vuetify.VBtn(
-                                "Load Inputs",
-                                variant="elevated",
-                                color="success",
-                                click=(ctrl.load_selected_sim),
-                            )
+            with vuetify.VRow(v_show="selected_sim_to_load",):
+                with vuetify.VCol():
+                    vuetify.VDivider()
+                    with vuetify.VCardActions():
+                        vuetify.VSpacer()
+                        vuetify.VBtn(
+                            "Load Inputs",
+                            variant="elevated",
+                            color="success",
+                            click=(ctrl.load_selected_sim),
+                        )

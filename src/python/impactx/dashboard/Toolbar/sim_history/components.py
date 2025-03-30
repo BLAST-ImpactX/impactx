@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 from contextlib import contextmanager
 
 from ...Input.components.input import InputComponents
+from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
 
 server, state, ctrl = setup_server()
@@ -43,7 +44,19 @@ class SimulationHistoryComponents:
             input_type="text",
             **kwargs,
         )
-    
+
+    @staticmethod
+    def icon_button(**kwargs):
+        """
+        Creates an icon with default properties
+        specifically for the simulation history panels.
+        """
+        return CardComponents.card_button(
+            density="default",
+            size="small",
+            **kwargs,
+        )
+
     @contextmanager
     def sim_details_card(title: str = "", prepend_icon: str = None, **kwargs):
         """

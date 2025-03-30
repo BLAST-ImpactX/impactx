@@ -228,11 +228,9 @@ class SimulationHistory:
                             with SimulationHistory._access_sim_history_slot("name"):
                                 with html.Div(style="display: flex; align-items: center; gap: 6px;"):
                                     html.Span("{{ item.name }}")
-                                    CardComponents.card_button(
-                                        "mdi-pencil",
+                                    SimulationHistoryComponents.icon_button(
+                                        icon_name="mdi-pencil",
                                         color="warning",
-                                        density="default",
-                                        size="small",
                                         click=(ctrl.rename_sim, "[item]"),
                                         description="Rename"
                                     )
@@ -249,33 +247,25 @@ class SimulationHistory:
                             with SimulationHistory._access_sim_history_slot("status"):
                                 SimulationHistoryComponents.status_chip("item")
                             with SimulationHistory._access_sim_history_slot("actions"):
-                                    CardComponents.card_button(
-                                        "mdi-eye",
-                                        density="default",
-                                        size="small",
+                                    SimulationHistoryComponents.icon_button(
+                                        icon_name="mdi-eye",
                                         classes="mr-1",
                                         click=(ctrl.open_sim_details, "[item]"),
                                         description="View Details"
                                     )
-                                    CardComponents.card_button(
-                                        "mdi-download",
-                                        density="default",
-                                        size="small",
+                                    SimulationHistoryComponents.icon_button(
+                                        icon_name="mdi-download",
                                         click="utils.download(`${item.name}.py`, trigger('download_sim', [item]), 'text/plain')",
                                         description="Download"
                                     )
-                                    CardComponents.card_button(
-                                        "mdi-trash-can-outline",
-                                        density="default",
-                                        size="small",
+                                    SimulationHistoryComponents.icon_button(
+                                        icon_name="mdi-trash-can-outline",
                                         color="error",
                                         click=(ctrl.delete_sim, "[item]"),
                                         description="Delete"
                                     )
-                                    CardComponents.card_button(
-                                        ["mdi-circle-outline", "mdi-check-circle"],
-                                        density="default",
-                                        size="small",
+                                    SimulationHistoryComponents.icon_button(
+                                        icon_name=["mdi-circle-outline", "mdi-check-circle"],
                                         dynamic_condition="selected_sim_to_load && selected_sim_to_load.name === item.name",
                                         click=(ctrl.toggle_selected_sim, "[item]"),
                                         description="Select",

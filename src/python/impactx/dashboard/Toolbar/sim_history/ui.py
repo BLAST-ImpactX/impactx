@@ -16,11 +16,13 @@ from ...Run.simulation import dashboard_sim_inputs
 from .components import SimulationHistoryComponents
 
 server, state, ctrl = setup_server()
+from ..importParser import DashboardParser
 
 
 state.simulation_history_dialog = False
 state.sims = []
 state.filtered_sims = []
+state.selected_sim_to_load = None
 
 state.sim_history_table_headers = [
     {"title": "Simulation Name", "key": "name", "sortable": True},
@@ -106,6 +108,29 @@ class SimulationHistory:
         state.sims = [sim for sim in state.sims if sim["name"] != sim_to_delete["name"]]
         SimulationHistory.filter_sim_history()
 
+    @ctrl.add("toggle_selected_sim")
+    def toggle_selected_sim(sim):
+        same_name = (
+            state.selected_sim_to_load is not None
+            and state.selected_sim_to_load["name"] == sim["name"]
+        )
+
+        if same_name:
+            state.selected_sim_to_load = None
+        else:
+            state.selected_sim_to_load = sim
+
+    @ctrl.add("load_selected_sim")
+    def load_selected_sim():
+        sim = state.selected_sim_to_load
+        sim_content = {
+            "name": sim["name"] + ".py",
+            "content": sim["inputs"].encode("utf-8"),
+        }
+        
+        DashboardParser.populate_impactx_simulation_file_to_ui(sim_content)
+        state.selected_sim_to_load = None
+
     @staticmethod
     def filter_sim_history():
         """
@@ -166,7 +191,6 @@ class SimulationHistory:
         Contains the UI and functionality for the
         dashboard's simulation history.
         """
-        
         with vuetify.VDialog(
             v_model=("simulation_history_dialog",),
             style="width:75vw",
@@ -261,3 +285,23 @@ class SimulationHistory:
                                             click=(ctrl.delete_sim, "[item]"),
                                             description="Delete"
                                         )
+                                        CardComponents.card_button(
+                                            ["mdi-circle-outline", "mdi-check-circle"],
+                                            density="default",
+                                            size="small",
+                                            dynamic_condition="selected_sim_to_load && selected_sim_to_load.name === item.name",
+                                            click=(ctrl.toggle_selected_sim, "[item]"),
+                                            description="Select",
+                                        )
+
+                with vuetify.VRow(v_show="selected_sim_to_load",):
+                    with vuetify.VCol():
+                        vuetify.VDivider()
+                        with vuetify.VCardActions():
+                            vuetify.VSpacer()
+                            vuetify.VBtn(
+                                "Load Inputs",
+                                variant="elevated",
+                                color="success",
+                                click=(ctrl.load_selected_sim),
+                            )

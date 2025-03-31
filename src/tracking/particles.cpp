@@ -16,6 +16,7 @@
 #include "diagnostics/DiagnosticOutput.H"
 #include "particles/spacecharge/HandleSpacecharge.H"
 #include "particles/wakefields/HandleWakefield.H"
+#include "particles/wakefields/HandleISR.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -81,8 +82,12 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         bool csr = false;
         pp_algo.query("csr", csr);
+        bool isr = false;
+        pp_algo.query("isr", isr);
+
         if (verbose > 0) {
             amrex::Print() << " CSR effects: " << csr << "\n";
+            amrex::Print() << " ISR effects: " << isr << "\n";
         }
 
         // periods through the lattice
@@ -114,6 +119,9 @@ namespace impactx
 
                     // Wakefield calculation: call wakefield function to apply wake effects
                     particles::wakefields::HandleWakefield(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
+
+                    // ISR calculation: call ISR function to apply incoherent synchrotron radiation effects
+                    particles::wakefields::HandleISR(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
 
                     // Space-charge calculation
                     particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);

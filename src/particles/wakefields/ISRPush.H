@@ -19,16 +19,19 @@
 namespace impactx::particles::wakefields
 {
 
-    /** Function to update particle momentum using ISR kick
+    /** Function to update particle momentum using a kick due to
+     *  incoherent synchrotron radiation (ISR).
      *
      * @param[inout] pc the particle species container
      * @param[in] slice_ds slice spacing [m]
      * @param[in] rc bending radius [m]
+     * @param[in] isr_order order of quantum ISR effects
      */
     void ISRPush (
         ImpactXParticleContainer & pc,
         amrex::ParticleReal slice_ds,
-        amrex::ParticleReal rc
+        amrex::ParticleReal rc,
+        [[maybe_unused]] int isr_order
     );
 
 } // namespace impactx::particles::wakefields

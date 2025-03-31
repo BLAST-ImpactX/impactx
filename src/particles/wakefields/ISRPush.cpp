@@ -20,7 +20,8 @@ namespace impactx::particles::wakefields
     void ISRPush (
         ImpactXParticleContainer & pc,
         amrex::ParticleReal slice_ds,
-        amrex::ParticleReal rc
+        amrex::ParticleReal rc,
+        [[maybe_unused]] int isr_order
     )
     {
         BL_PROFILE("impactx::particles::wakefields::ISRPush")

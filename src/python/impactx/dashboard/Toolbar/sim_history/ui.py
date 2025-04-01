@@ -171,7 +171,7 @@ class SimulationHistory:
         
         curr_num_sims = len(state.sims)
         new_sim_name = f"Simulation_{curr_num_sims + 1}"
-        current_time =  datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        current_time =  datetime.utcnow().isoformat() + "Z"
         sim_inputs = dashboard_sim_inputs(is_exporting=True)
 
         new_sim = {
@@ -238,11 +238,11 @@ class SimulationHistory:
                             with SimulationHistory._access_sim_history_slot("created_at_time"):
                                 with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
                                     html.Div(
-                                        "{{ new Date(item.created_at_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}",
-                                        classes="font-weight-bold"
+                                        "{{ window.formatDate(item.created_at_time) }}",
+                                        style="font-weight: 500"
                                     )
                                     html.Div(
-                                        "{{ new Date(item.created_at_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}",
+                                        "{{ window.formatTime(item.created_at_time) }}",
                                         classes="text-caption"
                                     )
                             with SimulationHistory._access_sim_history_slot("status"):

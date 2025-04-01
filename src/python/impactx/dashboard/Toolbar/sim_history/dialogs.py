@@ -87,8 +87,8 @@ class SimulationHistoryDialogs:
                         prepend_icon="mdi-calendar"
                     ):
                         with html.Div():
-                            html.Span(
-                                "{{ new Date(selected_sim?.created_at_time).toLocaleString() }}",
+                           html.Span(
+                                "{{ window.formatDate(selected_sim.created_at_time) }} at {{ window.formatTime(selected_sim.created_at_time) }}",
                                 classes="font-weight-medium",
                             )
                     with SimulationHistoryComponents.view_details_card(

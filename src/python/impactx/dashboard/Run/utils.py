@@ -110,7 +110,7 @@ class SimulationProgress:
 
         while True:
             elapsed = time.monotonic() - start_time
-            state.sim_elapsed_time = f"{elapsed:.1f}"
+            state.sim_elapsed_time = SimulationProgress.format_elapsed_time(elapsed)
             state.sims[state.sim_index]["time_elapsed"] = state.sim_elapsed_time
             state.dirty("filtered_sims")
             state.flush()
@@ -130,3 +130,20 @@ class SimulationProgress:
             state.sim_total_steps = sum(int(match) for match in nslice_matches)
 
         return state.sim_total_steps
+
+    @staticmethod
+    def format_elapsed_time(seconds: float) -> str:
+        """
+        Converts elapsed seconds to a clearly-readable string.
+        """
+        
+        seconds = round(seconds, 1)
+        minutes, sec = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        if hours:
+            return f"{int(hours)}h {int(minutes)}m {int(sec)}s"
+        elif minutes:
+            return f"{int(minutes)}m {int(sec)}s"
+        else:
+            return f"{sec:.1f}s"
+

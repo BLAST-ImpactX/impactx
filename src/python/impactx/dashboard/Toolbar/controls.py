@@ -217,7 +217,7 @@ class RunToolbar:
         """
 
         return html.Div(
-            "Step {{ sim_current_step }} • {{ sim_elapsed_time }}s",
+            "Step {{ sim_current_step }} • {{ sim_elapsed_time }}",
             style="margin-right: 8px;",
         )
 

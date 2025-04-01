@@ -170,7 +170,7 @@ class SimulationHistory:
         """
         
         curr_num_sims = len(state.sims)
-        new_sim_name = f"Simulation_{curr_num_sims + 1}"
+        new_sim_name = state.imported_file_name or f"Simulation_{curr_num_sims + 1}"
         current_time =  datetime.utcnow().isoformat() + "Z"
         sim_inputs = dashboard_sim_inputs(is_exporting=True)
 

@@ -10,9 +10,8 @@ from pathlib import Path
 from datetime import datetime
 
 from ... import html, setup_server, vuetify
-from .dialogs import SimulationHistoryDialogs
 from ...Run.simulation import dashboard_sim_inputs
-from .components import SimulationHistoryComponents
+from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
 from ..importParser import DashboardParser

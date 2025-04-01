@@ -16,6 +16,7 @@ from . import SimulationHistoryComponents, SimulationHistoryDialogs
 server, state, ctrl = setup_server()
 from ..importParser import DashboardParser
 
+state.curr_view_details_log = ""
 
 state.sims = []
 state.filtered_sims = []
@@ -179,11 +180,30 @@ class SimulationHistory:
             "time_elapsed": "",
             "status": "In Progress",
             "inputs": sim_inputs,
+            "log": "",
         }
 
         state.sims = state.sims + [new_sim]
         state.filtered_sims = state.sims
         return curr_num_sims
+
+    @staticmethod
+    def add_to_view_details_log(log: str) -> None:
+        """
+        Stores simulation details inside of 
+        curr_view_details_log state
+        """
+        
+        state.curr_view_details_log += log
+
+    @staticmethod
+    def save_view_details_log() -> None:
+        """
+        Updates the UI with the simulation's
+        details.
+        """
+        
+        state.sims[state.sim_index]["log"] = state.curr_view_details_log
 
     @staticmethod
     def simulation_history():

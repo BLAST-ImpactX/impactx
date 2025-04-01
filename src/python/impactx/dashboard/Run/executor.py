@@ -31,7 +31,6 @@ async def execute_impactx_sim() -> None:
     an async subprocess, and streams its output to the dashboard terminal
     in real time.
     """
-
     SimulationHelper.reset()
 
     simulation_contents = dashboard_sim_inputs()
@@ -61,6 +60,7 @@ async def execute_impactx_sim() -> None:
                 ) * 95
 
         SimulationProgress.print_to_xterm(sim_output_line)
+        SimulationHistory.add_to_view_details_log(sim_output_line_decoded)
 
     await simulation_process.wait()
     SimulationHelper.display_phase_space_plots()

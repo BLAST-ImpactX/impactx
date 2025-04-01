@@ -15,8 +15,12 @@ server, state, ctrl = setup_server()
 @staticmethod
 def view_details_tabs():
     dialog_name = "view_details_tabs"
-    with NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Inputs File"]):
+    with NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Log", "Inputs File"]):
         with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+            with vuetify.VTabsWindowItem():
+                with vuetify.VCardText():
+                    with html.Div(classes="code-editor-style"):
+                        html.Div("{{ selected_sim?.log }}")
             with vuetify.VTabsWindowItem():
                 with vuetify.VCardText():
                     with html.Div(classes="code-editor-style"):
@@ -72,7 +76,7 @@ class SimulationHistoryDialogs:
             title="{{ selected_sim?.name }} Details",
             prepend_icon="mdi-clipboard-text-clock",
             dialog_var="view_details_dialog",
-            width="50vw"
+            width="70vw"
         ):
             with vuetify.VCardText():
                 with html.Div(classes="ga-4 d-flex flex-wrap mb-2"):

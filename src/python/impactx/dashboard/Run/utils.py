@@ -5,6 +5,7 @@ import re
 import sys
 import time
 
+from ..Toolbar.sim_history.ui import SimulationHistory
 from .. import setup_server
 
 server, state, ctrl = setup_server()
@@ -48,6 +49,7 @@ class SimulationHelper:
         state.sims[state.sim_index]["status"] = "Completed"
         state.dirty("filtered_sims")
         state.flush()
+        SimulationHistory.save_view_details_log()
 
     @staticmethod
     def reset():
@@ -56,6 +58,7 @@ class SimulationHelper:
         state.sim_current_step = 0
         state.sim_elapsed_time = "0.0"
         state.sim_status_color = "primary"
+        state.curr_view_details_log = ""
         state.flush()
 
     @staticmethod

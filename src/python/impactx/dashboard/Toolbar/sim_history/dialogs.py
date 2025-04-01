@@ -118,3 +118,18 @@ class SimulationHistoryDialogs:
                         prepend_icon="mdi-file-code",
                         click="utils.download(`${sim_to_download.name}.py`, trigger('download_sim', [sim_to_download]), 'text/plain'); sim_download_dialog = false"
                     )
+    @staticmethod
+    def load_sim_dialog():
+        with SimulationHistoryComponents.dialog(
+            title="Loading Options",
+            prepend_icon="mdi-upload",
+            dialog_var="load_sim_dialog",
+            width="33.33vw"
+        ):
+            with vuetify.VCardText():
+                with vuetify.VList():
+                    vuetify.VListItem(
+                        title="Load Inputs",
+                        prepend_icon="mdi-file-code",
+                        click=(ctrl.load_selected_sim),
+                    )

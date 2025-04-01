@@ -159,6 +159,7 @@ class SimulationHistory:
         SimulationHistoryDialogs.rename_dialog()
         SimulationHistoryDialogs.view_details_dialog()
         SimulationHistoryDialogs.download_options_dialog()
+        SimulationHistoryDialogs.load_sim_dialog()
 
     @staticmethod
     def add_sim_to_history():
@@ -262,26 +263,17 @@ class SimulationHistory:
                                         description="Download"
                                     )
                                     SimulationHistoryComponents.icon_button(
+                                        icon_name="mdi-tray-arrow-up",
+                                        color="primary",
+                                        description="Load",
+                                        click="""
+                                            selected_sim_to_load = item;
+                                            load_sim_dialog = true;
+                                        """
+                                    )
+                                    SimulationHistoryComponents.icon_button(
                                         icon_name="mdi-trash-can-outline",
                                         color="error",
                                         click=(ctrl.delete_sim, "[item]"),
                                         description="Delete"
                                     )
-                                    SimulationHistoryComponents.icon_button(
-                                        icon_name=["mdi-circle-outline", "mdi-check-circle"],
-                                        dynamic_condition="selected_sim_to_load && selected_sim_to_load.name === item.name",
-                                        click=(ctrl.toggle_selected_sim, "[item]"),
-                                        description="Select",
-                                    )
-
-            with vuetify.VRow(v_show="selected_sim_to_load",):
-                with vuetify.VCol():
-                    vuetify.VDivider()
-                    with vuetify.VCardActions():
-                        vuetify.VSpacer()
-                        vuetify.VBtn(
-                            "Load Inputs",
-                            variant="elevated",
-                            color="success",
-                            click=(ctrl.load_selected_sim),
-                        )

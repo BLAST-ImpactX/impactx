@@ -11,10 +11,10 @@ import glob
 import io
 import os
 
-from trame.widgets import matplotlib, plotly
+from trame.widgets import plotly
 
 from .. import setup_server, vuetify
-from . import AnalyzeFunctions, adjusted_settings_plot, line_plot_1d
+from . import AnalyzeFunctions, line_plot_1d
 
 server, state, ctrl = setup_server()
 
@@ -41,17 +41,6 @@ def plot_over_s():
 
     fig = line_plot_1d(state.selected_headers, state.filtered_data)
     ctrl.plotly_figure_update(fig)
-
-
-def generate_phase_space(pc):
-    fig = adjusted_settings_plot(pc)
-    ctrl.matplotlib_figure_update(fig)
-
-    fig_original = pc.plot_phasespace()
-
-    if fig_original is not None:
-        image_base64 = fig_to_base64(fig_original)
-        state.phase_space_png = f"data:image/png;base64, {image_base64}"
 
 
 PLOTS = {
@@ -224,22 +213,12 @@ class AnalyzeSimulation:
                 with vuetify.VCard(style="height: 50vh; width: 150vh;"):
                     with vuetify.VTabs(v_model=("active_tab", 0)):
                         vuetify.VTab("Plot")
-                        vuetify.VTab("Interact")
                     vuetify.VDivider()
                     with vuetify.VTabsWindow(v_model="active_tab"):
                         with vuetify.VTabsWindowItem():
                             vuetify.VImg(
                                 v_if=("phase_space_png",), src=("phase_space_png",)
                             )
-
-                        with vuetify.VTabsWindowItem():
-                            with vuetify.VContainer(
-                                style="height: 37vh; width: 147vh;"
-                            ):
-                                matplotlib_figure = matplotlib.Figure(
-                                    style="position: absolute"
-                                )
-                                ctrl.matplotlib_figure_update = matplotlib_figure.update
 
         with vuetify.VContainer(
             v_if="active_plot === 'Plot Over S'", style="height: 50vh; width: 90vh;"

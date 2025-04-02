@@ -121,23 +121,6 @@ def parameter_input_checker_for_lattice(latticeElement):
     return parameter_input
 
 
-def lattice_elements():
-    """
-    Writes user input for lattice element parameters parameters in suitable format for simulation code.
-    :return: A list in the suitable format.
-    """
-
-    elements_list = []
-    for latticeElement in state.selected_lattice_list:
-        latticeElement_name = latticeElement["name"]
-        parameters = parameter_input_checker_for_lattice(latticeElement)
-
-        param_values = ", ".join(f"{value}" for value in parameters.values())
-        elements_list.append(eval(f"elements.{latticeElement_name}({param_values})"))
-
-    return elements_list
-
-
 # -----------------------------------------------------------------------------
 # Callbacks
 # -----------------------------------------------------------------------------

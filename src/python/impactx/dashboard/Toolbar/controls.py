@@ -12,8 +12,8 @@ from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
-from ..Run.controls import execute_impactx_sim
-from .exportTemplate import input_file
+from ..Run.executor import run_execute_impactx_sim
+from ..Run.simulation import dashboard_sim_inputs
 from .importParser import DashboardParser
 
 server, state, ctrl = setup_server()
@@ -60,7 +60,7 @@ class InputToolbar:
 
     @ctrl.trigger("export")
     def on_export_click():
-        return input_file()
+        return dashboard_sim_inputs(is_exporting=True)
 
     @ctrl.add("reset_all")
     def reset_all():
@@ -164,9 +164,15 @@ class RunToolbar:
     @ctrl.add("begin_sim")
     def run():
         state.plot_options = available_plot_options(simulationClicked=True)
-        execute_impactx_sim()
+        run_execute_impactx_sim()
         update_plot()
         load_dataTable_data()
+
+    @staticmethod
+    def run_simulation():
+        (RunToolbar.run_simulation_progress_details(),)
+        (RunToolbar.run_simulation_progress_bar(),)
+        (RunToolbar.run_simulation_button(),)
 
     @staticmethod
     def run_simulation_button() -> vuetify.VBtn:
@@ -174,12 +180,44 @@ class RunToolbar:
         Creates a button to run an ImpactX simulation
         with the current user-provided inputs.
         """
-
-        return vuetify.VBtn(
-            "Run Simulation",
-            style="background-color: #00313C; color: white; margin: 0 20px;",
+        CardComponents.card_button(
+            ["mdi-play-circle", "mdi-stop-circle"],
+            color=("sim_status_color",),
             click=ctrl.begin_sim,
-            disabled=("disableRunSimulationButton", True),
+            description="Run Simulation",
+            dynamic_condition="sim_is_running",
+            disabled=("disableRunSimulationButton || sim_is_running", True),
+        )
+
+    @staticmethod
+    def run_simulation_progress_bar() -> vuetify.VBtn:
+        """
+        Displays and updates a progress bar to the dashboard user
+        while running a simulation.
+        """
+        with html.Div(style="position: relative; margin: 0 8px;"):
+            vuetify.VProgressLinear(
+                height=5,
+                striped=True,
+                style="width: 7vw",
+                color=("sim_status_color",),
+                v_model=("sim_progress",),
+            )
+            html.Div(
+                "{{ sim_progress_status }}",
+                style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; color: grey; margin-top: 4px;",
+            )
+
+    @staticmethod
+    def run_simulation_progress_details() -> html.Div:
+        """
+        Provides dashboard users with simulation progress details,
+        such as the current step and the time elapsed in the simulation.
+        """
+
+        return html.Div(
+            "Step {{ sim_current_step }} • {{ sim_elapsed_time }}s",
+            style="margin-right: 8px;",
         )
 
 
@@ -234,7 +272,7 @@ class GeneralToolbar:
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
-            (RunToolbar.run_simulation_button(),)
+            (RunToolbar.run_simulation(),)
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()

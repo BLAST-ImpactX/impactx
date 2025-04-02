@@ -271,7 +271,7 @@ class SimulationHistory:
                                         icon_name="mdi-eye",
                                         classes="mr-1",
                                         click=(ctrl.open_view_details, "[item]"),
-                                        description="View Details"
+                                        description="View Details",
                                     )
                                     SimulationHistoryComponents.icon_button(
                                         icon_name="mdi-download",

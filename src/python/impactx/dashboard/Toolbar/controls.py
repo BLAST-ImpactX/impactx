@@ -152,7 +152,7 @@ class InputToolbar:
             variant="outlined",
             size="small",
             prepend_icon="mdi-refresh",
-            classes="mr-4",
+            classes="mr-2",
             color="#00313C",
         )
 
@@ -268,6 +268,7 @@ class GeneralToolbar:
             InputToolbar.import_button()
             InputToolbar.export_button()
             InputToolbar.reset_inputs_button()
+            vuetify.VDivider(vertical=True, classes="mr-2")
             GeneralToolbar.simulation_history_button()
             vuetify.VDivider(vertical=True, classes="mr-2")
             InputToolbar.collapse_all_sections_button()
@@ -275,12 +276,12 @@ class GeneralToolbar:
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
             (RunToolbar.run_simulation(),)
+            vuetify.VDivider(vertical=True, classes="mx-2")
             (GeneralToolbar.simulation_history_button())
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
             AnalyzeToolbar.plot_options()
-            (GeneralToolbar.simulation_history_button())
 
     @staticmethod
     def dashboard_info() -> vuetify.VAlert:
@@ -312,11 +313,12 @@ class GeneralToolbar:
         SimulationHistory.init_sim_history_dialogs()
         
         return vuetify.VBtn(
-            "Simulation History",
+            "History",
             color="primary",
-            classes="mx-2",
+            classes="mr-2",
             click="simulation_history_dialog = true",
             prepend_icon="mdi-clipboard-text-clock",
             size="small",
             variant="elevated",
+            disabled=("!sims.length",),
         )

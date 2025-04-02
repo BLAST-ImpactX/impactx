@@ -151,9 +151,9 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // coordinates within the quad
-            amrex::ParticleReal const s = refpart.s;
-            amrex::ParticleReal const sedge = refpart.sedge;
+            // coordinates within the quad (not needed)
+            //amrex::ParticleReal const s = refpart.s;
+            //amrex::ParticleReal const sedge = refpart.sedge;
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -298,6 +298,8 @@ namespace impactx::elements
             particle(4) = py;
             particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta));
             particle(6) = pt;
+
+            zeval += tau;
         }
 
 

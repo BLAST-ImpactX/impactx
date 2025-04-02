@@ -259,6 +259,8 @@ namespace impactx::elements
             particle(4) = pyout;
             particle(5) = tout;
             particle(6) = ptout;
+
+            zeval = zeval;
         }
 
         /** This pushes a particle in an ExactQuad element through

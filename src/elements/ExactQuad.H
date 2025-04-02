@@ -283,12 +283,20 @@ namespace impactx::elements
             amrex::ParticleReal const t = particle(5);
             amrex::ParticleReal const pt = particle(6);
 
-            // Leave the coordinates unchanged for now.
-            particle(1) = x;
+            // compute the radical in the denominator (= pz):
+            amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
+                std::pow(pt - m_ibeta, 2) -
+                m_ibetgam2 -
+                std::pow(px, 2) -
+                std::pow(py, 2)
+            );
+
+            // The momenta are not affected.
+            particle(1) = x + tau * px * (-1_prt + inv_pzden);
             particle(2) = px;
-            particle(3) = y;
+            particle(3) = y + tau * py * (-1_prt + inv_pzden);
             particle(4) = py;
-            particle(5) = t;
+            particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta));
             particle(6) = pt;
         }
 

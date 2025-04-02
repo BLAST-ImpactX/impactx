@@ -112,7 +112,7 @@ namespace impactx::elements
             m_ibetgam2 = 1_prt / m_betgam2;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
-        
+
             // normalize quad units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
@@ -154,13 +154,13 @@ namespace impactx::elements
             // coordinates within the quad
             amrex::ParticleReal const s = refpart.s;
             amrex::ParticleReal const sedge = refpart.sedge;
-         
+
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
             amrex::ParticleReal const zout = m_slice_ds;
             int const nsteps = m_mapsteps;
 
-            // initialize phase space 6-vector 
+            // initialize phase space 6-vector
             amrex::SmallVector<amrex::ParticleReal, 6, 1> particle{
                 x, px, y, py, t, pt
             };
@@ -185,7 +185,7 @@ namespace impactx::elements
         }
 
         /** This pushes a particle in an ExactQuad element through
-         *  the symplectic map associated with H_1 in the Hamiltonian 
+         *  the symplectic map associated with H_1 in the Hamiltonian
          *  splitting H = H_1 + H_2.  This is exactly the linear
          *  map of a quadrupole.
          *
@@ -215,7 +215,7 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             amrex::ParticleReal const sin_omega_ds = std::sin(m_omega*tau);
-            amrex::ParticleReal const cos_omega_ds = std::cos(m_omega*tau);  
+            amrex::ParticleReal const cos_omega_ds = std::cos(m_omega*tau);
             amrex::ParticleReal const sinh_omega_ds = std::sinh(m_omega*tau);
             amrex::ParticleReal const cosh_omega_ds = std::cosh(m_omega*tau);
             amrex::ParticleReal const slice_bg = tau / m_betgam2;
@@ -228,7 +228,7 @@ namespace impactx::elements
 
                 yout = cosh_omega_ds*y + sinh_omega_ds/m_omega*py;
                 pyout = m_omega*sinh_omega_ds*y + cosh_omega_ds*py;
-            
+
                 tout = t + (slice_bg)*pt;
                 // ptout = pt;
             } else if (m_g < 0.0_prt)
@@ -239,7 +239,7 @@ namespace impactx::elements
 
                 yout = cos_omega_ds*y + sin_omega_ds/m_omega*py;
                 pyout = -m_omega*sin_omega_ds*y + cos_omega_ds*py;
-         
+
                 tout = t + slice_bg*pt;
                 // ptout = pt;
             } else {
@@ -275,14 +275,14 @@ namespace impactx::elements
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            
+
             amrex::ParticleReal const x = particle(1);
             amrex::ParticleReal const px = particle(2);
             amrex::ParticleReal const y = particle(3);
             amrex::ParticleReal const py = particle(4);
             amrex::ParticleReal const t = particle(5);
             amrex::ParticleReal const pt = particle(6);
-            
+
             // Leave the coordinates unchanged for now.
             particle(1) = x;
             particle(2) = px;
@@ -341,11 +341,11 @@ namespace impactx::elements
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
-             
+
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-        
+
             // compute phase advance per unit length in s (in rad/m)
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
 
@@ -356,8 +356,8 @@ namespace impactx::elements
                 R(1,1) = std::cos(omega*slice_ds);
                 R(1,2) = std::sin(omega*slice_ds)/omega;
                 R(2,1) = -omega*std::sin(omega*slice_ds);
-                R(2,2) = std::cos(omega*slice_ds);  
-                R(3,3) = std::cosh(omega*slice_ds);   
+                R(2,2) = std::cos(omega*slice_ds);
+                R(3,3) = std::cosh(omega*slice_ds);
                 R(3,4) = std::sinh(omega*slice_ds)/omega;
                 R(4,3) = omega*std::sinh(omega*slice_ds);
                 R(4,4) = std::cosh(omega*slice_ds);
@@ -373,7 +373,7 @@ namespace impactx::elements
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
             } else {
-                R(1,2) = m_slice_ds; 
+                R(1,2) = m_slice_ds;
                 R(3,4) = m_slice_ds;
                 R(5,6) = m_slice_ds / betgam2;
             }

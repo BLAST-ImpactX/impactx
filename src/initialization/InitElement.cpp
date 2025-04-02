@@ -378,14 +378,14 @@ namespace detail
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
             auto b = detail::query_aperture(pp_element);
- 
+
             amrex::ParticleReal k;
             int units = 0;
             int mapsteps = mapsteps_default;
             pp_element.getWithParser("k", k);
             pp_element.queryAddWithParser("units", units);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
-      
+
             m_lattice.emplace_back( ExactQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], mapsteps, nslice, element_name) );
         } else if (element_type == "sbend_exact")
         {

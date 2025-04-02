@@ -172,7 +172,7 @@ namespace impactx::integrators
     * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
-    */  
+    */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp2_integrate_particle (
@@ -181,23 +181,23 @@ namespace impactx::integrators
         amrex::ParticleReal const zout,
         int const nsteps,
         T_Element const & element
-    )   
+    )
     {
         using namespace amrex::literals; // for _rt and _prt
- 
+
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
         amrex::ParticleReal const tau1 = dz/2.0_prt;
         amrex::ParticleReal const tau2 = dz;
-      
+
         // initialize the value of the independent variable
         amrex::ParticleReal zeval = zin;
-    
+
         // loop over integration steps
         for(int j=0; j < nsteps; ++j)
         {
             element.map1(tau1,particle,zeval);
-            element.map2(tau2,particle,zeval);   
+            element.map2(tau2,particle,zeval);
             element.map1(tau1,particle,zeval);
         }
     }
@@ -208,10 +208,10 @@ namespace impactx::integrators
     *  the two-terms splitting of symp2_integrate together with
     *  the method of Yoshida.
     *
-    *  H. Yoshida, Phys. Lett. A 150, 292-268 (1990). 
+    *  H. Yoshida, Phys. Lett. A 150, 292-268 (1990).
     *
     *  The form shown here appears, for example, in:
-    *   
+    *
     *  E. Forest and R. D. Ruth, Physica D 43, 105-117 (1990).
     *
     * @param particle  Particle phase space data in a 6-vector
@@ -228,10 +228,10 @@ namespace impactx::integrators
         amrex::ParticleReal const zout,
         int const nsteps,
         T_Element const & element
-    )   
-    {   
+    )
+    {
         using namespace amrex::literals; // for _rt and _prt
-    
+
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
         amrex::ParticleReal const alpha = 1.0_prt - std::pow(2.0_prt,1.0/3.0);
@@ -239,10 +239,10 @@ namespace impactx::integrators
         amrex::ParticleReal const tau1 = tau2/2.0_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
         amrex::ParticleReal const tau4 = (alpha - 1.0_prt)*tau2;
-    
+
         // initialize the value of the independent variable
         amrex::ParticleReal zeval = zin;
-    
+
         // loop over integration steps
         for (int j=0; j < nsteps; ++j)
         {

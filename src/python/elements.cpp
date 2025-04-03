@@ -925,6 +925,70 @@ void init_elements(py::module& m)
     ;
     register_push(py_ExactDrift);
 
+    py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
+    py_ExactQuad
+        .def("__repr__",
+             [](ExactQuad const & exact_quad) {
+                 return element_name(
+                     exact_quad,
+                     std::make_pair("k", exact_quad.m_k),
+                     std::make_pair("unit", exact_quad.m_unit)
+                 );
+             }
+        )
+        .def("to_dict",
+             [](ExactQuad const & exact_quad) {
+                 return element_dict(
+                     exact_quad,
+                     std::make_pair("k", exact_quad.m_k),
+                     std::make_pair("unit", exact_quad.m_unit)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::arg("ds"),
+             py::arg("k"),
+             py::arg("unit") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
+             py::arg("mapsteps") = 1,
+             py::arg("nslice") = 1,
+             py::arg("name") = py::none(),
+             "A Quadrupole magnet using the exact nonlinear Hamiltonian."
+        )
+        .def_property("k",
+            [](ExactQuad & exact_quad) { return exact_quad.m_k; },
+            [](ExactQuad & exact_quad, amrex::ParticleReal k) { exact_quad.m_k = k; },
+            "quadrupole strength in 1/m^2 (or T/m)"
+        )
+        .def_property("unit",
+            [](ExactQuad & exact_quad) { return exact_quad.m_unit; },
+            [](ExactQuad & exact_quad, int unit) { exact_quad.m_unit = unit; },
+            "unit specification for quad strength"
+        )
+        .def_property("mapsteps",
+            [](ExactQuad & exact_quad) { return exact_quad.m_mapsteps; },
+            [](ExactQuad & exact_quad, int mapsteps) { exact_quad.m_mapsteps = mapsteps; },
+            "number of integration steps per slice used for map and reference particle push in applied fields"
+        )
+    ;
+    register_push(py_ExactQuad);
+
     py::class_<ExactSbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactSbend(me, "ExactSbend");
     py_ExactSbend
         .def("__repr__",

@@ -260,7 +260,7 @@ namespace impactx::elements
             particle(5) = tout;
             particle(6) = ptout;
 
-            zeval = zeval;
+            zeval += 0_prt;
         }
 
         /** This pushes a particle in an ExactQuad element through
@@ -398,6 +398,7 @@ namespace impactx::elements
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
         int m_unit; //! unit specification for quad strength
+        int m_mapsteps; //! number of integration steps per slice
 
     private:
         // constants that are independent of the individually tracked particle,
@@ -409,7 +410,6 @@ namespace impactx::elements
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_g;              //! quadrupole strength in 1/m^2
         amrex::ParticleReal m_omega;
-        int m_mapsteps; //! number of integration steps per slice
     };
 
 } // namespace impactx

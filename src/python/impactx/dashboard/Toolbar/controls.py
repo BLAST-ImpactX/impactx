@@ -311,7 +311,7 @@ class GeneralToolbar:
         """
         SimulationHistory.simulation_history()
         SimulationHistory.init_sim_history_dialogs()
-        
+
         return vuetify.VBtn(
             "History",
             color="primary",

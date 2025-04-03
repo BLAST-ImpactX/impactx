@@ -239,8 +239,51 @@ namespace impactx::elements
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+            Map6x6 Rrotation = Map6x6::Identity();
+            Map6x6 Rfocusing = Map6x6::Identity();
+
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+
+            // compute phase advance per unit length (in rad/m) and
+            // rotation angle (in rad)
+            amrex::ParticleReal const alpha = m_ks / 2.0_prt;
+            amrex::ParticleReal const theta = alpha*slice_ds;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+            amrex::ParticleReal const sin_theta_ialpha = sin_theta / alpha;
+            amrex::ParticleReal const neg_alpha_sin_theta = -alpha * sin_theta;
+            amrex::ParticleReal const ds_bg2 = slice_ds / betgam2;
+
+            Rfocusing(1,1) = cos_theta;
+            Rfocusing(1,2) = sin_theta_ialpha;
+            Rfocusing(2,1) = neg_alpha_sin_theta;
+            Rfocusing(2,2) = cos_theta;
+            Rfocusing(3,3) = cos_theta;
+            Rfocusing(3,4) = sin_theta_ialpha;
+            Rfocusing(4,3) = neg_alpha_sin_theta;
+            Rfocusing(4,4) = cos_theta;
+            Rfocusing(5,6) = ds_bg2;
+
+            Rrotation(1,1) = cos_theta;
+            Rrotation(1,3) = sin_theta;
+            Rrotation(2,2) = cos_theta;
+            Rrotation(2,4) = sin_theta;
+            Rrotation(3,1) = -sin_theta;
+            Rrotation(3,3) = cos_theta;
+            Rrotation(4,2) = -sin_theta;
+            Rrotation(4,4) = cos_theta;
+
+            R = Rrotation * Rfocusing;
+
+            return R;
         }
 
         amrex::ParticleReal m_ks; //! solenoid strength in 1/m

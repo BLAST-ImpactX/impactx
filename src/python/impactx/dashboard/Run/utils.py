@@ -5,8 +5,8 @@ import re
 import sys
 import time
 
-from ..Toolbar.sim_history.ui import SimulationHistory
 from .. import setup_server
+from ..Toolbar.sim_history.ui import SimulationHistory
 
 server, state, ctrl = setup_server()
 
@@ -139,7 +139,7 @@ class SimulationProgress:
         """
         Converts elapsed seconds to a clearly-readable string.
         """
-        
+
         seconds = round(seconds, 1)
         minutes, sec = divmod(seconds, 60)
         hours, minutes = divmod(minutes, 60)
@@ -149,4 +149,3 @@ class SimulationProgress:
             return f"{int(minutes)}m {int(sec)}s"
         else:
             return f"{sec:.1f}s"
-

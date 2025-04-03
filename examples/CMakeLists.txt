@@ -1333,3 +1333,19 @@ add_impactx_test(FODO.envelope.sc.py
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py
     OFF  # no plot script yet
 )
+
+# Bending Dipole with Zero Field Strength ######################
+#
+# no space charge
+add_impactx_test(zero-bend-inverse
+    examples/reversibility/input_zero_bend_inverse.in
+    ON   # ImpactX MPI-parallel
+    examples/reversibility/analysis_zero_bend_inverse.py
+    OFF  # no plot script yet
+)
+add_impactx_test(zero-bend-inverse.py
+    examples/reversibility/run_zero_bend_inverse.py
+    OFF   # ImpactX MPI-parallel
+    examples/reversibility/analysis_zero_bend_inverse.py
+    OFF  # no plot script yet
+)

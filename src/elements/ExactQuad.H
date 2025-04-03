@@ -23,7 +23,6 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Print.H>
-#include <ablastr/warn_manager/WarnManager.H>
 
 #include <cmath>
 
@@ -175,13 +174,7 @@ namespace impactx::elements
                 integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
             } else {
                 integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
-                ablastr::warn_manager::WMRecordWarning(
-                        "Impactx::elements::ExactQuad",
-                        "The integer parameter int_order describing the order "
-                        "of symplectic integration in the external fields must "
-                        "be 2 or 4.  Order 2 is being used by default. ",
-                        ablastr::warn_manager::WarnPriority::medium
-                );
+                throw std::runtime_error(std::string(type) + ": Order of integration must be 2 or 4.");
             }
 
             // assign updated values

@@ -35,7 +35,7 @@ class SimulationHistoryDialogs:
         simulation history 'Rename' action button.
         """
         with SimulationHistoryComponents.dialog(
-            title="Rename Simulation",
+            title="{{ selected_sim?.name }} - Rename",
             prepend_icon="mdi-pencil",
             dialog_var="sim_rename_dialog",
             width="33.33vw"
@@ -73,7 +73,7 @@ class SimulationHistoryDialogs:
         """
 
         with SimulationHistoryComponents.dialog(
-            title="{{ selected_sim?.name }} Details",
+            title="{{ selected_sim?.name }} - Details",
             prepend_icon="mdi-clipboard-text-clock",
             dialog_var="view_details_dialog",
             width="70vw"
@@ -110,7 +110,7 @@ class SimulationHistoryDialogs:
     @staticmethod
     def download_options_dialog():
         with SimulationHistoryComponents.dialog(
-            title="{{ selected_sim?.name }}",
+            title="{{ sim_to_download?.name }} - Downloading Options",
             prepend_icon="mdi-download",
             dialog_var="sim_download_dialog",
             width="33.33vw"
@@ -125,7 +125,7 @@ class SimulationHistoryDialogs:
     @staticmethod
     def load_sim_dialog():
         with SimulationHistoryComponents.dialog(
-            title="Loading Options",
+            title="{{ selected_sim_to_load?.name }} - Loading Options",
             prepend_icon="mdi-upload",
             dialog_var="load_sim_dialog",
             width="33.33vw"

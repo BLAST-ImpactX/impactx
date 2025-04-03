@@ -23,6 +23,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Print.H>
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <cmath>
 
@@ -61,6 +62,7 @@ namespace impactx::elements
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
+         * @param int_order order used for symplectic integration (2 or 4)
          * @param mapsteps number of integration steps per slice used for
          *        particle push in the applied fields
          * @param nslice number of slices used for the application of space charge
@@ -75,6 +77,7 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree = 0,
             amrex::ParticleReal aperture_x = 0,
             amrex::ParticleReal aperture_y = 0,
+            int int_order = 2,
             int mapsteps = 1,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
@@ -83,7 +86,7 @@ namespace impactx::elements
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_k(k),m_unit(unit),m_mapsteps(mapsteps)
+          m_k(k),m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps)
         {
         }
 
@@ -166,8 +169,20 @@ namespace impactx::elements
             };
 
             // call integrator to advance through slice
-            integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
-//            integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+            if (m_int_order == 2) {
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+            } else if (m_int_order == 4) {
+                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+            } else {
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                ablastr::warn_manager::WMRecordWarning(
+                        "Impactx::elements::ExactQuad",
+                        "The integer parameter int_order describing the order "
+                        "of symplectic integration in the external fields must "
+                        "be 2 or 4.  Order 2 is being used by default. ",
+                        ablastr::warn_manager::WarnPriority::medium
+                );
+            }
 
             // assign updated values
             x = particle(1);
@@ -398,6 +413,7 @@ namespace impactx::elements
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
         int m_unit; //! unit specification for quad strength
+        int m_int_order; //! order used for the symplectic integration (2 or 4)
         int m_mapsteps; //! number of integration steps per slice
 
     private:

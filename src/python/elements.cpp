@@ -956,6 +956,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 int,
                 int,
+                int,
                 std::optional<std::string>
              >(),
              py::arg("ds"),
@@ -966,6 +967,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
+             py::arg("int_order") = 2,
              py::arg("mapsteps") = 1,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
@@ -981,10 +983,15 @@ void init_elements(py::module& m)
             [](ExactQuad & exact_quad, int unit) { exact_quad.m_unit = unit; },
             "unit specification for quad strength"
         )
+        .def_property("int_order",
+            [](ExactQuad & exact_quad) { return exact_quad.m_int_order; },
+            [](ExactQuad & exact_quad, int int_order) { exact_quad.m_int_order = int_order; },
+            "order of symplectic integration used for particle push in applied fields"
+        )
         .def_property("mapsteps",
             [](ExactQuad & exact_quad) { return exact_quad.m_mapsteps; },
             [](ExactQuad & exact_quad, int mapsteps) { exact_quad.m_mapsteps = mapsteps; },
-            "number of integration steps per slice used for map and reference particle push in applied fields"
+            "number of integration steps per slice used for particle push in the applied fields"
         )
     ;
     register_push(py_ExactQuad);

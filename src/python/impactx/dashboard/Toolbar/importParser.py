@@ -21,6 +21,7 @@ server, state, ctrl = setup_server()
 
 state.imported_file_name = None
 
+
 class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files
@@ -43,7 +44,7 @@ class DashboardParser:
         elif file_size_in_bytes < 1024 * 1024:
             size_str = f"{file_size_in_bytes / 1024:.1f} KB"
 
-        state.imported_file_name = file['name']
+        state.imported_file_name = file["name"]
         state.import_file_details = f"({size_str}) {state.imported_file_name}"
 
     @staticmethod

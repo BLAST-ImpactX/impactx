@@ -7,15 +7,18 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import html, setup_server, vuetify
-from .components import SimulationHistoryComponents
 from ...Input.components.navigation import NavigationComponents
+from .components import SimulationHistoryComponents
+
 server, state, ctrl = setup_server()
 
 
 @staticmethod
 def view_details_tabs():
     dialog_name = "view_details_tabs"
-    with NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Log", "Inputs File"]):
+    with NavigationComponents.create_dialog_tabs(
+        dialog_name, 2, ["Log", "Inputs File"]
+    ):
         with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
             with vuetify.VTabsWindowItem():
                 with vuetify.VCardText():
@@ -25,9 +28,9 @@ def view_details_tabs():
                 with vuetify.VCardText():
                     with html.Div(classes="code-editor-style"):
                         html.Div("{{ selected_sim?.inputs }}")
-                    
-class SimulationHistoryDialogs:
 
+
+class SimulationHistoryDialogs:
     @staticmethod
     def rename_dialog():
         """
@@ -38,7 +41,7 @@ class SimulationHistoryDialogs:
             title="Rename Simulation",
             prepend_icon="mdi-pencil",
             dialog_var="sim_rename_dialog",
-            width="33.33vw"
+            width="33.33vw",
         ):
             with vuetify.VCardText():
                 with vuetify.VRow():
@@ -76,28 +79,25 @@ class SimulationHistoryDialogs:
             title="{{ selected_sim?.name }} Details",
             prepend_icon="mdi-clipboard-text-clock",
             dialog_var="view_details_dialog",
-            width="70vw"
+            width="70vw",
         ):
             with vuetify.VCardText():
                 with html.Div(classes="ga-4 d-flex flex-wrap mb-2"):
                     with SimulationHistoryComponents.view_details_card(
-                        title="STATUS",
-                        prepend_icon="mdi-label-outline"
+                        title="STATUS", prepend_icon="mdi-label-outline"
                     ):
                         with html.Div():
                             SimulationHistoryComponents.status_chip("selected_sim?")
                     with SimulationHistoryComponents.view_details_card(
-                        title="CREATED",
-                        prepend_icon="mdi-calendar"
+                        title="CREATED", prepend_icon="mdi-calendar"
                     ):
                         with html.Div():
-                           html.Span(
+                            html.Span(
                                 "{{ window.formatDate(selected_sim.created_at_time) }} at {{ window.formatTime(selected_sim.created_at_time) }}",
                                 classes="font-weight-medium",
                             )
                     with SimulationHistoryComponents.view_details_card(
-                        title="DURATION",
-                        prepend_icon="mdi-clock-outline"
+                        title="DURATION", prepend_icon="mdi-clock-outline"
                     ):
                         with html.Div():
                             html.Span(
@@ -113,22 +113,23 @@ class SimulationHistoryDialogs:
             title="{{ selected_sim?.name }}",
             prepend_icon="mdi-download",
             dialog_var="sim_download_dialog",
-            width="33.33vw"
+            width="33.33vw",
         ):
             with vuetify.VCardText():
                 with vuetify.VList():
                     vuetify.VListItem(
                         title="Download Inputs",
                         prepend_icon="mdi-file-code",
-                        click="utils.download(`${sim_to_download.name}.py`, trigger('download_sim', [sim_to_download]), 'text/plain'); sim_download_dialog = false"
+                        click="utils.download(`${sim_to_download.name}.py`, trigger('download_sim', [sim_to_download]), 'text/plain'); sim_download_dialog = false",
                     )
+
     @staticmethod
     def load_sim_dialog():
         with SimulationHistoryComponents.dialog(
             title="Loading Options",
             prepend_icon="mdi-upload",
             dialog_var="load_sim_dialog",
-            width="33.33vw"
+            width="33.33vw",
         ):
             with vuetify.VCardText():
                 with vuetify.VList():

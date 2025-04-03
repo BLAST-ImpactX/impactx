@@ -86,7 +86,13 @@ class CardComponents:
 
     @staticmethod
     def card_button(
-        icon_name, color="primary", density = "compact", variant="text",dynamic_condition=None, description=None, **kwargs
+        icon_name,
+        color="primary",
+        density="compact",
+        variant="text",
+        dynamic_condition=None,
+        description=None,
+        **kwargs,
     ) -> vuetify.VBtn:
         """
         Create a Vuetify VBtn containing an icon.

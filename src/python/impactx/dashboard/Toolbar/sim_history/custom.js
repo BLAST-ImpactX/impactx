@@ -12,7 +12,7 @@ window.formatDate = function(isoString) {
       year: 'numeric'
     });
   };
-  
+
 window.formatTime = function(isoString) {
 return new Date(isoString).toLocaleTimeString([], {
     hour: '2-digit',
@@ -20,4 +20,3 @@ return new Date(isoString).toLocaleTimeString([], {
     second: '2-digit'
 });
 };
-

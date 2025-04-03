@@ -24,8 +24,8 @@ from . import (
     setup_server,
     vuetify,
 )
-from .Toolbar.sim_history.ui import load_my_js
 from .start import main
+from .Toolbar.sim_history.ui import load_my_js
 
 server, state, ctrl = setup_server()
 

@@ -6,8 +6,8 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from ... import html, setup_server, vuetify
 from ...Run.simulation import dashboard_sim_inputs
@@ -36,6 +36,7 @@ state.sim_history_table_headers = [
 # Load custom JS
 # --------------------------------
 
+
 def load_my_js(server):
     """
     Loads custom js file to the server.
@@ -48,9 +49,11 @@ def load_my_js(server):
         }
     )
 
+
 # --------------------------------
 # Functionality
 # --------------------------------
+
 
 class SimulationHistory:
     """
@@ -87,7 +90,7 @@ class SimulationHistory:
     @ctrl.add("close_rename_dialog")
     def _close_rename_dialog():
         state.sim_rename_dialog = False
-        
+
     @ctrl.add("update_search")
     def update_search(user_input):
         state.selected_sim_search = user_input
@@ -126,19 +129,23 @@ class SimulationHistory:
             "name": sim["name"] + ".py",
             "content": sim["inputs"].encode("utf-8"),
         }
-        
+
         DashboardParser.populate_impactx_simulation_file_to_ui(sim_content)
         state.selected_sim_to_load = None
 
     @staticmethod
     def filter_sim_history():
         """
-        Handles the functionality to filter the sim history. 
+        Handles the functionality to filter the sim history.
         """
         filtered = state.sims
 
         if state.selected_sim_search_status:
-            filtered = [sim for sim in filtered if sim["status"] == state.selected_sim_search_status]
+            filtered = [
+                sim
+                for sim in filtered
+                if sim["status"] == state.selected_sim_search_status
+            ]
 
         if state.selected_sim_search:
             search_query = state.selected_sim_search.lower()
@@ -168,10 +175,10 @@ class SimulationHistory:
 
         Adds a new simulation to the sim history.
         """
-        
+
         curr_num_sims = len(state.sims)
         new_sim_name = state.imported_file_name or f"Simulation_{curr_num_sims + 1}"
-        current_time =  datetime.utcnow().isoformat() + "Z"
+        current_time = datetime.utcnow().isoformat() + "Z"
         sim_inputs = dashboard_sim_inputs(is_exporting=True)
 
         new_sim = {
@@ -190,10 +197,10 @@ class SimulationHistory:
     @staticmethod
     def add_to_view_details_log(log: str) -> None:
         """
-        Stores simulation details inside of 
+        Stores simulation details inside of
         curr_view_details_log state
         """
-        
+
         state.curr_view_details_log += log
 
     @staticmethod
@@ -202,7 +209,7 @@ class SimulationHistory:
         Updates the UI with the simulation's
         details.
         """
-        
+
         state.sims[state.sim_index]["log"] = state.curr_view_details_log
 
     @staticmethod
@@ -243,56 +250,62 @@ class SimulationHistory:
                         with vuetify.VDataTable(
                             classes="elevation-2",
                             headers=("sim_history_table_headers",),
-                            items=("filtered_sims",)
+                            items=("filtered_sims",),
                         ):
                             with SimulationHistory._access_sim_history_slot("name"):
-                                with html.Div(style="display: flex; align-items: center; gap: 6px;"):
+                                with html.Div(
+                                    style="display: flex; align-items: center; gap: 6px;"
+                                ):
                                     html.Span("{{ item.name }}")
                                     SimulationHistoryComponents.icon_button(
                                         icon_name="mdi-pencil",
                                         color="warning",
                                         click=(ctrl.rename_sim, "[item]"),
-                                        description="Rename"
+                                        description="Rename",
                                     )
-                            with SimulationHistory._access_sim_history_slot("created_at_time"):
-                                with html.Div(style="display: flex; flex-direction: column; align-items: center;"):
+                            with SimulationHistory._access_sim_history_slot(
+                                "created_at_time"
+                            ):
+                                with html.Div(
+                                    style="display: flex; flex-direction: column; align-items: center;"
+                                ):
                                     html.Div(
                                         "{{ window.formatDate(item.created_at_time) }}",
-                                        style="font-weight: 500"
+                                        style="font-weight: 500",
                                     )
                                     html.Div(
                                         "{{ window.formatTime(item.created_at_time) }}",
-                                        classes="text-caption"
+                                        classes="text-caption",
                                     )
                             with SimulationHistory._access_sim_history_slot("status"):
                                 SimulationHistoryComponents.status_chip("item")
                             with SimulationHistory._access_sim_history_slot("actions"):
-                                    SimulationHistoryComponents.icon_button(
-                                        icon_name="mdi-eye",
-                                        classes="mr-1",
-                                        click=(ctrl.open_view_details, "[item]"),
-                                        description="View Details",
-                                    )
-                                    SimulationHistoryComponents.icon_button(
-                                        icon_name="mdi-download",
-                                        click="""
+                                SimulationHistoryComponents.icon_button(
+                                    icon_name="mdi-eye",
+                                    classes="mr-1",
+                                    click=(ctrl.open_view_details, "[item]"),
+                                    description="View Details",
+                                )
+                                SimulationHistoryComponents.icon_button(
+                                    icon_name="mdi-download",
+                                    click="""
                                             sim_to_download = item;
                                             sim_download_dialog = true;
                                         """,
-                                        description="Download"
-                                    )
-                                    SimulationHistoryComponents.icon_button(
-                                        icon_name="mdi-tray-arrow-up",
-                                        color="primary",
-                                        description="Load",
-                                        click="""
+                                    description="Download",
+                                )
+                                SimulationHistoryComponents.icon_button(
+                                    icon_name="mdi-tray-arrow-up",
+                                    color="primary",
+                                    description="Load",
+                                    click="""
                                             selected_sim_to_load = item;
                                             load_sim_dialog = true;
-                                        """
-                                    )
-                                    SimulationHistoryComponents.icon_button(
-                                        icon_name="mdi-trash-can-outline",
-                                        color="error",
-                                        click=(ctrl.delete_sim, "[item]"),
-                                        description="Delete"
-                                    )
+                                        """,
+                                )
+                                SimulationHistoryComponents.icon_button(
+                                    icon_name="mdi-trash-can-outline",
+                                    color="error",
+                                    click=(ctrl.delete_sim, "[item]"),
+                                    description="Delete",
+                                )

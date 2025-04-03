@@ -5,16 +5,17 @@ Copyright 2025 ImpactX contributors
 Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
+
 from contextlib import contextmanager
 
-from ...Input.components.input import InputComponents
-from ...Input.components.card import CardComponents
 from ... import html, setup_server, vuetify
+from ...Input.components.card import CardComponents
+from ...Input.components.input import InputComponents
 
 server, state, ctrl = setup_server()
 
-class SimulationHistoryComponents:
 
+class SimulationHistoryComponents:
     @staticmethod
     def status_chip(obj_expr: str):
         """
@@ -22,7 +23,7 @@ class SimulationHistoryComponents:
         """
 
         status_binding = f"{obj_expr}.status"
-        
+
         return vuetify.VChip(
             f"{{{{ {status_binding} }}}}",
             color=(f"window.getSimStatusColor({status_binding})",),
@@ -36,7 +37,7 @@ class SimulationHistoryComponents:
         Creates a VTextField with default properties
         specifically for the simulation history panels.
         """
-        
+
         return InputComponents.text_field(
             density="comfortable",
             hide_details=True,
@@ -64,20 +65,22 @@ class SimulationHistoryComponents:
         dialog of the simulation history.
 
         """
-        
+
         with vuetify.VCard(
             rounded="lg",
             elevation=2,
             classes="pa-4 flex-grow-1",
             style="min-width: 150px;",
-            **kwargs
+            **kwargs,
         ):
             with html.Div(classes="d-flex align-center mb-2"):
                 if prepend_icon:
-                    vuetify.VIcon(prepend_icon, size="small", color="primary", classes="mr-2")
+                    vuetify.VIcon(
+                        prepend_icon, size="small", color="primary", classes="mr-2"
+                    )
                 html.Div(title, classes="text-caption font-weight-medium")
             yield
-            
+
     @staticmethod
     @contextmanager
     def dialog(
@@ -85,7 +88,8 @@ class SimulationHistoryComponents:
         prepend_icon: str = None,
         dialog_var: str = None,
         width: str = "500px",
-        **kwargs):
+        **kwargs,
+    ):
         """
         A dialog layout with a preset toolbar, icon, and close button.
 
@@ -99,7 +103,9 @@ class SimulationHistoryComponents:
             v_model=(dialog_var, False),
             max_width=width,
         ):
-            with vuetify.VCard(elevation=10, classes="rounded-lg", style="overflow: hidden", **kwargs):
+            with vuetify.VCard(
+                elevation=10, classes="rounded-lg", style="overflow: hidden", **kwargs
+            ):
                 with vuetify.VToolbar(color="primary", classes="px-4"):
                     if prepend_icon:
                         vuetify.VIcon(prepend_icon)
@@ -108,4 +114,3 @@ class SimulationHistoryComponents:
                     if dialog_var:
                         vuetify.VBtn(icon="mdi-close", click=f"{dialog_var} = false")
                 yield
-

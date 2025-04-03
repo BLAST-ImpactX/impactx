@@ -173,8 +173,7 @@ namespace impactx::elements
             } else if (m_int_order == 4) {
                 integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
             } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
-                throw std::runtime_error("ExactQuad: Order of integration must be 2 or 4.");
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);  \\default
             }
 
             // assign updated values

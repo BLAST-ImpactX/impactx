@@ -57,6 +57,7 @@ class SimulationHistoryComponents:
             **kwargs,
         )
 
+    @staticmethod
     @contextmanager
     def view_details_card(title: str = "", prepend_icon: str = None, **kwargs):
         """

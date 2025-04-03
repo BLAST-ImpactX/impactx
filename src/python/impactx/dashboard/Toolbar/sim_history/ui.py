@@ -58,17 +58,20 @@ class SimulationHistory:
     simulation history for the dashboard.
     """
 
+    @staticmethod
     @ctrl.add("open_view_details")
     def open_view_details(selected_sim):
         state.selected_sim = selected_sim
         state.view_details_dialog = True
 
+    @staticmethod
     @ctrl.add("rename_sim")
     def open_rename_dialog(sim):
         state.rename_old_name = sim["name"]
         state.rename_new_name = sim["name"]
         state.sim_rename_dialog = True
 
+    @staticmethod
     @ctrl.add("confirm_rename")
     def confirm_rename():
         old = state.rename_old_name
@@ -84,24 +87,29 @@ class SimulationHistory:
 
         SimulationHistory._close_rename_dialog()
 
+    @staticmethod
     @ctrl.add("close_rename_dialog")
     def _close_rename_dialog():
         state.sim_rename_dialog = False
         
+    @staticmethod
     @ctrl.add("update_search")
     def update_search(user_input):
         state.selected_sim_search = user_input
         SimulationHistory.filter_sim_history()
 
+    @staticmethod
     @ctrl.add("update_status")
     def update_status(user_input):
         state.selected_sim_status = user_input
         SimulationHistory.filter_sim_history()
 
+    @staticmethod
     @ctrl.trigger("download_sim")
     def download_sim(sim):
         return sim.get("inputs", "")
 
+    @staticmethod
     @ctrl.add("delete_sim")
     def delete_sim(sim):
         actual_index = state.sims.index(sim)
@@ -111,6 +119,7 @@ class SimulationHistory:
         state.dirty("filtered_sims")
         state.dirty("sims")
 
+    @staticmethod
     @ctrl.add("toggle_selected_sim")
     def toggle_selected_sim(sim):
         same_name = (
@@ -123,6 +132,7 @@ class SimulationHistory:
         else:
             state.selected_sim_to_load = sim
 
+    @staticmethod
     @ctrl.add("load_selected_sim")
     def load_selected_sim():
         sim = state.selected_sim_to_load

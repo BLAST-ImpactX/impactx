@@ -387,7 +387,7 @@ namespace detail
             pp_element.queryAddWithParser("units", units);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
 
-            m_lattice.emplace_back( ExactQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, 
+            m_lattice.emplace_back( ExactQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice,
 element_name) );
         } else if (element_type == "sbend_exact")
         {

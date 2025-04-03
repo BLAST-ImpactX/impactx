@@ -232,7 +232,7 @@ class SimulationHistory:
                             label="Status",
                             v_model=("selected_sim_search_status", None),
                             update_modelValue=(ctrl.update_status, "[$event]"),
-                            items=(["Completed", "In Progress", "Failed"],),
+                            items=(["Completed", "In Progress"],),
                             clearable=True,
                             density="comfortable",
                             hide_details=True,

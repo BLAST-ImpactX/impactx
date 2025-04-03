@@ -868,7 +868,10 @@ This module provides elements and methods for the accelerator lattice.
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
    Here H_1 is the Hamiltonian for a linear quadrupole (containing all terms quadratic in the phase space variables),
-   and H_2 is the remainder (including the kinematic square root).  This suggested splitting is based on:
+   and H_2 is the remainder (including the kinematic square root).  This suggested splitting appears for example in:
+
+   D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
+   E. Forest, J. Phys. A: Math. Gen. 39, 5321 (2006).
 
    :param ds: Segment length in m.
    :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)

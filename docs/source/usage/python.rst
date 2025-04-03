@@ -886,21 +886,21 @@ This module provides elements and methods for the accelerator lattice.
    :param mapsteps: number of integration steps per slice used for symplectic integration
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
-   
+
    .. py:property:: k
-   
+
       quadrupole strength in 1/m^2 (or T/m)
-   
+
    .. py:property:: unit
-   
+
       unit specification for quad strength
 
    .. py:property:: int_order
-   
+
       the order used for symplectic integration (2 or 4)
 
    .. py:property:: mapsteps
-   
+
       number of integration steps per slice used for symplectic integration
 
 .. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)

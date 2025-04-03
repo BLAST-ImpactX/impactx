@@ -505,7 +505,7 @@ This requires these additional parameters:
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the quadrupole strength
   = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if ``unit = 0``
-  
+
   OR = magnetic field gradient in T/m - if ``unit = 1``
 
   * k > 0 horizontal focusing

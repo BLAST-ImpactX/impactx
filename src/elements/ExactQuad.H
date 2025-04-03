@@ -25,7 +25,7 @@
 #include <AMReX_Print.H>
 
 #include <cmath>
-
+#include <stdexcept>
 
 namespace impactx::elements
 {

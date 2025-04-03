@@ -109,6 +109,7 @@ class SimulationHistory:
         del state.sims[actual_index]
         SimulationHistory.filter_sim_history()
         state.dirty("filtered_sims")
+        state.dirty("sims")
 
     @ctrl.add("toggle_selected_sim")
     def toggle_selected_sim(sim):
@@ -275,6 +276,7 @@ class SimulationHistory:
                                         classes="mr-1",
                                         click=(ctrl.open_view_details, "[item]"),
                                         description="View Details",
+                                        disabled=("item.status !== 'Completed'", True),
                                     )
                                     SimulationHistoryComponents.icon_button(
                                         icon_name="mdi-download",
@@ -297,5 +299,6 @@ class SimulationHistory:
                                         icon_name="mdi-trash-can-outline",
                                         color="error",
                                         click=(ctrl.delete_sim, "[item]"),
-                                        description="Delete"
+                                        description="Delete",
+                                        disabled=("item.status !== 'Completed'", True),
                                     )

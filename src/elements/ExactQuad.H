@@ -167,13 +167,13 @@ namespace impactx::elements
                 x, px, y, py, t, pt
             };
 
-            // call integrator to advance through slice
+            // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
             if (m_int_order == 2) {
                 integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
             } else if (m_int_order == 4) {
                 integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
             } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);  \\default
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
             }
 
             // assign updated values

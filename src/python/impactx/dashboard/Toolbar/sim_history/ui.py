@@ -103,9 +103,12 @@ class SimulationHistory:
         return sim.get("inputs", "")
 
     @ctrl.add("delete_sim")
-    def delete_sim(sim_to_delete):
-        state.sims = [sim for sim in state.sims if sim["name"] != sim_to_delete["name"]]
+    def delete_sim(sim):
+        actual_index = state.sims.index(sim)
+
+        del state.sims[actual_index]
         SimulationHistory.filter_sim_history()
+        state.dirty("filtered_sims")
 
     @ctrl.add("toggle_selected_sim")
     def toggle_selected_sim(sim):

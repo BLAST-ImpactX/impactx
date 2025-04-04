@@ -22,6 +22,7 @@ state.sims = []
 state.filtered_sims = []
 state.selected_sim_to_load = None
 state.sim_to_download = None
+state.selected_sim_search_status = "All"
 
 state.sim_history_table_headers = [
     {"title": "Simulation Name", "key": "name", "sortable": True},
@@ -154,7 +155,7 @@ class SimulationHistory:
         """
         filtered = state.sims
 
-        if state.selected_sim_search_status:
+        if state.selected_sim_search_status and state.selected_sim_search_status != "All":
             filtered = [
                 sim
                 for sim in filtered
@@ -253,7 +254,7 @@ class SimulationHistory:
                             label="Status",
                             v_model=("selected_sim_search_status", None),
                             update_modelValue=(ctrl.update_status, "[$event]"),
-                            items=(["Completed", "In Progress"],),
+                            items=(["All","Completed", "In Progress"],),
                             clearable=True,
                             density="comfortable",
                             hide_details=True,

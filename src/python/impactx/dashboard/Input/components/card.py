@@ -88,10 +88,10 @@ class CardComponents:
     def card_button(
         icon_name,
         color="primary",
-        density="compact",
-        variant="text",
         dynamic_condition=None,
         description=None,
+        density="compact",
+        variant="text",
         **kwargs,
     ) -> vuetify.VBtn:
         """

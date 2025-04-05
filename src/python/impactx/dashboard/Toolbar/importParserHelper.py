@@ -157,3 +157,19 @@ class DashboardParserHelper:
             dictionary["lattice_elements"].append(element)
 
         return dictionary
+
+    @staticmethod
+    def parse_variables(content: str) -> dict:
+        variables = {}
+        variables_regex = r"^\s*(\w+)\s*=\s*([^#\n]+)"
+        matches = re.findall(variables_regex, content, re.MULTILINE)
+
+        for var_name, var_value in matches:
+            try:
+                value = ast.literal_eval(var_value.strip())
+                # only allowing numbers at the moment
+                if isinstance(value, (int, float)):
+                    variables[var_name] = value
+            except Exception:
+                continue
+        return variables

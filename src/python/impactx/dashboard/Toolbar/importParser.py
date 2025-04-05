@@ -63,12 +63,14 @@ class DashboardParser:
         lattice_element_contents = DashboardParserHelper.parse_lattice_elements(
             file_content
         )
+        variable_contents = DashboardParserHelper.parse_variables(file_content)
 
         parsed_values_dictionary = {
             **single_input_contents,
             **list_input_contents,
             **distribution_contents,
             **lattice_element_contents,
+            "variables": variable_contents,
         }
 
         return parsed_values_dictionary
@@ -85,7 +87,7 @@ class DashboardParser:
 
         imported_distribution_data = imported_data["distribution"]["parameters"].items()
         imported_lattice_data = imported_data["lattice_elements"]
-        non_state_inputs = ["distribution", "lattice_elements"]
+        non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
         # Update state inputs (inputParameters, Space Charge, CSR, ISR)
         for input_name, input_value in imported_data.items():
@@ -140,3 +142,12 @@ class DashboardParser:
                         parsed_parameter_value,
                         parameter_type,
                     )
+
+        parsed_variables = imported_data["variables"]
+        for name, value in parsed_variables.items():
+            # Check if a variable with the same name already exists
+            if not any(var["name"] == name for var in state.variables):
+                state.variables.append(
+                    {"name": name, "value": value, "error_message": ""}
+                )
+        state.dirty("variables")

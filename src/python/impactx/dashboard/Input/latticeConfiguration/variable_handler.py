@@ -26,13 +26,14 @@ class LatticeVariableHandler:
     @state.change("variables")
     def on_variables_list_change(variables, **kwargs):
         for lattice_element in state.lattice_params_bound_or_pending_variable.values():
-            ctrl.updateLatticeElementParameters(
-                lattice_element["index"],
-                lattice_element["parameter_name"],
-                lattice_element["ui_input"],
-                lattice_element["parameter_type"],
-            )
-        LatticeVariableHandler.update_delete_availability()
+            index = lattice_element["index"]
+            if index < len(state.selected_lattice_list):
+                ctrl.updateLatticeElementParameters(
+                    lattice_element["index"],
+                    lattice_element["parameter_name"],
+                    lattice_element["ui_input"],
+                    lattice_element["parameter_type"],
+                )
 
     # -----------------------------------------------------------------------------
     # Controllers

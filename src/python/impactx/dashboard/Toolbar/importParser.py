@@ -15,6 +15,7 @@ from ..Input.latticeConfiguration.latticeMain import (
     add_lattice_element,
     on_lattice_element_parameter_change,
 )
+from ..Input.latticeConfiguration.variable_handler import LatticeVariableHandler
 from .importParserHelper import DashboardParserHelper
 
 server, state, ctrl = setup_server()
@@ -151,3 +152,4 @@ class DashboardParser:
                     {"name": name, "value": value, "error_message": ""}
                 )
         state.dirty("variables")
+        LatticeVariableHandler.update_delete_availability()

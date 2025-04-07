@@ -92,7 +92,13 @@ num_particles = 100000
 dpt = 2.0 / 3.0 * re_classical * ds / (rc**2) * gamma**3
 
 dsigpt2 = (
-    55.0 / (24 * np.sqrt(3.0)) * lambda_compton_reduced * re_classical * ds / rc**3 * gamma**5
+    55.0
+    / (24 * np.sqrt(3.0))
+    * lambda_compton_reduced
+    * re_classical
+    * ds
+    / rc**3
+    * gamma**5
 )
 dsigpt = np.sqrt(dsigpt2)
 

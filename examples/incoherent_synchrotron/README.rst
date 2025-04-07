@@ -12,11 +12,12 @@ this also results in a growth of the bunch rms emittance.
 
 The resulting quantities are compared against the expressions given in:
 
-....
+N. Yampolsky and B. Carlsten, "Beam debunching due to ISR-induced energy diffusion," Nucl. Instrum. and Methods in Phys. Res. A,
+870, 156-162 (2017), equations (17-20).
 
 In this test, the values of :math:`\langle{p_x\rangle}`, :math:`\langle{p_y\rangle}`, :math:`\langle{p_t\rangle}`, :math:`\sigma_{p_x}`, :math:`\sigma_{p_y}`, and :math:`\sigma_{p_t}` must agree with nominal values.
 
-In addition, the final values of :math:`\langle{p_t\rangle}` and :math:`\sigma_{p_t}` must agree with nominal values.
+In addition, the final values of :math:`\langle{p_t\rangle}` and :math:`\sigma_{p_t}` must agree with predicted values.
 
 
 Run

@@ -88,6 +88,13 @@ rc = 10.0
 gamma = 195696.117901
 num_particles = 100000
 
+# Characteristic length of energy loss:
+length_isr = 3.0/2.0*rc**2/(re_classical*gamma**3)
+
+print("")
+print("Length and characteristic length for energy loss [m]:")
+print(f" Length={ds:e} Length_ISR={length_isr:e}")
+
 # Predicted energy loss and energy spread:
 dpt = 2.0 / 3.0 * re_classical * ds / (rc**2) * gamma**3
 
@@ -105,7 +112,7 @@ dsigpt = np.sqrt(dsigpt2)
 print("")
 print("Final Beam:")
 print(f" pt_mean={pt_meanf:e} sig_pt={sig_ptf}")
-print("Predicted:")
+print("Predicted (assuming that Length << Length_isr):")
 print(f" pt_mean={dpt:e} sig_pt={dsigpt:e}")
 print("")
 

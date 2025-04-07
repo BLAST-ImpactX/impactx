@@ -46,4 +46,3 @@ algo.isr = true
 ###############################################################################
 diag.slice_step_diagnostics = true
 diag.eigenemittances = true
-

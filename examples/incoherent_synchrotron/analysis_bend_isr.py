@@ -45,7 +45,7 @@ py_mean = rbc["py_mean"]
 pt_mean = rbc["pt_mean"]
 sig_px = rbc["sig_px"]
 sig_py = rbc["sig_py"]
-sig_pt = rbc["sig_pt"] 
+sig_pt = rbc["sig_pt"]
 
 px_meani = px_mean.iloc[0]
 py_meani = py_mean.iloc[0]
@@ -67,23 +67,14 @@ sig_ptf = sig_pt.iloc[length]
 
 print("Initial Beam:")
 print(f"  px_mean={px_meani:e} py_mean={py_meani:e} pt_mean={pt_meani:e}")
-print(
-    f"  sig_px={sig_pxi:e} sig_py={sig_pyi:e} sig_pt={sig_pti:e}"
-)
+print(f"  sig_px={sig_pxi:e} sig_py={sig_pyi:e} sig_pt={sig_pti:e}")
 
 
 atol = 1.0e-6
 print(f"  atol={atol}")
 assert np.allclose(
     [px_meani, py_meani, pt_meani, sig_pxi, sig_pyi, sig_pti],
-    [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
-    ],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     atol=atol,
 )
 
@@ -98,9 +89,11 @@ gamma = 195696.117901
 num_particles = 100000
 
 # Predicted energy loss and energy spread:
-dpt = 2.0/3.0*re*ds/(rc**2)*gamma**3
+dpt = 2.0 / 3.0 * re * ds / (rc**2) * gamma**3
 
-dsigpt2 = 55.0/(24*np.sqrt(3.0))*lambda_compton_reduced*re*ds/rc**3*gamma**5
+dsigpt2 = (
+    55.0 / (24 * np.sqrt(3.0)) * lambda_compton_reduced * re * ds / rc**3 * gamma**5
+)
 dsigpt = np.sqrt(dsigpt2)
 
 print("")
@@ -113,7 +106,7 @@ print("")
 rtol = 10.0 * num_particles**-0.5  # from random sampling of a smooth distribution
 assert np.allclose(
     [pt_meanf, sig_ptf],
-    [   
+    [
         dpt,
         dsigpt,
     ],

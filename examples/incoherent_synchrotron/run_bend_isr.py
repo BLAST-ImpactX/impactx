@@ -50,7 +50,9 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice)
 ns = 25  # number of slices per ds in the element
 
-bend = elements.ExactSbend(name="sbend_exact", ds=0.1, phi=0.5729577951308232, nslice=ns)
+bend = elements.ExactSbend(
+    name="sbend_exact", ds=0.1, phi=0.5729577951308232, nslice=ns
+)
 
 lattice_line = [monitor, bend, monitor]
 

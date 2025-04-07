@@ -1341,7 +1341,7 @@ add_impactx_test(bend-isr
     examples/incoherent_synchrotron/input_bend_isr.in
     ON   # ImpactX MPI-parallel
     examples/incoherent_synchrotron/analysis_bend_isr.py
-    OFF  # no plot script yet   
+    OFF  # no plot script yet
 )
 add_impactx_test(bend-isr.py
     examples/incoherent_synchrotron/run_bend_isr.py

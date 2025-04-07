@@ -74,7 +74,7 @@ Incoherent Synchrotron Radiation (ISR)
    :maxdepth: 1
 
    examples/incoherent_synchrotron/README.rst
-   examples/chicane/README_csr.rst
+   examples/chicane/README_isr.rst
 
 
 Beam Distributions

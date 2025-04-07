@@ -37,6 +37,7 @@ Single Particle Dynamics
    examples/coupled_optics/README.rst
    examples/linear_map/README.rst
    examples/scraping_beam/README.rst
+   examples/reversibility/README.rst
 
 
 Collective Effects

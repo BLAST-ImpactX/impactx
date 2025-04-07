@@ -1349,3 +1349,19 @@ add_impactx_test(bend-isr.py
     examples/incoherent_synchrotron/analysis_bend_isr.py
     OFF  # no plot script yet
 )
+
+# Bending Dipole with Zero Field Strength ######################
+#
+# no space charge
+add_impactx_test(zero-bend-inverse
+    examples/reversibility/input_zero_bend_inverse.in
+    ON   # ImpactX MPI-parallel
+    examples/reversibility/analysis_zero_bend_inverse.py
+    OFF  # no plot script yet
+)
+add_impactx_test(zero-bend-inverse.py
+    examples/reversibility/run_zero_bend_inverse.py
+    OFF   # ImpactX MPI-parallel
+    examples/reversibility/analysis_zero_bend_inverse.py
+    OFF  # no plot script yet
+)

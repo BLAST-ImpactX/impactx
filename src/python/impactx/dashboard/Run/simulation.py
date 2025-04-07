@@ -111,9 +111,23 @@ sim.particle_shape = {state.particle_shape}
 # -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
+def generate_phase_space(is_exporting: bool) -> str:
+    """
+    Returns the plotting section of the script as a string,
+    or an empty string if the script is being exported.
+    """
+
+    if is_exporting:
+        return ""
+    return (
+        "import matplotlib.pyplot as plt\n"
+        "fig = pc.plot_phasespace()\n"
+        "if fig is not None:\n"
+        '    fig.savefig("phase_space_plot.png")\n'
+    )
 
 
-def input_file():
+def dashboard_sim_inputs(is_exporting=False) -> str:
     """
     This function creates the template to export
     dashboard user inputs into a python script.
@@ -133,8 +147,10 @@ kin_energy_MeV = {state.kin_energy_MeV}
 bunch_charge_C = {state.bunch_charge_C}
 npart = {state.npart}
 
+pc = sim.particle_container()
+
 # Reference particle
-ref = sim.particle_container().ref_particle()
+ref = pc.ref_particle()
 ref.set_charge_qe({state.charge_qe}).set_mass_MeV({state.mass_MeV}).set_kin_energy_MeV(kin_energy_MeV)
 
 {build_distribution_list()}
@@ -146,6 +162,7 @@ sim.lattice.extend(lattice_configuration)
 # Simulate
 sim.track_particles()
 
+{generate_phase_space(is_exporting)}
 # Clean Shutdown
 sim.finalize()
 """

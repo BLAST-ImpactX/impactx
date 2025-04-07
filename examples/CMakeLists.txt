@@ -1366,7 +1366,7 @@ add_impactx_test(zero-bend-inverse.py
     OFF  # no plot script yet
 )
 
-# Chicane with ISR ########################################################### 
+# Chicane with ISR ###########################################################
 #
 add_impactx_test(chicane_isr
     examples/chicane/input_chicane_isr.in
@@ -1378,5 +1378,5 @@ add_impactx_test(chicane_isr.py
     examples/chicane/run_chicane_isr.py
     OFF  # ImpactX MPI-parallel
     examples/chicane/analysis_chicane_isr.py
-    OFF  # no plot script yet  
+    OFF  # no plot script yet
 )

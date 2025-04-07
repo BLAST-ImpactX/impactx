@@ -64,6 +64,19 @@ Coherent Synchrotron Radiation (CSR)
    examples/chicane/README_csr.rst
 
 
+Quantum Excitation
+--------------------
+
+Incoherent Synchrotron Radiation (ISR)
+""""""""""""""""""""""""""""""""""""""
+
+.. toctree::
+   :maxdepth: 1
+   
+   examples/incoherent_synchrotron/README.rst
+   examples/chicane/README_csr.rst
+
+
 Beam Distributions
 ------------------
 

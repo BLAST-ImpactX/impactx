@@ -13,6 +13,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SPACE.H>
 #include <AMReX_Random.H>
+#include <AMReX_Print.H>
 
 namespace impactx::particles::wakefields
 {
@@ -42,6 +43,9 @@ namespace impactx::particles::wakefields
 
         amrex::ParticleReal const deterministic_coef = c1 * slice_ds / std::pow(rc,2);
         amrex::ParticleReal const stochastic_coef = std::sqrt(c2 * slice_ds) / std::pow(rc_sqrt,3);
+
+        //amrex::Print() << "deterministic_coef = " << deterministic_coef << "\n";
+        //amrex::Print() << "stochastic_coef = " << stochastic_coef << "\n";
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();

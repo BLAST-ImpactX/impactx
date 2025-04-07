@@ -221,6 +221,16 @@ void init_ImpactX (py::module& m)
             },
             "Number of longitudinal bins used for CSR calculations (default: 150)."
         )
+        .def_property("isr",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "isr");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("isr", enable);
+            },
+            "Enable or disable Incoherent Synchrotron Radiation (ISR) calculations (default: disabled)."
+        )
         .def_property("eigenemittances",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("diag", "eigenemittances");

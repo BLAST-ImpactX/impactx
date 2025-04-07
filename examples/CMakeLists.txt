@@ -1333,3 +1333,19 @@ add_impactx_test(FODO.envelope.sc.py
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py
     OFF  # no plot script yet
 )
+
+# A single bend with incoherent synchrotron radiation ######################
+#
+# no space charge
+add_impactx_test(bend-isr
+    examples/incoherent_synchrotron/input_bend_isr.in
+    ON   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr.py
+    OFF  # no plot script yet   
+)
+add_impactx_test(bend-isr.py
+    examples/incoherent_synchrotron/run_bend_isr.py
+    OFF   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr.py
+    OFF  # no plot script yet
+)

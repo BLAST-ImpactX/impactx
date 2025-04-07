@@ -79,7 +79,7 @@ assert np.allclose(
 )
 
 # Physical constants:
-re = 2.8179403205e-15  # classical electron radius
+re_classical = 2.8179403205e-15  # classical electron radius
 lambda_compton_reduced = 3.8615926744e-13  # reduced Compton wavelength
 
 # Problem parameters:
@@ -89,10 +89,10 @@ gamma = 195696.117901
 num_particles = 100000
 
 # Predicted energy loss and energy spread:
-dpt = 2.0 / 3.0 * re * ds / (rc**2) * gamma**3
+dpt = 2.0 / 3.0 * re_classical * ds / (rc**2) * gamma**3
 
 dsigpt2 = (
-    55.0 / (24 * np.sqrt(3.0)) * lambda_compton_reduced * re * ds / rc**3 * gamma**5
+    55.0 / (24 * np.sqrt(3.0)) * lambda_compton_reduced * re_classical * ds / rc**3 * gamma**5
 )
 dsigpt = np.sqrt(dsigpt2)
 

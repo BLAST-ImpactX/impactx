@@ -89,7 +89,7 @@ gamma = 195696.117901
 num_particles = 100000
 
 # Characteristic length of energy loss:
-length_isr = 3.0/2.0*rc**2/(re_classical*gamma**3)
+length_isr = 3.0 / 2.0 * rc**2 / (re_classical * gamma**3)
 
 print("")
 print("Length and characteristic length for energy loss [m]:")

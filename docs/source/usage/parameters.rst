@@ -880,7 +880,7 @@ The model is based on:
 However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
 
 `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
-  
+
 * ``algo.isr`` (``boolean``, optional, default: ``false``)
 
   Whether to calculate ISR effects.

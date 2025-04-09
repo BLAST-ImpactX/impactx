@@ -98,10 +98,10 @@ namespace impactx::particles::wakefields
                        g = g0 + g1*chi;
                        h = h1*chi + h2*std::pow(chi,2);
                     } else if (isr_order == 3) {
-                       g = g0 + g1*chi + g2*std::pow(chi,2); 
+                       g = g0 + g1*chi + g2*std::pow(chi,2);
                        h = h1*chi + h2*std::pow(chi,2) + h3*std::pow(chi,3);
                     }
-                                           
+
                     // Value of the ISR kick in total momentum (relative to total momentum):
                     amrex::ParticleReal const dp = (-tau*g + std::sqrt(tau*h)*xi);
 

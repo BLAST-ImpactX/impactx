@@ -40,6 +40,7 @@ bend.phi = 0.5729577951308232  #deg
 algo.particle_shape = 2
 algo.space_charge = false
 algo.isr = true
+algo.isr_order = 1
 
 ###############################################################################
 # Diagnostics

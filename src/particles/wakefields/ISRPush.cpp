@@ -120,7 +120,7 @@ namespace impactx::particles::wakefields
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
 
-        amrex::Gpu::streamSynchronize(); 
+        amrex::Gpu::streamSynchronize();
 
    }
 } // namespace impactx::particles::wakefields

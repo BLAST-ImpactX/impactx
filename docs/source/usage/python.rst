@@ -128,7 +128,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      Enable (``True``) or disable (``False``) Coherent Synchrotron Radiation (CSR) calculations (default: ``False``).
 
       Whether to calculate Coherent Synchrotron Radiation (CSR) effects (default: disabled).
       Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19 of
@@ -142,7 +142,30 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      Enable or disable Coherent Synchrotron Radiation (CSR) calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+
+   .. py:property:: isr   
+
+      Enable (``True``) or disable (``False``) Incoherent Synchrotron Radiation (ISR) calculations (default: ``False``).
+
+      Whether to calculate Incoherent Synchrotron Radiation (ISR) effects (default: disabled).
+      ISR effects are included in the simulation for bend lattice elements such as ``Sbend`` and ``CFbend``, and are especially important for electron or positron bunches at high energy.
+      The effects of ISR include radiation reaction due to the stochastic emission of synchrotron radiation, resulting in mean energy loss and quantum excitation of the bunch.
+      The model is based on:
+  
+      `F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`
+
+      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+  
+      `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`
+
+      .. note::
+
+         ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+      
+   .. py:property:: isr_order
+      
+      The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
 
    .. py:property:: diagnostics
 

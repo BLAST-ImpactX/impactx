@@ -86,7 +86,7 @@ lambda_compton_reduced = 3.8615926744e-13  # reduced Compton wavelength
 ds = 0.1
 rc = 10.0
 gamma = 195696.117901
-num_particles = 100000
+num_particles = 10000
 
 # Characteristic length of energy loss:
 length_isr = 3.0 / 2.0 * rc**2 / (re_classical * gamma**3)

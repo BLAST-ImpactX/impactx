@@ -223,7 +223,7 @@ namespace impactx::elements
                        // update position coordinates
                        x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);
                        y = yout + theta * m_rc * py;
-                       t = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - m_phi * m_rc * m_ibeta;
+                       t = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - m_slice_phi * m_rc * m_ibeta;
 
                        // assign updated momenta
                        px = pxout;

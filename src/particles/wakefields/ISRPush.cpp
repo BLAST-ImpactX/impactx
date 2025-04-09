@@ -12,6 +12,7 @@
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SPACE.H>
+#include <AMReX_Gpu.H>
 #include <AMReX_Random.H>
 #include <AMReX_Print.H>
 
@@ -70,7 +71,7 @@ namespace impactx::particles::wakefields
                 amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
 
                 // Gather particles and push momentum
-                amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
+                amrex::ParallelForRNG(np, [=] AMREX_GPU_DEVICE (int i, amrex::RandomEngine const & engine)
                 {
                     // Access SoA Real data
                     amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
@@ -78,7 +79,7 @@ namespace impactx::particles::wakefields
                     amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
 
                     // Standard normal random variable used to kick this particle
-                    amrex::ParticleReal const xi = amrex::RandomNormal(0.0,1.0);
+                    amrex::ParticleReal const xi = amrex::RandomNormal(0.0,1.0,engine);
 
                     // Relativistic beta*gamma for this particle
                     amrex::ParticleReal const gamma = gamma_ref - bg_ref*pt;
@@ -115,7 +116,11 @@ namespace impactx::particles::wakefields
                     pt = (gamma_ref - gamma_f)/(bg_ref);
 
                 });
+
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
-    }
+
+        amrex::Gpu::streamSynchronize(); 
+
+   }
 } // namespace impactx::particles::wakefields

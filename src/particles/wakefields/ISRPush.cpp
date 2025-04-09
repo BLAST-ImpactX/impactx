@@ -35,17 +35,21 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const bg_ref = pc.GetRefParticle().beta_gamma();
         amrex::ParticleReal const r_e = (ablastr::constant::SI::r_e);
         amrex::ParticleReal const hbar = (ablastr::constant::SI::hbar);
+        amrex::ParticleReal const lambda_e = hbar/mc_SI;
 
         // Obtain constants for force normalization
-        amrex::ParticleReal const c1 = 2.0_prt/3.0_prt * (ablastr::constant::SI::r_e) * std::pow(bg_ref,2);
-        amrex::ParticleReal const c2 = 55_prt/(24_prt*std::sqrt(3_prt)) * r_e * hbar * std::pow(bg_ref,3)/mc_SI;
-        amrex::ParticleReal const rc_sqrt = std::sqrt(rc);
+        amrex::ParticleReal const B_normal = bg_ref/rc;
+        amrex::ParticleReal const c1 = 2.0_prt/3.0_prt * r_e * slice_ds * std::pow(B_normal,2);
+        amrex::ParticleReal const c2 = B_normal * lambda_e;
 
-        amrex::ParticleReal const deterministic_coef = c1 * slice_ds / std::pow(rc,2);
-        amrex::ParticleReal const stochastic_coef = std::sqrt(c2 * slice_ds) / std::pow(rc_sqrt,3);
-
-        //amrex::Print() << "deterministic_coef = " << deterministic_coef << "\n";
-        //amrex::Print() << "stochastic_coef = " << stochastic_coef << "\n";
+        // Coefficients of the Taylor expansion of polynomials g and h
+        amrex::ParticleReal const g0 = 1_prt;
+        amrex::ParticleReal const g1 = -55_prt*std::sqrt(3_prt)/16_prt;
+        amrex::ParticleReal const g2 = 48_prt;
+        amrex::ParticleReal const g3 = -8855_prt*std::sqrt(3_prt)/32_prt;
+        amrex::ParticleReal const h1 = 55_prt/(16_prt*std::sqrt(3_prt));
+        amrex::ParticleReal const h2 = -28_prt;
+        amrex::ParticleReal const h3 = 14245_prt*std::sqrt(3_prt)/64_prt;
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -81,15 +85,33 @@ namespace impactx::particles::wakefields
                     amrex::ParticleReal const bg = std::sqrt(std::pow(gamma,2)-1_prt);
 
                     // Value of ISR kick in the total momentum (normalized by mc)
-                    amrex::ParticleReal const dp = std::pow(bg,2) * (deterministic_coef + stochastic_coef*xi);
-                    amrex::ParticleReal const bg_f = bg - dp;
+                    amrex::ParticleReal const tau = c1 * bg;
+                    amrex::ParticleReal const chi = c2 * bg;
 
-                    // Value of ISR kick in the total energy (normalized by mc^2)
+                    // Check the order of quantum corrections
+                    amrex::ParticleReal g = 0_prt;
+                    amrex::ParticleReal h = 0_prt;
+                    if (isr_order == 1) {
+                       g = g0;
+                       h = h1*chi;
+                    } else if (isr_order == 2) {
+                       g = g0 + g1*chi;
+                       h = h1*chi + h2*std::pow(chi,2);
+                    } else if (isr_order == 3) {
+                       g = g0 + g1*chi + g2*std::pow(chi,2); 
+                       h = h1*chi + h2*std::pow(chi,2) + h3*std::pow(chi,3);
+                    }
+                                           
+                    // Value of the ISR kick in total momentum (relative to total momentum):
+                    amrex::ParticleReal const dp = (-tau*g + std::sqrt(tau*h)*xi);
+
+                    // Final value of updated particle gamma:
+                    amrex::ParticleReal const bg_f = bg*(1_prt + dp);
                     amrex::ParticleReal const gamma_f = std::sqrt(1_prt + std::pow(bg_f,2));
 
                     // Update momentum
-                    px = px * (1_prt - dp/bg);
-                    py = py * (1_prt - dp/bg);
+                    px = px * (1_prt + dp);
+                    py = py * (1_prt + dp);
                     pt = (gamma_ref - gamma_f)/(bg_ref);
 
                 });

@@ -46,7 +46,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const g0 = 1_prt;
         amrex::ParticleReal const g1 = -55_prt*std::sqrt(3_prt)/16_prt;
         amrex::ParticleReal const g2 = 48_prt;
-        amrex::ParticleReal const g3 = -8855_prt*std::sqrt(3_prt)/32_prt;
+        // amrex::ParticleReal const g3 = -8855_prt*std::sqrt(3_prt)/32_prt;
         amrex::ParticleReal const h1 = 55_prt/(16_prt*std::sqrt(3_prt));
         amrex::ParticleReal const h2 = -28_prt;
         amrex::ParticleReal const h3 = 14245_prt*std::sqrt(3_prt)/64_prt;

@@ -248,6 +248,20 @@ add_impactx_test(FODO.envelope.py
     OFF  # no plot script yet
 )
 
+# FODO Cell using nonlinear tracking ################################################
+#
+add_impactx_test(FODO-exact
+    examples/fodo/input_fodo_exact.in
+    ON  # ImpactX MPI-parallel
+    examples/fodo/analysis_fodo_exact.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO-exact.py
+    examples/fodo/run_fodo_exact.py
+    ON  # ImpactX MPI-parallel
+    examples/fodo/analysis_fodo_exact.py
+    OFF  # no plot script yet
+)
 
 # Python: FODO Cell w/ programmed element for the Drifts ######################
 #

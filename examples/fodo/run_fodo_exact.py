@@ -56,7 +56,9 @@ fodo = [
     monitor,
     elements.ExactDrift(name="drift2", ds=0.5, nslice=ns),
     monitor,
-    elements.ExactQuad(name="quad2", ds=1.0, k=-1.0, int_order=4, nslice=ns, mapsteps=4),
+    elements.ExactQuad(
+        name="quad2", ds=1.0, k=-1.0, int_order=4, nslice=ns, mapsteps=4
+    ),
     monitor,
     elements.ExactDrift(name="drift3", ds=0.25, nslice=ns),
     monitor,

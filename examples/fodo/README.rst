@@ -148,7 +148,7 @@ This is identical to the example ``examples-fodo``, except that fully nonlinear 
 
 The kinematic nonlinear effects are essentially negligible, so this is primarily a test that the nonlinear elements correctly reproduce the results of linear tracking.
 
-The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected due to 
+The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected due to
 noise due to the finite particle population.
 
 In this test, the initial and final values of :math:`\lambda_x`, :math:`\lambda_y`, :math:`\lambda_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
@@ -188,4 +188,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_fodo_exact.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo/analysis_fodo_exact.py``.
-

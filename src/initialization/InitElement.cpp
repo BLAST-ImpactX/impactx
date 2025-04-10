@@ -385,6 +385,7 @@ namespace detail
             int mapsteps = mapsteps_default;
             pp_element.getWithParser("k", k);
             pp_element.queryAddWithParser("units", units);
+            pp_element.queryAddWithParser("int_order", int_order);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
 
             m_lattice.emplace_back( ExactQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice,

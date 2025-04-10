@@ -1365,7 +1365,7 @@ add_impactx_test(zero-bend-inverse.py
 )
 
 # Symplectic Integration in an Exact Nonlinear Quadrupole ##############
-#   
+#
 # no space charge
 add_impactx_test(examples-exact-quad
     examples/symplectic_integration/input_exact_quad.in

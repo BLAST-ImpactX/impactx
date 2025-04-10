@@ -41,9 +41,9 @@ quad1.k = -207.0
 quad1.units = 1
 quad1.mapsteps = 5
 
-quad2.type = quad_exact    
+quad2.type = quad_exact
 quad2.ds = 0.02903
-quad2.k = 207.0   
+quad2.k = 207.0
 quad2.units = 1
 quad2.mapsteps = 5
 

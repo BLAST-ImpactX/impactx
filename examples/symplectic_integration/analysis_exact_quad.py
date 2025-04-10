@@ -7,8 +7,9 @@
 
 import numpy as np
 import openpmd_api as io
+from scipy.constants import c, e, m_e
 from scipy.stats import moment
-from scipy.constants import m_e, e, c
+
 
 def get_moments(beam):
     """Calculate standard deviations of beam position & momenta
@@ -32,6 +33,7 @@ def get_moments(beam):
 
     return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
+
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 
@@ -45,10 +47,10 @@ final = beam_final.to_df()
 num_particles = 10000
 assert num_particles == len(initial)
 assert num_particles == len(final)
-    
+
 print("Initial Beam:")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(initial)
-print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")  
+print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
@@ -69,7 +71,7 @@ assert np.allclose(
     ],
     rtol=rtol,
     atol=atol,
-)   
+)
 
 print("")
 print("Final Beam:")
@@ -81,11 +83,11 @@ print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}\n"
     f"  s_ref={s_ref:e} gamma_ref={gamma_ref:e}"
 )
-    
+
 atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
-        
+
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
@@ -117,17 +119,27 @@ ptf = beam_joined["momentum_t_final"]
 # Parameters appearing in the Hamiltonian
 beta_ref = beam_final.get_attribute("beta_ref")
 bg_ref = beam_final.get_attribute("beta_gamma_ref")
-rigidity = m_e*bg_ref*c/e
+rigidity = m_e * bg_ref * c / e
 B_gradient = 207.0
 k = B_gradient / rigidity
 
 # Evaluate the change in Hamiltonian value for each particle
-Hi = -np.sqrt(1.0 - 2.0/beta_ref*pti + pti**2 - pxi**2 - pyi**2) + (k/2.0)*(xi**2 - yi**2) - pti/beta_ref + 1.0
-Hf = -np.sqrt(1.0 - 2.0/beta_ref*ptf + ptf**2 - pxf**2 - pyf**2) + (k/2.0)*(xf**2 - yf**2) - ptf/beta_ref + 1.0
+Hi = (
+    -np.sqrt(1.0 - 2.0 / beta_ref * pti + pti**2 - pxi**2 - pyi**2)
+    + (k / 2.0) * (xi**2 - yi**2)
+    - pti / beta_ref
+    + 1.0
+)
+Hf = (
+    -np.sqrt(1.0 - 2.0 / beta_ref * ptf + ptf**2 - pxf**2 - pyf**2)
+    + (k / 2.0) * (xf**2 - yf**2)
+    - ptf / beta_ref
+    + 1.0
+)
 
 H_sigma = (np.std(Hi) + np.std(Hf)) / 2.0
 dH = (Hf - Hi).abs()
-dH_max_relative = dH.max()/H_sigma
+dH_max_relative = dH.max() / H_sigma
 
 # particle-wise comparison of H & I initial to final
 atol = 1.0e-3

@@ -281,11 +281,11 @@ RF1 = elements.RFCavity(
     nslice=ns,
 )
 D2 = elements.Drift(name="D204", ds=0.06586, nslice=ns)
-Q1 = elements.ChrQuad(name="Q29", ds=0.05, k=-11.4, unit=1, nslice=ns)
+Q1 = elements.ChrQuad(name="Q29", ds=0.05, k=11.4, unit=1, nslice=ns)
 D3 = elements.Drift(name="D205", ds=0.07, nslice=ns)
-Q2 = elements.ChrQuad(name="Q30", ds=0.1, k=10.47, unit=1, nslice=ns)
+Q2 = elements.ChrQuad(name="Q30", ds=0.1, k=-10.47, unit=1, nslice=ns)
 D4 = elements.Drift(name="D208", ds=0.070, nslice=ns)
-Q3 = elements.ChrQuad(name="Q31", ds=0.05, k=-11.4, unit=1, nslice=ns)
+Q3 = elements.ChrQuad(name="Q31", ds=0.05, k=11.4, unit=1, nslice=ns)
 D5 = elements.Drift(name="D208", ds=1.0106078, nslice=ns)
 
 mebt_fragment = [D1, RF1, D2, Q1, D3, Q2, D4, Q3, D5]
@@ -295,7 +295,7 @@ D1b = elements.Drift(name="D1b", ds=0.177422, nslice=ns)
 SOL1b = elements.SoftSolenoid(
     name="SOL1b",
     ds=0.3,
-    bscale=-2.3192,
+    bscale=2.3192,
     cos_coefficients=SOL_cos_coefs,
     sin_coefficients=SOL_sin_coefs,
     unit=1,

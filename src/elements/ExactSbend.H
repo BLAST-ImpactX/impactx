@@ -116,7 +116,8 @@ namespace impactx::elements
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
-            m_slice_phi = m_rc * std::abs(m_phi/m_rc) / nslice();  // the sign is determined by m_rc
+            amrex::ParticleReal const bend_sign = m_ds * m_rc / std::abs(m_ds * m_rc);
+            m_slice_phi = bend_sign * std::abs(m_phi) / nslice();  // the sign is determined by rc/ds
 
             // trigonometric evaluations
             auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
@@ -278,7 +279,8 @@ namespace impactx::elements
                // assign intermediate parameters
                amrex::ParticleReal const rc = (m_B != 0_prt) ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
                amrex::ParticleReal const B = refpart.beta_gamma() /rc;
-               amrex::ParticleReal const theta = rc * std::abs(m_phi/rc) / nslice(); // sign is determined by rc
+               amrex::ParticleReal const bend_sign = m_ds * rc / std::abs(m_ds * rc);
+               amrex::ParticleReal const theta = bend_sign * std::abs(m_phi) / nslice(); // sign is determined by rc*ds
 
                // calculate expensive terms once
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);

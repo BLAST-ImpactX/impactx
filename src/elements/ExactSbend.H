@@ -111,9 +111,12 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
+            // reference particle's orbital radius
+            m_rc = this->rc(refpart);
+
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
-            m_slice_phi = m_phi / nslice();
+            m_slice_phi = m_rc * std::abs(m_phi/m_rc) / nslice();  // the sign is determined by m_rc
 
             // trigonometric evaluations
             auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
@@ -124,8 +127,6 @@ namespace impactx::elements
             m_ibeta = 1_prt / refpart.beta();
             m_ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
 
-            // reference particle's orbital radius
-            m_rc = this->rc(refpart);
         }
 
         /** This is an ExactSbend functor, so that a variable of this type can be used like an ExactSbend function.
@@ -275,9 +276,9 @@ namespace impactx::elements
             } else {
 
                // assign intermediate parameters
-               amrex::ParticleReal const theta = m_phi / nslice();
                amrex::ParticleReal const rc = (m_B != 0_prt) ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
                amrex::ParticleReal const B = refpart.beta_gamma() /rc;
+               amrex::ParticleReal const theta = rc * std::abs(m_phi/rc) / nslice(); // sign is determined by rc
 
                // calculate expensive terms once
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);

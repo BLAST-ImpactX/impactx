@@ -29,7 +29,7 @@ class LatticeVariableHandler:
             ctrl.updateLatticeElementParameters(
                 lattice_element["index"],
                 lattice_element["parameter_name"],
-                lattice_element["ui_value"],
+                lattice_element["ui_input"],
                 lattice_element["parameter_type"],
             )
         LatticeVariableHandler.update_delete_availability()

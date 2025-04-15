@@ -63,8 +63,8 @@ def add_lattice_element():
         "parameters": [
             {
                 "parameter_name": parameter[0],
-                "ui_value": parameter[1],
-                "sim_value": parameter[1],
+                "ui_input": parameter[1],
+                "sim_input": parameter[1],
                 "parameter_type": parameter[2],
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
@@ -95,10 +95,10 @@ def parameter_input_checker_for_lattice(latticeElement):
         if parameter["parameter_error_message"] == []:
             if parameter["parameter_type"] == "str":
                 parameter_input[parameter["parameter_name"]] = (
-                    f"'{parameter['sim_value']}'"
+                    f"'{parameter['sim_input']}'"
                 )
             else:
-                parameter_input[parameter["parameter_name"]] = parameter["sim_value"]
+                parameter_input[parameter["parameter_name"]] = parameter["sim_input"]
         else:
             parameter_input[parameter["parameter_name"]] = 0
 
@@ -154,7 +154,7 @@ def on_add_lattice_element_click():
         state.dirty("selected_lattice_list")
 
 
-def process_if_variable(index, parameter_name, ui_value, parameter_type):
+def process_if_variable(index, parameter_name, ui_input, parameter_type):
     """
     If the updated lattice parameter value uses or potentially uses a variable, this
     function returns the simulation value by lookup, adds the element to a dictionary
@@ -163,43 +163,43 @@ def process_if_variable(index, parameter_name, ui_value, parameter_type):
 
     :param index: The index of the lattice element in the lattice list config.
     :param parameter_name: The specific lattice element parameter name.
-    :param ui_value: The value present on the UI end..
+    :param ui_input: The value present on the UI end..
     :param parameter_type: The lattice element parameters type.
     """
 
     lattice_variable, variable_index = (
-        LatticeVariableHandler.determine_if_existing_variable(ui_value)
+        LatticeVariableHandler.determine_if_existing_variable(ui_input)
     )
     potentially_lattice_variable = LatticeVariableHandler.is_valid_variable_name(
-        ui_value
+        ui_input
     )
 
     if lattice_variable or potentially_lattice_variable:
         if lattice_variable and variable_index is not None:
-            sim_value = state.variables[variable_index]["value"]
+            sim_input = state.variables[variable_index]["value"]
         else:
-            sim_value = ui_value
+            sim_input = ui_input
 
         binding = {
             "index": index,
             "parameter_name": parameter_name,
-            "ui_value": ui_value,
+            "ui_input": ui_input,
             "parameter_type": parameter_type,
             "variable_index": variable_index,
         }
     else:
-        sim_value, _ = generalFunctions.determine_input_type(ui_value)
+        sim_input, _ = generalFunctions.determine_input_type(ui_input)
         binding = None
 
-    return sim_value, binding
+    return sim_input, binding
 
 
 @ctrl.add("updateLatticeElementParameters")
 def on_lattice_element_parameter_change(
-    index, parameter_name, ui_value, parameter_type
+    index, parameter_name, ui_input, parameter_type
 ):
-    sim_value, bounded_or_pending_variable = process_if_variable(
-        index, parameter_name, ui_value, parameter_type
+    sim_input, bounded_or_pending_variable = process_if_variable(
+        index, parameter_name, ui_input, parameter_type
     )
 
     if bounded_or_pending_variable is not None:
@@ -211,12 +211,12 @@ def on_lattice_element_parameter_change(
             (index, parameter_name), None
         )
 
-    error_message = generalFunctions.validate_against(sim_value, parameter_type)
+    error_message = generalFunctions.validate_against(sim_input, parameter_type)
 
     for param in state.selected_lattice_list[index]["parameters"]:
         if param["parameter_name"] == parameter_name:
-            param["ui_value"] = ui_value
-            param["sim_value"] = sim_value
+            param["ui_input"] = ui_input
+            param["sim_input"] = sim_input
             param["parameter_error_message"] = error_message
 
     generalFunctions.update_simulation_validation_status()
@@ -324,7 +324,7 @@ class LatticeConfiguration(CardBase):
                     ):
                         vuetify.VTextField(
                             label=("parameter.parameter_name",),
-                            v_model=("parameter.ui_value",),
+                            v_model=("parameter.ui_input",),
                             update_modelValue=(
                                 ctrl.updateLatticeElementParameters,
                                 "[index, parameter.parameter_name, $event, parameter.parameter_type]",

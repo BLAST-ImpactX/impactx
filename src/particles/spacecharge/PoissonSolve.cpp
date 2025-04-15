@@ -13,8 +13,6 @@
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
-#include <AMReX_Extension.H>  // for AMREX_RESTRICT
-#include <AMReX_LO_BCTYPES.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>       // for ParticleReal
 
@@ -30,6 +28,8 @@ namespace impactx::particles::spacecharge
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     )
     {
+        BL_PROFILE("impactx::spacecharge::PoissonSolve");
+
         using namespace amrex::literals;
 
         // set space charge field to zero

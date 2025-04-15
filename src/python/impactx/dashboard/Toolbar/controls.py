@@ -15,6 +15,7 @@ from ..Input.generalFunctions import generalFunctions
 from ..Run.executor import run_execute_impactx_sim
 from ..Run.simulation import dashboard_sim_inputs
 from .importParser import DashboardParser
+from .sim_history.ui import SimulationHistory
 
 server, state, ctrl = setup_server()
 
@@ -151,7 +152,7 @@ class InputToolbar:
             variant="outlined",
             size="small",
             prepend_icon="mdi-refresh",
-            classes="mr-4",
+            classes="mr-2",
             color="#00313C",
         )
 
@@ -216,7 +217,7 @@ class RunToolbar:
         """
 
         return html.Div(
-            "Step {{ sim_current_step }} • {{ sim_elapsed_time }}s",
+            "Step {{ sim_current_step }} • {{ sim_elapsed_time }}",
             style="margin-right: 8px;",
         )
 
@@ -268,11 +269,15 @@ class GeneralToolbar:
             InputToolbar.export_button()
             InputToolbar.reset_inputs_button()
             vuetify.VDivider(vertical=True, classes="mr-2")
+            GeneralToolbar.simulation_history_button()
+            vuetify.VDivider(vertical=True, classes="mr-2")
             InputToolbar.collapse_all_sections_button()
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
             (RunToolbar.run_simulation(),)
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            (GeneralToolbar.simulation_history_button())
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
@@ -296,4 +301,24 @@ class GeneralToolbar:
             v_model=("show_dashboard_alert", True),
             classes="text-body-2 hidden-md-and-down",
             style="width: 50vw; overflow: hidden; margin: auto;",
+        )
+
+    @staticmethod
+    def simulation_history_button() -> vuetify.VBtn:
+        """
+        Displays a button to the user which holds the
+        components to the simulation history.
+        """
+        SimulationHistory.simulation_history()
+        SimulationHistory.init_sim_history_dialogs()
+
+        return vuetify.VBtn(
+            "History",
+            color="primary",
+            classes="mr-2",
+            click="simulation_history_dialog = true",
+            prepend_icon="mdi-clipboard-text-clock",
+            size="small",
+            variant="elevated",
+            disabled=("!sims.length",),
         )

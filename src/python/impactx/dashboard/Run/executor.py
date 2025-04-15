@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from .. import setup_server
+from ..Toolbar.sim_history.ui import SimulationHistory
 from . import SimulationHelper, SimulationProgress
 from .simulation import dashboard_sim_inputs
 
@@ -30,7 +31,6 @@ async def execute_impactx_sim() -> None:
     an async subprocess, and streams its output to the dashboard terminal
     in real time.
     """
-
     SimulationHelper.reset()
 
     simulation_contents = dashboard_sim_inputs()
@@ -40,6 +40,7 @@ async def execute_impactx_sim() -> None:
     simulation_process = await SimulationHelper.run_simulation_in_subprocess(
         simulation_contents
     )
+    state.sim_index = SimulationHistory.add_sim_to_history()
 
     while True:
         sim_output_line = await simulation_process.stdout.readline()
@@ -59,6 +60,7 @@ async def execute_impactx_sim() -> None:
                 ) * 95
 
         SimulationProgress.print_to_xterm(sim_output_line)
+        SimulationHistory.add_to_view_details_log(sim_output_line_decoded)
 
     await simulation_process.wait()
     SimulationHelper.display_phase_space_plots()

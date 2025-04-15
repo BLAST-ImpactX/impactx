@@ -25,6 +25,7 @@ from . import (
     vuetify,
 )
 from .start import main
+from .Toolbar.sim_history.ui import load_my_js
 
 server, state, ctrl = setup_server()
 
@@ -127,4 +128,5 @@ application()
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    load_my_js(server)
     sys.exit(main())

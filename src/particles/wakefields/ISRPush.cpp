@@ -39,7 +39,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const lambda_e = hbar/mc_SI;
 
         // Obtain constants for force normalization
-        amrex::ParticleReal const B_normal = bg_ref/rc;
+        amrex::ParticleReal const B_normal = bg_ref/std::abs(rc);
         amrex::ParticleReal const c1 = 2.0_prt/3.0_prt * r_e * slice_ds * std::pow(B_normal,2);
         amrex::ParticleReal const c2 = B_normal * lambda_e;
 

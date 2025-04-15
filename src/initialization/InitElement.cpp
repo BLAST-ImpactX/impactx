@@ -373,6 +373,23 @@ namespace detail
             auto b = detail::query_aperture(pp_element);
 
             m_lattice.emplace_back( ExactDrift(ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
+        } else if (element_type == "quad_exact")
+        {
+            auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
+            auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
+
+            amrex::ParticleReal k;
+            int units = 0;
+            int int_order = 2;
+            int mapsteps = mapsteps_default;
+            pp_element.getWithParser("k", k);
+            pp_element.queryAddWithParser("units", units);
+            pp_element.queryAddWithParser("int_order", int_order);
+            pp_element.queryAddWithParser("mapsteps", mapsteps);
+
+            m_lattice.emplace_back( ExactQuad(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice,
+element_name) );
         } else if (element_type == "sbend_exact")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
@@ -589,7 +606,7 @@ namespace detail
         pp_lattice.queryWithParser("nslice", nslice_default);
 
         // Default number of map integration steps per slice
-        int const mapsteps_default = 10;  // used only in RF cavity
+        int const mapsteps_default = 10;  // used only in a subset of elements
 
         // Loop through lattice elements
         for (std::string const & element_name : lattice_elements) {

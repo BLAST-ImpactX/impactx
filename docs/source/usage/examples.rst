@@ -38,6 +38,7 @@ Single Particle Dynamics
    examples/linear_map/README.rst
    examples/scraping_beam/README.rst
    examples/reversibility/README.rst
+   examples/symplectic_integration/README.rst
 
 
 Collective Effects

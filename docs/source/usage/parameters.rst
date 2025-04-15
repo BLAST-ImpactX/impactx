@@ -492,6 +492,39 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
+``quad_exact``
+^^^^^^^^^^^^^^^^^^
+
+``quad_exact`` for a Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+Here :math:`H_1` is the Hamiltonian for a linear quadrupole (containing all terms quadratic in the phase space variables),
+and :math:`H_2` is the remainder (including the kinematic square root).  This suggested splitting appears for example in:
+
+* D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
+* E. Forest, J. Phys. A: Math. Gen. 39, 5321 (2006).
+
+This requires these additional parameters:
+
+* ``<element_name>.ds`` (``float``, in meters) the segment length
+* ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the quadrupole strength
+  = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if ``unit = 0``
+
+  OR = magnetic field gradient in T/m - if ``unit = 1``
+
+  * k > 0 horizontal focusing
+  * k < 0 horizontal defocusing
+
+* ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+* ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
+* ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2 or 4) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``10``)
+* ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
+
+
 ``quadrupole_softedge``
 ^^^^^^^^^^^^^^^^^^^^^^^
 

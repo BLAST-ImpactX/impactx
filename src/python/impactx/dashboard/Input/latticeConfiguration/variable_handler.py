@@ -32,6 +32,7 @@ class LatticeVariableHandler:
                 lattice_element["ui_value"],
                 lattice_element["parameter_type"],
             )
+        LatticeVariableHandler.update_delete_availability()
 
     # -----------------------------------------------------------------------------
     # Controllers
@@ -49,7 +50,6 @@ class LatticeVariableHandler:
         new_variable = {key: "" for key in state.variables[0]}
         state.variables.append(new_variable)
         state.dirty("variables")
-        LatticeVariableHandler.update_delete_availability()
 
     @staticmethod
     @ctrl.add("delete_variable")
@@ -63,7 +63,6 @@ class LatticeVariableHandler:
 
         state.variables.pop(index)
         state.dirty("variables")
-        LatticeVariableHandler.update_delete_availability()
 
     @staticmethod
     @ctrl.add("update_variable")
@@ -95,7 +94,6 @@ class LatticeVariableHandler:
             {"name": init_value, "value": init_value, "error_message": init_value}
         ]
         state.dirty("variables")
-        LatticeVariableHandler.update_delete_availability()
 
     # -----------------------------------------------------------------------------
     # Methods

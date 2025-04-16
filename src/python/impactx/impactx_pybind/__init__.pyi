@@ -730,6 +730,7 @@ def push(
     | elements.DipEdge
     | elements.Drift
     | elements.ExactDrift
+    | elements.ExactQuad
     | elements.ExactSbend
     | elements.Kicker
     | elements.LinearMap

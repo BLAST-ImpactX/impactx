@@ -19,6 +19,8 @@ from .importParserHelper import DashboardParserHelper
 
 server, state, ctrl = setup_server()
 
+state.imported_file_name = None
+
 
 class DashboardParser:
     """
@@ -42,7 +44,8 @@ class DashboardParser:
         elif file_size_in_bytes < 1024 * 1024:
             size_str = f"{file_size_in_bytes / 1024:.1f} KB"
 
-        state.import_file_details = f"({size_str}) {file['name']}"
+        state.imported_file_name = file["name"]
+        state.import_file_details = f"({size_str}) {state.imported_file_name}"
 
     @staticmethod
     def parse_impactx_simulation_file(file) -> None:

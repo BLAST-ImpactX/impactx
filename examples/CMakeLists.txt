@@ -248,6 +248,20 @@ add_impactx_test(FODO.envelope.py
     OFF  # no plot script yet
 )
 
+# FODO Cell using nonlinear tracking ################################################
+#
+add_impactx_test(FODO-exact
+    examples/fodo/input_fodo_exact.in
+    ON  # ImpactX MPI-parallel
+    examples/fodo/analysis_fodo_exact.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO-exact.py
+    examples/fodo/run_fodo_exact.py
+    ON  # ImpactX MPI-parallel
+    examples/fodo/analysis_fodo_exact.py
+    OFF  # no plot script yet
+)
 
 # Python: FODO Cell w/ programmed element for the Drifts ######################
 #
@@ -1378,5 +1392,21 @@ add_impactx_test(chicane_isr.py
     examples/chicane/run_chicane_isr.py
     OFF  # ImpactX MPI-parallel
     examples/chicane/analysis_chicane_isr.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in an Exact Nonlinear Quadrupole ##############
+#
+# no space charge
+add_impactx_test(examples-exact-quad
+    examples/symplectic_integration/input_exact_quad.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_quad.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-exact-quad.py
+    examples/symplectic_integration/run_exact_quad.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_quad.py
     OFF  # no plot script yet
 )

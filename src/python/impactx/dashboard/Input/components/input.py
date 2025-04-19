@@ -114,7 +114,7 @@ class InputComponents:
         """
 
         InputComponents._build_component(
-            vuetify.VCheckbox, label, v_model_name, **kwargs
+            vuetify.VCheckbox, label, v_model_name, color="primary", **kwargs
         )
 
     @staticmethod

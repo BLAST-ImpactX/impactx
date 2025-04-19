@@ -36,6 +36,7 @@ class DashboardDefaults:
     }
 
     INPUT_PARAMETERS = {
+        "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
         "npart": 1000,
@@ -80,6 +81,7 @@ class DashboardDefaults:
     }
 
     LISTS = {
+        "tracking_mode_list": ["Particle Tracking", "Envelope Tracking", "Reference Tracking"],
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],

@@ -13,6 +13,24 @@ from . import InputFunctions
 server, state, ctrl = setup_server()
 
 
+TRACKING_MODE_UI_PROPERTIES: dict[str, dict[str, bool]] = {
+    "Reference Tracking": {
+        "space_charge":        False,
+        "csr":                 False,
+        "disable_space_charge": True,
+        "disable_csr":          True,
+    },
+    "Envelope Tracking": {
+        "csr":                 False,
+        "disable_space_charge": False,
+        "disable_csr":          True,
+    },
+    "Particle Tracking": {
+        "disable_space_charge": False,
+        "disable_csr":          False,
+    },
+}
+
 class InputParameters(CardBase):
     """
     User-Input section for beam properties.
@@ -28,18 +46,34 @@ class InputParameters(CardBase):
         if state.kin_energy_on_ui != 0:
             InputFunctions.update_kin_energy_sim_value()
 
+    @state.change("tracking_mode")
+    def on_tracking_mode_change(**kwargs) -> None:
+        """
+        Sync the relevant UI components whenever
+        the user selects a new tracking mode.
+        """
+        ui_props = TRACKING_MODE_UI_PROPERTIES[state.tracking_mode]
+        for prop_name, prop in ui_props.items():
+            setattr(state, prop_name, prop)
+
     def card_content(self):
         with vuetify.VCard(**self.card_props):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
-                    with vuetify.VCol(cols="auto"):
-                        InputComponents.checkbox(
-                            label="Space Charge",
+                    with vuetify.VCol(md=6, sm=12):
+                        InputComponents.select(
+                            label="Tracking Mode",
                         )
-                    with vuetify.VCol(cols="auto"):
+                    with vuetify.VCol(classes="ga-4 py-0 d-flex align-center"):
+                        InputComponents.checkbox(
+                            label="SC",
+                            v_model_name="space_charge",
+                            disabled=("disable_space_charge",),
+                        )
                         InputComponents.checkbox(
                             label="CSR",
+                            disabled=("disable_csr",),
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):

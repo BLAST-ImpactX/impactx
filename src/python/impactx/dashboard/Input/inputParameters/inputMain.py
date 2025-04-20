@@ -7,29 +7,12 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardBase, CardComponents, InputComponents
+from .. import CardBase, CardComponents, InputComponents, generalFunctions
 from . import InputFunctions
 
 server, state, ctrl = setup_server()
+from ..defaults import TRACKING_MODE_PROPERTIES
 
-
-TRACKING_MODE_UI_PROPERTIES: dict[str, dict[str, bool]] = {
-    "Reference Tracking": {
-        "space_charge":        False,
-        "csr":                 False,
-        "disable_space_charge": True,
-        "disable_csr":          True,
-    },
-    "Envelope Tracking": {
-        "csr":                 False,
-        "disable_space_charge": False,
-        "disable_csr":          True,
-    },
-    "Particle Tracking": {
-        "disable_space_charge": False,
-        "disable_csr":          False,
-    },
-}
 
 class InputParameters(CardBase):
     """
@@ -52,9 +35,14 @@ class InputParameters(CardBase):
         Sync the relevant UI components whenever
         the user selects a new tracking mode.
         """
-        ui_props = TRACKING_MODE_UI_PROPERTIES[state.tracking_mode]
+        ui_props = TRACKING_MODE_PROPERTIES[state.tracking_mode]
         for prop_name, prop in ui_props.items():
             setattr(state, prop_name, prop)
+
+        current_sc_list = ui_props.get("space_charge_list", [])
+        if state.space_charge not in current_sc_list:
+            state.space_charge = current_sc_list[0]
+        generalFunctions.update_simulation_validation_status()
 
     def card_content(self):
         with vuetify.VCard(**self.card_props):
@@ -66,9 +54,9 @@ class InputParameters(CardBase):
                             label="Tracking Mode",
                         )
                     with vuetify.VCol(classes="ga-4 py-0 d-flex align-center"):
-                        InputComponents.checkbox(
-                            label="SC",
-                            v_model_name="space_charge",
+                        InputComponents.select(
+                            label="Space Charge",
+                            items=("space_charge_list",),
                             disabled=("disable_space_charge",),
                         )
                         InputComponents.checkbox(

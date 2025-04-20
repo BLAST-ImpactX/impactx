@@ -82,7 +82,7 @@ def build_space_charge_or_csr():
 
     if state.space_charge:
         content += f"""# Space Charge
-sim.space_charge = {state.space_charge}
+sim.space_charge = "{state.space_charge}"
 sim.dynamic_size = {state.dynamic_size}
 sim.poisson_solver = '{state.poisson_solver}'
 sim.particle_shape = {state.particle_shape}
@@ -124,6 +124,7 @@ def build_tracking_commands() -> str:
     return the corresponding ImpactX sim command block.
     """
     return TRACKING_MODE_COMMANDS[state.tracking_mode]
+
 
 # -----------------------------------------------------------------------------
 # Trame setup

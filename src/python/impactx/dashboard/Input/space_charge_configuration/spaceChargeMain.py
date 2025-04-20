@@ -112,7 +112,7 @@ def on_poisson_solver_change(poisson_solver, **kwargs):
 
 @state.change("space_charge")
 def on_space_charge_change(space_charge, **kwargs):
-    state.dynamic_size = space_charge
+    state.dynamic_size = space_charge != "false"
     generalFunctions.update_simulation_validation_status()
 
 

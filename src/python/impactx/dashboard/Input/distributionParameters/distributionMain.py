@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 import inspect
 
-from distribution_input_helpers import twiss
+from impactx.distribution_input_helpers import twiss
 
 from impactx import distribution
 

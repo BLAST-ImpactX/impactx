@@ -295,6 +295,20 @@ class ImpactX:
         The currently finest level of mesh-refinement used. This is always less or equal to max_level.
         """
     @property
+    def isr(self) -> bool:
+        """
+        Enable or disable Incoherent Synchrotron Radiation (ISR) calculations (default: disabled).
+        """
+    @isr.setter
+    def isr(self, arg1: bool) -> None: ...
+    @property
+    def isr_order(self) -> bool:
+        """
+        Number of terms in the Taylor series retained for quantum effects (default: 1).
+        """
+    @isr_order.setter
+    def isr_order(self, arg1: int) -> None: ...
+    @property
     def lattice(self) -> elements.KnownElementsList:
         """
         Access the accelerator element lattice.

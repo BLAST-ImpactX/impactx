@@ -8,7 +8,7 @@ The solenoid is identical to that found in the example "solenoid".
 
 Its primary purpose is to benchmark the calculation of the three beam eigenemittances (mode emittances).
 
-In this test, the initial and final values of :math:`\lambda_x`, :math:`\lambda_y`, :math:`\lambda_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must
 agree with nominal values.
 
 In addition, the initial and final values of :math:`emittance_1`, :math:`emittance_2`, :math:`emittance_3` must coincide.

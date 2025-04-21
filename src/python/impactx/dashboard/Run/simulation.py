@@ -12,6 +12,16 @@ from ..Input.latticeConfiguration.latticeMain import parameter_input_checker_for
 
 server, state, ctrl = setup_server()
 
+TRACKING_MODE_COMMANDS = {
+    "Particle Tracking": """\
+sim.add_particles(bunch_charge_C, distr, npart)
+sim.track_particles()""",
+    "Envelope Tracking": """\
+sim.init_envelope(ref, distr)
+sim.track_envelope()""",
+    "Reference Tracking": "sim.track_reference(ref)",
+}
+
 # -----------------------------------------------------------------------------
 # Helper Functions
 # -----------------------------------------------------------------------------
@@ -72,7 +82,7 @@ def build_space_charge_or_csr():
 
     if state.space_charge:
         content += f"""# Space Charge
-sim.space_charge = {state.space_charge}
+sim.space_charge = "{state.space_charge}"
 sim.dynamic_size = {state.dynamic_size}
 sim.poisson_solver = '{state.poisson_solver}'
 sim.particle_shape = {state.particle_shape}
@@ -108,6 +118,14 @@ sim.particle_shape = {state.particle_shape}
     return content
 
 
+def build_tracking_commands() -> str:
+    """
+    Read the user's choice from state.tracking_mode and
+    return the corresponding ImpactX sim command block.
+    """
+    return TRACKING_MODE_COMMANDS[state.tracking_mode]
+
+
 # -----------------------------------------------------------------------------
 # Trame setup
 # -----------------------------------------------------------------------------
@@ -117,7 +135,7 @@ def generate_phase_space(is_exporting: bool) -> str:
     or an empty string if the script is being exported.
     """
 
-    if is_exporting:
+    if is_exporting or state.tracking_mode != "particle tracking":
         return ""
     return (
         "import matplotlib.pyplot as plt\n"
@@ -154,13 +172,12 @@ ref = pc.ref_particle()
 ref.set_charge_qe({state.charge_qe}).set_mass_MeV({state.mass_MeV}).set_kin_energy_MeV(kin_energy_MeV)
 
 {build_distribution_list()}
-sim.add_particles(bunch_charge_C, distr, npart)
 
 {build_lattice_list()}
 sim.lattice.extend(lattice_configuration)
 
 # Simulate
-sim.track_particles()
+{build_tracking_commands()}
 
 {generate_phase_space(is_exporting)}
 # Clean Shutdown

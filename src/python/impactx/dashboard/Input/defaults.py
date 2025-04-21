@@ -6,12 +6,32 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+from typing import Any
+
 from impactx.impactx_pybind import ImpactX, RefPart
 
-from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
 
-server, state, ctrl = setup_server()
+TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
+    "Reference Tracking": {
+        "space_charge": False,
+        "csr": False,
+        "disable_space_charge": True,
+        "disable_csr": True,
+        "space_charge_list": ["false"],
+    },
+    "Envelope Tracking": {
+        "csr": False,
+        "disable_space_charge": False,
+        "disable_csr": True,
+        "space_charge_list": ["false", "2D", "3D"],
+    },
+    "Particle Tracking": {
+        "disable_space_charge": False,
+        "disable_csr": False,
+        "space_charge_list": ["false", "3D"],
+    },
+}
 
 
 class DashboardDefaults:
@@ -31,11 +51,12 @@ class DashboardDefaults:
     # -------------------------------------------------------------------------
 
     SELECTION = {
-        "space_charge": False,
+        "space_charge": "false",
         "csr": False,
     }
 
     INPUT_PARAMETERS = {
+        "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
         "npart": 1000,
@@ -80,6 +101,11 @@ class DashboardDefaults:
     }
 
     LISTS = {
+        "tracking_mode_list": [
+            "Particle Tracking",
+            "Envelope Tracking",
+            "Reference Tracking",
+        ],
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],

@@ -14,6 +14,7 @@ sim = ImpactX()
 sim.n_cell = [48, 48, 40]  # use [72, 72, 72] for increased precision
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
+sim.poisson_solver = "multigrid"
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
 

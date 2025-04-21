@@ -821,7 +821,7 @@ See there ``nslice`` option on lattice elements for slicing.
   High-order shape factors are computationally more expensive, but may increase the overall accuracy of the results.
   For production runs it is generally safer to use high-order shape factors, such as cubic order.
 
-* ``algo.poisson_solver`` (``string``, optional, default: ``"multigrid"``)
+* ``algo.poisson_solver`` (``string``, optional, default: ``"fft"``)
 
   The numerical solver to solve the Poisson equation when calculating space charge effects.
   Currently, this is a 3D solver.

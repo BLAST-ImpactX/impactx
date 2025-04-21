@@ -36,7 +36,7 @@ namespace impactx::initialization
 
         auto space_charge = get_space_charge_algo();
 
-        std::string poisson_solver = "multigrid";
+        std::string poisson_solver = "fft";
         pp_algo.queryAdd("poisson_solver", poisson_solver);
 
         int max_level = 0;

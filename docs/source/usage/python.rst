@@ -79,7 +79,7 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.
-      Either ``"multigrid"`` (default) or ``"fft"``.
+      Either ``"fft"`` (default) or ``"multigrid"``.
 
       Currently, this is a 3D solver.
       An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.

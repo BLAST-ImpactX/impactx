@@ -1348,6 +1348,22 @@ add_impactx_test(FODO.envelope.sc.py
     OFF  # no plot script yet
 )
 
+# A single bend with incoherent synchrotron radiation ######################
+#
+# no space charge
+add_impactx_test(bend-isr
+    examples/incoherent_synchrotron/input_bend_isr.in
+    ON   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr.py
+    OFF  # no plot script yet
+)
+add_impactx_test(bend-isr.py
+    examples/incoherent_synchrotron/run_bend_isr.py
+    OFF   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr.py
+    OFF  # no plot script yet
+)
+
 # Bending Dipole with Zero Field Strength ######################
 #
 # no space charge
@@ -1361,6 +1377,21 @@ add_impactx_test(zero-bend-inverse.py
     examples/reversibility/run_zero_bend_inverse.py
     OFF   # ImpactX MPI-parallel
     examples/reversibility/analysis_zero_bend_inverse.py
+    OFF  # no plot script yet
+)
+
+# Chicane with ISR ###########################################################
+#
+add_impactx_test(chicane_isr
+    examples/chicane/input_chicane_isr.in
+    OFF  # ImpactX MPI-parallel
+    examples/chicane/analysis_chicane_isr.py
+    OFF  # no plot script yet
+)
+add_impactx_test(chicane_isr.py
+    examples/chicane/run_chicane_isr.py
+    OFF  # ImpactX MPI-parallel
+    examples/chicane/analysis_chicane_isr.py
     OFF  # no plot script yet
 )
 

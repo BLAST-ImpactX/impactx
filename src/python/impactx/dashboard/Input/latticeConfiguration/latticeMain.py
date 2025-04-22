@@ -153,8 +153,8 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     lattice_variable, variable_index = (
         LatticeVariableHandler.determine_if_existing_variable(ui_input)
     )
-    potentially_lattice_variable = LatticeConfigurationHelper.is_valid_name_for_user_input(
-        ui_input
+    potentially_lattice_variable = (
+        LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input)
     )
 
     if lattice_variable or potentially_lattice_variable:

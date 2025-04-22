@@ -106,7 +106,6 @@ class DashboardDefaults:
         "isr_order": 1,
     }
 
-
     LISTS = {
         "tracking_mode_list": [
             "Particle Tracking",
@@ -118,7 +117,11 @@ class DashboardDefaults:
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
         "max_level_list": [0, 1, 2, 3, 4],
-        "isr_order_list": [1, 2, 3,],
+        "isr_order_list": [
+            1,
+            2,
+            3,
+        ],
     }
 
     # -------------------------------------------------------------------------

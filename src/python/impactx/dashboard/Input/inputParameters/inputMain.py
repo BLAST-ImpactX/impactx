@@ -60,12 +60,16 @@ class InputParameters(CardBase):
                             items=("space_charge_list",),
                             disabled=("disable_space_charge",),
                         )
-                    with vuetify.VCol(cols=3, classes="py-0 d-flex justify-center align-center"):
+                    with vuetify.VCol(
+                        cols=3, classes="py-0 d-flex justify-center align-center"
+                    ):
                         InputComponents.checkbox(
                             label="CSR",
                             disabled=("disable_csr",),
                         )
-                    with vuetify.VCol(cols=3, classes="py-0 d-flex justify-center align-center"):
+                    with vuetify.VCol(
+                        cols=3, classes="py-0 d-flex justify-center align-center"
+                    ):
                         InputComponents.checkbox(
                             label="ISR",
                             disabled=("disable_isr",),

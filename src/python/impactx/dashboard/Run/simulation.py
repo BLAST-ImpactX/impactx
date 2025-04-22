@@ -117,6 +117,7 @@ sim.particle_shape = {state.particle_shape}
 
     return content
 
+
 def build_isr():
     """
     Generates simulation content for Incoherent Synchrotron Radiation (ISR).

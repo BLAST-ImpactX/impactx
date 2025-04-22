@@ -12,6 +12,9 @@ from impactx.impactx_pybind import ImpactX, RefPart
 
 from .defaults_helper import InputDefaultsHelper
 
+from .. import setup_server
+server, state, ctrl = setup_server()
+
 TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     "Reference Tracking": {
         "space_charge": False,
@@ -177,7 +180,7 @@ class TooltipDefaults:
     Defaults for input toolips in the ImpactX dashboard.
     """
 
-    TOOLTIP = InputDefaultsHelper.get_docstrings(
+    state.all_tooltips = InputDefaultsHelper.get_docstrings(
         [RefPart, ImpactX], DashboardDefaults.DEFAULT_VALUES
     )
 

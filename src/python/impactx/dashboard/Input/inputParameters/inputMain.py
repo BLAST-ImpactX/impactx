@@ -63,6 +63,11 @@ class InputParameters(CardBase):
                             label="CSR",
                             disabled=("disable_csr",),
                         )
+                    with vuetify.VCol(cols=3, classes="py-0 d-flex justify-center align-center"):
+                        InputComponents.checkbox(
+                            label="ISR",
+                            disabled=("disable_isr",),
+                        )
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):
                         InputComponents.text_field(

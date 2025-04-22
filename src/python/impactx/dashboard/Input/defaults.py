@@ -42,6 +42,7 @@ class DashboardDefaults:
     COLLAPSABLE_SECTIONS = [
         "collapse_input_parameters",
         "collapse_csr",
+        "collapse_isr",
         "collapse_distribution_parameters",
         "collapse_space_charge",
         "collapse_lattice_configuration",
@@ -53,6 +54,7 @@ class DashboardDefaults:
     SELECTION = {
         "space_charge": "false",
         "csr": False,
+        "isr": False,
     }
 
     INPUT_PARAMETERS = {
@@ -100,6 +102,11 @@ class DashboardDefaults:
         "csr_bins": 150,
     }
 
+    ISR = {
+        "isr_order": 1,
+    }
+
+
     LISTS = {
         "tracking_mode_list": [
             "Particle Tracking",
@@ -111,6 +118,7 @@ class DashboardDefaults:
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
         "max_level_list": [0, 1, 2, 3, 4],
+        "isr_order_list": [1, 2, 3,],
     }
 
     # -------------------------------------------------------------------------
@@ -124,6 +132,7 @@ class DashboardDefaults:
         **LATTICE_CONFIGURATION,
         **SPACE_CHARGE,
         **CSR,
+        **ISR,
         **LISTS,
     }
 

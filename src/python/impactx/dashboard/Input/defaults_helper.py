@@ -50,6 +50,7 @@ class InputDefaultsHelper:
 
         return docstrings
 
+    @staticmethod
     def get_tooltips_from_param(func: Callable) -> Dict[str, str]:
         """
         Extract all ':param name: description' entries from a function's docstring.

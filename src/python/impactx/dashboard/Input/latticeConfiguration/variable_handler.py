@@ -1,4 +1,3 @@
-import keyword
 from typing import Optional, Tuple
 
 from ... import html, setup_server, vuetify
@@ -6,6 +5,7 @@ from .. import (
     CardComponents,
     generalFunctions,
 )
+from .helper import LatticeConfigurationHelper
 
 server, state, ctrl = setup_server()
 
@@ -130,15 +130,6 @@ class LatticeVariableHandler:
         return duplicates
 
     @staticmethod
-    def is_valid_variable_name(var_name: str) -> bool:
-        """
-        Check if the variable name is a valid Python variable name.
-        """
-        if var_name is None:
-            return True
-        return var_name.isidentifier() and not keyword.iskeyword(var_name)
-
-    @staticmethod
     def validate_variable_name(new_name: str, index: int) -> None:
         """
         Validates the variable name and outputs an error message if any.
@@ -151,7 +142,7 @@ class LatticeVariableHandler:
             state.variables[idx]["error_message"] = message
             state.dirty("variables")
 
-        if not LatticeVariableHandler.is_valid_variable_name(new_name):
+        if not LatticeConfigurationHelper.is_valid_name_for_user_input(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
             generalFunctions.update_simulation_validation_status()
             state.dirty("variables")

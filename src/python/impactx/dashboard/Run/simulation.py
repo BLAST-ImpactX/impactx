@@ -88,9 +88,9 @@ sim.poisson_solver = '{state.poisson_solver}'
 sim.particle_shape = {state.particle_shape}
 sim.max_level = {state.max_level}
 sim.n_cell = {state.n_cell}
-sim.blocking_factor_x = {state.blocking_factor_x}
-sim.blocking_factor_y = {state.blocking_factor_y}
-sim.blocking_factor_z = {state.blocking_factor_z}
+sim.blocking_factor_x = [{state.blocking_factor_x}]
+sim.blocking_factor_y = [{state.blocking_factor_y}]
+sim.blocking_factor_z = [{state.blocking_factor_z}]
 sim.prob_relative = {state.prob_relative}
 """
         if state.poisson_solver == "multigrid":

@@ -10,9 +10,9 @@ from typing import Any
 
 from impactx.impactx_pybind import ImpactX, RefPart
 
+from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
 
-from .. import setup_server
 server, state, ctrl = setup_server()
 
 TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {

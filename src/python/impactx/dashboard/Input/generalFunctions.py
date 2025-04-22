@@ -280,6 +280,8 @@ class generalFunctions:
                 else:
                     parameter_type = type_and_default
 
+            if "Optional" in parameter_type:
+                parameter_type = parameter_type[len("Optional["):-1]
             parameters.append((name, default, parameter_type))
 
         return parameters

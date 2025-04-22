@@ -145,6 +145,9 @@ class DashboardDefaults:
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
+        "beta": "int",
+        "emitt": "float",
+        "alpha": "float",
     }
 
     VALIDATION_CONDITION = {

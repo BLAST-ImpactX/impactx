@@ -40,56 +40,69 @@ state.distribution_type_disable = False
 # -----------------------------------------------------------------------------
 
 
+def get_distribution_units(name: str) -> str:
+    """
+    Returns the correct units depending on if
+    selected_distribution == Twiss.
+    """
+    if "beta" in name or "emitt" in name:
+        return generalFunctions.get_default(name, "units")
+    return ""
+
+
+def get_twiss_data():
+    """
+    Retrieves parameters names and default values for the Twiss parameters.
+
+    Utilizes the twiss helper function from `distribution_input_helpers`.
+    """
+    param_data = []
+
+    sig = inspect.signature(twiss)
+    for parameter in sig.parameters.values():
+        name = parameter.name
+        default_value = (
+            parameter.default if parameter.default != inspect._empty else None
+        )
+        default_type = generalFunctions.get_default(name, "types")
+        param_data.append((name, default_value, default_type))
+    return param_data
+
 def populate_distribution_parameters():
     """
     Populates distribution parameters based on the selected distribution.
-    :param selected_distribution (str): The name of the selected distribution
-    whose parameters need to be populated.
     """
+    params = []
+    param_data = []
+    is_twiss = state.distribution_type == "Twiss"
 
-    if state.distribution_type == "Twiss":
-        sig = inspect.signature(twiss)
-        state.selected_distribution_parameters = [
+    # Gather necessary data
+    if is_twiss:
+        param_data = get_twiss_data()
+    else:
+        # data for quadratic (impactX native)
+        param_data = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(state.distribution, [])
+
+    # Populate the UI
+    for param_name, param_value, param_type in param_data:
+        error_message = generalFunctions.validate_against(param_value, param_type)
+        units = get_distribution_units(param_name)
+        step = generalFunctions.get_default(param_name, "steps")
+
+        params.append(
             {
-                "parameter_name": param.name,
-                "parameter_default_value": param.default
-                if param.default != param.empty
-                else None,
-                "parameter_type": "float",  # Hardcoding Twiss to 'float' type.
-                "parameter_error_message": generalFunctions.validate_against(
-                    param.default if param.default != param.empty else None, "float"
-                ),
-                "parameter_units": generalFunctions.get_default(param.name, "units")
-                if "beta" in param.name or "emitt" in param.name
-                else "",
-                "parameter_step": generalFunctions.get_default(param.name, "steps"),
+                "parameter_name": param_name,
+                "parameter_default_value": param_value,
+                "parameter_type": param_type,
+                "parameter_error_message": error_message,
+                "parameter_units": units,
+                "parameter_step": step,
             }
-            for param in sig.parameters.values()
-        ]
-
-    else:  # when type == 'Quadratic Form'
-        selected_distribution_parameters = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(
-            state.distribution, []
         )
 
-        state.selected_distribution_parameters = [
-            {
-                "parameter_name": parameter[0],
-                "parameter_default_value": parameter[1],
-                "parameter_type": parameter[2],
-                "parameter_error_message": generalFunctions.validate_against(
-                    parameter[1], parameter[2]
-                ),
-                "parameter_units": "m"
-                if "beta" in parameter[0] or "emitt" in parameter[0]
-                else "",
-                "parameter_step": generalFunctions.get_default(parameter[0], "steps"),
-            }
-            for parameter in selected_distribution_parameters
-        ]
-
+    state.selected_distribution_parameters = params
     generalFunctions.update_simulation_validation_status()
-    return state.selected_distribution_parameters
+    return params
 
 
 # -----------------------------------------------------------------------------

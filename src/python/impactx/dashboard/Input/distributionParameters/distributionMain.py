@@ -178,7 +178,7 @@ class DistributionParameters(CardBase):
                         cols=4,
                     ):
                         with vuetify.VTooltip(
-                            location="bottom",
+                            location="top",
                             text=("all_tooltips[parameter.parameter_name]",),
                         ):
                             with vuetify.Template(v_slot_activator="{ props }"):

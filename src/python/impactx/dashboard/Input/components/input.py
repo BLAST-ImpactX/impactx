@@ -42,7 +42,7 @@ class InputComponents:
         props = {**common_props, **component_kwargs}
 
         with vuetify.VTooltip(
-            location="bottom",
+            location="top",
             text=(f"all_tooltips['{v_model_name}']",),
         ):
             with vuetify.Template(v_slot_activator="{ props }"):

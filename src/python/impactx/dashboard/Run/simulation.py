@@ -117,6 +117,17 @@ sim.particle_shape = {state.particle_shape}
 
     return content
 
+def build_isr():
+    """
+    Generates simulation content for Incoherent Synchrotron Radiation (ISR).
+    """
+    if state.isr:
+        return f"""# Incoherent Synchrotron Radiation
+sim.isr = {state.isr}
+sim.isr_order = {state.isr_order}
+"""
+    return ""
+
 
 def build_tracking_commands() -> str:
     """
@@ -172,6 +183,7 @@ ref = pc.ref_particle()
 ref.set_charge_qe({state.charge_qe}).set_mass_MeV({state.mass_MeV}).set_kin_energy_MeV(kin_energy_MeV)
 
 {build_distribution_list()}
+{build_isr()}
 
 {build_lattice_list()}
 sim.lattice.extend(lattice_configuration)

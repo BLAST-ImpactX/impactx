@@ -87,7 +87,7 @@ class DashboardParser:
         imported_lattice_data = imported_data["lattice_elements"]
         non_state_inputs = ["distribution", "lattice_elements"]
 
-        # Update state inputs (inputParameters, Space Charge, CSR)
+        # Update state inputs (inputParameters, Space Charge, CSR, ISR)
         for input_name, input_value in imported_data.items():
             if hasattr(state, input_name) and input_name not in non_state_inputs:
                 setattr(state, input_name, input_value)

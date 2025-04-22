@@ -7,7 +7,10 @@ License: BSD-3-Clause-LBNL
 """
 
 import inspect
-from typing import Dict, List, Type
+import re
+from typing import Callable, Dict, List, Type
+
+from impactx.distribution_input_helpers import twiss
 
 
 class InputDefaultsHelper:
@@ -42,4 +45,25 @@ class InputDefaultsHelper:
                     docstring = inspect.getdoc(attribute) or ""
                     docstrings[name] = docstring
 
+        distribution_tooltips = InputDefaultsHelper.get_tooltips_from_param(twiss)
+        docstrings.update(distribution_tooltips)
+
         return docstrings
+
+    def get_tooltips_from_param(func: Callable) -> Dict[str, str]:
+        """
+        Extract all ':param name: description' entries from a function's docstring.
+
+        :param func: The function whose docstring you want to parse.
+        :return: A dict mapping each parameter name to its description.
+        """
+        tooltips = {}
+        doc = inspect.getdoc(func) or ""
+        pattern = re.compile(r"^\s*:param\s+(\w+)\s*:\s*(.+)$", re.MULTILINE)
+
+        for match in pattern.finditer(doc):
+            param_name = match.group(1)
+            description = match.group(2)
+            tooltips[param_name] = description
+
+        return tooltips

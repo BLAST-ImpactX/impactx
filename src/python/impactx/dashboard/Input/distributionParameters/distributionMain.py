@@ -177,19 +177,27 @@ class DistributionParameters(CardBase):
                         v_for="(parameter, index) in selected_distribution_parameters",
                         cols=4,
                     ):
-                        vuetify.VTextField(
-                            label=("parameter.parameter_name",),
-                            v_model=("parameter.parameter_default_value",),
-                            suffix=("parameter.parameter_units",),
-                            update_modelValue=(
-                                ctrl.updateDistributionParameters,
-                                "[parameter.parameter_name, $event, parameter.parameter_type]",
-                            ),
-                            error_messages=("parameter.parameter_error_message",),
-                            type="number",
-                            step=("parameter.parameter_step",),
-                            __properties=["step"],
-                            density="compact",
-                            variant="underlined",
-                            hide_details="auto",
-                        )
+                        with vuetify.VTooltip(
+                            location="bottom",
+                            text=("all_tooltips[parameter.parameter_name]",),
+                        ):
+                            with vuetify.Template(v_slot_activator="{ props }"):
+                                vuetify.VTextField(
+                                    label=("parameter.parameter_name",),
+                                    v_model=("parameter.parameter_default_value",),
+                                    suffix=("parameter.parameter_units",),
+                                    update_modelValue=(
+                                        ctrl.updateDistributionParameters,
+                                        "[parameter.parameter_name, $event, parameter.parameter_type]",
+                                    ),
+                                    error_messages=(
+                                        "parameter.parameter_error_message",
+                                    ),
+                                    type="number",
+                                    step=("parameter.parameter_step",),
+                                    __properties=["step"],
+                                    density="compact",
+                                    variant="underlined",
+                                    hide_details="auto",
+                                    v_bind="props",
+                                )

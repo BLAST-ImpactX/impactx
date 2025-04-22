@@ -80,7 +80,7 @@ def build_space_charge_or_csr():
     """
     content = ""
 
-    if state.space_charge:
+    if state.space_charge != "false":
         content += f"""# Space Charge
 sim.space_charge = "{state.space_charge}"
 sim.dynamic_size = {state.dynamic_size}

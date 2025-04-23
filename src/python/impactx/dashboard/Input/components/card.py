@@ -1,11 +1,13 @@
 from ... import html, setup_server, vuetify
-from ..defaults import UIDefaults
+from ..defaults import DashboardDefaults, UIDefaults
 from ..generalFunctions import generalFunctions
 
 server, state, ctrl = setup_server()
 
 state.documentation_drawer_open = False
 state.documentation_url = ""
+
+_missing_docs = set()
 
 
 def clean_name(section_name):
@@ -25,6 +27,15 @@ class CardBase(UIDefaults):
         """
         Creates UI content for a section.
         """
+
+        if (
+            self.header not in DashboardDefaults.DOCUMENTATION
+            and self.header not in _missing_docs
+        ):
+            print(
+                f"WARNING: Card '{self.header}' has no doc link in DashboardDefaults.DOCUMENTATION"
+            )
+            _missing_docs.add(self.header)
 
         self.init_dialog(self.HEADER_NAME, self.card_content)
         self.card_content()

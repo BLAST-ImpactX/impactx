@@ -49,19 +49,30 @@ class InputParameters(CardBase):
             CardComponents.input_header(self.HEADER_NAME)
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
-                    with vuetify.VCol(md=6, sm=12):
+                    with vuetify.VCol(cols=12):
                         InputComponents.select(
                             label="Tracking Mode",
                         )
-                    with vuetify.VCol(classes="ga-4 py-0 d-flex align-center"):
+                with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(md=6, sm=12):
                         InputComponents.select(
                             label="Space Charge",
                             items=("space_charge_list",),
                             disabled=("disable_space_charge",),
                         )
+                    with vuetify.VCol(
+                        cols=3, classes="py-0 d-flex justify-center align-center"
+                    ):
                         InputComponents.checkbox(
                             label="CSR",
                             disabled=("disable_csr",),
+                        )
+                    with vuetify.VCol(
+                        cols=3, classes="py-0 d-flex justify-center align-center"
+                    ):
+                        InputComponents.checkbox(
+                            label="ISR",
+                            disabled=("disable_isr",),
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):

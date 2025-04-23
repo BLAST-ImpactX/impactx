@@ -38,20 +38,20 @@ namespace impactx::elements
      * which we clean up in the end.
      */
     namespace MultipoleData
-    {           
+    {
         //! last used id for a created ExactMultipole
         inline int next_id = 0;
-         
+
         //! host: normal multipole coefficients of the magnetic field
         inline std::map<int, std::vector<amrex::ParticleReal>> h_k_normal = {};
         //! host: skew multipole coefficients of the magnetic field
         inline std::map<int, std::vector<amrex::ParticleReal>> h_k_skew = {};
-         
+
         //! device: normal multipole coefficients of the magnetic field
         inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_k_normal = {};
         //! device: skew multipole coefficients of the magnetic field
         inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_k_skew = {};
-         
+
     } // namespace MultipoleData
 
 
@@ -69,7 +69,7 @@ namespace impactx::elements
 
         /** A general (thick) straight-axis magnetic element whose field consists
          *  of a superposition of ideal hard-edge multipoles.  Like the element
-         *  ExactQuad, the magnet is treated using the exact Hamiltonian, which 
+         *  ExactQuad, the magnet is treated using the exact Hamiltonian, which
          *  includes all nonlinear kinematic effects.  This is a generalization
          *  of the (thin) element Multipole, which applies the kick associated
          *  with a single ideal multipole.  Here, symplectic integration
@@ -113,20 +113,20 @@ namespace impactx::elements
           PipeAperture(aperture_x, aperture_y),
           m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),m_id(MultipoleData::next_id)
         {
-            // next created ExactMultipole has another id for its data  
+            // next created ExactMultipole has another id for its data
             MultipoleData::next_id++;
-         
+
             // validate normal and skew coefficients are the same length
             m_ncoef = int(k_normal.size());
             if (m_ncoef != int(k_skew.size()))
                 throw std::runtime_error("ExactMultipole: normal and skew coefficient arrays must have same length!");
-            
+
             // host data
             MultipoleData::h_k_normal[m_id] = k_normal;
             MultipoleData::h_k_skew[m_id] = k_skew;
             m_k_normal_h_data = MultipoleData::h_k_normal[m_id].data();
             m_k_skew_h_data = MultipoleData::h_k_skew[m_id].data();
-            
+
             // device data
             MultipoleData::d_k_normal.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
             MultipoleData::d_k_skew.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
@@ -137,7 +137,7 @@ namespace impactx::elements
                                   k_skew.begin(), k_skew.end(),
                                   MultipoleData::d_k_skew[m_id].begin());
             amrex::Gpu::streamSynchronize();
-            
+
             // low-level objects we can use on device
             m_k_normal_d_data = MultipoleData::d_k_normal[m_id].data();
             m_k_skew_d_data = MultipoleData::d_k_skew[m_id].data();
@@ -183,7 +183,7 @@ namespace impactx::elements
 
             // normalize quad units to MAD-X convention if needed
             m_g = m_unit == 1 ? k_normal[2] / refpart.rigidity_Tm() : k_normal[2];
-            
+
             // compute phase advance per unit length in s (in rad/m)
             m_omega = std::sqrt(std::abs(m_g));
         }
@@ -470,7 +470,7 @@ namespace impactx::elements
 
 
         /** Close and deallocate all data and handles.
-         */ 
+         */
         void
         finalize ()
         {
@@ -479,18 +479,18 @@ namespace impactx::elements
                 MultipoleData::h_k_normal.erase(m_id);
             if (MultipoleData::h_k_skew.count(m_id) != 0u)
                 MultipoleData::h_k_skew.erase(m_id);
-         
+
             if (MultipoleData::d_k_normal.count(m_id) != 0u)
                 MultipoleData::d_k_normal.erase(m_id);
             if (MultipoleData::d_k_skew.count(m_id) != 0u)
-                MultipoleData::d_k_skew.erase(m_id); 
+                MultipoleData::d_k_skew.erase(m_id);
         }
 
         int m_unit; //! unit specification for Multipole strength
         int m_int_order; //! order used for the symplectic integration (2 or 4)
         int m_mapsteps; //! number of integration steps per slice
-        int m_id; //! unique ExactMultipole id used for data lookup map 
-            
+        int m_id; //! unique ExactMultipole id used for data lookup map
+
         int m_ncoef = 0; //! number of Fourier coefficients
         amrex::ParticleReal* m_k_normal_h_data = nullptr; //! non-owning pointer to host cosine coefficients
         amrex::ParticleReal* m_k_skew_h_data = nullptr; //! non-owning pointer to host sine coefficients

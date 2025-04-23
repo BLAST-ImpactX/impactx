@@ -506,8 +506,6 @@ namespace impactx::elements
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_g;              //! quadrupole strength in 1/m^2
-        std::vector<amrex::ParticleReal> g_normal;
-        std::vector<amrex::ParticleReal> g_skew;
         amrex::ParticleReal m_omega;
     };
 

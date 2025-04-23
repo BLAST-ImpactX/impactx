@@ -107,21 +107,13 @@ class DashboardDefaults:
     }
 
     LISTS = {
-        "tracking_mode_list": [
-            "Particle Tracking",
-            "Envelope Tracking",
-            "Reference Tracking",
-        ],
+        "tracking_mode_list": ["Particle Tracking", "Envelope Tracking", "Reference Tracking"],
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
         "max_level_list": [0, 1, 2, 3, 4],
-        "isr_order_list": [
-            1,
-            2,
-            3,
-        ],
+        "isr_order_list": [1,2,3],
     }
 
     # -------------------------------------------------------------------------
@@ -181,6 +173,7 @@ class DashboardDefaults:
         "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
         "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
         "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+        "isr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#incoherent-synchrotron-radiation-isr",
     }
 
 

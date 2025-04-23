@@ -146,8 +146,7 @@ def generate_phase_space(is_exporting: bool) -> str:
     Returns the plotting section of the script as a string,
     or an empty string if the script is being exported.
     """
-
-    if is_exporting or state.tracking_mode != "particle tracking":
+    if is_exporting or state.tracking_mode.lower() != "particle tracking":
         return ""
     return (
         "import matplotlib.pyplot as plt\n"

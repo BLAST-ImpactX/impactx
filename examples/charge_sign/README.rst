@@ -10,7 +10,7 @@ For elements that support an option for user-provided field strength in SI units
 with the sign of the specified field.
 
 This example tests the transport of a 1 GeV electron bunch through multiple field sign combinations.  The transport occurs through pairs of elements.  For example, the element
-`quad1` specifies a positive normalized field strength, and should provide horizontal focusing.  The element `quad2inv` specifies a quadrupole field gradient in units of T/m, which
+``quad1`` specifies a positive normalized field strength, and should provide horizontal focusing.  The element ``quad2inv`` specifies a quadrupole field gradient in units of T/m, which
 should provide an equivalent horizontal focusing.  (For electrons, the required field gradient is negative.)
 
 To test this, the map for `quad1` is applied (ds > 0), and this is followed by applying the inverse map for `quad2inv` (ds < 0), which should result in the identity map.  Similar

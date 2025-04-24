@@ -86,9 +86,9 @@ class DashboardDefaults:
         "n_cell_x": 32,
         "n_cell_y": 32,
         "n_cell_z": 32,
-        "blocking_factor_x": 16,
-        "blocking_factor_y": 16,
-        "blocking_factor_z": 16,
+        "blocking_factor_x": 8,
+        "blocking_factor_y": 8,
+        "blocking_factor_z": 8,
         "prob_relative_first_value_fft": 1.1,
         "prob_relative_first_value_multigrid": 3.1,
         "mlmg_relative_tolerance": 1.0e-7,
@@ -117,11 +117,7 @@ class DashboardDefaults:
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
         "max_level_list": [0, 1, 2, 3, 4],
-        "isr_order_list": [
-            1,
-            2,
-            3,
-        ],
+        "isr_order_list": [1, 2, 3],
     }
 
     # -------------------------------------------------------------------------
@@ -181,6 +177,7 @@ class DashboardDefaults:
         "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
         "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",
         "csr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#coherent-synchrotron-radiation-csr",
+        "isr": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#incoherent-synchrotron-radiation-isr",
     }
 
 

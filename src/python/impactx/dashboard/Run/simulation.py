@@ -80,7 +80,7 @@ def build_space_charge_or_csr():
     """
     content = ""
 
-    if state.space_charge:
+    if state.space_charge != "false":
         content += f"""# Space Charge
 sim.space_charge = "{state.space_charge}"
 sim.dynamic_size = {state.dynamic_size}
@@ -88,9 +88,9 @@ sim.poisson_solver = '{state.poisson_solver}'
 sim.particle_shape = {state.particle_shape}
 sim.max_level = {state.max_level}
 sim.n_cell = {state.n_cell}
-sim.blocking_factor_x = {state.blocking_factor_x}
-sim.blocking_factor_y = {state.blocking_factor_y}
-sim.blocking_factor_z = {state.blocking_factor_z}
+sim.blocking_factor_x = [{state.blocking_factor_x}]
+sim.blocking_factor_y = [{state.blocking_factor_y}]
+sim.blocking_factor_z = [{state.blocking_factor_z}]
 sim.prob_relative = {state.prob_relative}
 """
         if state.poisson_solver == "multigrid":
@@ -146,8 +146,7 @@ def generate_phase_space(is_exporting: bool) -> str:
     Returns the plotting section of the script as a string,
     or an empty string if the script is being exported.
     """
-
-    if is_exporting or state.tracking_mode != "particle tracking":
+    if is_exporting or state.tracking_mode.lower() != "particle tracking":
         return ""
     return (
         "import matplotlib.pyplot as plt\n"

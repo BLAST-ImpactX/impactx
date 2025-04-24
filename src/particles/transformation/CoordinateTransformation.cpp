@@ -25,6 +25,7 @@ namespace impactx::transformation
                                    CoordSystem direction)
     {
         BL_PROFILE("impactx::transformation::CoordinateTransformation");
+
         using namespace amrex::literals; // for _rt and _prt
 
         if (direction == CoordSystem::s) {

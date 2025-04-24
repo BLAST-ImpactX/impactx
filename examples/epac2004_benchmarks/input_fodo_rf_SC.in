@@ -118,6 +118,7 @@ gapb1.sin_coefficients = 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  \
 ###############################################################################
 algo.particle_shape = 2
 algo.space_charge = 3D
+algo.poisson_solver = "multigrid"
 
 amr.n_cell = 56 56 64
 geometry.prob_relative = 4.0

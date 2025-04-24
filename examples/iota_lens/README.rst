@@ -124,7 +124,7 @@ ideal map associated with the remainder of the lattice.
 
 We use a 2.5 MeV proton beam, corresponding to the nominal IOTA proton energy.  The beam is transported over 3 periods.
 
-In this test, the initial and final values of :math:`\lambda_x`, :math:`\lambda_y`, :math:`\lambda_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 
 The fraction of charge lost after 3 periods of transport must agree with the nominal value obtained from high-resolution simulation.
 

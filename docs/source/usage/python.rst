@@ -79,7 +79,7 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.
-      Either ``"multigrid"`` (default) or ``"fft"``.
+      Either ``"fft"`` (default) or ``"multigrid"``.
 
       Currently, this is a 3D solver.
       An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
@@ -128,9 +128,10 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      Enable (``True``) or disable (``False``) Coherent Synchrotron Radiation (CSR) calculations (default: ``False``).
 
       Whether to calculate Coherent Synchrotron Radiation (CSR) effects (default: disabled).
+
       Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19 of
       `E. L. Saldin et al, NIMA 398, p. 373-394 (1997), DOI:10.1016/S0168-9002(97)00822-X <https://doi.org/10.1016/S0168-9002(97)00822-X>`__).
 
@@ -142,7 +143,31 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      Enable or disable Coherent Synchrotron Radiation (CSR) calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+
+   .. py:property:: isr
+
+      Enable (``True``) or disable (``False``) Incoherent Synchrotron Radiation (ISR) calculations (default: ``False``).
+
+      Whether to calculate Incoherent Synchrotron Radiation (ISR) effects (default: disabled).
+
+      ISR effects are included in the simulation for bend lattice elements such as ``Sbend`` and ``CFbend``, and are especially important for electron or positron bunches at high energy.
+      The effects of ISR include radiation reaction due to the stochastic emission of synchrotron radiation, resulting in mean energy loss and quantum excitation of the bunch.
+      The model is based on:
+
+      `F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`__
+
+      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+
+      `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
+
+      .. note::
+
+         ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+
+   .. py:property:: isr_order
+
+      The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
 
    .. py:property:: diagnostics
 
@@ -862,6 +887,49 @@ This module provides elements and methods for the accelerator lattice.
    .. py:property:: unit
 
       unit specification for quad strength
+
+.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=1, nslice=1, name=None)
+
+   A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
+   Here H_1 is the Hamiltonian for a linear quadrupole (containing all terms quadratic in the phase space variables),
+   and H_2 is the remainder (including the kinematic square root).  This suggested splitting appears for example in:
+
+   D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
+   E. Forest, J. Phys. A: Math. Gen. 39, 5321 (2006).
+
+   :param ds: Segment length in m.
+   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)
+              = (gradient in T/m) / (rigidity in T-m)
+          OR  Quadrupole strength in T/m (MaryLie convention, if unit = 1)
+              k > 0 horizontal focusing
+              k < 0 horizontal defocusing
+   :param unit: specification of units for quadrupole field strength
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2 or 4)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   .. py:property:: k
+
+      quadrupole strength in 1/m^2 (or T/m)
+
+   .. py:property:: unit
+
+      unit specification for quad strength
+
+   .. py:property:: int_order
+
+      the order used for symplectic integration (2 or 4)
+
+   .. py:property:: mapsteps
+
+      number of integration steps per slice used for symplectic integration
 
 .. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 

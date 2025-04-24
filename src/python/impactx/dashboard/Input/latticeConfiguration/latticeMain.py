@@ -16,9 +16,10 @@ from .. import (
     NavigationComponents,
     generalFunctions,
 )
-from . import LatticeConfigurationHelper
+from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
+state.lattice_params_bound_or_pending_variable = {}
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -62,7 +63,8 @@ def add_lattice_element():
         "parameters": [
             {
                 "parameter_name": parameter[0],
-                "parameter_default_value": parameter[1],
+                "ui_input": parameter[1],
+                "sim_input": parameter[1],
                 "parameter_type": parameter[2],
                 "parameter_error_message": generalFunctions.validate_against(
                     parameter[1], parameter[2]
@@ -75,22 +77,6 @@ def add_lattice_element():
     state.selected_lattice_list.append(selected_lattice_element)
     generalFunctions.update_simulation_validation_status()
     return selected_lattice_element
-
-
-def update_latticeElement_parameters(
-    index, parameterName, parameterValue, parameterErrorMessage
-):
-    """
-    Updates parameter value and includes error message if user input is not valid
-    """
-
-    for param in state.selected_lattice_list[index]["parameters"]:
-        if param["parameter_name"] == parameterName:
-            param["parameter_default_value"] = parameterValue
-            param["parameter_error_message"] = parameterErrorMessage
-
-    generalFunctions.update_simulation_validation_status()
-    state.dirty("selected_lattice_list")
 
 
 # -----------------------------------------------------------------------------
@@ -109,12 +95,10 @@ def parameter_input_checker_for_lattice(latticeElement):
         if parameter["parameter_error_message"] == []:
             if parameter["parameter_type"] == "str":
                 parameter_input[parameter["parameter_name"]] = (
-                    f"'{parameter['parameter_default_value']}'"
+                    f"'{parameter['sim_input']}'"
                 )
             else:
-                parameter_input[parameter["parameter_name"]] = parameter[
-                    "parameter_default_value"
-                ]
+                parameter_input[parameter["parameter_name"]] = parameter["sim_input"]
         else:
             parameter_input[parameter["parameter_name"]] = 0
 
@@ -153,16 +137,73 @@ def on_add_lattice_element_click():
         state.dirty("selected_lattice_list")
 
 
+def process_if_variable(index, parameter_name, ui_input, parameter_type):
+    """
+    If the updated lattice parameter value uses or potentially uses a variable, this
+    function returns the simulation value by lookup, adds the element to a dictionary
+    which contains current or potential variables, and also returns true or false if it
+    is a current or potential variable.
+
+    :param index: The index of the lattice element in the lattice list config.
+    :param parameter_name: The specific lattice element parameter name.
+    :param ui_input: The value present on the UI end..
+    :param parameter_type: The lattice element parameters type.
+    """
+
+    lattice_variable, variable_index = (
+        LatticeVariableHandler.determine_if_existing_variable(ui_input)
+    )
+    potentially_lattice_variable = LatticeVariableHandler.is_valid_variable_name(
+        ui_input
+    )
+
+    if lattice_variable or potentially_lattice_variable:
+        if lattice_variable and variable_index is not None:
+            sim_input = state.variables[variable_index]["value"]
+        else:
+            sim_input = ui_input
+
+        binding = {
+            "index": index,
+            "parameter_name": parameter_name,
+            "ui_input": ui_input,
+            "parameter_type": parameter_type,
+            "variable_index": variable_index,
+        }
+    else:
+        sim_input, _ = generalFunctions.determine_input_type(ui_input)
+        binding = None
+
+    return sim_input, binding
+
+
 @ctrl.add("updateLatticeElementParameters")
 def on_lattice_element_parameter_change(
-    index, parameter_name, parameter_value, parameter_type
+    index, parameter_name, ui_input, parameter_type
 ):
-    parameter_value, input_type = generalFunctions.determine_input_type(parameter_value)
-    error_message = generalFunctions.validate_against(parameter_value, parameter_type)
-
-    update_latticeElement_parameters(
-        index, parameter_name, parameter_value, error_message
+    sim_input, bounded_or_pending_variable = process_if_variable(
+        index, parameter_name, ui_input, parameter_type
     )
+
+    if bounded_or_pending_variable is not None:
+        state.lattice_params_bound_or_pending_variable[(index, parameter_name)] = (
+            bounded_or_pending_variable
+        )
+    else:
+        state.lattice_params_bound_or_pending_variable.pop(
+            (index, parameter_name), None
+        )
+
+    error_message = generalFunctions.validate_against(sim_input, parameter_type)
+
+    for param in state.selected_lattice_list[index]["parameters"]:
+        if param["parameter_name"] == parameter_name:
+            param["ui_input"] = ui_input
+            param["sim_input"] = sim_input
+            param["parameter_error_message"] = error_message
+
+    generalFunctions.update_simulation_validation_status()
+    state.dirty("selected_lattice_list")
 
 
 @ctrl.add("deleteLatticeElement")
@@ -266,7 +307,7 @@ class LatticeConfiguration(CardBase):
                     ):
                         vuetify.VTextField(
                             label=("parameter.parameter_name",),
-                            v_model=("parameter.parameter_default_value",),
+                            v_model=("parameter.ui_input",),
                             update_modelValue=(
                                 ctrl.updateLatticeElementParameters,
                                 "[index, parameter.parameter_name, $event, parameter.parameter_type]",
@@ -276,6 +317,29 @@ class LatticeConfiguration(CardBase):
                             variant="underlined",
                             style="width: 100px;",
                         )
+
+    @staticmethod
+    def defaults_handler():
+        """
+        Displays the content for the 'Defaults' tab
+        in the lattice configuration settings.
+
+        Allows users to pre-determine default values for
+        any parameter name. Example: user can set 'nslice' to 25
+        and every element added thereafter will have the nslice value
+        of 25 as default.
+        """
+        with vuetify.VCardText():
+            with vuetify.VRow():
+                with vuetify.VCol(cols=3):
+                    InputComponents.text_field(
+                        label="nslice",
+                        v_model_name="nslice",
+                        change=(
+                            ctrl.nsliceDefaultChange,
+                            "['nslice', $event]",
+                        ),
+                    )
 
     # -----------------------------------------------------------------------------
     # Dialogs
@@ -289,17 +353,11 @@ class LatticeConfiguration(CardBase):
         """
         dialog_name = "lattice_configuration_dialog_tab_settings"
 
-        with NavigationComponents.create_dialog_tabs(dialog_name, 1, ["Defaults"]):
+        with NavigationComponents.create_dialog_tabs(
+            dialog_name, 2, ["Variables", "Defaults"]
+        ):
             with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
                 with vuetify.VTabsWindowItem():
-                    with vuetify.VCardText():
-                        with vuetify.VRow():
-                            with vuetify.VCol(cols=3):
-                                InputComponents.text_field(
-                                    label="nslice",
-                                    v_model_name="nslice",
-                                    change=(
-                                        ctrl.nsliceDefaultChange,
-                                        "['nslice', $event]",
-                                    ),
-                                )
+                    LatticeVariableHandler.variable_handler()
+                with vuetify.VTabsWindowItem():
+                    LatticeConfiguration.defaults_handler()

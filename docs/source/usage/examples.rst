@@ -39,6 +39,7 @@ Single Particle Dynamics
    examples/scraping_beam/README.rst
    examples/reversibility/README.rst
    examples/charge_sign/README.rst
+   examples/symplectic_integration/README.rst
 
 
 Collective Effects
@@ -63,6 +64,19 @@ Coherent Synchrotron Radiation (CSR)
    :maxdepth: 1
 
    examples/chicane/README_csr.rst
+
+
+Quantum Excitation
+--------------------
+
+Incoherent Synchrotron Radiation (ISR)
+""""""""""""""""""""""""""""""""""""""
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/incoherent_synchrotron/README.rst
+   examples/chicane/README_isr.rst
 
 
 Beam Distributions

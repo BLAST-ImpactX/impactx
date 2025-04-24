@@ -40,7 +40,7 @@ namespace detail
         int max_level = 0;
         pp_amr.queryWithParser("max_level", max_level);
 
-        std::string poisson_solver = "multigrid";
+        std::string poisson_solver = "fft";
         pp_algo.queryAdd("poisson_solver", poisson_solver);
 
         // The box is expanded beyond the min and max of the particle beam.

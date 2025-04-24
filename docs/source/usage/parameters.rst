@@ -492,6 +492,39 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
+``quad_exact``
+^^^^^^^^^^^^^^^^^^
+
+``quad_exact`` for a Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+Here :math:`H_1` is the Hamiltonian for a linear quadrupole (containing all terms quadratic in the phase space variables),
+and :math:`H_2` is the remainder (including the kinematic square root).  This suggested splitting appears for example in:
+
+* D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
+* E. Forest, J. Phys. A: Math. Gen. 39, 5321 (2006).
+
+This requires these additional parameters:
+
+* ``<element_name>.ds`` (``float``, in meters) the segment length
+* ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the quadrupole strength
+  = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if ``unit = 0``
+
+  OR = magnetic field gradient in T/m - if ``unit = 1``
+
+  * k > 0 horizontal focusing
+  * k < 0 horizontal defocusing
+
+* ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+* ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
+* ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2 or 4) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``10``)
+* ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
+
+
 ``quadrupole_softedge``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -788,7 +821,7 @@ See there ``nslice`` option on lattice elements for slicing.
   High-order shape factors are computationally more expensive, but may increase the overall accuracy of the results.
   For production runs it is generally safer to use high-order shape factors, such as cubic order.
 
-* ``algo.poisson_solver`` (``string``, optional, default: ``"multigrid"``)
+* ``algo.poisson_solver`` (``string``, optional, default: ``"fft"``)
 
   The numerical solver to solve the Poisson equation when calculating space charge effects.
   Currently, this is a 3D solver.
@@ -864,6 +897,34 @@ Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19
    CSR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
    CSR effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+.. _running-cpp-parameters-collective-isr:
+
+
+Incoherent Synchrotron Radiation (ISR)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ISR effects are included in the simulation for bend lattice elements such as ``Sbend`` and ``CFbend``, and are especially important for electron or positron bunches at high energy.
+The effects of ISR include radiation reaction due to the stochastic emission of synchrotron radiation, resulting in mean energy loss and quantum excitation of the bunch.
+The model is based on:
+
+`F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`__
+
+However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+
+`J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
+
+* ``algo.isr`` (``boolean``, optional, default: ``false``)
+
+  Whether to calculate ISR effects.
+
+* ``algo.isr_order`` (``integer`, optional, default: ``1``)
+
+  The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in equations (25) and (41) describing quantum effects.
+
+.. note::
+
+   ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
 
 .. _running-cpp-parameters-parser:

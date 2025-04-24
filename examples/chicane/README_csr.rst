@@ -11,7 +11,7 @@ The rms pulse length should decrease by the compression factor (10).
 
 An ultrarelativistic model of steady-state CSR in the bending dipoles is included, resulting in a horizontal emittance growth of 19%.  Note that this value is smaller than the horizontal emittance growth of 57% that is obtained when transient (bend-entry and -exit) effects are included.
 
-In this test, the initial and final values of :math:`\lambda_x`, :math:`\lambda_y`, :math:`\lambda_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 
 
 Run

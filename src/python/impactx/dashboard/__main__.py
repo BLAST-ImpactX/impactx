@@ -21,10 +21,12 @@ from . import (
     NavigationComponents,
     SpaceChargeConfiguration,
     csrConfiguration,
+    isrConfiguration,
     setup_server,
     vuetify,
 )
 from .start import main
+from .Toolbar.sim_history.ui import load_my_js
 
 server, state, ctrl = setup_server()
 
@@ -47,6 +49,7 @@ distribution = DistributionParameters()
 lattice_config = LatticeConfiguration()
 space_charge = SpaceChargeConfiguration()
 csr = csrConfiguration()
+isr = isrConfiguration()
 
 card_column_padding = {"classes": "pa-2"}
 card_row_padding = {"classes": "ma-2"}
@@ -61,7 +64,7 @@ with RouterViewLayout(server, "/Input"):
                         inputParameters.card()
                     with vuetify.VCol(
                         **{**card_breakpoints, **card_column_padding},
-                        v_show="space_charge",
+                        v_show="space_charge !== 'false'",
                     ):
                         space_charge.card()
                     with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
@@ -70,6 +73,10 @@ with RouterViewLayout(server, "/Input"):
                         **{**card_breakpoints, **card_column_padding}, v_show="csr"
                     ):
                         csr.card()
+                    with vuetify.VCol(
+                        **{**card_breakpoints, **card_column_padding}, v_show="isr"
+                    ):
+                        isr.card()
                 with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(cols=12, **card_column_padding):
                         lattice_config.card()
@@ -127,4 +134,5 @@ application()
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    load_my_js(server)
     sys.exit(main())

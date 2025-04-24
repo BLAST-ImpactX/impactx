@@ -71,13 +71,14 @@ class InputComponents:
 
     @staticmethod
     def text_field(
-        label: str, v_model_name: Optional[str] = None, **kwargs
+        label: str, v_model_name: Optional[str] = None, input_type="number", **kwargs
     ) -> vuetify.VTextField:
         """
         Creates a Vuetify VTextField component with default properties.
 
         :param label: The label to display.
         :param v_model_name: Optional binding name for v_model. Defaults to a lowercase version
+        :param input_type: The HTML input type (e.g., "text", "number", "email", etc.). Defaults to "number".
         of the label with spaces replaced by underscores if not provided.
         :param kwargs: Additional keyword arguments to pass to the component.
         """
@@ -92,7 +93,7 @@ class InputComponents:
             label,
             v_model_name,
             error_messages=(f"{computed_v_model}_error_message", []),
-            type="number",
+            type=input_type,
             step=generalFunctions.get_default(computed_v_model, "steps"),
             suffix=generalFunctions.get_default(computed_v_model, "units"),
             __properties=["step"],
@@ -113,7 +114,7 @@ class InputComponents:
         """
 
         InputComponents._build_component(
-            vuetify.VCheckbox, label, v_model_name, **kwargs
+            vuetify.VSwitch, label, v_model_name, color="primary", **kwargs
         )
 
     @staticmethod

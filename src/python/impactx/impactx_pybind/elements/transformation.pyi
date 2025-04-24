@@ -24,6 +24,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.DipEdge
     | impactx.impactx_pybind.elements.Drift
     | impactx.impactx_pybind.elements.ExactDrift
+    | impactx.impactx_pybind.elements.ExactQuad
     | impactx.impactx_pybind.elements.ExactSbend
     | impactx.impactx_pybind.elements.Kicker
     | impactx.impactx_pybind.elements.LinearMap

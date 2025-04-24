@@ -7,6 +7,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+
 from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
@@ -60,18 +61,33 @@ field = rigidity * angle_rad / length
 ns = 20  # number of slices per ds in the element
 
 quad1 = elements.ChrQuad(name="quad1", ds=length, k=k_gradient, unit=0, nslice=ns)
-quad2inv = elements.ChrQuad(name="quad2inv", ds=-length, k=-g_gradient, unit=1, nslice=ns)
+quad2inv = elements.ChrQuad(
+    name="quad2inv", ds=-length, k=-g_gradient, unit=1, nslice=ns
+)
 
 quad3 = elements.ChrQuad(name="quad3", ds=length, k=-k_gradient, unit=0, nslice=ns)
-quad4inv = elements.ChrQuad(name="quad4inv", ds=-length, k=g_gradient, unit=1, nslice=ns)
+quad4inv = elements.ChrQuad(
+    name="quad4inv", ds=-length, k=g_gradient, unit=1, nslice=ns
+)
 
 bend1 = elements.ExactSbend(name="bend1", ds=length, phi=angle_deg, B=field, nslice=ns)
-bend2inv = elements.ExactSbend(name="bend2inv", ds=-length, phi=angle_deg, nslice=ns) 
+bend2inv = elements.ExactSbend(name="bend2inv", ds=-length, phi=angle_deg, nslice=ns)
 
-bend3 = elements.ExactSbend(name="bend3", ds=length, phi=angle_deg, B=-field, nslice=ns) 
+bend3 = elements.ExactSbend(name="bend3", ds=length, phi=angle_deg, B=-field, nslice=ns)
 bend4inv = elements.ExactSbend(name="bend4inv", ds=-length, phi=-angle_deg, nslice=ns)
 
-line = [monitor, quad1, quad2inv, quad3, quad4inv, bend1, bend2inv, bend3, bend4inv, monitor]
+line = [
+    monitor,
+    quad1,
+    quad2inv,
+    quad3,
+    quad4inv,
+    bend1,
+    bend2inv,
+    bend3,
+    bend4inv,
+    monitor,
+]
 
 sim.lattice.extend(line)
 

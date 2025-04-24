@@ -33,7 +33,7 @@ quad1.k = 29.963938169129919
 quad1.units = 0
 
 quad2inv.type = quad_chromatic
-quad2inv.ds = -0.25 
+quad2inv.ds = -0.25
 quad2inv.k = -100.0
 quad2inv.units = 1
 

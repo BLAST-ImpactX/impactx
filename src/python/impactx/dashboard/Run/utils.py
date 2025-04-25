@@ -106,11 +106,23 @@ class SimulationHelper:
             with open("phase_space_plot.png", "rb") as f:
                 image_data = f.read()
                 image_base64 = base64.b64encode(image_data).decode()
-                state.phase_space_png = f"data:image/png;base64, {image_base64}"
+                phase_space_src = f"data:image/png;base64, {image_base64}"
+                state.phase_space_png = phase_space_src
                 state.flush()
+
+            SimulationHelper.save_phase_space_output(phase_space_src)
 
             os.remove("phase_space_plot.png")
 
+
+    @staticmethod
+    def save_phase_space_output(phase_space_src: str) -> None:
+        """
+        Saves the given phase space image into the current simulation's outputs.
+        """
+        state.sims[state.sim_index]["outputs"] = {
+            "phase_space_png": phase_space_src
+        }
 
 class SimulationProgress:
     """

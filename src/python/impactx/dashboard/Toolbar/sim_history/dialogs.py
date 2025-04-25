@@ -137,3 +137,10 @@ class SimulationHistoryDialogs:
                         prepend_icon="mdi-file-code",
                         click=(ctrl.load_selected_sim),
                     )
+                with vuetify.VList():
+                    vuetify.VListItem(
+                        title="Load Outputs",
+                        prepend_icon="mdi-folder-open",
+                        click=(ctrl.load_selected_sim_outputs),
+                    )
+

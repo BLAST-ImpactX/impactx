@@ -149,6 +149,17 @@ class SimulationHistory:
         state.selected_sim_to_load = None
 
     @staticmethod
+    @ctrl.add("load_selected_sim_outputs")
+    def load_sim_outputs():
+        sim = state.selected_sim_to_load
+        outputs = sim.get("outputs", {})
+
+        if "phase_space_png" in outputs:
+            state.phase_space_png = outputs["phase_space_png"]
+
+        state.load_sim_dialog = False
+        
+    @staticmethod
     def filter_sim_history():
         """
         Handles the functionality to filter the sim history.
@@ -206,6 +217,7 @@ class SimulationHistory:
             "status": "In Progress",
             "inputs": sim_inputs,
             "log": "",
+            "outputs": {},
         }
 
         state.sims = state.sims + [new_sim]

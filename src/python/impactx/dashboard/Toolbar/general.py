@@ -69,6 +69,8 @@ class GeneralToolbar:
             vuetify.VSpacer()
             AnalyzeToolbar.select_visualization()
             vuetify.VDivider(vertical=True, classes="mx-2")
+            GeneralToolbar.simulation_history_button()
+            vuetify.VDivider(vertical=True, classes="mx-2")
             GeneralToolbar.force_quit_button()
 
     @staticmethod

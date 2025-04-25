@@ -13,7 +13,7 @@ This example tests the transport of a 1 GeV electron bunch through multiple fiel
 ``quad1`` specifies a positive normalized field strength, and should provide horizontal focusing.  The element ``quad2inv`` specifies a quadrupole field gradient in units of T/m, which
 should provide an equivalent horizontal focusing.  (For electrons, the required field gradient is negative.)
 
-To test this, the map for `quad1` is applied (ds > 0), and this is followed by applying the inverse map for `quad2inv` (ds < 0), which should result in the identity map.  Similar
+To test this, the map for ``quad1`` is applied (ds > 0), and this is followed by applying the inverse map for ``quad2inv`` (ds < 0), which should result in the identity map.  Similar
 considerations apply to the other element pairs.
 
 As a result, the second moments of x, y, and t and the associated emittances of the bunch should all be exactly unchanged.

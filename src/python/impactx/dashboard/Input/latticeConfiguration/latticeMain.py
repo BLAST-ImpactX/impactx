@@ -150,16 +150,27 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     :param parameter_type: The lattice element parameters type.
     """
 
+    is_negative = False
+    if ui_input.startswith("-"):
+        is_negative = True
+        var_name = ui_input[1:]
+    else:
+        var_name = ui_input
+
     lattice_variable, variable_index = (
-        LatticeVariableHandler.determine_if_existing_variable(ui_input)
+        LatticeVariableHandler.determine_if_existing_variable(var_name)
     )
     potentially_lattice_variable = (
-        LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input)
+        LatticeConfigurationHelper.is_valid_name_for_user_input(var_name)
     )
 
     if lattice_variable or potentially_lattice_variable:
         if lattice_variable and variable_index is not None:
-            sim_input = state.variables[variable_index]["value"]
+            sim_value = state.variables[variable_index]["value"]
+            if is_negative:
+                sim_input = -sim_value
+            else:
+                sim_input = sim_value
         else:
             sim_input = ui_input
 

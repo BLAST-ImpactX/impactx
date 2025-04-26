@@ -148,6 +148,9 @@ class DashboardParser:
                     )
 
         parsed_variables = imported_data["variables"]
+
+        # Remove default empty entry if it exists
+        state.variables = [var for var in state.variables if var["name"]]
         for name, value in parsed_variables.items():
             # Check if a variable with the same name already exists
             if not any(var["name"] == name for var in state.variables):

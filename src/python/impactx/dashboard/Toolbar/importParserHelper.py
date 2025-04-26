@@ -143,6 +143,7 @@ class DashboardParserHelper:
         """
 
         dictionary = {"lattice_elements": []}
+        used_variables = set()
 
         lattice_elements = re.findall(r"elements\.(\w+)\((.*?)\)", content)
 
@@ -153,18 +154,22 @@ class DashboardParserHelper:
             for parameter_name, parameter_value in parameter_pairs:
                 parameter_value_cleaned = parameter_value.strip("'\"")
                 element["parameters"][parameter_name] = parameter_value_cleaned
+                used_variables.add(parameter_value_cleaned)
 
             dictionary["lattice_elements"].append(element)
 
+        dictionary["used_lattice_variables"] = used_variables
         return dictionary
 
     @staticmethod
-    def parse_variables(content: str) -> dict:
+    def parse_variables(content: str, used_vars: set) -> dict:
         variables = {}
         variables_regex = r"^\s*(\w+)\s*=\s*([^#\n]+)"
         matches = re.findall(variables_regex, content, re.MULTILINE)
 
         for var_name, var_value in matches:
+            if var_name not in used_vars:
+                continue
             try:
                 value = ast.literal_eval(var_value.strip())
                 # only allowing numbers at the moment

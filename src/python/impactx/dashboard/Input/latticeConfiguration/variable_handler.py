@@ -196,8 +196,9 @@ class LatticeVariableHandler:
                 ):
                     with vuetify.VCol(cols=5, classes="pr-0"):
                         vuetify.VTextField(
-                            placeholder="Name",
+                            placeholder="Variable Name",
                             v_model=("variable.name",),
+                            id=("'variable_name_' + (index + 1)",),
                             variant="outlined",
                             density="compact",
                             background_color="grey lighten-4",
@@ -213,8 +214,9 @@ class LatticeVariableHandler:
                         html.Span("=", classes="mx-0")
                     with vuetify.VCol(cols=4, classes="pl-0"):
                         vuetify.VTextField(
-                            placeholder="Value",
+                            placeholder="Variable Value",
                             v_model=("variable.value",),
+                            id=("'variable_value_' + (index + 1)",),
                             variant="outlined",
                             density="compact",
                             type="number",

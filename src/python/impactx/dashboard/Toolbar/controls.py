@@ -148,6 +148,7 @@ class InputToolbar:
 
         return vuetify.VBtn(
             "Reset",
+            id="reset_all_inputs_button",
             click=ctrl.reset_all,
             variant="outlined",
             size="small",
@@ -188,6 +189,7 @@ class RunToolbar:
             description="Run Simulation",
             dynamic_condition="sim_is_running",
             disabled=("disableRunSimulationButton || sim_is_running", True),
+            id="run_simulation_button",
         )
 
     @staticmethod

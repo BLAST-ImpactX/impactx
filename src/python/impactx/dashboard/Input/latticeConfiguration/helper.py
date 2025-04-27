@@ -22,6 +22,7 @@ class LatticeConfigurationHelper:
 
         CardComponents.card_button(
             "mdi-cog",
+            id="lattice_settings",
             color=LatticeConfigurationHelper.BUTTON_COLOR,
             click="lattice_configuration_dialog_settings = true",
             documentation="Settings",

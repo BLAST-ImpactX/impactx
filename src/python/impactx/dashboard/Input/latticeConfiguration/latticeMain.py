@@ -286,6 +286,7 @@ class LatticeConfiguration(CardBase):
                     with vuetify.VCol(cols="auto"):
                         vuetify.VBtn(
                             "ADD",
+                            id="add_lattice_element",
                             color="primary",
                             dense=True,
                             click=ctrl.add_latticeElement,
@@ -312,6 +313,7 @@ class LatticeConfiguration(CardBase):
                         vuetify.VTextField(
                             label=("parameter.parameter_name",),
                             v_model=("parameter.ui_input",),
+                            id=("parameter.parameter_name + (index + 1)",),
                             update_modelValue=(
                                 ctrl.updateLatticeElementParameters,
                                 "[index, parameter.parameter_name, $event, parameter.parameter_type]",

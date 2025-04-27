@@ -27,6 +27,7 @@ class NavigationComponents:
 
         return vuetify.VListItem(
             to=to,
+            id=(f"{route_title}_route"),
             click=click,
             prepend_icon=mdi_icon,
             title=route_title,

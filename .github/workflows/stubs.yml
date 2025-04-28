@@ -79,6 +79,11 @@ jobs:
       run: |
         cmake --build build -j 4 --target pip_install
 
+
+    - name: Dashboard tests
+      run: |
+        mpiexec -np 1 python3 -m pytest tests/python/dashboard
+
     - name: Unit tests
       run: |
         mpiexec -np 1 python3 -m pytest tests/python/

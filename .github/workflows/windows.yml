@@ -111,9 +111,16 @@ jobs:
         if(!$?) { Exit $LASTEXITCODE }
         cmake --build build --config RelWithDebInfo --parallel 4
         if(!$?) { Exit $LASTEXITCODE }
+
+    - name: run dashboard tests
+      run: |
+        pip install .
+        cd tests/python/dashboard
+        pytest --confcutdir=.
+
     - name: Test
       run: |
-        ctest --test-dir build --build-config RelWithDebInfo --output-on-failure -E AMReX
+        ctest --test-dir build --build-config RelWithDebInfo --output-on-failure -E "AMReX|dashboard"
         if(!$?) { Exit $LASTEXITCODE }
     - name: Install
       run: |
@@ -235,12 +242,18 @@ jobs:
               -DPython_EXECUTABLE=python3
         if errorlevel 1 exit 1
         cmake --build build --parallel 4
-        if errorlevel 1 exit 1
+        if errorlevel 1 exit 1        
+    - name: run dashboard tests
+    # Install ImpactX to access the right modules
+      run: |
+        cmake --build build --target install
+        cd tests/python/dashboard
+        pytest --confcutdir=.
     - name: Test
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
-        ctest --test-dir build --output-on-failure -E AMReX
+        ctest --test-dir build --output-on-failure -E "AMReX|dashboard"
         if errorlevel 1 exit 1
 #    - name: Install
 #      shell: cmd

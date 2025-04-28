@@ -74,15 +74,20 @@ jobs:
         du -hs ~/Library/Caches/ccache
         ccache -s
 
-    - name: run tests
-      run: |
-        ctest --test-dir build --output-on-failure -E pytest.AMReX
-
     - name: run installed python module
       run: |
         cmake --build build --target pip_install
 
         python3 examples/fodo/run_fodo.py
+      
+    - name: run dashboard tests
+      run: |
+        cd tests/python/dashboard
+        pytest --confcutdir=.
+
+    - name: run tests
+      run: |
+        ctest --test-dir build --output-on-failure -E "pytest.AMReX|dashboard"
 
     - name: run installed app
       run: |

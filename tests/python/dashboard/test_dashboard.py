@@ -10,7 +10,7 @@ import importlib
 
 import pytest
 from seleniumbase import SB
-from utils import (
+from .utils import (
     DashboardTester,
     start_dashboard,
     wait_for_dashboard,

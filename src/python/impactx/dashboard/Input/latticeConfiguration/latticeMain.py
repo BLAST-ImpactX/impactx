@@ -168,7 +168,7 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
         if lattice_variable and variable_index is not None:
             sim_value = state.variables[variable_index]["value"]
             if is_negative:
-                sim_input = -sim_value
+                sim_input = -float(sim_value)
             else:
                 sim_input = sim_value
         else:

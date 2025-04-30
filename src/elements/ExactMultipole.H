@@ -23,6 +23,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Print.H>
+#include <AMReX_GpuComplex.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -169,23 +170,8 @@ namespace impactx::elements
             m_ibetgam2 = 1_prt / m_betgam2;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
+            m_brho = refpart.rigidity_Tm();
 
-            // print coefficients
-            // pick the right data depending if we are on the host side
-            // (reference particle push) or device side (particles):
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* k_normal = m_k_normal_d_data;
-//            amrex::ParticleReal* k_skew = m_k_skew_d_data;
-#else
-            amrex::ParticleReal* k_normal = m_k_normal_h_data;
-//            amrex::ParticleReal* k_skew = m_k_skew_h_data;
-#endif
-
-            // normalize quad units to MAD-X convention if needed
-            m_g = m_unit == 1 ? k_normal[2] / refpart.rigidity_Tm() : k_normal[2];
-
-            // compute phase advance per unit length in s (in rad/m)
-            m_omega = std::sqrt(std::abs(m_g));
         }
 
         /** This is a Multipole functor, so that a variable of this type can be used like a Multipole function.
@@ -258,8 +244,7 @@ namespace impactx::elements
 
         /** This pushes a particle in an ExactMultipole element through
          *  the symplectic map associated with H_1 in the Hamiltonian
-         *  splitting H = H_1 + H_2.  This is exactly the linear
-         *  map of a quadrupole.
+         *  splitting H = H_1 + H_2.  This is the exact map for a drift.
          *
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
@@ -286,43 +271,21 @@ namespace impactx::elements
             amrex::ParticleReal tout = t;
             amrex::ParticleReal ptout = pt;
 
-            amrex::ParticleReal const sin_omega_ds = std::sin(m_omega*tau);
-            amrex::ParticleReal const cos_omega_ds = std::cos(m_omega*tau);
-            amrex::ParticleReal const sinh_omega_ds = std::sinh(m_omega*tau);
-            amrex::ParticleReal const cosh_omega_ds = std::cosh(m_omega*tau);
-            amrex::ParticleReal const slice_bg = tau / m_betgam2;
-
-            if (m_g > 0.0_prt)
-            {
-                // advance position and momentum (focusing Multipole)
-                xout = cos_omega_ds*x + sin_omega_ds/m_omega*px;
-                pxout = -m_omega*sin_omega_ds*x + cos_omega_ds*px;
-
-                yout = cosh_omega_ds*y + sinh_omega_ds/m_omega*py;
-                pyout = m_omega*sinh_omega_ds*y + cosh_omega_ds*py;
-
-                tout = t + (slice_bg)*pt;
-                // ptout = pt;
-            } else if (m_g < 0.0_prt)
-            {
-                // advance position and momentum (defocusing Multipole)
-                xout = cosh_omega_ds*x + sinh_omega_ds/m_omega*px;
-                pxout = m_omega*sinh_omega_ds*x + cosh_omega_ds*px;
-
-                yout = cos_omega_ds*y + sin_omega_ds/m_omega*py;
-                pyout = -m_omega*sin_omega_ds*y + cos_omega_ds*py;
-
-                tout = t + slice_bg*pt;
-                // ptout = pt;
-            } else {
-                // advance position and momentum (zero strength = drift)
-                xout = x + tau * px;
-                // pxout = px;
-                yout = y + tau * py;
-                // pyout = py;
-                tout = t + slice_bg * pt;
-                // ptout = pt;
-            }
+            // compute the radical in the denominator (= pz):   
+            amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
+                std::pow(pt - m_ibeta, 2) -
+                m_ibetgam2 -
+                std::pow(px, 2) -
+                std::pow(py, 2)
+            );
+           
+            // advance position and momentum (exact drift)
+            xout = x + tau * px * inv_pzden;
+            // pxout = px;
+            yout = y + tau * py * inv_pzden;
+            // pyout = py;
+            tout = t - tau * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+            // ptout = pt;
 
             // push particle coordinates
             particle(1) = xout;
@@ -337,7 +300,8 @@ namespace impactx::elements
 
         /** This pushes a particle in an ExactMultipole element through
          *  the symplectic map associated with H_2 in the Hamiltonian
-         *  splitting H = H_1 + H_2.
+         *  splitting H = H_1 + H_2.  This is the exact kick obtained
+         *  in the ideal multipole field.
          *
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
@@ -357,21 +321,61 @@ namespace impactx::elements
             amrex::ParticleReal const t = particle(5);
             amrex::ParticleReal const pt = particle(6);
 
-            // compute the radical in the denominator (= pz):
-            amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                std::pow(pt - m_ibeta, 2) -
-                m_ibetgam2 -
-                std::pow(px, 2) -
-                std::pow(py, 2)
-            );
+            amrex::ParticleReal xout = x;
+            amrex::ParticleReal pxout = px;
+            amrex::ParticleReal yout = y;
+            amrex::ParticleReal pyout = py;
+            amrex::ParticleReal tout = t;
+            amrex::ParticleReal ptout = pt;
 
-            // The momenta are not affected.
-            particle(1) = x + tau * px * (-1_prt + inv_pzden);
-            particle(2) = px;
-            particle(3) = y + tau * py * (-1_prt + inv_pzden);
-            particle(4) = py;
-            particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta));
-            particle(6) = pt;
+#if AMREX_DEVICE_COMPILE
+            amrex::ParticleReal* k_normal = m_k_normal_d_data;
+            amrex::ParticleReal* k_skew = m_k_skew_d_data;
+#else
+            amrex::ParticleReal* k_normal = m_k_normal_h_data;
+            amrex::ParticleReal* k_skew = m_k_skew_h_data;
+#endif   
+            
+            // a complex type with two amrex::ParticleReal
+            using Complex = amrex::GpuComplex<amrex::ParticleReal>;
+
+            // assign complex position and complex multipole strength
+            Complex const zeta(x, y);
+
+            // initialize the momentum kick
+            amrex::ParticleReal dpx = 0_prt;
+            amrex::ParticleReal dpy = 0_prt;
+
+            int factorial = 1;
+
+            // loop over array of multipole coefficients
+            for (int m = 0; m < m_ncoef; m++) {
+
+               // normalize units to MAD-X convention if needed
+               amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               amrex::ParticleReal kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
+            
+               // multipole contribution to complex momentum kick
+               Complex alpha(knormal_value, kskew_value);
+               Complex kick = amrex::pow(zeta, m) * alpha;
+               dpx += -1.0_prt * kick.m_real / factorial;
+               dpy += kick.m_imag / factorial;
+
+               factorial *= m+1;
+
+            }
+
+            // advance momentum by a step of length tau
+            pxout = pxout + tau * dpx;
+            pyout = pyout + tau * dpy;
+          
+            //update the particle coordinates
+            particle(1) = xout;
+            particle(2) = pxout;
+            particle(3) = yout;
+            particle(4) = pyout;
+            particle(5) = tout;
+            particle(6) = ptout;
 
             zeval += tau;
         }
@@ -430,36 +434,57 @@ namespace impactx::elements
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
 
+            // pick the right data depending if we are on the host side
+            // (reference particle push) or device side (particles):
+#if AMREX_DEVICE_COMPILE
+            amrex::ParticleReal* k_normal = m_k_normal_d_data;
+            amrex::ParticleReal* k_skew = m_k_skew_d_data;
+#else
+            amrex::ParticleReal* k_normal = m_k_normal_h_data;
+            amrex::ParticleReal* k_skew = m_k_skew_h_data;
+#endif   
+
+            // normalize quad units to MAD-X convention if needed
+            amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / refpart.rigidity_Tm() : k_normal[1];
+            amrex::ParticleReal const ks = m_unit == 1 ? k_skew[1] / refpart.rigidity_Tm() : k_skew[1];
+            
+            amrex::ParticleReal const kabs = std::sqrt(std::pow(kn,2) + std::pow(ks,2));
+            amrex::ParticleReal const kplus = kn + kabs;
+            amrex::ParticleReal const kminus = kn - kabs;
+            
             // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_g));
+            amrex::ParticleReal const omega = std::sqrt(kabs);
+            amrex::ParticleReal const sin_omega_ds = std::sin(omega*slice_ds);
+            amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
+            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
+            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            if (m_g > 0.0) {
-                R(1,1) = std::cos(omega*slice_ds);
-                R(1,2) = std::sin(omega*slice_ds)/omega;
-                R(2,1) = -omega*std::sin(omega*slice_ds);
-                R(2,2) = std::cos(omega*slice_ds);
-                R(3,3) = std::cosh(omega*slice_ds);
-                R(3,4) = std::sinh(omega*slice_ds)/omega;
-                R(4,3) = omega*std::sinh(omega*slice_ds);
-                R(4,4) = std::cosh(omega*slice_ds);
-                R(5,6) = slice_ds/betgam2;
-            } else if (m_g < 0.0) {
-                R(1,1) = std::cosh(omega*slice_ds);
-                R(1,2) = std::sinh(omega*slice_ds)/omega;
-                R(2,1) = omega*std::sinh(omega*slice_ds);
-                R(2,2) = std::cosh(omega*slice_ds);
-                R(3,3) = std::cos(omega*slice_ds);
-                R(3,4) = std::sin(omega*slice_ds)/omega;
-                R(4,3) = -omega*std::sin(omega*slice_ds);
-                R(4,4) = std::cos(omega*slice_ds);
-                R(5,6) = slice_ds/betgam2;
-            } else {
-                R(1,2) = m_slice_ds;
-                R(3,4) = m_slice_ds;
-                R(5,6) = m_slice_ds / betgam2;
+            // linear matrix for a quadrupole with both normal and skew coefficients
+            R(1,1) = (kplus * cos_omega_ds - kminus * cosh_omega_ds) / (2_prt * kabs);
+            R(1,2) = (kplus * sin_omega_ds - kminus * sinh_omega_ds) / (2_prt * kabs * omega);
+            R(1,3) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
+            R(1,4) = ks * (-sin_omega_ds + sinh_omega_ds) / (2_prt * kabs * omega);
+            R(2,1) = (-kplus * sin_omega_ds - kminus * sinh_omega_ds) / (2_prt * omega);
+            R(2,2) = (kplus * cos_omega_ds - kminus * cosh_omega_ds) / (2_prt * kabs);
+            R(2,3) = ks * (sin_omega_ds + sinh_omega_ds) / (2_prt * omega);
+            R(2,4) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
+            R(3,1) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
+            R(3,2) = ks * (-sin_omega_ds + sinh_omega_ds) / (2_prt * kabs * omega);
+            R(3,3) = (-kminus * cos_omega_ds + kplus * cosh_omega_ds) / (2_prt * kabs);
+            R(3,4) = (-kminus * sin_omega_ds + kplus * sinh_omega_ds) / (2_prt * kabs * omega);
+            R(4,1) = ks * (sin_omega_ds + sinh_omega_ds) / (2_prt * omega);
+            R(4,2) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
+            R(4,3) = (kminus * sin_omega_ds + kplus * sinh_omega_ds) / (2_prt * omega);
+            R(4,4) = (-kminus * cos_omega_ds + kplus * cosh_omega_ds) / (2_prt * kabs);
+            R(5,6) = slice_ds/betgam2;
+
+            for (int j=1; j<=6; j++) {
+               for (int k=1; k<=6; k++) {
+                  amrex::Print() << "R(" << j << "," << k << ") = " << R(j,k) << "\n";
+               }
             }
 
             return R;
@@ -505,8 +530,7 @@ namespace impactx::elements
         amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
-        amrex::ParticleReal m_g;              //! quadrupole strength in 1/m^2
-        amrex::ParticleReal m_omega;
+        amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
     };
 
 } // namespace impactx

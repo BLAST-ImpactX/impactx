@@ -52,17 +52,17 @@ D5.ds = 1.0106078
 
 Q1.type = quad_chromatic
 Q1.ds = 0.05
-Q1.k = -11.4
+Q1.k = 11.4
 Q1.units = 1
 
 Q2.type = quad_chromatic
 Q2.ds = 0.1
-Q2.k = 10.47
+Q2.k = -10.47
 Q2.units = 1
 
 Q3.type = quad_chromatic
 Q3.ds = 0.05
-Q3.k = -11.4
+Q3.k = 11.4
 Q3.units = 1
 
 RF1.type = rfcavity
@@ -149,7 +149,7 @@ D4b.ds = 0.0679
 
 SOL1b.type = solenoid_softedge
 SOL1b.ds = 0.3
-SOL1b.bscale = -2.3192
+SOL1b.bscale = 2.3192
 SOL1b.units = 1
 SOL1b.mapsteps = 100
 SOL1b.nslice = 4
@@ -218,7 +218,7 @@ SOL1b.sin_coefficients = \
 
 SOL2b.type = solenoid_softedge
 SOL2b.ds = 0.3
-SOL2b.bscale = -2.3969
+SOL2b.bscale = 2.3969
 SOL2b.units = 1
 SOL2b.mapsteps = 100
 SOL2b.nslice = 4

@@ -1380,6 +1380,22 @@ add_impactx_test(zero-bend-inverse.py
     OFF  # no plot script yet
 )
 
+# Testing Charge and Field Sign Consistency ######################
+#
+# no space charge
+add_impactx_test(examples-charge-sign
+    examples/charge_sign/input_charge_sign.in
+    ON   # ImpactX MPI-parallel
+    examples/charge_sign/analysis_charge_sign.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-charge-sign.py
+    examples/charge_sign/run_charge_sign.py
+    ON   # ImpactX MPI-parallel
+    examples/charge_sign/analysis_charge_sign.py
+    OFF  # no plot script yet
+)
+
 # Chicane with ISR ###########################################################
 #
 add_impactx_test(chicane_isr

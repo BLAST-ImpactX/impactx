@@ -271,14 +271,14 @@ namespace impactx::elements
             amrex::ParticleReal tout = t;
             amrex::ParticleReal ptout = pt;
 
-            // compute the radical in the denominator (= pz):   
+            // compute the radical in the denominator (= pz):
             amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
                 std::pow(pt - m_ibeta, 2) -
                 m_ibetgam2 -
                 std::pow(px, 2) -
                 std::pow(py, 2)
             );
-           
+
             // advance position and momentum (exact drift)
             xout = x + tau * px * inv_pzden;
             // pxout = px;
@@ -334,8 +334,8 @@ namespace impactx::elements
 #else
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
             amrex::ParticleReal* k_skew = m_k_skew_h_data;
-#endif   
-            
+#endif
+
             // a complex type with two amrex::ParticleReal
             using Complex = amrex::GpuComplex<amrex::ParticleReal>;
 
@@ -354,7 +354,7 @@ namespace impactx::elements
                // normalize units to MAD-X convention if needed
                amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
                amrex::ParticleReal kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
-            
+
                // multipole contribution to complex momentum kick
                Complex alpha(knormal_value, kskew_value);
                Complex kick = amrex::pow(zeta, m) * alpha;
@@ -368,7 +368,7 @@ namespace impactx::elements
             // advance momentum by a step of length tau
             pxout = pxout + tau * dpx;
             pyout = pyout + tau * dpy;
-          
+
             //update the particle coordinates
             particle(1) = xout;
             particle(2) = pxout;
@@ -442,16 +442,16 @@ namespace impactx::elements
 #else
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
             amrex::ParticleReal* k_skew = m_k_skew_h_data;
-#endif   
+#endif
 
             // normalize quad units to MAD-X convention if needed
             amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / refpart.rigidity_Tm() : k_normal[1];
             amrex::ParticleReal const ks = m_unit == 1 ? k_skew[1] / refpart.rigidity_Tm() : k_skew[1];
-            
+
             amrex::ParticleReal const kabs = std::sqrt(std::pow(kn,2) + std::pow(ks,2));
             amrex::ParticleReal const kplus = kn + kabs;
             amrex::ParticleReal const kminus = kn - kabs;
-            
+
             // compute phase advance per unit length in s (in rad/m)
             amrex::ParticleReal const omega = std::sqrt(kabs);
             amrex::ParticleReal const sin_omega_ds = std::sin(omega*slice_ds);

@@ -51,24 +51,36 @@ class InputDefaultsHelper:
         return docstrings
 
     @staticmethod
-    def get_tooltips_from_param(func: Callable) -> Dict[str, str]:
+    def get_tooltips_from_param(function: Callable) -> Dict[str, str]:
         """
         Extract all ':param name: description' entries from a function's docstring.
 
-        :param func: The function whose docstring you want to parse.
+        Example:
+            :param beta_x: Beta function value in the x dimension.
+            :param emitt_x: Emittance function value in the x dimension.
+
+        This will produce:
+            {
+                "beta_x": "Beta function value in the x dimension.",
+                "emitt_x": "Emittance function value in the x dimension."
+            }
+
+        :param function: The function whose docstring you want to parse.
         :return: A dict mapping each parameter name to its description.
         """
-        tooltips = {}
-        doc = inspect.getdoc(func) or ""
+        tooltip_results = {}
+        docstring = inspect.getdoc(function) or ""
         pattern = re.compile(r"^\s*:param\s+(\w+)\s*:\s*(.+)$", re.MULTILINE)
-        pattern_matches = list(pattern.finditer(doc))
+        pattern_matches = list(pattern.finditer(docstring))
 
         if not pattern_matches:
-            raise ValueError(f"Found no docstrings to parse in function {func.__name__}")
+            raise ValueError(
+                f"Found no docstrings to parse in function {function.__name__}"
+            )
 
         for match in pattern_matches:
             param_name = match.group(1)
-            description = match.group(2)
-            tooltips[param_name] = description
+            param_description = match.group(2)
+            tooltip_results[param_name] = param_description
 
-        return tooltips
+        return tooltip_results

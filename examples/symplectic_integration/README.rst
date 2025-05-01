@@ -87,12 +87,11 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
 Analyze
 -------
-   
+
 We run the following script to analyze correctness:
-       
+
 .. dropdown:: Script ``analysis_fodo_multipole.py``
-          
+
    .. literalinclude:: analysis_fodo_multipole.py
       :language: python3
       :caption: You can copy this file from ``examples/symplectic_integration/analysis_fodo_multipole.py``.
-

@@ -89,7 +89,7 @@ def populate_distribution_parameters():
             for parameter in selected_distribution_parameters
         ]
 
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     return state.selected_distribution_parameters
 
 
@@ -136,7 +136,7 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
             param["parameter_default_value"] = parameter_value
             param["parameter_error_message"] = error_message
 
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     state.dirty("selected_distribution_parameters")
 
 

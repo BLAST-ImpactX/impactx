@@ -36,7 +36,7 @@ class SharedUtilities:
                     input, desired_type, conditions
                 )
                 setattr(state, validation_name, validation_result)
-                generalFunctions.update_simulation_validation_status()
+                DashboardValidation.update_simulation_validation_status()
 
                 if validation_result == []:
                     converted_value = generalFunctions.convert_to_numeric(input)

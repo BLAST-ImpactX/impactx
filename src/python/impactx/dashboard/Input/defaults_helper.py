@@ -61,8 +61,12 @@ class InputDefaultsHelper:
         tooltips = {}
         doc = inspect.getdoc(func) or ""
         pattern = re.compile(r"^\s*:param\s+(\w+)\s*:\s*(.+)$", re.MULTILINE)
+        pattern_matches = list(pattern.finditer(doc))
 
-        for match in pattern.finditer(doc):
+        if not pattern_matches:
+            raise ValueError(f"Found no docstrings to parse in function {func.__name__}")
+
+        for match in pattern_matches:
             param_name = match.group(1)
             description = match.group(2)
             tooltips[param_name] = description

@@ -730,7 +730,14 @@ This module provides elements and methods for the accelerator lattice.
 .. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=1, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user may provide an array of multipole coefficients of arbitrary order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
+   The coefficients must appear in the following sequence:
+
+   dipole, quadrupole, sextupole, octupole, etc...
+
+   (Note: Dipole coefficients are currently ignored, and will be supported in a separate combined-function dipole element.)
+
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
    Here H_1 is the nonlinear Hamiltonian for a drift (including the kinematic square root),
    and H_2 is the term containing the vector potential, which is a superposition of multipole contributions.

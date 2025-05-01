@@ -393,8 +393,15 @@ This requires these additional parameters:
 ``multipole_exact``
 ^^^^^^^^^^^^^^^^^^
 
-``multipole_exact`` for a thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-The user may provide an array of multipole coefficients of arbitrary order.
+``multipole_exact`` for a thick multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
+The coefficients must appear in the following sequence:
+
+dipole, quadrupole, sextupole, octupole, etc...
+
+(Note: Dipole coefficients are currently ignored, and will be supported in a separate combined-function dipole element.)
+
 Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
 Here :math:`H_1` is the nonlinear Hamiltonian for a drift (including the kinematic square root),
 and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
@@ -405,7 +412,7 @@ This requires these additional parameters:
 * ``<element_name>.k_normal`` (``float``, in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of normal multipole coefficients
 * ``<element_name>.k_skew`` (``float``, in 1/meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of skew multipole coefficients
 * ``<element_name>.unit`` (``integer``) specification of units for the multipole coefficients (default: ``0``)
-  By default, the multipole coefficients are normalized by magnetic rigidity.  Using ``unit=1`` to specify using SI units.
+  By default, the multipole coefficients are normalized by magnetic rigidity.  Use ``unit=1`` to specify using SI units.
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

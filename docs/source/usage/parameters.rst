@@ -400,7 +400,7 @@ Here :math:`H_1` is the nonlinear Hamiltonian for a drift (including the kinemat
 and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
 
 This requires these additional parameters:
-  
+
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.k_normal`` (``float``, in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of normal multipole coefficients
 * ``<element_name>.k_skew`` (``float``, in 1/meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of skew multipole coefficients

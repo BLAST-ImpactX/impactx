@@ -390,6 +390,32 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 
 
+``multipole_exact``
+^^^^^^^^^^^^^^^^^^
+
+``multipole_exact`` for a thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+The user may provide an array of multipole coefficients of arbitrary order.
+Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+Here :math:`H_1` is the nonlinear Hamiltonian for a drift (including the kinematic square root),
+and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
+
+This requires these additional parameters:
+  
+* ``<element_name>.ds`` (``float``, in meters) the segment length
+* ``<element_name>.k_normal`` (``float``, in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of normal multipole coefficients
+* ``<element_name>.k_skew`` (``float``, in 1/meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of skew multipole coefficients
+* ``<element_name>.unit`` (``integer``) specification of units for the multipole coefficients (default: ``0``)
+  By default, the multipole coefficients are normalized by magnetic rigidity.  Using ``unit=1`` to specify using SI units.
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+* ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
+* ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2 or 4) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
+
+
 ``nonlinear_lens``
 ^^^^^^^^^^^^^^^^^^
 

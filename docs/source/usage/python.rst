@@ -727,6 +727,40 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
+.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=1, nslice=1, name=None)
+  
+   A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   The user may provide an array of multipole coefficients of arbitrary order.
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
+   Here H_1 is the nonlinear Hamiltonian for a drift (including the kinematic square root),
+   and H_2 is the term containing the vector potential, which is a superposition of multipole contributions.  
+   
+   :param ds: Segment length in m.
+   :param K_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param K_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2 or 4)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   .. py:property:: unit
+                    
+      unit specification for multipole coefficients
+   
+   .. py:property:: int_order
+   
+      the order used for symplectic integration (2 or 4)
+              
+   .. py:property:: mapsteps
+              
+      number of integration steps per slice used for symplectic integration
+
 .. py::class:: impactx.elements.Empty
 
    This element does nothing.

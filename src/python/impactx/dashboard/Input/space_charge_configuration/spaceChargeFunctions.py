@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server
-from .. import CardComponents, generalFunctions
+from .. import CardComponents, DashboardValidation
 
 server, state, ctrl = setup_server()
 
@@ -71,8 +71,8 @@ class SpaceChargeFunctions:
         n_cell_value = getattr(state, f"n_cell_{direction}", None)
         blocking_factor_value = getattr(state, f"blocking_factor_{direction}", None)
 
-        n_cell_errors = generalFunctions.validate_against(n_cell_value, "int")
-        blocking_factor_errors = generalFunctions.validate_against(
+        n_cell_errors = DashboardValidation.validate_against(n_cell_value, "int")
+        blocking_factor_errors = DashboardValidation.validate_against(
             blocking_factor_value, "int", ["non_zero", "positive"]
         )
 

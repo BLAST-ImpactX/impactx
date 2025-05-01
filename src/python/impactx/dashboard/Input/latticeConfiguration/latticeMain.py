@@ -12,6 +12,7 @@ from ... import setup_server, vuetify
 from .. import (
     CardBase,
     CardComponents,
+    DashboardValidation,
     InputComponents,
     NavigationComponents,
     generalFunctions,
@@ -66,7 +67,7 @@ def add_lattice_element():
                 "ui_input": parameter[1],
                 "sim_input": parameter[1],
                 "parameter_type": parameter[2],
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     parameter[1], parameter[2]
                 ),
             }
@@ -194,7 +195,7 @@ def on_lattice_element_parameter_change(
             (index, parameter_name), None
         )
 
-    error_message = generalFunctions.validate_against(sim_input, parameter_type)
+    error_message = DashboardValidation.validate_against(sim_input, parameter_type)
 
     if parameter_name == "name":
         if not LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input):

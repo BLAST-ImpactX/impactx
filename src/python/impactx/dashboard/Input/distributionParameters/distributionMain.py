@@ -16,6 +16,7 @@ from .. import (
     CardBase,
     CardComponents,
     DashboardDefaults,
+    DashboardValidation,
     InputComponents,
     generalFunctions,
 )
@@ -56,7 +57,7 @@ def populate_distribution_parameters():
                 if param.default != param.empty
                 else None,
                 "parameter_type": "float",  # Hardcoding Twiss to 'float' type.
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     param.default if param.default != param.empty else None, "float"
                 ),
                 "parameter_units": generalFunctions.get_default(param.name, "units")
@@ -77,7 +78,7 @@ def populate_distribution_parameters():
                 "parameter_name": parameter[0],
                 "parameter_default_value": parameter[1],
                 "parameter_type": parameter[2],
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     parameter[1], parameter[2]
                 ),
                 "parameter_units": "m"
@@ -126,7 +127,9 @@ def on_distribution_type_change(**kwargs):
 @ctrl.add("updateDistributionParameters")
 def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
     parameter_value = generalFunctions.convert_to_numeric(parameter_value)
-    error_message = generalFunctions.validate_against(parameter_value, parameter_type)
+    error_message = DashboardValidation.validate_against(
+        parameter_value, parameter_type
+    )
 
     for param in state.selected_distribution_parameters:
         if param["parameter_name"] == parameter_name:

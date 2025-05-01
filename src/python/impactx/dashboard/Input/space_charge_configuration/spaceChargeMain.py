@@ -10,6 +10,7 @@ from ... import setup_server, vuetify
 from .. import (
     CardBase,
     CardComponents,
+    DashboardValidation,
     InputComponents,
     NavigationComponents,
     generalFunctions,
@@ -62,7 +63,7 @@ def populate_prob_relative_fields():
     state.prob_relative_fields = [
         {
             "value": state.prob_relative[i],
-            "error_message": SpaceChargeFunctions.validate_prob_relative_fields(
+            "error_message": DashboardValidation.validate_prob_relative_fields(
                 i, state.prob_relative[i]
             ),
             "step": generalFunctions.get_default("prob_relative", "steps"),
@@ -77,7 +78,7 @@ def update_blocking_factor_and_n_cell(category, kwargs):
     for state_name, value in kwargs.items():
         if any(state_name == f"{category}_{dir}" for dir in directions):
             direction = state_name.split("_")[-1]
-            SpaceChargeFunctions.validate_n_cell_and_blocking_factor(direction)
+            DashboardValidation.validate_n_cell_and_blocking_factor(direction)
 
             n_cell_error = getattr(state, f"n_cell_{direction}_error_message")
             blocking_factor_error = getattr(
@@ -146,7 +147,7 @@ def on_update_prob_relative_call(index, value):
         state.prob_relative[index] = prob_relative_value
 
     # Validate the updated value
-    error_message = SpaceChargeFunctions.validate_prob_relative_fields(
+    error_message = DashboardValidation.validate_prob_relative_fields(
         index, prob_relative_value
     )
 
@@ -157,7 +158,7 @@ def on_update_prob_relative_call(index, value):
     if index + 1 < len(state.prob_relative):
         next_value = state.prob_relative[index + 1]
 
-        next_error_message = SpaceChargeFunctions.validate_prob_relative_fields(
+        next_error_message = DashboardValidation.validate_prob_relative_fields(
             index + 1, next_value
         )
         state.prob_relative_fields[index + 1]["error_message"] = next_error_message

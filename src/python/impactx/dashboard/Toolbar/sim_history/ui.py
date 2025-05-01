@@ -257,7 +257,7 @@ class SimulationHistory:
                             label="Status",
                             v_model=("selected_sim_search_status", None),
                             update_modelValue=(ctrl.update_status, "[$event]"),
-                            items=(["All", "Completed", "In Progress"],),
+                            items=(["All", "Completed", "In Progress", "Failed"],),
                             clearable=True,
                             density="comfortable",
                             hide_details=True,
@@ -295,6 +295,10 @@ class SimulationHistory:
                                         "{{ window.formatTime(item.created_at_time) }}",
                                         classes="text-caption",
                                     )
+                            with SimulationHistory._access_sim_history_slot(
+                                "time_elapsed"
+                            ):
+                                html.Span("{{ item.time_elapsed || '—' }}")
                             with SimulationHistory._access_sim_history_slot("status"):
                                 SimulationHistoryComponents.status_chip("item")
                             with SimulationHistory._access_sim_history_slot("actions"):
@@ -303,7 +307,7 @@ class SimulationHistory:
                                     classes="mr-1",
                                     click=(ctrl.open_view_details, "[item]"),
                                     description="View Details",
-                                    disabled=("item.status !== 'Completed'", True),
+                                    disabled=("sim_is_running",),
                                 )
                                 SimulationHistoryComponents.icon_button(
                                     icon_name="mdi-download",
@@ -327,5 +331,5 @@ class SimulationHistory:
                                     color="error",
                                     click=(ctrl.delete_sim, "[item]"),
                                     description="Delete",
-                                    disabled=("item.status !== 'Completed'", True),
+                                    disabled=("sim_is_running",),
                                 )

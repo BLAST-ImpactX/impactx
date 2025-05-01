@@ -52,6 +52,20 @@ class SimulationHelper:
         SimulationHistory.save_view_details_log()
 
     @staticmethod
+    def fail_simulation() -> None:
+        """
+        Updates the UI and simulation history to reflect a failed simulation.
+        """
+        state.sim_is_running = False
+        state.sim_progress_status = "Failed"
+        state.sim_status_color = "error"
+        state.sims[state.sim_index]["status"] = "Failed"
+        state.dirty("filtered_sims")
+        state.flush()
+        ctrl.terminal_print("Simulation failed due to the above error.")
+        SimulationHistory.save_view_details_log()
+
+    @staticmethod
     def reset():
         state.sim_is_running = True
         state.sim_progress = 0

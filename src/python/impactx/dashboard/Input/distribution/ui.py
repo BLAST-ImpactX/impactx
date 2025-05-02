@@ -29,7 +29,6 @@ DISTRIBUTION_PARAMETERS_AND_DEFAULTS = (
 state.selected_distribution_parameters = {}
 state.distribution_type_disable = False
 
-
 def populate_distribution_parameters():
     """
     Called when `state.distribution_type` changes.
@@ -47,8 +46,8 @@ def populate_distribution_parameters():
 
     # Populate the UI
     for param_name, default_value, default_type in param_data:
-        error_message = DashboardValidation.validate_against(
-            default_value, default_type
+        error_message = DashboardValidation.validate_input(
+            param_name, default_value, category="distribution"
         )
         units = DistributionFunctions.get_distribution_units(param_name)
         step = GeneralFunctions.get_default(param_name, "steps")
@@ -95,10 +94,8 @@ def on_distribution_type_change(**kwargs):
 @ctrl.add("update_distribution_parameter")
 def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
     numeric_input = GeneralFunctions.convert_to_numeric(input)
-    lookup_name = "lambda" if "lambda" in name else name
-    conditions = GeneralFunctions.get_default(lookup_name, "validation_condition")
-    error_message = DashboardValidation.validate_against(
-        numeric_input, type, additional_conditions=conditions
+    error_message = DashboardValidation.validate_input(
+        name, numeric_input, category="distribution"
     )
 
     parameter = state.selected_distribution_parameters.get(name)

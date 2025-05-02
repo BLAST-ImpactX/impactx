@@ -8,27 +8,46 @@ License: BSD-3-Clause-LBNL
 
 from .. import state
 
-
+from . import generalFunctions
 class DashboardValidation:
     """
     Contains all validation logic for the ImpactX dashboard inputs.
     """
 
     @staticmethod
-    def validate_against(input_value, value_type, additional_conditions=None):
+    def validate_input(input_name: str, input_value, category=None, parameter_type=None):
         """
         Validates the input value against the desired type and additional conditions.
+        :param input_name: The name of the parameter being validated.
         :param input_value: The value to validate.
-        :param value_type: The desired type ('int', 'float', 'str').
-        :param additional_conditions: A list of additional conditions to validate.
+        :param category: The category of validation (e.g., 'distribution', 'lattice').
+        :param parameter_type: The explicit type to use ('int', 'float', 'str'). If provided, overrides type lookup.
         :return: A list of error messages. An empty list if there are no errors.
         """
+        lookup_name = "lambda" if "lambda" in input_name else input_name
+        
+        # Use explicit parameter_type if provided, otherwise look it up
+        if parameter_type is not None:
+            value_type = parameter_type
+        else:
+            value_type = generalFunctions.get_default(lookup_name, "types")
+            
+            # Default to float for distribution and lattice parameters if no type is found
+            if value_type is None and category in ["distribution", "lattice"]:
+                value_type = "float"
+        
+        additional_conditions = generalFunctions.get_default(lookup_name, "validation_condition") or []
+
         errors = []
         value = None
 
         if input_value == "None":
             return errors
 
+        if value_type not in ["int", "float", "str"]:
+            errors.append(f"Unknown or unsupported type '{value_type}'")
+            return errors
+            
         # value_type checking
         if value_type == "int":
             if input_value is None:
@@ -110,10 +129,8 @@ class DashboardValidation:
         n_cell_value = getattr(state, f"n_cell_{direction}", None)
         blocking_factor_value = getattr(state, f"blocking_factor_{direction}", None)
 
-        n_cell_errors = DashboardValidation.validate_against(n_cell_value, "int")
-        blocking_factor_errors = DashboardValidation.validate_against(
-            blocking_factor_value, "int", ["non_zero", "positive"]
-        )
+        n_cell_errors = DashboardValidation.validate_input("n_cell", n_cell_value)
+        blocking_factor_errors = DashboardValidation.validate_input("blocking_factor", blocking_factor_value)
 
         setattr(state, f"n_cell_{direction}_error_message", "; ".join(n_cell_errors))
         setattr(

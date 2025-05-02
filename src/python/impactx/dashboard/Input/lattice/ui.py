@@ -46,6 +46,9 @@ def add_lattice_element() -> dict:
     parameters = []
     for name, default_value, default_type in parameters_data:
         value = default_value
+        error_message = DashboardValidation.validate_input(
+                name, default_value, category="lattice", parameter_type=default_type
+        )
 
         if selected_lattice == "BeamMonitor" and name == "name" and not value:
             value = BEAM_MONITOR_DEFAULT_NAME
@@ -56,9 +59,7 @@ def add_lattice_element() -> dict:
                 "ui_input": value,
                 "sim_input": value,
                 "parameter_type": default_type,
-                "parameter_error_message": DashboardValidation.validate_against(
-                    value, default_type
-                ),
+                "parameter_error_message": error_message,
             }
         )
 
@@ -178,11 +179,13 @@ def on_lattice_element_parameter_change(
     else:
         state.lattice_elements_using_variables.pop(key, None)
 
-    error_message = DashboardValidation.validate_against(sim_input, parameter_type)
-
-    if parameter_name == "name":
+    if parameter_name in ["name", "backend"]:
         if not LatticeConfigurationHelper.is_valid_input_name(ui_input):
             error_message = ["Must be a valid Python identifier"]
+        else:
+            error_message = []
+    else:
+        error_message = DashboardValidation.validate_input(parameter_name, sim_input, category="lattice", parameter_type=parameter_type)
 
     for param in state.selected_lattice_list[index]["parameters"]:
         if param["parameter_name"] == parameter_name:

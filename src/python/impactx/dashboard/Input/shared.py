@@ -45,8 +45,8 @@ class SharedUtilities:
                     state_name, None
                 )
 
-                validation_result = DashboardValidation.validate_against(
-                    input, desired_type, conditions
+                validation_result = DashboardValidation.validate_input(
+                    state_name, input
                 )
                 setattr(state, validation_name, validation_result)
                 DashboardValidation.update_simulation_validation_status()

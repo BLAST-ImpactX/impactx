@@ -112,11 +112,7 @@ class DashboardDefaults:
     }
 
     LISTS = {
-        "tracking_mode_list": [
-            "Particle Tracking",
-            "Envelope Tracking",
-            "Reference Tracking",
-        ],
+        "tracking_mode_list": ["Particle Tracking", "Envelope Tracking", "Reference Tracking"],
         "distribution_list": InputDefaultsHelper.select_classes(DISTRIBUTION_MODULE_NAME),
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],

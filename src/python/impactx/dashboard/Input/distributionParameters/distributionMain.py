@@ -20,6 +20,7 @@ from .. import (
     InputComponents,
     generalFunctions,
 )
+from ..defaults_helper import InputDefaultsHelper
 
 server, state, ctrl = setup_server()
 
@@ -28,9 +29,9 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 DISTRIBUTION_MODULE_NAME = distribution
-DISTRIBUTION_LIST = generalFunctions.select_classes(DISTRIBUTION_MODULE_NAME)
-DISTRIBUTION_PARAMETERS_AND_DEFAULTS = generalFunctions.class_parameters_with_defaults(
-    DISTRIBUTION_MODULE_NAME
+DISTRIBUTION_LIST = InputDefaultsHelper.select_classes(DISTRIBUTION_MODULE_NAME)
+DISTRIBUTION_PARAMETERS_AND_DEFAULTS = (
+    InputDefaultsHelper.class_parameters_with_defaults(DISTRIBUTION_MODULE_NAME)
 )
 
 state.selected_distribution_parameters = []

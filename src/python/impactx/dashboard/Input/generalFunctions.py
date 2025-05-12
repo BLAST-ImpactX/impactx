@@ -6,9 +6,6 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-import inspect
-import re
-
 from .. import setup_server
 from .defaults import DashboardDefaults
 
@@ -75,116 +72,6 @@ class generalFunctions:
                 return float(input)
             except ValueError:
                 return None
-
-    # -----------------------------------------------------------------------------
-    # Class, parameter, default value, and default type retrievals
-    # -----------------------------------------------------------------------------
-
-    @staticmethod
-    def find_classes(module_name):
-        """
-        Returns a list of all classes in the given module.
-        :param module_name: The module to inspect.
-        :return: A list of tuples containing class names.
-        """
-
-        results = []
-        for name in dir(module_name):
-            attr = getattr(module_name, name)
-            if inspect.isclass(attr):
-                results.append((name, attr))
-        return results
-
-    @staticmethod
-    def find_init_docstring_for_classes(classes):
-        """
-        Retrieves the __init__ docstring of the given classes.
-        :param classes: A list of typles containing class names.
-        :return: A dictionary with class names as keys and their __init__ docstrings as values.
-        """
-
-        if not isinstance(classes, (list, tuple)):
-            raise TypeError("The 'classes' argument must be a list or tuple.")
-
-        docstrings = {}
-        for name, cls in classes:
-            init_method = getattr(cls, "__init__", None)
-            if init_method:
-                docstring = cls.__init__.__doc__
-                docstrings[name] = docstring
-        return docstrings
-
-    @staticmethod
-    def extract_parameters(docstring):
-        """
-        Parses specific information from docstrings.
-        Aimed to retrieve parameter names, values, and types.
-        :param docstring: The docstring to parse.
-        :return: A list of tuples containing parameter names, default values, and types.
-        """
-
-        parameters = []
-        docstring = re.search(r"\((.*?)\)", docstring).group(
-            1
-        )  # Return class name and init signature
-        docstring = docstring.split(",")
-
-        for parameter in docstring:
-            if parameter.startswith("self"):
-                continue
-
-            name = parameter
-            default = None
-            parameter_type = "Any"
-
-            if ":" in parameter:
-                split_by_semicolon = parameter.split(":", 1)
-                name = split_by_semicolon[0].strip()
-                type_and_default = split_by_semicolon[1].strip()
-                if "=" in type_and_default:
-                    split_by_equals = type_and_default.split("=", 1)
-                    parameter_type = split_by_equals[0].strip()
-                    default = split_by_equals[1].strip()
-                    if default.startswith("'") and default.endswith("'"):
-                        default = default[1:-1]
-                else:
-                    parameter_type = type_and_default
-
-            if "Optional" in parameter_type:
-                parameter_type = parameter_type[len("Optional[") : -1]
-            parameters.append((name, default, parameter_type))
-
-        return parameters
-
-    @staticmethod
-    def class_parameters_with_defaults(module_name):
-        """
-        Given a module name, outputs a dictionary of class names and their parameters.
-        Keys are class names, and values are lists of parameter information (name, default value, type).
-        :param module_name: The module to inspect.
-        :return: A dictionary with class names as keys and parameter information as values.
-        """
-
-        classes = generalFunctions.find_classes(module_name)
-        docstrings = generalFunctions.find_init_docstring_for_classes(classes)
-
-        result = {}
-
-        for class_name, docstring in docstrings.items():
-            parameters = generalFunctions.extract_parameters(docstring)
-            result[class_name] = parameters
-
-        return result
-
-    @staticmethod
-    def select_classes(module_name):
-        """
-        Given a module name, outputs a list of all class names in the module.
-        :param module_name: The module to inspect.
-        :return: A list of class names.
-        """
-
-        return list(generalFunctions.class_parameters_with_defaults(module_name))
 
     @staticmethod
     def reset_inputs(input_section):

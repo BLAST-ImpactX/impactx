@@ -17,6 +17,7 @@ from .. import (
     NavigationComponents,
     generalFunctions,
 )
+from ..defaults_helper import InputDefaultsHelper
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
@@ -28,11 +29,11 @@ state.lattice_params_bound_or_pending_variable = {}
 
 LATTICE_ELEMENTS_MODULE_NAME = elements
 
-state.listOfLatticeElements = generalFunctions.select_classes(
+state.listOfLatticeElements = InputDefaultsHelper.select_classes(
     LATTICE_ELEMENTS_MODULE_NAME
 )
 state.listOfLatticeElementParametersAndDefault = (
-    generalFunctions.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
+    InputDefaultsHelper.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
 )
 
 # -----------------------------------------------------------------------------

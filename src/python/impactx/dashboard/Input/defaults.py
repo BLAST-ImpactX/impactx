@@ -8,8 +8,8 @@ License: BSD-3-Clause-LBNL
 
 from typing import Any
 
-from impactx.impactx_pybind import ImpactX, RefPart
 from impactx import distribution, elements
+from impactx.impactx_pybind import ImpactX, RefPart
 
 from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
@@ -114,8 +114,14 @@ class DashboardDefaults:
     }
 
     LISTS = {
-        "tracking_mode_list": ["Particle Tracking", "Envelope Tracking", "Reference Tracking"],
-        "distribution_list": InputDefaultsHelper.select_classes(DISTRIBUTION_MODULE_NAME),
+        "tracking_mode_list": [
+            "Particle Tracking",
+            "Envelope Tracking",
+            "Reference Tracking",
+        ],
+        "distribution_list": InputDefaultsHelper.select_classes(
+            DISTRIBUTION_MODULE_NAME
+        ),
         "lattice_list": InputDefaultsHelper.select_classes(LATTICE_MODULE_NAME),
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],

@@ -10,6 +10,7 @@ server, state, ctrl = setup_server()
 
 state.sim_elapsed_time = "0.0"
 state.sim_is_running = False
+state.sim_is_generating_plots = False
 state.sim_current_step = 0
 state.sim_total_steps = 0
 state.sim_progress = 0

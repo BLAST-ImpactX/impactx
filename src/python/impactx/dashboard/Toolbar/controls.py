@@ -187,7 +187,7 @@ class RunToolbar:
             click=ctrl.begin_sim,
             description="Run Simulation",
             dynamic_condition="sim_is_running",
-            disabled=("disableRunSimulationButton", True),
+            disabled=("disableRunSimulationButton || sim_is_generating_plots", True)
         )
 
     @staticmethod

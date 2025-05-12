@@ -182,12 +182,12 @@ class RunToolbar:
         with the current user-provided inputs.
         """
         CardComponents.card_button(
-            ["mdi-play-circle", "mdi-stop-circle"],
-            color=("sim_status_color",),
+            ["mdi-play-circle", "mdi-close-circle"],
+            color=("sim_is_running ? 'error' : sim_status_color",),
             click=ctrl.begin_sim,
             description="Run Simulation",
             dynamic_condition="sim_is_running",
-            disabled=("disableRunSimulationButton || sim_is_running", True),
+            disabled=("disableRunSimulationButton", True),
         )
 
     @staticmethod

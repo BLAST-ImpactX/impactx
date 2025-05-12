@@ -12,6 +12,7 @@ from ... import setup_server, vuetify
 from .. import (
     CardBase,
     CardComponents,
+    DashboardDefaults,
     DashboardValidation,
     InputComponents,
     NavigationComponents,
@@ -29,9 +30,6 @@ state.lattice_params_bound_or_pending_variable = {}
 
 LATTICE_ELEMENTS_MODULE_NAME = elements
 
-state.listOfLatticeElements = InputDefaultsHelper.select_classes(
-    LATTICE_ELEMENTS_MODULE_NAME
-)
 state.listOfLatticeElementParametersAndDefault = (
     InputDefaultsHelper.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
 )
@@ -128,9 +126,10 @@ def on_lattice_element_name_change(selected_lattice, **kwargs):
 
 @ctrl.add("add_latticeElement")
 def on_add_lattice_element_click():
+    lattice_list = DashboardDefaults.LISTS["lattice_list"]
     selected_lattice = state.selected_lattice
 
-    if selected_lattice not in state.listOfLatticeElements:
+    if selected_lattice not in lattice_list:
         state.isSelectedLatticeListEmpty = (
             f"Lattice element '{selected_lattice}' does not exist."
         )
@@ -282,7 +281,7 @@ class LatticeConfiguration(CardBase):
                         InputComponents.combobox(
                             label="Select Accelerator Lattice",
                             v_model_name="selected_lattice",
-                            items=("listOfLatticeElements",),
+                            items=("lattice_list",),
                             error_messages=("isSelectedLatticeListEmpty",),
                         )
                     with vuetify.VCol(cols="auto"):

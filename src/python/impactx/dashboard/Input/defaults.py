@@ -9,12 +9,14 @@ License: BSD-3-Clause-LBNL
 from typing import Any
 
 from impactx.impactx_pybind import ImpactX, RefPart
+from impactx import distribution
 
 from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
 
 server, state, ctrl = setup_server()
 
+DISTRIBUTION_MODULE_NAME = distribution
 TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     "Reference Tracking": {
         "space_charge": False,
@@ -115,6 +117,7 @@ class DashboardDefaults:
             "Envelope Tracking",
             "Reference Tracking",
         ],
+        "distribution_list": InputDefaultsHelper.select_classes(DISTRIBUTION_MODULE_NAME),
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],

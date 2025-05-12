@@ -29,7 +29,6 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 DISTRIBUTION_MODULE_NAME = distribution
-DISTRIBUTION_LIST = InputDefaultsHelper.select_classes(DISTRIBUTION_MODULE_NAME)
 DISTRIBUTION_PARAMETERS_AND_DEFAULTS = (
     InputDefaultsHelper.class_parameters_with_defaults(DISTRIBUTION_MODULE_NAME)
 )
@@ -168,7 +167,6 @@ class DistributionParameters(CardBase):
                         InputComponents.select(
                             label="Select Distribution",
                             v_model_name="distribution",
-                            items=(DISTRIBUTION_LIST,),
                         )
                     with vuetify.VCol(cols=6):
                         InputComponents.select(

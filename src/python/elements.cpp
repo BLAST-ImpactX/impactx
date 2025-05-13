@@ -971,7 +971,7 @@ void init_elements(py::module& m)
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
              py::arg("int_order") = 2,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 5,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A thick Multipole magnet using the exact nonlinear Hamiltonian."
@@ -1037,7 +1037,7 @@ void init_elements(py::module& m)
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
              py::arg("int_order") = 2,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 5,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Quadrupole magnet using the exact nonlinear Hamiltonian."

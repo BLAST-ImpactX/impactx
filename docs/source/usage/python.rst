@@ -727,7 +727,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -762,7 +762,7 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:property:: int_order
 
-      the order used for symplectic integration (2 or 4)
+      the order used for symplectic integration (2, 4, or 6)
 
    .. py:property:: mapsteps
 
@@ -929,7 +929,7 @@ This module provides elements and methods for the accelerator lattice.
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
@@ -951,7 +951,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param aperture_x: horizontal half-aperture (elliptical) in m
    :param aperture_y: vertical half-aperture (elliptical) in m
-   :param int_order: the order used for symplectic integration (2 or 4)
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
    :param mapsteps: number of integration steps per slice used for symplectic integration
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
@@ -966,7 +966,7 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:property:: int_order
 
-      the order used for symplectic integration (2 or 4)
+      the order used for symplectic integration (2, 4, or 6)
 
    .. py:property:: mapsteps
 

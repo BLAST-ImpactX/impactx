@@ -87,7 +87,7 @@ namespace impactx::elements
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
-         * @param int_order order used for symplectic integration (2 or 4)
+         * @param int_order order used for symplectic integration (2, 4, or 6)
          * @param mapsteps number of integration steps per slice used for
          *        particle push in the applied fields
          * @param nslice number of slices used for the application of space charge
@@ -223,6 +223,8 @@ namespace impactx::elements
                 integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
             } else if (m_int_order == 4) {
                 integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+            } else if (m_int_order == 6) {
+                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
             } else {
                 integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
             }

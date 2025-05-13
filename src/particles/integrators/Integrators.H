@@ -256,14 +256,14 @@ namespace impactx::integrators
         }
     }
 
-        
+
    /** A sixth-order symplectic integrator based on a Hamiltonian
     *  splitting H = H_1 + H_2.  The implementation below
-    *  requires a reduced number of map evaluations (15 total) 
-    *  compared to direct use of the Yoshida construction, which 
+    *  requires a reduced number of map evaluations (15 total)
+    *  compared to direct use of the Yoshida construction, which
     *  requires three compositions of a fourth-order integrator step,
     *  each involving seven map evaluations (when expressed
-    *  in the form obtained by Forest and Ruth, above). 
+    *  in the form obtained by Forest and Ruth, above).
     *  It is based on Section 5 of:
     *
     *  H. Yoshida, Phys. Lett. A 150, 292-268 (1990),
@@ -280,8 +280,8 @@ namespace impactx::integrators
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Element>
-    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE  
-    void symp6_integrate_particle (  
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void symp6_integrate_particle (
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
@@ -290,7 +290,7 @@ namespace impactx::integrators
     )
     {
         using namespace amrex::literals; // for _rt and _prt
-   
+
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
         amrex::ParticleReal const w0 = 1.31518632068391121888424973;
@@ -306,10 +306,10 @@ namespace impactx::integrators
         amrex::ParticleReal const tau6 = w1 * dz;
         amrex::ParticleReal const tau7 = (w1 + w0) * dz / 2_prt;
         amrex::ParticleReal const tau8 = w0 * dz;
-     
-        // initialize the value of the independent variable   
+
+        // initialize the value of the independent variable
         amrex::ParticleReal zeval = zin;
-    
+
         // loop over integration steps
         for (int j=0; j < nsteps; ++j)
         {

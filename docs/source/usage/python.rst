@@ -751,7 +751,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param aperture_x: horizontal half-aperture (elliptical) in m
    :param aperture_y: vertical half-aperture (elliptical) in m
-   :param int_order: the order used for symplectic integration (2 or 4)
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
    :param mapsteps: number of integration steps per slice used for symplectic integration
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element

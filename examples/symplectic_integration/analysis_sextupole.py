@@ -57,7 +57,6 @@ print(error_ti)
 print(error_pti)
 
 atol = 1.0e-13
-rtol = 0.0
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -82,7 +81,6 @@ print(error_yf / yf_max)
 print(error_pyf / pyf_max)
 
 atol = 1.0e-7
-rtol = 0.0
 print(f"  tol={atol}")
 
 assert np.allclose(
@@ -103,7 +101,6 @@ print(error_tf)
 print(error_ptf)
 
 atol = 1.0e-13
-rtol = 0.0
 print(f"  atol={atol}")
 
 assert np.allclose(

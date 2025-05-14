@@ -1431,9 +1431,9 @@ add_impactx_test(examples-fodo_multipole.py
 #
 # no space charge
 file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/initial_coords.pickle
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/initial_coords.pickle)
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/final_coords.pickle
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/final_coords.pickle)
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
 add_impactx_test(examples-long-sextupole.py
     examples/symplectic_integration/run_sextupole.py
     ON   # ImpactX MPI-parallel

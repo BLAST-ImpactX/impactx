@@ -1430,9 +1430,13 @@ add_impactx_test(examples-fodo_multipole.py
 # Symplectic Integration in a Long Sextupole ##############
 #
 # no space charge
+file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/initial_coords.pickle
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/initial_coords.pickle)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/final_coords.pickle
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/final_coords.pickle)
 add_impactx_test(examples-long-sextupole.py
     examples/symplectic_integration/run_sextupole.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_sextupole.py
-    ON  # no plot script yet
+    OFF  # no plot script yet
 )

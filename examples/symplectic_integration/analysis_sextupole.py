@@ -15,7 +15,7 @@ last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
 beam_final = series.iterations[last_step].particles["beam"]
 final = beam_final.to_df()
-    
+
 # compare number of particles
 num_particles = 24
 assert num_particles == len(initial)
@@ -76,17 +76,17 @@ assert np.allclose(
 print("")
 print("Final beam, maximum relative difference in transverse coordinates:")
 print("Difference x, px, y, py:")
-print(error_xf/xf_max)
-print(error_pxf/pxf_max)
-print(error_yf/yf_max)
-print(error_pyf/pyf_max)
+print(error_xf / xf_max)
+print(error_pxf / pxf_max)
+print(error_yf / yf_max)
+print(error_pyf / pyf_max)
 
 atol = 1.0e-7
 rtol = 0.0
 print(f"  tol={atol}")
 
 assert np.allclose(
-    [error_xf/xf_max, error_pxf/pxf_max, error_yf/yf_max, error_pyf/pyf_max],
+    [error_xf / xf_max, error_pxf / pxf_max, error_yf / yf_max, error_pyf / pyf_max],
     [
         0.0,
         0.0,
@@ -105,7 +105,7 @@ print(error_ptf)
 atol = 1.0e-13
 rtol = 0.0
 print(f"  atol={atol}")
-    
+
 assert np.allclose(
     [error_tf, error_ptf],
     [
@@ -114,4 +114,3 @@ assert np.allclose(
     ],
     atol=atol,
 )
-

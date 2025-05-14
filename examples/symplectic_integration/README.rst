@@ -138,4 +138,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_sextupole.py
       :language: python3
       :caption: You can copy this file from ``examples/symplectic_integration/analysis_sextupole.py``.
-

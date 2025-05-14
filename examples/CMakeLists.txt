@@ -1426,3 +1426,14 @@ add_impactx_test(examples-fodo_multipole.py
     examples/symplectic_integration/analysis_fodo_multipole.py
     OFF  # no plot script yet
 )
+
+# Symplectic Integration in a Long Sextupole ##############
+#   
+# no space charge
+add_impactx_test(examples-long-sextupole.py
+    examples/symplectic_integration/run_sextupole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_sextupole.py
+    ON  # no plot script yet
+)
+

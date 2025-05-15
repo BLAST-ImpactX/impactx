@@ -100,7 +100,7 @@ namespace impactx::elements
             // access reference particle values to find beta and gamma
             m_beta = refpart.beta();
             m_gamma = refpart.gamma();
-         
+
             // normalize quad units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
@@ -142,9 +142,9 @@ namespace impactx::elements
 
             // compute particle momentum deviation delta + 1
             amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + std::pow(pt,2));
-            amrex::ParticleReal a = m_a / delta1; 
+            amrex::ParticleReal a = m_a / delta1;
 
-            // intialize output values   
+            // intialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -155,7 +155,7 @@ namespace impactx::elements
             amrex::ParticleReal x2my2 = x*x - y*y;
             amrex::ParticleReal x2py2 = x*x + y*y;
             amrex::ParticleReal denominator = 1_prt - 9_prt*std::pow(a,2)*std::pow(x2my2,2);
-            amrex::ParticleReal f4 = a * ( px * (std::pow(x,3) + 3_prt*x*std::pow(y,2))   
+            amrex::ParticleReal f4 = a * ( px * (std::pow(x,3) + 3_prt*x*std::pow(y,2))
                                          - py * (std::pow(y,3) + 3_prt*y*std::pow(x,2)) );
 
             // apply edge focusing
@@ -172,7 +172,7 @@ namespace impactx::elements
             t = tout;
             px = pxout;
             py = pyout;
- 
+
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
         }

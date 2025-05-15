@@ -322,6 +322,8 @@ namespace impactx::integrators
         T_Element const & element
     )
     {
+        using namespace amrex::literals; // for _rt and _prt
+
         // initialize numerical integration parameters
         amrex::ParticleReal const tau1 = tau/2.0_prt;
         amrex::ParticleReal const tau2 = tau;

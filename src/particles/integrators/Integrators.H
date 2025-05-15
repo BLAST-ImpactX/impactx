@@ -256,6 +256,84 @@ namespace impactx::integrators
         }
     }
 
+
+    template <typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE  
+    void semiexplicit_integrator_step(
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::ParticleReal const tau,
+        T_Element const & element
+    )
+    {   
+        using namespace amrex::literals; // for _rt and _prt
+
+        // Parameters defining the implicit iteration loop
+        amrex::ParticleReal const tolerance = 1.0e-12;
+        int max_iterations = 100;
+        int count = 0;
+
+        // Initialize the perturbation vector
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> perturbation{};
+
+        // Iteration loop (implicit step)
+        for (int j = 0; j < max_iterations; j++) {
+
+           // Create the extended phase space by creating two copies of the initial condition,
+           // and applying the initial perturbation.
+           amrex::SmallVector<amrex::ParticleReal, 6, 1> particle_copy1 = particle + perturbation;
+           amrex::SmallVector<amrex::ParticleReal, 6, 1> particle_copy2 = particle - perturbation;
+        
+           // Apply the map for a step of size tau on the extended phase space.
+           extended_phase_space_map(particle_copy1,particle_copy2,tau,element);        
+
+           // Apply the final perturbation, and evaluate the defect (difference between copies)
+           particle_copy1 = particle_copy1 + perturbation;
+           particle_copy2 = particle_copy2 - perturbation;
+           amrex::SmallVector<amrex::ParticleReal, 6, 1> defect = particle_copy1 - particle_copy2;
+
+           // Use the defect to update the perturbation vector.  Here, we use the simplified
+           // Newton approximation (23) from Buddhika et al.
+           perturbation = perturbation - (1_prt/4_prt) * defect;
+
+           // Compute the norm of the phase space vector defect
+           amrex::ParticleReal defect_norm2 = (defect.transpose()*defect).trace();
+           amrex::ParticleReal defect_norm = std::sqrt(defect_norm2);
+
+           // Update particle phase space vector once the desired tolerance is reached
+           if (defect_norm < tolerance) {
+              particle = particle_copy1;
+              break;
+           }
+           count = count + 1;
+       }
+     
+       // A statement for debugging:
+       amrex::Print() << "Number of iterations required: " << count << "\n";
+
+    }   
+
+
+    template <typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void extended_phase_space_map(
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
+        amrex::ParticleReal const tau,
+        T_Element const & element
+    )
+    {
+        // initialize numerical integration parameters
+        amrex::ParticleReal const tau1 = tau/2.0_prt;
+        amrex::ParticleReal const tau2 = tau;
+
+        // Apply the map on the extended phase space
+        element.map(particle1,tau1);
+        element.map(particle2,tau2);
+        element.map(particle1,tau1);
+         
+    }
+
+
 } // namespace impactx::integrators
 
 #endif // IMPACTX_INTEGRATORS_H_

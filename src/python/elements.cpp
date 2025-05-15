@@ -887,7 +887,7 @@ void init_elements(py::module& m)
              {
                  if (flag != "entry" && flag != "exit")
                      throw std::runtime_error(R"(flag must be "entry" or "exit")");
-                   
+
                  QuadEdge::Location const fl = flag == "entry" ?
                                             QuadEdge::Location::entry :
                                             QuadEdge::Location::exit;

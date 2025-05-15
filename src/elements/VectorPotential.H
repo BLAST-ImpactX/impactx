@@ -41,8 +41,8 @@ namespace impactx::elements
         static constexpr auto type = "VectorPotential";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        /** Symplectic integration in a user-defined vector potential, 
-         *  using the exact Hamiltonian, which includes all nonlinear 
+        /** Symplectic integration in a user-defined vector potential,
+         *  using the exact Hamiltonian, which includes all nonlinear
          *  kinematic effects.  Integration is performed with respect
          *  to a Cartesian coordinate system local to the body of the
          *  element.  A symmetric, semi-explicit symplectic integration
@@ -52,7 +52,7 @@ namespace impactx::elements
          *  integrators for non-separable Hamiltonian systems,"
          *  Math. Comput. 92, pp. 251-281 (2022),
          *  https://doi.org/10.1090/mcom/3778
-         *  
+         *
          * @param ds Segment length in m.
          * @param k  Quadrupole strength in m^(-2) (MADX convention)
          *           = (gradient in T/m) / (rigidity in T-m)

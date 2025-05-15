@@ -258,13 +258,13 @@ namespace impactx::integrators
 
 
     template <typename T_Element>
-    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE  
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void semiexplicit_integrator_step(
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const tau,
         T_Element const & element
     )
-    {   
+    {
         using namespace amrex::literals; // for _rt and _prt
 
         // Parameters defining the implicit iteration loop
@@ -282,9 +282,9 @@ namespace impactx::integrators
            // and applying the initial perturbation.
            amrex::SmallVector<amrex::ParticleReal, 6, 1> particle_copy1 = particle + perturbation;
            amrex::SmallVector<amrex::ParticleReal, 6, 1> particle_copy2 = particle - perturbation;
-        
+
            // Apply the map for a step of size tau on the extended phase space.
-           extended_phase_space_map(particle_copy1,particle_copy2,tau,element);        
+           extended_phase_space_map(particle_copy1,particle_copy2,tau,element);
 
            // Apply the final perturbation, and evaluate the defect (difference between copies)
            particle_copy1 = particle_copy1 + perturbation;
@@ -306,11 +306,11 @@ namespace impactx::integrators
            }
            count = count + 1;
        }
-     
+
        // A statement for debugging:
        amrex::Print() << "Number of iterations required: " << count << "\n";
 
-    }   
+    }
 
 
     template <typename T_Element>
@@ -330,7 +330,7 @@ namespace impactx::integrators
         element.map(particle1,tau1);
         element.map(particle2,tau2);
         element.map(particle1,tau1);
-         
+
     }
 
 

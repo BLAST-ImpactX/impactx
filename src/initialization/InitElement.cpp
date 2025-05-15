@@ -191,6 +191,24 @@ namespace detail
             pp_element.getWithParser("K2", K2);
 
             m_lattice.emplace_back( DipEdge(psi, rc, g, K2, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+        } else if (element_type == "quadedge")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal k;
+            int units = 0;
+            std::string flag_str = "entry";
+            pp_element.getWithParser("k", k);
+            pp_element.queryAddWithParser("units", units);
+            pp_element.queryAdd("flag", flag_str);
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(flag_str == "entry" || flag_str == "exit",
+                                             element_name + ".flag must be \"entry\" or \"exit\"");
+            QuadEdge::Location const flag = flag_str == "entry" ?
+                QuadEdge::Location::entry :
+                QuadEdge::Location::exit;
+
+            m_lattice.emplace_back( QuadEdge(k, units, flag, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+
         } else if (element_type == "constf")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);

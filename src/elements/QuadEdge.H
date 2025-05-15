@@ -1,0 +1,218 @@
+/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+ *           Berkeley National Laboratory (subject to receipt of any required
+ *           approvals from the U.S. Dept. of Energy). All rights reserved.
+ *
+ * This file is part of ImpactX.
+ *
+ * Authors: Chad Mitchell, Axel Huebl
+ * License: BSD-3-Clause-LBNL
+ */
+#ifndef IMPACTX_QUADEDGE_H
+#define IMPACTX_QUADEDGE_H
+
+#include "particles/ImpactXParticleContainer.H"
+#include "mixin/alignment.H"
+#include "mixin/beamoptic.H"
+#include "mixin/thin.H"
+#include "mixin/lineartransport.H"
+#include "mixin/named.H"
+#include "mixin/nofinalize.H"
+
+#include <AMReX_Extension.H>
+#include <AMReX_REAL.H>
+
+#include <cmath>
+#include <stdexcept>
+
+
+namespace impactx::elements
+{
+    struct QuadEdge
+    : public mixin::Named,
+      public mixin::BeamOptic<QuadEdge>,
+      public mixin::LinearTransport<QuadEdge>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
+    {
+        static constexpr auto type = "QuadEdge";
+        using PType = ImpactXParticleContainer::ParticleType;
+
+        enum Location
+        {
+            entry = 1, //! for leading (entry) fringe field
+            exit = -1  //! for trailing (exit) fringe field
+        };
+
+        /** Quadrupole entry or exit fringe field effects.
+         *
+         * This is a third-order nonlinear symplectic map, representing
+         * model-independent terms that contribute in the hard-edge
+         * limit.  Chromatic energy dependence is included.
+         *
+         * References: TBA
+         *
+         * @param k  Quadrupole strength in m^(-2) (MADX convention)
+         *           = (gradient in T/m) / (rigidity in T-m)
+         *        OR Quadrupole strength in T/m (MaryLie convention)
+         *           k > 0 horizontal focusing
+         *           k < 0 horizontal defocusing
+         * @param unit  Unit specification
+         *           unit = 0 MADX convention (default)
+         *           unit = 1 MaryLie convention
+         # @param flag  Flag specifying entry or exit location
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param name a user defined and not necessarily unique name of the element
+         */
+        QuadEdge (
+            amrex::ParticleReal k,
+            int unit,
+            Location flag,
+            amrex::ParticleReal dx = 0,
+            amrex::ParticleReal dy = 0,
+            amrex::ParticleReal rotation_degree = 0,
+            std::optional<std::string> name = std::nullopt
+        )
+        : Named(std::move(name)),
+          Alignment(dx, dy, rotation_degree),
+          m_k(k), m_unit(unit), m_flag(flag)
+        {
+        }
+
+        /** Push all particles */
+        using BeamOptic::operator();
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants ([[maybe_unused]] RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            // access reference particle values to find beta and gamma
+            m_beta = refpart.beta();
+            m_gamma = refpart.gamma();
+         
+            // normalize quad units to MAD-X convention if needed
+            m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
+            // the global scale constant; sign depends on entry or exit
+            m_a = m_flag * (-1_prt * m_g / 12.0_prt);
+        }
+
+        /** This is a quadedge functor, so that a variable of this type can be used like a
+         *  quadedge function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t (unchanged)
+         * @param idcpu particle global index (unused)
+         * @param refpart reference particle (unused)
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (
+            amrex::ParticleReal & AMREX_RESTRICT x,
+            amrex::ParticleReal & AMREX_RESTRICT y,
+            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
+            amrex::ParticleReal & AMREX_RESTRICT px,
+            amrex::ParticleReal & AMREX_RESTRICT py,
+            amrex::ParticleReal & AMREX_RESTRICT pt,
+            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+
+            using namespace amrex::literals; // for _rt and _prt
+
+            // shift due to alignment errors of the element
+            shift_in(x, y, px, py);
+
+            // compute particle momentum deviation delta + 1
+            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + std::pow(pt,2));
+            amrex::ParticleReal a = m_a / delta1; 
+
+            // intialize output values   
+            amrex::ParticleReal xout = x;
+            amrex::ParticleReal yout = y;
+            amrex::ParticleReal tout = t;
+            amrex::ParticleReal pxout = px;
+            amrex::ParticleReal pyout = py;
+
+            // intermediate quantities to be used below
+            amrex::ParticleReal x2my2 = x*x - y*y;
+            amrex::ParticleReal x2py2 = x*x + y*y;
+            amrex::ParticleReal denominator = 1_prt - 9_prt*std::pow(a,2)*std::pow(x2my2,2);
+            amrex::ParticleReal f4 = a * ( px * (std::pow(x,3) + 3_prt*x*std::pow(y,2))   
+                                         - py * (std::pow(y,3) + 3_prt*y*std::pow(x,2)) );
+
+            // apply edge focusing
+            xout = x - a * (std::pow(x,3) + 3_prt * x * std::pow(y,2));
+            yout = y + a * (3_prt * std::pow(x,2) * y + std::pow(y,3));
+            tout = t + f4 * (pt - 1_prt/m_beta) / std::pow(delta1,2);
+
+            pxout = (px + 3_prt*a*px*x2py2 - 6_prt*a*py*x*y) / denominator;
+            pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
+
+            // update output values
+            x = xout;
+            y = yout;
+            t = tout;
+            px = pxout;
+            py = pyout;
+ 
+            // undo shift due to alignment errors of the element
+            shift_out(x, y, px, py);
+        }
+
+        /** This pushes the reference particle. */
+        using Thin::operator();
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            return R;
+        }
+
+        amrex::ParticleReal m_k;  //! quadrupole focusing strength
+        int m_unit; //! unit specification for quad strength
+        Location m_flag; //! +1 for entry, or -1 for exit
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_g;
+        amrex::ParticleReal m_a;
+        amrex::ParticleReal m_beta;
+        amrex::ParticleReal m_gamma;
+    };
+
+} // namespace impactx
+
+#endif // IMPACTX_QUADEDGE_H

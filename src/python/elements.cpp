@@ -855,6 +855,66 @@ void init_elements(py::module& m)
     ;
     register_push(py_DipEdge);
 
+    py::class_<QuadEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_QuadEdge(me, "QuadEdge");
+    py_QuadEdge
+        .def("__repr__",
+             [](QuadEdge const & quadedge) {
+                 return element_name(
+                     quadedge,
+                     std::make_pair("k", quadedge.m_k)
+                 );
+             }
+        )
+        .def("to_dict",
+            [](QuadEdge const & quadedge) {
+                return element_dict(
+                    quadedge,
+                    std::make_pair("k", quadedge.m_k),
+                    std::make_pair("unit", quadedge.m_unit),
+                    std::make_pair("flag", quadedge.m_flag)
+                );
+            }
+        )
+        .def(py::init([](
+                amrex::ParticleReal k,
+                int unit,
+                std::string const & flag,
+                amrex::ParticleReal dx,
+                amrex::ParticleReal dy,
+                amrex::ParticleReal rotation_degree,
+                std::optional<std::string> name
+             )
+             {
+                 if (flag != "entry" && flag != "exit")
+                     throw std::runtime_error(R"(flag must be "entry" or "exit")");
+                   
+                 QuadEdge::Location const fl = flag == "entry" ?
+                                            QuadEdge::Location::entry :
+                                            QuadEdge::Location::exit;
+                 return new QuadEdge(k, unit, fl, dx, dy, rotation_degree, name);
+             }),
+             py::arg("k"),
+             py::arg("unit") = 0,
+             py::arg("flag") = "entry",
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             R"(A thin quadrupole fringe field element. Flag must be "entry" or "exit".)"
+        )
+        .def_property("k",
+            [](QuadEdge & quadedge) { return quadedge.m_k; },
+            [](QuadEdge & quadedge, amrex::ParticleReal k) { quadedge.m_k = k; },
+            "quadrupole focusing strength (1/meter^2 OR T/m)"
+        )
+        .def_property("unit",
+            [](QuadEdge & quadedge) { return quadedge.m_unit; },
+            [](QuadEdge & quadedge, int unit) { quadedge.m_unit = unit; },
+            "unit specification for quad strength"
+        )
+    ;
+    register_push(py_QuadEdge);
+
     py::class_<Drift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Drift(me, "Drift");
     py_Drift
         .def("__repr__",

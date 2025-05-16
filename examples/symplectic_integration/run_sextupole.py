@@ -42,7 +42,8 @@ dy = df_initial["y"].to_numpy()
 dpy = df_initial["py"].to_numpy()
 dt = df_initial["t"].to_numpy()
 dpt = df_initial["pt"].to_numpy()
-
+print(dx[0])
+print(dx[23])
 if not Config.have_gpu:  # initialize using cpu-based PODVectors
     dx_podv = amr.PODVector_real_std()
     dy_podv = amr.PODVector_real_std()

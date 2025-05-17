@@ -13,8 +13,8 @@ from seleniumbase import SB
 from .utils import (
     DashboardTester,
     start_dashboard,
-    wait_for_dashboard,
-    wait_for_ready,
+    wait_for_interaction_ready,
+    wait_for_server_ready,
 )
 
 TIMEOUT = 20
@@ -26,10 +26,23 @@ TIMEOUT = 20
 )
 def test_dashbnoard():
     """
-    ImpactX dashbord testing with inputs from 'examples/fodo/run_fodo.py'.
+    Tests the ImpactX dashboard with inputs from 'examples/fodo/run_fodo.py'.
 
-    Distribution, lattice, and variable inputs are individual states, rather part of a nested state
-    which is why we modify those values by the DOM.
+    The test includes:
+    - Launching the dashboard
+    - Configuring the beam properties
+    - Configuring the beam distribution
+    - Configuring the lattice
+        - Through direct numeric input
+        - Through the variable configuration
+    - Running the simulation
+    - Checking if the simulation completes successfully
+
+
+    We call 'set_state()' for inputs which are connected to state variables.
+    We call 'set_js_input()' primarily for inputs which are part of nested states.
+    However, we can also use 'set_js_input()' in place of 'set_state()', but not
+    vice versa.
     """
     app_process = None
 
@@ -39,9 +52,9 @@ def test_dashbnoard():
 
             # Setup Dashboard
             app_process = start_dashboard()
-            wait_for_dashboard(app_process, timeout=TIMEOUT)
+            wait_for_server_ready(app_process, timeout=TIMEOUT)
             sb.open("http://localhost:8080/index.html#/Input")
-            wait_for_ready(sb, TIMEOUT)
+            wait_for_interaction_ready(sb, TIMEOUT)
 
             # Adjust beam properties
             dashboard.set_state("tracking_mode", "Particle Tracking")

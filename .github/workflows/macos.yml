@@ -79,7 +79,7 @@ jobs:
         cmake --build build --target pip_install
 
         python3 examples/fodo/run_fodo.py
-      
+
     - name: run dashboard tests
       run: |
         cd tests/python/dashboard

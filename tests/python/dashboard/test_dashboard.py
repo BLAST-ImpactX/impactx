@@ -10,6 +10,7 @@ import importlib
 
 import pytest
 from seleniumbase import SB
+
 from .utils import (
     DashboardTester,
     start_dashboard,

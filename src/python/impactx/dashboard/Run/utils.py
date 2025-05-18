@@ -18,6 +18,7 @@ class SimulationHelper:
     Methods to help factilitate proper ImpactX simulation
     excution on the dashboard.
     """
+
     current_process: asyncio.subprocess.Process = None
     timer_task = None
     cancelled: bool = False
@@ -133,7 +134,7 @@ class SimulationProgress:
             if state.sim_current_step == 0:
                 state.sim_progress_status = "Starting..."
             elif state.sim_current_step >= state.sim_total_steps:
-                state.sim_is_generating_plots = True 
+                state.sim_is_generating_plots = True
                 state.sim_progress_status = "Generating plots..."
             else:
                 progress_percent = int(state.sim_progress)

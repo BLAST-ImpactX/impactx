@@ -36,7 +36,7 @@ async def execute_impactx_sim() -> None:
 
     start_timer = None
     sim_failed = False
-    
+
     simulation_contents = dashboard_sim_inputs()
     state.sim_total_steps = SimulationProgress.determine_sim_total_steps(
         simulation_contents
@@ -44,7 +44,7 @@ async def execute_impactx_sim() -> None:
     simulation_process = await SimulationHelper.run_simulation_in_subprocess(
         simulation_contents
     )
-    SimulationHelper.current_process = simulation_process 
+    SimulationHelper.current_process = simulation_process
 
     state.sim_index = SimulationHistory.add_sim_to_history()
 
@@ -75,11 +75,11 @@ async def execute_impactx_sim() -> None:
 
     if start_timer is not None:
         start_timer.cancel()
-        
+
     if state.sim_is_cancelled:
         SimulationHelper.cancel_simulation()
         return
-        
+
     if sim_failed:
         SimulationHelper.fail_simulation()
         return

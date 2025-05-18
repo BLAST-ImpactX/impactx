@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from selenium.common.exceptions import TimeoutException
 
 TIMEOUT = 60
 
@@ -165,7 +166,10 @@ class DashboardTester:
             return null;
         """
         for i in range(timeout):
-            value = self.sb.execute_script(js_script, state_name)
+            try:
+                value = self.sb.execute_script(js_script, state_name)
+            except TimeoutException:
+                value = None
 
             if isinstance(expected_input, (int, float)):
                 if value is not None and float(value) == float(expected_input):

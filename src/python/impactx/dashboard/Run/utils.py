@@ -18,6 +18,9 @@ class SimulationHelper:
     Methods to help factilitate proper ImpactX simulation
     excution on the dashboard.
     """
+    current_process: asyncio.subprocess.Process = None
+    timer_task = None
+    cancelled: bool = False
 
     @staticmethod
     async def run_simulation_in_subprocess(simulation_contents):
@@ -47,7 +50,30 @@ class SimulationHelper:
         state.dirty("filtered_data")
         state.sim_status_color = "success"
         state.sims[state.sim_index]["status"] = "Completed"
+        state.sim_is_generating_plots = False
         state.dirty("filtered_sims")
+        state.flush()
+        SimulationHistory.save_view_details_log()
+
+    @staticmethod
+    def cancel_simulation():
+        proc = SimulationHelper.current_process
+        if proc is not None and proc.returncode is None:
+            proc.kill()
+
+        if SimulationHelper.timer_task:
+            SimulationHelper.timer_task.cancel()
+
+        SimulationHelper.cancelled = True
+        state.sim_is_cancelled = True
+        state.sim_is_running = False
+        state.sim_progress = 0
+        state.sim_current_step = 0
+        state.sim_elapsed_time = "0.0"
+        state.sim_progress_status = "Cancelled."
+        state.sims[state.sim_index]["status"] = "Cancelled"
+        state.dirty("filtered_sims")
+        ctrl.terminal_print("Simulation cancelled.")
         state.flush()
         SimulationHistory.save_view_details_log()
 
@@ -67,6 +93,7 @@ class SimulationHelper:
 
     @staticmethod
     def reset():
+        state.sim_is_cancelled = False
         state.sim_is_running = True
         state.sim_progress = 0
         state.sim_current_step = 0

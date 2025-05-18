@@ -17,8 +17,6 @@ from .utils import (
     wait_for_server_ready,
 )
 
-TIMEOUT = 20
-
 
 @pytest.mark.skipif(
     importlib.util.find_spec("seleniumbase") is None,
@@ -52,9 +50,9 @@ def test_dashbnoard():
 
             # Setup Dashboard
             app_process = start_dashboard()
-            wait_for_server_ready(app_process, timeout=TIMEOUT)
+            wait_for_server_ready(app_process)
             sb.open("http://localhost:8080/index.html#/Input")
-            wait_for_interaction_ready(sb, TIMEOUT)
+            wait_for_interaction_ready(sb)
 
             # Adjust beam properties
             dashboard.set_state("tracking_mode", "Particle Tracking")

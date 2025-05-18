@@ -112,21 +112,30 @@ jobs:
         cmake --build build --config RelWithDebInfo --parallel 4
         if(!$?) { Exit $LASTEXITCODE }
 
+    - name: Install
+      run: |
+        cmake --build build --config RelWithDebInfo --target install
+        if(!$?) { Exit $LASTEXITCODE }
+        cmake --build build --config RelWithDebInfo --target pip_install
+        if(!$?) { Exit $LASTEXITCODE }
+
+    - name: List impactx_pybind files
+      run: |
+        Get-ChildItem -Path build -Recurse -Filter *impactx_pybind* | Select-Object -ExpandProperty FullName
+        Get-ChildItem -Path src/python/impactx -Recurse -Filter *impactx_pybind* | Select-Object -ExpandProperty FullName
+        Get-ChildItem -Path "C:\hostedtoolcache\windows" -Recurse -Filter *impactx_pybind* | Select-Object -ExpandProperty FullName
+
+    - name: Print Python sys.path
+      run: python -c "import sys; print('\n'.join(sys.path))"
+
     - name: run dashboard tests
       run: |
-        pip install .
         cd tests/python/dashboard
         pytest --confcutdir=.
 
     - name: Test
       run: |
         ctest --test-dir build --build-config RelWithDebInfo --output-on-failure -E "AMReX|dashboard"
-        if(!$?) { Exit $LASTEXITCODE }
-    - name: Install
-      run: |
-        cmake --build build --config RelWithDebInfo --target install
-        if(!$?) { Exit $LASTEXITCODE }
-        cmake --build build --config RelWithDebInfo --target pip_install
         if(!$?) { Exit $LASTEXITCODE }
     - name: validate created openPMD files
       run: Get-ChildItem -Path build -Recurse -Filter *.h5 | %{openPMD_check_h5 -i $_}
@@ -243,11 +252,17 @@ jobs:
         if errorlevel 1 exit 1
         cmake --build build --parallel 4
         if errorlevel 1 exit 1
-
+   
     - name: Install ImpactX Python binding
       shell: cmd
       run: |
-        cmake --build build --target install
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        cmake --build build --config Release --target pip_install
+
+    - name: Run dashboard tests
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
         cd tests/python/dashboard
         pytest --confcutdir=.
     - name: Test

@@ -82,11 +82,12 @@ jobs:
 
     - name: Dashboard tests
       run: |
-        mpiexec -np 1 python3 -m pytest tests/python/dashboard
+        cd tests/python/dashboard
+        pytest --confcutdir=.
 
     - name: Unit tests
       run: |
-        mpiexec -np 1 python3 -m pytest tests/python/
+        mpiexec -np 1 python3 -m pytest tests/python/ --ignore=tests/python/dashboard
 
     - uses: stefanzweifel/git-auto-commit-action@v5
       name: Commit Updated Stub Files

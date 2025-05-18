@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
 from selenium.common.exceptions import TimeoutException
 
 TIMEOUT = 60
@@ -141,7 +142,11 @@ class DashboardTester:
                 const state = window.trame?.state;
                 const state_name = arguments[0];
                 const state_value = arguments[1];
-                state.set(state_name, state_value);
+                if (state?.set) { state.set(state_name, state_value); }
+                else if (state) {
+                    state[state_name] = state_value;
+                    if (state.dirty) state.dirty(state_name);
+                }
             """
             self.sb.execute_script(js_script, state_name, state_value)
         except Exception as error:

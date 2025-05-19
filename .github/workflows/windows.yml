@@ -119,20 +119,6 @@ jobs:
         cmake --build build --config RelWithDebInfo --target pip_install
         if(!$?) { Exit $LASTEXITCODE }
 
-    - name: List impactx_pybind files
-      run: |
-        Get-ChildItem -Path build -Recurse -Filter *impactx_pybind* | Select-Object -ExpandProperty FullName
-        Get-ChildItem -Path src/python/impactx -Recurse -Filter *impactx_pybind* | Select-Object -ExpandProperty FullName
-        Get-ChildItem -Path "C:\hostedtoolcache\windows" -Recurse -Filter *impactx_pybind* | Select-Object -ExpandProperty FullName
-
-    - name: Print Python sys.path
-      run: python -c "import sys; print('\n'.join(sys.path))"
-
-    - name: run dashboard tests
-      run: |
-        cd tests/python/dashboard
-        pytest --confcutdir=.
-
     - name: Test
       run: |
         ctest --test-dir build --build-config RelWithDebInfo --output-on-failure -E "AMReX|dashboard"

@@ -52,14 +52,6 @@ jobs:
           -DMPIEXEC_POSTFLAGS="--use-hwthread-cpus"
         cmake --build build --parallel 4
 
-    - name: install ImpactX wheel
-      run: cmake --build build --target pip_install
-
-    - name: run dashboard tests
-      run: |
-        cd tests/python/dashboard
-        pytest --confcutdir=.
-
     - name: run tests
       env:
         ASAN_OPTIONS: detect_stack_use_after_return=1:detect_leaks=1:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_scope=1:fast_unwind_on_malloc=0

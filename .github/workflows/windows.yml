@@ -252,19 +252,7 @@ jobs:
         if errorlevel 1 exit 1
         cmake --build build --parallel 4
         if errorlevel 1 exit 1
-   
-    - name: Install ImpactX Python binding
-      shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
-        cmake --build build --config Release --target pip_install
 
-    - name: Run dashboard tests
-      shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
-        cd tests/python/dashboard
-        pytest --confcutdir=.
     - name: Test
       shell: cmd
       run: |

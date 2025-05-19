@@ -58,8 +58,8 @@ def test_dashbnoard():
             # Adjust beam properties
             dashboard.set_state("tracking_mode", "Particle Tracking")
             dashboard.set_state("space_charge", "false")
-            # dashboard.set_state("csr", "false")
-            # dashboard.set_state("isr", "false")
+            dashboard.set_state("csr", False)
+            dashboard.set_state("isr", False)
 
             dashboard.set_state("charge_qe", -1)
             dashboard.set_state("mass_MeV", 0.510998950)

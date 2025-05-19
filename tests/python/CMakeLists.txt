@@ -14,6 +14,7 @@ file(COPY ${ImpactX_SOURCE_DIR}/examples
 add_test(NAME ${pytest_name}
     COMMAND ${Python_EXECUTABLE} -m pytest -s -vvvv
         ${ImpactX_SOURCE_DIR}/tests/python
+        --ignore=${ImpactX_SOURCE_DIR}/tests/python/dashboard
     WORKING_DIRECTORY ${pytest_rundir}
 )
 

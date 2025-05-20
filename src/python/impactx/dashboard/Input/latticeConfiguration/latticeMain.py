@@ -153,22 +153,22 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     sim_input = ui_input
     binding = None
 
-    is_negative_input = ui_input.startswith("-") and ui_input.strip() != "-"
+    is_negative_input = ui_input.startswith("-") and ui_input != "-"
     var_name = ui_input[1:] if is_negative_input else ui_input
 
-    lattice_variable, variable_index = (
+    is_variable, variable_index = (
         LatticeVariableHandler.determine_if_existing_variable(var_name)
     )
-    potentially_lattice_variable = (
+    is_potential_variable = (
         LatticeConfigurationHelper.is_valid_name_for_user_input(var_name)
     )
+    
+    if is_variable:
+        sim_value = state.variables[variable_index]["value"]
+        if sim_value is not None:
+            sim_input = -sim_value if is_negative_input else sim_value
 
-    if lattice_variable or potentially_lattice_variable:
-        if lattice_variable:
-            sim_value = state.variables[variable_index]["value"]
-            if sim_value is not None:
-                sim_input = -sim_value if is_negative_input else sim_value
-
+    if is_variable or is_potential_variable:
         binding = {
             "index": index,
             "parameter_name": parameter_name,

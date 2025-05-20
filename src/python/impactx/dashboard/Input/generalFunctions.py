@@ -52,10 +52,11 @@ class generalFunctions:
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def convert_to_numeric(input: 'str') -> int | float:
+    def convert_to_numeric(input: str) -> int | float:
         """
         Converts string inputs to their appropriate numeric type.
-        Needed as text fields inputs on the dashboard are inherently strings.
+        This method is needed since text fields inputs on the dashboard
+        are inherently strings.
 
         It first tries to convert the value to int, then to float.
         If the conversion fails, it raises a ValueError.

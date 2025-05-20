@@ -149,7 +149,7 @@ class LatticeVariableHandler:
             state.variables[idx]["error_message"] = message
             state.dirty("variables")
 
-        if not LatticeConfigurationHelper.is_valid_name_for_user_input(new_name):
+        if not LatticeConfigurationHelper.is_valid_input_name(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
             generalFunctions.update_simulation_validation_status()
             state.dirty("variables")

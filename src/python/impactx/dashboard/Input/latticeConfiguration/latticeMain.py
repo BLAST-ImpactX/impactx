@@ -159,9 +159,7 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     is_variable, variable_index = (
         LatticeVariableHandler.determine_if_existing_variable(var_name)
     )
-    is_potential_variable = (
-        LatticeConfigurationHelper.is_valid_name_for_user_input(var_name)
-    )
+    is_potential_variable = LatticeConfigurationHelper.is_valid_input_name(var_name)
     
     if is_variable:
         sim_value = state.variables[variable_index]["value"]
@@ -200,7 +198,7 @@ def on_lattice_element_parameter_change(
     error_message = generalFunctions.validate_against(sim_input, parameter_type)
 
     if parameter_name == "name":
-        if not LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input):
+        if not LatticeConfigurationHelper.is_valid_input_name(ui_input):
             error_message = ["Must be a valid Python identifier"]
 
     for param in state.selected_lattice_list[index]["parameters"]:

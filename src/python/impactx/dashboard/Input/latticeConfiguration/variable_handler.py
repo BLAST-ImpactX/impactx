@@ -25,6 +25,20 @@ class LatticeVariableHandler:
     @staticmethod
     @state.change("variables")
     def on_variables_list_change(variables, **kwargs):
+        """
+        Called when the variable configuration is modified on the dashboard.
+
+        Updates lattice element parameters that reference variables,
+        ensuring they reflect the latest variable values.
+
+        We ensure that the index of the lattice element is a valid index
+        in the selected lattice list before updating the parameters.
+            EX:
+            - The user adds a 'drift' element and sets its 'nslice' parameter to a variable named "ns".
+            - Later, they delete this drift element from the lattice list.
+            - Even though the variable "ns" still exists in the variable configuration,
+            the deleted element's index is now invalid.
+        """
         for lattice_element in state.lattice_params_bound_or_pending_variable.values():
             index = lattice_element["index"]
             if index < len(state.selected_lattice_list):

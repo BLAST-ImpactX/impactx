@@ -87,7 +87,7 @@ jobs:
 
     - name: run tests
       run: |
-        ctest --test-dir build --output-on-failure -E pytest.AMReX
+        ctest --test-dir build --output-on-failure -E pytest.AMReX --label-exclude "dashboard"
 
     - name: run installed app
       run: |

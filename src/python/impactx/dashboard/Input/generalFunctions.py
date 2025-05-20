@@ -73,7 +73,6 @@ class generalFunctions:
             except ValueError:
                 raise ValueError(f"Cannot convert '{input}' to a numeric type.")
 
-
     @staticmethod
     def validate_against(input_value, value_type, additional_conditions=None):
         """

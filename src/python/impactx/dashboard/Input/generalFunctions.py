@@ -52,20 +52,26 @@ class generalFunctions:
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def determine_input_type(value):
+    def convert_to_numeric(input: 'str') -> int | float:
         """
-        Determines the type of the input value.
-        :param value: The input value whose type needs to be determined.
-        :return: A tuple containing the value converted to its determined type and the type itself.
+        Converts string inputs to their appropriate numeric type.
+        Needed as text fields inputs on the dashboard are inherently strings.
+
+        It first tries to convert the value to int, then to float.
+        If the conversion fails, it raises a ValueError.
+
+        :param input: The input to convert to a numeric type.
+        :return: The input converted to a numeric type.
         """
 
         try:
-            return int(value), int
+            return int(input)
         except ValueError:
             try:
-                return float(value), float
+                return float(input)
             except ValueError:
-                return value, str
+                raise ValueError(f"Cannot convert '{input}' to a numeric type.")
+
 
     @staticmethod
     def validate_against(input_value, value_type, additional_conditions=None):

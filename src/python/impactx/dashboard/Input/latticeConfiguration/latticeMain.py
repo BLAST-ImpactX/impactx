@@ -171,7 +171,7 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
             "variable_index": variable_index,
         }
     else:
-        sim_input, _ = generalFunctions.determine_input_type(ui_input)
+        sim_input = generalFunctions.convert_to_numeric(ui_input)
         binding = None
 
     return sim_input, binding

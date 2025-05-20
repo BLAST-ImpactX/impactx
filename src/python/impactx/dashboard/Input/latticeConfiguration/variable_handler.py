@@ -69,19 +69,23 @@ class LatticeVariableHandler:
     @ctrl.add("update_variable")
     def on_variable_change(key_name: str, index: int, event) -> None:
         """
-        Called when any variable name or value changes.
-        Validates the new value and updates it's associated sim value.
+        Called when any variable name or value changes and updates
+        state.variables accordingly.
 
-        :param key_name: The name of the variable.
-        :param index: The index of the variable.
+        :param key_name: The variable type.
+        :param index: The variable index.
         :param event: Either the variable's new name or value.
         """
 
+        variable = state.variables[index]
         if key_name == "name":
             LatticeVariableHandler.validate_variable_name(event, index)
-            state.variables[index]["name"] = event
-        else:
-            state.variables[index][key_name] = event
+
+            if not variable["error_message"]:
+                variable["name"] = event
+                variable["value"] = variable["value"] or None
+        else: 
+            variable["value"] = generalFunctions.convert_to_numeric(event) if event else None
         state.dirty("variables")
 
     @staticmethod

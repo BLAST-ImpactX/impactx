@@ -323,26 +323,6 @@ class generalFunctions:
         return list(generalFunctions.class_parameters_with_defaults(module_name))
 
     @staticmethod
-    def convert_to_correct_type(value, desired_type):
-        """
-        Converts the given value to the desired type.
-        :param value: The value to convert.
-        :param desired_type: The type to convert the value to ('int', 'float', 'str').
-        :return: The value converted to the desired type.
-        """
-
-        if value is None:
-            raise ValueError("Cannot convert to desired type")
-        if desired_type == "int":
-            return int(value)
-        elif desired_type == "float":
-            return float(value)
-        elif desired_type == "str":
-            return str(value)
-        else:
-            raise ValueError("Unknown type")
-
-    @staticmethod
     def reset_inputs(input_section):
         """
         Resets dashboard inputs to default values.

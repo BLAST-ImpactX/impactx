@@ -149,13 +149,12 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     :param ui_input: The value present on the UI end..
     :param parameter_type: The lattice element parameters type.
     """
+    ui_input = ui_input.strip()
+    sim_input = ui_input
+    binding = None
 
-    is_negative = False
-    if ui_input.startswith("-"):
-        is_negative = True
-        var_name = ui_input[1:]
-    else:
-        var_name = ui_input
+    is_negative_input = ui_input.startswith("-") and ui_input.strip() != "-"
+    var_name = ui_input[1:] if is_negative_input else ui_input
 
     lattice_variable, variable_index = (
         LatticeVariableHandler.determine_if_existing_variable(var_name)
@@ -165,14 +164,10 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     )
 
     if lattice_variable or potentially_lattice_variable:
-        if lattice_variable and variable_index is not None:
+        if lattice_variable:
             sim_value = state.variables[variable_index]["value"]
-            if is_negative:
-                sim_input = -float(sim_value)
-            else:
-                sim_input = sim_value
-        else:
-            sim_input = ui_input
+            if sim_value is not None:
+                sim_input = -sim_value if is_negative_input else sim_value
 
         binding = {
             "index": index,
@@ -181,9 +176,6 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
             "parameter_type": parameter_type,
             "variable_index": variable_index,
         }
-    else:
-        sim_input, _ = generalFunctions.determine_input_type(ui_input)
-        binding = None
 
     return sim_input, binding
 

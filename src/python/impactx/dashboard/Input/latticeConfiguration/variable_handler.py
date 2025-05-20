@@ -84,8 +84,10 @@ class LatticeVariableHandler:
             if not variable["error_message"]:
                 variable["name"] = event
                 variable["value"] = variable["value"] or None
-        else: 
-            variable["value"] = generalFunctions.convert_to_numeric(event) if event else None
+        else:
+            variable["value"] = generalFunctions.determine_input_type(event)[
+                0
+            ]  # converts to numeric
         state.dirty("variables")
 
     @staticmethod

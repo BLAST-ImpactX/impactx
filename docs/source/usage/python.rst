@@ -932,12 +932,12 @@ This module provides elements and methods for the accelerator lattice.
       number of integration steps per slice used for symplectic integration
 
 .. py:class:: impactx.elements.QuadEdge(k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
-   
-   Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing 
-   the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq 
+
+   Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing
+   the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq
    (28) of:  E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
-   
-   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0) 
+
+   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)
               = (gradient in T/m) / (rigidity in T-m)
           OR  Quadrupole strength in T/m (MaryLie convention, if unit = 1)
               k > 0 horizontal focusing

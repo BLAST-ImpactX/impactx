@@ -547,9 +547,9 @@ This requires these additional parameters:
 ``quadedge``
 ^^^^^^^^^^^
 
-``quadedge`` for quadrupole edge focusing.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing the effect 
+``quadedge`` for quadrupole edge focusing.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing the effect
 of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq (28) of:
-E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988). 
+E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
 This requires these additional parameters:
 
 * ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the quadrupole strength

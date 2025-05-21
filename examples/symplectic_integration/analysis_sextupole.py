@@ -21,9 +21,9 @@ num_particles = 24
 assert num_particles == len(initial)
 assert num_particles == len(final)
 
-# load pickle data
-df_initial = pd.read_pickle("./initial_coords.pickle")
-df_final = pd.read_pickle("./final_coords.pickle")
+# load particle data
+df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
+df_final = pd.read_csv("./final_coords.csv", sep=" ")
 
 # compute differences
 error_xi = (df_initial["x"] - initial["position_x"]).abs().max()

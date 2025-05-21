@@ -35,15 +35,13 @@ qm_eev = 1.0 / 938.27208816 / 1e6  # electron charge/mass in e / eV
 
 pc = sim.particle_container()
 
-df_initial = pd.read_pickle("./initial_coords.pickle")
+df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
 dx = df_initial["x"].to_numpy()
 dpx = df_initial["px"].to_numpy()
 dy = df_initial["y"].to_numpy()
 dpy = df_initial["py"].to_numpy()
 dt = df_initial["t"].to_numpy()
 dpt = df_initial["pt"].to_numpy()
-print(dx[0])
-print(dx[23])
 if not Config.have_gpu:  # initialize using cpu-based PODVectors
     dx_podv = amr.PODVector_real_std()
     dy_podv = amr.PODVector_real_std()

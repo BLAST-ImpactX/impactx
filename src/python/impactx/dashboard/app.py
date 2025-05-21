@@ -75,13 +75,11 @@ with RouterViewLayout(server, "/Input"):
                         LatticeVisualizer().card()
 
 with RouterViewLayout(server, "/Analyze"):
-    with vuetify.VContainer(fluid=True):
-        with vuetify.VRow(no_gutters=True, classes="fill-height"):
-            with vuetify.VCol(cols="auto", classes="pa-2 fill-height"):
-                AnalyzeSimulation.card()
-            with vuetify.VCol(cols="auto", classes="pa-2 fill-height"):
-                AnalyzeSimulation.plot()
+    with vuetify.Template(v_if="active_plot === 'Plot Over S'"):
+        AnalyzeSimulation.plot_over_s()
 
+    with vuetify.Template(v_if="active_plot === 'Phase Space Plots'"):
+        AnalyzeSimulation.phase_space()
 
 # ----------------------------------------------------------------------------
 # GUI

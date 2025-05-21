@@ -161,13 +161,13 @@ class AnalyzeSimulation:
     """
 
     @staticmethod
-    def card():
+    def plot_over_s():
         """
-        Displays any non-plot content for 'Analyze' page.
+        Displays the content for the 'Plot Over S' visualization option.
         """
 
         with vuetify.VContainer():
-            with vuetify.VCard(v_if=("show_table")):
+            with vuetify.VRow():
                 with vuetify.VCol(style="width: 500px;"):
                     vuetify.VSelect(
                         v_model=("selected_headers",),
@@ -188,16 +188,21 @@ class AnalyzeSimulation:
                         height="325px",
                     )
 
+                with vuetify.VCol(style="height: 50vh; width: 90vh"):
+                    plotly_figure = plotly.Figure(
+                        display_mode_bar="true", config={"responsive": True}
+                    )
+                    ctrl.plotly_figure_update = plotly_figure.update
+                    plotly_figure
+
     @staticmethod
-    def plot():
+    def phase_space():
         """
-        Displays any plot content for 'Analyze' page.
+        Displays the phase space plots.
         """
 
         with vuetify.VContainer(fluid=True):
-            with vuetify.VContainer(
-                v_if="active_plot === 'Phase Space Plots'", fluid=True
-            ):
+            with vuetify.VContainer():
                 with vuetify.VCard(style="height: 50vh; width: 150vh;"):
                     with vuetify.VTabs(v_model=("active_tab", 0)):
                         vuetify.VTab("Plot")
@@ -207,11 +212,3 @@ class AnalyzeSimulation:
                             vuetify.VImg(
                                 v_if=("phase_space_png",), src=("phase_space_png",)
                             )
-
-        with vuetify.VContainer(
-            v_if="active_plot === 'Plot Over S'", style="height: 50vh; width: 90vh;"
-        ):
-            plotly_figure = plotly.Figure(
-                display_mode_bar="true", config={"responsive": True}
-            )
-            ctrl.plotly_figure_update = plotly_figure.update

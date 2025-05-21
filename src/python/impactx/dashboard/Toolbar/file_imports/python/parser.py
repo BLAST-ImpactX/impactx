@@ -17,7 +17,7 @@ state.import_file = False
 state.import_file_details = None
 state.import_file_error = False
 state.importing_file = False
-
+state.imported_file_name = None
 
 class DashboardParser:
     """

@@ -49,6 +49,7 @@ class SimulationHelper:
         state.sims[state.sim_index]["status"] = "Completed"
         state.sim_is_generating_plots = False
         state.dirty("filtered_sims")
+        state.selected_sim_to_analyze = state.sims[state.sim_index]
         state.flush()
         save_view_details_log()
 

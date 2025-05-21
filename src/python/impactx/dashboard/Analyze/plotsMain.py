@@ -6,9 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-import base64
 import glob
-import io
 import os
 
 from trame.widgets import plotly
@@ -21,16 +19,6 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 # Plotting
 # -----------------------------------------------------------------------------
-
-
-def fig_to_base64(fig):
-    """
-    Puts png in trame-compatible form
-    """
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png")
-    buf.seek(0)
-    return base64.b64encode(buf.read()).decode("utf-8")
 
 
 # Call plot_over_s

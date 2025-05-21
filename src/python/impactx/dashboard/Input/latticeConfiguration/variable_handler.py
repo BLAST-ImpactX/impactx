@@ -31,24 +31,27 @@ class LatticeVariableHandler:
         Updates lattice element parameters that reference variables,
         ensuring they reflect the latest variable values.
 
-        We ensure that the index of the lattice element is a valid index
-        in the selected lattice list before updating the parameters.
+        We ensure that the lattice element is an existing element a valid index
+        in the 'selected_lattice_list' before updating the input.
             EX:
             - The user adds a 'drift' element and sets its 'nslice' parameter to a variable named "ns".
             - Later, they delete this drift element from the lattice list.
             - Even though the variable "ns" still exists in the variable configuration,
             the deleted element's index is now invalid.
         """
-        for lattice_element in state.lattice_params_bound_or_pending_variable.values():
-            index = lattice_element["index"]
-            if index < len(state.selected_lattice_list):
-                ctrl.updateLatticeElementParameters(
-                    lattice_element["index"],
-                    lattice_element["parameter_name"],
-                    lattice_element["ui_input"],
-                    lattice_element["parameter_type"],
-                )
+        for lattice in state.lattice_elements_using_variables.values():
+            try:
+                lattice_id = lattice["element_reference"]
+                lattice_index = state.selected_lattice_list.index(lattice_id)
+            except ValueError:
+                continue  # skip the deleted elements
 
+            ctrl.updateLatticeElementParameters(
+                lattice_index,
+                lattice["parameter_name"],
+                lattice["ui_input"],
+                lattice["parameter_type"],
+            )
     # -----------------------------------------------------------------------------
     # Controllers
     # -----------------------------------------------------------------------------

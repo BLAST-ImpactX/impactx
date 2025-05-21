@@ -19,7 +19,7 @@ from .. import (
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
-state.lattice_params_bound_or_pending_variable = {}
+state.lattice_elements_using_variables = {}
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -168,11 +168,10 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
 
     if is_variable or is_potential_variable:
         binding = {
-            "index": index,
+            "element_reference": state.selected_lattice_list[index],
             "parameter_name": parameter_name,
             "ui_input": ui_input,
             "parameter_type": parameter_type,
-            "variable_index": variable_index,
         }
 
     return sim_input, binding
@@ -186,14 +185,11 @@ def on_lattice_element_parameter_change(
         index, parameter_name, ui_input, parameter_type
     )
 
+    key = (id(state.selected_lattice_list[index]), parameter_name)
     if bounded_or_pending_variable is not None:
-        state.lattice_params_bound_or_pending_variable[(index, parameter_name)] = (
-            bounded_or_pending_variable
-        )
+        state.lattice_elements_using_variables[key] = bounded_or_pending_variable
     else:
-        state.lattice_params_bound_or_pending_variable.pop(
-            (index, parameter_name), None
-        )
+        state.lattice_elements_using_variables.pop(key, None)
 
     error_message = generalFunctions.validate_against(sim_input, parameter_type)
 

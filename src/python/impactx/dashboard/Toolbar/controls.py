@@ -172,7 +172,7 @@ class RunToolbar:
 
     @ctrl.trigger("cancel_sim")
     def cancel_sim():
-        SimulationHelper.cancel_simulation()
+        state.sim_is_cancelled = True
 
     @staticmethod
     def run_simulation():

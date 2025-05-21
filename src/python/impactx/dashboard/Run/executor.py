@@ -49,6 +49,10 @@ async def execute_impactx_sim() -> None:
     state.sim_index = SimulationHistory.add_sim_to_history()
 
     while True:
+        if state.sim_is_cancelled:
+            SimulationHelper.cancel_simulation()
+            break
+
         sim_output_line = await simulation_process.stdout.readline()
         sim_output_line_decoded = sim_output_line.decode()
 

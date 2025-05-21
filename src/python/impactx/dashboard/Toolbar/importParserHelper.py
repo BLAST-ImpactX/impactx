@@ -189,7 +189,7 @@ class DashboardParserHelper:
         :param used_vars: Set of variable names to filter by.
         :return: Dictionary of parsed variables.
         """
-            
+
         variables = {}
         variables_regex = r"^\s*(\w+)\s*=\s*([^#\n]+)"
         variables_found = re.findall(variables_regex, content, re.MULTILINE)

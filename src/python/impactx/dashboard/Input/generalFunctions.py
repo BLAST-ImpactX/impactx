@@ -59,7 +59,7 @@ class generalFunctions:
         are inherently strings.
 
         It first tries to convert the value to int, then to float.
-        If the conversion fails, it raises a ValueError.
+        If the conversion fails, returns None.
 
         :param input: The input to convert to a numeric type.
         :return: The input converted to a numeric type.
@@ -71,7 +71,7 @@ class generalFunctions:
             try:
                 return float(input)
             except ValueError:
-                raise ValueError(f"Cannot convert '{input}' to a numeric type.")
+                return None
 
     @staticmethod
     def validate_against(input_value, value_type, additional_conditions=None):

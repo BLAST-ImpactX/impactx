@@ -16,14 +16,12 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
-# sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# load a 2 GeV electron beam with an initial
-# unnormalized rms emittance of 2 nm
+# load initial beam parameters
 kin_energy_MeV = 0.8e3  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles

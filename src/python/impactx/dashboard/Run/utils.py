@@ -19,10 +19,6 @@ class SimulationHelper:
     excution on the dashboard.
     """
 
-    current_process: asyncio.subprocess.Process = None
-    timer_task = None
-    cancelled: bool = False
-
     @staticmethod
     async def run_simulation_in_subprocess(simulation_contents):
         """
@@ -57,8 +53,7 @@ class SimulationHelper:
         SimulationHistory.save_view_details_log()
 
     @staticmethod
-    def cancel_simulation():
-        proc = SimulationHelper.current_process
+    def cancel_simulation(proc: asyncio.subprocess.Process):
         if proc is not None and proc.returncode is None:
             proc.kill()
 
@@ -67,6 +62,7 @@ class SimulationHelper:
         state.sim_progress = 0
         state.sim_current_step = 0
         state.sim_elapsed_time = "0.0"
+        state.sim_status_color = "warning"
         state.sim_progress_status = "Cancelled."
         state.sims[state.sim_index]["status"] = "Cancelled"
         state.dirty("filtered_sims")

@@ -44,13 +44,11 @@ async def execute_impactx_sim() -> None:
     simulation_process = await SimulationHelper.run_simulation_in_subprocess(
         simulation_contents
     )
-    SimulationHelper.current_process = simulation_process
-
     state.sim_index = SimulationHistory.add_sim_to_history()
 
     while True:
         if state.sim_is_cancelled:
-            SimulationHelper.cancel_simulation()
+            SimulationHelper.cancel_simulation(simulation_process)
             break
 
         sim_output_line = await simulation_process.stdout.readline()

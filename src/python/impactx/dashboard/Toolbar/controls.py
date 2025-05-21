@@ -12,11 +12,12 @@ from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
+from ..Run import SimulationHelper
 from ..Run.executor import run_execute_impactx_sim
 from ..Run.simulation import dashboard_sim_inputs
 from .importParser import DashboardParser
 from .sim_history.ui import SimulationHistory
-from ..Run import SimulationHelper
+
 server, state, ctrl = setup_server()
 
 state.show_dashboard_alert = True
@@ -162,7 +163,7 @@ class RunToolbar:
     Contains toolbar elements for the Run page.
     """
 
-    @ctrl.trigger("begin_sim")  
+    @ctrl.trigger("begin_sim")
     def run():
         state.plot_options = available_plot_options(simulationClicked=True)
         run_execute_impactx_sim()
@@ -191,7 +192,7 @@ class RunToolbar:
             click="sim_is_running ? trigger('cancel_sim') : trigger('begin_sim')",
             description="Run Simulation",
             dynamic_condition="sim_is_running",
-            disabled=("disableRunSimulationButton || sim_is_generating_plots", True)
+            disabled=("disableRunSimulationButton || sim_is_generating_plots", True),
         )
 
     @staticmethod

@@ -148,8 +148,9 @@ class DashboardDefaults:
     }
 
     VALIDATION_CONDITION = {
-        "beta": ["non_zero", "positive"],
-        "emitt": ["non_zero", "positive"],
+        "lambda": ["positive"],
+        "beta": ["positive"],
+        "emitt": ["positive"],
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],

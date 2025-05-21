@@ -121,9 +121,9 @@ class generalFunctions:
             for condition in additional_conditions:
                 if condition == "non_zero" and value == 0:
                     errors.append("Must be non-zero.")
-                if condition == "positive" and value < 0:
+                if condition == "positive" and value <= 0:
                     errors.append("Must be positive.")
-                if condition == "negative" and value > 0:
+                if condition == "negative" and value >= 0:
                     errors.append("Must be negative.")
 
         return errors

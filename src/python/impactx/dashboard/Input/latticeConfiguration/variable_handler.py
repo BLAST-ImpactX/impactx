@@ -31,7 +31,7 @@ class LatticeVariableHandler:
         Updates lattice element parameters that reference variables,
         ensuring they reflect the latest variable values.
 
-        We ensure that the lattice element is an existing element a valid index
+        We ensure that the lattice element is an existing element
         in the 'selected_lattice_list' before updating the input.
             EX:
             - The user adds a 'drift' element and sets its 'nslice' parameter to a variable named "ns".

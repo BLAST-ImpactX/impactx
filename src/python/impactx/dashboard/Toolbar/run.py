@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 from trame.widgets import html
 
 from .. import setup_server, vuetify
-from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
+from ..Analyze.plotsMain import available_plot_options
 from ..Input.components.card import CardComponents
 from ..Run.executor import run_execute_impactx_sim
 
@@ -28,8 +28,6 @@ class RunToolbar:
         """
         state.plot_options = available_plot_options(simulationClicked=True)
         run_execute_impactx_sim()
-        update_plot()
-        load_dataTable_data()
 
     @ctrl.trigger("cancel_sim")
     def cancel_sim():

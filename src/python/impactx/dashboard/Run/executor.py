@@ -85,5 +85,8 @@ async def execute_impactx_sim() -> None:
         SimulationHelper.fail_simulation()
         return
 
+    # Update visualizations
     SimulationHelper.display_phase_space_plots()
+    SimulationHelper.update_plot_over_s()
+    
     SimulationHelper.complete_simulation()

@@ -12,6 +12,7 @@ import os
 from trame.widgets import plotly
 
 from .. import setup_server, vuetify
+from ..Input.components.navigation import NavigationComponents
 from . import AnalyzeFunctions, line_plot_1d
 
 server, state, ctrl = setup_server()
@@ -163,37 +164,42 @@ class AnalyzeSimulation:
     @staticmethod
     def plot_over_s():
         """
-        Displays the content for the 'Plot Over S' visualization option.
+        Displays the content for the 'Plot Over S' selection.
         """
+
+        dialog_name = "plot_over_s_tab_dialog"
 
         with vuetify.VContainer():
             with vuetify.VRow():
-                with vuetify.VCol(style="width: 500px;"):
-                    vuetify.VSelect(
-                        v_model=("selected_headers",),
-                        items=("headers_without_step_or_s",),
-                        label="Select data to view",
-                        multiple=True,
-                        item_title="title",
-                        item_value="key",
-                        density="compact",
-                        variant="underlined",
-                    )
-                    vuetify.VDivider()
-                    vuetify.VDataTable(
-                        headers=("filtered_headers",),
-                        items=("filtered_data",),
-                        header_class="centered-header",
-                        density="compact",
-                        height="325px",
-                    )
-
-                with vuetify.VCol(style="height: 50vh; width: 90vh"):
-                    plotly_figure = plotly.Figure(
-                        display_mode_bar="true", config={"responsive": True}
-                    )
-                    ctrl.plotly_figure_update = plotly_figure.update
-                    plotly_figure
+                with vuetify.VCol(cols=9, classes="d-flex flex-column"):
+                    with NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Plot", "Data"]):
+                        with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+                            with vuetify.VTabsWindowItem(): # tab1
+                                with vuetify.VContainer(style="height: 400px;"):
+                                    plotly_figure = plotly.Figure(
+                                        display_mode_bar="true",
+                                    )
+                                    ctrl.plotly_figure_update = plotly_figure.update
+                            with vuetify.VTabsWindowItem(): # tab2
+                                with vuetify.VCardText(classes="pa-0"):
+                                    vuetify.VDataTable(
+                                        headers=("filtered_headers",),
+                                        items=("filtered_data",),
+                                        header_class="centered-header",
+                                        density="compact",
+                                    )
+                with vuetify.VCol(cols=3):
+                    with vuetify.VCard(classes="pa-4 d-flex flex-column"):
+                        vuetify.VSelect(
+                            v_model=("selected_headers",),
+                            items=("headers_without_step_or_s",),
+                            label="Select data to view",
+                            multiple=True,
+                            item_title="title",
+                            item_value="key",
+                            density="comfortable",
+                            variant="outlined",
+                        )
 
     @staticmethod
     def phase_space():

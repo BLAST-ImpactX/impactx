@@ -163,11 +163,38 @@ class DashboardParserHelper:
 
     @staticmethod
     def parse_variables(content: str, used_vars: set) -> dict:
+        """
+        Parses variable definitions from the simulation file content.
+
+        The function looks for lines that define variables in similar format of:
+            variable_name = value
+
+        variables_regex breakdown:
+            ^\s* - Remove leading whitespace before variable name
+            (\w+) => Retrieve the variable name
+            \s*=\s*  => Allow the line to have spaces around '=' (ie. 'a= 10' or 'a =10')
+            ([^#\n]+) => Captures everything after '=' up to a comment '#' or end of line
+
+        EX when calling this function:
+            content = '''
+                a = 10
+                b = 2.5  # some comment
+                c = "some string"
+            '''
+            used_vars = {"a", "b"}
+            result = parse_variables(content, used_vars)
+            # result: { "a": 10, "b": 2.5}
+
+        :param content: The content of the ImpactX simulation file.
+        :param used_vars: Set of variable names to filter by.
+        :return: Dictionary of parsed variables.
+        """
+            
         variables = {}
         variables_regex = r"^\s*(\w+)\s*=\s*([^#\n]+)"
-        matches = re.findall(variables_regex, content, re.MULTILINE)
+        variables_found = re.findall(variables_regex, content, re.MULTILINE)
 
-        for var_name, var_value in matches:
+        for var_name, var_value in variables_found:
             if var_name not in used_vars:
                 continue
             try:

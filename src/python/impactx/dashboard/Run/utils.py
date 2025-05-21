@@ -63,7 +63,7 @@ class SimulationHelper:
         state.sim_current_step = 0
         state.sim_elapsed_time = "0.0"
         state.sim_status_color = "warning"
-        state.sim_progress_status = "Cancelled."
+        state.sim_progress_status = "Cancelled"
         state.sims[state.sim_index]["status"] = "Cancelled"
         state.dirty("filtered_sims")
         ctrl.terminal_print("Simulation cancelled.")

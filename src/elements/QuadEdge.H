@@ -157,16 +157,18 @@ namespace impactx::elements
             amrex::ParticleReal x2my2 = x*x - y*y;
             amrex::ParticleReal x2py2 = x*x + y*y;
             amrex::ParticleReal denominator = 1_prt - 9_prt*std::pow(a,2)*std::pow(x2my2,2);
-            amrex::ParticleReal f4 = a * ( px * (std::pow(x,3) + 3_prt*x*std::pow(y,2))
-                                         - py * (std::pow(y,3) + 3_prt*y*std::pow(x,2)) );
 
-            // apply edge focusing
+            // apply edge focusing (transverse phase space)
             xout = x - a * (std::pow(x,3) + 3_prt * x * std::pow(y,2));
             yout = y + a * (3_prt * std::pow(x,2) * y + std::pow(y,3));
-            tout = t + f4 * (pt - 1_prt/m_beta) / std::pow(delta1,2);
 
             pxout = (px + 3_prt*a*px*x2py2 - 6_prt*a*py*x*y) / denominator;
             pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
+
+            // apply edge focusing (longitudinal phase space)
+            amrex::ParticleReal f4 = a * ( pxout * (std::pow(x,3) + 3_prt*x*std::pow(y,2))
+                                         - pyout * (std::pow(y,3) + 3_prt*y*std::pow(x,2)) );
+            tout = t + f4 * (pt - 1_prt/m_beta) / std::pow(delta1,2);
 
             // update output values
             x = xout;

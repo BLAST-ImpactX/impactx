@@ -153,10 +153,7 @@ class SimulationHistory:
     def load_sim_outputs():
         sim = state.selected_sim_to_load
         state.selected_sim_to_analyze = sim
-        outputs = sim.get("outputs", {})
-
-        if "phase_space_png" in outputs:
-            state.phase_space_png = outputs["phase_space_png"]
+        state.phase_space_png = sim["outputs"]["phase_space_png"]
 
         state.load_sim_dialog = False
         

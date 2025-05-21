@@ -152,6 +152,7 @@ class SimulationHistory:
     @ctrl.add("load_selected_sim_outputs")
     def load_sim_outputs():
         sim = state.selected_sim_to_load
+        state.selected_sim_to_analyze = sim
         outputs = sim.get("outputs", {})
 
         if "phase_space_png" in outputs:

@@ -25,7 +25,7 @@ class SharedUtilities:
         state_changes = state.modified_keys & set(INPUT_DEFAULTS)
         for state_name in state_changes:
             if type(state[state_name]) is str:
-                value = getattr(state, state_name)
+                input = getattr(state, state_name)
                 desired_type = DashboardDefaults.TYPES.get(state_name, None)
                 validation_name = f"{state_name}_error_message"
                 conditions = DashboardDefaults.VALIDATION_CONDITION.get(
@@ -33,15 +33,13 @@ class SharedUtilities:
                 )
 
                 validation_result = generalFunctions.validate_against(
-                    value, desired_type, conditions
+                    input, desired_type, conditions
                 )
                 setattr(state, validation_name, validation_result)
                 generalFunctions.update_simulation_validation_status()
 
                 if validation_result == []:
-                    converted_value = generalFunctions.convert_to_correct_type(
-                        value, desired_type
-                    )
+                    converted_value = generalFunctions.convert_to_numeric(input)
 
                     if getattr(state, state_name) != converted_value:
                         setattr(state, state_name, converted_value)

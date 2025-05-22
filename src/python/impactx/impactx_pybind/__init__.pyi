@@ -755,6 +755,7 @@ def push(
     | elements.Programmable
     | elements.PRot
     | elements.Quad
+    | elements.QuadEdge
     | elements.RFCavity
     | elements.Sbend
     | elements.ShortRF

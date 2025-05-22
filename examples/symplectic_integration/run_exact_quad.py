@@ -66,10 +66,10 @@ monitor1 = elements.BeamMonitor("monitor", backend="h5")
 
 drift1 = elements.ExactDrift(name="drift1", ds=0.046, nslice=ns)
 quad1 = elements.ExactQuad(
-    name="quad1", ds=0.02903, k=-207.0, unit=1, mapsteps=5, nslice=ns
+    name="quad1", ds=0.02903, k=207.0, unit=1, mapsteps=5, nslice=ns
 )
 quad2 = elements.ExactQuad(
-    name="quad2", ds=0.02890, k=207.0, unit=1, mapsteps=5, nslice=ns
+    name="quad2", ds=0.02890, k=-207.0, unit=1, mapsteps=5, nslice=ns
 )
 
 # set the lattice

@@ -7,7 +7,10 @@ License: BSD-3-Clause-LBNL
 """
 
 import inspect
-from typing import Dict, List, Type
+import re
+from typing import Callable, Dict, List, Type
+
+from impactx.distribution_input_helpers import twiss
 
 
 class InputDefaultsHelper:
@@ -42,4 +45,42 @@ class InputDefaultsHelper:
                     docstring = inspect.getdoc(attribute) or ""
                     docstrings[name] = docstring
 
+        distribution_tooltips = InputDefaultsHelper.get_tooltips_from_param(twiss)
+        docstrings.update(distribution_tooltips)
+
         return docstrings
+
+    @staticmethod
+    def get_tooltips_from_param(function: Callable) -> Dict[str, str]:
+        """
+        Extract all ':param name: description' entries from a function's docstring.
+
+        Example:
+            :param beta_x: Beta function value in the x dimension.
+            :param emitt_x: Emittance function value in the x dimension.
+
+        This will produce:
+            {
+                "beta_x": "Beta function value in the x dimension.",
+                "emitt_x": "Emittance function value in the x dimension."
+            }
+
+        :param function: The function whose docstring you want to parse.
+        :return: A dict mapping each parameter name to its description.
+        """
+        tooltip_results = {}
+        docstring = inspect.getdoc(function) or ""
+        pattern = re.compile(r"^\s*:param\s+(\w+)\s*:\s*(.+)$", re.MULTILINE)
+        pattern_matches = list(pattern.finditer(docstring))
+
+        if not pattern_matches:
+            raise ValueError(
+                f"Found no docstrings to parse in function {function.__name__}"
+            )
+
+        for match in pattern_matches:
+            param_name = match.group(1)
+            param_description = match.group(2)
+            tooltip_results[param_name] = param_description
+
+        return tooltip_results

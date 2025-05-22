@@ -103,9 +103,7 @@ class LatticeVariableHandler:
                 variable["name"] = event
                 variable["value"] = variable["value"] or None
         else:
-            variable["value"] = generalFunctions.determine_input_type(event)[
-                0
-            ]  # converts to numeric
+            variable["value"] = generalFunctions.convert_to_numeric(event)
         state.dirty("variables")
 
     @staticmethod

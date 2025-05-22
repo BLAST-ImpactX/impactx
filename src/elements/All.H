@@ -33,6 +33,7 @@
 #include "Programmable.H"
 #include "PRot.H"
 #include "Quad.H"
+#include "QuadEdge.H"
 #include "RFCavity.H"
 #include "Sbend.H"
 #include "ShortRF.H"
@@ -74,6 +75,7 @@ namespace impactx::elements
         Programmable,
         PRot,
         Quad,
+        QuadEdge,
         RFCavity,
         Sbend,
         ShortRF,

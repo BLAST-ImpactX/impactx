@@ -172,8 +172,7 @@ namespace impactx
 
             amrex::ParticleReal const ref_gamma = -pt;
             amrex::ParticleReal const ref_betagamma = std::sqrt(std::pow(ref_gamma, 2) - 1.0_prt);
-            //amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge; //fails due to "charge"
-            amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/(ablastr::constant::SI::q_e);
+            amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge;
             return ref_rigidity;
         }
 

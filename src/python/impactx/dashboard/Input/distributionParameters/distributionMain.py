@@ -125,7 +125,7 @@ def on_distribution_type_change(**kwargs):
 
 @ctrl.add("updateDistributionParameters")
 def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
-    parameter_value, input_type = generalFunctions.determine_input_type(parameter_value)
+    parameter_value = generalFunctions.convert_to_numeric(parameter_value)
     error_message = generalFunctions.validate_against(parameter_value, parameter_type)
 
     for param in state.selected_distribution_parameters:
@@ -177,19 +177,27 @@ class DistributionParameters(CardBase):
                         v_for="(parameter, index) in selected_distribution_parameters",
                         cols=4,
                     ):
-                        vuetify.VTextField(
-                            label=("parameter.parameter_name",),
-                            v_model=("parameter.parameter_default_value",),
-                            suffix=("parameter.parameter_units",),
-                            update_modelValue=(
-                                ctrl.updateDistributionParameters,
-                                "[parameter.parameter_name, $event, parameter.parameter_type]",
-                            ),
-                            error_messages=("parameter.parameter_error_message",),
-                            type="number",
-                            step=("parameter.parameter_step",),
-                            __properties=["step"],
-                            density="compact",
-                            variant="underlined",
-                            hide_details="auto",
-                        )
+                        with vuetify.VTooltip(
+                            location="top",
+                            text=("all_tooltips[parameter.parameter_name]",),
+                        ):
+                            with vuetify.Template(v_slot_activator="{ props }"):
+                                vuetify.VTextField(
+                                    label=("parameter.parameter_name",),
+                                    v_model=("parameter.parameter_default_value",),
+                                    suffix=("parameter.parameter_units",),
+                                    update_modelValue=(
+                                        ctrl.updateDistributionParameters,
+                                        "[parameter.parameter_name, $event, parameter.parameter_type]",
+                                    ),
+                                    error_messages=(
+                                        "parameter.parameter_error_message",
+                                    ),
+                                    type="number",
+                                    step=("parameter.parameter_step",),
+                                    __properties=["step"],
+                                    density="compact",
+                                    variant="underlined",
+                                    hide_details="auto",
+                                    v_bind="props",
+                                )

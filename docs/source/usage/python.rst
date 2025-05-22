@@ -931,6 +931,24 @@ This module provides elements and methods for the accelerator lattice.
 
       number of integration steps per slice used for symplectic integration
 
+.. py:class:: impactx.elements.QuadEdge(k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+
+   Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing
+   the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq
+   (28) of:  E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
+
+   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)
+              = (gradient in T/m) / (rigidity in T-m)
+          OR  Quadrupole strength in T/m (MaryLie convention, if unit = 1)
+              k > 0 horizontal focusing
+              k < 0 horizontal defocusing
+   :param unit: specification of units for quadrupole field strength
+   :param flag: location of edge (``"entry"`` or ``"exit"``)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An active cylindrically symmetric plasma lens, with chromatic effects included.

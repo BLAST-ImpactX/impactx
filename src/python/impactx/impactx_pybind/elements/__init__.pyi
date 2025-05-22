@@ -37,6 +37,7 @@ __all__ = [
     "PlaneXYRot",
     "Programmable",
     "Quad",
+    "QuadEdge",
     "RFCavity",
     "Sbend",
     "ShortRF",
@@ -1142,6 +1143,7 @@ class KnownElementsList:
         | Programmable
         | PRot
         | Quad
+        | QuadEdge
         | RFCavity
         | Sbend
         | ShortRF
@@ -1181,6 +1183,7 @@ class KnownElementsList:
         | Programmable
         | PRot
         | Quad
+        | QuadEdge
         | RFCavity
         | Sbend
         | ShortRF
@@ -1221,6 +1224,7 @@ class KnownElementsList:
         | Programmable
         | PRot
         | Quad
+        | QuadEdge
         | RFCavity
         | Sbend
         | ShortRF
@@ -1734,6 +1738,69 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     @k.setter
     def k(self, arg1: float) -> None: ...
+
+class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        k: float,
+        unit: int = 0,
+        flag: str = "entry",
+        dx: float = 0,
+        dy: float = 0,
+        rotation: float = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A thin quadrupole fringe field element. Flag must be "entry" or "exit".
+        """
+    def __repr__(self) -> str: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: int = 0,
+        period: int = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def k(self) -> float:
+        """
+        quadrupole focusing strength (1/meter^2 OR T/m)
+        """
+    @k.setter
+    def k(self, arg1: float) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        unit specification for quad strength
+        """
+    @unit.setter
+    def unit(self, arg1: int) -> None: ...
 
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(

@@ -985,6 +985,75 @@ void init_elements(py::module& m)
     ;
     register_push(py_ExactDrift);
 
+    py::class_<ExactMultipole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactMultipole(me, "ExactMultipole");
+    py_ExactMultipole
+        .def("__repr__",
+             [](ExactMultipole const & exact_multipole) {
+                 return element_name(
+                     exact_multipole,
+                     std::make_pair("unit", exact_multipole.m_unit)
+                 );
+             }
+        )
+        .def("to_dict",
+             [](ExactMultipole const & exact_multipole) {
+                 return element_dict(
+                     exact_multipole,
+                     std::make_pair("unit", exact_multipole.m_unit),
+                     std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
+                     std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
+                     std::make_pair("mapsteps", exact_multipole.m_mapsteps)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                std::vector<amrex::ParticleReal>,
+                std::vector<amrex::ParticleReal>,
+                int,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::arg("ds"),
+             py::arg("k_normal"),
+             py::arg("k_skew"),
+             py::arg("unit") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
+             py::arg("int_order") = 2,
+             py::arg("mapsteps") = 5,
+             py::arg("nslice") = 1,
+             py::arg("name") = py::none(),
+             "A thick Multipole magnet using the exact nonlinear Hamiltonian."
+        )
+        .def_property("unit",
+            [](ExactMultipole & exact_multipole) { return exact_multipole.m_unit; },
+            [](ExactMultipole & exact_multipole, int unit) { exact_multipole.m_unit = unit; },
+            "unit specification for multipole strength"
+        )
+        .def_property("int_order",
+            [](ExactMultipole & exact_multipole) { return exact_multipole.m_int_order; },
+            [](ExactMultipole & exact_multipole, int int_order) { exact_multipole.m_int_order = int_order; },
+            "order of symplectic integration used for particle push in applied fields"
+        )
+        .def_property("mapsteps",
+            [](ExactMultipole & exact_multipole) { return exact_multipole.m_mapsteps; },
+            [](ExactMultipole & exact_multipole, int mapsteps) { exact_multipole.m_mapsteps = mapsteps; },
+            "number of integration steps per slice used for particle push in the applied fields"
+        )
+    ;
+    register_push(py_ExactMultipole);
+
     py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
     py_ExactQuad
         .def("__repr__",
@@ -1028,7 +1097,7 @@ void init_elements(py::module& m)
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
              py::arg("int_order") = 2,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 5,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Quadrupole magnet using the exact nonlinear Hamiltonian."

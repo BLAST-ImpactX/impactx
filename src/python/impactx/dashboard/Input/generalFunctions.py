@@ -60,6 +60,9 @@ class generalFunctions:
 
         It first tries to convert the value to int, then to float.
         If the conversion fails, returns None.
+        Note that the function runs on every keystroke.
+        For non-trivial input, e.g., '1e-2', the conversion 
+        fails silently until the full number is typed.
 
         :param input: The input to convert to a numeric type.
         :return: The input converted to a numeric type.

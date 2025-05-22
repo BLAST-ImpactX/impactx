@@ -125,7 +125,7 @@ def on_distribution_type_change(**kwargs):
 
 @ctrl.add("updateDistributionParameters")
 def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
-    parameter_value, input_type = generalFunctions.determine_input_type(parameter_value)
+    parameter_value = generalFunctions.convert_to_numeric(parameter_value)
     error_message = generalFunctions.validate_against(parameter_value, parameter_type)
 
     for param in state.selected_distribution_parameters:

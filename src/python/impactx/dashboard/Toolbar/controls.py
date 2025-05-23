@@ -189,7 +189,7 @@ class RunToolbar:
             ["mdi-play-circle", "mdi-close-circle"],
             color=("sim_is_running ? 'error' : sim_status_color",),
             click="sim_is_running ? trigger('cancel_sim') : trigger('begin_sim')",
-            description="Run Simulation",
+            description=["Run Simulation", "Cancel Simulation"],
             dynamic_condition="sim_is_running",
             disabled=("disableRunSimulationButton || sim_is_generating_plots", True),
         )

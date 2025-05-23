@@ -36,12 +36,6 @@ def test_dashbnoard():
         - Through the variable configuration
     - Running the simulation
     - Checking if the simulation completes successfully
-
-
-    We call 'set_state()' for inputs which are connected to state variables.
-    We call 'set_js_input()' primarily for inputs which are part of nested states.
-    However, we can also use 'set_js_input()' in place of 'set_state()', but not
-    vice versa.
     """
     app_process = None
 

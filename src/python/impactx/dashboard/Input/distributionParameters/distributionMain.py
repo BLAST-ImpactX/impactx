@@ -127,8 +127,10 @@ def on_distribution_type_change(**kwargs):
 @ctrl.add("updateDistributionParameters")
 def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
     parameter_value = generalFunctions.convert_to_numeric(parameter_value)
+    lookup_name = "lambda" if "lambda" in parameter_name else parameter_name
+    conditions = generalFunctions.get_default(lookup_name, "validation_condition")
     error_message = DashboardValidation.validate_against(
-        parameter_value, parameter_type
+        parameter_value, parameter_type, additional_conditions=conditions
     )
 
     for param in state.selected_distribution_parameters:

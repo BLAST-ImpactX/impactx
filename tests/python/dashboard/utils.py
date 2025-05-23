@@ -174,7 +174,7 @@ class DashboardTester:
         
         try:
             state_exists = self.sb.execute_script(js_check_state, element_id)
-        except:
+        except Exception:
             state_exists = False
         
         if state_exists:

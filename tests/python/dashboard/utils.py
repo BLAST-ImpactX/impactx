@@ -152,10 +152,10 @@ class DashboardTester:
     def set_input(self, element_id: str, new_value) -> None:
         """
         Set input value by first trying set_state, then falling back to set_js_input if needed.
-        
+
         This method combines the functionality of set_state and set_js_input, providing
         a unified interface for setting input values in the dashboard.
-        
+
         :param element_id: ID of the input element to set (same as v_model_name).
         :param new_value: New value to set for the input element.
         """
@@ -171,12 +171,12 @@ class DashboardTester:
             }
             return false;
         """
-        
+
         try:
             state_exists = self.sb.execute_script(js_check_state, element_id)
         except Exception:
             state_exists = False
-        
+
         if state_exists:
             self.set_state(element_id, new_value)
         else:

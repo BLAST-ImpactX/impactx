@@ -10,6 +10,8 @@ server, state, ctrl = setup_server()
 
 state.sim_elapsed_time = "0.0"
 state.sim_is_running = False
+state.sim_is_cancelled = False
+state.sim_is_generating_plots = False
 state.sim_current_step = 0
 state.sim_total_steps = 0
 state.sim_progress = 0
@@ -45,6 +47,10 @@ async def execute_impactx_sim() -> None:
     state.sim_index = SimulationHistory.add_sim_to_history()
 
     while True:
+        if state.sim_is_cancelled:
+            SimulationHelper.cancel_simulation(simulation_process)
+            break
+
         sim_output_line = await simulation_process.stdout.readline()
         sim_output_line_decoded = sim_output_line.decode()
 
@@ -71,6 +77,9 @@ async def execute_impactx_sim() -> None:
 
     if start_timer is not None:
         start_timer.cancel()
+
+    if state.sim_is_cancelled:
+        return
 
     if sim_failed:
         SimulationHelper.fail_simulation()

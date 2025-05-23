@@ -52,20 +52,29 @@ class generalFunctions:
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def determine_input_type(value):
+    def convert_to_numeric(input: str) -> int | float:
         """
-        Determines the type of the input value.
-        :param value: The input value whose type needs to be determined.
-        :return: A tuple containing the value converted to its determined type and the type itself.
+        Converts string inputs to their appropriate numeric type.
+        This method is needed since text fields inputs on the dashboard
+        are inherently strings.
+
+        It first tries to convert the value to int, then to float.
+        If the conversion fails, returns None.
+        Note that the function runs on every keystroke.
+        For non-trivial input, e.g., '1e-2', the conversion
+        fails silently until the full number is typed.
+
+        :param input: The input to convert to a numeric type.
+        :return: The input converted to a numeric type.
         """
 
         try:
-            return int(value), int
+            return int(input)
         except ValueError:
             try:
-                return float(value), float
+                return float(input)
             except ValueError:
-                return value, str
+                return None
 
     @staticmethod
     def validate_against(input_value, value_type, additional_conditions=None):
@@ -314,26 +323,6 @@ class generalFunctions:
         """
 
         return list(generalFunctions.class_parameters_with_defaults(module_name))
-
-    @staticmethod
-    def convert_to_correct_type(value, desired_type):
-        """
-        Converts the given value to the desired type.
-        :param value: The value to convert.
-        :param desired_type: The type to convert the value to ('int', 'float', 'str').
-        :return: The value converted to the desired type.
-        """
-
-        if value is None:
-            raise ValueError("Cannot convert to desired type")
-        if desired_type == "int":
-            return int(value)
-        elif desired_type == "float":
-            return float(value)
-        elif desired_type == "str":
-            return str(value)
-        else:
-            raise ValueError("Unknown type")
 
     @staticmethod
     def reset_inputs(input_section):

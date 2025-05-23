@@ -727,6 +727,47 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
+.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+
+   A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
+   The coefficients must appear in the following sequence:
+
+   dipole, quadrupole, sextupole, octupole, etc...
+
+   (Note: Dipole coefficients are currently ignored, and will be supported in a separate combined-function dipole element.)
+
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
+   Here H_1 is the nonlinear Hamiltonian for a drift (including the kinematic square root),
+   and H_2 is the term containing the vector potential, which is a superposition of multipole contributions.
+
+   :param ds: Segment length in m.
+   :param K_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param K_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   .. py:property:: unit
+
+      unit specification for multipole coefficients
+
+   .. py:property:: int_order
+
+      the order used for symplectic integration (2, 4, or 6)
+
+   .. py:property:: mapsteps
+
+      number of integration steps per slice used for symplectic integration
+
 .. py::class:: impactx.elements.Empty
 
    This element does nothing.
@@ -888,7 +929,7 @@ This module provides elements and methods for the accelerator lattice.
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
@@ -910,7 +951,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param aperture_x: horizontal half-aperture (elliptical) in m
    :param aperture_y: vertical half-aperture (elliptical) in m
-   :param int_order: the order used for symplectic integration (2 or 4)
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
    :param mapsteps: number of integration steps per slice used for symplectic integration
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
@@ -925,11 +966,29 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:property:: int_order
 
-      the order used for symplectic integration (2 or 4)
+      the order used for symplectic integration (2, 4, or 6)
 
    .. py:property:: mapsteps
 
       number of integration steps per slice used for symplectic integration
+
+.. py:class:: impactx.elements.QuadEdge(k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+
+   Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing
+   the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq
+   (28) of:  E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
+
+   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)
+              = (gradient in T/m) / (rigidity in T-m)
+          OR  Quadrupole strength in T/m (MaryLie convention, if unit = 1)
+              k > 0 horizontal focusing
+              k < 0 horizontal defocusing
+   :param unit: specification of units for quadrupole field strength
+   :param flag: location of edge (``"entry"`` or ``"exit"``)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
 
 .. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 

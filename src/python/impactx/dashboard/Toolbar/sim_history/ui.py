@@ -257,7 +257,15 @@ class SimulationHistory:
                             label="Status",
                             v_model=("selected_sim_search_status", None),
                             update_modelValue=(ctrl.update_status, "[$event]"),
-                            items=(["All", "Completed", "In Progress", "Failed"],),
+                            items=(
+                                [
+                                    "All",
+                                    "Completed",
+                                    "In Progress",
+                                    "Cancelled",
+                                    "Failed",
+                                ],
+                            ),
                             clearable=True,
                             density="comfortable",
                             hide_details=True,

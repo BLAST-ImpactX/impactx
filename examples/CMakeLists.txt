@@ -1426,3 +1426,33 @@ add_impactx_test(examples-exact-quad.py
     examples/symplectic_integration/analysis_exact_quad.py
     OFF  # no plot script yet
 )
+
+# FODO Channel with Quads Treated as Exact Multipoles ##############
+#
+# no space charge
+add_impactx_test(examples-fodo-multipole
+    examples/symplectic_integration/input_fodo_multipole.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_fodo_multipole.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-fodo_multipole.py
+    examples/symplectic_integration/run_fodo_multipole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_fodo_multipole.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in a Long Sextupole ##############
+#
+# no space charge
+file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/initial_coords.csv
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/final_coords.csv
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
+add_impactx_test(examples-long-sextupole.py
+    examples/symplectic_integration/run_sextupole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_sextupole.py
+    OFF  # no plot script yet
+)

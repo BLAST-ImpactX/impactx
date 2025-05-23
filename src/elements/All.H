@@ -22,6 +22,7 @@
 #include "Drift.H"
 #include "Empty.H"
 #include "ExactDrift.H"
+#include "ExactMultipole.H"
 #include "ExactQuad.H"
 #include "ExactSbend.H"
 #include "Kicker.H"
@@ -33,6 +34,7 @@
 #include "Programmable.H"
 #include "PRot.H"
 #include "Quad.H"
+#include "QuadEdge.H"
 #include "RFCavity.H"
 #include "Sbend.H"
 #include "ShortRF.H"
@@ -63,6 +65,7 @@ namespace impactx::elements
         DipEdge,
         Drift,
         ExactDrift,
+        ExactMultipole,
         ExactQuad,
         ExactSbend,
         Kicker,
@@ -74,6 +77,7 @@ namespace impactx::elements
         Programmable,
         PRot,
         Quad,
+        QuadEdge,
         RFCavity,
         Sbend,
         ShortRF,

@@ -163,12 +163,16 @@ class RunToolbar:
     Contains toolbar elements for the Run page.
     """
 
-    @ctrl.add("begin_sim")
+    @ctrl.trigger("begin_sim")
     def run():
         state.plot_options = available_plot_options(simulationClicked=True)
         run_execute_impactx_sim()
         update_plot()
         load_dataTable_data()
+
+    @ctrl.trigger("cancel_sim")
+    def cancel_sim():
+        state.sim_is_cancelled = True
 
     @staticmethod
     def run_simulation():
@@ -183,12 +187,12 @@ class RunToolbar:
         with the current user-provided inputs.
         """
         CardComponents.card_button(
-            ["mdi-play-circle", "mdi-stop-circle"],
-            color=("sim_status_color",),
-            click=ctrl.begin_sim,
+            ["mdi-play-circle", "mdi-close-circle"],
+            color=("sim_is_running ? 'error' : sim_status_color",),
+            click="sim_is_running ? trigger('cancel_sim') : trigger('begin_sim')",
             description="Run Simulation",
             dynamic_condition="sim_is_running",
-            disabled=("disableRunSimulationButton || sim_is_running", True),
+            disabled=("disableRunSimulationButton || sim_is_generating_plots", True),
             id="run_simulation_button",
         )
 

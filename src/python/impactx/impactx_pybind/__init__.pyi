@@ -744,6 +744,7 @@ def push(
     | elements.DipEdge
     | elements.Drift
     | elements.ExactDrift
+    | elements.ExactMultipole
     | elements.ExactQuad
     | elements.ExactSbend
     | elements.Kicker
@@ -755,6 +756,7 @@ def push(
     | elements.Programmable
     | elements.PRot
     | elements.Quad
+    | elements.QuadEdge
     | elements.RFCavity
     | elements.Sbend
     | elements.ShortRF

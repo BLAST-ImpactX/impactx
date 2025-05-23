@@ -22,6 +22,7 @@
 #include "Drift.H"
 #include "Empty.H"
 #include "ExactDrift.H"
+#include "ExactMultipole.H"
 #include "ExactQuad.H"
 #include "ExactSbend.H"
 #include "Kicker.H"
@@ -64,6 +65,7 @@ namespace impactx::elements
         DipEdge,
         Drift,
         ExactDrift,
+        ExactMultipole,
         ExactQuad,
         ExactSbend,
         Kicker,

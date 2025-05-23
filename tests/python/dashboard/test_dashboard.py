@@ -68,11 +68,11 @@ def test_dashbnoard():
             }
 
             for param_id, param_value in BEAM_PROPERTIES.items():
-                dashboard.set_state(param_id, param_value)
+                dashboard.set_input(param_id, param_value)
 
             # Adjust beam distribution
-            dashboard.set_state("distribution", "Waterbag")
-            dashboard.set_state("distribution_type", "Quadratic")
+            dashboard.set_input("distribution", "Waterbag")
+            dashboard.set_input("distribution_type", "Quadratic")
             DISTRIBUTION_PARAMETERS = {
                 "lambdaX": 3.9984884770e-5,
                 "lambdaY": 3.9984884770e-5,
@@ -86,7 +86,7 @@ def test_dashbnoard():
             }
 
             for param_id, param_value in DISTRIBUTION_PARAMETERS.items():
-                dashboard.set_js_input(param_id, param_value)
+                dashboard.set_input(param_id, param_value)
 
             # Build lattice
             for element_name in ["Drift", "Quad", "Drift", "Quad", "Drift"]:
@@ -108,7 +108,7 @@ def test_dashbnoard():
             }
 
             for param_id, param_value in LATTICE_CONFIGURATION.items():
-                dashboard.set_js_input(param_id, param_value)
+                dashboard.set_input(param_id, param_value)
 
             # Add variable
             sb.click("#lattice_settings")
@@ -118,7 +118,7 @@ def test_dashbnoard():
             }
 
             for param_id, param_value in VARIABLES.items():
-                dashboard.set_js_input(param_id, param_value)
+                dashboard.set_input(param_id, param_value)
 
             # Run the simulation and check if it completes successfully
             sb.click("#Run_route")

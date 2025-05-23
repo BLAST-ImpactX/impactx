@@ -56,15 +56,19 @@ def test_dashbnoard():
             wait_for_interaction_ready(sb)
 
             # Adjust beam properties
-            dashboard.set_state("tracking_mode", "Particle Tracking")
-            dashboard.set_state("space_charge", "false")
-            dashboard.set_state("csr", False)
-            dashboard.set_state("isr", False)
+            BEAM_PROPERTIES = {
+                "tracking_mode": "Particle Tracking",
+                "space_charge": "false",
+                "csr": False,
+                "isr": False,
+                "charge_qe": -1,
+                "mass_MeV": 0.510998950,
+                "npart": 10000,
+                "bunch_charge_C": 1e-9,
+            }
 
-            dashboard.set_state("charge_qe", -1)
-            dashboard.set_state("mass_MeV", 0.510998950)
-            dashboard.set_state("npart", 10000)
-            dashboard.set_state("bunch_charge_C", 1e-9)
+            for param_id, param_value in BEAM_PROPERTIES.items():
+                dashboard.set_state(param_id, param_value)
 
             # Adjust beam distribution
             dashboard.set_state("distribution", "Waterbag")

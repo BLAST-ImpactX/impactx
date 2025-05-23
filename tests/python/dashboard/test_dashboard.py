@@ -71,9 +71,9 @@ def test_dashbnoard():
                 dashboard.set_input(param_id, param_value)
 
             # Adjust beam distribution
-            dashboard.set_input("distribution", "Waterbag")
-            dashboard.set_input("distribution_type", "Quadratic")
             DISTRIBUTION_PARAMETERS = {
+                "distribution": "Waterbag",
+                "distribution_type": "Quadratic",
                 "lambdaX": 3.9984884770e-5,
                 "lambdaY": 3.9984884770e-5,
                 "lambdaT": 1.0e-3,

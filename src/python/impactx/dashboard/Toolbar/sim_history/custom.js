@@ -1,3 +1,12 @@
+// Supress ResizeObserver errors
+const originalConsoleError = console.error;
+console.error = function(...args) {
+    if (args[0].includes('ResizeObserver loop completed')) {
+        return; // suppress the error
+    }
+    originalConsoleError.apply(console, args);
+};
+
 window.getSimStatusColor = function(status) {
     if (status === 'Completed') return 'success';
     if (status === 'In Progress') return 'info';

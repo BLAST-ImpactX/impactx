@@ -86,6 +86,7 @@ class SimulationHelper:
 
     @staticmethod
     def reset():
+        ctrl.terminal_clear()
         state.sim_is_cancelled = False
         state.sim_is_running = True
         state.sim_progress = 0

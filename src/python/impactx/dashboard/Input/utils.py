@@ -71,10 +71,10 @@ class GeneralFunctions:
 
         try:
             return int(input)
-        except ValueError:
+        except (ValueError, TypeError):
             try:
                 return float(input)
-            except ValueError:
+            except (ValueError, TypeError):
                 return None
 
     @staticmethod

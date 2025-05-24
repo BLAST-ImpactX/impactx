@@ -9,6 +9,14 @@ License: BSD-3-Clause-LBNL
 from .. import state
 
 from . import generalFunctions
+
+ALLOWED_INPUT_TYPES = {"int", "float", "str"}
+INT_ERROR_MESSAGE = "Must be an integer"
+FLOAT_ERROR_MESSAGE = "Must be a float"
+NON_ZERO_ERROR = "Must be non-zero."
+POSITIVE_ERROR = "Must be positive."
+NEGATIVE_ERROR = "Must be negative."
+
 class DashboardValidation:
     """
     Contains all validation logic for the ImpactX dashboard inputs.
@@ -18,71 +26,88 @@ class DashboardValidation:
     def validate_input(input_name: str, input_value, category=None, parameter_type=None):
         """
         Validates the input value against the desired type and additional conditions.
+
         :param input_name: The name of the parameter being validated.
         :param input_value: The value to validate.
         :param category: The category of validation (e.g., 'distribution', 'lattice').
         :param parameter_type: The explicit type to use ('int', 'float', 'str'). If provided, overrides type lookup.
         :return: A list of error messages. An empty list if there are no errors.
         """
-        lookup_name = "lambda" if "lambda" in input_name else input_name
+        input_type = DashboardValidation._get_input_type(input_name, category, parameter_type)
+
+        if input_type not in ALLOWED_INPUT_TYPES:
+            return [f"Unknown or unsupported type '{input_type}'"]
+
+        if input_type == "str":
+            no_errors = []
+            return no_errors
         
-        # Use explicit parameter_type if provided, otherwise look it up
+        numeric_input = generalFunctions.convert_to_numeric(input_value)
+        value, type_errors = DashboardValidation._validate_type(numeric_input, input_type)
+
+        if type_errors:
+            return type_errors
+
+        additional_validation = DashboardValidation._validate_additional_conditions(input_name, value)
+        return additional_validation
+
+    @staticmethod
+    def _get_input_type(input_name: str, category, parameter_type):
+        """
+        Helper method to determine the input type.
+        """
         if parameter_type is not None:
-            value_type = parameter_type
+            return parameter_type
+    
+        if category in ["distribution", "lattice"]:
+            input_type = "float"
         else:
-            value_type = generalFunctions.get_default(lookup_name, "types")
+            input_type = generalFunctions.get_default(input_name, "types")
+
+        return input_type
+
+    @staticmethod
+    def _validate_type(numeric_input, value_type):
+        """
+        Helper method to validate the numeric_input.
+        """
+        if numeric_input is None:
+            error_message = (
+                INT_ERROR_MESSAGE if value_type == "int" else FLOAT_ERROR_MESSAGE
+            )
+            return None, [error_message]
+
+        is_int = isinstance(numeric_input, int)
+        is_float = isinstance(numeric_input, (int, float))
+
+        if value_type == "int" and not is_int:
+            return None, [INT_ERROR_MESSAGE]
+        elif value_type == "float" and not is_float:
+            return None, [FLOAT_ERROR_MESSAGE]
+
+        return numeric_input, []
+
+    @staticmethod
+    def _validate_additional_conditions(input_name: str, value):
+        """
+        Helper method to validate additional conditions (ie. non-zero, positive, negative).
+        """
+
+        if value is None:
+            return []
             
-            # Default to float for distribution and lattice parameters if no type is found
-            if value_type is None and category in ["distribution", "lattice"]:
-                value_type = "float"
-        
+        lookup_name = "lambda" if "lambda" in input_name else input_name
         additional_conditions = generalFunctions.get_default(lookup_name, "validation_condition") or []
-
+        
         errors = []
-        value = None
-
-        if input_value == "None":
-            return errors
-
-        if value_type not in ["int", "float", "str"]:
-            errors.append(f"Unknown or unsupported type '{value_type}'")
-            return errors
-            
-        # value_type checking
-        if value_type == "int":
-            if input_value is None:
-                errors.append("Must be an integer")
-            else:
-                try:
-                    value = int(input_value)
-                except ValueError:
-                    errors.append("Must be an integer")
-        elif value_type == "float":
-            if input_value is None:
-                errors.append("Must be a float")
-            else:
-                try:
-                    value = float(input_value)
-                except ValueError:
-                    errors.append("Must be a float")
-        elif value_type == "str":
-            if input_value is None:
-                errors.append("Must be a string")
-            else:
-                value = str(input_value)
-        else:
-            errors.append("Unknown type")
-
-        # addition_conditions checking
-        if errors == [] and additional_conditions:
-            for condition in additional_conditions:
-                if condition == "non_zero" and value == 0:
-                    errors.append("Must be non-zero.")
-                if condition == "positive" and value <= 0:
-                    errors.append("Must be positive.")
-                if condition == "negative" and value >= 0:
-                    errors.append("Must be negative.")
-
+        for condition in additional_conditions:
+            if condition == "non_zero" and value == 0:
+                errors.append(NON_ZERO_ERROR)
+            elif condition == "positive" and value <= 0:
+                errors.append(POSITIVE_ERROR)
+            elif condition == "negative" and value >= 0:
+                errors.append(NEGATIVE_ERROR)
+                
         return errors
 
     @staticmethod

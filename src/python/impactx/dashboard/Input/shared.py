@@ -39,11 +39,7 @@ class SharedUtilities:
         for state_name in state_changes:
             if type(state[state_name]) is str:
                 input = getattr(state, state_name)
-                desired_type = DashboardDefaults.TYPES.get(state_name, None)
                 validation_name = f"{state_name}_error_message"
-                conditions = DashboardDefaults.VALIDATION_CONDITION.get(
-                    state_name, None
-                )
 
                 validation_result = DashboardValidation.validate_input(
                     state_name, input

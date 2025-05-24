@@ -62,7 +62,7 @@ class RunToolbar:
             click="sim_is_running ? trigger('cancel_sim') : trigger('begin_sim')",
             description=["Run Simulation", "Cancel Simulation"],
             dynamic_condition="sim_is_running",
-            disabled=("disableRunSimulationButton || sim_is_generating_plots", True),
+            disabled=("disable_simulation || sim_is_generating_plots", True),
             id="run_simulation_button",
         )
 

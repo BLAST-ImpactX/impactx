@@ -48,19 +48,32 @@ CONVERSION_FACTORS = {
     "TeV": 1.0e6,
 }
 
+INPUT_LABELS = {
+    # state_name : "label"
+    "npart": "Number of Particles",
+    "kin_energy_on_ui": "Kinetic Energy",
+    "bunch_charge_C": "Bunch Charge",
+    "charge_qe": "Ref. Particle Charge",
+    "mass_MeV": "Ref. Particle Mass",
+}
+
 
 class DashboardDefaults:
     """
     Defaults for simulation parameters in the ImpactX dashboard.
     """
 
+    INPUT_SECTIONS = [
+        "Simulation Parameters",
+        "Distribution Parameters",
+        "Lattice Configuration",
+        "Space Charge",
+        "CSR",
+        "ISR",
+    ]
+
     COLLAPSABLE_SECTIONS = [
-        "collapse_simulation_parameters",
-        "collapse_csr",
-        "collapse_isr",
-        "collapse_distribution_parameters",
-        "collapse_space_charge",
-        "collapse_lattice_configuration",
+        f"collapse_{section.replace(' ', '_')}" for section in INPUT_SECTIONS
     ]
     # -------------------------------------------------------------------------
     # Inputs by section

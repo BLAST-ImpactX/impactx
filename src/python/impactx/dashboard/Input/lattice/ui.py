@@ -18,6 +18,7 @@ from ...Input.components import (
 from .. import DashboardDefaults, DashboardValidation
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
+from ..validation import sim_validator
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
@@ -69,7 +70,7 @@ def add_lattice_element() -> dict:
     }
 
     state.selected_lattice_list.append(lattice_element)
-    DashboardValidation.update_simulation_validation_status()
+    sim_validator.update(LatticeConfiguration.HEADER_NAME)
     return lattice_element
 
 
@@ -108,7 +109,7 @@ def parameter_input_checker_for_lattice(latticeElement):
 def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
     if selected_lattice_list == []:
         state.isSelectedLatticeListEmpty = "Please select a lattice element"
-        DashboardValidation.update_simulation_validation_status()
+        sim_validator.update(LatticeConfiguration.HEADER_NAME)
     else:
         state.isSelectedLatticeListEmpty = ""
 
@@ -189,13 +190,14 @@ def on_lattice_element_parameter_change(
             param["sim_input"] = sim_input
             param["parameter_error_message"] = error_message
 
-    DashboardValidation.update_simulation_validation_status()
+    sim_validator.update(LatticeConfiguration.HEADER_NAME)
     state.dirty("selected_lattice_list")
 
 
 @ctrl.add("deleteLatticeElement")
 def on_delete_LatticeElement_click(index):
     state.selected_lattice_list.pop(index)
+    sim_validator.update(LatticeConfiguration.HEADER_NAME)
     state.dirty("selected_lattice_list")
 
 

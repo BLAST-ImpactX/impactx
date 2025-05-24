@@ -48,7 +48,7 @@ class InputToolbar:
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
             variant="outlined",
             size="small",
-            disabled=("disableRunSimulationButton", True),
+            disabled=("disable_simulation", True),
             classes="mx-2",
             prepend_icon="mdi-download",
             color="#00313C",
@@ -142,16 +142,15 @@ class InputToolbar:
     def error_notification():
         """
         Displays a notification when there are input validation errors.
-        Shows error count and provides tooltip with details.
+        Shows error count and provides tooltip with categorized details.
         """
-        num_input_errors = "simulation_error_details.length"
         with html.Div(
-            v_if="disableRunSimulationButton",
-            style="display: flex; align-items: center; margin-right: 8px; padding: 4px 8px; background-color: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800;"
+            v_if="disable_simulation",
+            style="display: flex; align-items: center; margin-right: 8px; padding: 4px 8px; background-color: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800;",
         ):
             html.Span(
-                "{{ simulation_error_details.length }} input error{{ simulation_error_details.length > 1 ? 's' : '' }}",
-                style="font-size: 12px; color: #e65100; margin-right: 4px;"
+                "{{ number_of_input_errors }} input error{{ number_of_input_errors > 1 ? 's' : '' }}",
+                style="font-size: 12px; color: #e65100; margin-right: 4px;",
             )
             with vuetify.VTooltip(location="bottom"):
                 with html.Template(v_slot_activator="{ props }"):
@@ -163,15 +162,14 @@ class InputToolbar:
                     )
                 with html.Div():
                     with html.Div(
-                        v_for="(category_group, category_index) in categorized_error_details",
+                        v_for="(category_group, category_index) in input_errors",
                     ):
                         html.Div(
-                            "{{ category_group.category }}",
-                            style="color: #e65100;"
+                            "{{ category_group.category }}", style="color: #e65100;"
                         )
                         with html.Ul(style="padding-left: 16px;"):
                             with html.Li(
                                 v_for="(error, error_index) in category_group.errors",
-                                style="font-size: 12px;"
+                                style="font-size: 12px;",
                             ):
                                 html.Span("{{ error }}")

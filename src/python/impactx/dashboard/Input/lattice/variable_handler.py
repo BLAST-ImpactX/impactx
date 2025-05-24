@@ -2,8 +2,8 @@ from typing import Optional, Tuple
 
 from ... import ctrl, html, state, vuetify
 from ...Input.components import CardComponents
-from .. import DashboardValidation
 from ..utils import GeneralFunctions
+from ..validation import sim_validator
 
 init_value = ""
 state.variables = [
@@ -163,7 +163,7 @@ class LatticeVariableHandler:
 
         if not DashboardValidation.is_valid_input_name(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
-            DashboardValidation.update_simulation_validation_status()
+            sim_validator.update("Variables")
             state.dirty("variables")
             return
 
@@ -173,12 +173,12 @@ class LatticeVariableHandler:
         if duplicate_indexes:
             for dup_index in duplicate_indexes:
                 set_var_error_message(dup_index, "error")
-            DashboardValidation.update_simulation_validation_status()
+            sim_validator.update("Variables")
             state.dirty("variables")
             return
 
         set_var_error_message(index, "")
-        DashboardValidation.update_simulation_validation_status()
+        sim_validator.update("Variables")
 
     @staticmethod
     def determine_if_existing_variable(var_name: str) -> Tuple[bool, Optional[int]]:

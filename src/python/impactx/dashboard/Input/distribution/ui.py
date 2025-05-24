@@ -13,6 +13,7 @@ from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardDefaults, DashboardValidation
 from ..defaults_helper import InputDefaultsHelper
 from ..utils import GeneralFunctions
+from ..validation import sim_validator
 from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
@@ -60,7 +61,7 @@ def populate_distribution_parameters():
         }
 
     state.selected_distribution_parameters = params
-    DashboardValidation.update_simulation_validation_status()
+    sim_validator.update(DistributionConfiguration.HEADER_NAME)
     return params
 
 
@@ -101,7 +102,7 @@ def on_distribution_parameter_change(name: str, input: str):
     if parameter:
         parameter["value"] = numeric_input
         parameter["error_message"] = error_message
-        DashboardValidation.update_simulation_validation_status()
+        sim_validator.update(DistributionConfiguration.HEADER_NAME)
         state.dirty("selected_distribution_parameters")
 
 

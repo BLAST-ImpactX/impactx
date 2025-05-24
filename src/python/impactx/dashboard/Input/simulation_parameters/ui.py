@@ -8,7 +8,6 @@ License: BSD-3-Clause-LBNL
 
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from .. import DashboardValidation
 from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
 
 
@@ -30,10 +29,12 @@ def on_tracking_mode_change(**kwargs) -> None:
     for prop_name, prop in ui_props.items():
         setattr(state, prop_name, prop)
 
-    current_sc_list = ui_props.get("space_charge_list", [])
-    if state.space_charge not in current_sc_list:
-        state.space_charge = current_sc_list[0]
-    DashboardValidation.update_simulation_validation_status()
+        current_sc_list = ui_props.get("space_charge_list", [])
+        if state.space_charge not in current_sc_list:
+            state.space_charge = current_sc_list[0]
+
+
+from ..defaults import INPUT_LABELS
 
 
 class SimulationParameters(CardBase):
@@ -79,24 +80,24 @@ class SimulationParameters(CardBase):
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=6):
                         InputComponents.text_field(
-                            label="Ref. Particle Charge",
+                            label=INPUT_LABELS.get("charge_qe"),
                             v_model_name="charge_qe",
                         )
                     with vuetify.VCol(cols=6):
                         InputComponents.text_field(
-                            label="Ref. Particle Mass",
+                            label=INPUT_LABELS.get("mass_MeV"),
                             v_model_name="mass_MeV",
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=12):
                         InputComponents.text_field(
-                            label="Number of Particles",
+                            label=INPUT_LABELS.get("npart"),
                             v_model_name="npart",
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=8):
                         InputComponents.text_field(
-                            label="Kinetic Energy",
+                            label=INPUT_LABELS.get("kin_energy_on_ui"),
                             v_model_name="kin_energy_on_ui",
                         )
                     with vuetify.VCol(cols=4):
@@ -107,6 +108,6 @@ class SimulationParameters(CardBase):
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(cols=12):
                         InputComponents.text_field(
-                            label="Bunch Charge",
+                            label=INPUT_LABELS.get("bunch_charge_C"),
                             v_model_name="bunch_charge_C",
                         )

@@ -137,3 +137,41 @@ class InputToolbar:
             classes="mr-2",
             color="#00313C",
         )
+
+    @staticmethod
+    def error_notification():
+        """
+        Displays a notification when there are input validation errors.
+        Shows error count and provides tooltip with details.
+        """
+        num_input_errors = "simulation_error_details.length"
+        with html.Div(
+            v_if="disableRunSimulationButton",
+            style="display: flex; align-items: center; margin-right: 8px; padding: 4px 8px; background-color: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800;"
+        ):
+            html.Span(
+                "{{ simulation_error_details.length }} input error{{ simulation_error_details.length > 1 ? 's' : '' }}",
+                style="font-size: 12px; color: #e65100; margin-right: 4px;"
+            )
+            with vuetify.VTooltip(location="bottom"):
+                with html.Template(v_slot_activator="{ props }"):
+                    vuetify.VIcon(
+                        "mdi-information",
+                        size="small",
+                        color="#ff9800",
+                        v_bind="props",
+                    )
+                with html.Div():
+                    with html.Div(
+                        v_for="(category_group, category_index) in categorized_error_details",
+                    ):
+                        html.Div(
+                            "{{ category_group.category }}",
+                            style="color: #e65100;"
+                        )
+                        with html.Ul(style="padding-left: 16px;"):
+                            with html.Li(
+                                v_for="(error, error_index) in category_group.errors",
+                                style="font-size: 12px;"
+                            ):
+                                html.Span("{{ error }}")

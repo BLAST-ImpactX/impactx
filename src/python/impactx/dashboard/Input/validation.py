@@ -323,3 +323,4 @@ class DashboardValidation:
             error_details.append("error")
 
         state.disableRunSimulationButton = bool(error_details)
+        state.simulation_error_details = error_details

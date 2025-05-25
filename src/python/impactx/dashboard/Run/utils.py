@@ -6,7 +6,7 @@ import sys
 import time
 
 from .. import setup_server
-from ..Toolbar.sim_history.ui import SimulationHistory
+from ..Toolbar.sim_history import save_view_details_log
 
 server, state, ctrl = setup_server()
 
@@ -50,7 +50,7 @@ class SimulationHelper:
         state.sim_is_generating_plots = False
         state.dirty("filtered_sims")
         state.flush()
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def cancel_simulation(proc: asyncio.subprocess.Process):
@@ -68,7 +68,7 @@ class SimulationHelper:
         state.dirty("filtered_sims")
         ctrl.terminal_print("Simulation cancelled.")
         state.flush()
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def fail_simulation() -> None:
@@ -82,7 +82,7 @@ class SimulationHelper:
         state.dirty("filtered_sims")
         state.flush()
         ctrl.terminal_print("Simulation failed due to the above error.")
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def reset():

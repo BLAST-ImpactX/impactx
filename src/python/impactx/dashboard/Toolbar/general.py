@@ -31,9 +31,9 @@ class ToolbarImport:
         state.import_file = None
         state.importing_file = False
 
-from .input_toolbar import InputToolbar
-from .run_toolbar import RunToolbar
-from .analyze_toolbar import AnalyzeToolbar
+from .input import InputToolbar
+from .run import RunToolbar
+from .analyze import AnalyzeToolbar
 
 
 class GeneralToolbar:

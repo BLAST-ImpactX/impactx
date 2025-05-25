@@ -15,16 +15,31 @@ from ...Input.latticeConfiguration.latticeMain import (
     add_lattice_element,
     on_lattice_element_parameter_change,
 )
-
+from .python.parser import DashboardParser
 server, state, ctrl = setup_server()
 
 
-def populate_impactx_simulation_file_to_ui(imported_data) -> None:
-    """
-    Auto fills the dashboard UI with parsed inputs.
+@state.change("import_file")
+def on_import_file_change(import_file, **kwargs):
+    if import_file:
+        try:
+            state.importing_file = True
+            DashboardParser.file_details(import_file)
+            populate_impactx_simulation_file_to_ui(import_file)
+        except Exception:
+            state.import_file_error = True
+            state.import_file_error_message = "Unable to parse"
+        finally:
+            state.importing_file = False
 
-    :param imported_data: Parsed contents from the ImpactX simulation file.
+def populate_impactx_simulation_file_to_ui(file) -> None:
     """
+    Auto fills the dashboard with parsed inputs.
+
+    :param file: ImpactX simulation file uploaded by the user.
+    """
+
+    imported_data = DashboardParser.parse_impactx_simulation_file(file)
 
     imported_distribution_data = imported_data["distribution"]["parameters"].items()
     imported_lattice_data = imported_data["lattice_elements"]

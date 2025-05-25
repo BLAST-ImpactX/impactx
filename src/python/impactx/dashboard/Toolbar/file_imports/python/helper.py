@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import ast
 import re
 
-from ...Input.defaults import DashboardDefaults
+from ....Input.defaults import DashboardDefaults
 
 
 class DashboardParserHelper:

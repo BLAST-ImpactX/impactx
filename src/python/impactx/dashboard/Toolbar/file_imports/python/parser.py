@@ -6,40 +6,12 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server
-from .ui_populator import populate_impactx_simulation_file_to_ui
-from .parser_helper import DashboardParserHelper
+from .... import setup_server
+from .helper import DashboardParserHelper
 
 server, state, ctrl = setup_server()
 
 state.imported_file_name = None
-
-
-class ToolbarImport:
-    @state.change("import_file")
-    def on_import_file_change(import_file, **kwargs):
-        if import_file:
-            try:
-                state.importing_file = True
-                DashboardParser.file_details(import_file)
-                parsed_data = DashboardParser.parse_impactx_simulation_file(import_file)
-                populate_impactx_simulation_file_to_ui(parsed_data)
-            except Exception:
-                state.import_file_error = True
-                state.import_file_error_message = "Unable to parse"
-            finally:
-                state.importing_file = False
-
-    @staticmethod
-    def reset_importing_states():
-        """
-        Resets import related states to default.
-        """
-
-        state.import_file_error = None
-        state.import_file_details = None
-        state.import_file = None
-        state.importing_file = False
 
 
 class DashboardParser:

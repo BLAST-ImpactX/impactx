@@ -14,8 +14,7 @@ from ...Run.simulation import dashboard_sim_inputs
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
-from ..dashboard_parser.parser import DashboardParser
-
+from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 state.curr_view_details_log = ""
 
 state.sims = []
@@ -145,7 +144,7 @@ class SimulationHistory:
             "content": sim["inputs"].encode("utf-8"),
         }
 
-        DashboardParser.populate_impactx_simulation_file_to_ui(sim_content)
+        populate_impactx_simulation_file_to_ui(sim_content)
         state.selected_sim_to_load = None
 
     @staticmethod

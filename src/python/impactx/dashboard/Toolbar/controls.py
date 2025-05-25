@@ -12,7 +12,6 @@ from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.components.card import CardComponents
 from ..Run.executor import run_execute_impactx_sim
-from .dashboard_parser.parser import DashboardParser
 from .sim_history.ui import SimulationHistory
 
 server, state, ctrl = setup_server()
@@ -25,7 +24,17 @@ state.importing_file = False
 
 state.expand_all_sections = False
 
+class ToolbarImport:
+    @staticmethod
+    def reset_importing_states():
+        """
+        Resets import related states to default.
+        """
 
+        state.import_file_error = None
+        state.import_file_details = None
+        state.import_file = None
+        state.importing_file = False
 
 from .input_toolbar import InputToolbar
 

@@ -17,7 +17,7 @@ server, state, ctrl = setup_server()
 
 class RunToolbar:
     """
-    Contains toolbar elements for the Run page.
+    Contains toolbar components for the 'Run' page.
     """
 
     @ctrl.trigger("begin_sim")

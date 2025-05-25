@@ -12,7 +12,7 @@ server, state, ctrl = setup_server()
 
 class AnalyzeToolbar:
     """
-    Contains toolbar elements for the Analyze page.
+    Contains toolbar components for the 'Analyze' page.
     """
 
     @staticmethod

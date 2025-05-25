@@ -38,7 +38,7 @@ from .analyze import AnalyzeToolbar
 
 class GeneralToolbar:
     """
-    General tolbar elements.
+    Contains toolbar components displayed on all pages.
     """
 
     @staticmethod

@@ -16,7 +16,7 @@ from ..Input.components.card import CardComponents
 
 class InputToolbar:
     """
-    Contains toolbar elements for the Input page.
+    Contains toolbar components for the 'Input' page.
     """
 
     @ctrl.trigger("export")

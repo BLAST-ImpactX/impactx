@@ -25,14 +25,33 @@ class LatticeVariableHandler:
     @staticmethod
     @state.change("variables")
     def on_variables_list_change(variables, **kwargs):
-        for lattice_element in state.lattice_params_bound_or_pending_variable.values():
+        """
+        Called when the variable configuration is modified on the dashboard.
+
+        Updates lattice element parameters that reference variables,
+        ensuring they reflect the latest variable values.
+
+        We ensure that the lattice element is an existing element
+        in the 'selected_lattice_list' before updating the input.
+            EX:
+            - The user adds a 'drift' element and sets its 'nslice' parameter to a variable named "ns".
+            - Later, they delete this drift element from the lattice list.
+            - Even though the variable "ns" still exists in the variable configuration,
+            the deleted element's index is now invalid.
+        """
+        for lattice in state.lattice_elements_using_variables.values():
+            try:
+                lattice_id = lattice["element_reference"]
+                lattice_index = state.selected_lattice_list.index(lattice_id)
+            except ValueError:
+                continue  # skip the deleted elements
+
             ctrl.updateLatticeElementParameters(
-                lattice_element["index"],
-                lattice_element["parameter_name"],
-                lattice_element["ui_input"],
-                lattice_element["parameter_type"],
+                lattice_index,
+                lattice["parameter_name"],
+                lattice["ui_input"],
+                lattice["parameter_type"],
             )
-        LatticeVariableHandler.update_delete_availability()
 
     # -----------------------------------------------------------------------------
     # Controllers
@@ -68,19 +87,23 @@ class LatticeVariableHandler:
     @ctrl.add("update_variable")
     def on_variable_change(key_name: str, index: int, event) -> None:
         """
-        Called when any variable name or value changes.
-        Validates the new value and updates it's associated sim value.
+        Called when any variable name or value changes and updates
+        state.variables accordingly.
 
-        :param key_name: The name of the variable.
-        :param index: The index of the variable.
+        :param key_name: The variable type.
+        :param index: The variable index.
         :param event: Either the variable's new name or value.
         """
 
+        variable = state.variables[index]
         if key_name == "name":
             LatticeVariableHandler.validate_variable_name(event, index)
-            state.variables[index]["name"] = event
+
+            if not variable["error_message"]:
+                variable["name"] = event
+                variable["value"] = variable["value"] or None
         else:
-            state.variables[index][key_name] = event
+            variable["value"] = generalFunctions.convert_to_numeric(event)
         state.dirty("variables")
 
     @staticmethod
@@ -142,7 +165,7 @@ class LatticeVariableHandler:
             state.variables[idx]["error_message"] = message
             state.dirty("variables")
 
-        if not LatticeConfigurationHelper.is_valid_name_for_user_input(new_name):
+        if not LatticeConfigurationHelper.is_valid_input_name(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
             generalFunctions.update_simulation_validation_status()
             state.dirty("variables")

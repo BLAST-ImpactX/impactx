@@ -19,7 +19,7 @@ from .. import (
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
-state.lattice_params_bound_or_pending_variable = {}
+state.lattice_elements_using_variables = {}
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -149,30 +149,30 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     :param ui_input: The value present on the UI end..
     :param parameter_type: The lattice element parameters type.
     """
+    ui_input = ui_input.strip()
+    sim_input = ui_input
+    binding = None
 
-    lattice_variable, variable_index = (
-        LatticeVariableHandler.determine_if_existing_variable(ui_input)
+    is_negative_input = ui_input.startswith("-") and ui_input != "-"
+    var_name = ui_input[1:] if is_negative_input else ui_input
+
+    is_variable, variable_index = LatticeVariableHandler.determine_if_existing_variable(
+        var_name
     )
-    potentially_lattice_variable = (
-        LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input)
-    )
+    is_potential_variable = LatticeConfigurationHelper.is_valid_input_name(var_name)
 
-    if lattice_variable or potentially_lattice_variable:
-        if lattice_variable and variable_index is not None:
-            sim_input = state.variables[variable_index]["value"]
-        else:
-            sim_input = ui_input
+    if is_variable:
+        sim_value = state.variables[variable_index]["value"]
+        if sim_value is not None:
+            sim_input = -sim_value if is_negative_input else sim_value
 
+    if is_variable or is_potential_variable:
         binding = {
-            "index": index,
+            "element_reference": state.selected_lattice_list[index],
             "parameter_name": parameter_name,
             "ui_input": ui_input,
             "parameter_type": parameter_type,
-            "variable_index": variable_index,
         }
-    else:
-        sim_input = generalFunctions.convert_to_numeric(ui_input)
-        binding = None
 
     return sim_input, binding
 
@@ -185,19 +185,16 @@ def on_lattice_element_parameter_change(
         index, parameter_name, ui_input, parameter_type
     )
 
+    key = (id(state.selected_lattice_list[index]), parameter_name)
     if bounded_or_pending_variable is not None:
-        state.lattice_params_bound_or_pending_variable[(index, parameter_name)] = (
-            bounded_or_pending_variable
-        )
+        state.lattice_elements_using_variables[key] = bounded_or_pending_variable
     else:
-        state.lattice_params_bound_or_pending_variable.pop(
-            (index, parameter_name), None
-        )
+        state.lattice_elements_using_variables.pop(key, None)
 
     error_message = generalFunctions.validate_against(sim_input, parameter_type)
 
     if parameter_name == "name":
-        if not LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input):
+        if not LatticeConfigurationHelper.is_valid_input_name(ui_input):
             error_message = ["Must be a valid Python identifier"]
 
     for param in state.selected_lattice_list[index]["parameters"]:

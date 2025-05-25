@@ -8,8 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from ... import setup_server
 from ...Input.latticeConfiguration.latticeMain import add_lattice_element
-
+from ...Input.latticeConfiguration.variable_handler import LatticeVariableHandler
 from .python.parser import DashboardParser
+
 server, state, ctrl = setup_server()
 
 
@@ -25,6 +26,7 @@ def on_import_file_change(import_file, **kwargs):
             state.import_file_error_message = "Unable to parse"
         finally:
             state.importing_file = False
+
 
 def populate_impactx_simulation_file_to_ui(file) -> None:
     """
@@ -47,6 +49,18 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     _populate_distribution_inputs_to_ui(imported_distribution_data)
     _populate_lattice_config_to_ui(imported_lattice_data)
 
+    parsed_variables = imported_data["variables"]
+
+    # Remove default empty entry if it exists
+    state.variables = [var for var in state.variables if var["name"]]
+    for name, value in parsed_variables.items():
+        # Check if a variable with the same name already exists
+        if not any(var["name"] == name for var in state.variables):
+            state.variables.append({"name": name, "value": value, "error_message": ""})
+    state.dirty("variables")
+    LatticeVariableHandler.update_delete_availability()
+
+
 @staticmethod
 def _populate_distribution_inputs_to_ui(parsed_data):
     state.distribution = parsed_data["name"]
@@ -55,6 +69,7 @@ def _populate_distribution_inputs_to_ui(parsed_data):
 
     for distr_param_name, distr_param_value in parsed_data["parameters"].items():
         ctrl.updateDistributionParameters(distr_param_name, distr_param_value, "float")
+
 
 @staticmethod
 def _populate_lattice_config_to_ui(parsed_data):
@@ -68,9 +83,9 @@ def _populate_lattice_config_to_ui(parsed_data):
         state.selected_lattice = parsed_element
         add_lattice_element()
 
-        lattice_list_parameters = state.selected_lattice_list[
-            lattice_element_index
-        ]["parameters"]
+        lattice_list_parameters = state.selected_lattice_list[lattice_element_index][
+            "parameters"
+        ]
 
         for parsed_param_name, parsed_param_value in parsed_parameters.items():
             parameter_type = None

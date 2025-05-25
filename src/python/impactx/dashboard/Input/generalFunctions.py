@@ -345,6 +345,8 @@ class generalFunctions:
                 state.dirty("distribution_type")
             elif input_section == "lattice_configuration":
                 state.selected_lattice_list = []
+                state.variables = [{"name": "", "value": "", "error_message": ""}]
+                state.dirty("variables")
             elif input_section == "space_charge":
                 state.dirty("max_level")
 
@@ -353,3 +355,5 @@ class generalFunctions:
             state.dirty("distribution_type")
             state.selected_lattice_list = []
             state.dirty("max_level")
+            state.variables = [{"name": "", "value": "", "error_message": ""}]
+            state.dirty("variables")

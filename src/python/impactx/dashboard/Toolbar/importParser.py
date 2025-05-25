@@ -22,6 +22,32 @@ server, state, ctrl = setup_server()
 state.imported_file_name = None
 
 
+class ToolbarImport:
+    @state.change("import_file")
+    def on_import_file_change(import_file, **kwargs):
+        if import_file:
+            try:
+                state.importing_file = True
+                DashboardParser.file_details(import_file)
+                DashboardParser.populate_impactx_simulation_file_to_ui(import_file)
+            except Exception:
+                state.import_file_error = True
+                state.import_file_error_message = "Unable to parse"
+            finally:
+                state.importing_file = False
+
+    @staticmethod
+    def reset_importing_states():
+        """
+        Resets import related states to default.
+        """
+
+        state.import_file_error = None
+        state.import_file_details = None
+        state.import_file = None
+        state.importing_file = False
+
+
 class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files

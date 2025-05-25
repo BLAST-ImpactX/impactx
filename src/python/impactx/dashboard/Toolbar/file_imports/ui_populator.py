@@ -39,6 +39,7 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
 
     imported_distribution_data = imported_data["distribution"]
     imported_lattice_data = imported_data["lattice_elements"]
+    parsed_variables = imported_data["variables"]
     non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
     # Update state inputs (inputParameters, Space Charge, CSR, ISR)
@@ -48,18 +49,7 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
 
     _populate_distribution_inputs_to_ui(imported_distribution_data)
     _populate_lattice_config_to_ui(imported_lattice_data)
-
-    parsed_variables = imported_data["variables"]
-
-    # Remove default empty entry if it exists
-    state.variables = [var for var in state.variables if var["name"]]
-    for name, value in parsed_variables.items():
-        # Check if a variable with the same name already exists
-        if not any(var["name"] == name for var in state.variables):
-            state.variables.append({"name": name, "value": value, "error_message": ""})
-    state.dirty("variables")
-    LatticeVariableHandler.update_delete_availability()
-
+    _populate_lattice_config_variables_to_ui(parsed_variables)
 
 @staticmethod
 def _populate_distribution_inputs_to_ui(parsed_data):
@@ -103,3 +93,17 @@ def _populate_lattice_config_to_ui(parsed_data):
                     parsed_param_value,
                     parameter_type,
                 )
+
+@staticmethod
+def _populate_lattice_config_variables_to_ui(parsed_data):
+    # Remove default empty entry if it exists
+    state.variables = [var for var in state.variables if var["name"]]
+
+    for name, value in parsed_data.items():
+        # Check if a variable with the same name already exists
+        if not any(var["name"] == name for var in state.variables):
+            state.variables.append(
+                {"name": name, "value": value, "error_message": ""}
+            )
+    state.dirty("variables")
+    LatticeVariableHandler.update_delete_availability()

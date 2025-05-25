@@ -6,12 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from trame.widgets import html
-
 from .. import setup_server, vuetify
-from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
-from ..Input.components.card import CardComponents
-from ..Run.executor import run_execute_impactx_sim
 from .sim_history.ui import SimulationHistory
 
 server, state, ctrl = setup_server()

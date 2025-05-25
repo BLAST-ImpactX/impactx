@@ -11,7 +11,7 @@ server, state, ctrl = setup_server()
 
 from ..Run.simulation import dashboard_sim_inputs
 from ..Input.generalFunctions import generalFunctions
-from ..Toolbar.controls import ToolbarImport
+from .general_toolbar import ToolbarImport
 from ..Input.components.card import CardComponents
 
 class InputToolbar:

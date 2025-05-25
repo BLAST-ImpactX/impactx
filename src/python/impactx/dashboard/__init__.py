@@ -4,7 +4,7 @@ from trame.widgets import vuetify3 as vuetify
 # isort: off
 
 from .trame_setup import setup_server
-from .Toolbar.controls import GeneralToolbar
+from .Toolbar.general_toolbar import GeneralToolbar
 
 from .Analyze.plotsMain import AnalyzeSimulation
 from .Input.csrConfiguration.csrMain import csrConfiguration

@@ -53,9 +53,11 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
 
 @staticmethod
 def _populate_distribution_inputs_to_ui(parsed_data):
+    # the below two calls do not call state.change("distribution") or state.change("distribution_type")
+    # since they are both part of a nested state (ie. distribution_type=["Twiss","Quadratic"]).
     state.distribution = parsed_data["name"]
     state.distribution_type = parsed_data["type"]
-    state.flush()
+    state.flush() # force calls state.change("distribution") and state.change("distribution_type")
 
     for distr_param_name, distr_param_value in parsed_data["parameters"].items():
         ctrl.updateDistributionParameters(distr_param_name, distr_param_value, "float")

@@ -38,28 +38,7 @@ class ToolbarImport:
 
 from .input_toolbar import InputToolbar
 from .run_toolbar import RunToolbar
-class AnalyzeToolbar:
-    """
-    Contains toolbar elements for the Analyze page.
-    """
-
-    @staticmethod
-    def plot_options() -> vuetify.VSelect:
-        """
-        Creates a dropdown menu for selecting a plot
-        to visualize simulation results.
-        """
-
-        return vuetify.VSelect(
-            v_model=("active_plot", "1D plots over s"),
-            items=("plot_options",),
-            label="Select plot to view",
-            hide_details=True,
-            density="compact",
-            variant="underlined",
-            style="max-width: 250px",
-            disabled=("disableRunSimulationButton", True),
-        )
+from .analyze_toolbar import AnalyzeToolbar
 
 
 class GeneralToolbar:

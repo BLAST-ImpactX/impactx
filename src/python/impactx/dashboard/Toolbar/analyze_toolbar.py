@@ -1,0 +1,34 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy, Axel Huebl
+License: BSD-3-Clause-LBNL
+"""
+
+from .. import setup_server, vuetify
+
+server, state, ctrl = setup_server()
+
+class AnalyzeToolbar:
+    """
+    Contains toolbar elements for the Analyze page.
+    """
+
+    @staticmethod
+    def plot_options() -> vuetify.VSelect:
+        """
+        Creates a dropdown menu for selecting a plot
+        to visualize simulation results.
+        """
+
+        return vuetify.VSelect(
+            v_model=("active_plot", "1D plots over s"),
+            items=("plot_options",),
+            label="Select plot to view",
+            hide_details=True,
+            density="compact",
+            variant="underlined",
+            style="max-width: 250px",
+            disabled=("disableRunSimulationButton", True),
+        )

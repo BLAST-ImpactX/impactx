@@ -14,7 +14,7 @@ from ...Run.simulation import dashboard_sim_inputs
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
-from ..importParser import DashboardParser
+from ..dashboard_parser.parser import DashboardParser
 
 state.curr_view_details_log = ""
 

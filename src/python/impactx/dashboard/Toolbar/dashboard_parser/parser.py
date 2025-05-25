@@ -6,16 +6,16 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server
-from ..Input.distributionParameters.distributionMain import (
+from ... import setup_server
+from ...Input.distributionParameters.distributionMain import (
     on_distribution_parameter_change,
     populate_distribution_parameters,
 )
-from ..Input.latticeConfiguration.latticeMain import (
+from ...Input.latticeConfiguration.latticeMain import (
     add_lattice_element,
     on_lattice_element_parameter_change,
 )
-from .importParserHelper import DashboardParserHelper
+from .parser_helper import DashboardParserHelper
 
 server, state, ctrl = setup_server()
 

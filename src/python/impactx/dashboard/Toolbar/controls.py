@@ -12,7 +12,7 @@ from .. import setup_server, vuetify
 from ..Analyze.plotsMain import available_plot_options, load_dataTable_data, update_plot
 from ..Input.components.card import CardComponents
 from ..Run.executor import run_execute_impactx_sim
-from .importParser import DashboardParser
+from .dashboard_parser.parser import DashboardParser
 from .sim_history.ui import SimulationHistory
 
 server, state, ctrl = setup_server()

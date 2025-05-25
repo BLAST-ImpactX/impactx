@@ -12,24 +12,6 @@ from .sim_history.ui import SimulationHistory
 server, state, ctrl = setup_server()
 
 state.show_dashboard_alert = True
-state.import_file = False
-state.import_file_details = None
-state.import_file_error = False
-state.importing_file = False
-
-state.expand_all_sections = False
-
-class ToolbarImport:
-    @staticmethod
-    def reset_importing_states():
-        """
-        Resets import related states to default.
-        """
-
-        state.import_file_error = None
-        state.import_file_details = None
-        state.import_file = None
-        state.importing_file = False
 
 from .input import InputToolbar
 from .run import RunToolbar

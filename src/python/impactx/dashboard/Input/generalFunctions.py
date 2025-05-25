@@ -11,7 +11,7 @@ import re
 
 from .. import setup_server
 from .defaults import DashboardDefaults
-
+from ..Toolbar.file_imports.python.parser import DashboardParser
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
@@ -351,6 +351,7 @@ class generalFunctions:
                 state.dirty("max_level")
 
         elif input_section == "all":
+            DashboardParser.reset_importing_states()
             state.update(DashboardDefaults.DEFAULT_VALUES)
             state.dirty("distribution_type")
             state.selected_lattice_list = []

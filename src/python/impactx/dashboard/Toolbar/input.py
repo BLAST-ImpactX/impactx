@@ -11,8 +11,9 @@ server, state, ctrl = setup_server()
 
 from ..Run.simulation import dashboard_sim_inputs
 from ..Input.generalFunctions import generalFunctions
-from .general import ToolbarImport
 from ..Input.components.card import CardComponents
+
+state.expand_all_sections = False
 
 class InputToolbar:
     """
@@ -31,7 +32,6 @@ class InputToolbar:
         """
         Called when the reset button is clicked.
         """
-        ToolbarImport.reset_importing_states()
         generalFunctions.reset_inputs("all")
 
     @staticmethod

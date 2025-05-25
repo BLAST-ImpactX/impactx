@@ -13,12 +13,27 @@ server, state, ctrl = setup_server()
 
 state.imported_file_name = None
 
+state.import_file = False
+state.import_file_details = None
+state.import_file_error = False
+state.importing_file = False
 
 class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files
     to the dashboard and auto-populate the UI with their configurations.
     """
+
+    @staticmethod
+    def reset_importing_states():
+        """
+        Resets import related states to default.
+        """
+
+        state.import_file_error = None
+        state.import_file_details = None
+        state.import_file = None
+        state.importing_file = False
 
     @staticmethod
     def file_details(file) -> None:

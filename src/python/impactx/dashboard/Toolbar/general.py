@@ -44,8 +44,11 @@ class GeneralToolbar:
     @staticmethod
     def dashboard_toolbar(toolbar_name: str) -> None:
         """
-        Builds and displays the appropriate toolbar
-        based on the selected dashboard section.
+        Displays the toolbar components based on the provided toolbar name.
+        The toolbar name should be one of the following:
+        - "input": Displays components related to input configuration.
+        - "run": Displays components related to running simulations.
+        - "analyze": Displays components related to analyzing simulation results.
 
         :param toolbar_name: The name of the dashboard section
         for which the toolbar is needed.
@@ -76,10 +79,8 @@ class GeneralToolbar:
     @staticmethod
     def dashboard_info() -> vuetify.VAlert:
         """
-        Creates an informational alert box for the dashboard to
+        Displays an informational alert box for the dashboard to
         notify users that the ImpactX dashboard is still in development.
-
-        :return: A Vuetify alert component displaying the dashboard notice.
         """
 
         return vuetify.VAlert(
@@ -96,9 +97,12 @@ class GeneralToolbar:
     @staticmethod
     def simulation_history_button() -> vuetify.VBtn:
         """
-        Displays a button to the user which holds the
-        components to the simulation history.
+        Displays a button to open the simulation history dialog.
+
+        This button is disabled when there are no simulations available
+        (ie, when `sims.length` is 0).
         """
+
         SimulationHistory.simulation_history()
         SimulationHistory.init_sim_history_dialogs()
 

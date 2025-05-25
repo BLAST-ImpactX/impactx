@@ -22,6 +22,9 @@ class RunToolbar:
 
     @ctrl.trigger("begin_sim")
     def run():
+        """
+        Called when the 'Run Simulation' button is clicked.
+        """
         state.plot_options = available_plot_options(simulationClicked=True)
         run_execute_impactx_sim()
         update_plot()
@@ -29,10 +32,17 @@ class RunToolbar:
 
     @ctrl.trigger("cancel_sim")
     def cancel_sim():
+        """
+        Called when the 'Run Simulation' button is clicked while
+        a simulation is on-going.
+        """
         state.sim_is_cancelled = True
 
     @staticmethod
     def run_simulation():
+        """
+        Displays the 'Run Simulation' components
+        """
         (RunToolbar.run_simulation_progress_details(),)
         (RunToolbar.run_simulation_progress_bar(),)
         (RunToolbar.run_simulation_button(),)
@@ -40,9 +50,17 @@ class RunToolbar:
     @staticmethod
     def run_simulation_button() -> vuetify.VBtn:
         """
-        Creates a button to run an ImpactX simulation
-        with the current user-provided inputs.
+        Component to run the simulation.
+
+        On click, it either starts the simulation
+        or cancels it if it is already running.
+
+        Disabled when the simulation is generating plots
+        or if the simulation is not running.
+
+        Color changes based on the simulation status.
         """
+
         CardComponents.card_button(
             ["mdi-play-circle", "mdi-close-circle"],
             color=("sim_is_running ? 'error' : sim_status_color",),
@@ -53,10 +71,12 @@ class RunToolbar:
         )
 
     @staticmethod
-    def run_simulation_progress_bar() -> vuetify.VBtn:
+    def run_simulation_progress_bar() -> vuetify.VProgressLinear:
         """
-        Displays and updates a progress bar to the dashboard user
-        while running a simulation.
+        Displays a progress bar indicating the current progress of the simulation.
+
+        Below the progress bar, it shows the current simulation status
+        (e.g., "Running", "Completed", "Cancelled") and the percentage of completion.
         """
         with html.Div(style="position: relative; margin: 0 8px;"):
             vuetify.VProgressLinear(
@@ -74,8 +94,8 @@ class RunToolbar:
     @staticmethod
     def run_simulation_progress_details() -> html.Div:
         """
-        Provides dashboard users with simulation progress details,
-        such as the current step and the time elapsed in the simulation.
+        Displays the current step and elapsed time of the simulation.
+        This component is updated dynamically to reflect the current state of the simulation.
         """
 
         return html.Div(

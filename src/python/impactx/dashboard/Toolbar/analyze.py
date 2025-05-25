@@ -18,8 +18,8 @@ class AnalyzeToolbar:
     @staticmethod
     def plot_options() -> vuetify.VSelect:
         """
-        Creates a dropdown menu for selecting a plot
-        to visualize simulation results.
+        Displays a dropdown menu to select the available plots
+        generated from the simulation data.
         """
 
         return vuetify.VSelect(

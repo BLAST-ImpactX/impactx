@@ -21,18 +21,27 @@ class InputToolbar:
 
     @ctrl.trigger("export")
     def on_export_click():
+        """
+        Called when the export button is clicked.
+        """
         return dashboard_sim_inputs(is_exporting=True)
 
     @ctrl.add("reset_all")
-    def reset_all():
+    def on_reset_all_click():
+        """
+        Called when the reset button is clicked.
+        """
         ToolbarImport.reset_importing_states()
         generalFunctions.reset_inputs("all")
 
     @staticmethod
     def export_button() -> vuetify.VBtn:
         """
-        Creates an export button to download a .py file
-        containing the user's current input values.
+        Displays a button to export the current simulation inputs
+        to a Python file.
+        
+        On click, it triggers the export of the current
+        simulation inputs to a file named 'impactx_simulation.py'.
         """
 
         return vuetify.VBtn(
@@ -47,8 +56,16 @@ class InputToolbar:
         )
 
     @staticmethod
-    def collapse_all_sections_button():
-        CardComponents.card_button(
+    def collapse_all_sections_button() -> vuetify.VBtn:
+        """
+        Displays a button to collapse or expand all input sections.
+
+        On click, it toggles the visibility of all input sections
+        in the dashboard, allowing users to quickly hide or show
+        all input fields.
+        """
+
+        return CardComponents.card_button(
             ["mdi-collapse-all", "mdi-expand-all"],
             click=ctrl.collapse_all_sections,
             dynamic_condition="expand_all_sections",
@@ -56,10 +73,12 @@ class InputToolbar:
         )
 
     @staticmethod
-    def import_button() -> None:
+    def import_button() -> vuetify.VBtn:
         """
-        Displays the 'import' button on the input section
-        of the dashboard.
+        Displays a button to upload a file.
+
+        On click, it opens a file input dialog to select
+        an ImpactX simulation file (.py) for import.
         """
 
         vuetify.VFileInput(
@@ -102,7 +121,9 @@ class InputToolbar:
     @staticmethod
     def reset_inputs_button() -> vuetify.VBtn:
         """
-        Creates a button to reset all input fields to
+        Displays a button to reset all input fields.
+
+        On click, it resets all input fields to their
         default values.
         """
 

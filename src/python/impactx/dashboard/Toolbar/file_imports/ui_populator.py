@@ -7,14 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server
-from ...Input.distributionParameters.distributionMain import (
-    on_distribution_parameter_change,
-    populate_distribution_parameters,
-)
-from ...Input.latticeConfiguration.latticeMain import (
-    add_lattice_element,
-    on_lattice_element_parameter_change,
-)
+from ...Input.latticeConfiguration.latticeMain import add_lattice_element
+
 from .python.parser import DashboardParser
 server, state, ctrl = setup_server()
 
@@ -41,34 +35,33 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
 
     imported_data = DashboardParser.parse_impactx_simulation_file(file)
 
-    imported_distribution_data = imported_data["distribution"]["parameters"].items()
+    imported_distribution_data = imported_data["distribution"]
     imported_lattice_data = imported_data["lattice_elements"]
-    non_state_inputs = ["distribution", "lattice_elements"]
+    non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
     # Update state inputs (inputParameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)
 
-    # Update distribution inputs
-    if imported_distribution_data:
-        state.distribution = imported_data["distribution"]["name"]
-        state.distribution_type = imported_data["distribution"]["type"]
-        state.flush()
-        populate_distribution_parameters()
+    _populate_distribution_inputs_to_ui(imported_distribution_data)
+    _populate_lattice_config_to_ui(imported_lattice_data)
 
-        for (
-            distr_parameter_name,
-            distr_parameter_value,
-        ) in imported_distribution_data:
-            on_distribution_parameter_change(
-                distr_parameter_name, distr_parameter_value, "float"
-            )
+@staticmethod
+def _populate_distribution_inputs_to_ui(parsed_data):
+    state.distribution = parsed_data["name"]
+    state.distribution_type = parsed_data["type"]
+    state.flush()
 
+    for distr_param_name, distr_param_value in parsed_data["parameters"].items():
+        ctrl.updateDistributionParameters(distr_param_name, distr_param_value, "float")
+
+@staticmethod
+def _populate_lattice_config_to_ui(parsed_data):
     # Update lattice elements
     state.selected_lattice_list = []
 
-    for lattice_element_index, element in enumerate(imported_lattice_data):
+    for lattice_element_index, element in enumerate(parsed_data):
         parsed_element = element["element"]
         parsed_parameters = element["parameters"]
 
@@ -79,22 +72,19 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
             lattice_element_index
         ]["parameters"]
 
-        for (
-            parsed_parameter_name,
-            parsed_parameter_value,
-        ) in parsed_parameters.items():
+        for parsed_param_name, parsed_param_value in parsed_parameters.items():
             parameter_type = None
 
             for parameter_info in lattice_list_parameters:
                 parameter_info_name = parameter_info["parameter_name"]
-                if parameter_info_name == parsed_parameter_name:
+                if parameter_info_name == parsed_param_name:
                     parameter_type = parameter_info["parameter_type"]
                     break
 
             if parameter_type:
-                on_lattice_element_parameter_change(
+                ctrl.updateLatticeElementParameters(
                     lattice_element_index,
-                    parsed_parameter_name,
-                    parsed_parameter_value,
+                    parsed_param_name,
+                    parsed_param_value,
                     parameter_type,
                 )

@@ -221,15 +221,6 @@ class SimulationHistory:
         state.curr_view_details_log += log
 
     @staticmethod
-    def save_view_details_log() -> None:
-        """
-        Updates the UI with the simulation's
-        details.
-        """
-
-        state.sims[state.sim_index]["log"] = state.curr_view_details_log
-
-    @staticmethod
     def simulation_history():
         """
         Contains the UI and functionality for the

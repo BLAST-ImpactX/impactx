@@ -122,19 +122,27 @@ class CardComponents:
             Ensure dynamic_condition components are a list of exactly 2 strings for dynamic toggling (e.g., expand/collapse).
             """
 
-            if not isinstance(prop_value, list):
-                raise ValueError(f"When dynamic_condition is set, {prop_name} must be a list of exactly 2 strings")
-            if len(prop_value) != 2:
-                raise ValueError(f"When dynamic_condition is set, {prop_name} must contain exactly 2 elements")
-            if not all(isinstance(item, str) for item in prop_value):
-                raise ValueError(f"When dynamic_condition is set, all elements in {prop_name} must be strings")
+            if not isinstance(value, (list, tuple)):
+                raise ValueError(
+                    f"When dynamic_condition is True, {name} must be a list or tuple of exactly 2 strings"
+                )
+            if len(value) != 2:
+                raise ValueError(
+                    f"When dynamic_condition is True, {name} must contain exactly 2 elements"
+                )
+            if not all(isinstance(item, str) for item in value):
+                raise ValueError(
+                    f"When dynamic_condition is True, all elements in {name} must be strings"
+                )
 
         if dynamic_condition:
             validate_dynamic_condition(icon_name, "icon_name")
             validate_dynamic_condition(description, "description")
 
         if dynamic_condition:
-            tooltip_text =  (f"{dynamic_condition} ? '{description[1]}' : '{description[0]}'",)
+            tooltip_text = (
+                f"{dynamic_condition} ? '{description[1]}' : '{description[0]}'",
+            )
         else:
             tooltip_text = description
 
@@ -200,7 +208,7 @@ class CardComponents:
             ["mdi-arrow-expand", "mdi-close"],
             click=f"{expand_state} = !{expand_state}",
             dynamic_condition=expand_state,
-            description=["Expand","Close"],
+            description=["Expand", "Close"],
         )
 
     @staticmethod

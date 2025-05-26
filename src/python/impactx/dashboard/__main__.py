@@ -100,7 +100,6 @@ def init_terminal():
 
 
 def application():
-    init_terminal()
     with SinglePageWithDrawerLayout(server) as layout:
         layout.title.hide()
         with layout:

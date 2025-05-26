@@ -1,6 +1,7 @@
 from ... import html, setup_server, vuetify
 from ..defaults import DashboardDefaults, UIDefaults
 from ..generalFunctions import generalFunctions
+from typing import Optional, Union, List, Tuple
 
 server, state, ctrl = setup_server()
 
@@ -97,35 +98,36 @@ class CardComponents:
 
     @staticmethod
     def card_button(
-        icon_name,
-        color="primary",
-        dynamic_condition=None,
-        description=None,
-        density="compact",
-        variant="text",
+        icon_name: Union[str, List[str]],
+        color: str ="primary",
+        dynamic_condition: Optional[str] = None,
+        description: Optional[Union[str, List[str]]] = None,
+        density: str ="compact",
+        variant: str ="text",
         **kwargs,
     ) -> vuetify.VBtn:
         """
-        Create a Vuetify VBtn containing an icon.
+        Creates a Vuetify VBtn as an icon button. Can be dynamically toggled
+        between two states using 'dynamic_condition'.
 
-        :param icon_name: A string or a list/tuple of two strings for conditional rendering of the button icon.
+        :param icon_name: A string or a list of two strings for conditional rendering of the button icon.
         :param color: The button color.
-        :param dynamic_condition: A Vue boolean expression used to toggle between the two values in 'icon_name' and 'description'.
-        :param description: A string or a list/tuple of two strings for conditional tooltip text.
-        :param kwargs: Extra keyword arguments for the VBtn component.
+        :param dynamic_condition: A Vue state variable (boolean) that controls which value to show in 'icon_name' and 'description'.
+        :param description: A string or a list of two strings for conditional tooltip text.
+        :param kwargs: Extra keyword arguments for the component.
         """
 
-        def validate_dynamic_condition(value, name):
+        def validate_dynamic_condition(prop_value: List[str], prop_name: str) -> None:
             """
-            Ensure dynamic_condition components are a list/tuple with exactly 2 strings for dynamic toggling (e.g., expand/collapse).
+            Ensure dynamic_condition components are a list of exactly 2 strings for dynamic toggling (e.g., expand/collapse).
             """
 
-            if not isinstance(value, (list, tuple)):
-                raise ValueError(f"When dynamic_condition is True, {name} must be a list or tuple of exactly 2 strings")
-            if len(value) != 2:
-                raise ValueError(f"When dynamic_condition is True, {name} must contain exactly 2 elements")
-            if not all(isinstance(item, str) for item in value):
-                raise ValueError(f"When dynamic_condition is True, all elements in {name} must be strings")
+            if not isinstance(prop_value, list):
+                raise ValueError(f"When dynamic_condition is set, {prop_name} must be a list of exactly 2 strings")
+            if len(prop_value) != 2:
+                raise ValueError(f"When dynamic_condition is set, {prop_name} must contain exactly 2 elements")
+            if not all(isinstance(item, str) for item in prop_value):
+                raise ValueError(f"When dynamic_condition is set, all elements in {prop_name} must be strings")
 
         if dynamic_condition:
             validate_dynamic_condition(icon_name, "icon_name")

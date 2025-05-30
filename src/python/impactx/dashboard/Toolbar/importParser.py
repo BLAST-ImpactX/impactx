@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import setup_server
-from ..Input.distributionParameters.distributionMain import (
+from ..Input.distribution.ui import (
     on_distribution_parameter_change,
     populate_distribution_parameters,
 )

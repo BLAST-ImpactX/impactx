@@ -7,14 +7,18 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import setup_server, vuetify
-from ... import CardBase, CardComponents
+from ... import CardBase, CardComponents, NavigationComponents
+from . import LatticeVisualizerComponents, LatticeVisualizerDialogs
+
 server, state, ctrl = setup_server()
+
 
 ELEMENT_COLOR_MAP = {
     "drift": "blue lighten-2",
     "quad": "red darken-1",
     "monitor": "grey darken-2",
 }
+
 
 def get_element_color(name: str) -> str:
     """
@@ -32,15 +36,25 @@ def on_lattice_list_change(**kwargs):
     for element in state.selected_lattice_list:
         element["color"] = get_element_color(element["name"])
 
+
 class LatticeVisualizer(CardBase):
     HEADER_NAME = "Lattice Visualizer"
+    components = LatticeVisualizerComponents
 
     def __init__(self):
         super().__init__()
 
     def card_content(self):
+        with vuetify.VDialog(
+            v_model=("lattice_visualizer_dialog_settings", False), max_width="33.33vw"
+        ):
+            self.dialog_settings()
+
         with vuetify.VCard(**self.card_props):
-            CardComponents.input_header(self.HEADER_NAME)
+            CardComponents.input_header(
+                self.HEADER_NAME,
+                additional_components={"end": self.components.settings},
+            )
             with vuetify.VCardText():
                 with vuetify.VRow():
                     with vuetify.VCol(
@@ -53,3 +67,16 @@ class LatticeVisualizer(CardBase):
                             elevation=2,
                         ):
                             pass
+
+    @staticmethod
+    def dialog_settings():
+        dialog_name = "lattice_visualizer_dialog_tab_settings"
+
+        with NavigationComponents.create_dialog_tabs(
+            dialog_name, 2, ["Element Colors", "General Settings"]
+        ):
+            with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+                with vuetify.VTabsWindowItem():
+                    LatticeVisualizerDialogs.element_colors_tab()
+                with vuetify.VTabsWindowItem():
+                    LatticeVisualizerDialogs.general_settings_tab()

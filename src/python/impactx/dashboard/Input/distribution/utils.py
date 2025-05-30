@@ -5,13 +5,15 @@ Copyright 2025 ImpactX contributors
 Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
+
 import inspect
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
 from impactx.distribution_input_helpers import twiss
 
 from ... import setup_server
 from .. import generalFunctions
+
 server, state, ctrl = setup_server()
 
 
@@ -48,7 +50,6 @@ class DistributionFunctions:
             return generalFunctions.get_default(name, "units")
         return ""
 
-
     def get_twiss_data() -> List[Tuple[str, Any, type]]:
         """
         Retrieves parameters names and default values for the Twiss parameters.
@@ -66,4 +67,3 @@ class DistributionFunctions:
             default_type = generalFunctions.get_default(name, "types")
             param_data.append((name, default_value, default_type))
         return param_data
-        

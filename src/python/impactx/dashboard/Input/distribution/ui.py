@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from impactx import distribution
+
 from ... import setup_server, vuetify
 from .. import (
     CardBase,
@@ -108,8 +109,12 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
     )
 
     if parameter_name in state.selected_distribution_parameters:
-        state.selected_distribution_parameters[parameter_name]["parameter_default_value"] = parameter_value
-        state.selected_distribution_parameters[parameter_name]["parameter_error_message"] = error_message
+        state.selected_distribution_parameters[parameter_name][
+            "parameter_default_value"
+        ] = parameter_value
+        state.selected_distribution_parameters[parameter_name][
+            "parameter_error_message"
+        ] = error_message
 
     generalFunctions.update_simulation_validation_status()
     state.dirty("selected_distribution_parameters")

@@ -8,10 +8,11 @@ License: BSD-3-Clause-LBNL
 
 from .... import setup_server, vuetify
 from ... import CardBase, CardComponents, NavigationComponents
-from . import LatticeVisualizerComponents, LatticeVisualizerDialogs
+from . import LatticeVisualizerComponents, LatticeVisualizerDialogs, LatticeVisualizerUtils
 
 server, state, ctrl = setup_server()
 
+utils = LatticeVisualizerUtils
 
 ELEMENT_COLOR_MAP = {
     "drift": "blue lighten-2",
@@ -30,19 +31,23 @@ def get_element_color(name: str) -> str:
             return color
     return "grey lighten-1"
 
-
 @state.change("selected_lattice_list")
 def on_lattice_list_change(**kwargs):
     for element in state.selected_lattice_list:
         element["color"] = get_element_color(element["name"])
-                                    
+
+    state.total_elements = len(state.selected_lattice_list)
+    state.total_steps = utils.update_total_steps()
+    state.element_counts = utils.update_element_counts()
+    utils.update_length_statistics()
+
 class LatticeVisualizer(CardBase):
     HEADER_NAME = "Lattice Visualizer"
     components = LatticeVisualizerComponents
 
     def __init__(self):
         super().__init__()
-
+        
     def card_content(self):
         with vuetify.VDialog(
             v_model=("lattice_visualizer_dialog_settings", False), max_width="33.33vw"
@@ -54,7 +59,8 @@ class LatticeVisualizer(CardBase):
                 self.HEADER_NAME,
                 additional_components={"end": self.components.settings},
             )
-            with vuetify.VCardText():
+            with vuetify.VCardText(): 
+                self.components.statistics()
                 with vuetify.VRow():
                     with vuetify.VCol(
                         v_for="(element, index) in selected_lattice_list",

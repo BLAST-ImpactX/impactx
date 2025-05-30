@@ -84,7 +84,8 @@ with RouterViewLayout(server, "/Input"):
                         lattice_config.card()
             with vuetify.VCol(cols=12, md=6):
                 with vuetify.VRow(**card_row_padding):
-                    LatticeVisualizer().card()
+                    with vuetify.VCol():
+                        LatticeVisualizer().card()
 
 with RouterViewLayout(server, "/Analyze"):
     with vuetify.VContainer(fluid=True):

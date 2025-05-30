@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from impactx import distribution
+from typing import Union
 
 from ... import setup_server, vuetify
 from .. import (
@@ -100,21 +101,18 @@ def on_distribution_type_change(**kwargs):
 
 
 @ctrl.add("update_distribution_parameter")
-def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
-    parameter_value = generalFunctions.convert_to_numeric(parameter_value)
-    lookup_name = "lambda" if "lambda" in parameter_name else parameter_name
+def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
+    numeric_input = generalFunctions.convert_to_numeric(input)
+    lookup_name = "lambda" if "lambda" in name else name
     conditions = generalFunctions.get_default(lookup_name, "validation_condition")
     error_message = generalFunctions.validate_against(
-        parameter_value, parameter_type, additional_conditions=conditions
+        numeric_input, type, additional_conditions=conditions
     )
 
-    if parameter_name in state.selected_distribution_parameters:
-        state.selected_distribution_parameters[parameter_name][
-            "parameter_default_value"
-        ] = parameter_value
-        state.selected_distribution_parameters[parameter_name][
-            "parameter_error_message"
-        ] = error_message
+    parameter = state.selected_distribution_parameters[name]
+    parameter["parameter_default_value"] = numeric_input
+    parameter["parameter_error_message"] = error_message
+
 
     generalFunctions.update_simulation_validation_status()
     state.dirty("selected_distribution_parameters")

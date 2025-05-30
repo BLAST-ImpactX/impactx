@@ -37,10 +37,10 @@ state.distribution_type_disable = False
 
 def populate_distribution_parameters():
     """
-    Populates distribution parameters based on the selected distribution.
+    Called when `state.distribution_type` changes.
+    Populates distribution parameters based on the current `state.distribution`.
     """
     params = {}
-    param_data = []
     is_twiss = state.distribution_type == "Twiss"
 
     # Gather necessary data
@@ -51,17 +51,17 @@ def populate_distribution_parameters():
         param_data = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(state.distribution, [])
 
     # Populate the UI
-    for param_name, param_value, param_type in param_data:
-        error_message = generalFunctions.validate_against(param_value, param_type)
+    for param_name, default_value, default_type in param_data:
+        error_message = generalFunctions.validate_against(default_value, default_type)
         units = DistributionFunctions.get_distribution_units(param_name)
         step = generalFunctions.get_default(param_name, "steps")
 
         params[param_name] = {
-            "parameter_default_value": param_value,
-            "parameter_type": param_type,
-            "parameter_error_message": error_message,
-            "parameter_units": units,
-            "parameter_step": step,
+            "value": default_value,
+            "type": default_type,
+            "error_message": error_message,
+            "units": units,
+            "step": step,
         }
 
     state.selected_distribution_parameters = params
@@ -109,13 +109,12 @@ def on_distribution_parameter_change(name: str, input: Union[float, int], type: 
         numeric_input, type, additional_conditions=conditions
     )
 
-    parameter = state.selected_distribution_parameters[name]
-    parameter["parameter_default_value"] = numeric_input
-    parameter["parameter_error_message"] = error_message
-
-
-    generalFunctions.update_simulation_validation_status()
-    state.dirty("selected_distribution_parameters")
+    parameter = state.selected_distribution_parameters.get(name)
+    if parameter:
+        parameter["value"] = numeric_input
+        parameter["error_message"] = error_message
+        generalFunctions.update_simulation_validation_status()
+        state.dirty("selected_distribution_parameters")
 
 
 # -----------------------------------------------------------------------------
@@ -165,17 +164,17 @@ class DistributionParameters(CardBase):
                             with vuetify.Template(v_slot_activator="{ props }"):
                                 vuetify.VTextField(
                                     label=("parameter_name",),
-                                    v_model=("parameter.parameter_default_value",),
-                                    suffix=("parameter.parameter_units",),
+                                    v_model=("parameter.value",),
+                                    suffix=("parameter.units",),
                                     update_modelValue=(
                                         ctrl.update_distribution_parameter,
-                                        "[parameter_name, $event, parameter.parameter_type]",
+                                        "[parameter_name, $event, parameter.type]",
                                     ),
                                     error_messages=(
-                                        "parameter.parameter_error_message",
+                                        "parameter.error_message",
                                     ),
                                     type="number",
-                                    step=("parameter.parameter_step",),
+                                    step=("parameter.step",),
                                     __properties=["step"],
                                     density="compact",
                                     variant="underlined",

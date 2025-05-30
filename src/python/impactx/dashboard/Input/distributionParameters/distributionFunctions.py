@@ -5,14 +5,14 @@ Copyright 2025 ImpactX contributors
 Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
+import inspect
+from typing import List, Tuple, Any
+
+from impactx.distribution_input_helpers import twiss
 
 from ... import setup_server
-
+from .. import generalFunctions
 server, state, ctrl = setup_server()
-
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
 
 
 class DistributionFunctions:
@@ -38,3 +38,32 @@ class DistributionFunctions:
         }
 
         return parameter_input
+
+    def get_distribution_units(name: str) -> str:
+        """
+        Returns the correct units depending on if
+        selected_distribution == Twiss.
+        """
+        if "beta" in name or "emitt" in name:
+            return generalFunctions.get_default(name, "units")
+        return ""
+
+
+    def get_twiss_data() -> List[Tuple[str, Any, type]]:
+        """
+        Retrieves parameters names and default values for the Twiss parameters.
+
+        Utilizes the twiss helper function from `distribution_input_helpers`.
+        """
+        param_data = []
+
+        sig = inspect.signature(twiss)
+        for parameter in sig.parameters.values():
+            name = parameter.name
+            default_value = (
+                parameter.default if parameter.default != inspect._empty else None
+            )
+            default_type = generalFunctions.get_default(name, "types")
+            param_data.append((name, default_value, default_type))
+        return param_data
+        

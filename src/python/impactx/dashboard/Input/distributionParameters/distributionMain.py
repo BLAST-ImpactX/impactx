@@ -6,11 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-import inspect
-
 from impactx import distribution
-from impactx.distribution_input_helpers import twiss
-
 from ... import setup_server, vuetify
 from .. import (
     CardBase,
@@ -19,6 +15,7 @@ from .. import (
     InputComponents,
     generalFunctions,
 )
+from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
 
@@ -35,38 +32,6 @@ DISTRIBUTION_PARAMETERS_AND_DEFAULTS = generalFunctions.class_parameters_with_de
 state.selected_distribution_parameters = {}
 state.distribution_type_disable = False
 
-# -----------------------------------------------------------------------------
-# Main Functions
-# -----------------------------------------------------------------------------
-
-
-def get_distribution_units(name: str) -> str:
-    """
-    Returns the correct units depending on if
-    selected_distribution == Twiss.
-    """
-    if "beta" in name or "emitt" in name:
-        return generalFunctions.get_default(name, "units")
-    return ""
-
-
-def get_twiss_data():
-    """
-    Retrieves parameters names and default values for the Twiss parameters.
-
-    Utilizes the twiss helper function from `distribution_input_helpers`.
-    """
-    param_data = []
-
-    sig = inspect.signature(twiss)
-    for parameter in sig.parameters.values():
-        name = parameter.name
-        default_value = (
-            parameter.default if parameter.default != inspect._empty else None
-        )
-        default_type = generalFunctions.get_default(name, "types")
-        param_data.append((name, default_value, default_type))
-    return param_data
 
 def populate_distribution_parameters():
     """
@@ -78,7 +43,7 @@ def populate_distribution_parameters():
 
     # Gather necessary data
     if is_twiss:
-        param_data = get_twiss_data()
+        param_data = DistributionFunctions.get_twiss_data()
     else:
         # data for quadratic (impactX native)
         param_data = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(state.distribution, [])
@@ -86,7 +51,7 @@ def populate_distribution_parameters():
     # Populate the UI
     for param_name, param_value, param_type in param_data:
         error_message = generalFunctions.validate_against(param_value, param_type)
-        units = get_distribution_units(param_name)
+        units = DistributionFunctions.get_distribution_units(param_name)
         step = generalFunctions.get_default(param_name, "steps")
 
         params[param_name] = {

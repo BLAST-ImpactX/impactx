@@ -30,10 +30,10 @@ class DistributionFunctions:
         """
 
         parameter_input = {
-            param["parameter_name"]: float(param["parameter_default_value"])
+            param_name: float(param["parameter_default_value"])
             if param_is_valid
             else 0.0
-            for param in state.selected_distribution_parameters
+            for param_name, param in state.selected_distribution_parameters.items()
             if (param_is_valid := param["parameter_error_message"] == [])
         }
 

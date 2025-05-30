@@ -138,10 +138,10 @@ class generalFunctions:
         error_details = []
 
         # Check for errors in distribution parameters
-        for param in state.selected_distribution_parameters:
+        for param_name, param in state.selected_distribution_parameters.items():
             if param["parameter_error_message"]:
                 error_details.append(
-                    f"{param['parameter_name']}: {param['parameter_error_message']}"
+                    f"{param_name}: {param['parameter_error_message']}"
                 )
 
         # Check for errors in lattice parameters

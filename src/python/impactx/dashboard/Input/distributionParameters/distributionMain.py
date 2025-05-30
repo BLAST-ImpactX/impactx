@@ -133,7 +133,7 @@ def on_distribution_type_change(**kwargs):
     populate_distribution_parameters()
 
 
-@ctrl.add("updateDistributionParameters")
+@ctrl.add("update_distribution_parameter")
 def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
     parameter_value = generalFunctions.convert_to_numeric(parameter_value)
     lookup_name = "lambda" if "lambda" in parameter_name else parameter_name
@@ -200,7 +200,7 @@ class DistributionParameters(CardBase):
                                     v_model=("parameter.parameter_default_value",),
                                     suffix=("parameter.parameter_units",),
                                     update_modelValue=(
-                                        ctrl.updateDistributionParameters,
+                                        ctrl.update_distribution_parameter,
                                         "[parameter_name, $event, parameter.parameter_type]",
                                     ),
                                     error_messages=(

@@ -41,6 +41,7 @@ class DistributionFunctions:
 
         return parameter_input
 
+    @staticmethod
     def get_distribution_units(name: str) -> str:
         """
         Returns the correct units depending on if
@@ -50,6 +51,7 @@ class DistributionFunctions:
             return generalFunctions.get_default(name, "units")
         return ""
 
+    @staticmethod
     def get_twiss_data() -> List[Tuple[str, Any, type]]:
         """
         Retrieves parameters names and default values for the Twiss parameters.

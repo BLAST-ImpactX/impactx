@@ -6,8 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from impactx import distribution
 from typing import Union
+
+from impactx import distribution
 
 from ... import setup_server, vuetify
 from .. import (
@@ -170,9 +171,7 @@ class DistributionParameters(CardBase):
                                         ctrl.update_distribution_parameter,
                                         "[parameter_name, $event, parameter.type]",
                                     ),
-                                    error_messages=(
-                                        "parameter.error_message",
-                                    ),
+                                    error_messages=("parameter.error_message",),
                                     type="number",
                                     step=("parameter.step",),
                                     __properties=["step"],

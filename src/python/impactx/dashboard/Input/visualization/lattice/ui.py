@@ -10,10 +10,27 @@ from .... import setup_server, vuetify
 from ... import CardBase, CardComponents
 server, state, ctrl = setup_server()
 
+ELEMENT_COLOR_MAP = {
+    "drift": "blue lighten-2",
+    "quad": "red darken-1",
+    "monitor": "grey darken-2",
+}
+
+def get_element_color(name: str) -> str:
+    """
+    Determine Vuetify color for an element based on its name.
+    """
+    clean_name = name.lower()
+    for element_key, color in ELEMENT_COLOR_MAP.items():
+        if element_key in clean_name:
+            return color
+    return "grey lighten-1"
+
 
 @state.change("selected_lattice_list")
 def on_lattice_list_change(**kwargs):
-    print(f"lattice list changed")
+    for element in state.selected_lattice_list:
+        element["color"] = get_element_color(element["name"])
 
 class LatticeVisualizer(CardBase):
     HEADER_NAME = "Lattice Visualizer"
@@ -31,8 +48,7 @@ class LatticeVisualizer(CardBase):
                     ):
                         with vuetify.VCard(
                             text=("element.name",),
-                            class_="rounded-xl pa-2 text-center",
-                            color="primary",
+                            color=("element.color",),
                             text_color="white",
                             elevation=2,
                         ):

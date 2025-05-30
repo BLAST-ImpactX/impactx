@@ -35,8 +35,7 @@ def get_element_color(name: str) -> str:
 def on_lattice_list_change(**kwargs):
     for element in state.selected_lattice_list:
         element["color"] = get_element_color(element["name"])
-
-
+                                    
 class LatticeVisualizer(CardBase):
     HEADER_NAME = "Lattice Visualizer"
     components = LatticeVisualizerComponents

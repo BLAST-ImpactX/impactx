@@ -108,6 +108,41 @@ class DashboardLatticeConfigParser:
 
         return operations
 
+
+    @staticmethod
+    def replace_variable_names_with_elements(content: str, raw_lattice: list) -> list:
+        """
+        This function is called to simplify the lattice list by replacing variable names with their corresponding constructor calls.
+
+        EX:
+            (input)
+                drift1 = elements.Drift(ds=1.0)
+                quad1 = elements.Quad(k=0.5)
+                raw_lattice = ["drift1", "quad1"]
+            (output)    
+                raw_lattice = ["elements.Drift(ds=1.0)", "elements.Quad(k=0.5)"]
+
+        :param content: Full text content of the ImpactX simulation file.
+        :param raw_lattice: List of lattice element variable names or constructor calls, e.g. ["drift1", "quad1"].
+        :return: List with variable names replaced by their corresponding constructor calls.
+        """
+        element_mapping = {}
+
+        ellement_assignment_pattern = r"^\s*(\w+)\s*=\s*(elements\.\w+\(.*?\))"
+        all_element_assignments = re.findall(
+            ellement_assignment_pattern, content, re.MULTILINE | re.DOTALL
+        )
+
+        for var_name, element in all_element_assignments:
+            element_mapping[var_name] = element
+
+        if not element_mapping:
+            return raw_lattice
+
+        # Replace each item in the list
+        # later can be optimized by not iterating over the whole raw_lattice list
+        return [element_mapping.get(item, item) for item in raw_lattice]
+        
     @staticmethod
     def extract_used_variables(parsed_lattice: dict) -> set:
         """

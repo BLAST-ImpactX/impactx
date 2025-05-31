@@ -16,10 +16,10 @@ state.max_length = 0
 state.min_length = 0
 state.avg_length = 0
 state.total_steps = 0
-state.periods = 1
+state.periods = 1 if state.total_elements > 0 else 0
 state.element_counts = {}
 state.length_stats_content = ""
-state.lattice_list_empty = len(state.selected_lattice_list) == 0
+state.lattice_is_empty = len(state.selected_lattice_list) == 0
 
 class LatticeVisualizerUtils:
     
@@ -40,7 +40,6 @@ class LatticeVisualizerUtils:
                         pass
 
         if lengths:
-            state.additional_length_stats_diabled = False
             state.total_length = round(sum(lengths), 2)
             state.min_length = round(min(lengths), 3)
             state.max_length = round(max(lengths), 3)
@@ -50,6 +49,12 @@ class LatticeVisualizerUtils:
                 f"Shortest: {state.min_length} m",
                 f"Average: {state.avg_length} m"
             ]
+        else:
+            state.total_length = None
+            state.min_length = None
+            state.max_length = None
+            state.avg_length = None
+            state.length_stats_content = []
 
     @staticmethod
     def update_element_counts() -> list[tuple[str, int]]:
@@ -64,7 +69,7 @@ class LatticeVisualizerUtils:
             # can't do += 1 because key is not already initialized
             counts[key] = counts.get(key, 0) + 1
 
-        state.lattice_list_empty = len(counts) == 0
+        state.lattice_is_empty = len(counts) == 0
         # sort from desc. so we see top elements left to right
         return sorted(counts.items(), key=lambda item: item[1], reverse=True)
 
@@ -109,12 +114,12 @@ class LatticeVisualizerComponents:
         title_state_name = title.lower().replace(" ", "_")
 
         is_stat_length = "length" in title.lower()
-        suffix = " m" if is_stat_length else ""
+        suffix = " m" if is_stat_length and state.total_elements > 0 else ""
 
         vuetify.VCardSubtitle(title)
 
         with vuetify.VCardTitle(
-            f"{{{{ {title_state_name} }}}}{suffix}",
+            f"{{{{ {title_state_name} || '-' }}}}{suffix}",
             classes="d-flex align-center justify-center"
         ):
             if is_stat_length:
@@ -130,7 +135,7 @@ class LatticeVisualizerComponents:
                     "mdi-information",
                     size="x-small",
                     v_bind="props",
-                    disabled=("lattice_list_empty",),
+                    disabled=("lattice_is_empty",),
                     classes="ml-2",
                 )
             with vuetify.Template(v_for="line in length_stats_content"):
@@ -160,7 +165,7 @@ class LatticeVisualizerComponents:
                 with vuetify.VRow():
                     with vuetify.VCol(cols=12):
                         vuetify.VCardSubtitle("Element Breakdown")
-                        with vuetify.Template(v_if="lattice_list_empty"):
+                        with vuetify.Template(v_if="lattice_is_empty"):
                             vuetify.VCardTitle("Lattice list is empty.")
                         with vuetify.Template(v_else=True):
                             with vuetify.VChipGroup():

@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from .... import setup_server, vuetify
 from ... import CardBase, CardComponents, NavigationComponents
-from . import LatticeVisualizerComponents, LatticeVisualizerDialogs, LatticeVisualizerUtils
+from . import Components, Dialogs, Utils
 
 server, state, ctrl = setup_server()
-
-utils = LatticeVisualizerUtils
 
 ELEMENT_COLOR_MAP = {
     "drift": "blue lighten-2",
@@ -37,13 +35,12 @@ def on_lattice_list_change(**kwargs):
         element["color"] = get_element_color(element["name"])
 
     state.total_elements = len(state.selected_lattice_list)
-    state.total_steps = utils.update_total_steps()
-    state.element_counts = utils.update_element_counts()
-    utils.update_length_statistics()
+    state.total_steps = Utils.update_total_steps()
+    state.element_counts = Utils.update_element_counts()
+    Utils.update_length_statistics()
 
 class LatticeVisualizer(CardBase):
     HEADER_NAME = "Lattice Visualizer"
-    components = LatticeVisualizerComponents
 
     def __init__(self):
         super().__init__()
@@ -57,10 +54,10 @@ class LatticeVisualizer(CardBase):
         with vuetify.VCard(**self.card_props):
             CardComponents.input_header(
                 self.HEADER_NAME,
-                additional_components={"end": self.components.settings},
+                additional_components={"end": Components.settings},
             )
             with vuetify.VCardText(): 
-                self.components.statistics()
+                Components.statistics()
                 with vuetify.VRow():
                     with vuetify.VCol(
                         v_for="(element, index) in selected_lattice_list",
@@ -82,6 +79,6 @@ class LatticeVisualizer(CardBase):
         ):
             with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
                 with vuetify.VTabsWindowItem():
-                    LatticeVisualizerDialogs.element_colors_tab()
+                    Dialogs.element_colors_tab()
                 with vuetify.VTabsWindowItem():
-                    LatticeVisualizerDialogs.general_settings_tab()
+                    Dialogs.general_settings_tab()

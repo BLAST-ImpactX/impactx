@@ -16,7 +16,7 @@ state.max_length = 0
 state.min_length = 0
 state.avg_length = 0
 state.total_steps = 0
-state.periods = 1 if state.total_elements > 0 else 0
+state.periods = 0
 state.element_counts = {}
 state.length_stats_content = ""
 state.lattice_is_empty = len(state.selected_lattice_list) == 0
@@ -98,9 +98,9 @@ class LatticeVisualizerComponents:
     def settings():
         CardComponents.card_button(
             "mdi-cog",
-            color="grey-darken-2",
+            color="white",
             click="lattice_visualizer_dialog_settings = true",
-            documentation="Settings",
+            description="Settings",
         )
 
     @staticmethod
@@ -116,11 +116,11 @@ class LatticeVisualizerComponents:
         is_stat_length = "length" in title.lower()
         suffix = " m" if is_stat_length and state.total_elements > 0 else ""
 
-        vuetify.VCardSubtitle(title)
+        vuetify.VCardSubtitle(title, classes="pb-0 mb-0")
 
         with vuetify.VCardTitle(
             f"{{{{ {title_state_name} || '-' }}}}{suffix}",
-            classes="d-flex align-center justify-center"
+            classes="d-flex align-center justify-center my-0 py-0"
         ):
             if is_stat_length:
                 LatticeVisualizerComponents._additional_length_stats()
@@ -143,34 +143,28 @@ class LatticeVisualizerComponents:
 
     @staticmethod
     def statistics():
-        with vuetify.VCard(
-            title="Statistics",
-            elevation=2,
-            color="grey lighten-4",
-            style="margin-bottom: 20px;",
-        ):
-            with vuetify.VCardText():
-                # row 1: numerical stats
-                with vuetify.VRow(classes="text-center"):
-                    with vuetify.VCol():
-                        LatticeVisualizerComponents._stat("Total Elements")
-                    with vuetify.VCol():
-                        LatticeVisualizerComponents._stat("Total Length")
-                    with vuetify.VCol():
-                        LatticeVisualizerComponents._stat("Total Steps")
-                    with vuetify.VCol():
-                        LatticeVisualizerComponents._stat("Periods")
+        with vuetify.VCardText():
+            # row 1: numerical stats
+            with vuetify.VRow(classes="text-center"):
+                with vuetify.VCol():
+                    LatticeVisualizerComponents._stat("Total Elements")
+                with vuetify.VCol():
+                    LatticeVisualizerComponents._stat("Total Length")
+                with vuetify.VCol():
+                    LatticeVisualizerComponents._stat("Total Steps")
+                with vuetify.VCol():
+                    LatticeVisualizerComponents._stat("Periods")
 
-                # row 2: element breakdown
-                with vuetify.VRow():
-                    with vuetify.VCol(cols=12):
-                        vuetify.VCardSubtitle("Element Breakdown")
-                        with vuetify.Template(v_if="lattice_is_empty"):
-                            vuetify.VCardTitle("Lattice list is empty.")
-                        with vuetify.Template(v_else=True):
-                            with vuetify.VChipGroup():
-                                with vuetify.Template(v_for="[name, count] in element_counts", key="name"):
-                                    vuetify.VChip(
-                                        "{{ name.charAt(0).toUpperCase() + name.slice(1) }}: {{ count }}",
-                                        style="font-size: 0.75rem;",
-                                    )
+            # row 2: element breakdown
+            with vuetify.VRow(classes="pt-0 mt-0"):
+                with vuetify.VCol(cols=12):
+                    vuetify.VCardSubtitle("Element Breakdown")
+                    with vuetify.Template(v_if="lattice_is_empty"):
+                        vuetify.VCardTitle("Lattice list is empty.")
+                    with vuetify.Template(v_else=True):
+                        with vuetify.VChipGroup():
+                            with vuetify.Template(v_for="[name, count] in element_counts", key="name"):
+                                vuetify.VChip(
+                                    "{{ name.charAt(0).toUpperCase() + name.slice(1) }}: {{ count }}",
+                                    style="font-size: 0.75rem;",
+                                )

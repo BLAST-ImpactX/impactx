@@ -6,8 +6,8 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import setup_server, vuetify
-from ... import CardBase, CardComponents, NavigationComponents
+from .... import html, setup_server, vuetify
+from ... import CardBase, NavigationComponents
 from . import Components, Dialogs, Utils
 
 server, state, ctrl = setup_server()
@@ -35,12 +35,12 @@ def on_lattice_list_change(**kwargs):
         element["color"] = get_element_color(element["name"])
 
     state.total_elements = len(state.selected_lattice_list)
+    state.periods = 1 if state.total_elements > 0 else 0
     state.total_steps = Utils.update_total_steps()
     state.element_counts = Utils.update_element_counts()
     Utils.update_length_statistics()
 
 class LatticeVisualizer(CardBase):
-    HEADER_NAME = "Lattice Visualizer"
 
     def __init__(self):
         super().__init__()
@@ -51,13 +51,20 @@ class LatticeVisualizer(CardBase):
         ):
             self.dialog_settings()
 
-        with vuetify.VCard(**self.card_props):
-            CardComponents.input_header(
-                self.HEADER_NAME,
-                additional_components={"end": Components.settings},
-            )
-            with vuetify.VCardText(): 
+        with vuetify.VCard():
+            with vuetify.VCard(
+                classes="d-flex flex-column",
+                style="min-height: 3.75rem; margin-bottom: 20px;",
+                color="grey lighten-4",
+                elevation=2,
+            ):
+                # create custom header over using component in CardComponents
+                with vuetify.VCardTitle(classes="d-flex align-center"):
+                    html.Div("Lattice Statistics")
+                    vuetify.VSpacer()
+                    Components.settings()
                 Components.statistics()
+            with vuetify.VCardText():
                 with vuetify.VRow():
                     with vuetify.VCol(
                         v_for="(element, index) in selected_lattice_list",

@@ -80,7 +80,7 @@ def _populate_lattice_config_to_ui(parsed_data):
     state.selected_lattice_list = []
 
     for lattice_element_index, element in enumerate(parsed_data):
-        parsed_element = element["element"]
+        parsed_element = element["name"]
         parsed_parameters = element["parameters"]
 
         state.selected_lattice = parsed_element

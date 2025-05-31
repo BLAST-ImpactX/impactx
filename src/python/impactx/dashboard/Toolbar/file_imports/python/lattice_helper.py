@@ -7,27 +7,53 @@ class DashboardLatticeConfigParser:
         """
         Parses lattice elements and also extracts used lattice variables.
         """
-        result = DashboardLatticeConfigParser.parse_simple_lattice(content)
+        result = DashboardLatticeConfigParser.parse_cleaned_lattice(content)
         result["used_lattice_variables"] = DashboardLatticeConfigParser.extract_used_variables(result)
 
         return result
 
     @staticmethod
-    def parse_simple_lattice(content: str) -> dict:
+    def parse_cleaned_lattice(content: str) -> dict:
         """
-        Parses simple lattice elements from the simulation file content.
+        Parses the lattice elements from the ImpactX simulation file content.
+        
+        Extracts element names and their parameters from constructor calls in the format:
+        elements.ElementName(param1=value1, param2=value2, ...)
+        
+        EX:
+            elements.Drift(ds=1.0)
+                
+            Results in:
+            {
+                "lattice_elements": [
+                    {
+                        "name": "Drift",
+                        "parameters": {"ds": "1.0"}
+                    }
+                ]
+            }
+            
+        :param content: The content of the ImpactX simulation file.
+        :return: A dictionary containing the parsed lattice elements.
         """
 
         dictionary = {"lattice_elements": []}
-        lattice_elements = re.findall(r"elements\.(\w+)\((.*?)\)", content)
 
-        for element_name, element_parameter in lattice_elements:
-            element = {"element": element_name, "parameters": {}}
+        element_pattern = r"elements\.(\w+)\((.*?)\)"  # EX: elements.Drift(...)
+        lattice_elements = re.findall(element_pattern, content)
 
-            parameter_pairs = re.findall(r"(\w+)=([^,\)]+)", element_parameter)
-            for parameter_name, parameter_value in parameter_pairs:
-                parameter_value_cleaned = parameter_value.strip("'\"")
-                element["parameters"][parameter_name] = parameter_value_cleaned
+        for element_name, parameter in lattice_elements:
+            element = {
+                "name": element_name,
+                "parameters": {}
+            }
+
+            # Match parameters in the format key=value
+            parameter_pattern = r"(\w+)=([^,\)]+)"  # EX: ds=1.0, k1=0.5
+            all_parameters = re.findall(parameter_pattern, parameter)
+
+            for parameter_name, value in all_parameters:
+                element["parameters"][parameter_name] = value.strip()
 
             dictionary["lattice_elements"].append(element)
 

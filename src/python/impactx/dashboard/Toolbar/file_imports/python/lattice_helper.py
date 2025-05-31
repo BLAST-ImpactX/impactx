@@ -7,6 +7,7 @@ class DashboardLatticeConfigParser:
         """
         Parses lattice elements and also extracts used lattice variables.
         """
+        lattice_order = DashboardLatticeConfigParser.collect_lattice_operations(content, debug=True)
         result = DashboardLatticeConfigParser.parse_cleaned_lattice(content)
         result["used_lattice_variables"] = DashboardLatticeConfigParser.extract_used_variables(result)
 
@@ -59,6 +60,54 @@ class DashboardLatticeConfigParser:
 
         return dictionary
 
+
+    @staticmethod
+    def collect_lattice_operations(content: str, debug=False) -> list:
+        """
+        Returns a list of operations (in order) that define how the lattice is built.
+        Handles sim.lattice.append, sim.lattice.extend, and .reverse() calls.
+
+        EX:
+            sim.lattice.append(monitor)
+            sim.lattice.extend([drift1, quad1])
+            lattice_half.reverse()
+
+            Results the following (in order):
+            [
+                {"type": "append", "argument": "monitor"},
+                {"type": "extend", "argument": "[drift1, quad1]"}
+                {"type": "reverse", "argument": "lattice_half"}
+            ]
+
+        :param content: Full text content of the ImpactX simulation file.
+        :param debug: Whether to print the collected operations.
+        :return: List of dictionaries with 'type' and 'argument' keys.
+        """
+        operations = []
+
+        lattice_call_pattern = r"sim\.lattice\.(append|extend)"
+        pattern = re.compile(rf"{lattice_call_pattern}\((.*?)\)")
+
+
+        # Store sim.lattice.append and sim.lattice.extend calls
+        for match in pattern.finditer(content):
+            operation, arg = match.groups()
+            operations.append((match.start(), {"type": operation, "argument": arg.strip()}))
+
+        # Store .reverse() calls
+        reverse_pattern = r"(\w+)\.reverse\(\)"
+        for match in re.finditer(reverse_pattern, content):
+            operations.append((match.start(), {"type": "reverse", "argument": match.group(1)}))
+
+        # important: sort operations by their position in the content
+        # since the for loops can be executed in any order
+        operations = [type for _, type in sorted(operations, key=lambda x: x[0])]
+
+        if debug:
+            DashboardLatticeConfigParser.print_lattice_operations(operations)
+
+        return operations
+
     @staticmethod
     def extract_used_variables(parsed_lattice: dict) -> set:
         """
@@ -71,3 +120,17 @@ class DashboardLatticeConfigParser:
                 used_variables.add(value)
 
         return used_variables
+
+    #-----------------------------------------------------------------------------
+    # Debug methods
+    # -----------------------------------------------------------------------------
+
+    @staticmethod
+    def print_lattice_operations(operations: list) -> None:
+        """
+        Prints all lattice operations in the order they appear.
+        """
+
+        print("Full lattice operation sequence (in order):")
+        for operation in operations:
+            print(f"  {operation['type']}({operation['argument']})")

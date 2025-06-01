@@ -6,6 +6,10 @@ class DashboardLatticeConfigParser:
     Helper class to parse the lattice configuration from Impactx .py-compatible simulation files.
     """
 
+    def __init__(self):
+        self._flatten_cache: Dict[str, List[str]] = {}
+        self._variable_assignments_cache: Dict[str, Dict[str, str]] = {}
+
     def parse_lattice(self, content: str) -> Dict[str, Any]:
         """
         Parses lattice elements and also extracts used lattice variables.
@@ -131,9 +135,33 @@ class DashboardLatticeConfigParser:
 
         return operations
 
+    def _get_variable_assignments(self, content: str) -> Dict[str, str]:
+        """
+        Helper function to extract all variable list assignments from content.
+        Caches the result to avoid re-parsing the same content.
+        
+        :param content: Full text content containing variable definitions
+        """
+        content_hash = str(hash(content))
+        
+        if content_hash in self._variable_assignments_cache:
+            return self._variable_assignments_cache[content_hash]
+        
+        variable_assignments = {}
+        var_assignment_pattern = r"(\w+)\s*=\s*\[(.*?)\]"
+        
+        for match in re.finditer(var_assignment_pattern, content, re.DOTALL):
+            var_name = match.group(1)
+            list_content = match.group(2)
+            variable_assignments[var_name] = list_content
+        
+        self._variable_assignments_cache[content_hash] = variable_assignments
+        return variable_assignments
+
     def _flatten(self, content: str, variable_name: str, debug: bool = True) -> List[str]:
         """
         Recursively expands a varible name to replace it with its set of elements.
+        Utilizes caching to avoid redundant parsing.
 
         EX:
             content = '''
@@ -151,24 +179,25 @@ class DashboardLatticeConfigParser:
         :param debug: Whether to print the expanded list.
         :return: List of individual element names with all nesting resolved.
         """
-
+        # check cache first
+        cache_key = f"{hash(content)}:{variable_name}"
+        if cache_key in self._flatten_cache:
+            return self._flatten_cache[cache_key]
+        
+        # Get variable assignments (cached)
+        variable_assignments = self._get_variable_assignments(content)
+        
         # Check if the input is an inline list like "[monitor, elements.Drift(...)]"
         if variable_name.startswith("[") and variable_name.endswith("]"):
             list_contents = variable_name[1:-1]  # contents between brackets
             # split on commas that are NOT inside parentheses
             list_to_flatten = [element.strip() for element in re.split(r",\s*(?![^()]*\))", list_contents) if element.strip()]
         else:
-            var_assignment_pattern = rf"{re.escape(variable_name)}\s*=\s*\[(.*?)\]"
-            match = re.search(var_assignment_pattern, content, re.DOTALL)
-
-            if not match:
+            if variable_name not in variable_assignments:
+                self._flatten_cache[cache_key] = [variable_name]
                 return [variable_name]  # It's not a list, it's a single element
 
-            if debug:
-                print(f"\nExpanding variable list definition for '{variable_name}':")
-                print(f"  {match.group(0)}")
-
-            list_content = match.group(1)
+            list_content = variable_assignments[variable_name]
             list_to_flatten = [item.strip() for item in list_content.split(",") if item.strip()]
 
         expanded = []
@@ -177,6 +206,9 @@ class DashboardLatticeConfigParser:
             sub_items = self._flatten(content, item, debug)
             expanded.extend(sub_items)
 
+        # Cache the result
+        self._flatten_cache[cache_key] = expanded
+        
         return expanded
 
 

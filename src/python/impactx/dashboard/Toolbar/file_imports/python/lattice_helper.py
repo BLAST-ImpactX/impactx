@@ -1,6 +1,9 @@
 import re
 
 class DashboardLatticeConfigParser:
+    """
+    Helper class to parse the lattice configuration from Impactx .py-compatible simulation files.
+    """
 
     def parse_lattice(self, content: str) -> dict:
         """

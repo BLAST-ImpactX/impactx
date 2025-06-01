@@ -145,22 +145,27 @@ class DashboardLatticeConfigParser:
         :return: List of individual element names with all nesting resolved.
         """
 
+        # Check if the input is an inline list like "[monitor, elements.Drift(...)]"
+        if variable_name.startswith("[") and variable_name.endswith("]"):
+            list_contents = variable_name[1:-1]  # contents between brackets
+            # split on commas that are NOT inside parentheses
+            list_to_flatten = [element.strip() for element in re.split(r",\s*(?![^()]*\))", list_contents) if element.strip()]
+        else:
+            var_assignment_pattern = rf"{re.escape(variable_name)}\s*=\s*\[(.*?)\]"
+            match = re.search(var_assignment_pattern, content, re.DOTALL)
 
-        var_assignment_pattern = rf"{re.escape(variable_name)}\s*=\s*\[(.*?)\]"
-        match = re.search(var_assignment_pattern, content, re.DOTALL)
+            if not match:
+                return [variable_name]  # It's not a list, it's a single element
 
-        if not match:
-            return [variable_name]  # It's not a list, it's a single element
+            if debug:
+                print(f"\nExpanding variable list definition for '{variable_name}':")
+                print(f"  {match.group(0)}")
 
-        if debug:
-            print(f"\nExpanding variable list definition for '{variable_name}':")
-            print(f"  {match.group(0)}")
-
-        list_content = match.group(1)
-        items = [item.strip() for item in list_content.split(",") if item.strip()]
+            list_content = match.group(1)
+            list_to_flatten = [item.strip() for item in list_content.split(",") if item.strip()]
 
         expanded = []
-        for item in items:
+        for item in list_to_flatten:
             # recursively expand each item
             sub_items = self.flatten_variable_list_definition(content, item, debug)
             expanded.extend(sub_items)

@@ -1,11 +1,12 @@
 import re
+from typing import Dict, List, Set, Any
 
 class DashboardLatticeConfigParser:
     """
     Helper class to parse the lattice configuration from Impactx .py-compatible simulation files.
     """
 
-    def parse_lattice(self, content: str) -> dict:
+    def parse_lattice(self, content: str) -> Dict[str, Any]:
         """
         Parses lattice elements and also extracts used lattice variables.
         """
@@ -36,7 +37,7 @@ class DashboardLatticeConfigParser:
 
         return result
 
-    def parse_cleaned_lattice(self, content: str) -> dict:
+    def parse_cleaned_lattice(self, content: str) -> Dict[str, List[Dict[str, Any]]]:
         """
         Parses the lattice elements from the ImpactX simulation file content.
         
@@ -85,7 +86,7 @@ class DashboardLatticeConfigParser:
         return dictionary
 
 
-    def collect_lattice_operations(self, content: str, debug=False) -> list:
+    def collect_lattice_operations(self, content: str, debug: bool = False) -> List[Dict[str, str]]:
         """
         Returns a list of operations (in order) that define how the lattice is built.
         Handles sim.lattice.append, sim.lattice.extend, and .reverse() calls.
@@ -130,7 +131,7 @@ class DashboardLatticeConfigParser:
 
         return operations
 
-    def _flatten(self, content: str, variable_name: str, debug=True) -> list:
+    def _flatten(self, content: str, variable_name: str, debug: bool = True) -> List[str]:
         """
         Recursively expands a varible name to replace it with its set of elements.
 
@@ -179,7 +180,7 @@ class DashboardLatticeConfigParser:
         return expanded
 
 
-    def replace_variables(self, content: str, raw_lattice: list) -> list:
+    def replace_variables(self, content: str, raw_lattice: List[str]) -> List[str]:
         """
         This function is called to simplify the lattice list by replacing variable names with their corresponding constructor calls.
 
@@ -212,7 +213,7 @@ class DashboardLatticeConfigParser:
         # later can be optimized by not iterating over the whole raw_lattice list
         return [element_mapping.get(item, item) for item in raw_lattice]
         
-    def extract_used_variables(self, parsed_lattice: dict) -> set:
+    def extract_used_variables(self, parsed_lattice: Dict[str, Any]) -> Set[str]:
         """
         Extracts used lattice variables from parsed lattice data.
         """
@@ -228,7 +229,7 @@ class DashboardLatticeConfigParser:
     # Debug methods
     # -----------------------------------------------------------------------------
 
-    def print_lattice_operations(self, operations: list) -> None:
+    def print_lattice_operations(self, operations: List[Dict[str, str]]) -> None:
         """
         Prints all lattice operations in the order they appear.
         """

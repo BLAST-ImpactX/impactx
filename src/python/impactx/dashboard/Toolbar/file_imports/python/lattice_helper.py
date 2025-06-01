@@ -152,6 +152,10 @@ class DashboardLatticeConfigParser:
         if not match:
             return [variable_name]  # It's not a list, it's a single element
 
+        if debug:
+            print(f"\nExpanding variable list definition for '{variable_name}':")
+            print(f"  {match.group(0)}")
+
         list_content = match.group(1)
         items = [item.strip() for item in list_content.split(",") if item.strip()]
 
@@ -160,10 +164,6 @@ class DashboardLatticeConfigParser:
             # recursively expand each item
             sub_items = self.flatten_variable_list_definition(content, item, debug)
             expanded.extend(sub_items)
-
-        if debug:
-            print(f"\nExpanded list for {variable_name}:")
-            print(f"  {expanded}")
 
         return expanded
 

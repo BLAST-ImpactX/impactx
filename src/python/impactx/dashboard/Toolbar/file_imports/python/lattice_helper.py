@@ -16,6 +16,8 @@ class DashboardLatticeConfigParser:
 
             if operation_type == "extend":
                 expanded_elements.extend(DashboardLatticeConfigParser.flatten_variable_list_definition(content, operation_arg))
+            elif operation_type == "append":
+                expanded_elements.append(operation_arg)
 
         clean_lattice_list = DashboardLatticeConfigParser.replace_variable_names_with_elements(content, expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)

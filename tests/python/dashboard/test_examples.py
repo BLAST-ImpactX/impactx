@@ -43,6 +43,7 @@ def test_examples():
 
             # test lattice builds w/importing
             test_examples.cyclotron_lattice()
+            test_examples.dogleg_lattice() # uses lattice.append() and lattice.extend()
 
     finally:
         if app_process is not None:

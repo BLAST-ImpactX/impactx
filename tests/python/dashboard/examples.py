@@ -130,3 +130,35 @@ class DashboardExamples:
             ("#B5", 1),
         ]
         self._run_example("cyclotron", "cyclotron/run_cyclotron.py", LATTICE_CONFIGURATION)
+
+
+    def dogleg_lattice(self):
+        LATTICE_CONFIGURATION = [
+            # sbend1
+            ("#name2", "sbend1"),
+            ("#ds2", "lb"),
+            ("#rc2", "-rc"),
+            ("#nslice2", "ns"),
+            # dipedge1
+            ("#name3", "dipedge1"),
+            ("#psi3", "-psi"),
+            ("#rc3", "-rc"),
+            # dr1
+            ("#name4", "dr1"),
+            ("#ds4", 5.0058489435),
+            ("#nslice4", "ns"),
+            # dipedge2
+            ("#name5", "dipedge2"),
+            ("#psi5", "psi"),
+            ("#rc5", "rc"),
+            # sbend2
+            ("#name6", "sbend2"),
+            ("#ds6", "lb"),
+            ("#rc6", "rc"),
+            ("#nslice6", "ns"),
+            # dr2
+            ("#name7", "dr2"),
+            ("#ds7", 0.5),
+            ("#nslice7", "ns"),
+        ]
+        self._run_example("dogleg", "dogleg/run_dogleg.py", LATTICE_CONFIGURATION)

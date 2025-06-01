@@ -108,6 +108,50 @@ class DashboardLatticeConfigParser:
 
         return operations
 
+    @staticmethod
+    def flatten_variable_definition(content: str, variable_name: str, debug=True) -> list:
+        """
+        Recursively expands a varible name to replace it with its set of elements.
+
+        EX:
+            content = '''
+                cell = [drift1, quad1]
+                line = [cell, cell]
+                sim.lattice.extend(line)
+            '''
+            flatten_variable_definition(content, "line")
+                
+            Results in:
+                ["drift1", "quad1", "drift1", "quad1"]
+
+        :param content: Full text content containing all variable definitions
+        :param variable_name: Name of the specific variable to expand (e.g. "line")
+        :param debug: Whether to print the expanded list.
+        :return: List of individual element names with all nesting resolved.
+        """
+
+
+        var_assignment_pattern = rf"{re.escape(variable_name)}\s*=\s*\[(.*?)\]"
+        match = re.search(var_assignment_pattern, content, re.DOTALL)
+
+        if not match:
+            return [variable_name]  # It's not a list, it's a single element
+
+        list_content = match.group(1)
+        items = [item.strip() for item in list_content.split(",") if item.strip()]
+
+        expanded = []
+        for item in items:
+            # recursively expand each item
+            sub_items = DashboardLatticeConfigParser.flatten_variable_definition(content, item, debug)
+            expanded.extend(sub_items)
+
+        if debug:
+            print(f"\nExpanded list for {variable_name}:")
+            print(f"  {expanded}")
+
+        return expanded
+
 
     @staticmethod
     def replace_variable_names_with_elements(content: str, raw_lattice: list) -> list:

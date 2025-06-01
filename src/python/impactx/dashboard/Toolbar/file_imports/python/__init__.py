@@ -1,6 +1,6 @@
-from .lattice_helper import DashboardLatticeConfigParser as LatticeParser
+from .lattice_helper import DashboardLatticeConfigParser
 
 
 __all__ = [
-    "LatticeParser",
+    "DashboardLatticeConfigParser",
 ]

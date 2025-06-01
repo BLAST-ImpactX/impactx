@@ -19,9 +19,10 @@ def on_import_file_change(import_file, **kwargs):
             state.importing_file = True
             DashboardParser.file_details(import_file)
             populate_impactx_simulation_file_to_ui(import_file)
-        except Exception:
+        except Exception as error:
             state.import_file_error = True
             state.import_file_error_message = "Unable to parse"
+            print(f"Error while parsing the file: {error}")
         finally:
             state.importing_file = False
 

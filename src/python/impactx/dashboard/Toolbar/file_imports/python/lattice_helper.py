@@ -2,12 +2,11 @@ import re
 
 class DashboardLatticeConfigParser:
 
-    @staticmethod
-    def parse_lattice_elements(content: str) -> dict:
+    def parse_lattice(self, content: str) -> dict:
         """
         Parses lattice elements and also extracts used lattice variables.
         """
-        lattice_order = DashboardLatticeConfigParser.collect_lattice_operations(content, debug=True)
+        lattice_order = self.collect_lattice_operations(content, debug=True)
 
         expanded_elements = []
         for operation in lattice_order:
@@ -16,22 +15,21 @@ class DashboardLatticeConfigParser:
 
         match operation_type:
             case "extend":
-                expanded_elements.extend(DashboardLatticeConfigParser.flatten_variable_list_definition(content, operation_arg))
+                expanded_elements.extend(self.flatten_variable_list_definition(content, operation_arg))
             case "append":
                 expanded_elements.append(operation_arg)
             case _:
                 print(f"Warning: Unsupported operation type: {operation_type}")
 
-        clean_lattice_list = DashboardLatticeConfigParser.replace_variable_names_with_elements(content, expanded_elements)
+        clean_lattice_list = self.replace_variable_names_with_elements(content, expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)
-        result = DashboardLatticeConfigParser.parse_cleaned_lattice(clean_lattice_list_str)
+        result = self.parse_cleaned_lattice(clean_lattice_list_str)
         
-        result["used_lattice_variables"] = DashboardLatticeConfigParser.extract_used_variables(result)
+        result["used_lattice_variables"] = self.extract_used_variables(result)
 
         return result
 
-    @staticmethod
-    def parse_cleaned_lattice(content: str) -> dict:
+    def parse_cleaned_lattice(self, content: str) -> dict:
         """
         Parses the lattice elements from the ImpactX simulation file content.
         
@@ -80,8 +78,7 @@ class DashboardLatticeConfigParser:
         return dictionary
 
 
-    @staticmethod
-    def collect_lattice_operations(content: str, debug=False) -> list:
+    def collect_lattice_operations(self, content: str, debug=False) -> list:
         """
         Returns a list of operations (in order) that define how the lattice is built.
         Handles sim.lattice.append, sim.lattice.extend, and .reverse() calls.
@@ -123,12 +120,11 @@ class DashboardLatticeConfigParser:
         operations = [type for _, type in sorted(operations, key=lambda x: x[0])]
 
         if debug:
-            DashboardLatticeConfigParser.print_lattice_operations(operations)
+            self.print_lattice_operations(operations)
 
         return operations
 
-    @staticmethod
-    def flatten_variable_list_definition(content: str, variable_name: str, debug=True) -> list:
+    def flatten_variable_list_definition(self, content: str, variable_name: str, debug=True) -> list:
         """
         Recursively expands a varible name to replace it with its set of elements.
 
@@ -162,7 +158,7 @@ class DashboardLatticeConfigParser:
         expanded = []
         for item in items:
             # recursively expand each item
-            sub_items = DashboardLatticeConfigParser.flatten_variable_list_definition(content, item, debug)
+            sub_items = self.flatten_variable_list_definition(content, item, debug)
             expanded.extend(sub_items)
 
         if debug:
@@ -172,8 +168,7 @@ class DashboardLatticeConfigParser:
         return expanded
 
 
-    @staticmethod
-    def replace_variable_names_with_elements(content: str, raw_lattice: list) -> list:
+    def replace_variable_names_with_elements(self, content: str, raw_lattice: list) -> list:
         """
         This function is called to simplify the lattice list by replacing variable names with their corresponding constructor calls.
 
@@ -206,8 +201,7 @@ class DashboardLatticeConfigParser:
         # later can be optimized by not iterating over the whole raw_lattice list
         return [element_mapping.get(item, item) for item in raw_lattice]
         
-    @staticmethod
-    def extract_used_variables(parsed_lattice: dict) -> set:
+    def extract_used_variables(self, parsed_lattice: dict) -> set:
         """
         Extracts used lattice variables from parsed lattice data.
         """
@@ -223,8 +217,7 @@ class DashboardLatticeConfigParser:
     # Debug methods
     # -----------------------------------------------------------------------------
 
-    @staticmethod
-    def print_lattice_operations(operations: list) -> None:
+    def print_lattice_operations(self, operations: list) -> None:
         """
         Prints all lattice operations in the order they appear.
         """

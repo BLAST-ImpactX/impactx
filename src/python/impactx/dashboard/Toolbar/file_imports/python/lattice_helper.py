@@ -41,7 +41,7 @@ class DashboardLatticeConfigParser:
         dictionary = {"lattice_elements": []}
 
         element_pattern = r"elements\.(\w+)\((.*?)\)"  # EX: elements.Drift(...)
-        lattice_elements = re.findall(element_pattern, content)
+        lattice_elements = re.findall(element_pattern, content, re.DOTALL)
 
         for element_name, parameter in lattice_elements:
             element = {
@@ -49,12 +49,14 @@ class DashboardLatticeConfigParser:
                 "parameters": {}
             }
 
-            # Match parameters in the format key=value
-            parameter_pattern = r"(\w+)=([^,\)]+)"  # EX: ds=1.0, k1=0.5
+            # CHANGE: Updated parameter pattern to handle multiline and whitespace around =
+            # OLD: r"(\w+)=([^,\)]+)"
+            # NEW: r"(\w+)\s*=\s*([^,\)\n]+)" with re.MULTILINE flag
+            parameter_pattern = r"(\w+)\s*=\s*([^,\)\n]+)"  # EX: ds=1.0, k1=0.5
             all_parameters = re.findall(parameter_pattern, parameter)
 
             for parameter_name, value in all_parameters:
-                element["parameters"][parameter_name] = value.strip()
+                element["parameters"][parameter_name] = value.strip("'\"")
 
             dictionary["lattice_elements"].append(element)
 

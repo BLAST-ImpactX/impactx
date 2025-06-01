@@ -101,12 +101,11 @@ class DashboardLatticeConfigParser:
         """
         operations = []
 
-        lattice_call_pattern = r"sim\.lattice\.(append|extend)"
-        pattern = re.compile(rf"{lattice_call_pattern}\((.*?)\)")
-
-
+        # Simple greedy pattern - matches everything until the last ) on the line
+        lattice_call_pattern = r"sim\.lattice\.(append|extend)\((.*)\)"
+        
         # Store sim.lattice.append and sim.lattice.extend calls
-        for match in pattern.finditer(content):
+        for match in re.finditer(lattice_call_pattern, content):
             operation, arg = match.groups()
             operations.append((match.start(), {"type": operation, "argument": arg.strip()}))
 

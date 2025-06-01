@@ -14,10 +14,13 @@ class DashboardLatticeConfigParser:
             operation_type = operation["type"]
             operation_arg = operation["argument"]
 
-            if operation_type == "extend":
+        match operation_type:
+            case "extend":
                 expanded_elements.extend(DashboardLatticeConfigParser.flatten_variable_list_definition(content, operation_arg))
-            elif operation_type == "append":
+            case "append":
                 expanded_elements.append(operation_arg)
+            case _:
+                print(f"Warning: Unsupported operation type: {operation_type}")
 
         clean_lattice_list = DashboardLatticeConfigParser.replace_variable_names_with_elements(content, expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)

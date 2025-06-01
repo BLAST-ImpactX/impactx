@@ -74,8 +74,14 @@ class DashboardParserHelper:
         :param content: The content of the ImpactX simulation file.
         """
         dictionary = {}
-        list_inputs = ["n_cell", "prob_relative"]
-        list_parsing = "{} = (\\[.*?\\])"
+        list_inputs = [
+            "n_cell",
+            "prob_relative",
+            "blocking_factor_x",
+            "blocking_factor_y",
+            "blocking_factor_z",
+        ]
+        list_parsing = "{}\s*=\s*(\\[.*?\\])"
 
         for input_name in list_inputs:
             match = re.search(list_parsing.format(input_name), content)
@@ -86,8 +92,12 @@ class DashboardParserHelper:
                     for i, dim in enumerate(["x", "y", "z"]):
                         dictionary[f"n_cell_{dim}"] = values[i]
 
-                if input_name == "prob_relative":
+                elif input_name == "prob_relative":
                     dictionary["prob_relative"] = values
+
+                elif input_name.startswith("blocking_factor_"):
+                    # Convert [16] -> 16
+                    dictionary[input_name] = values[0]
 
         return dictionary
 

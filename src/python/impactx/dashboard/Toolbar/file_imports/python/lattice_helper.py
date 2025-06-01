@@ -15,7 +15,7 @@ class DashboardLatticeConfigParser:
             operation_arg = operation["argument"]
 
             if operation_type == "extend":
-                expanded_elements.extend(DashboardLatticeConfigParser.flatten_variable_definition(content, operation_arg))
+                expanded_elements.extend(DashboardLatticeConfigParser.flatten_variable_list_definition(content, operation_arg))
 
         clean_lattice_list = DashboardLatticeConfigParser.replace_variable_names_with_elements(content, expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)
@@ -123,7 +123,7 @@ class DashboardLatticeConfigParser:
         return operations
 
     @staticmethod
-    def flatten_variable_definition(content: str, variable_name: str, debug=True) -> list:
+    def flatten_variable_list_definition(content: str, variable_name: str, debug=True) -> list:
         """
         Recursively expands a varible name to replace it with its set of elements.
 
@@ -157,7 +157,7 @@ class DashboardLatticeConfigParser:
         expanded = []
         for item in items:
             # recursively expand each item
-            sub_items = DashboardLatticeConfigParser.flatten_variable_definition(content, item, debug)
+            sub_items = DashboardLatticeConfigParser.flatten_variable_list_definition(content, item, debug)
             expanded.extend(sub_items)
 
         if debug:

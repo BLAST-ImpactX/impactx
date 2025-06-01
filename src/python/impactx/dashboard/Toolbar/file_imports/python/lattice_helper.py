@@ -15,7 +15,7 @@ class DashboardLatticeConfigParser:
 
             match operation_type:
                 case "extend":
-                    expanded_elements.extend(self.flatten_variable_list_definition(content, operation_arg))
+                    expanded_elements.extend(self._flatten(content, operation_arg))
                 case "append":
                     expanded_elements.append(operation_arg)
                 case _:
@@ -123,7 +123,7 @@ class DashboardLatticeConfigParser:
 
         return operations
 
-    def flatten_variable_list_definition(self, content: str, variable_name: str, debug=True) -> list:
+    def _flatten(self, content: str, variable_name: str, debug=True) -> list:
         """
         Recursively expands a varible name to replace it with its set of elements.
 
@@ -133,7 +133,7 @@ class DashboardLatticeConfigParser:
                 line = [cell, cell]
                 sim.lattice.extend(line)
             '''
-            flatten_variable_definition(content, "line")
+            _flatten(content, "line")
                 
             Results in:
                 ["drift1", "quad1", "drift1", "quad1"]
@@ -166,7 +166,7 @@ class DashboardLatticeConfigParser:
         expanded = []
         for item in list_to_flatten:
             # recursively expand each item
-            sub_items = self.flatten_variable_list_definition(content, item, debug)
+            sub_items = self._flatten(content, item, debug)
             expanded.extend(sub_items)
 
         return expanded

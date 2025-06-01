@@ -41,6 +41,9 @@ def test_examples():
             # Test full example inputs
             test_examples.fodo_example()
 
+            # test lattice builds w/importing
+            test_examples.cyclotron_lattice()
+
     finally:
         if app_process is not None:
             app_process.terminate()

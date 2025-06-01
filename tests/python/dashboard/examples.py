@@ -105,3 +105,28 @@ class DashboardExamples:
             actual_value = float(self.sb.get_value(element_id))
             assert actual_value == expected_value, f"{element_id}: expected {expected_value}, got {actual_value}"
 
+    def cyclotron_lattice(self):
+        LATTICE_CONFIGURATION = [
+            ("#name2", "acc1"),
+            ("#ds2", 0.038),
+            ("#ez2", 1.12188308693e-4),
+            ("#bz2", 1.0e-14),
+            ("#nslice2", "ns"),
+            # First ExactSbend element (sbend1)
+            ("#name3", "sbend1"),
+            ("#ds3", 0.25),
+            ("#phi3", 180.0),
+            ("#B3", 1),
+            # Second ChrAcc element (acc2)
+            ("#name4", "acc2"),
+            ("#ds4", 0.038),
+            ("#ez4", 1.12188308693e-4),
+            ("#bz4", 1.0e-14),
+            ("#nslice4", "ns"),
+            # Second ExactSbend element (sbend2)
+            ("#name5", "sbend2"),
+            ("#ds5", 0.25),
+            ("#phi5", 180.0),
+            ("#B5", 1),
+        ]
+        self._run_example("cyclotron", "cyclotron/run_cyclotron.py", LATTICE_CONFIGURATION)

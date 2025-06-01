@@ -38,14 +38,17 @@ def test_examples():
             wait_for_interaction_ready(sb)
 
             # Run tests once dashboard is ready for interaction
-            # Test full example inputs
+            # Test full example inputs w/importing
             test_examples.fodo_example()
 
             # test lattice builds w/importing
-            test_examples.chicane_lattice() # uses .reverse(), limited to 11 elements
+            test_examples.kurth_10nC_periodic_lattice()
+            test_examples.chicane_lattice() # uses .reverse(), limited to 11 elements - ids not showing past 11
+            test_examples.apochromatic_lattice() # limited to 11 elements
             test_examples.cyclotron_lattice()
             test_examples.dogleg_lattice() # uses lattice.append() and lattice.extend()
             test_examples.expanding_fft_lattice() # uses blocking factor, and .extend() is a list of variables and direct elements
+            # test_examples.iotalattice() # stress test - dashboard does not yet success well
     finally:
         if app_process is not None:
             app_process.terminate()

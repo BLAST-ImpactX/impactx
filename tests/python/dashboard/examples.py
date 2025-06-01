@@ -235,3 +235,70 @@ class DashboardExamples:
 
         self._run_example("chicane", "chicane/run_chicane.py", LATTICE_CONFIGURATION)
         
+    def apochromatic_lattice(self):
+        LATTICE_CONFIGURATION = [
+            # Drift elements
+            ("#name2", "dr1"),
+            ("#ds2", 1.0),
+            ("#nslice2", "ns"),
+            
+            ("#name6", "dr2"),
+            ("#ds6", 10.0),
+            ("#nslice6", "ns"),
+            # Quad elements
+            ("#name3", "q1"),
+            ("#ds3", 1.2258333333),
+            ("#k3", 0.5884),
+            ("#nslice3", "ns"),
+            ("#name4", "q2"),
+            ("#ds4", 1.5677083333),
+            ("#k4", -0.7525),
+            ("#nslice4", "ns"),
+            ("#name5", "q3"),
+            ("#ds5", 1.205625),
+            ("#k5", 0.5787),
+            ("#nslice5", "ns"),
+            ("#name7", "q4"),
+            ("#ds7", 1.2502083333),
+            ("#k7", -0.6001),
+            ("#nslice7", "ns"),
+            ("#name8", "q5"),
+            ("#ds8", 1.2502083333),
+            ("#k8", 0.6001),
+            ("#nslice8", "ns"),
+            ("#name10", "q6"),
+            ("#ds10", 1.205625),
+            ("#k10", -0.5787),
+            ("#nslice10", "ns"),
+            
+            ("#name11", "q7"),
+            ("#ds11", 1.5677083333),
+            ("#k11", 0.7525),
+            ("#nslice11", "ns"),
+            
+            # ("#name12", "q8"),
+            # ("#ds12", 1.2258333333),
+            # ("#k12", -0.5884),
+            # ("#nslice12", "ns"),
+        ]
+        self._run_example("apochromatic", "apochromatic/run_apochromatic.py", LATTICE_CONFIGURATION)
+
+    def kurth_10nC_periodic_lattice(self):
+        example_name = "kurth_10nC_periodic"
+        LATTICE_CONFIGURATION = [
+            ("#name2", "drift1"),
+            ("#ds2", 1),
+            ("#name3", "constf1"),
+            ("#ds3", 2),
+            ("#kx3", 0.7),
+            ("#ky3", 0.7),
+            ("#kt3", 0.7),
+            ("#name4", "drift1"),
+            ("#ds4", 1),
+        ]
+        self._run_example(
+            name=example_name,
+            path=f"kurth/run_{example_name}.py",
+            test_data=LATTICE_CONFIGURATION
+        )
+        

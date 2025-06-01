@@ -162,3 +162,17 @@ class DashboardExamples:
             ("#nslice7", "ns"),
         ]
         self._run_example("dogleg", "dogleg/run_dogleg.py", LATTICE_CONFIGURATION)
+
+    def expanding_fft_lattice(self):
+        """
+        Utilizes unique build
+        """
+        LATTICE_CONFIGURATION = [
+            ("#ds2", 6.0),
+            ("#nslice2", 40),
+        ]
+        self._run_example(
+            name="expanding_fft",
+            path="expanding_beam/run_expanding_fft.py",
+            test_data=LATTICE_CONFIGURATION
+        )

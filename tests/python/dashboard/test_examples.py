@@ -44,7 +44,7 @@ def test_examples():
             # test lattice builds w/importing
             test_examples.cyclotron_lattice()
             test_examples.dogleg_lattice() # uses lattice.append() and lattice.extend()
-
+            test_examples.expanding_fft_lattice() # uses blocking factor, and .extend() is a list of variables and direct elements
     finally:
         if app_process is not None:
             app_process.terminate()

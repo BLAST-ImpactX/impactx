@@ -8,7 +8,19 @@ class DashboardLatticeConfigParser:
         Parses lattice elements and also extracts used lattice variables.
         """
         lattice_order = DashboardLatticeConfigParser.collect_lattice_operations(content, debug=True)
-        result = DashboardLatticeConfigParser.parse_cleaned_lattice(content)
+
+        expanded_elements = []
+        for operation in lattice_order:
+            operation_type = operation["type"]
+            operation_arg = operation["argument"]
+
+            if operation_type == "extend":
+                expanded_elements.extend(DashboardLatticeConfigParser.flatten_variable_definition(content, operation_arg))
+
+        clean_lattice_list = DashboardLatticeConfigParser.replace_variable_names_with_elements(content, expanded_elements)
+        clean_lattice_list_str = '\n'.join(clean_lattice_list)
+        result = DashboardLatticeConfigParser.parse_cleaned_lattice(clean_lattice_list_str)
+        
         result["used_lattice_variables"] = DashboardLatticeConfigParser.extract_used_variables(result)
 
         return result

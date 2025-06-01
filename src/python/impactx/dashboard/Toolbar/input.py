@@ -149,6 +149,7 @@ class InputToolbar:
             "Reset",
             id="reset_all_inputs_button",
             click=ctrl.reset_all,
+            id="reset_button",
             variant="outlined",
             size="small",
             prepend_icon="mdi-refresh",

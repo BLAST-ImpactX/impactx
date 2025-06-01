@@ -21,7 +21,7 @@ class DashboardLatticeConfigParser:
                 case _:
                     print(f"Warning: Unsupported operation type: {operation_type}")
 
-        clean_lattice_list = self.replace_variable_names_with_elements(content, expanded_elements)
+        clean_lattice_list = self.replace_variables(content, expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)
         result = self.parse_cleaned_lattice(clean_lattice_list_str)
         
@@ -172,7 +172,7 @@ class DashboardLatticeConfigParser:
         return expanded
 
 
-    def replace_variable_names_with_elements(self, content: str, raw_lattice: list) -> list:
+    def replace_variables(self, content: str, raw_lattice: list) -> list:
         """
         This function is called to simplify the lattice list by replacing variable names with their corresponding constructor calls.
 

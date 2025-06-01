@@ -18,6 +18,10 @@ class DashboardLatticeConfigParser:
                     expanded_elements.extend(self._flatten(content, operation_arg))
                 case "append":
                     expanded_elements.append(operation_arg)
+                case "reverse":
+                    # Find the variable definition and reverse its flattened list
+                    variable_elements = self._flatten(content, operation_arg)
+                    expanded_elements.extend(reversed(variable_elements))
                 case _:
                     print(f"Warning: Unsupported operation type: {operation_type}")
 

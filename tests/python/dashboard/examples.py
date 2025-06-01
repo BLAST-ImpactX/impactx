@@ -176,3 +176,62 @@ class DashboardExamples:
             path="expanding_beam/run_expanding_fft.py",
             test_data=LATTICE_CONFIGURATION
         )
+
+    def chicane_lattice(self):
+        """
+        Utilizes lattice_half.reverse()
+        """
+        LATTICE_CONFIGURATION = [
+            # FIRST LATTICE_HALF
+            ("#name2", "sbend1"),
+            ("#ds2", "lb"),
+            ("#rc2", "-rc"),
+            ("#nslice2", "ns"),
+
+            ("#name3", "dipedge1"),
+            ("#psi3", "-psi"),
+            ("#rc3", "-rc"),
+
+            ("#name4", "dr1"),
+            ("#ds4", 5.0058489435),
+            ("#nslice4", "ns"),
+
+            ("#name5", "dipedge2"),
+            ("#psi5", "psi"),
+            ("#rc5", "rc"),
+
+            ("#name6", "sbend2"),
+            ("#ds6", "lb"),
+            ("#rc6", "rc"),
+            ("#nslice6", "ns"),
+
+            ("#name7", "dr2"),
+            ("#ds7", 1.0),
+            ("#nslice7", "ns"),
+
+            # SECOND LATTICE_HALF (mirror of above, reversed, without reusing keys)
+            ("#name8", "sbend2"),
+            ("#ds8", "lb"),
+            ("#rc8", "rc"),
+            ("#nslice8", "ns"),
+
+            ("#name9", "dipedge2"),
+            ("#psi9", "psi"),
+            ("#rc9", "rc"),
+
+            ("#name10", "dr1"),
+            ("#ds10", 5.0058489435),
+            ("#nslice10", "ns"),
+
+            ("#name11", "dipedge1"),
+            ("#psi11", "-psi"),
+            ("#rc11", "-rc"),
+
+            # ("#name12", "sbend1"),
+            # ("#ds12", "lb"),
+            # ("#rc12", "-rc"),
+            # ("#nslice12", "ns"),
+        ]
+
+        self._run_example("chicane", "chicane/run_chicane.py", LATTICE_CONFIGURATION)
+        

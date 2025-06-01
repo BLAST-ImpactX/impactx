@@ -42,6 +42,7 @@ def test_examples():
             test_examples.fodo_example()
 
             # test lattice builds w/importing
+            test_examples.chicane_lattice() # uses .reverse(), limited to 11 elements
             test_examples.cyclotron_lattice()
             test_examples.dogleg_lattice() # uses lattice.append() and lattice.extend()
             test_examples.expanding_fft_lattice() # uses blocking factor, and .extend() is a list of variables and direct elements

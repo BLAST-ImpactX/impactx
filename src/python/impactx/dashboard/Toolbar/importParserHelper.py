@@ -143,6 +143,7 @@ class DashboardParserHelper:
         """
 
         dictionary = {"lattice_elements": []}
+        used_variables = set()
 
         lattice_elements = re.findall(r"elements\.(\w+)\((.*?)\)", content)
 
@@ -153,7 +154,54 @@ class DashboardParserHelper:
             for parameter_name, parameter_value in parameter_pairs:
                 parameter_value_cleaned = parameter_value.strip("'\"")
                 element["parameters"][parameter_name] = parameter_value_cleaned
+                used_variables.add(parameter_value_cleaned)
 
             dictionary["lattice_elements"].append(element)
 
+        dictionary["used_lattice_variables"] = used_variables
         return dictionary
+
+    @staticmethod
+    def parse_variables(content: str, used_vars: set) -> dict:
+        """
+        Parses variable definitions from the simulation file content.
+
+        The function looks for lines that define variables in similar format of:
+            variable_name = value
+
+        variables_regex breakdown:
+            ^\s* - Remove leading whitespace before variable name
+            (\w+) => Retrieve the variable name
+            \s*=\s*  => Allow the line to have spaces around '=' (ie. 'a= 10' or 'a =10')
+            ([^#\n]+) => Captures everything after '=' up to a comment '#' or end of line
+
+        EX when calling this function:
+            content = '''
+                a = 10
+                b = 2.5  # some comment
+                c = "some string"
+            '''
+            used_vars = {"a", "b"}
+            result = parse_variables(content, used_vars)
+            # result: { "a": 10, "b": 2.5}
+
+        :param content: The content of the ImpactX simulation file.
+        :param used_vars: Set of variable names to filter by.
+        :return: Dictionary of parsed variables.
+        """
+
+        variables = {}
+        variables_regex = r"^\s*(\w+)\s*=\s*([^#\n]+)"
+        variables_found = re.findall(variables_regex, content, re.MULTILINE)
+
+        for var_name, var_value in variables_found:
+            if var_name not in used_vars:
+                continue
+            try:
+                value = ast.literal_eval(var_value.strip())
+                # only allowing numbers at the moment
+                if isinstance(value, (int, float)):
+                    variables[var_name] = value
+            except Exception:
+                continue
+        return variables

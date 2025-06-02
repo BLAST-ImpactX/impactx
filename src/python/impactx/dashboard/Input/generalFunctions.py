@@ -10,8 +10,9 @@ import inspect
 import re
 
 from .. import setup_server
-from .defaults import DashboardDefaults
 from ..Toolbar.file_imports.python.parser import DashboardParser
+from .defaults import DashboardDefaults
+
 server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------

@@ -15,6 +15,7 @@ from ..Run.executor import run_execute_impactx_sim
 
 server, state, ctrl = setup_server()
 
+
 class RunToolbar:
     """
     Contains toolbar components for the 'Run' page.

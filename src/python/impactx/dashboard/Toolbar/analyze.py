@@ -10,6 +10,7 @@ from .. import setup_server, vuetify
 
 server, state, ctrl = setup_server()
 
+
 class AnalyzeToolbar:
     """
     Contains toolbar components for the 'Analyze' page.

@@ -13,9 +13,9 @@ server, state, ctrl = setup_server()
 
 state.show_dashboard_alert = True
 
+from .analyze import AnalyzeToolbar
 from .input import InputToolbar
 from .run import RunToolbar
-from .analyze import AnalyzeToolbar
 
 
 class GeneralToolbar:

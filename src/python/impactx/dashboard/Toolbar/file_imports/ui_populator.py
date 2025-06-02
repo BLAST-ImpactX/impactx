@@ -51,13 +51,14 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     _populate_lattice_config_to_ui(imported_lattice_data)
     _populate_lattice_config_variables_to_ui(parsed_variables)
 
+
 @staticmethod
 def _populate_distribution_inputs_to_ui(parsed_data):
     # the below two calls do not call state.change("distribution") or state.change("distribution_type")
     # since they are both part of a nested state (ie. distribution_type=["Twiss","Quadratic"]).
     state.distribution = parsed_data["name"]
     state.distribution_type = parsed_data["type"]
-    state.flush() # force calls state.change("distribution") and state.change("distribution_type")
+    state.flush()  # force calls state.change("distribution") and state.change("distribution_type")
 
     for distr_param_name, distr_param_value in parsed_data["parameters"].items():
         ctrl.updateDistributionParameters(distr_param_name, distr_param_value, "float")
@@ -96,6 +97,7 @@ def _populate_lattice_config_to_ui(parsed_data):
                     parameter_type,
                 )
 
+
 @staticmethod
 def _populate_lattice_config_variables_to_ui(parsed_data):
     # Remove default empty entry if it exists
@@ -104,8 +106,6 @@ def _populate_lattice_config_variables_to_ui(parsed_data):
     for name, value in parsed_data.items():
         # Check if a variable with the same name already exists
         if not any(var["name"] == name for var in state.variables):
-            state.variables.append(
-                {"name": name, "value": value, "error_message": ""}
-            )
+            state.variables.append({"name": name, "value": value, "error_message": ""})
     state.dirty("variables")
     LatticeVariableHandler.update_delete_availability()

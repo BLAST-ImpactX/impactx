@@ -7,13 +7,15 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import html, setup_server, vuetify
+
 server, state, ctrl = setup_server()
 
-from ..Run.simulation import dashboard_sim_inputs
-from ..Input.generalFunctions import generalFunctions
 from ..Input.components.card import CardComponents
+from ..Input.generalFunctions import generalFunctions
+from ..Run.simulation import dashboard_sim_inputs
 
 state.expand_all_sections = False
+
 
 class InputToolbar:
     """
@@ -39,7 +41,7 @@ class InputToolbar:
         """
         Displays a button to export the current simulation inputs
         to a Python file.
-        
+
         On click, it triggers the export of the current
         simulation inputs to a file named 'impactx_simulation.py'.
         """

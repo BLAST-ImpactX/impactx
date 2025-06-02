@@ -15,6 +15,7 @@ from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
 from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
+
 state.curr_view_details_log = ""
 
 state.sims = []

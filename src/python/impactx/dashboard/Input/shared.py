@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .. import setup_server
 from ..Input.inputParameters.inputMain import InputParameters
-from . import DashboardDefaults, generalFunctions
+from . import DashboardDefaults, DashboardValidation, generalFunctions
 
 server, state, ctrl = setup_server()
 
@@ -32,11 +32,11 @@ class SharedUtilities:
                     state_name, None
                 )
 
-                validation_result = generalFunctions.validate_against(
+                validation_result = DashboardValidation.validate_against(
                     input, desired_type, conditions
                 )
                 setattr(state, validation_name, validation_result)
-                generalFunctions.update_simulation_validation_status()
+                DashboardValidation.update_simulation_validation_status()
 
                 if validation_result == []:
                     converted_value = generalFunctions.convert_to_numeric(input)

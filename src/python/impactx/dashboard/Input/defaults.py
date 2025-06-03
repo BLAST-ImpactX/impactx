@@ -8,12 +8,16 @@ License: BSD-3-Clause-LBNL
 
 from typing import Any
 
+from impactx import distribution, elements
 from impactx.impactx_pybind import ImpactX, RefPart
 
 from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
 
 server, state, ctrl = setup_server()
+
+DISTRIBUTION_MODULE_NAME = distribution
+LATTICE_MODULE_NAME = elements
 
 TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     "Reference Tracking": {
@@ -115,6 +119,10 @@ class DashboardDefaults:
             "Envelope Tracking",
             "Reference Tracking",
         ],
+        "distribution_list": InputDefaultsHelper.select_classes(
+            DISTRIBUTION_MODULE_NAME
+        ),
+        "lattice_list": InputDefaultsHelper.select_classes(LATTICE_MODULE_NAME),
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],
@@ -148,6 +156,9 @@ class DashboardDefaults:
     }
 
     VALIDATION_CONDITION = {
+        "lambda": ["positive"],
+        "beta": ["positive"],
+        "emitt": ["positive"],
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],

@@ -68,7 +68,7 @@ class LatticeConfigurationHelper:
         )
 
     @staticmethod
-    def is_valid_name_for_user_input(user_input: str) -> bool:
+    def is_valid_input_name(user_input: str) -> bool:
         """
         Check if the user input is a valid Python name.
         """

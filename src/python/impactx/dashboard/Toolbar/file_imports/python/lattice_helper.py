@@ -6,11 +6,12 @@ class DashboardLatticeConfigParser:
     Helper class to parse the lattice configuration from Impactx .py-compatible simulation files.
     """
 
-    def __init__(self):
+    def __init__(self, content: str):
         self._flatten_cache: Dict[str, List[str]] = {}
         self._variable_assignments_cache: Dict[str, Dict[str, str]] = {}
+        self._content = content
 
-    def parse_lattice(self, content: str) -> Dict[str, Any]:
+    def parse_lattice(self) -> Dict[str, Any]:
         """
         Extracts the lattice configuration from ImpactX simulation file content.
         
@@ -25,10 +26,9 @@ class DashboardLatticeConfigParser:
             ]
         }
 
-        :param content: The full text content of the ImpactX simulation file.
         :return: Parsed dictionary containing 'lattice_elements'.
         """
-        lattice_order = self.collect_lattice_operations(content, debug=True)
+        lattice_order = self.collect_lattice_operations(debug=True)
 
         expanded_elements = []
         for operation in lattice_order:
@@ -37,17 +37,17 @@ class DashboardLatticeConfigParser:
 
             match operation_type:
                 case "extend":
-                    expanded_elements.extend(self._flatten(content, operation_arg))
+                    expanded_elements.extend(self._flatten(operation_arg))
                 case "append":
                     expanded_elements.append(operation_arg)
                 case "reverse":
                     # Find the variable definition and reverse its flattened list
-                    variable_elements = self._flatten(content, operation_arg)
+                    variable_elements = self._flatten(operation_arg)
                     expanded_elements.extend(reversed(variable_elements))
                 case _:
                     print(f"Warning: Unsupported operation type: {operation_type}")
 
-        clean_lattice_list = self.replace_variables(content, expanded_elements)
+        clean_lattice_list = self.replace_variables(expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)
         result = self.parse_cleaned_lattice(clean_lattice_list_str)
 
@@ -102,7 +102,7 @@ class DashboardLatticeConfigParser:
         return dictionary
 
 
-    def collect_lattice_operations(self, content: str, debug: bool = False) -> List[Dict[str, str]]:
+    def collect_lattice_operations(self, debug: bool = False) -> List[Dict[str, str]]:
         """
         Collects lattice operations in the order they appear in the content.
         
@@ -119,7 +119,6 @@ class DashboardLatticeConfigParser:
                 {"type": "reverse", "argument": "lattice_half"}
             ]
 
-        :param content: Full text content of the ImpactX simulation file.
         :param debug: Whether to print the collected operations.
         :return: List of dictionaries with 'type' and 'argument' keys.
         """
@@ -130,13 +129,13 @@ class DashboardLatticeConfigParser:
         lattice_call_pattern = r"sim\.lattice\.(append|extend)\((.*)\)"
 
         # Store sim.lattice.append and sim.lattice.extend calls
-        for match in re.finditer(lattice_call_pattern, content):
+        for match in re.finditer(lattice_call_pattern, self._content):
             operation, arg = match.groups()
             operations.append((match.start(), {"type": operation, "argument": arg.strip()}))
 
         # Store .reverse() calls
         reverse_pattern = r"(\w+)\.reverse\(\)"
-        for match in re.finditer(reverse_pattern, content):
+        for match in re.finditer(reverse_pattern, self._content):
             operations.append((match.start(), {"type": "reverse", "argument": match.group(1)}))
 
         # important: sort operations by their position in the content
@@ -148,14 +147,13 @@ class DashboardLatticeConfigParser:
 
         return operations
 
-    def _get_variable_assignments(self, content: str) -> Dict[str, str]:
+    def _get_variable_assignments(self) -> Dict[str, str]:
         """
         Helper function to extract all variable list assignments from content.
         Caches the result to avoid re-parsing the same content.
         
-        :param content: Full text content containing variable definitions
         """
-        content_hash = str(hash(content))
+        content_hash = str(hash(self._content))
         
         if content_hash in self._variable_assignments_cache:
             return self._variable_assignments_cache[content_hash]
@@ -163,7 +161,7 @@ class DashboardLatticeConfigParser:
         variable_assignments = {}
         var_assignment_pattern = r"(\w+)\s*=\s*\[(.*?)\]"
         
-        for match in re.finditer(var_assignment_pattern, content, re.DOTALL):
+        for match in re.finditer(var_assignment_pattern, self._content, re.DOTALL):
             var_name = match.group(1)
             list_content = match.group(2)
             variable_assignments[var_name] = list_content
@@ -171,7 +169,7 @@ class DashboardLatticeConfigParser:
         self._variable_assignments_cache[content_hash] = variable_assignments
         return variable_assignments
 
-    def _flatten(self, content: str, variable_name: str, debug: bool = True) -> List[str]:
+    def _flatten(self, variable_name: str, debug: bool = True) -> List[str]:
         """
         Recursively expands a varible name to replace it with its set of elements.
         Utilizes caching to avoid redundant parsing.
@@ -187,18 +185,17 @@ class DashboardLatticeConfigParser:
             Results in:
                 ["drift1", "quad1", "drift1", "quad1"]
 
-        :param content: Full text content containing all variable definitions
         :param variable_name: Name of the specific variable to expand (e.g. "line")
         :param debug: Whether to print the expanded list.
         :return: List of individual element names with all nesting resolved.
         """
         # check cache first
-        cache_key = f"{hash(content)}:{variable_name}"
+        cache_key = f"{hash(self._content)}:{variable_name}"
         if cache_key in self._flatten_cache:
             return self._flatten_cache[cache_key]
         
         # Get variable assignments (cached)
-        variable_assignments = self._get_variable_assignments(content)
+        variable_assignments = self._get_variable_assignments()
         
         # Check if the input is an inline list like "[monitor, elements.Drift(...)]"
         if variable_name.startswith("[") and variable_name.endswith("]"):
@@ -216,7 +213,7 @@ class DashboardLatticeConfigParser:
         expanded = []
         for item in list_to_flatten:
             # recursively expand each item
-            sub_items = self._flatten(content, item, debug)
+            sub_items = self._flatten(item, debug)
             expanded.extend(sub_items)
 
         # Cache the result
@@ -225,7 +222,7 @@ class DashboardLatticeConfigParser:
         return expanded
 
 
-    def replace_variables(self, content: str, raw_lattice: List[str]) -> List[str]:
+    def replace_variables(self, raw_lattice: List[str]) -> List[str]:
         """
         This function is called to simplify the lattice list by replacing variable names with their corresponding constructor calls.
 
@@ -237,15 +234,14 @@ class DashboardLatticeConfigParser:
             (output)    
                 raw_lattice = ["elements.Drift(ds=1.0)", "elements.Quad(k=0.5)"]
 
-        :param content: Full text content of the ImpactX simulation file.
         :param raw_lattice: List of lattice element variable names or constructor calls, e.g. ["drift1", "quad1"].
-        :return: List with variable names replaced by their corresponding constructor calls.
+         :return: List with variable names replaced by their corresponding constructor calls.
         """
         element_mapping = {}
 
         ellement_assignment_pattern = r"^\s*(\w+)\s*=\s*(elements\.\w+\(.*?\))"
         all_element_assignments = re.findall(
-            ellement_assignment_pattern, content, re.MULTILINE | re.DOTALL
+            ellement_assignment_pattern, self._content, re.MULTILINE | re.DOTALL
         )
 
         for var_name, element in all_element_assignments:

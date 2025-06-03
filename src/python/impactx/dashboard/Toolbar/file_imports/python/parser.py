@@ -17,8 +17,6 @@ state.importing_file = False
 state.imported_file_name = None
 
 
-lattice_parser = DashboardLatticeConfigParser()
-
 class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files
@@ -65,11 +63,12 @@ class DashboardParser:
         """
 
         file_content = DashboardParserHelper.import_file_content(file, state)
+        lattice_parser = DashboardLatticeConfigParser(file_content)
 
         single_input_contents = DashboardParserHelper.parse_single_inputs(file_content)
         list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
         distribution_contents = DashboardParserHelper.parse_distribution(file_content)
-        lattice_element_contents = lattice_parser.parse_lattice(file_content)
+        lattice_element_contents = lattice_parser.parse_lattice()
 
         used_inputs = lattice_parser.extract_lattice_inputs(lattice_element_contents)
         variable_contents = DashboardParserHelper.parse_variables(file_content, used_inputs)

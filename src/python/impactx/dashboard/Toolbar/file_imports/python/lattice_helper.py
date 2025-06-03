@@ -12,7 +12,21 @@ class DashboardLatticeConfigParser:
 
     def parse_lattice(self, content: str) -> Dict[str, Any]:
         """
-        Parses lattice elements and also extracts used lattice variables.
+        Extracts the lattice configuration from ImpactX simulation file content.
+        
+        Parses lattice operations (append, extend, reverse) and element definitions
+        to return a structured representation of the lattice elements and their parameters.
+
+        Example return:
+        {
+            "lattice_elements": [
+                {"name": "Drift", "parameters": {"ds": "0.5"}},
+                {"name": "Quad", "parameters": {"k": "quad_strength", "ds": "0.3"}}
+            ]
+        }
+
+        :param content: The full text content of the ImpactX simulation file.
+        :return: Parsed dictionary containing 'lattice_elements'.
         """
         lattice_order = self.collect_lattice_operations(content, debug=True)
 
@@ -90,13 +104,13 @@ class DashboardLatticeConfigParser:
 
     def collect_lattice_operations(self, content: str, debug: bool = False) -> List[Dict[str, str]]:
         """
-        Returns a list of operations (in order) that define how the lattice is built.
-        Handles sim.lattice.append, sim.lattice.extend, and .reverse() calls.
+        Collects lattice operations in the order they appear in the content.
+        
+        Finds sim.lattice.append(), sim.lattice.extend(), and variable.reverse() calls
+        and returns them as a chronologically ordered list of operation dictionaries.
 
         EX:
-            sim.lattice.append(monitor)
-            sim.lattice.extend([drift1, quad1])
-            lattice_half.reverse()
+            sim.lattice.append(monitor) ; sim.lattice.extend([drift1, quad1]) ; lattice_half.reverse()
 
             Results the following (in order):
             [
@@ -111,9 +125,10 @@ class DashboardLatticeConfigParser:
         """
         operations = []
 
-        # Simple greedy pattern - matches everything until the last ) on the line
+        # Captures the operation type (append or extend) and its argument
+        # (everything inside the parentheses, up to the last closing parenthesis on the line).
         lattice_call_pattern = r"sim\.lattice\.(append|extend)\((.*)\)"
-        
+
         # Store sim.lattice.append and sim.lattice.extend calls
         for match in re.finditer(lattice_call_pattern, content):
             operation, arg = match.groups()
@@ -187,7 +202,7 @@ class DashboardLatticeConfigParser:
         
         # Check if the input is an inline list like "[monitor, elements.Drift(...)]"
         if variable_name.startswith("[") and variable_name.endswith("]"):
-            list_contents = variable_name[1:-1]  # contents between brackets
+            list_contents = variable_name[1:-1]
             # split on commas that are NOT inside parentheses
             list_to_flatten = [element.strip() for element in re.split(r",\s*(?![^()]*\))", list_contents) if element.strip()]
         else:

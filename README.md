@@ -108,7 +108,7 @@ Examples:
     impactx input_fodo.in
 
   In the current working directory, there is a file "input_fodo.in" and the
-  "impactx" executable. We want to voerwrite the segment length of the beamline
+  "impactx" executable. We want to overwrite the segment length of the beamline
   element "quad1" that is already defined in it. We also want to change the
   radius of curvature of the bending magnet "sbend1" to a different value than
   in the file "input_fodo.in".

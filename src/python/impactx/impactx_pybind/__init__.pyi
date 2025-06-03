@@ -148,7 +148,7 @@ class ImpactX:
         intensity: float | None = None,
     ) -> None:
         """
-        Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
+        Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
         """
     def init_grids(self) -> None:
         """

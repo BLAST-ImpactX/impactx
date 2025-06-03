@@ -107,7 +107,7 @@ namespace impactx::elements
                 g = m_k / refpart.rigidity_Tm();
             }
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;

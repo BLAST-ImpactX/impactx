@@ -152,6 +152,20 @@ class DashboardLatticeConfigParser:
         Helper function to extract all variable list assignments from content.
         Caches the result to avoid re-parsing the same content.
         
+        EX:
+            content = '''
+                drift1 = elements.Drift(ds=1.0)
+                cell = [drift1, quad1]
+                line = [cell, monitor]
+            '''
+            _get_variable_assignments()
+                
+            Results in:
+                {
+                    "cell": "drift1, quad1",
+                    "line": "cell, monitor"
+                }
+        
         """
         content_hash = str(hash(self._content))
         
@@ -235,7 +249,7 @@ class DashboardLatticeConfigParser:
                 raw_lattice = ["elements.Drift(ds=1.0)", "elements.Quad(k=0.5)"]
 
         :param raw_lattice: List of lattice element variable names or constructor calls, e.g. ["drift1", "quad1"].
-         :return: List with variable names replaced by their corresponding constructor calls.
+        :return: List with variable names replaced by their corresponding constructor calls.
         """
         element_mapping = {}
 

@@ -16,9 +16,11 @@ from .. import (
     CardBase,
     CardComponents,
     DashboardDefaults,
+    DashboardValidation,
     InputComponents,
     generalFunctions,
 )
+from ..defaults_helper import InputDefaultsHelper
 
 server, state, ctrl = setup_server()
 
@@ -27,9 +29,8 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 DISTRIBUTION_MODULE_NAME = distribution
-DISTRIBUTION_LIST = generalFunctions.select_classes(DISTRIBUTION_MODULE_NAME)
-DISTRIBUTION_PARAMETERS_AND_DEFAULTS = generalFunctions.class_parameters_with_defaults(
-    DISTRIBUTION_MODULE_NAME
+DISTRIBUTION_PARAMETERS_AND_DEFAULTS = (
+    InputDefaultsHelper.class_parameters_with_defaults(DISTRIBUTION_MODULE_NAME)
 )
 
 state.selected_distribution_parameters = []
@@ -56,7 +57,7 @@ def populate_distribution_parameters():
                 if param.default != param.empty
                 else None,
                 "parameter_type": "float",  # Hardcoding Twiss to 'float' type.
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     param.default if param.default != param.empty else None, "float"
                 ),
                 "parameter_units": generalFunctions.get_default(param.name, "units")
@@ -77,7 +78,7 @@ def populate_distribution_parameters():
                 "parameter_name": parameter[0],
                 "parameter_default_value": parameter[1],
                 "parameter_type": parameter[2],
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     parameter[1], parameter[2]
                 ),
                 "parameter_units": "m"
@@ -88,7 +89,7 @@ def populate_distribution_parameters():
             for parameter in selected_distribution_parameters
         ]
 
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     return state.selected_distribution_parameters
 
 
@@ -128,7 +129,7 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
     parameter_value = generalFunctions.convert_to_numeric(parameter_value)
     lookup_name = "lambda" if "lambda" in parameter_name else parameter_name
     conditions = generalFunctions.get_default(lookup_name, "validation_condition")
-    error_message = generalFunctions.validate_against(
+    error_message = DashboardValidation.validate_against(
         parameter_value, parameter_type, additional_conditions=conditions
     )
 
@@ -137,7 +138,7 @@ def on_distribution_parameter_change(parameter_name, parameter_value, parameter_
             param["parameter_default_value"] = parameter_value
             param["parameter_error_message"] = error_message
 
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     state.dirty("selected_distribution_parameters")
 
 
@@ -168,7 +169,6 @@ class DistributionParameters(CardBase):
                         InputComponents.select(
                             label="Select Distribution",
                             v_model_name="distribution",
-                            items=(DISTRIBUTION_LIST,),
                         )
                     with vuetify.VCol(cols=6):
                         InputComponents.select(

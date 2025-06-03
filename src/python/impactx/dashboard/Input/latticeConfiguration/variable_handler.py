@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from ... import html, setup_server, vuetify
 from .. import (
     CardComponents,
-    generalFunctions,
+    DashboardValidation,
 )
 from .helper import LatticeConfigurationHelper
 
@@ -167,7 +167,7 @@ class LatticeVariableHandler:
 
         if not LatticeConfigurationHelper.is_valid_input_name(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
-            generalFunctions.update_simulation_validation_status()
+            DashboardValidation.update_simulation_validation_status()
             state.dirty("variables")
             return
 
@@ -177,12 +177,12 @@ class LatticeVariableHandler:
         if duplicate_indexes:
             for dup_index in duplicate_indexes:
                 set_var_error_message(dup_index, "error")
-            generalFunctions.update_simulation_validation_status()
+            DashboardValidation.update_simulation_validation_status()
             state.dirty("variables")
             return
 
         set_var_error_message(index, "")
-        generalFunctions.update_simulation_validation_status()
+        DashboardValidation.update_simulation_validation_status()
 
     @staticmethod
     def determine_if_existing_variable(var_name: str) -> Tuple[bool, Optional[int]]:

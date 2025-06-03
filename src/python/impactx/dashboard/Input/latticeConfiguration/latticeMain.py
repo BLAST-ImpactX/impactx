@@ -12,10 +12,13 @@ from ... import setup_server, vuetify
 from .. import (
     CardBase,
     CardComponents,
+    DashboardDefaults,
+    DashboardValidation,
     InputComponents,
     NavigationComponents,
     generalFunctions,
 )
+from ..defaults_helper import InputDefaultsHelper
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
@@ -27,11 +30,8 @@ state.lattice_elements_using_variables = {}
 
 LATTICE_ELEMENTS_MODULE_NAME = elements
 
-state.listOfLatticeElements = generalFunctions.select_classes(
-    LATTICE_ELEMENTS_MODULE_NAME
-)
 state.listOfLatticeElementParametersAndDefault = (
-    generalFunctions.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
+    InputDefaultsHelper.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
 )
 
 # -----------------------------------------------------------------------------
@@ -66,7 +66,7 @@ def add_lattice_element():
                 "ui_input": parameter[1],
                 "sim_input": parameter[1],
                 "parameter_type": parameter[2],
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     parameter[1], parameter[2]
                 ),
             }
@@ -75,7 +75,7 @@ def add_lattice_element():
     }
 
     state.selected_lattice_list.append(selected_lattice_element)
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     return selected_lattice_element
 
 
@@ -114,7 +114,7 @@ def parameter_input_checker_for_lattice(latticeElement):
 def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
     if selected_lattice_list == []:
         state.isSelectedLatticeListEmpty = "Please select a lattice element"
-        generalFunctions.update_simulation_validation_status()
+        DashboardValidation.update_simulation_validation_status()
     else:
         state.isSelectedLatticeListEmpty = ""
 
@@ -126,9 +126,10 @@ def on_lattice_element_name_change(selected_lattice, **kwargs):
 
 @ctrl.add("add_latticeElement")
 def on_add_lattice_element_click():
+    lattice_list = DashboardDefaults.LISTS["lattice_list"]
     selected_lattice = state.selected_lattice
 
-    if selected_lattice not in state.listOfLatticeElements:
+    if selected_lattice not in lattice_list:
         state.isSelectedLatticeListEmpty = (
             f"Lattice element '{selected_lattice}' does not exist."
         )
@@ -191,7 +192,7 @@ def on_lattice_element_parameter_change(
     else:
         state.lattice_elements_using_variables.pop(key, None)
 
-    error_message = generalFunctions.validate_against(sim_input, parameter_type)
+    error_message = DashboardValidation.validate_against(sim_input, parameter_type)
 
     if parameter_name == "name":
         if not LatticeConfigurationHelper.is_valid_input_name(ui_input):
@@ -203,7 +204,7 @@ def on_lattice_element_parameter_change(
             param["sim_input"] = sim_input
             param["parameter_error_message"] = error_message
 
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     state.dirty("selected_lattice_list")
 
 
@@ -277,7 +278,7 @@ class LatticeConfiguration(CardBase):
                         InputComponents.combobox(
                             label="Select Accelerator Lattice",
                             v_model_name="selected_lattice",
-                            items=("listOfLatticeElements",),
+                            items=("lattice_list",),
                             error_messages=("isSelectedLatticeListEmpty",),
                         )
                     with vuetify.VCol(cols="auto"):

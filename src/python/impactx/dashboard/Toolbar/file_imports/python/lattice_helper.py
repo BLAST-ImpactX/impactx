@@ -36,8 +36,6 @@ class DashboardLatticeConfigParser:
         clean_lattice_list = self.replace_variables(content, expanded_elements)
         clean_lattice_list_str = '\n'.join(clean_lattice_list)
         result = self.parse_cleaned_lattice(clean_lattice_list_str)
-        
-        result["used_lattice_variables"] = self.extract_used_variables(result)
 
         return result
 
@@ -245,17 +243,17 @@ class DashboardLatticeConfigParser:
         # later can be optimized by not iterating over the whole raw_lattice list
         return [element_mapping.get(item, item) for item in raw_lattice]
         
-    def extract_used_variables(self, parsed_lattice: Dict[str, Any]) -> Set[str]:
+    def extract_lattice_inputs(self, parsed_lattice: Dict[str, Any]) -> List[str]:
         """
-        Extracts used lattice variables from parsed lattice data.
+        Extracts all parameter values from parsed lattice data.
         """
         used_variables = set()
 
-        for element in parsed_lattice["lattice_elements"]:
+        for element in parsed_lattice.get("lattice_elements", []):
             for value in element["parameters"].values():
-                used_variables.add(value)
+                used_variables.add(str(value).strip())
 
-        return used_variables
+        return list(used_variables)
 
     #-----------------------------------------------------------------------------
     # Debug methods

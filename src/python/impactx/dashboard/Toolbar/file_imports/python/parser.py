@@ -69,14 +69,11 @@ class DashboardParser:
         single_input_contents = DashboardParserHelper.parse_single_inputs(file_content)
         list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
         distribution_contents = DashboardParserHelper.parse_distribution(file_content)
-        lattice_element_contents = lattice_parser.parse_lattice(
-            file_content
-        )
-        used_vars = lattice_element_contents.pop("used_lattice_variables", set())
+        lattice_element_contents = lattice_parser.parse_lattice(file_content)
 
-        variable_contents = DashboardParserHelper.parse_variables(
-            file_content, used_vars
-        )
+        used_inputs = lattice_parser.extract_lattice_inputs(lattice_element_contents)
+        variable_contents = DashboardParserHelper.parse_variables(file_content, used_inputs)
+        
         parsed_values_dictionary = {
             **single_input_contents,
             **list_input_contents,

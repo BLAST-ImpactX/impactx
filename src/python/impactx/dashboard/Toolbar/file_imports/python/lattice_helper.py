@@ -10,6 +10,7 @@ class DashboardLatticeConfigParser:
         self._flatten_cache: Dict[str, List[str]] = {}
         self._variable_assignments_cache: Dict[str, Dict[str, str]] = {}
         self._content = content
+        self._content_hash: str = str(hash(content))
 
     def parse_lattice(self) -> Dict[str, Any]:
         """
@@ -167,10 +168,8 @@ class DashboardLatticeConfigParser:
                 }
         
         """
-        content_hash = str(hash(self._content))
-        
-        if content_hash in self._variable_assignments_cache:
-            return self._variable_assignments_cache[content_hash]
+        if self._content_hash in self._variable_assignments_cache:
+            return self._variable_assignments_cache[self._content_hash]
         
         variable_assignments = {}
         var_assignment_pattern = r"(\w+)\s*=\s*\[(.*?)\]"
@@ -180,7 +179,7 @@ class DashboardLatticeConfigParser:
             list_content = match.group(2)
             variable_assignments[var_name] = list_content
         
-        self._variable_assignments_cache[content_hash] = variable_assignments
+        self._variable_assignments_cache[self._content_hash] = variable_assignments
         return variable_assignments
 
     def _flatten(self, variable_name: str, debug: bool = True) -> List[str]:
@@ -204,7 +203,7 @@ class DashboardLatticeConfigParser:
         :return: List of individual element names with all nesting resolved.
         """
         # check cache first
-        cache_key = f"{hash(self._content)}:{variable_name}"
+        cache_key = f"{self._content_hash}:{variable_name}"
         if cache_key in self._flatten_cache:
             return self._flatten_cache[cache_key]
         

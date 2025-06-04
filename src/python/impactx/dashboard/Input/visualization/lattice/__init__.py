@@ -4,6 +4,6 @@ from .statistic_utils import LatticeVisualizerStatisticUtils as StatUtils
 
 __all__ = [
     "Dialogs",
-    "StatComponents", 
+    "StatComponents",  
     "StatUtils",
 ]

@@ -36,7 +36,8 @@ class ToolbarImport:
                 state.importing_file = True
                 DashboardParser.file_details(import_file)
                 DashboardParser.populate_impactx_simulation_file_to_ui(import_file)
-            except Exception:
+            except Exception as e:
+                print(f"Error parsing import file: {e}")
                 state.import_file_error = True
                 state.import_file_error_message = "Unable to parse"
             finally:

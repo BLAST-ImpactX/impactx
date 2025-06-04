@@ -7,14 +7,17 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import html, setup_server, vuetify
+from trame.widgets import plotly
+
 from ... import CardBase, NavigationComponents
 from . import Dialogs, StatComponents, StatUtils
+from .plot import lattice_visualizer
 
 server, state, ctrl = setup_server()
 
 ELEMENT_COLOR_MAP = {
     "drift": "blue lighten-2",
-    "quad": "red darken-1",
+    "quad": "green darken-1",
     "monitor": "grey darken-2",
 }
 
@@ -42,9 +45,14 @@ def _update_statistics():
     state.element_counts = StatUtils.update_element_counts()
     StatUtils.update_length_statistics()
 
+def _update_lattice_visualization():
+    # Update plotly figure with new lattice visualization
+    ctrl.lattice_figure_update(lattice_visualizer())
+
 @state.change("selected_lattice_list")
 def on_lattice_list_change(**kwargs):
     _update_statistics()
+    _update_lattice_visualization()
 
 class LatticeVisualizer(CardBase):
 
@@ -70,6 +78,13 @@ class LatticeVisualizer(CardBase):
                     vuetify.VSpacer()
                     StatComponents.settings()
                 StatComponents.statistics()
+            
+            with vuetify.VCard(color="#002949"):
+                with vuetify.VCardText():
+                    ctrl.lattice_figure_update = plotly.Figure(
+                        display_mode_bar="true",
+                        style="width: 100%; height: 50vh"
+                    ).update
 
             with vuetify.VCardText():
                 with vuetify.VRow():

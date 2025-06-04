@@ -1,0 +1,280 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
+import plotly.graph_objects as go
+import numpy as np
+
+def transform(x, y, rotation_deg, dx):
+    """
+    Transform coordinates based on angle and displacement.
+    """
+    rotation_rad = np.radians(rotation_deg)
+    x_new = x + dx * np.cos(rotation_rad)
+    y_new = y + dx * np.sin(rotation_rad)
+    return x_new, y_new
+
+import numpy as np
+
+def rotate_corners(x: float, y: float, rotation_deg: float, ds: float = 1.0, width: float = 0.1) -> np.ndarray:
+    """
+    Generates rectangle's corners after applying rotation matrix.
+    This is utilized to properly visualize a rotated lattice element in Plotly.
+
+    :param x: starting x-coordinate before the rotation
+    :param y: starting y-coordinate before the rotation
+    :param rotation_deg: Rotation angle in degrees, counterclockwise.
+    :param ds: Length of the rectangle along the local X-axis (default is 1.0).
+    :param width: Half of the rectangle's height (default is 0.1).
+    :return: A NumPy array of shape (5, 2) with rotated (x, y) corner coordinates, closed for polygon plotting.
+
+    """
+    rotation_rad = np.radians(rotation_deg)
+
+    corners = np.array([
+        [0, -width],
+        [ds, -width],
+        [ds, width],
+        [0, width],
+        [0, -width]  # close polygon
+    ])
+
+    R = np.array([
+        [np.cos(rotation_rad), -np.sin(rotation_rad)],
+        [np.sin(rotation_rad),  np.cos(rotation_rad)],
+    ])
+
+    rotated = corners @ R.T + [x, y]
+    return rotated
+import numpy as np
+
+
+class LatticeVisualizerElements:
+
+    def __init__(self):
+        pass
+
+    def _add_trace(self, fig, **kwargs):
+        """
+        This is the function that actually draws on the plotly figure.
+        """
+        kwargs.setdefault("showlegend", False)
+        kwargs.setdefault("hoverinfo", "text")
+        trace = go.Scatter(**kwargs)
+        fig.add_trace(trace)
+
+    def _add_annotation(self, fig, x, y, label, **kwargs):
+        """
+        This is the part that adds the label to the plotly figure.
+        """
+        kwargs.setdefault("text", label)
+        kwargs.setdefault("showarrow", False)
+        fig.add_annotation(x=x, y=y, **kwargs)
+
+    def drift(self, fig, x, y, ds, dx, dy, rotation, label):
+        rotation_rad = np.radians(rotation)
+        thickness = 0.05  # line thickness (half-height for visual padding)
+        x += dx
+        y += dy
+
+        rotated_corners = rotate_corners(x, y, rotation, ds, thickness)
+        xs, ys = rotated_corners[:, 0], rotated_corners[:, 1]
+
+        self._add_trace(
+            fig,
+            x=xs,
+            y=ys,
+            mode="lines",
+            fill="toself",
+            line=dict(color="gray", width=1),
+            fillcolor="lightgray",
+            hovertext=f"<b>{label}</b><br>Length: {ds:.2f} m"
+        )
+
+
+        self._add_annotation(
+            fig,
+            x=np.mean(xs),
+            y=np.mean(ys) + 0.3,
+            label=label,
+            font=dict(size=10),
+        )
+
+        x1 = x + ds * np.cos(rotation_rad)
+        y1 = y + ds * np.sin(rotation_rad)
+        return x1, y1, rotation
+
+
+    def quad(self, fig, x, y, k, ds, dx, dy, rotation, label):
+        x1, y1 = transform(x, y, rotation, ds)
+        x += dx
+        y += dy
+
+        match k:
+            case _ if k > 0:
+                line_color = "darkblue"
+                fill_color = "lightblue"
+            case _ if k < 0:
+                line_color = "darkred"
+                fill_color = "lightcoral"
+            case _:
+                line_color = "darkgreen"
+                fill_color = "lightgreen"
+
+        rotated_corners = rotate_corners(x, y, rotation, ds, 0.2)
+        xs, ys = rotated_corners[:, 0], rotated_corners[:, 1]
+    
+        self._add_trace(
+            fig,
+            x=xs,
+            y=ys,
+            mode="lines",
+            fill="toself",
+            line=dict(color=line_color, width=2),
+            fillcolor=fill_color,
+            hovertext=f"<b>{label}</b><br>Length: {ds:.2f} m"
+        )
+
+        self._add_annotation(fig, x=(x + x1)/2, y=y+0.4, label=label)
+        return x1, y1, rotation
+
+
+
+    def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label):
+        """
+        Draw a sector‐bend (SBEND) of length ds that has radius rc.
+        - rc is the radius of curvature (in meters).
+        - ds is the arc length (in meters).
+        - rotation is the incoming reference angle (in degrees).
+        - label is the magnet’s name for hover/annotation.
+        """
+
+        # Apply any lateral offsets first:
+        x += dx
+        y += dy
+
+        phi_rad = ds / rc           # Bend angle in radians
+        rotation_rad = np.radians(rotation)
+
+        # The circular‐arc center (in lab coords) is found by: 
+        #   cx = x - ρ sin(incoming_angle)
+        #   cy = y + ρ cos(incoming_angle)
+        # because the bend is in the local x–z plane.
+        r = rc
+        cx = x - r * np.sin(rotation_rad)
+        cy = y + r * np.cos(rotation_rad)
+
+        n_points = 50
+        arc_thetas = np.linspace(0, phi_rad, n_points)
+        arc_x = cx + r * np.sin(rotation_rad + arc_thetas)
+        arc_y = cy - r * np.cos(rotation_rad + arc_thetas)
+
+        self._add_trace(
+            fig,
+            x=arc_x,
+            y=arc_y,
+            mode="lines",
+            line=dict(color="blue", width=3),
+            hovertext=(
+                f"<b>{label}</b><br>"
+                f"Length: {ds:.2f} m<br>"
+                f"Radius of curvature: {rc:.2f} m<br>"
+                f"dx: {dx:.3f} m<br>"
+                f"dy: {dy:.3f} m<br>"
+                f"Bend Angle: {np.degrees(phi_rad):.2f}°"
+            )
+        )
+        self._add_annotation(
+            fig,
+            x=np.mean(arc_x),
+            y=np.mean(arc_y) + 0.3,
+            label=label,
+            font=dict(size=10),
+        )
+
+        # Compute exit point and exit angle (in degrees)
+        x_end = arc_x[-1]
+        y_end = arc_y[-1]
+        final_angle = rotation + np.degrees(phi_rad)
+        return x_end, y_end, final_angle
+
+
+    def exactSBend(self, fig, x, y, ds: float, dx: float, dy: float, rotation_deg: float, phi_deg: float, label: str):
+        """
+        Draws an ExactSBend lattice element on the lattice visualization.
+        """
+
+        phi_rad = np.radians(phi_deg) # phi is given in degrees in the input
+        rotation_rad = np.radians(rotation_deg) # may or may not be given
+
+        #  Ensure the bend starts at the proper x and y coordinates
+        x += dx
+        y += dy
+
+        # Compute curvature radius and arc path
+        r = ds / phi_rad  # radius of curvature
+
+        # find coords of center of the circle
+        circle_center_x = x - r * np.sin(rotation_rad)
+        circle_center_y = y + r * np.cos(rotation_rad)
+
+        # Generate arc points
+        n_points = 100 # determines smoothness of the arc
+        arc_thetas = np.linspace(0, phi_rad, n_points)
+        arc_x = circle_center_x + r * np.sin(rotation_rad + arc_thetas)
+        arc_y = circle_center_y - r * np.cos(rotation_rad + arc_thetas)
+
+        self._add_trace(
+            fig,
+            x=arc_x,
+            y=arc_y,
+            mode="lines",
+            line=dict(color="blue", width=3),
+            hovertext=(
+                f"<b>{label}</b><br>"
+                f"Length: {ds:.2f} m<br>"
+                f"Bend Angle: {phi_deg:.1f}°<br>"
+                f"dx: {dx:.3f} m<br>"
+                f"dy: {dy:.3f} m"
+            )
+        )
+
+        self._add_annotation(
+            fig,
+            x=np.mean(arc_x),
+            y=np.mean(arc_y) + 0.3,
+            label=label,
+            font=dict(size=10),
+        )
+
+        # Compute new beamline exit point and angle
+        final_angle = rotation_deg + phi_deg
+        x_end = arc_x[-1]
+        y_end = arc_y[-1]
+        return x_end, y_end, final_angle
+
+
+
+    def beam_monitor(self, fig, x, y, rotation, length, label):
+        x1, y1 = transform(x, y, rotation, length)
+        fig.add_shape(
+            type="rect",
+            x0=x, x1=x1,
+            y0=y-0.15, y1=y+0.15,
+            line=dict(color="darkgray"),
+            fillcolor="lightgray",
+        )
+        self._add_trace(
+            fig,
+            x=[(x + x1)/2], y=[y],
+            mode="markers",
+            marker=dict(size=15, color='rgba(0,0,0,0)'),
+            hovertext=f"<b>{label}</b><br>Length: {length:.2f} m"
+        )
+        self._add_annotation(fig, x=(x + x1)/2, y=y+0.3, label=label)
+        return x1, y1, rotation
+

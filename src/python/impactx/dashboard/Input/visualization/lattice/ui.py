@@ -29,8 +29,10 @@ def get_element_color(name: str) -> str:
             return color
     return "grey lighten-1"
 
-@state.change("selected_lattice_list")
-def on_lattice_list_change(**kwargs):
+def _update_statistics():
+    """
+    Update statistics based on the current selected lattice elements.
+    """
     for element in state.selected_lattice_list:
         element["color"] = get_element_color(element["name"])
 
@@ -39,6 +41,10 @@ def on_lattice_list_change(**kwargs):
     state.total_steps = StatUtils.update_total_steps()
     state.element_counts = StatUtils.update_element_counts()
     StatUtils.update_length_statistics()
+
+@state.change("selected_lattice_list")
+def on_lattice_list_change(**kwargs):
+    _update_statistics()
 
 class LatticeVisualizer(CardBase):
 

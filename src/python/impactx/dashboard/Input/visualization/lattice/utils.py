@@ -21,7 +21,7 @@ state.element_counts = {}
 state.length_stats_content = ""
 state.lattice_is_empty = len(state.selected_lattice_list) == 0
 
-class LatticeVisualizerUtils:
+class LatticeVisualizerStatisticUtils:
     
     @staticmethod
     def update_length_statistics() -> None:
@@ -93,7 +93,7 @@ class LatticeVisualizerUtils:
 
         return total_steps
 
-class LatticeVisualizerComponents:
+class LatticeVisualizerStatisticComponents:
     @staticmethod
     def settings():
         CardComponents.card_button(
@@ -123,7 +123,7 @@ class LatticeVisualizerComponents:
             classes="d-flex align-center justify-center my-0 py-0"
         ):
             if is_stat_length:
-                LatticeVisualizerComponents._additional_length_stats()
+                LatticeVisualizerStatisticComponents._additional_length_stats()
 
     @staticmethod
     def _additional_length_stats():
@@ -147,13 +147,13 @@ class LatticeVisualizerComponents:
             # row 1: numerical stats
             with vuetify.VRow(classes="text-center"):
                 with vuetify.VCol():
-                    LatticeVisualizerComponents._stat("Total Elements")
+                    LatticeVisualizerStatisticComponents._stat("Total Elements")
                 with vuetify.VCol():
-                    LatticeVisualizerComponents._stat("Total Length")
+                    LatticeVisualizerStatisticComponents._stat("Total Length")
                 with vuetify.VCol():
-                    LatticeVisualizerComponents._stat("Total Steps")
+                    LatticeVisualizerStatisticComponents._stat("Total Steps")
                 with vuetify.VCol():
-                    LatticeVisualizerComponents._stat("Periods")
+                    LatticeVisualizerStatisticComponents._stat("Periods")
 
             # row 2: element breakdown
             with vuetify.VRow(classes="pt-0 mt-0"):

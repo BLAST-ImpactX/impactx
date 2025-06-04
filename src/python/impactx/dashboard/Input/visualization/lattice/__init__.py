@@ -1,9 +1,9 @@
 from .dialogs import LatticeVisualizerDialogs as Dialogs
-from .utils import LatticeVisualizerComponents as Components
-from .utils import LatticeVisualizerUtils as Utils
+from .utils import LatticeVisualizerStatisticComponents as StatComponents
+from .utils import LatticeVisualizerStatisticUtils as StatUtils
 
 __all__ = [
     "Dialogs",
-    "Components",
-    "Utils",
+    "StatComponents", 
+    "StatUtils",
 ]

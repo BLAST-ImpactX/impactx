@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .... import html, setup_server, vuetify
 from ... import CardBase, NavigationComponents
-from . import Components, Dialogs, Utils
+from . import Dialogs, StatComponents, StatUtils
 
 server, state, ctrl = setup_server()
 
@@ -36,9 +36,9 @@ def on_lattice_list_change(**kwargs):
 
     state.total_elements = len(state.selected_lattice_list)
     state.periods = 1 if state.total_elements > 0 else 0
-    state.total_steps = Utils.update_total_steps()
-    state.element_counts = Utils.update_element_counts()
-    Utils.update_length_statistics()
+    state.total_steps = StatUtils.update_total_steps()
+    state.element_counts = StatUtils.update_element_counts()
+    StatUtils.update_length_statistics()
 
 class LatticeVisualizer(CardBase):
 
@@ -62,8 +62,9 @@ class LatticeVisualizer(CardBase):
                 with vuetify.VCardTitle(classes="d-flex align-center"):
                     html.Div("Lattice Statistics")
                     vuetify.VSpacer()
-                    Components.settings()
-                Components.statistics()
+                    StatComponents.settings()
+                StatComponents.statistics()
+
             with vuetify.VCardText():
                 with vuetify.VRow():
                     with vuetify.VCol(

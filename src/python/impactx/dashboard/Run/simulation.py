@@ -187,6 +187,7 @@ ref.set_charge_qe({state.charge_qe}).set_mass_MeV({state.mass_MeV}).set_kin_ener
 
 {build_lattice_list()}
 sim.lattice.extend(lattice_configuration)
+sim.periods = {state.periods}
 
 # Simulate
 {build_tracking_commands()}

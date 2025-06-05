@@ -174,6 +174,8 @@ class DashboardValidation:
 
         if state.selected_lattice_list == []:
             error_details.append("LatticeListIsEmpty")
+        if state.periods_error_message:
+            error_details.append(f"Periods: {state.periods_error_message}")
 
         # Check for errors in CSR parameters
         if state.csr_bins_error_message:

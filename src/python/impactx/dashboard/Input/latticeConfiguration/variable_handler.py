@@ -2,9 +2,9 @@ from typing import Optional, Tuple
 
 from ... import html, setup_server, vuetify
 from .. import (
-    generalFunctions,
     CardComponents,
     DashboardValidation,
+    generalFunctions,
 )
 from .helper import LatticeConfigurationHelper
 

@@ -61,7 +61,7 @@ class LatticeVisualizer(CardBase):
             with vuetify.VCard(
                 classes="d-flex flex-column",
                 style="min-height: 3.75rem; margin-bottom: 20px;",
-                color="grey lighten-4",
+                color="#002949",
                 elevation=2,
             ):
                 # create custom header over using component in CardComponents

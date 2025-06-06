@@ -80,6 +80,10 @@ class LatticeVisualizerElements:
         kwargs.setdefault("showlegend", show_legend)
         if show_legend and legend_name:
             kwargs.setdefault("name", legend_name)
+            kwargs.setdefault("legendgroup", legend_name)
+        elif legend_name:
+            kwargs.setdefault("legendgroup", legend_name)
+            kwargs.setdefault("showlegend", False)
         kwargs.setdefault("hoverinfo", "text")
         trace = go.Scatter(**kwargs)
         fig.add_trace(trace)

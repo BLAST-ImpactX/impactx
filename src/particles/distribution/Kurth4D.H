@@ -33,6 +33,9 @@ namespace impactx::distribution
          *                                   RMS sizes (in meters)
          * @param lambdapx,lambdapy,lambdapt RMS momentum
          * @param muxpx,muypy,mutpt correlation length-momentum
+         * @param meanx,meany,meant offsets of the mean (centroid) positions from those of the reference particle
+         * @param meanpx,meanpy,meanpt offsets of the mean (centroid) momenta from those of the reference particle
+         * @param dispx,disppx,dispy,disppy dispersion and its derivative in horizontal and vertical directions
          */
         Kurth4D (
             amrex::ParticleReal lambdax,
@@ -43,10 +46,22 @@ namespace impactx::distribution
             amrex::ParticleReal lambdapt,
             amrex::ParticleReal muxpx=0.0,
             amrex::ParticleReal muypy=0.0,
-            amrex::ParticleReal mutpt=0.0
+            amrex::ParticleReal mutpt=0.0,
+            amrex::ParticleReal meanx=0.0,
+            amrex::ParticleReal meany=0.0,
+            amrex::ParticleReal meant=0.0,
+            amrex::ParticleReal meanpx=0.0,
+            amrex::ParticleReal meanpy=0.0,
+            amrex::ParticleReal meanpt=0.0,
+            amrex::ParticleReal dispx=0.0,
+            amrex::ParticleReal disppx=0.0,
+            amrex::ParticleReal dispy=0.0,
+            amrex::ParticleReal disppy=0.0
         )
         : m_lambdaX(lambdax), m_lambdaY(lambday), m_lambdaT(lambdat), m_lambdaPx(lambdapx), m_lambdaPy(lambdapy),
-          m_lambdaPt(lambdapt), m_muxpx(muxpx), m_muypy(muypy), m_mutpt(mutpt)
+          m_lambdaPt(lambdapt), m_muxpx(muxpx), m_muypy(muypy), m_mutpt(mutpt), m_meanx(meanx), m_meany(meany),
+          m_meant(meant), m_meanpx(meanpx), m_meanpy(meanpy), m_meanpt(meanpt), m_dispx(dispx), m_disppx(disppx),
+          m_dispy(dispy), m_disppy(disppy)
         {
         }
 
@@ -155,11 +170,28 @@ namespace impactx::distribution
             a2 = m_lambdaPt * (-m_mutpt * t / root + pt);
             t = a1;
             pt = a2;
+
+            // Apply dispersive correlations
+            x = x - m_dispx * pt;
+            px = px - m_disppx * pt;
+            y = y - m_dispy * pt;
+            py = py - m_disppy * pt;
+         
+            // Apply centroid translation
+            x = x + m_meanx;
+            px = px + m_meanpx;
+            y = y + m_meany;
+            py = py + m_meanpy;
+            t = t + m_meant;
+            pt = pt + m_meanpt;
         }
 
         amrex::ParticleReal m_lambdaX, m_lambdaY, m_lambdaT;  //! related position axis intercepts (length) of the phase space ellipse
         amrex::ParticleReal m_lambdaPx, m_lambdaPy, m_lambdaPt;  //! related momentum axis intercepts of the phase space ellipse
         amrex::ParticleReal m_muxpx, m_muypy, m_mutpt;  //! correlation length-momentum
+        amrex::ParticleReal m_meanx, m_meany, m_meant;  //! spatial coordinates of centroid offset
+        amrex::ParticleReal m_meanpx, m_meanpy, m_meanpt;  //! momentum coordinates of centroid offset
+        amrex::ParticleReal m_dispx, m_disppx, m_dispy, m_disppy;  //! dispersion and its derivative
     };
 
 } // namespace impactx::distribution

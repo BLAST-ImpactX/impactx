@@ -31,8 +31,13 @@ def get_element_name_param(element):
     """Get the name parameter from the element's parameters list."""
     for param in element.get("parameters", []):
         if param.get("parameter_name", "").lower() == "name":
-            return param.get("sim_input", "")
-    return element.get("name", "")  # fallback to element name if no name parameter
+            name_value = param.get("sim_input", "")
+            if name_value and name_value.strip():  # Check if name is not empty
+                return name_value
+    
+    # If no name parameter found or it's empty, create a meaningful fallback
+    element_type = element.get("name", "")
+    return f"{element_type}"  # Use the element type as fallback
 
 def classify_element(element_name, element=None):
     name = element_name.lower()

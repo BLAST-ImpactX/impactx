@@ -84,7 +84,14 @@ class LatticeVisualizerElements:
         elif legend_group:
             kwargs.setdefault("legendgroup", legend_group)
             kwargs.setdefault("showlegend", False)
-        kwargs.setdefault("hoverinfo", "text")
+        
+        # Properly handle hover information
+        if 'hovertext' in kwargs:
+            kwargs['hovertemplate'] = kwargs.pop('hovertext') + '<extra></extra>'
+            kwargs['hoverinfo'] = 'text'
+        else:
+            kwargs.setdefault("hoverinfo", "skip")
+            
         trace = go.Scatter(**kwargs)
         fig.add_trace(trace)
 
@@ -114,7 +121,14 @@ class LatticeVisualizerElements:
             fill="toself",
             line=dict(color="gray", width=1),
             fillcolor="lightgray",
-            hovertext=f"<b>{label}</b><br>Length: {ds:.2f} m",
+            text=(
+                f"<b>{label}</b><br>"
+                f"ds: {ds} m<br>"
+                f"dx: {dx} m<br>"
+                f"dy: {dy} m<br>"
+                f"rotation: {rotation}°"
+            ),
+            hoverinfo="text",
             show_legend=show_legend,
             legend_name="Drift",
             legend_group="Drift"
@@ -168,7 +182,15 @@ class LatticeVisualizerElements:
             fill="toself",
             line=dict(color=line_color, width=2),
             fillcolor=fill_color,
-            hovertext=f"<b>{label}</b><br>Length: {ds:.2f} m",
+            text=(
+                f"<b>{label}</b><br>"
+                f"ds: {ds} m<br>"
+                f"k: {k} m⁻²<br>"
+                f"dx: {dx} m<br>"
+                f"dy: {dy} m<br>"
+                f"rotation: {rotation}°"
+            ),
+            hoverinfo="text",
             show_legend=show_legend,
             legend_name=legend_name,
             legend_group=legend_name
@@ -214,14 +236,15 @@ class LatticeVisualizerElements:
             y=arc_y,
             mode="lines",
             line=dict(color="blue", width=3),
-            hovertext=(
+            text=(
                 f"<b>{label}</b><br>"
-                f"Length: {ds:.2f} m<br>"
-                f"Radius of curvature: {rc:.2f} m<br>"
-                f"dx: {dx:.3f} m<br>"
-                f"dy: {dy:.3f} m<br>"
-                f"Bend Angle: {np.degrees(phi_rad):.2f}°"
+                f"ds: {ds} m<br>"
+                f"rc: {rc} m<br>"
+                f"dx: {dx} m<br>"
+                f"dy: {dy} m<br>"
+                f"phi: {np.degrees(phi_rad)}°"
             ),
+            hoverinfo="text",
             show_legend=show_legend,
             legend_name="Sector Bend",
             legend_group="Sector Bend"
@@ -275,13 +298,14 @@ class LatticeVisualizerElements:
             y=arc_y,
             mode="lines",
             line=dict(color="blue", width=3),
-            hovertext=(
+            text=(
                 f"<b>{label}</b><br>"
-                f"Length: {ds:.2f} m<br>"
-                f"Bend Angle: {phi_deg:.1f}°<br>"
-                f"dx: {dx:.3f} m<br>"
-                f"dy: {dy:.3f} m"
+                f"ds: {ds} m<br>"
+                f"phi: {phi_deg}°<br>"
+                f"dx: {dx} m<br>"
+                f"dy: {dy} m"
             ),
+            hoverinfo="text",
             show_legend=show_legend,
             legend_name="Exact Sector Bend",
             legend_group="Exact Sector Bend"
@@ -319,7 +343,12 @@ class LatticeVisualizerElements:
             x=[(x + x1)/2], y=[y],
             mode="markers",
             marker=dict(size=15, color='rgba(0,0,0,0)'),
-            hovertext=f"<b>{label}</b><br>Length: {length:.2f} m",
+            text=(
+                f"<b>{label}</b><br>"
+                f"ds: {length} m<br>"
+                f"rotation: {rotation}°"
+            ),
+            hoverinfo="text",
             show_legend=show_legend,
             legend_name="Beam Monitor",
             legend_group="Beam Monitor"

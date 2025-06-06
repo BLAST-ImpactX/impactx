@@ -176,7 +176,7 @@ namespace impactx::distribution
             px = px - m_disppx * pt;
             y = y - m_dispy * pt;
             py = py - m_disppy * pt;
-         
+
             // Apply centroid translation
             x = x + m_meanx;
             px = px + m_meanpx;

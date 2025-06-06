@@ -155,7 +155,7 @@ namespace impactx::initialization
      * @param dispx Reference to the variable storing the beam-based dispersion in the x direction.
      * @param disppx Reference to the variable storing the derivative of the beam-based dispersion in the x direction.
      * @param dispy Reference to the variable storing the beam-based dispersion in the y direction.
-     * @param disppy Reference to the variable storing the derivative of the beam-based dispersion in the y direction. 
+     * @param disppy Reference to the variable storing the derivative of the beam-based dispersion in the y direction.
      */
     void
     set_distribution_parameters_from_phase_space_inputs (

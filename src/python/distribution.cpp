@@ -51,8 +51,8 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal,                     
-                 amrex::ParticleReal, amrex::ParticleReal                    
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
          >(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
@@ -72,8 +72,8 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal,                     
-                 amrex::ParticleReal, amrex::ParticleReal                    
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
              >(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),

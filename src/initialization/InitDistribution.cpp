@@ -142,7 +142,7 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant,  
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "gaussian") {
@@ -150,7 +150,7 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant,  
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kvdist") {
@@ -158,7 +158,7 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant,  
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kurth4d") {
@@ -166,7 +166,7 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant,  
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "semigaussian") {
@@ -174,7 +174,7 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant,  
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "triangle") {
@@ -182,7 +182,7 @@ namespace impactx
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant,  
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "empty") {
@@ -397,8 +397,8 @@ namespace impactx
         pp_dist.queryWithParser("meanPy", meanpy);
         pp_dist.queryWithParser("meanPt", meanpt);
         pp_dist.queryWithParser("dispX", dispx);
-        pp_dist.queryWithParser("dispPx", disppx); 
-        pp_dist.queryWithParser("dispY", dispy); 
+        pp_dist.queryWithParser("dispPx", disppx);
+        pp_dist.queryWithParser("dispY", dispy);
         pp_dist.queryWithParser("dispPy", disppy);
 
         if (betax <= 0.0_prt || betay <= 0.0_prt || betat <= 0.0_prt) {
@@ -448,7 +448,7 @@ namespace impactx
         amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
         amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
         amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
-        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,                            
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,
         amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     )
     {
@@ -464,10 +464,10 @@ namespace impactx
         pp_dist.queryWithParser("meanX", meanx);
         pp_dist.queryWithParser("meanY", meany);
         pp_dist.queryWithParser("meanT", meant);
-        pp_dist.queryWithParser("meanPx", meanpx);  
+        pp_dist.queryWithParser("meanPx", meanpx);
         pp_dist.queryWithParser("meanPy", meanpy);
         pp_dist.queryWithParser("meanPt", meanpt);
-        pp_dist.queryWithParser("dispX", dispx); 
+        pp_dist.queryWithParser("dispX", dispx);
         pp_dist.queryWithParser("dispPx", disppx);
         pp_dist.queryWithParser("dispY", dispy);
         pp_dist.queryWithParser("dispPy", disppy);

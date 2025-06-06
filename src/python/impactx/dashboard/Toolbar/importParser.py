@@ -15,6 +15,7 @@ from ..Input.latticeConfiguration.latticeMain import (
     add_lattice_element,
     on_lattice_element_parameter_change,
 )
+from ..Input.latticeConfiguration.variable_handler import LatticeVariableHandler
 from .importParserHelper import DashboardParserHelper
 
 server, state, ctrl = setup_server()
@@ -63,12 +64,17 @@ class DashboardParser:
         lattice_element_contents = DashboardParserHelper.parse_lattice_elements(
             file_content
         )
+        used_vars = lattice_element_contents.pop("used_lattice_variables", set())
 
+        variable_contents = DashboardParserHelper.parse_variables(
+            file_content, used_vars
+        )
         parsed_values_dictionary = {
             **single_input_contents,
             **list_input_contents,
             **distribution_contents,
             **lattice_element_contents,
+            "variables": variable_contents,
         }
 
         return parsed_values_dictionary
@@ -85,7 +91,7 @@ class DashboardParser:
 
         imported_distribution_data = imported_data["distribution"]["parameters"].items()
         imported_lattice_data = imported_data["lattice_elements"]
-        non_state_inputs = ["distribution", "lattice_elements"]
+        non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
         # Update state inputs (inputParameters, Space Charge, CSR, ISR)
         for input_name, input_value in imported_data.items():
@@ -140,3 +146,16 @@ class DashboardParser:
                         parsed_parameter_value,
                         parameter_type,
                     )
+
+        parsed_variables = imported_data["variables"]
+
+        # Remove default empty entry if it exists
+        state.variables = [var for var in state.variables if var["name"]]
+        for name, value in parsed_variables.items():
+            # Check if a variable with the same name already exists
+            if not any(var["name"] == name for var in state.variables):
+                state.variables.append(
+                    {"name": name, "value": value, "error_message": ""}
+                )
+        state.dirty("variables")
+        LatticeVariableHandler.update_delete_availability()

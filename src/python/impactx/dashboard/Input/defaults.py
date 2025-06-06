@@ -8,12 +8,16 @@ License: BSD-3-Clause-LBNL
 
 from typing import Any
 
+from impactx import distribution, elements
 from impactx.impactx_pybind import ImpactX, RefPart
 
 from .. import setup_server
 from .defaults_helper import InputDefaultsHelper
 
 server, state, ctrl = setup_server()
+
+DISTRIBUTION_MODULE_NAME = distribution
+LATTICE_MODULE_NAME = elements
 
 TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     "Reference Tracking": {
@@ -79,6 +83,7 @@ class DashboardDefaults:
     LATTICE_CONFIGURATION = {
         "selected_lattice_list": [],
         "selected_lattice": None,
+        "periods": 1,
     }
 
     SPACE_CHARGE = {
@@ -115,6 +120,10 @@ class DashboardDefaults:
             "Envelope Tracking",
             "Reference Tracking",
         ],
+        "distribution_list": InputDefaultsHelper.select_classes(
+            DISTRIBUTION_MODULE_NAME
+        ),
+        "lattice_list": InputDefaultsHelper.select_classes(LATTICE_MODULE_NAME),
         "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],
@@ -148,6 +157,7 @@ class DashboardDefaults:
         "beta": "float",
         "emitt": "float",
         "alpha": "float",
+        "periods": "int",
     }
 
     VALIDATION_CONDITION = {
@@ -157,6 +167,7 @@ class DashboardDefaults:
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],
+        "periods": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

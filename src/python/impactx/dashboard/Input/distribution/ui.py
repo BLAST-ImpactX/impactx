@@ -15,9 +15,11 @@ from .. import (
     CardBase,
     CardComponents,
     DashboardDefaults,
+    DashboardValidation,
     InputComponents,
     generalFunctions,
 )
+from ..defaults_helper import InputDefaultsHelper
 from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
@@ -27,9 +29,8 @@ server, state, ctrl = setup_server()
 # -----------------------------------------------------------------------------
 
 DISTRIBUTION_MODULE_NAME = distribution
-DISTRIBUTION_LIST = generalFunctions.select_classes(DISTRIBUTION_MODULE_NAME)
-DISTRIBUTION_PARAMETERS_AND_DEFAULTS = generalFunctions.class_parameters_with_defaults(
-    DISTRIBUTION_MODULE_NAME
+DISTRIBUTION_PARAMETERS_AND_DEFAULTS = (
+    InputDefaultsHelper.class_parameters_with_defaults(DISTRIBUTION_MODULE_NAME)
 )
 
 state.selected_distribution_parameters = {}
@@ -53,7 +54,9 @@ def populate_distribution_parameters():
 
     # Populate the UI
     for param_name, default_value, default_type in param_data:
-        error_message = generalFunctions.validate_against(default_value, default_type)
+        error_message = DashboardValidation.validate_against(
+            default_value, default_type
+        )
         units = DistributionFunctions.get_distribution_units(param_name)
         step = generalFunctions.get_default(param_name, "steps")
 
@@ -66,7 +69,7 @@ def populate_distribution_parameters():
         }
 
     state.selected_distribution_parameters = params
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     return params
 
 
@@ -106,7 +109,7 @@ def on_distribution_parameter_change(name: str, input: Union[float, int], type: 
     numeric_input = generalFunctions.convert_to_numeric(input)
     lookup_name = "lambda" if "lambda" in name else name
     conditions = generalFunctions.get_default(lookup_name, "validation_condition")
-    error_message = generalFunctions.validate_against(
+    error_message = DashboardValidation.validate_against(
         numeric_input, type, additional_conditions=conditions
     )
 
@@ -114,7 +117,7 @@ def on_distribution_parameter_change(name: str, input: Union[float, int], type: 
     if parameter:
         parameter["value"] = numeric_input
         parameter["error_message"] = error_message
-        generalFunctions.update_simulation_validation_status()
+        DashboardValidation.update_simulation_validation_status()
         state.dirty("selected_distribution_parameters")
 
 
@@ -145,7 +148,6 @@ class DistributionParameters(CardBase):
                         InputComponents.select(
                             label="Select Distribution",
                             v_model_name="distribution",
-                            items=(DISTRIBUTION_LIST,),
                         )
                     with vuetify.VCol(cols=6):
                         InputComponents.select(

@@ -12,14 +12,17 @@ from ... import setup_server, vuetify
 from .. import (
     CardBase,
     CardComponents,
+    DashboardDefaults,
+    DashboardValidation,
     InputComponents,
     NavigationComponents,
     generalFunctions,
 )
+from ..defaults_helper import InputDefaultsHelper
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
 server, state, ctrl = setup_server()
-state.lattice_params_bound_or_pending_variable = {}
+state.lattice_elements_using_variables = {}
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -27,11 +30,8 @@ state.lattice_params_bound_or_pending_variable = {}
 
 LATTICE_ELEMENTS_MODULE_NAME = elements
 
-state.listOfLatticeElements = generalFunctions.select_classes(
-    LATTICE_ELEMENTS_MODULE_NAME
-)
 state.listOfLatticeElementParametersAndDefault = (
-    generalFunctions.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
+    InputDefaultsHelper.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
 )
 
 # -----------------------------------------------------------------------------
@@ -66,7 +66,7 @@ def add_lattice_element():
                 "ui_input": parameter[1],
                 "sim_input": parameter[1],
                 "parameter_type": parameter[2],
-                "parameter_error_message": generalFunctions.validate_against(
+                "parameter_error_message": DashboardValidation.validate_against(
                     parameter[1], parameter[2]
                 ),
             }
@@ -75,7 +75,7 @@ def add_lattice_element():
     }
 
     state.selected_lattice_list.append(selected_lattice_element)
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     return selected_lattice_element
 
 
@@ -114,7 +114,7 @@ def parameter_input_checker_for_lattice(latticeElement):
 def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
     if selected_lattice_list == []:
         state.isSelectedLatticeListEmpty = "Please select a lattice element"
-        generalFunctions.update_simulation_validation_status()
+        DashboardValidation.update_simulation_validation_status()
     else:
         state.isSelectedLatticeListEmpty = ""
 
@@ -126,9 +126,10 @@ def on_lattice_element_name_change(selected_lattice, **kwargs):
 
 @ctrl.add("add_latticeElement")
 def on_add_lattice_element_click():
+    lattice_list = DashboardDefaults.LISTS["lattice_list"]
     selected_lattice = state.selected_lattice
 
-    if selected_lattice not in state.listOfLatticeElements:
+    if selected_lattice not in lattice_list:
         state.isSelectedLatticeListEmpty = (
             f"Lattice element '{selected_lattice}' does not exist."
         )
@@ -149,30 +150,30 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     :param ui_input: The value present on the UI end..
     :param parameter_type: The lattice element parameters type.
     """
+    ui_input = ui_input.strip()
+    sim_input = ui_input
+    binding = None
 
-    lattice_variable, variable_index = (
-        LatticeVariableHandler.determine_if_existing_variable(ui_input)
+    is_negative_input = ui_input.startswith("-") and ui_input != "-"
+    var_name = ui_input[1:] if is_negative_input else ui_input
+
+    is_variable, variable_index = LatticeVariableHandler.determine_if_existing_variable(
+        var_name
     )
-    potentially_lattice_variable = (
-        LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input)
-    )
+    is_potential_variable = LatticeConfigurationHelper.is_valid_input_name(var_name)
 
-    if lattice_variable or potentially_lattice_variable:
-        if lattice_variable and variable_index is not None:
-            sim_input = state.variables[variable_index]["value"]
-        else:
-            sim_input = ui_input
+    if is_variable:
+        sim_value = state.variables[variable_index]["value"]
+        if sim_value is not None:
+            sim_input = -sim_value if is_negative_input else sim_value
 
+    if is_variable or is_potential_variable:
         binding = {
-            "index": index,
+            "element_reference": state.selected_lattice_list[index],
             "parameter_name": parameter_name,
             "ui_input": ui_input,
             "parameter_type": parameter_type,
-            "variable_index": variable_index,
         }
-    else:
-        sim_input = generalFunctions.convert_to_numeric(ui_input)
-        binding = None
 
     return sim_input, binding
 
@@ -185,19 +186,16 @@ def on_lattice_element_parameter_change(
         index, parameter_name, ui_input, parameter_type
     )
 
+    key = (id(state.selected_lattice_list[index]), parameter_name)
     if bounded_or_pending_variable is not None:
-        state.lattice_params_bound_or_pending_variable[(index, parameter_name)] = (
-            bounded_or_pending_variable
-        )
+        state.lattice_elements_using_variables[key] = bounded_or_pending_variable
     else:
-        state.lattice_params_bound_or_pending_variable.pop(
-            (index, parameter_name), None
-        )
+        state.lattice_elements_using_variables.pop(key, None)
 
-    error_message = generalFunctions.validate_against(sim_input, parameter_type)
+    error_message = DashboardValidation.validate_against(sim_input, parameter_type)
 
     if parameter_name == "name":
-        if not LatticeConfigurationHelper.is_valid_name_for_user_input(ui_input):
+        if not LatticeConfigurationHelper.is_valid_input_name(ui_input):
             error_message = ["Must be a valid Python identifier"]
 
     for param in state.selected_lattice_list[index]["parameters"]:
@@ -206,7 +204,7 @@ def on_lattice_element_parameter_change(
             param["sim_input"] = sim_input
             param["parameter_error_message"] = error_message
 
-    generalFunctions.update_simulation_validation_status()
+    DashboardValidation.update_simulation_validation_status()
     state.dirty("selected_lattice_list")
 
 
@@ -276,11 +274,16 @@ class LatticeConfiguration(CardBase):
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(cols=2):
+                        InputComponents.text_field(
+                            label="Periods",
+                        )
+                    vuetify.VDivider(vertical=True)
                     with vuetify.VCol(cols=True):
                         InputComponents.combobox(
                             label="Select Accelerator Lattice",
                             v_model_name="selected_lattice",
-                            items=("listOfLatticeElements",),
+                            items=("lattice_list",),
                             error_messages=("isSelectedLatticeListEmpty",),
                         )
                     with vuetify.VCol(cols="auto"):

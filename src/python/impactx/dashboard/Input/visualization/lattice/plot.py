@@ -104,6 +104,7 @@ def lattice_visualizer():
     
     try:
         x, y, rotation = 0, 0, 0
+        draw.reset_legend()
 
         for element in state.selected_lattice_list:
             element_name = element.get("name", "")

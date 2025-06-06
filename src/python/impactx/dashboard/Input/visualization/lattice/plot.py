@@ -112,6 +112,10 @@ def lattice_visualizer():
     try:
         x, y, rotation = 0, 0, 0
         draw.reset_legend()
+        
+        # Check if we should show labels based on element count
+        element_count = len(state.selected_lattice_list)
+        draw.set_show_labels(element_count <= 20)
 
         for element in state.selected_lattice_list:
             element_name = element.get("name", "")  # This gets the actual element name

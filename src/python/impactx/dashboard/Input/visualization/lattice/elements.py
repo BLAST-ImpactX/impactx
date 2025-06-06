@@ -120,14 +120,14 @@ class LatticeVisualizerElements:
             legend_group="Drift"
         )
 
-
-        self._add_annotation(
-            fig,
-            x=np.mean(xs),
-            y=np.mean(ys) + 0.3,
-            label=label,
-            font=dict(size=10),
-        )
+        if self.show_labels:
+            self._add_annotation(
+                fig,
+                x=np.mean(xs),
+                y=np.mean(ys) + 0.3,
+                label=label,
+                font=dict(size=10),
+            )
 
         x1 = x + ds * np.cos(rotation_rad)
         y1 = y + ds * np.sin(rotation_rad)
@@ -174,10 +174,9 @@ class LatticeVisualizerElements:
             legend_group=legend_name
         )
 
-        self._add_annotation(fig, x=(x + x1)/2, y=y+0.4, label=label)
+        if self.show_labels:
+            self._add_annotation(fig, x=(x + x1)/2, y=y+0.4, label=label)
         return x1, y1, rotation
-
-
 
     def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label):
         show_legend = self._add_to_legend("sbend")
@@ -228,13 +227,14 @@ class LatticeVisualizerElements:
             legend_group="Sector Bend"
         )
         
-        self._add_annotation(
-            fig,
-            x=np.mean(arc_x),
-            y=np.mean(arc_y) + 0.3,
-            label=label,
-            font=dict(size=10),
-        )
+        if self.show_labels:
+            self._add_annotation(
+                fig,
+                x=np.mean(arc_x),
+                y=np.mean(arc_y) + 0.3,
+                label=label,
+                font=dict(size=10),
+            )
 
         # Compute exit point and exit angle (in degrees)
         x_end = arc_x[-1]
@@ -287,13 +287,14 @@ class LatticeVisualizerElements:
             legend_group="Exact Sector Bend"
         )
 
-        self._add_annotation(
-            fig,
-            x=np.mean(arc_x),
-            y=np.mean(arc_y) + 0.3,
-            label=label,
-            font=dict(size=10),
-        )
+        if self.show_labels:
+            self._add_annotation(
+                fig,
+                x=np.mean(arc_x),
+                y=np.mean(arc_y) + 0.3,
+                label=label,
+                font=dict(size=10),
+            )
 
         # Compute new beamline exit point and angle
         final_angle = rotation_deg + phi_deg
@@ -323,6 +324,7 @@ class LatticeVisualizerElements:
             legend_name="Beam Monitor",
             legend_group="Beam Monitor"
         )
-        self._add_annotation(fig, x=(x + x1)/2, y=y+0.3, label=label)
+        if self.show_labels:
+            self._add_annotation(fig, x=(x + x1)/2, y=y+0.3, label=label)
         return x1, y1, rotation
 

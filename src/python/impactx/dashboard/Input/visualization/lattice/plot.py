@@ -27,6 +27,13 @@ def get_element_param(element, name, default=0.0):
                 raise ValueError(f"Invalid value for {name}: {param.get('sim_input', default)}")
     return default
 
+def get_element_name_param(element):
+    """Get the name parameter from the element's parameters list."""
+    for param in element.get("parameters", []):
+        if param.get("parameter_name", "").lower() == "name":
+            return param.get("sim_input", "")
+    return element.get("name", "")  # fallback to element name if no name parameter
+
 def classify_element(element_name, element=None):
     name = element_name.lower()
     match name:
@@ -107,7 +114,8 @@ def lattice_visualizer():
         draw.reset_legend()
 
         for element in state.selected_lattice_list:
-            element_name = element.get("name", "")
+            element_name = element.get("name", "")  # This gets the actual element name
+            element_label = get_element_name_param(element)  # This gets the name from parameters
             element_type = classify_element(element_name, element)
             ds = get_element_param(element, "ds", 1.0)
             dx = get_element_param(element, "dx", 0.0)
@@ -117,21 +125,21 @@ def lattice_visualizer():
 
             match element_type:
                 case "drift":
-                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_name)
+                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label)
                 case "quadrupole":
                     k = get_element_param(element, "k", 0.0)
-                    x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_name)
+                    x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label)
                 case "bend":
                     if element_name.lower().startswith("sbend"):
                         rc = get_element_param(element, "rc", 0.0)
-                        x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_name)
+                        x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label)
                     elif element_name.lower().startswith("exactsbend"):
                         phi = get_element_param(element, "phi", 0)
-                        x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_name)
+                        x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label)
                 case "monitor":
-                    x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_name)
+                    x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_label)
                 case _:
-                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_name)
+                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label)
     except ValueError:
         return _error_plot(fig)
 

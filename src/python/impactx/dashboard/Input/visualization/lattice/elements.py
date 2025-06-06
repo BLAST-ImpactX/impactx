@@ -73,16 +73,16 @@ class LatticeVisualizerElements:
         if element_type not in self.seen_elements:
             self.seen_elements.add(element_type)
 
-    def _add_trace(self, fig, show_legend=False, legend_name=None, **kwargs):
+    def _add_trace(self, fig, show_legend=False, legend_name=None, legend_group=None, **kwargs):
         """
         This is the function that actually draws on the plotly figure.
         """
         kwargs.setdefault("showlegend", show_legend)
         if show_legend and legend_name:
             kwargs.setdefault("name", legend_name)
-            kwargs.setdefault("legendgroup", legend_name)
-        elif legend_name:
-            kwargs.setdefault("legendgroup", legend_name)
+            kwargs.setdefault("legendgroup", legend_group or legend_name)
+        elif legend_group:
+            kwargs.setdefault("legendgroup", legend_group)
             kwargs.setdefault("showlegend", False)
         kwargs.setdefault("hoverinfo", "text")
         trace = go.Scatter(**kwargs)
@@ -115,8 +115,9 @@ class LatticeVisualizerElements:
             line=dict(color="gray", width=1),
             fillcolor="lightgray",
             hovertext=f"<b>{label}</b><br>Length: {ds:.2f} m",
-            show_legend=self.should_show_legend("drift"),
-            legend_name="Drift"
+            show_legend=show_legend,
+            legend_name="Drift",
+            legend_group="Drift"
         )
 
 
@@ -169,7 +170,8 @@ class LatticeVisualizerElements:
             fillcolor=fill_color,
             hovertext=f"<b>{label}</b><br>Length: {ds:.2f} m",
             show_legend=show_legend,
-            legend_name=legend_name
+            legend_name=legend_name,
+            legend_group=legend_name
         )
 
         self._add_annotation(fig, x=(x + x1)/2, y=y+0.4, label=label)
@@ -221,8 +223,9 @@ class LatticeVisualizerElements:
                 f"dy: {dy:.3f} m<br>"
                 f"Bend Angle: {np.degrees(phi_rad):.2f}°"
             ),
-            show_legend=self.should_show_legend("sbend"),
-            legend_name="Sector Bend"
+            show_legend=show_legend,
+            legend_name="Sector Bend",
+            legend_group="Sector Bend"
         )
         
         self._add_annotation(
@@ -279,8 +282,9 @@ class LatticeVisualizerElements:
                 f"dx: {dx:.3f} m<br>"
                 f"dy: {dy:.3f} m"
             ),
-            show_legend= self.should_show_legend("exactsbend"),
-            legend_name="Exact Sector Bend"
+            show_legend=show_legend,
+            legend_name="Exact Sector Bend",
+            legend_group="Exact Sector Bend"
         )
 
         self._add_annotation(
@@ -315,8 +319,9 @@ class LatticeVisualizerElements:
             mode="markers",
             marker=dict(size=15, color='rgba(0,0,0,0)'),
             hovertext=f"<b>{label}</b><br>Length: {length:.2f} m",
-            show_legend=self.should_show_legend("monitor"),
-            legend_name="Beam Monitor"
+            show_legend=show_legend,
+            legend_name="Beam Monitor",
+            legend_group="Beam Monitor"
         )
         self._add_annotation(fig, x=(x + x1)/2, y=y+0.3, label=label)
         return x1, y1, rotation

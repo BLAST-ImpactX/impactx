@@ -4,6 +4,7 @@ from ... import html, setup_server, vuetify
 from .. import (
     CardComponents,
     DashboardValidation,
+    generalFunctions,
 )
 from .helper import LatticeConfigurationHelper
 

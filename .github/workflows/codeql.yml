@@ -46,6 +46,7 @@ jobs:
           python -m pip install --upgrade numpy
           python -m pip install --upgrade mpi4py
           python -m pip install --upgrade pytest
+          python -m pip install --upgrade pytest-benchmark
           python -m pip install --upgrade cmake
           python -m pipx install cmake
 

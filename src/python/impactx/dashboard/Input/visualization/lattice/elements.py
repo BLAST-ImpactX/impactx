@@ -70,9 +70,13 @@ class LatticeVisualizerElements:
     def _add_to_legend(self, element_type):
         """
         Adds an element type to the legend if it hasn't been added already.
+        Returns True if this is the first time seeing this element type.
         """
+        
         if element_type not in self.seen_elements:
             self.seen_elements.add(element_type)
+            return True
+        return False
 
     def _add_annotation(self, fig, x, y, label, **kwargs):
         """
@@ -162,7 +166,7 @@ class LatticeVisualizerElements:
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation),
             show_legend=show_legend,
             legend_name="Drift",
-            legend_group="Drift"
+            legend_group="drift"
         )
 
         if self.show_labels:
@@ -216,7 +220,7 @@ class LatticeVisualizerElements:
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation, k=k),
             show_legend=show_legend,
             legend_name=legend_name,
-            legend_group=legend_name
+            legend_group=quad_type
         )
 
         if self.show_labels:
@@ -262,7 +266,7 @@ class LatticeVisualizerElements:
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation, rc=rc, phi=np.degrees(phi_rad)),
             show_legend=show_legend,
             legend_name="Sector Bend",
-            legend_group="Sector Bend"
+            legend_group="sbend"
         )
         
         if self.show_labels:
@@ -315,7 +319,7 @@ class LatticeVisualizerElements:
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation_deg, phi=phi_deg),
             show_legend=show_legend,
             legend_name="Exact Sector Bend",
-            legend_group="Exact Sector Bend"
+            legend_group="exactsbend"
         )
 
         if self.show_labels:
@@ -351,7 +355,7 @@ class LatticeVisualizerElements:
             text=self._generate_hover_text(index, label, length, 0, 0, rotation),
             show_legend=show_legend,
             legend_name="Beam Monitor",
-            legend_group="Beam Monitor"
+            legend_group="monitor"
         )
         if self.show_labels:
             self._add_annotation(fig, x=(x + x1)/2, y=y+0.3, label=label)

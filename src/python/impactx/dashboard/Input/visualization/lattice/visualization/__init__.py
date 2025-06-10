@@ -1,5 +1,5 @@
-from .elements import LatticeVisualizerElements
-from .utils import LatticeVisualizerUtils
+from .elements.elements import LatticeVisualizerElements
+from . import LatticeVisualizerUtils
 
 __all__ = [
     "LatticeVisualizerElements",

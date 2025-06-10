@@ -86,12 +86,17 @@ class LatticeVisualizerElements:
         kwargs.setdefault("showarrow", False)
         fig.add_annotation(x=x, y=y, **kwargs)
 
-    def _add_trace(self, fig, show_legend=False, legend_name=None, legend_group=None, **kwargs):
+    def _add_trace(self, fig, show_legend=False, element_name=None, legend_name=None, legend_group=None, **kwargs):
         """
         This is the function that actually draws on the plotly figure.
         """
         kwargs.setdefault("showlegend", show_legend)
         kwargs.setdefault("hoverinfo", "text")
+        
+        # Use element_name as default for legend_name and legend_group if not provided
+        if element_name:
+            legend_name = legend_name or element_name
+            legend_group = legend_group or element_name
         
         if show_legend and legend_name:
             kwargs.setdefault("name", legend_name)
@@ -145,8 +150,8 @@ class LatticeVisualizerElements:
         
         return text
 
-    def drift(self, fig, x, y, ds, dx, dy, rotation, label, index):
-        show_legend = self._add_to_legend("drift")
+    def drift(self, fig, x, y, ds, dx, dy, rotation, label, index, element_name):
+        show_legend = self._add_to_legend(element_name)
         rotation_rad = np.radians(rotation)
         thickness = 0.05  # line thickness (half-height for visual padding)
         x += dx
@@ -165,8 +170,7 @@ class LatticeVisualizerElements:
             fillcolor="lightgray",
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation),
             show_legend=show_legend,
-            legend_name="Drift",
-            legend_group="drift"
+            element_name=element_name
         )
 
         if self.show_labels:
@@ -183,29 +187,26 @@ class LatticeVisualizerElements:
         return x1, y1, rotation
 
 
-    def quad(self, fig, x, y, k, ds, dx, dy, rotation, label, index):
+    def quad(self, fig, x, y, k, ds, dx, dy, rotation, label, index, element_name):
         x1, y1 = transform(x, y, rotation, ds)
         x += dx
         y += dy
     
-        match k:
-            case _ if k > 0:
-                quad_type = "focusing_quad"
-                legend_name = "Focusing Quadrupole"
-                line_color = "darkblue"
-                fill_color = "lightblue"
-            case _ if k < 0:
-                quad_type = "defocusing_quad"
-                legend_name = "Defocusing Quadrupole"
-                line_color = "darkred"
-                fill_color = "lightcoral"
-            case _:
-                quad_type = "quadrupole"
-                legend_name = "Quadrupole"
-                line_color = "darkgreen"
-                fill_color = "lightgreen"
+        # Determine quad type and visual properties based on k value
+        if k > 0:
+            quad_legend_name = "Focusing Quadrupole"
+            line_color = "darkblue"
+            fill_color = "lightblue"
+        elif k < 0:
+            quad_legend_name = "Defocusing Quadrupole"
+            line_color = "darkred"
+            fill_color = "lightcoral"
+        else:
+            quad_legend_name = "Quadrupole"
+            line_color = "darkgreen"
+            fill_color = "lightgreen"
 
-        show_legend = self._add_to_legend(quad_type)
+        show_legend = self._add_to_legend(quad_legend_name)
         rotated_corners = rotate_corners(x, y, rotation, ds, 0.2)
         xs, ys = rotated_corners[:, 0], rotated_corners[:, 1]
     
@@ -219,16 +220,16 @@ class LatticeVisualizerElements:
             fillcolor=fill_color,
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation, k=k),
             show_legend=show_legend,
-            legend_name=legend_name,
-            legend_group=quad_type
+            legend_name=quad_legend_name,
+            legend_group=quad_legend_name
         )
 
         if self.show_labels:
             self._add_annotation(fig, x=(x + x1)/2, y=y+0.4, label=label)
         return x1, y1, rotation
 
-    def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label, index):
-        show_legend = self._add_to_legend("sbend")
+    def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label, index, element_name):
+        show_legend = self._add_to_legend(element_name)
         """
         Draw a sector‐bend (SBEND) of length ds that has radius rc.
         - rc is the radius of curvature (in meters).
@@ -265,8 +266,7 @@ class LatticeVisualizerElements:
             line=dict(color="blue", width=3),
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation, rc=rc, phi=np.degrees(phi_rad)),
             show_legend=show_legend,
-            legend_name="Sector Bend",
-            legend_group="sbend"
+            element_name=element_name
         )
         
         if self.show_labels:
@@ -284,8 +284,8 @@ class LatticeVisualizerElements:
         final_angle = rotation + np.degrees(phi_rad)
         return x_end, y_end, final_angle
 
-    def exactSBend(self, fig, x, y, ds: float, dx: float, dy: float, rotation_deg: float, phi_deg: float, label: str, index: int):
-        show_legend = self._add_to_legend("exactsbend")
+    def exactSBend(self, fig, x, y, ds: float, dx: float, dy: float, rotation_deg: float, phi_deg: float, label: str, index: int, element_name: str):
+        show_legend = self._add_to_legend(element_name)
         """
         Draws an ExactSBend lattice element on the lattice visualization.
         """
@@ -318,8 +318,7 @@ class LatticeVisualizerElements:
             line=dict(color="blue", width=3),
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation_deg, phi=phi_deg),
             show_legend=show_legend,
-            legend_name="Exact Sector Bend",
-            legend_group="exactsbend"
+            element_name=element_name
         )
 
         if self.show_labels:
@@ -337,8 +336,8 @@ class LatticeVisualizerElements:
         y_end = arc_y[-1]
         return x_end, y_end, final_angle
 
-    def beam_monitor(self, fig, x, y, rotation, length, label, index):
-        show_legend = self._add_to_legend("monitor")
+    def beam_monitor(self, fig, x, y, rotation, length, label, index, element_name):
+        show_legend = self._add_to_legend(element_name)
         x1, y1 = transform(x, y, rotation, length)
         fig.add_shape(
             type="rect",
@@ -354,8 +353,7 @@ class LatticeVisualizerElements:
             marker=dict(size=15, color='rgba(0,0,0,0)'),
             text=self._generate_hover_text(index, label, length, 0, 0, rotation),
             show_legend=show_legend,
-            legend_name="Beam Monitor",
-            legend_group="monitor"
+            element_name=element_name
         )
         if self.show_labels:
             self._add_annotation(fig, x=(x + x1)/2, y=y+0.3, label=label)

@@ -15,7 +15,6 @@ state.max_length = 0
 state.min_length = 0
 state.avg_length = 0
 state.total_steps = 0
-state.periods = 0
 state.element_counts = {}
 state.length_stats_content = ""
 state.lattice_is_empty = len(state.selected_lattice_list) == 0

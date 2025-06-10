@@ -21,7 +21,6 @@ def _update_statistics() -> None:
     Update statistics based on the current selected lattice elements.
     """
     state.total_elements = len(state.selected_lattice_list)
-    state.periods = 1 if state.total_elements > 0 else 0
     state.total_steps = StatUtils.update_total_steps()
     state.element_counts = StatUtils.update_element_counts()
     StatUtils.update_length_statistics()

@@ -15,38 +15,21 @@ from .visualization.plot import lattice_visualizer
 
 server, state, ctrl = setup_server()
 
-ELEMENT_COLOR_MAP = {
-    "drift": "blue lighten-2",
-    "quad": "green darken-1",
-    "monitor": "grey darken-2",
-}
 
-
-def get_element_color(name: str) -> str:
-    """
-    Determine Vuetify color for an element based on its name.
-    """
-    clean_name = name.lower()
-    for element_key, color in ELEMENT_COLOR_MAP.items():
-        if element_key in clean_name:
-            return color
-    return "grey lighten-1"
-
-def _update_statistics():
+def _update_statistics() -> None:
     """
     Update statistics based on the current selected lattice elements.
     """
-    for element in state.selected_lattice_list:
-        element["color"] = get_element_color(element["name"])
-
     state.total_elements = len(state.selected_lattice_list)
     state.periods = 1 if state.total_elements > 0 else 0
     state.total_steps = StatUtils.update_total_steps()
     state.element_counts = StatUtils.update_element_counts()
     StatUtils.update_length_statistics()
 
-def _update_lattice_visualization():
-    # Update plotly figure with new lattice visualization
+def _update_lattice_visualization() -> None:
+    """
+    Updates the plotly figure with an updated lattice visualization.
+    """
     ctrl.lattice_figure_update(lattice_visualizer())
 
 @state.change("selected_lattice_list")
@@ -85,19 +68,6 @@ class LatticeVisualizer(CardBase):
                         display_mode_bar="true",
                         style="width: 100%; height: 50vh"
                     ).update
-
-            with vuetify.VCardText():
-                with vuetify.VRow():
-                    with vuetify.VCol(
-                        v_for="(element, index) in selected_lattice_list",
-                    ):
-                        with vuetify.VCard(
-                            text=("element.name",),
-                            color=("element.color",),
-                            text_color="white",
-                            elevation=2,
-                        ):
-                            pass
 
     @staticmethod
     def dialog_settings():

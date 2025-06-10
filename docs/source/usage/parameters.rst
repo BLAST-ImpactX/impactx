@@ -79,6 +79,24 @@ Initial Beam Distributions
      * ``beam.emittY`` (``float``, in meters times radian) geometric (unnormalized) emittance :math:`\epsilon` in Y
      * ``beam.emittT`` (``float``, in meters times radian) geometric (unnormalized) emittance :math:`\epsilon` in T
 
+  Two additional (optional) sets of input parameters may be provided:
+
+  #. Parameters that describe the displacement of the **beam centroid** from the reference particle in phase space:
+
+     * ``beam.meanX`` (``float``, in meters) mean value of the X coordinate
+     * ``beam.meanY`` (``float``, in meters) mean value of the Y coordinate
+     * ``beam.meanT`` (``float``, in meters) mean value of the T coordinate
+     * ``beam.meanPx`` (``float``, in radians) mean value of the Px coordinate
+     * ``beam.meanPy`` (``float``, in radians) mean value of the Py coordinate
+     * ``beam.meanPt`` (``float``, in radians) mean value of the Pt coordinate
+
+  #. Parameters that describe correlations between (x,pt), (px,pt), (y,pt), and (py,pt), described by a nonzero **dispersion**
+
+     * ``beam.dispX`` (``float``, in meters) beam-based horizontal dispersion
+     * ``beam.dispPx`` (``float``, dimensionless) derivative of beam-based horizontal dispersion   
+     * ``beam.dispY`` (``float``, in meters) beam-based vertical dispersion                  
+     * ``beam.dispPy`` (``float``, dimensionless) derivative of beam-based vertical dispersion    
+
   The following distributions are available:
 
   * ``waterbag`` or ``waterbag_from_twiss`` for initial Waterbag distribution.

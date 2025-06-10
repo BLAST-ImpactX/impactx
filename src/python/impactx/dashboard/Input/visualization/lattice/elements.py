@@ -59,6 +59,7 @@ class LatticeVisualizerElements:
         self.seen_elements = set()
         self.show_labels = True  # Track whether to show labels
 
+
     def reset_legend(self):
         self.seen_elements.clear()
 
@@ -72,6 +73,14 @@ class LatticeVisualizerElements:
         """
         if element_type not in self.seen_elements:
             self.seen_elements.add(element_type)
+
+    def _add_annotation(self, fig, x, y, label, **kwargs):
+        """
+        This is the part that adds the label to the plotly figure.
+        """
+        kwargs.setdefault("text", label)
+        kwargs.setdefault("showarrow", False)
+        fig.add_annotation(x=x, y=y, **kwargs)
 
     def _add_trace(self, fig, show_legend=False, legend_name=None, legend_group=None, **kwargs):
         """

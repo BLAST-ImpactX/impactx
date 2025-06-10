@@ -1458,7 +1458,7 @@ add_impactx_test(examples-long-sextupole.py
 )
 
 # Dogleg in Reverse  ##############
-# 
+#
 # no space charge
 add_impactx_test(examples-dogleg-reverse
     examples/dogleg/input_dogleg_reverse.in
@@ -1470,5 +1470,5 @@ add_impactx_test(examples-dogleg-reverse.py
     examples/dogleg/run_dogleg_reverse.py
     ON   # ImpactX MPI-parallel
     examples/dogleg/analysis_dogleg_reverse.py
-    OFF  # no plot script yet  
+    OFF  # no plot script yet
 )

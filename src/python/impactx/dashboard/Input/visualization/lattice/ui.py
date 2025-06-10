@@ -46,6 +46,9 @@ class LatticeVisualizer(CardBase):
         super().__init__()
         
     def card_content(self):
+        """
+        The content of the lattice visualizer.
+        """
         with vuetify.VDialog(
             v_model=("lattice_visualizer_dialog_settings", False), max_width="33.33vw"
         ):

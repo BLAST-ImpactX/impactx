@@ -1,7 +1,7 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-beam.npart = 10000
+beam.npart = 1000000
 beam.units = static
 beam.kin_energy = 5.0e3
 beam.charge = 1.0e-9
@@ -65,3 +65,5 @@ algo.space_charge = false
 # Diagnostics
 ###############################################################################
 diag.slice_step_diagnostics = true
+diag.eigenemittances = true
+

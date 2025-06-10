@@ -212,6 +212,8 @@ jobs:
     - name: Build
       shell: cmd
       env:
+        # OpenMP Flags
+        CXXFLAGS: "-Xclang -fopenmp"
         # FFTW3 install prefix path
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"
@@ -225,6 +227,8 @@ jobs:
               -DCMAKE_CXX_COMPILER=clang-cl  ^
               -DCMAKE_LINKER=lld-link        ^
               -DCMAKE_NM=llvm-nm             ^
+              -DOpenMP_CXX_FLAGS="-Xclang -fopenmp" ^
+              -DOpenMP_CXX_LIB_NAMES="C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.43.34808\lib\x64\libomp.lib" ^
               -DBUILD_SHARED_LIBS=OFF        ^
               -DCMAKE_BUILD_TYPE=Release     ^
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^

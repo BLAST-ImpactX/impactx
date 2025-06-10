@@ -93,9 +93,9 @@ Initial Beam Distributions
   #. Parameters that describe correlations between (x,pt), (px,pt), (y,pt), and (py,pt), described by a nonzero **dispersion**
 
      * ``beam.dispX`` (``float``, in meters) beam-based horizontal dispersion
-     * ``beam.dispPx`` (``float``, dimensionless) derivative of beam-based horizontal dispersion   
-     * ``beam.dispY`` (``float``, in meters) beam-based vertical dispersion                  
-     * ``beam.dispPy`` (``float``, dimensionless) derivative of beam-based vertical dispersion    
+     * ``beam.dispPx`` (``float``, dimensionless) derivative of beam-based horizontal dispersion
+     * ``beam.dispY`` (``float``, in meters) beam-based vertical dispersion
+     * ``beam.dispPy`` (``float``, dimensionless) derivative of beam-based vertical dispersion
 
   The following distributions are available:
 

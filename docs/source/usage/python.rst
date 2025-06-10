@@ -495,7 +495,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, 
+.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0,
 meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Gaussian distribution.

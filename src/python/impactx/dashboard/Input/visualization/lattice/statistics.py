@@ -23,20 +23,33 @@ state.lattice_is_empty = len(state.selected_lattice_list) == 0
 class LatticeVisualizerStatisticUtils:
     
     @staticmethod
+    def _extract_parameter_values(parameter_name: str, value_type=float):
+        """
+        Helper function to extract parameter values from the lattice list.
+        
+        :param parameter_name: Name of the parameter to extract (case-insensitive)
+        :param value_type: Type to convert values to (float, int, etc.)
+        :return: List of extracted values
+        """
+        values = []
+        
+        for element in state.selected_lattice_list:
+            for param in element.get("parameters", []):
+                if param.get("parameter_name", "").lower() == parameter_name.lower():
+                    try:
+                        values.append(value_type(param.get("sim_input", 0)))
+                    except (ValueError, TypeError):
+                        pass
+        
+        return values
+    
+    @staticmethod
     def update_length_statistics() -> None:
         """
         Computes and return the total, min, max, and average length of the
         lattice configuration. Sums all elements' 'ds' (length) parameters.
         """
-        lengths = []
-
-        for element in state.selected_lattice_list:
-            for param in element.get("parameters", []):
-                if param.get("parameter_name", "").lower() == "ds":
-                    try:
-                        lengths.append(float(param.get("sim_input", 0)))
-                    except (ValueError, TypeError):
-                        pass
+        lengths = LatticeVisualizerStatisticUtils._extract_parameter_values("ds", float)
 
         if lengths:
             state.total_length = round(sum(lengths), 2)
@@ -80,17 +93,8 @@ class LatticeVisualizerStatisticUtils:
 
         :return: Total number of slices.
         """
-        total_steps = 0
-
-        for element in state.selected_lattice_list:
-            for param in element.get("parameters", []):
-                if param.get("parameter_name", "").lower() == "nslice":
-                    try:
-                        total_steps += int(param.get("sim_input", 0))
-                    except (ValueError, TypeError):
-                        pass
-
-        return total_steps
+        steps = LatticeVisualizerStatisticUtils._extract_parameter_values("nslice", int)
+        return sum(steps)
 
 class LatticeVisualizerStatisticComponents:
     @staticmethod

@@ -122,7 +122,7 @@ def lattice_visualizer():
         element_count = len(state.selected_lattice_list)
         draw.set_show_labels(element_count <= 20)
 
-        for element in state.selected_lattice_list:
+        for index, element in enumerate(state.selected_lattice_list, 1):
             element_name = element.get("name", "")  # This gets the actual element name
             element_label = get_element_name_param(element)  # This gets the name from parameters
             element_type = classify_element(element_name, element)
@@ -134,21 +134,21 @@ def lattice_visualizer():
 
             match element_type:
                 case "drift":
-                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label)
+                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index)
                 case "quadrupole":
                     k = get_element_param(element, "k", 0.0)
-                    x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label)
+                    x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label, index)
                 case "bend":
                     if element_name.lower().startswith("sbend"):
                         rc = get_element_param(element, "rc", 0.0)
-                        x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label)
+                        x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label, index)
                     elif element_name.lower().startswith("exactsbend"):
                         phi = get_element_param(element, "phi", 0)
-                        x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label)
+                        x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label, index)
                 case "monitor":
-                    x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_label)
+                    x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_label, index)
                 case _:
-                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label)
+                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index)
     except ValueError:
         return _error_plot(fig)
 

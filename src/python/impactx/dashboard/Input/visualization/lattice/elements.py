@@ -96,10 +96,11 @@ class LatticeVisualizerElements:
         trace = go.Scatter(**kwargs)
         fig.add_trace(trace)
 
-    def _generate_hover_text(self, label, ds, dx, dy, rotation, **special_params):
+    def _generate_hover_text(self, index, label, ds, dx, dy, rotation, **special_params):
         """
         Generate standardized hover text for lattice elements.
         
+        :param index: Element index in the lattice sequence
         :param label: Element label/name
         :param ds: Element length
         :param dx: X displacement
@@ -109,6 +110,7 @@ class LatticeVisualizerElements:
         :return: Formatted hover text string
         """
         text = (
+            f"<b>Element #{index}</b><br>"
             f"<b>{label}</b><br>"
             f"ds: {ds} m<br>"
         )
@@ -130,7 +132,7 @@ class LatticeVisualizerElements:
         
         return text
 
-    def drift(self, fig, x, y, ds, dx, dy, rotation, label):
+    def drift(self, fig, x, y, ds, dx, dy, rotation, label, index):
         show_legend = self._add_to_legend("drift")
         rotation_rad = np.radians(rotation)
         thickness = 0.05  # line thickness (half-height for visual padding)
@@ -148,7 +150,7 @@ class LatticeVisualizerElements:
             fill="toself",
             line=dict(color="gray", width=1),
             fillcolor="lightgray",
-            text=self._generate_hover_text(label, ds, dx, dy, rotation),
+            text=self._generate_hover_text(index, label, ds, dx, dy, rotation),
             show_legend=show_legend,
             legend_name="Drift",
             legend_group="Drift"
@@ -168,7 +170,7 @@ class LatticeVisualizerElements:
         return x1, y1, rotation
 
 
-    def quad(self, fig, x, y, k, ds, dx, dy, rotation, label):
+    def quad(self, fig, x, y, k, ds, dx, dy, rotation, label, index):
         x1, y1 = transform(x, y, rotation, ds)
         x += dx
         y += dy
@@ -202,7 +204,7 @@ class LatticeVisualizerElements:
             fill="toself",
             line=dict(color=line_color, width=2),
             fillcolor=fill_color,
-            text=self._generate_hover_text(label, ds, dx, dy, rotation, k=k),
+            text=self._generate_hover_text(index, label, ds, dx, dy, rotation, k=k),
             show_legend=show_legend,
             legend_name=legend_name,
             legend_group=legend_name
@@ -212,7 +214,7 @@ class LatticeVisualizerElements:
             self._add_annotation(fig, x=(x + x1)/2, y=y+0.4, label=label)
         return x1, y1, rotation
 
-    def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label):
+    def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label, index):
         show_legend = self._add_to_legend("sbend")
         """
         Draw a sector‐bend (SBEND) of length ds that has radius rc.
@@ -248,7 +250,7 @@ class LatticeVisualizerElements:
             y=arc_y,
             mode="lines",
             line=dict(color="blue", width=3),
-            text=self._generate_hover_text(label, ds, dx, dy, rotation, rc=rc, phi=np.degrees(phi_rad)),
+            text=self._generate_hover_text(index, label, ds, dx, dy, rotation, rc=rc, phi=np.degrees(phi_rad)),
             show_legend=show_legend,
             legend_name="Sector Bend",
             legend_group="Sector Bend"
@@ -269,7 +271,7 @@ class LatticeVisualizerElements:
         final_angle = rotation + np.degrees(phi_rad)
         return x_end, y_end, final_angle
 
-    def exactSBend(self, fig, x, y, ds: float, dx: float, dy: float, rotation_deg: float, phi_deg: float, label: str):
+    def exactSBend(self, fig, x, y, ds: float, dx: float, dy: float, rotation_deg: float, phi_deg: float, label: str, index: int):
         show_legend = self._add_to_legend("exactsbend")
         """
         Draws an ExactSBend lattice element on the lattice visualization.
@@ -301,7 +303,7 @@ class LatticeVisualizerElements:
             y=arc_y,
             mode="lines",
             line=dict(color="blue", width=3),
-            text=self._generate_hover_text(label, ds, dx, dy, rotation_deg, phi=phi_deg),
+            text=self._generate_hover_text(index, label, ds, dx, dy, rotation_deg, phi=phi_deg),
             show_legend=show_legend,
             legend_name="Exact Sector Bend",
             legend_group="Exact Sector Bend"
@@ -322,7 +324,7 @@ class LatticeVisualizerElements:
         y_end = arc_y[-1]
         return x_end, y_end, final_angle
 
-    def beam_monitor(self, fig, x, y, rotation, length, label):
+    def beam_monitor(self, fig, x, y, rotation, length, label, index):
         show_legend = self._add_to_legend("monitor")
         x1, y1 = transform(x, y, rotation, length)
         fig.add_shape(
@@ -337,7 +339,7 @@ class LatticeVisualizerElements:
             x=[(x + x1)/2], y=[y],
             mode="markers",
             marker=dict(size=15, color='rgba(0,0,0,0)'),
-            text=self._generate_hover_text(label, length, 0, 0, rotation),
+            text=self._generate_hover_text(index, label, length, 0, 0, rotation),
             show_legend=show_legend,
             legend_name="Beam Monitor",
             legend_group="Beam Monitor"

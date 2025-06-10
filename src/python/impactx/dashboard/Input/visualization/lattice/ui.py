@@ -11,7 +11,7 @@ from trame.widgets import plotly
 
 from ... import CardBase, NavigationComponents
 from . import Dialogs, StatComponents, StatUtils
-from .plot import lattice_visualizer
+from .visualization.plot import lattice_visualizer
 
 server, state, ctrl = setup_server()
 

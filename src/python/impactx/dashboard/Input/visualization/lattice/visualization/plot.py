@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import plotly.graph_objects as go
 from .elements import LatticeVisualizerElements as DrawElements
 
-from .... import setup_server
+from ..... import setup_server
 
 server, state, ctrl = setup_server()
 draw = DrawElements()

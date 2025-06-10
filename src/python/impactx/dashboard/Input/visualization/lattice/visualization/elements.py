@@ -10,6 +10,28 @@ import plotly.graph_objects as go
 import numpy as np
 from .calculations import transform, rotate_corners
 
+# Global color dictionary for quadrupole visual properties
+QUAD_COLORS = {
+    'focusing_quadrupole': {
+        'legend_name': 'Focusing Quadrupole',
+        'line_color': 'darkblue',
+        'fill_color': 'lightblue',
+        'line_width': 2
+    },
+    'defocusing_quadrupole': {
+        'legend_name': 'Defocusing Quadrupole',
+        'line_color': 'darkred',
+        'fill_color': 'lightcoral',
+        'line_width': 2
+    },
+    'quadrupole': {
+        'legend_name': 'Quadrupole',
+        'line_color': 'darkgreen',
+        'fill_color': 'lightgreen',
+        'line_width': 2
+    }
+}
+
 
 class LatticeVisualizerElements:
 
@@ -150,19 +172,16 @@ class LatticeVisualizerElements:
         x += dx
         y += dy
     
-        # Determine quad type and visual properties based on k value
+        # Determine quad type and get visual properties based on k value
         if k > 0:
-            quad_legend_name = "Focusing Quadrupole"
-            line_color = "darkblue"
-            fill_color = "lightblue"
+            quad_type = 'focusing_quadrupole'
         elif k < 0:
-            quad_legend_name = "Defocusing Quadrupole"
-            line_color = "darkred"
-            fill_color = "lightcoral"
+            quad_type = 'defocusing_quadrupole'
         else:
-            quad_legend_name = "Quadrupole"
-            line_color = "darkgreen"
-            fill_color = "lightgreen"
+            quad_type = 'quadrupole'
+        
+        quad_colors = QUAD_COLORS[quad_type]
+        quad_legend_name = quad_colors['legend_name']
 
         show_legend = self._add_to_legend(quad_legend_name)
         rotated_corners = rotate_corners(x, y, rotation, ds, 0.2)
@@ -174,8 +193,8 @@ class LatticeVisualizerElements:
             y=ys,
             mode="lines",
             fill="toself",
-            line=dict(color=line_color, width=2),
-            fillcolor=fill_color,
+            line=dict(color=quad_colors['line_color'], width=quad_colors['line_width']),
+            fillcolor=quad_colors['fill_color'],
             text=self._generate_hover_text(index, label, ds, dx, dy, rotation, k=k),
             show_legend=show_legend,
             legend_name=quad_legend_name,

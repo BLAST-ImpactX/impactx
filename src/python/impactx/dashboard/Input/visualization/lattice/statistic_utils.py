@@ -6,7 +6,6 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import CardComponents
 from .... import html, setup_server, vuetify
 server, state, ctrl = setup_server()
 
@@ -94,15 +93,6 @@ class LatticeVisualizerStatisticUtils:
         return total_steps
 
 class LatticeVisualizerStatisticComponents:
-    @staticmethod
-    def settings():
-        CardComponents.card_button(
-            "mdi-cog",
-            color="white",
-            click="lattice_visualizer_dialog_settings = true",
-            description="Settings",
-        )
-
     @staticmethod
     def _stat(title: str) -> None:
         """

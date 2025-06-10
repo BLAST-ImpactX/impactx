@@ -39,20 +39,6 @@ def get_element_name_param(element):
     element_type = element.get("name", "")
     return f"{element_type}"  # Use the element type as fallback
 
-def classify_element(element_name, element=None):
-    name = element_name.lower()
-    match name:
-        case _ if "drift" in name:
-            return "drift"
-        case _ if "quad" in name:
-            return "quadrupole"
-        case _ if "bend" in name or "dipole" in name:
-            return "bend"
-        case _ if "monitor" in name or "bpm" in name:
-            return "monitor"
-        case _:
-            return "drift"  # default fallback
-
 # -----------------------------------------------------------------------------
 # Lattice Visualizer
 # -----------------------------------------------------------------------------
@@ -123,32 +109,36 @@ def lattice_visualizer():
         draw.set_show_labels(element_count <= 20)
 
         for index, element in enumerate(state.selected_lattice_list, 1):
-            element_name = element.get("name", "")  # This gets the actual element name
+            element_name = element.get("name", "").lower()  # This gets the actual element name
             element_label = get_element_name_param(element)  # This gets the name from parameters
-            element_type = classify_element(element_name, element)
             ds = get_element_param(element, "ds", 1.0)
             dx = get_element_param(element, "dx", 0.0)
             dy = get_element_param(element, "dy", 0.0)
             element_rotation = get_element_param(element, "rotation", 0.0)
             rotation_total = rotation + element_rotation
 
-            match element_type:
-                case "drift":
+            # Classify and draw element based on name
+            if "drift" in element_name:
+                x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index)
+            elif "quad" in element_name:
+                k = get_element_param(element, "k", 0.0)
+                x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label, index)
+            elif "bend" in element_name or "dipole" in element_name:
+                if element_name.startswith("sbend"):
+                    rc = get_element_param(element, "rc", 0.0)
+                    x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label, index)
+                elif element_name.startswith("exactsbend"):
+                    phi = get_element_param(element, "phi", 0)
+                    x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label, index)
+                else:
+                    # Default bend handling
                     x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index)
-                case "quadrupole":
-                    k = get_element_param(element, "k", 0.0)
-                    x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label, index)
-                case "bend":
-                    if element_name.lower().startswith("sbend"):
-                        rc = get_element_param(element, "rc", 0.0)
-                        x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label, index)
-                    elif element_name.lower().startswith("exactsbend"):
-                        phi = get_element_param(element, "phi", 0)
-                        x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label, index)
-                case "monitor":
-                    x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_label, index)
-                case _:
-                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index)
+            elif "monitor" in element_name or "bpm" in element_name:
+                x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_label, index)
+            else:
+                # Default fallback to drift
+                x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index)
+                
     except ValueError:
         return _error_plot(fig)
 

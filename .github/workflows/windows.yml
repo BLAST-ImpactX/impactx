@@ -126,7 +126,7 @@ jobs:
 
   build_win_clang:
     name: Clang w/ OMP w/o MPI
-    runs-on: windows-2019
+    runs-on: windows-2022
     if: github.event.pull_request.draft == false
     steps:
     - uses: actions/checkout@v4
@@ -159,7 +159,7 @@ jobs:
     - name: Install Dependencies
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         cmake -S fftw-3.3.10                    ^
               -B build_fftw                     ^
@@ -216,7 +216,7 @@ jobs:
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         cmake -S . -B build   ^
@@ -239,13 +239,13 @@ jobs:
     - name: Test
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
         ctest --test-dir build --output-on-failure -E AMReX
         if errorlevel 1 exit 1
 #    - name: Install
 #      shell: cmd
 #      run: |
-#        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+#        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 #        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
 #
 #        cmake --build build --target install

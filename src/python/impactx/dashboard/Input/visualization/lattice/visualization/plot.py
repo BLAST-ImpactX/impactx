@@ -7,41 +7,13 @@ License: BSD-3-Clause-LBNL
 """
 
 import plotly.graph_objects as go
-from .elements import LatticeVisualizerElements as DrawElements
-
+from . import LatticeVisualizerElements as DrawElements
+from . import LatticeVisualizerUtils as Utils
 from ..... import setup_server
 
 server, state, ctrl = setup_server()
 draw = DrawElements()
-
-# -----------------------------------------------------------------------------
-# utils
-# -----------------------------------------------------------------------------
-
-def get_element_param(element, name, default=0.0):
-    for param in element.get("parameters", []):
-        if param.get("parameter_name", "").lower() == name.lower():
-            try:
-                return float(param.get("sim_input", default))
-            except (ValueError, TypeError):
-                raise ValueError(f"Invalid value for {name}: {param.get('sim_input', default)}")
-    return default
-
-def get_element_name_param(element):
-    """Get the name parameter from the element's parameters list."""
-    for param in element.get("parameters", []):
-        if param.get("parameter_name", "").lower() == "name":
-            name_value = param.get("sim_input", "")
-            if name_value and name_value.strip():  # Check if name is not empty
-                return name_value
-    
-    # If no name parameter found or it's empty, create a meaningful fallback
-    element_type = element.get("name", "")
-    return f"{element_type}"  # Use the element type as fallback
-
-# -----------------------------------------------------------------------------
-# Lattice Visualizer
-# -----------------------------------------------------------------------------
+utils = Utils()
 
 def _error_plot(fig: go.Figure) -> go.Figure:
     """
@@ -110,25 +82,25 @@ def lattice_visualizer():
 
         for index, element in enumerate(state.selected_lattice_list, 1):
             element_name = element.get("name", "").lower()  # This gets the actual element name
-            element_label = get_element_name_param(element)  # This gets the name from parameters
-            ds = get_element_param(element, "ds", 1.0)
-            dx = get_element_param(element, "dx", 0.0)
-            dy = get_element_param(element, "dy", 0.0)
-            element_rotation = get_element_param(element, "rotation", 0.0)
+            element_label = utils.get_element_name_param(element)  # This gets the name from parameters
+            ds = utils.get_element_param(element, "ds", 1.0)
+            dx = utils.get_element_param(element, "dx", 0.0)
+            dy = utils.get_element_param(element, "dy", 0.0)
+            element_rotation = utils.get_element_param(element, "rotation", 0.0)
             rotation_total = rotation + element_rotation
 
             # Classify and draw element based on name
             if "drift" in element_name:
                 x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index, element_name)
             elif "quad" in element_name:
-                k = get_element_param(element, "k", 0.0)
+                k = utils.get_element_param(element, "k", 0.0)
                 x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label, index, element_name)
             elif "bend" in element_name or "dipole" in element_name:
                 if element_name.startswith("sbend"):
-                    rc = get_element_param(element, "rc", 0.0)
+                    rc = utils.get_element_param(element, "rc", 0.0)
                     x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label, index, element_name)
                 elif element_name.startswith("exactsbend"):
-                    phi = get_element_param(element, "phi", 0)
+                    phi = utils.get_element_param(element, "phi", 0)
                     x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label, index, element_name)
                 else:
                     # Default bend handling

@@ -38,6 +38,9 @@ def on_lattice_list_change(**kwargs):
     _update_lattice_visualization()
 
 class LatticeVisualizer(CardBase):
+    """
+    Displays the lattice visualizer section on the inputs page of the dashboard.
+    """
 
     def __init__(self):
         super().__init__()
@@ -59,7 +62,7 @@ class LatticeVisualizer(CardBase):
                 with vuetify.VCardTitle(classes="d-flex align-center"):
                     html.Div("Lattice Statistics")
                     vuetify.VSpacer()
-                    StatComponents.settings()
+                    Dialogs.settings()
                 StatComponents.statistics()
             
             with vuetify.VCard(color="#002949"):

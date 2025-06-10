@@ -67,4 +67,3 @@ algo.space_charge = false
 ###############################################################################
 diag.slice_step_diagnostics = true
 diag.eigenemittances = true
-

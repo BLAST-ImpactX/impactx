@@ -127,19 +127,19 @@ print(f"  dispersion_x={dispersion_x:e} dispersion_px={dispersion_px:e}")
 atol = 0.0  # ignored
 rtol = 3.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
-     
+
 assert np.allclose(
     [alpha_x, beta_x, alpha_y, beta_y, dispersion_x],
     [
-        1.340770e+00,
-        1.440253e+01,
-        -1.347747e+00,
-        4.602637e+00,
+        1.340770e00,
+        1.440253e01,
+        -1.347747e00,
+        4.602637e00,
         -2.667038e-01,
     ],
     rtol=rtol,
     atol=atol,
-)   
+)
 
 print("")
 print("Final Twiss functions:")
@@ -154,9 +154,9 @@ print(f"  rtol={rtol} (ignored: atol~={atol})")
 assert np.allclose(
     [beta_x, alpha_y, beta_y],
     [
-        5.176642e+00,
-        -4.973010e+00,
-        4.687750e+01,
+        5.176642e00,
+        -4.973010e00,
+        4.687750e01,
     ],
     rtol=rtol,
     atol=atol,
@@ -167,15 +167,14 @@ assert np.allclose(
 assert np.allclose(
     [alpha_x],
     [
-         0.0,
+        0.0,
     ],
     atol=0.1,
 )
 assert np.allclose(
     [dispersion_x],
     [
-         0.0,
+        0.0,
     ],
     atol=3.0e-5,
 )
-

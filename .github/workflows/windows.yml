@@ -16,7 +16,7 @@ jobs:
     - uses: actions/setup-python@v5
       name: Install Python
       with:
-        python-version: '3.x'
+        python-version: '3.12'
     - name: CCache Cache
       uses: actions/cache@v4
       # - once stored under a key, they become immutable (even if local cache path content changes)
@@ -133,7 +133,7 @@ jobs:
     - uses: actions/setup-python@v5
       name: Install Python
       with:
-        python-version: '3.x'
+        python-version: '3.11'
     - name: CCache Cache
       uses: actions/cache@v4
       # - once stored under a key, they become immutable (even if local cache path content changes)
@@ -159,7 +159,7 @@ jobs:
     - name: Install Dependencies
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         cmake -S fftw-3.3.10                    ^
               -B build_fftw                     ^
@@ -187,6 +187,8 @@ jobs:
             -G "Ninja"                          ^
             -DCMAKE_C_COMPILER=clang-cl         ^
             -DCMAKE_CXX_COMPILER=clang-cl       ^
+            -DCMAKE_LINKER=lld-link             ^
+            -DCMAKE_NM=llvm-nm                  ^
             -DCMAKE_BUILD_TYPE=Release          ^
             -DBUILD_SHARED_LIBS=OFF             ^
             -DBUILD_TESTING=OFF                 ^
@@ -212,13 +214,11 @@ jobs:
     - name: Build
       shell: cmd
       env:
-        # OpenMP Flags
-        CXXFLAGS: "-Xclang -fopenmp"
         # FFTW3 install prefix path
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         cmake -S . -B build   ^
@@ -227,8 +227,6 @@ jobs:
               -DCMAKE_CXX_COMPILER=clang-cl  ^
               -DCMAKE_LINKER=lld-link        ^
               -DCMAKE_NM=llvm-nm             ^
-              -DOpenMP_CXX_FLAGS="-Xclang -fopenmp" ^
-              -DOpenMP_CXX_LIB_NAMES="C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.43.34808\lib\x64\libomp.lib" ^
               -DBUILD_SHARED_LIBS=OFF        ^
               -DCMAKE_BUILD_TYPE=Release     ^
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^
@@ -237,21 +235,20 @@ jobs:
               -DImpactX_FFT=ON               ^
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^
-              -DopenPMD_USE_HDF5=ON          ^
-              -DPython_EXECUTABLE=python3
+              -DopenPMD_USE_HDF5=ON
         if errorlevel 1 exit 1
         cmake --build build --parallel 4
         if errorlevel 1 exit 1
     - name: Test
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
         ctest --test-dir build --output-on-failure -E AMReX
         if errorlevel 1 exit 1
 #    - name: Install
 #      shell: cmd
 #      run: |
-#        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 #        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
 #
 #        cmake --build build --target install

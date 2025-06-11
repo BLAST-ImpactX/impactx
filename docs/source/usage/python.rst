@@ -495,8 +495,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0,
-meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Gaussian distribution.
 
@@ -520,19 +519,19 @@ meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
    :param dispy: see dispx
    :param disppy: see disppx
 
-.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 4D Kurth distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
 
-.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Kurth distribution.
 
    R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)
    C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
 
-.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A K-V distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
@@ -541,18 +540,18 @@ meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    This distribution sets all values to zero.
 
-.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
 
-.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A triangle distribution for laser-plasma acceleration related applications.
 
    A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
    The transverse distribution is a 4D waterbag.
 
-.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Waterbag distribution.
 

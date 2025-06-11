@@ -52,9 +52,9 @@ def get_twiss(openpmd_beam):
     return (alpha_x, beta_x, alpha_y, beta_y, d_x, d_px)
 
 
-def get_mean(openpmd_beam):  
+def get_mean(openpmd_beam):
     """Return centroid (mean) from an openPMD particle species
-        
+
     Returns
     -------
     x_mean, px_mean, y_mean, py_mean, t_mean, pt_mean
@@ -65,7 +65,7 @@ def get_mean(openpmd_beam):
     py_mean = openpmd_beam.get_attribute("py_mean")
     t_mean = openpmd_beam.get_attribute("t_mean")
     pt_mean = openpmd_beam.get_attribute("pt_mean")
-    
+
     return (x_mean, px_mean, y_mean, py_mean, t_mean, pt_mean)
 
 
@@ -163,14 +163,16 @@ print(f"  x_mean={x_mean:e} y_mean={y_mean:e} t_mean={t_mean:e}")
 print(f"  px_mean={px_mean:e} py_mean={py_mean:e} pt_mean={pt_mean:e}")
 
 # Predicted beam centroid
-mean_pt_input = 0.025  #specified in the lattice input file
+mean_pt_input = 0.025  # specified in the lattice input file
 pt_mean_predicted = mean_pt_input
 x_mean_predicted = -dispersion_x * pt_mean
 px_mean_predicted = -dispersion_px * pt_mean
 
 print("")
 print("Predicted beam centroid:")
-print(f"  x_mean_predicted={x_mean_predicted:e} px_mean_predicted={px_mean_predicted:e} pt_mean_predicted={pt_mean_predicted:e}")
+print(
+    f"  x_mean_predicted={x_mean_predicted:e} px_mean_predicted={px_mean_predicted:e} pt_mean_predicted={pt_mean_predicted:e}"
+)
 
 atol = 0.0  # ignored
 rtol = 3.5 * num_particles**-0.5  # from random sampling of a smooth distribution
@@ -179,7 +181,7 @@ assert np.allclose(
     [x_mean, pt_mean],
     [
         x_mean_predicted,
-        pt_mean_predicted, 
+        pt_mean_predicted,
     ],
     rtol=rtol,
     atol=atol,

@@ -1474,7 +1474,7 @@ add_impactx_test(examples-dogleg-reverse.py
 )
 
 # Dogleg with Energy Jitter ##############
-#   
+#
 # no space charge
 add_impactx_test(examples-dogleg-jitter
     examples/dogleg/input_dogleg_jitter.in
@@ -1488,4 +1488,3 @@ add_impactx_test(examples-dogleg-jitter.py
     examples/dogleg/analysis_dogleg_jitter.py
     OFF  # no plot script yet
 )
-

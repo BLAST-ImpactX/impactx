@@ -131,7 +131,7 @@ agree with nominal values.
 In addition, the initial and final values of :math:`\alpha_x`, :math:`\alpha_y`, :math:`\beta_x`, :math:`\beta_y`, :math:`\dispersion_x`, and :math:`\dispersion_px` must
 agree with nominal values.
 
-Finally, the values of :math:`\mean_pt`, `\mean_x`, and `\mean_px` must agree with predicted values.
+Finally, the values of :math:`\mean_pt`, :math:`\mean_x`, and :math:`\mean_px` must agree with predicted values.
 
 Run
 ---

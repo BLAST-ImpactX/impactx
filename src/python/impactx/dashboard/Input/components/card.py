@@ -136,6 +136,10 @@ class CardComponents:
                 )
 
         if dynamic_condition:
+            if description is None:
+                raise ValueError(
+                    "When dynamic_condition is set, 'description' must be provided and cannot be None."
+                )
             validate_dynamic_condition(icon_name, "icon_name")
             validate_dynamic_condition(description, "description")
 

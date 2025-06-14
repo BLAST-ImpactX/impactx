@@ -24,7 +24,6 @@ from .utils import (
     reason="seleniumbase is not available",
 )
 def test_dashboard():
-
     """
     Tests the ImpactX dashboard with inputs from 'examples/fodo/run_fodo.py'.
 

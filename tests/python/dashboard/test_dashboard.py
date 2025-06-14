@@ -23,7 +23,8 @@ from .utils import (
     importlib.util.find_spec("seleniumbase") is None,
     reason="seleniumbase is not available",
 )
-def test_dashbnoard():
+def test_dashboard():
+
     """
     Tests the ImpactX dashboard with inputs from 'examples/fodo/run_fodo.py'.
 

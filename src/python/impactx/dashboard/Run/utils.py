@@ -6,12 +6,7 @@ import sys
 import time
 
 from .. import setup_server
-<<<<<<< HEAD
 from ..Toolbar.sim_history import save_view_details_log
-=======
-from ..Analyze.plotsMain import load_dataTable_data, update_plot
-from ..Toolbar.sim_history.ui import SimulationHistory
->>>>>>> 7e574353 (relocate function call)
 
 server, state, ctrl = setup_server()
 
@@ -116,10 +111,6 @@ class SimulationHelper:
 
             os.remove("phase_space_plot.png")
 
-    @staticmethod
-    def update_plot_over_s():
-        update_plot()
-        load_dataTable_data()
 
 class SimulationProgress:
     """

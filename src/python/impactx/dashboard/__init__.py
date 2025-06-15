@@ -6,7 +6,7 @@ from trame.widgets import vuetify3 as vuetify
 from .trame_setup import setup_server
 from .Toolbar.general import GeneralToolbar
 
-from .Analyze.plotsMain import AnalyzeSimulation
+from .Analyze.ui import AnalyzeSimulation
 from .Input.csrConfiguration.csrMain import csrConfiguration
 from .Input.isr.ui import isrConfiguration
 from .Input.distribution.ui import DistributionParameters

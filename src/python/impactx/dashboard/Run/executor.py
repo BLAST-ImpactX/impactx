@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from .. import setup_server
+from ..Analyze import VisualizeOverS
 from ..Toolbar.sim_history.ui import SimulationHistory
 from . import SimulationHelper, SimulationProgress
 from .simulation import dashboard_sim_inputs
@@ -20,7 +21,7 @@ state.sim_progress = 0
 def run_execute_impactx_sim():
     asyncio.get_running_loop().create_task(execute_impactx_sim())
 
-
+over_s = VisualizeOverS()
 state.sim_status_color = "primary"
 
 
@@ -87,6 +88,6 @@ async def execute_impactx_sim() -> None:
 
     # Update visualizations
     SimulationHelper.display_phase_space_plots()
-    SimulationHelper.update_plot_over_s()
-    
+    over_s.update()
+
     SimulationHelper.complete_simulation()

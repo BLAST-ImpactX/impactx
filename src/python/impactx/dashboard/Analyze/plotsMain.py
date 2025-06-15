@@ -169,6 +169,7 @@ class AnalyzeSimulation:
 
         dialog_name = "plot_over_s_tab_dialog"
 
+        update_data_table()
         with vuetify.VContainer(fluid=True):
             with vuetify.VRow():
                 with vuetify.VCol(cols=9, classes="d-flex flex-column"):
@@ -194,8 +195,6 @@ class AnalyzeSimulation:
                             items=("headers_without_step_or_s",),
                             label="Select data to view",
                             multiple=True,
-                            item_title="title",
-                            item_value="key",
                             density="comfortable",
                             variant="outlined",
                         )

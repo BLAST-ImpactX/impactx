@@ -17,19 +17,16 @@ server, state, ctrl = setup_server()
 DEFAULT_HEADERS = ["s", "beta_x", "beta_y"]
 
 state.selected_headers = DEFAULT_HEADERS
-state.filtered_data = []
 state.all_data = []
 state.all_headers = []
 
 @state.change("selected_headers")
-def on_header_selection_change(selected_headers, **kwargs):
-    state.filtered_headers = AnalyzeFunctions.filter_headers(
-        state.all_headers, selected_headers
-    )
-    state.filtered_data = AnalyzeFunctions.filter_data(state.all_data, selected_headers)
+def on_header_selection_change(**kwargs):
+    state.over_s_headers = AnalyzeFunctions.filter_headers()
+    state.over_s_data = AnalyzeFunctions.filter_data()
 
-@state.change("filtered_data", "active_plot")
-def on_filtered_data_change(**kwargs):
+@state.change("over_s_data", "active_plot")
+def on_over_s_data_change(**kwargs):
     over_s.update()
 
 class VisualizeOverS:
@@ -40,19 +37,15 @@ class VisualizeOverS:
         """
 
         self.load_dataTable_data()
-        state.filtered_data = AnalyzeFunctions.filter_data(
-            state.all_data, state.selected_headers
-        )
-        state.filtered_headers = AnalyzeFunctions.filter_headers(
-            state.all_headers, state.selected_headers
-        )
+        state.over_s_data = AnalyzeFunctions.filter_data()
+        state.over_s_headers = AnalyzeFunctions.filter_headers()
 
     def _update_plot(self):
         """
         Updates the plot in the 'Plot Over S' tab
         """
 
-        fig = line_plot_1d(state.selected_headers, state.filtered_data)
+        fig = line_plot_1d(state.selected_headers, state.over_s_data)
         ctrl.plotly_figure_update(fig)
 
 

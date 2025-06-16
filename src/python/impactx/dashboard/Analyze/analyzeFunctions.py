@@ -68,31 +68,35 @@ class AnalyzeFunctions:
         return pd.merge(file1, file2, how="outer")
 
     @staticmethod
-    def filter_headers(allHeaders, selected_headers):
+    def filter_headers() -> list:
         """
         Retrieves only user-selected headers.
-        :param allHeaders: The list of all headers.
-        :param selected_headers: The list of headers selected by the user.
+        
         :return: A list of filtered headers based on user selection.
         """
 
+        all_headers = state.all_headers
+        selected_headers = state.selected_headers
+
         filtered_headers = []
-        for selectedHeader in allHeaders:
+        for selectedHeader in all_headers:
             if selectedHeader["key"] in selected_headers:
                 filtered_headers.append(selectedHeader)
         return filtered_headers
 
     @staticmethod
-    def filter_data(allData, selected_headers):
+    def filter_data() -> list:
         """
         Retrieves data for user-selected headers.
-        :param allData: The list of all data.
-        :param selected_headers: The list of headers selected by the user.
+
         :return: A list of filtered data based on user selection.
         """
 
+        all_data = state.all_data
+        selected_headers = state.selected_headers
+ 
         filtered_data = []
-        for row in allData:
+        for row in all_data:
             filtered_row = {}
             for key, value in row.items():
                 if key in selected_headers:

@@ -22,25 +22,23 @@ state.all_headers = []
 
 @state.change("selected_headers")
 def on_header_selection_change(**_):
-    over_s.update()
+    over_s._update_visualization()
 
 class VisualizeOverS:
-    def _update_table(self):
-        """
-        Combines reducedBeam and refParticle files
-        and updates data table upon column selection by user
-        """
-
-        state.over_s_data = AnalyzeFunctions.filter_data()
-        state.over_s_headers = AnalyzeFunctions.filter_headers()
-
     def update(self):
         """
         Updates the 'Plot Over S' tab with the latest data and plot.
         Called once when the simulation is complete.
         """
         self.load_dataTable_data()
-        self._update_table()
+        self._update_visualization()
+
+    def _update_visualization(self):
+        # Update the table
+        state.over_s_data = AnalyzeFunctions.filter_data()
+        state.over_s_headers = AnalyzeFunctions.filter_headers()
+
+        # Update the plot
         ctrl.plotly_figure_update(over_s_plot())
 
     def load_dataTable_data(self):

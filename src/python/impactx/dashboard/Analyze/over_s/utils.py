@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 import glob
 import os
 
-from . import line_plot_1d
+from .plot import over_s_plot
 from ..analyzeFunctions import AnalyzeFunctions
 from ... import setup_server
 
@@ -34,15 +34,6 @@ class VisualizeOverS:
         state.over_s_data = AnalyzeFunctions.filter_data()
         state.over_s_headers = AnalyzeFunctions.filter_headers()
 
-    def _update_plot(self):
-        """
-        Updates the plot in the 'Plot Over S' tab
-        """
-
-        fig = line_plot_1d(state.selected_headers, state.over_s_data)
-        ctrl.plotly_figure_update(fig)
-
-
     def update(self):
         """
         Updates the 'Plot Over S' tab with the latest data and plot.
@@ -50,7 +41,7 @@ class VisualizeOverS:
         """
         self.load_dataTable_data()
         self._update_table()
-        self._update_plot()
+        ctrl.plotly_figure_update(over_s_plot())
 
     def load_dataTable_data(self):
         """

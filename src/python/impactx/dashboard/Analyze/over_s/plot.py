@@ -8,21 +8,26 @@ License: BSD-3-Clause-LBNL
 
 import plotly.graph_objects as go
 
+from ... import setup_server
+server, state, ctrl = setup_server()
 
-def line_plot_1d(selected_headers, filtered_data):
+def over_s_plot():
     """
     Generates a 1D line plot using Plotly based on selected headers and filtered data.
     """
 
+    selected_headers = state.selected_headers
+    over_s_data = state.over_s_data
+
     x_axis = selected_headers[0] if len(selected_headers) > 1 else None
     y_axis = selected_headers[1:] if len(selected_headers) > 2 else None
 
-    x = [row[x_axis] for row in filtered_data] if x_axis else []
+    x = [row[x_axis] for row in over_s_data] if x_axis else []
 
     figure_data = []
     if y_axis:
         for column in y_axis:
-            y = [row[column] for row in filtered_data]
+            y = [row[column] for row in over_s_data]
             trace = go.Scatter(
                 x=x,
                 y=y,

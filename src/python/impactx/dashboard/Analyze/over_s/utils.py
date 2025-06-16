@@ -21,12 +21,7 @@ state.all_data = []
 state.all_headers = []
 
 @state.change("selected_headers")
-def on_header_selection_change(**kwargs):
-    state.over_s_headers = AnalyzeFunctions.filter_headers()
-    state.over_s_data = AnalyzeFunctions.filter_data()
-
-@state.change("over_s_data", "active_plot")
-def on_over_s_data_change(**kwargs):
+def on_header_selection_change(**_):
     over_s.update()
 
 class VisualizeOverS:
@@ -36,7 +31,6 @@ class VisualizeOverS:
         and updates data table upon column selection by user
         """
 
-        self.load_dataTable_data()
         state.over_s_data = AnalyzeFunctions.filter_data()
         state.over_s_headers = AnalyzeFunctions.filter_headers()
 
@@ -54,6 +48,7 @@ class VisualizeOverS:
         Updates the 'Plot Over S' tab with the latest data and plot.
         Called once when the simulation is complete.
         """
+        self.load_dataTable_data()
         self._update_table()
         self._update_plot()
 
@@ -84,6 +79,8 @@ class VisualizeOverS:
         data, headers = combined_files_data_converted_to_dictionary_format
         state.all_data = data
         state.all_headers = headers
-        state.headers_without_step_or_s = state.all_headers[2:]
+        state.selectable_headers = [
+            header for header in state.all_headers if header["key"] not in ("step", "s")
+        ]
 
 over_s = VisualizeOverS()

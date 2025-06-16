@@ -73,7 +73,7 @@ class AnalyzeSimulation:
                     with vuetify.VCard(classes="pa-4 d-flex flex-column"):
                         vuetify.VSelect(
                             v_model=("selected_headers",),
-                            items=("headers_without_step_or_s",),
+                            items=("selectable_headers",),
                             label="Select data to view",
                             multiple=True,
                             density="comfortable",

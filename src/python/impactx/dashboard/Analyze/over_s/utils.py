@@ -24,6 +24,12 @@ state.all_headers = []
 def on_header_selection_change(**_):
     over_s._update_visualization()
 
+@state.change("all_headers")
+def on_all_headers_updated(**_):
+    state.selectable_headers = [
+        header for header in state.all_headers if header["key"] not in ("step", "s")
+    ]
+
 class VisualizeOverS:
     def update(self):
         """
@@ -68,8 +74,5 @@ class VisualizeOverS:
         data, headers = combined_files_data_converted_to_dictionary_format
         state.all_data = data
         state.all_headers = headers
-        state.selectable_headers = [
-            header for header in state.all_headers if header["key"] not in ("step", "s")
-        ]
 
 over_s = VisualizeOverS()

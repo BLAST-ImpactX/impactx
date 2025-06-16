@@ -65,9 +65,9 @@ class AnalyzeSimulation:
                             with vuetify.VTabsWindowItem(): # tab2
                                 with vuetify.VContainer(style="height: 80vh; width: 100%;",):
                                     vuetify.VDataTable(
-                                        headers=("over_s_headers",),
-                                        items=("over_s_data", []),
-                                        density="compact",  
+                                        headers=("over_s_table_headers",),
+                                        items=("over_s_table_data", []),
+                                        density="compact",
                                     )
                 with vuetify.VCol(cols=3):
                     with vuetify.VCard(classes="pa-4 d-flex flex-column"):

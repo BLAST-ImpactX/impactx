@@ -17,7 +17,7 @@ def over_s_plot():
     """
 
     selected_headers = state.selected_headers
-    over_s_data = state.over_s_data
+    over_s_data = state.over_s_table_data
 
     x_axis = selected_headers[0] if len(selected_headers) > 1 else None
     y_axis = selected_headers[1:] if len(selected_headers) > 2 else None

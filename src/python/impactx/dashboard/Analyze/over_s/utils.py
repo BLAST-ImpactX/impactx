@@ -7,28 +7,40 @@ License: BSD-3-Clause-LBNL
 """
 import glob
 import os
+import pandas as pd
 
 from .plot import over_s_plot
-from ..analyzeFunctions import AnalyzeFunctions
 from ... import setup_server
 
 server, state, ctrl = setup_server()
 
 DEFAULT_HEADERS = ["s", "beta_x", "beta_y"]
+UNSELECTABLE_HEADERS = ["step", "s"]
 
 state.selected_headers = DEFAULT_HEADERS
-state.all_data = []
-state.all_headers = []
+state.over_s_possible_data = []
+state.over_s_possible_headers = []
+
+@state.change("over_s_possible_headers")
+def on_over_s_possible_headers_updated(**_):
+    state.selectable_headers = [
+        header for header in state.over_s_possible_headers if header["key"] not in UNSELECTABLE_HEADERS
+    ]
 
 @state.change("selected_headers")
 def on_header_selection_change(**_):
-    over_s._update_visualization()
+    """
+    Called whenever the user selects or deselects headers
+    for the 'Plot Over S' visualization.
+    """
+    over_s._update_table()
 
-@state.change("all_headers")
-def on_all_headers_updated(**_):
-    state.selectable_headers = [
-        header for header in state.all_headers if header["key"] not in ("step", "s")
-    ]
+@state.change("over_s_table_headers")
+def on_over_s_table_headers_change(**_):
+    """
+    Called whenever the data table for the 'Plot Over S' visualization is changed.
+    """
+    over_s._update_plot()
 
 class VisualizeOverS:
     def update(self):
@@ -36,43 +48,58 @@ class VisualizeOverS:
         Updates the 'Plot Over S' tab with the latest data and plot.
         Called once when the simulation is complete.
         """
-        self.load_dataTable_data()
-        self._update_visualization()
+        self._load_data_table()
+        self._update_table()
+        self._update_plot()
 
-    def _update_visualization(self):
-        # Update the table
-        state.over_s_data = AnalyzeFunctions.filter_data()
-        state.over_s_headers = AnalyzeFunctions.filter_headers()
+    def _update_table(self):
+        """
+        Updates the data table for the 'Plot Over S' visualization.
+        """
 
-        # Update the plot
+        # Only display the headers that are selected by the user
+        selected_headers = set(state.selected_headers)
+        state.over_s_table_headers = [
+            header for header in state.over_s_possible_headers if header["key"] in selected_headers
+        ]
+
+        # Display the corresponding data rows 
+        state.over_s_table_data = [
+            row for row in state.over_s_possible_data if any(key in selected_headers for key in row.keys())
+        ]
+
+    def _update_plot(self):
+        """
+        Updates the plot for the 'Plot Over S' visualization.
+        """
         ctrl.plotly_figure_update(over_s_plot())
 
-    def load_dataTable_data(self):
+    def _load_data_table(self) -> None:
         """
-        Loads and processes data from combined beam and reference particle files.
+        When called, retrieves both beam and reference particle data, combines
+        them into a single DataFrame, and updates 
         """
 
-        CURRENT_DIR = os.getcwd()
-        DIAGS_DIR = os.path.join(CURRENT_DIR, "diags")
+        DIAGS_DIRECTORY = os.path.join(os.getcwd(), "diags")
+        REDUCED_BEAM_FILE = glob.glob(f"{DIAGS_DIRECTORY}/reduced_beam_characteristics.*")
+        REF_PARTICLE_FILE = glob.glob(f"{DIAGS_DIRECTORY}/ref_particle.*")
 
-        base_path = DIAGS_DIR + "/"
-        REDUCED_BEAM_DATA = glob.glob(base_path + "reduced_beam_characteristics.*")[0]
-        REF_PARTICLE_DATA = glob.glob(base_path + "ref_particle.*")[0]
-
-        if not os.path.exists(REDUCED_BEAM_DATA) or not os.path.exists(REF_PARTICLE_DATA):
-            ctrl.terminal_print(
-                "Diagnostics files are missing. Please ensure they are in the correct directory."
-            )
+        if not REDUCED_BEAM_FILE or not REF_PARTICLE_FILE:
             return
 
-        combined_files = AnalyzeFunctions.combine_files(
-            REDUCED_BEAM_DATA, REF_PARTICLE_DATA
-        )
-        combined_files_data_converted_to_dictionary_format = (
-            AnalyzeFunctions.convert_to_dict(combined_files)
-        )
-        data, headers = combined_files_data_converted_to_dictionary_format
-        state.all_data = data
-        state.all_headers = headers
+        beam_data = pd.read_csv(REDUCED_BEAM_FILE[0], sep=" ")
+        ref_particle_data = pd.read_csv(REF_PARTICLE_FILE[0], sep=" ")
+        combined_data = pd.merge(beam_data, ref_particle_data, how="outer")
+
+        over_s._update_possible_data(combined_data)
+
+    def _update_possible_data(self, data: pd.DataFrame) -> None:
+        """
+        Updates the possible headers and data for the 'Plot Over S' visualization.
+        """
+        state.over_s_possible_headers = [
+            {"title": header, "key": header} for header in data.columns
+        ]
+        state.over_s_possible_data = data.to_dict(orient="records")
 
 over_s = VisualizeOverS()

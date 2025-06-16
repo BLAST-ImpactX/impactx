@@ -238,9 +238,8 @@ jobs:
         ctest --test-dir build -C Release --output-on-failure -E AMReX
         if errorlevel 1 exit 0
 
-    - name: Print Cmd
-      run: |
-        Get-ChildItem -Path . -Filter "Backtrace.*" -Recurse -File | Get-Content
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
 
     - name: Test PwSh
       run: |

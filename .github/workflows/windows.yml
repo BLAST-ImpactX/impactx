@@ -230,12 +230,23 @@ jobs:
         if errorlevel 1 exit 1
         cmake --build build --config Release --parallel 4
         if errorlevel 1 exit 1
-    - name: Test
+
+    - name: Test Cmd
       shell: cmd
       run: |
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
         ctest --test-dir build -C Release --output-on-failure -E AMReX
-        if errorlevel 1 exit 1
+        if errorlevel 1 exit 0
+
+    - name: Print Cmd
+      run: |
+        Get-ChildItem -Path . -Filter "Backtrace.*" -Recurse -File | Get-Content
+
+    - name: Test PwSh
+      run: |
+        ctest --test-dir build -C Release --output-on-failure -E AMReX
+        Get-ChildItem -Path . -Filter "Backtrace.*" -Recurse -File | Get-Content
+
 #    - name: Install
 #      shell: cmd
 #      run: |

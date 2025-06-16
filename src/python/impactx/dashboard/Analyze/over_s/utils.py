@@ -7,9 +7,11 @@ License: BSD-3-Clause-LBNL
 """
 import glob
 import os
-from ... import setup_server
+
 from . import line_plot_1d
 from ..analyzeFunctions import AnalyzeFunctions
+from ... import setup_server
+
 server, state, ctrl = setup_server()
 
 DEFAULT_HEADERS = ["s", "beta_x", "beta_y"]

@@ -9,12 +9,11 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import plotly
 
+from . import over_s
 from .. import setup_server, vuetify
 from ..Input.components.navigation import NavigationComponents
+
 server, state, ctrl = setup_server()
-from .analyzeFunctions import AnalyzeFunctions
-from .over_s.utils import VisualizeOverS
-over_s = VisualizeOverS()
 
 PLOTS = {
     "Plot Over S": over_s.update,

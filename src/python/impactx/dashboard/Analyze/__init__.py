@@ -1,7 +1,7 @@
 from .analyzeFunctions import AnalyzeFunctions
-from .over_s.utils import VisualizeOverS
+from .over_s.utils import over_s
 
 __all__ = [
     "AnalyzeFunctions",
-    "VisualizeOverS",
+    "over_s",
 ]

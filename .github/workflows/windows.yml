@@ -159,10 +159,10 @@ jobs:
 
         cmake -S hdf5-hdf5_1.14.6 -B build_hdf5 ^
             -G "Ninja"                          ^
-            -DCMAKE_C_COMPILER=clang-cl         ^
-            -DCMAKE_CXX_COMPILER=clang-cl       ^
-            -DCMAKE_LINKER=lld-link             ^
-            -DCMAKE_NM=llvm-nm                  ^
+            -DCMAKE_C_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"         ^
+            -DCMAKE_CXX_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"       ^
+            -DCMAKE_LINKER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/lld-link.exe"             ^
+            -DCMAKE_NM="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/llvm-nm.exe"                  ^
             -DBUILD_SHARED_LIBS=OFF             ^
             -DBUILD_TESTING=OFF                 ^
             -DCMAKE_BUILD_TYPE=Release          ^
@@ -197,10 +197,10 @@ jobs:
 
         cmake -S . -B build                  ^
               -G "Ninja"                     ^
-              -DCMAKE_C_COMPILER=clang-cl    ^
-              -DCMAKE_CXX_COMPILER=clang-cl  ^
-              -DCMAKE_LINKER=lld-link        ^
-              -DCMAKE_NM=llvm-nm             ^
+              -DCMAKE_C_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"    ^
+              -DCMAKE_CXX_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"  ^
+              -DCMAKE_LINKER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/lld-link.exe"        ^
+              -DCMAKE_NM="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/llvm-nm.exe"             ^
               -DCMAKE_BUILD_TYPE=Release     ^
               -DBUILD_SHARED_LIBS=OFF        ^
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^

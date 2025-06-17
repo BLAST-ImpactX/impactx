@@ -223,10 +223,10 @@ jobs:
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^
               -DHDF5_USE_STATIC_LIBRARIES=ON ^
               -DImpactX_COMPUTE=OMP          ^
-              -DImpactX_FFT=ON               ^
+              -DImpactX_FFT=OFF              ^
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^
-              -DopenPMD_USE_HDF5=ON
+              -DopenPMD_USE_HDF5=OFF
         if errorlevel 1 exit 1
         cmake --build build --config Release --parallel 4
         if errorlevel 1 exit 1

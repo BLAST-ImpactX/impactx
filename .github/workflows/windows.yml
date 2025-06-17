@@ -126,7 +126,7 @@ jobs:
 
   build_win_clang:
     name: Clang w/ OMP
-    runs-on: windows-2022
+    runs-on: windows-2025
     if: github.event.pull_request.draft == false
     steps:
     - uses: actions/checkout@v4

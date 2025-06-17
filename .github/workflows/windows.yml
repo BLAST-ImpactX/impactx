@@ -222,7 +222,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF        ^
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^
               -DHDF5_USE_STATIC_LIBRARIES=ON ^
-              -DImpactX_COMPUTE=OMP          ^
+              -DImpactX_COMPUTE=NOACC        ^
               -DImpactX_FFT=ON               ^
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^

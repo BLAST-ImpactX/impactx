@@ -226,7 +226,7 @@ jobs:
               -DImpactX_FFT=OFF              ^
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^
-              -DopenPMD_USE_HDF5=OFF
+              -DopenPMD_USE_HDF5=ON
         if errorlevel 1 exit 1
         cmake --build build --config Release --parallel 4
         if errorlevel 1 exit 1

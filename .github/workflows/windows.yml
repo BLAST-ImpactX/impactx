@@ -149,10 +149,6 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Download Dependencies
       run: |
-        Invoke-WebRequest http://fftw.org/fftw-3.3.10.tar.gz -OutFile fftw-3.3.10.tar.gz
-        7z.exe x -r fftw-3.3.10.tar.gz
-        7z.exe x -r fftw-3.3.10.tar
-
         Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_2.tar.gz -OutFile hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar
@@ -161,30 +157,12 @@ jobs:
       run: |
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
-        cmake -S fftw-3.3.10                    ^
-              -B build_fftw                     ^
-              -G "Ninja"                        ^
-              -DBUILD_TESTS=OFF                 ^
-              -DBUILD_SHARED_LIBS=OFF           ^
-              -DCMAKE_BUILD_TYPE=Release        ^
-              -DDISABLE_FORTRAN=ON
-        if errorlevel 1 exit 1
-        cmake --build build_fftw --config Release --target install --parallel 4
-        if errorlevel 1 exit 1
-        cmake -S fftw-3.3.10                    ^
-              -B build_fftwf                    ^
-              -G "Ninja"                        ^
-              -DBUILD_TESTS=OFF                 ^
-              -DBUILD_SHARED_LIBS=OFF           ^
-              -DCMAKE_BUILD_TYPE=Release        ^
-              -DDISABLE_FORTRAN=ON              ^
-              -DENABLE_FLOAT=ON
-        if errorlevel 1 exit 1
-        cmake --build build_fftwf --config Release --target install --parallel 4
-        if errorlevel 1 exit 1
-
         cmake -S hdf5-hdf5-1_12_2 -B build_hdf5 ^
-            -T "ClangCl"                        ^
+            -G "Ninja"                          ^
+            -DCMAKE_C_COMPILER=clang-cl         ^
+            -DCMAKE_CXX_COMPILER=clang-cl       ^
+            -DCMAKE_LINKER=lld-link             ^
+            -DCMAKE_NM=llvm-nm                  ^
             -DBUILD_SHARED_LIBS=OFF             ^
             -DBUILD_TESTING=OFF                 ^
             -DCMAKE_BUILD_TYPE=Release          ^
@@ -218,7 +196,12 @@ jobs:
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         cmake -S . -B build                  ^
-              -T "ClangCl"                   ^
+              -G "Ninja"                     ^
+              -DCMAKE_C_COMPILER=clang-cl    ^
+              -DCMAKE_CXX_COMPILER=clang-cl  ^
+              -DCMAKE_LINKER=lld-link        ^
+              -DCMAKE_NM=llvm-nm             ^
+              -DCMAKE_BUILD_TYPE=Release     ^
               -DBUILD_SHARED_LIBS=OFF        ^
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^
               -DHDF5_USE_STATIC_LIBRARIES=ON ^

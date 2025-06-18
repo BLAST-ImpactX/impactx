@@ -29,6 +29,12 @@ namespace impactx::initialization
         std::string omp_threads = "nosmt"; // AMReX' default: system
         pp_amrex.queryAdd("omp_threads", omp_threads);
 
+        // https://amrex-codes.github.io/amrex/docs_html/Debugging.html#breaking-into-debuggers
+        bool throw_exception = 1;
+        pp_amrex.queryAdd("throw_exception", throw_exception);
+        bool signal_handling = 0;
+        pp_amrex.queryAdd("signal_handling", signal_handling);
+
         // Here we override the default tiling option for particles, which is always
         // "false" in AMReX, to "false" if compiling for GPU execution and "true"
         // if compiling for CPU.

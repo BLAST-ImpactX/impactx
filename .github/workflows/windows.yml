@@ -35,9 +35,9 @@ jobs:
         7z.exe x -r fftw-3.3.10.tar.gz
         7z.exe x -r fftw-3.3.10.tar
 
-        Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5_1.14.6.tar.gz -OutFile hdf5_1.14.6.tar.gz
-        7z.exe x -r hdf5_1.14.6.tar.gz
-        7z.exe x -r hdf5_1.14.6.tar
+        Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_2.tar.gz -OutFile hdf5-1_12_2.tar.gz
+        7z.exe x -r hdf5-1_12_2.tar.gz
+        7z.exe x -r hdf5-1_12_2.tar
     - name: Install Dependencies
       env:
         # Work-around for windows-latest GH runner issue, see
@@ -64,7 +64,7 @@ jobs:
         cmake --build build_fftwf --config RelWithDebInfo --target install --parallel 4
         if(!$?) { Exit $LASTEXITCODE }
 
-        cmake -S hdf5-hdf5_1.14.6 -B build_hdf5  `
+        cmake -S hdf5-hdf5-1_12_2 -B build_hdf5  `
               -DCMAKE_BUILD_TYPE=RelWithDebInfo  `
               -DBUILD_SHARED_LIBS=OFF            `
               -DBUILD_TESTING=OFF                `
@@ -77,7 +77,7 @@ jobs:
         cmake --build build_hdf5 --config RelWithDebInfo --target install --parallel 4
         if(!$?) { Exit $LASTEXITCODE }
 
-        $env:HDF5_DIR = "C:/Program Files/HDF_Group/HDF5/1.14.6/cmake/"
+        $env:HDF5_DIR = "C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         $env:HDF5_USE_STATIC_LIBRARIES = "ON"
 
         python3 -m pip install -U pip
@@ -96,7 +96,7 @@ jobs:
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"
       run: |
-        $env:HDF5_DIR = "C:/Program Files/HDF_Group/HDF5/1.14.6/cmake/"
+        $env:HDF5_DIR = "C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         cmake -S . -B build               `
               -DBUILD_SHARED_LIBS=ON      `
               -DCMAKE_BUILD_TYPE=RelWithDebInfo  `
@@ -149,15 +149,13 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Download Dependencies
       run: |
-        winget install Microsoft.WinDbg --accept-source-agreements --accept-package-agreements
-
         Invoke-WebRequest http://fftw.org/fftw-3.3.10.tar.gz -OutFile fftw-3.3.10.tar.gz
         7z.exe x -r fftw-3.3.10.tar.gz
         7z.exe x -r fftw-3.3.10.tar
 
-        Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5_1.14.6.tar.gz -OutFile hdf5_1.14.6.tar.gz
-        7z.exe x -r hdf5_1.14.6.tar.gz
-        7z.exe x -r hdf5_1.14.6.tar
+        Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_2.tar.gz -OutFile hdf5-1_12_2.tar.gz
+        7z.exe x -r hdf5-1_12_2.tar.gz
+        7z.exe x -r hdf5-1_12_2.tar
     - name: Install Dependencies
       shell: cmd
       run: |
@@ -185,12 +183,8 @@ jobs:
         cmake --build build_fftwf --config Debug --target install --parallel 4
         if errorlevel 1 exit 1
 
-        cmake -S hdf5-hdf5_1.14.6 -B build_hdf5 ^
-            -G "Ninja"                          ^
-            -DCMAKE_C_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"         ^
-            -DCMAKE_CXX_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"       ^
-            -DCMAKE_LINKER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/lld-link.exe"             ^
-            -DCMAKE_NM="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/llvm-nm.exe"                  ^
+        cmake -S hdf5-hdf5-1_12_2 -B build_hdf5 ^
+            -T "ClangCl"                        ^
             -DBUILD_SHARED_LIBS=OFF             ^
             -DBUILD_TESTING=OFF                 ^
             -DCMAKE_BUILD_TYPE=Debug            ^
@@ -203,7 +197,7 @@ jobs:
         cmake --build build_hdf5 --config Debug --target install --parallel 4
         if errorlevel 1 exit 1
 
-        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.14.6/cmake/"
+        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         set "HDF5_USE_STATIC_LIBRARIES=ON"
 
         python3 -m pip install -U pip
@@ -219,16 +213,12 @@ jobs:
         # Dependency install prefix path
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"
-        HDF5_DIR: "C:/Program Files/HDF_Group/HDF5/1.14.6/cmake/"
+        HDF5_DIR: "C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
       run: |
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         cmake -S . -B build                  ^
-              -G "Ninja"                     ^
-              -DCMAKE_C_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"    ^
-              -DCMAKE_CXX_COMPILER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/clang-cl.exe"  ^
-              -DCMAKE_LINKER="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/lld-link.exe"        ^
-              -DCMAKE_NM="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/Llvm/x64/bin/llvm-nm.exe"             ^
+              -T "ClangCl"                   ^
               -DCMAKE_BUILD_TYPE=Debug       ^
               -DBUILD_SHARED_LIBS=OFF        ^
               -DCMAKE_VERBOSE_MAKEFILE=ON    ^
@@ -249,6 +239,14 @@ jobs:
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
 
+    - name: Test Simple
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        set "PATH=C:/Program Files (x86)/ImpactX/bin/;%PATH%"
+        python3 examples/fodo/run_fodo.py
+        if errorlevel 1 exit 1
+
     - name: Test
       shell: cmd
       run: |
@@ -260,7 +258,7 @@ jobs:
 #      shell: cmd
 #      run: |
 #        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
-#        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.14.6/cmake/"
+#        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
 #
 #        cmake --build build --target install
 #        if errorlevel 1 exit 1

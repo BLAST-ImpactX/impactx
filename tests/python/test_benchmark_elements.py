@@ -16,7 +16,7 @@ from functools import partial
 
 import pytest
 
-from impactx import ImpactX, Map6x6, distribution, elements
+from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 # benchmark config
 rounds = 5
@@ -44,9 +44,9 @@ def sim():
             beam = self.sim.particle_container()
             beam.clear_particles()
 
-            # load a 2 GeV electron beam with an initial
-            # unnormalized rms emittance of 2 nm
-            kin_energy_MeV = 2.0e3  # reference energy
+            # load a 1 GeV electron beam with an initial
+            # unnormalized rms emittance of 1 nm
+            kin_energy_MeV = 1.0e3  # reference energy
             bunch_charge_C = 1.0e-9  # used with space charge
 
             #   reference particle
@@ -57,15 +57,17 @@ def sim():
 
             #   particle bunch
             distr = distribution.Waterbag(
-                lambdaX=3.9984884770e-5,
-                lambdaY=3.9984884770e-5,
-                lambdaT=1.0e-3,
-                lambdaPx=2.6623538760e-5,
-                lambdaPy=2.6623538760e-5,
-                lambdaPt=2.0e-3,
-                muxpx=-0.846574929020762,
-                muypy=0.846574929020762,
-                mutpt=0.0,
+                **twiss(
+                    beta_x=1.0,
+                    beta_y=1.0,
+                    beta_t=1.0,
+                    emitt_x=1e-09,
+                    emitt_y=1e-09,
+                    emitt_t=1e-06,
+                    alpha_x=0.0,
+                    alpha_y=0.0,
+                    alpha_t=0.0,
+                )
             )
             self.sim.add_particles(bunch_charge_C, distr, npart)
             assert self.sim.particle_container().total_number_of_particles() == npart

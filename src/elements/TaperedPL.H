@@ -21,6 +21,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -34,7 +35,8 @@ namespace impactx::elements
       public mixin::LinearTransport<TaperedPL>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "TaperedPL";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -84,37 +86,39 @@ namespace impactx::elements
          * @param idcpu particle global index (unused)
          * @param refpart reference particle
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // normalize focusing strength units to MAD-X convention if needed
-            amrex::ParticleReal g = m_k;
+            T_Real g = m_k;
             if (m_unit == 1) {
                 g = m_k / refpart.rigidity_Tm();
             }
 
             // initialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
+            T_Real xout = x;
+            T_Real yout = y;
+            T_Real tout = t;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            T_Real ptout = pt;
 
             // advance position and momentum
             xout = x;

@@ -173,12 +173,12 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp2_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-        amrex::ParticleReal const zin,
-        amrex::ParticleReal const zout,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        T_Real const zin,
+        T_Real const zout,
         int const nsteps,
         T_Element const & element
     )
@@ -186,12 +186,12 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
-        amrex::ParticleReal const tau2 = dz;
+        T_Real const dz = (zout-zin)/nsteps;
+        T_Real const tau1 = dz*0.5_prt;
+        T_Real const tau2 = dz;
 
         // initialize the value of the independent variable
-        amrex::ParticleReal zeval = zin;
+        T_Real zeval = zin;
 
         // loop over integration steps
         for(int j=0; j < nsteps; ++j)
@@ -220,12 +220,12 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp4_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-        amrex::ParticleReal const zin,
-        amrex::ParticleReal const zout,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        T_Real const zin,
+        T_Real const zout,
         int const nsteps,
         T_Element const & element
     )
@@ -233,15 +233,15 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
-        amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
-        amrex::ParticleReal const tau1 = tau2*0.5_prt;
-        amrex::ParticleReal const tau3 = alpha*tau1;
-        amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
+        T_Real const dz = (zout-zin)/nsteps;
+        T_Real const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
+        T_Real const tau2 = dz/(1_prt + alpha);
+        T_Real const tau1 = tau2*0.5_prt;
+        T_Real const tau3 = alpha*tau1;
+        T_Real const tau4 = (alpha - 1_prt)*tau2;
 
         // initialize the value of the independent variable
-        amrex::ParticleReal zeval = zin;
+        T_Real zeval = zin;
 
         // loop over integration steps
         for (int j=0; j < nsteps; ++j)
@@ -279,12 +279,12 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp6_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-        amrex::ParticleReal const zin,
-        amrex::ParticleReal const zout,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        T_Real const zin,
+        T_Real const zout,
         int const nsteps,
         T_Element const & element
     )
@@ -292,23 +292,23 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
+        T_Real const dz = (zout-zin)/nsteps;
         amrex::ParticleReal const w0 = 1.31518632068391121888424973;
         amrex::ParticleReal const w1 = -1.17767998417887100694641568;
         amrex::ParticleReal const w2 = 0.23557321335935813368479318;
         amrex::ParticleReal const w3 = 0.78451361047755726381949763;
 
-        amrex::ParticleReal const tau1 = w3 * dz / 2_prt;
-        amrex::ParticleReal const tau2 = w3 * dz;
-        amrex::ParticleReal const tau3 = (w3 + w2) * dz / 2_prt;
-        amrex::ParticleReal const tau4 = w2 * dz;
-        amrex::ParticleReal const tau5 = (w2 + w1) * dz / 2_prt;
-        amrex::ParticleReal const tau6 = w1 * dz;
-        amrex::ParticleReal const tau7 = (w1 + w0) * dz / 2_prt;
-        amrex::ParticleReal const tau8 = w0 * dz;
+        T_Real const tau1 = w3 * dz / 2_prt;
+        T_Real const tau2 = w3 * dz;
+        T_Real const tau3 = (w3 + w2) * dz / 2_prt;
+        T_Real const tau4 = w2 * dz;
+        T_Real const tau5 = (w2 + w1) * dz / 2_prt;
+        T_Real const tau6 = w1 * dz;
+        T_Real const tau7 = (w1 + w0) * dz / 2_prt;
+        T_Real const tau8 = w0 * dz;
 
         // initialize the value of the independent variable
-        amrex::ParticleReal zeval = zin;
+        T_Real zeval = zin;
 
         // loop over integration steps
         for (int j=0; j < nsteps; ++j)

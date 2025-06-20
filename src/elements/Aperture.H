@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -35,7 +36,8 @@ namespace impactx::elements
       public mixin::LinearTransport<Aperture>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Aperture";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -136,20 +138,25 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            namespace stdx = amrex::simd::stdx;
             using amrex::Math::powi;
+            using std::fmod;
+            using std::abs;
+            using VBool = decltype(x>0_prt);
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -159,12 +166,18 @@ namespace impactx::elements
             amrex::ParticleReal const dy = m_repeat_y * 0.5_prt;
 
             // shift every 2nd row by half of m_repeat_x
-            amrex::ParticleReal const sx = (!m_shift_odd_x || std::fmod(std::floor((y+dy)/m_repeat_y), 2) == 0_prt) ? x : x + dx;
-            amrex::ParticleReal const sy = y;
+            T_Real sx = x;
+            T_Real const sy = y;
+            VBool const shift_x = m_shift_odd_x == false ? VBool{false} : fmod(floor((y+dy)/m_repeat_y), 2) != T_Real{0};
+#ifdef AMREX_USE_SIMD
+            amrex::simd::stdx::where(shift_x.__cvt(), sx) += dx;
+#else
+            sx += shift_x ? dx : 0_prt;
+#endif
 
             // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
-            amrex::ParticleReal u = (m_repeat_x==0.0_prt) ? sx : (std::fmod(std::abs(sx)+dx,m_repeat_x)-dx);
-            amrex::ParticleReal v = (m_repeat_y==0.0_prt) ? sy : (std::fmod(std::abs(sy)+dy,m_repeat_y)-dy);
+            T_Real u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
+            T_Real v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
 
             // scale horizontal and vertical coordinates
             // performance optimization: we intentionally store the inverse of
@@ -174,7 +187,7 @@ namespace impactx::elements
             v = v * m_inv_aperture_y;
 
             // compare against the aperture boundary
-            bool inside_aperture = true;
+            VBool inside_aperture;
 
             switch (m_shape)
             {
@@ -185,14 +198,17 @@ namespace impactx::elements
                 case Shape::elliptical:
                     inside_aperture = (powi<2>(u) + powi<2>(v) <= 1_prt);
                     break;
+
+                default:
+                    inside_aperture = VBool{true};
+                    break;
             }
 
             // For transmit (default): invalidate if outside aperture
             // For absorb: invalidate if inside aperture
-            if ((m_action == Action::transmit && !inside_aperture) ||
-                (m_action == Action::absorb && inside_aperture)) {
-                amrex::ParticleIDWrapper{idcpu}.make_invalid();
-            }
+            auto const invalid_mask = m_action == Action::transmit ? !inside_aperture : inside_aperture;
+            if (stdx::any_of(invalid_mask) == true)
+                amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

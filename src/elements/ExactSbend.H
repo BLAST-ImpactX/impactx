@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -36,7 +37,8 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ExactSbend";
         static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
@@ -142,38 +144,41 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
+            namespace stdx = amrex::simd::stdx;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // access position data
-            amrex::ParticleReal const xout = x;
-            amrex::ParticleReal const yout = y;
-            amrex::ParticleReal const tout = t;
+            T_Real const xout = x;
+            T_Real const yout = y;
+            T_Real const tout = t;
 
             // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            T_Real ptout = pt;
 
             // treat the special case of zero field
             if (m_phi==0_prt && m_B==0_prt) {
                // compute the radical in the denominator (= pz):
-               amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
+               T_Real const inv_pzden = 1_prt / sqrt(
                    powi<2>(pt - m_ibeta) -
                    m_ibetagam2 -
                    powi<2>(px) -
@@ -196,17 +201,18 @@ namespace impactx::elements
             } else {
 
                // assign intermediate quantities
-               amrex::ParticleReal const pperp2 = powi<2>(pt)-2.0_prt * m_ibeta * pt - powi<2>(py)+1.0_prt;
-               amrex::ParticleReal const px2 = powi<2>(px);
+               T_Real const pperp2 = powi<2>(pt)-2.0_prt * m_ibeta * pt - powi<2>(py)+1.0_prt;
+               T_Real const px2 = powi<2>(px);
                // determine if particle lies within the domain of map definition
-               if (pperp2 <= px2)
+               auto const mask = pperp2 <= px2;
+               if (stdx::any_of(mask) == true)
                {
-                   amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                   amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
                } else
                {
-                   amrex::ParticleReal const pperp = std::sqrt(pperp2);
-                   amrex::ParticleReal const pzi = std::sqrt(powi<2>(pperp) - powi<2>(px));
-                   amrex::ParticleReal const rho = m_rc + xout;
+                   T_Real const pperp = sqrt(pperp2);
+                   T_Real const pzi = sqrt(powi<2>(pperp) - powi<2>(px));
+                   T_Real const rho = m_rc + xout;
 
                    // update momenta
                    pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
@@ -214,15 +220,16 @@ namespace impactx::elements
                    ptout = pt;
 
                    // angle of momentum rotation
-                   amrex::ParticleReal const px2f = powi<2>(pxout);
+                   T_Real const px2f = powi<2>(pxout);
                    // determine if particle lies within domain of map definition
-                   if (pperp2 <= px2f)
+                   auto const mask2 = pperp2 <= px2f;
+                   if (stdx::any_of(mask2) == true)
                    {
-                       amrex::ParticleIDWrapper{idcpu}.make_invalid();
+                       amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask2);
                    } else
                    {
-                       amrex::ParticleReal const pzf = std::sqrt(powi<2>(pperp)-powi<2>(pxout));
-                       amrex::ParticleReal const theta = m_slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
+                       T_Real const pzf = sqrt(powi<2>(pperp)-powi<2>(pxout));
+                       T_Real const theta = m_slice_phi + asin(px/pperp) - asin(pxout/pperp);
 
                        // update position coordinates
                        x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);

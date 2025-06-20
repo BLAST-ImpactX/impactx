@@ -132,7 +132,7 @@ namespace detail
     void read_element (std::string const & element_name,
                        std::list<elements::KnownElements> & m_lattice,
                        int nslice_default,
-                       int mapsteps_default)
+                       [[maybe_unused]] int mapsteps_default)
     {
         using namespace elements;
 ;

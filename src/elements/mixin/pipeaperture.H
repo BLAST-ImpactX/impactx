@@ -15,6 +15,7 @@
 #include <AMReX_Math.H>
 #include <AMReX_Particle.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 
 namespace impactx::elements::mixin
@@ -53,30 +54,33 @@ namespace impactx::elements::mixin
          * @param[inout] y vertical position relative to reference particle
          * @param idcpu particle global index
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void apply_aperture (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            uint64_t & AMREX_RESTRICT idcpu
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_IdCpu & AMREX_RESTRICT idcpu
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            namespace stdx = amrex::simd::stdx;
 
             // skip aperture application if aperture_x <= 0 or aperture_y <= 0
             if (m_inv_aperture_x > 0_prt && m_inv_aperture_y > 0_prt) {
 
-               // scale horizontal and vertical coordinates
-               // performance optimization: we intentionally store the inverse of
-               //   the aperture, so we can do a quick multiplication (instead of a
-               //   costly division) here.
-               amrex::ParticleReal const u = x * m_inv_aperture_x;
-               amrex::ParticleReal const v = y * m_inv_aperture_y;
+                // scale horizontal and vertical coordinates
+                // performance optimization: we intentionally store the inverse of
+                //   the aperture, so we can do a quick multiplication (instead of a
+                //   costly division) here.
+                T_Real const u = x * m_inv_aperture_x;
+                T_Real const v = y * m_inv_aperture_y;
 
-               // compare against the aperture boundary
-               if (powi<2>(u) + powi<2>(v) > 1_prt) {
-                  amrex::ParticleIDWrapper{idcpu}.make_invalid();
-               }
+                // compare against the aperture boundary
+                auto const mask = u*u + v*v > 1_prt;
+                if (stdx::any_of(mask) == true) {
+                    amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
+                }
             }
         }
 

@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -36,7 +37,8 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ChrAcc";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -123,20 +125,23 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
+            namespace stdx = amrex::simd::stdx;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -147,34 +152,35 @@ namespace impactx::elements
             pt = pt * m_bgi;
 
             // compute intermediate quantities related to acceleration
-            amrex::ParticleReal const pti_tot = m_pti_ref + pt;
-            amrex::ParticleReal const ptf_tot = m_ptf_ref + pt;
-            amrex::ParticleReal const pti_tot2 = powi<2>(pti_tot);
-            amrex::ParticleReal const ptf_tot2 = powi<2>(ptf_tot);
+            T_Real const pti_tot = m_pti_ref + pt;
+            T_Real const ptf_tot = m_ptf_ref + pt;
+            T_Real const pti_tot2 = powi<2>(pti_tot);
+            T_Real const ptf_tot2 = powi<2>(ptf_tot);
 
             // check whether particle lies within the domain of map definition
-            if (pti_tot2 <= 1_prt || ptf_tot2 <= 1_prt) {
-                amrex::ParticleIDWrapper{idcpu}.make_invalid();
+            auto const mask = pti_tot2 <= 1_prt || ptf_tot2 <= 1_prt;
+            if (stdx::any_of(mask) == true) {
+                amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
             } else {
-                amrex::ParticleReal const pzi_tot = std::sqrt(powi<2>(pti_tot) - 1_prt);
-                amrex::ParticleReal const pzf_tot = std::sqrt(powi<2>(ptf_tot) - 1_prt);
-                amrex::ParticleReal const pzi_ref = std::sqrt(powi<2>(m_pti_ref) - 1_prt);
-                amrex::ParticleReal const pzf_ref = std::sqrt(powi<2>(m_ptf_ref) - 1_prt);
+                T_Real const pzi_tot = sqrt(powi<2>(pti_tot) - 1_prt);
+                T_Real const pzf_tot = sqrt(powi<2>(ptf_tot) - 1_prt);
+                T_Real const pzi_ref = sqrt(powi<2>(m_pti_ref) - 1_prt);
+                T_Real const pzf_ref = sqrt(powi<2>(m_ptf_ref) - 1_prt);
 
-                amrex::ParticleReal const numer = -ptf_tot + pzf_tot;
-                amrex::ParticleReal const denom = -pti_tot + pzi_tot;
+                T_Real const numer = -ptf_tot + pzf_tot;
+                T_Real const denom = -pti_tot + pzi_tot;
 
                 // compute focusing constant (1/m) and rotation angle (in rad)
-                amrex::ParticleReal const theta = m_alpha_iez * std::log(numer / denom);
+                T_Real const theta = m_alpha_iez * log(numer / denom);
                 auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
                 // initialize output values
-                amrex::ParticleReal xout = x;
-                amrex::ParticleReal yout = y;
-                amrex::ParticleReal tout = t;
-                amrex::ParticleReal pxout = px;
-                amrex::ParticleReal pyout = py;
-                amrex::ParticleReal ptout = pt;
+                T_Real xout = x;
+                T_Real yout = y;
+                T_Real tout = t;
+                T_Real pxout = px;
+                T_Real pyout = py;
+                T_Real ptout = pt;
 
                 // advance positions and momenta using map for focusing
                 xout = cos_theta * x + sin_theta / m_alpha * px;

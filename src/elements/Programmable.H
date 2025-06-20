@@ -18,6 +18,7 @@
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+// TODO: #include <AMReX_SIMD.H>
 
 #include <functional>
 #include <stdexcept>
@@ -28,6 +29,7 @@ namespace impactx::elements
     struct Programmable
     : public mixin::Named,
       public mixin::LinearTransport<Programmable>
+      // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;

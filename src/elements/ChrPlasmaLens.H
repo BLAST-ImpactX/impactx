@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -36,7 +37,8 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ChrPlasmaLens";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -118,46 +120,48 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
-            amrex::ParticleReal const delta = delta1 - 1_prt;
+            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+            T_Real const delta = delta1 - 1_prt;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_g)/delta1);
+            T_Real const omega = sqrt(abs(m_g)/delta1);
 
             // initialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
+            T_Real xout = x;
+            T_Real yout = y;
 
             // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal const ptout = pt;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            T_Real const ptout = pt;
 
             // paceholder variables
-            amrex::ParticleReal q1 = x;
-            amrex::ParticleReal q2 = y;
-            amrex::ParticleReal p1 = px;
-            amrex::ParticleReal p2 = py;
+            T_Real q1 = x;
+            T_Real q2 = y;
+            T_Real p1 = px;
+            T_Real p2 = py;
 
             auto const [sin_ods, cos_ods] = amrex::Math::sincos(omega*m_slice_ds);
 
@@ -171,15 +175,15 @@ namespace impactx::elements
             // advance longitudinal position and momentum
 
             // the corresponding symplectic update to t
-            amrex::ParticleReal const term = pt + delta/m_beta;
-            amrex::ParticleReal const t0 = t - term*m_slice_ds/delta1;
+            T_Real const term = pt + delta/m_beta;
+            T_Real const t0 = t - term*m_slice_ds/delta1;
 
-            amrex::ParticleReal const w = omega*delta1;
-            amrex::ParticleReal const term1 = -(powi<2>(p2)-powi<2>(q2) * powi<2>(w)) * std::sin(2_prt*m_slice_ds*omega);
-            amrex::ParticleReal const term2 = -(powi<2>(p1)-powi<2>(q1) * powi<2>(w)) * std::sin(2_prt*m_slice_ds*omega);
-            amrex::ParticleReal const term3 = -2_prt*q2*p2*w * std::cos(2_prt*m_slice_ds*omega);
-            amrex::ParticleReal const term4 = -2_prt*q1*p1*w * std::cos(2_prt*m_slice_ds*omega);
-            amrex::ParticleReal const term5 = 2_prt*omega*(q1*p1*delta1 + q2*p2*delta1
+            T_Real const w = omega*delta1;
+            T_Real const term1 = -(powi<2>(p2)-powi<2>(q2) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
+            T_Real const term2 = -(powi<2>(p1)-powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
+            T_Real const term3 = -2_prt*q2*p2*w * cos(2_prt*m_slice_ds*omega);
+            T_Real const term4 = -2_prt*q1*p1*w * cos(2_prt*m_slice_ds*omega);
+            T_Real const term5 = 2_prt*omega*(q1*p1*delta1 + q2*p2*delta1
                                         -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
             t = t0 + (-1_prt+m_beta*pt)/(8_prt*m_beta * powi<3>(delta1)*omega)
                      *(term1+term2+term3+term4+term5);
@@ -225,7 +229,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;

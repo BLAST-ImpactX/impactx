@@ -73,23 +73,24 @@ namespace impactx::elements::mixin
          * @param[inout] px horizontal momentum relative to reference particle
          * @param[inout] py vertical momentum relative to reference particle
          */
+        template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void shift_in (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py
         ) const
         {
             // position
-            amrex::ParticleReal const xc = x - m_dx;
-            amrex::ParticleReal const yc = y - m_dy;
+            T_Real const xc = x - m_dx;
+            T_Real const yc = y - m_dy;
             x =  xc * m_cos_rotation + yc * m_sin_rotation;
             y = -xc * m_sin_rotation + yc * m_cos_rotation;
 
             // momentum
-            amrex::ParticleReal const pxc = px;
-            amrex::ParticleReal const pyc = py;
+            T_Real const pxc = px;
+            T_Real const pyc = py;
             px =  pxc * m_cos_rotation + pyc * m_sin_rotation;
             py = -pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
@@ -103,25 +104,26 @@ namespace impactx::elements::mixin
          * @param[inout] px horizontal momentum relative to reference particle
          * @param[inout] py vertical momentum relative to reference particle
          */
+        template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void shift_out (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py
         ) const
         {
             // position
-            amrex::ParticleReal const xc = x;
-            amrex::ParticleReal const yc = y;
+            T_Real const xc = x;
+            T_Real const yc = y;
             x = xc * m_cos_rotation - yc * m_sin_rotation;
             y = xc * m_sin_rotation + yc * m_cos_rotation;
             x += m_dx;
             y += m_dy;
 
             // momentum
-            amrex::ParticleReal const pxc = px;
-            amrex::ParticleReal const pyc = py;
+            T_Real const pxc = px;
+            T_Real const pyc = py;
             px = pxc * m_cos_rotation - pyc * m_sin_rotation;
             py = pxc * m_sin_rotation + pyc * m_cos_rotation;
         }

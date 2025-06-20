@@ -21,14 +21,16 @@
 #include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
-#include <AMReX_REAL.H>
-#include <AMReX_Print.H>
 #include <AMReX_GpuComplex.H>
 #include <AMReX_Math.H>
+#include <AMReX_Print.H>
+#include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
 #include <vector>
+
 
 namespace impactx::elements
 {
@@ -64,7 +66,8 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ExactMultipole";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -189,15 +192,16 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -207,16 +211,16 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // coordinates within the multipole (not needed)
-            //amrex::ParticleReal const s = refpart.s;
-            //amrex::ParticleReal const sedge = refpart.sedge;
+            //T_Real const s = refpart.s;
+            //T_Real const sedge = refpart.sedge;
 
             // numerical integration parameters
-            amrex::ParticleReal const zin = 0_prt;
-            amrex::ParticleReal const zout = m_slice_ds;
+            T_Real const zin = 0_prt;
+            T_Real const zout = m_slice_ds;
             int const nsteps = m_mapsteps;
 
             // initialize phase space 6-vector
-            amrex::SmallVector<amrex::ParticleReal, 6, 1> particle{
+            amrex::SmallVector<T_Real, 6, 1> particle{
                 x, px, y, py, t, pt
             };
 
@@ -254,30 +258,32 @@ namespace impactx::elements
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
          */
+        template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map1 (amrex::ParticleReal const tau,
-                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+        void map1 (T_Real const tau,
+                   amrex::SmallVector<T_Real, 6, 1> & particle,
+                   T_Real & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
 
-            amrex::ParticleReal const x = particle(1);
-            amrex::ParticleReal const px = particle(2);
-            amrex::ParticleReal const y = particle(3);
-            amrex::ParticleReal const py = particle(4);
-            amrex::ParticleReal const t = particle(5);
-            amrex::ParticleReal const pt = particle(6);
+            T_Real const x = particle(1);
+            T_Real const px = particle(2);
+            T_Real const y = particle(3);
+            T_Real const py = particle(4);
+            T_Real const t = particle(5);
+            T_Real const pt = particle(6);
 
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal ptout = pt;
+            T_Real xout = x;
+            T_Real pxout = px;
+            T_Real yout = y;
+            T_Real pyout = py;
+            T_Real tout = t;
+            T_Real ptout = pt;
 
             // compute the radical in the denominator (= pz):
-            amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
+            T_Real const inv_pzden = 1_prt / sqrt(
                 powi<2>(pt - m_ibeta) -
                 m_ibetgam2 -
                 powi<2>(px) -
@@ -312,26 +318,28 @@ namespace impactx::elements
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
          */
+        template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map2 (amrex::ParticleReal const tau,
-                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+        void map2 (T_Real const tau,
+                   amrex::SmallVector<T_Real, 6, 1> & particle,
+                   T_Real & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
 
-            amrex::ParticleReal const x = particle(1);
-            amrex::ParticleReal const px = particle(2);
-            amrex::ParticleReal const y = particle(3);
-            amrex::ParticleReal const py = particle(4);
-            amrex::ParticleReal const t = particle(5);
-            amrex::ParticleReal const pt = particle(6);
+            T_Real const x = particle(1);
+            T_Real const px = particle(2);
+            T_Real const y = particle(3);
+            T_Real const py = particle(4);
+            T_Real const t = particle(5);
+            T_Real const pt = particle(6);
 
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal ptout = pt;
+            T_Real xout = x;
+            T_Real pxout = px;
+            T_Real yout = y;
+            T_Real pyout = py;
+            T_Real tout = t;
+            T_Real ptout = pt;
 
 #if AMREX_DEVICE_COMPILE
             amrex::ParticleReal* k_normal = m_k_normal_d_data;
@@ -341,15 +349,15 @@ namespace impactx::elements
             amrex::ParticleReal* k_skew = m_k_skew_h_data;
 #endif
 
-            // a complex type with two amrex::ParticleReal
-            using Complex = amrex::GpuComplex<amrex::ParticleReal>;
+            // a complex type with two T_Real
+            using Complex = amrex::GpuComplex<T_Real>;
 
             // assign complex position and complex multipole strength
             Complex const zeta(x, y);
 
             // initialize the momentum kick
-            amrex::ParticleReal dpx = 0_prt;
-            amrex::ParticleReal dpy = 0_prt;
+            T_Real dpx = 0_prt;
+            T_Real dpy = 0_prt;
 
             int factorial = 1;
 
@@ -357,8 +365,8 @@ namespace impactx::elements
             for (int m = 0; m < m_ncoef; m++) {
 
                // normalize units to MAD-X convention if needed
-               amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
-               amrex::ParticleReal kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
+               T_Real knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               T_Real kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
                // multipole contribution to complex momentum kick
                Complex alpha(knormal_value, kskew_value);

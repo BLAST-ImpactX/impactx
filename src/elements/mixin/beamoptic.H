@@ -15,6 +15,7 @@
 
 #include <AMReX_Extension.H> // for AMREX_RESTRICT
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <type_traits>
 
@@ -85,7 +86,7 @@ namespace detail
          */
         AMREX_GPU_DEVICE AMREX_FORCE_INLINE
         void
-        operator() (long i) const
+        operator() (int i) const
         {
             // access SoA Real data
             // note: an optimizing compiler will eliminate loads of unused parameters
@@ -99,8 +100,64 @@ namespace detail
 
             // push through element
             m_element(x, y, t, px, py, pt, idcpu, m_ref_part);
-
         }
+
+#ifdef AMREX_USE_SIMD
+        /** Push N SIMD particles through an element
+         *
+         * @param i particle index in the current box
+         */
+        template<int SIMD_WIDTH>
+        AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+        void
+        operator() (amrex::SIMDindex<SIMD_WIDTH, int> idx) const
+        {
+            using namespace amrex::simd;
+
+            int const i = idx.index;
+
+            // uninitialized memory
+            SIMDParticleReal<SIMD_WIDTH> part_x;
+            SIMDParticleReal<SIMD_WIDTH> part_y;
+            SIMDParticleReal<SIMD_WIDTH> part_t;
+            SIMDParticleReal<SIMD_WIDTH> part_px;
+            SIMDParticleReal<SIMD_WIDTH> part_py;
+            SIMDParticleReal<SIMD_WIDTH> part_pt;
+            SIMDIdCpu<decltype(part_x)> part_idcpu;
+
+            // initialize vector registers
+            // TODO stdx::vector_aligned needs alignment guarantees
+            //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
+            part_x.copy_from(&m_part_x[i], stdx::element_aligned);
+            part_y.copy_from(&m_part_y[i], stdx::element_aligned);
+            part_t.copy_from(&m_part_t[i], stdx::element_aligned);
+            part_px.copy_from(&m_part_px[i], stdx::element_aligned);
+            part_py.copy_from(&m_part_py[i], stdx::element_aligned);
+            part_pt.copy_from(&m_part_pt[i], stdx::element_aligned);
+            part_idcpu.copy_from(&m_part_idcpu[i], stdx::element_aligned);
+
+            // push through element
+            m_element(part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, m_ref_part);
+
+            // write back to memory
+            // TODO stdx::vector_aligned needs alignment guarantees
+            //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 0))
+                part_x.copy_to(&m_part_x[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 1))
+                part_y.copy_to(&m_part_y[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 2))
+                part_t.copy_to(&m_part_t[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 3))
+                part_px.copy_to(&m_part_px[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 4))
+                part_py.copy_to(&m_part_py[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 5))
+                part_pt.copy_to(&m_part_pt[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 6))
+                part_idcpu.copy_to(&m_part_idcpu[i], stdx::element_aligned);
+        }
+#endif
 
     private:
         T_Element m_element;
@@ -118,9 +175,9 @@ namespace detail
      */
     template< typename T_Element >
     void push_all_particles (
-            ImpactXParticleContainer::iterator & pti,
-            RefPart & AMREX_RESTRICT ref_part,
-            T_Element & element
+        ImpactXParticleContainer::iterator & pti,
+        RefPart & AMREX_RESTRICT ref_part,
+        T_Element & element
     ) {
         const int np = pti.numParticles();
 
@@ -138,8 +195,15 @@ namespace detail
         detail::PushSingleParticle<T_Element> const pushSingleParticle(
             element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
 
-        //   loop over beam particles in the box
-        amrex::ParallelFor(np, pushSingleParticle);
+        // loop over beam particles in the box
+#ifdef AMREX_USE_SIMD
+        if constexpr (amrex::simd::is_vectorized<T_Element>) {
+            amrex::ParallelForSIMD<T_Element::simd_width>(np, pushSingleParticle);  // TODO: test 2,4,8, ... and handle remainder
+        } else
+#endif
+        {
+            amrex::ParallelFor(np, pushSingleParticle);
+        }
     }
 } // namespace detail
 

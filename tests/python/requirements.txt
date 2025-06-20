@@ -1,3 +1,4 @@
 -r ../../examples/requirements.txt
 pytest
+pytest-benchmark
 seleniumbase

@@ -83,6 +83,7 @@ class DashboardDefaults:
     LATTICE_CONFIGURATION = {
         "selected_lattice_list": [],
         "selected_lattice": None,
+        "periods": 1,
     }
 
     SPACE_CHARGE = {
@@ -153,6 +154,7 @@ class DashboardDefaults:
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
+        "periods": "int",
     }
 
     VALIDATION_CONDITION = {
@@ -162,6 +164,7 @@ class DashboardDefaults:
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],
+        "periods": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

@@ -274,6 +274,11 @@ class LatticeConfiguration(CardBase):
             )
             with vuetify.VCardText(**self.CARD_TEXT_OVERFLOW):
                 with vuetify.VRow(**self.ROW_STYLE):
+                    with vuetify.VCol(cols=2):
+                        InputComponents.text_field(
+                            label="Periods",
+                        )
+                    vuetify.VDivider(vertical=True)
                     with vuetify.VCol(cols=True):
                         InputComponents.combobox(
                             label="Select Accelerator Lattice",

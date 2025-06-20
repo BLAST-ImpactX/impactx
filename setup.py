@@ -266,7 +266,7 @@ setup(
     cmdclass=cmdclass,
     zip_safe=False,
     python_requires=">=3.8",  # left for CI, truly ">=3.9"
-    tests_require=["numpy", "pandas", "pytest", "scipy"],
+    tests_require=["numpy", "pandas", "pytest", "pytest-benchmark", "scipy"],
     install_requires=install_requires,
     # cmdclass={'test': PyTest},
     # platforms='any',

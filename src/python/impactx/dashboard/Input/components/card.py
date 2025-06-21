@@ -1,7 +1,8 @@
+from typing import List, Optional, Union
+
 from ... import html, setup_server, vuetify
 from ..defaults import DashboardDefaults, UIDefaults
 from ..generalFunctions import generalFunctions
-from typing import Optional, Union, List, Tuple
 
 server, state, ctrl = setup_server()
 
@@ -99,11 +100,11 @@ class CardComponents:
     @staticmethod
     def card_button(
         icon_name: Union[str, List[str]],
-        color: str ="primary",
+        color: str = "primary",
         dynamic_condition: Optional[str] = None,
         description: Optional[Union[str, List[str]]] = None,
-        density: str ="compact",
-        variant: str ="text",
+        density: str = "compact",
+        variant: str = "text",
         **kwargs,
     ) -> vuetify.VBtn:
         """

@@ -122,17 +122,17 @@ class CardComponents:
             Ensure dynamic_condition components are a list of exactly 2 strings for dynamic toggling (e.g., expand/collapse).
             """
 
-            if not isinstance(value, (list, tuple)):
+            if not isinstance(prop_value, (list, tuple)):
                 raise ValueError(
-                    f"When dynamic_condition is True, {name} must be a list or tuple of exactly 2 strings"
+                    f"When dynamic_condition is set, {prop_name} must be a list of exactly 2 strings"
                 )
-            if len(value) != 2:
+            if len(prop_value) != 2:
                 raise ValueError(
-                    f"When dynamic_condition is True, {name} must contain exactly 2 elements"
+                    f"When dynamic_condition is set, {prop_name} must contain exactly 2 elements"
                 )
-            if not all(isinstance(item, str) for item in value):
+            if not all(isinstance(item, str) for item in prop_value):
                 raise ValueError(
-                    f"When dynamic_condition is True, all elements in {name} must be strings"
+                    f"When dynamic_condition is set, all elements in {prop_name} must be strings"
                 )
 
         if dynamic_condition:

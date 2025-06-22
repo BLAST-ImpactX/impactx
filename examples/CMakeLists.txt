@@ -699,6 +699,10 @@ add_impactx_test(solenoid.restart
     OFF  # no plot script yet
 )
 set_property(TEST solenoid.restart.run APPEND PROPERTY DEPENDS "solenoid.run")
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.cleanup APPEND PROPERTY DEPENDS "soilenoid.restart.cleanup")
+endif()
 
 add_impactx_test(solenoid.restart.py
     examples/solenoid_restart/run_solenoid.py
@@ -708,6 +712,10 @@ add_impactx_test(solenoid.restart.py
 )
 if(ImpactX_PYTHON)
     set_property(TEST solenoid.restart.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "soilenoid.restart.py.cleanup")
 endif()
 
 

@@ -6,10 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-import importlib
+import importlib.util
 
 import pytest
-from seleniumbase import SB
 
 from .utils import (
     DashboardTester,
@@ -20,8 +19,9 @@ from .utils import (
 
 
 @pytest.mark.skipif(
-    importlib.util.find_spec("seleniumbase") is None,
-    reason="seleniumbase is not available",
+    importlib.util.find_spec("trame") is None
+    or importlib.util.find_spec("seleniumbase") is None,
+    reason="trame and seleniumbase must be available",
 )
 def test_dashboard():
     """
@@ -37,6 +37,8 @@ def test_dashboard():
     - Running the simulation
     - Checking if the simulation completes successfully
     """
+    from seleniumbase import SB
+
     app_process = None
 
     try:

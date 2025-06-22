@@ -158,6 +158,24 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
             "ValueError: No objects to concatenate"
         )
     endif()
+
+    # CI: remove test directory after run
+    if(ImpactX_TEST_CLEANUP)
+        add_test(
+            NAME ${name}.cleanup
+            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/examples/test_cleanup.cmake ${THIS_WORKING_DIR}
+        )
+        # test cleanup depends on test run
+        set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.run")
+        if(analysis_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.analysis")
+        endif()
+        if(plot_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.plot")
+        endif()
+    endif()
 endfunction()
 
 

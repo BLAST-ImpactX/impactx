@@ -429,6 +429,20 @@ void init_ImpactX (py::module& m)
             "if there are unused parameters in the input."
         )
 
+        .def_property("omp_threads",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<std::string>("amrex", "omp_threads");
+            },
+            [](ImpactX & /* ix */, std::variant<int, std::string> omp_threads_var) {
+                std::visit([&]( auto && omp_threads) {
+                    amrex::ParmParse pp_amrex("amrex");
+                pp_amrex.add("omp_threads", omp_threads);
+                }, omp_threads_var);
+            },
+            "Controls the number of OpenMP threads to use (ImpactX default: \"nosmt\").\n"
+            "https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html."
+        )
+
         .def_property("verbose",
             [](ImpactX & /* ix */){
                 return detail::get_or_throw<int>("impactx", "verbose");

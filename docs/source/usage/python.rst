@@ -237,6 +237,12 @@ Collective Effects & Overall Simulation Parameters
 
       The number of periods to repeat the lattice.
 
+   .. py:property:: omp_threads
+
+      Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+
+      See the detailed `AMReX docs <https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html>`__ for details in the accepted values.
+
    .. py:property:: abort_on_warning_threshold
 
       (optional) Set to "low", "medium" or "high".

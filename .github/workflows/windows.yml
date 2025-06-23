@@ -106,6 +106,7 @@ jobs:
               -DImpactX_FFT=ON            `
               -DImpactX_MPI=OFF           `
               -DImpactX_PYTHON=ON         `
+              -DImpactX_TEST_CLEANUP=ON   `
               -DopenPMD_USE_HDF5=ON       `
               -DPython_EXECUTABLE=python3
         if(!$?) { Exit $LASTEXITCODE }
@@ -227,6 +228,7 @@ jobs:
               -DImpactX_FFT=ON               ^
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^
+              -DImpactX_TEST_CLEANUP=ON      ^
               -DopenPMD_USE_HDF5=ON
         if errorlevel 1 exit 1
         cmake --build build --config Debug --parallel 4

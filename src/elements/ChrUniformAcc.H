@@ -166,7 +166,7 @@ namespace impactx::elements
                 amrex::ParticleReal const theta = m_alpha_iez * std::log(numer / denom);
                 auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
-                // intialize output values
+                // initialize output values
                 amrex::ParticleReal xout = x;
                 amrex::ParticleReal yout = y;
                 amrex::ParticleReal tout = t;
@@ -246,7 +246,7 @@ namespace impactx::elements
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
-            // compute intial value of beta*gamma
+            // compute initial value of beta*gamma
             amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // advance pt (uniform acceleration)

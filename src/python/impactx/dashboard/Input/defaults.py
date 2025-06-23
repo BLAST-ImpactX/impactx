@@ -154,6 +154,9 @@ class DashboardDefaults:
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
+        "beta": "float",
+        "emitt": "float",
+        "alpha": "float",
         "periods": "int",
     }
 

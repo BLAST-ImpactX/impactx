@@ -35,7 +35,7 @@ class MADXParser:
         Combine to one list of all basic
         elements.
 
-        return a list of of element dictionaries
+        return a list of element dictionaries
 
         """
     def _flatten(self, line):

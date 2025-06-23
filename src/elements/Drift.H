@@ -125,7 +125,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;

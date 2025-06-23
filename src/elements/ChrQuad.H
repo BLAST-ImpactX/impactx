@@ -154,7 +154,7 @@ namespace impactx::elements
             // chromatic dependence on delta is included
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_g)/delta1);
 
-            // intialize output values of momenta
+            // initialize output values of momenta
             amrex::ParticleReal pxout = px;
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal const ptout = pt;

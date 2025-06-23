@@ -147,7 +147,7 @@ namespace impactx::elements
             amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + amrex::Math::powi<2>(pt));
             amrex::ParticleReal a = m_a / delta1;
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;

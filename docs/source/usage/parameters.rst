@@ -366,7 +366,7 @@ The internal tracking methods used by ImpactX are symplectic.  However, if a use
 This element requires these additional parameters:
 
 * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
-  a 1-indexed, 6x6, linear transport map to multiply with the the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`.
+  a 1-indexed, 6x6, linear transport map to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`.
 * ``<element_name>.ds`` (``float``, in meters) length associated with a user-defined linear element (defaults to 0)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error

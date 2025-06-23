@@ -140,7 +140,7 @@ namespace impactx::elements
             //amrex::ParticleReal const pt_ref = refpart.pt;
             //amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;

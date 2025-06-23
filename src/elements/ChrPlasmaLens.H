@@ -147,7 +147,7 @@ namespace impactx::elements
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
 
-            // intialize output values of momenta
+            // initialize output values of momenta
             amrex::ParticleReal pxout = px;
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal const ptout = pt;

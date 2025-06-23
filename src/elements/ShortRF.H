@@ -133,7 +133,7 @@ namespace impactx::elements
             py = py * m_bgi;
             pt = pt * m_bgi;
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -194,7 +194,7 @@ namespace impactx::elements
             using ablastr::constant::math::pi;
             amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
 
-            // compute intial value of beta*gamma
+            // compute initial value of beta*gamma
             amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // advance pt

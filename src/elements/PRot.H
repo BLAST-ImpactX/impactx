@@ -116,7 +116,7 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;

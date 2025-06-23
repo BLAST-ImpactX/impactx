@@ -368,6 +368,14 @@ class ImpactX:
         arg1: typing.Annotated[list[int], pybind11_stubgen.typing_ext.FixedSize(3)],
     ) -> None: ...
     @property
+    def omp_threads(self) -> str:
+        """
+        Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+        https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html.
+        """
+    @omp_threads.setter
+    def omp_threads(self, arg1: int | str) -> None: ...
+    @property
     def particle_lost_diagnostics_backend(self) -> str:
         """
         Diagnostics for particles lost in apertures.

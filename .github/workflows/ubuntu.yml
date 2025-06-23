@@ -56,7 +56,7 @@ jobs:
         cmake -S . -B build            \
           -DCMAKE_BUILD_TYPE=Debug     \
           -DBUILD_SHARED_LIBS=ON       \
-          -DCMAKE_INSTALL_PREFIX=/usr  \
+          -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_PYTHON=ON          \
@@ -71,7 +71,9 @@ jobs:
 
     - name: run installed app
       run: |
-        sudo cmake --build build --target install
+        cmake --build build --target install
+        export PATH=$HOME/.local/bin:$PATH
+        export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
         impactx.MPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }
@@ -133,7 +135,7 @@ jobs:
         cmake -S . -B build            \
           -DBUILD_SHARED_LIBS=ON       \
           -DCMAKE_BUILD_TYPE=Debug     \
-          -DCMAKE_INSTALL_PREFIX=/usr  \
+          -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_MPI=OFF            \
@@ -147,7 +149,9 @@ jobs:
 
     - name: run installed app
       run: |
-        sudo cmake --build build --target install
+        cmake --build build --target install
+        export PATH=$HOME/.local/bin:$PATH
+        export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
         impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }

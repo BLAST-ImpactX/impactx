@@ -436,6 +436,9 @@ void init_ImpactX (py::module& m)
             [](ImpactX & /* ix */, int const verbose) {
                 amrex::ParmParse pp_impactx("impactx");
                 pp_impactx.add("verbose", verbose);
+                // AMReX init/finalize
+                amrex::ParmParse pp_amrex("amrex");
+                pp_amrex.add("verbose", verbose);
             },
             "Controls how much information is printed to the terminal, when running ImpactX.\n"
             "``0`` for silent, higher is more verbose. Default is ``1``."

@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import setup_server, vuetify
-from .. import CardBase, CardComponents, InputComponents, generalFunctions
+from .. import CardBase, CardComponents, DashboardValidation, InputComponents
 from . import InputFunctions
 
 server, state, ctrl = setup_server()
@@ -42,7 +42,7 @@ class InputParameters(CardBase):
         current_sc_list = ui_props.get("space_charge_list", [])
         if state.space_charge not in current_sc_list:
             state.space_charge = current_sc_list[0]
-        generalFunctions.update_simulation_validation_status()
+        DashboardValidation.update_simulation_validation_status()
 
     def card_content(self):
         with vuetify.VCard(**self.card_props):

@@ -16,6 +16,17 @@ jobs:
       CXXFLAGS: "-Werror"
       OMP_NUM_THREADS: 2
     steps:
+    - name: Free More Disk Space
+      uses: ax3l/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false  # apt takes ~1:30min
+        docker-images: true
+        swap-storage: false
+
     - uses: actions/checkout@v4
 
     - name: install dependencies
@@ -49,6 +60,7 @@ jobs:
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_PYTHON=ON          \
+          -DImpactX_TEST_CLEANUP=ON    \
           -DImpactX_UNITY_BUILD=ON     \
           -DMPIEXEC_POSTFLAGS="--use-hwthread-cpus"
         cmake --build build -j 4
@@ -86,6 +98,17 @@ jobs:
       CXXFLAGS: "-Werror"
       OMP_NUM_THREADS: 2
     steps:
+    - name: Free More Disk Space
+      uses: ax3l/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false  # apt takes ~1:30min
+        docker-images: true
+        swap-storage: false
+
     - uses: actions/checkout@v4
 
     - name: install dependencies
@@ -114,7 +137,8 @@ jobs:
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_MPI=OFF            \
-          -DImpactX_PYTHON=ON
+          -DImpactX_PYTHON=ON          \
+          -DImpactX_TEST_CLEANUP=ON
         cmake --build build -j 4
 
     - name: run tests

@@ -24,6 +24,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_Print.H>
 #include <AMReX_GpuComplex.H>
+#include <AMReX_Math.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -166,7 +167,7 @@ namespace impactx::elements
 
             // find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            m_betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            m_betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
             m_ibetgam2 = 1_prt / m_betgam2;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
@@ -275,10 +276,10 @@ namespace impactx::elements
 
             // compute the radical in the denominator (= pz):
             amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                std::pow(pt - m_ibeta, 2) -
+                amrex::Math::powi<2>(pt - m_ibeta) -
                 m_ibetgam2 -
-                std::pow(px, 2) -
-                std::pow(py, 2)
+                amrex::Math::powi<2>(px) -
+                amrex::Math::powi<2>(py)
             );
 
             // advance position and momentum (exact drift)
@@ -407,7 +408,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -434,7 +435,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
 
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
@@ -450,7 +451,7 @@ namespace impactx::elements
             amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / refpart.rigidity_Tm() : k_normal[1];
             amrex::ParticleReal const ks = m_unit == 1 ? k_skew[1] / refpart.rigidity_Tm() : k_skew[1];
 
-            amrex::ParticleReal const kabs = std::sqrt(std::pow(kn,2) + std::pow(ks,2));
+            amrex::ParticleReal const kabs = std::sqrt(amrex::Math::powi<2>(kn) + amrex::Math::powi<2>(ks));
             amrex::ParticleReal const kplus = kn + kabs;
             amrex::ParticleReal const kminus = kn - kabs;
 

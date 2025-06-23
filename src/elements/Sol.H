@@ -93,7 +93,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
 
             // compute phase advance per unit length (in rad/m) and
             // rotation angle (in rad)
@@ -215,7 +215,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt,2) - 1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -250,7 +250,7 @@ namespace impactx::elements
             Map6x6 Rfocusing = Map6x6::Identity();
 
             // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
 
             // compute phase advance per unit length (in rad/m) and
             // rotation angle (in rad)

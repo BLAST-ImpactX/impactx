@@ -14,6 +14,7 @@
 
 #include <ablastr/constant.H>
 
+#include <AMReX_Math.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -113,7 +114,7 @@ namespace impactx::distribution
             // Random samples used to define pr:
             alpha = amrex::Random(engine);
             alpha = pi*alpha;
-            pmax = 1.0_prt - std::pow((Lz/r),2) - std::pow(r,2) + std::pow(Lz,2);
+            pmax = 1.0_prt - amrex::Math::powi<2>((Lz/r)) - amrex::Math::powi<2>(r) + amrex::Math::powi<2>(Lz);
             pmax = std::sqrt(pmax);
             pr = pmax * std::cos(alpha);
             pphi = Lz/r;

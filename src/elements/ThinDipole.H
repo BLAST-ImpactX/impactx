@@ -19,6 +19,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -135,12 +136,12 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             // compute the function expressing dp/p in terms of pt (labeled f in Ripken etc.)
-            amrex::ParticleReal const f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt * pt / m_beta + std::pow(pt, 2));
+            amrex::ParticleReal const f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt * pt / m_beta + amrex::Math::powi<2>(pt));
             amrex::ParticleReal const fprime = (1.0_prt - m_beta*pt) / (m_beta * (1.0_prt + f));
 
             // advance position and momentum
             x = xout;
-            pxout = px - std::pow(m_kx, 2) * m_ds * xout + m_kx * m_ds * f; //eq (3.2b)
+            pxout = px - amrex::Math::powi<2>(m_kx) * m_ds * xout + m_kx * m_ds * f; //eq (3.2b)
 
             y = yout;
             pyout = py;

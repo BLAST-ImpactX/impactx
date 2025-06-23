@@ -303,7 +303,7 @@ namespace SoftSolenoidData
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(pt*pt - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;

@@ -371,8 +371,10 @@ namespace impactx
 
         // calculate Twiss / Courant-Snyder gammas
         amrex::Vector<amrex::ParticleReal> gammas;
-        for (size_t i = 0; i < alphas.size(); i++)
-            gammas.push_back((1.0 + std::pow(alphas.at(i), 2)) / betas.at(i));
+        for (size_t i = 0; i < alphas.size(); i++) {
+            amrex::ParticleReal const alpha = alphas.at(i);
+            gammas.push_back((1_prt + alpha*alpha) / betas.at(i));
+        }
 
         amrex::Vector<amrex::ParticleReal> lambdas_pos;
         amrex::Vector<amrex::ParticleReal> lambdas_mom;

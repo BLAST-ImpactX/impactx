@@ -98,13 +98,13 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2, beta
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1_prt;
+            amrex::ParticleReal const betgam2 = refpart.pt*refpart.pt - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = std::pow(bet, 2) * std::pow(m_rc, 2);
+            amrex::ParticleReal const b2rc2 = bet*bet * m_rc*m_rc;
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + std::pow(m_rc,-2);
+            amrex::ParticleReal const gx = m_k + 1_prt / (m_rc*m_rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables

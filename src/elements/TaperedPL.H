@@ -117,7 +117,7 @@ namespace impactx::elements
 
             // advance position and momentum
             xout = x;
-            pxout = px - g * ( x + m_taper*0.5_prt * (std::pow(x, 2) + std::pow(y, 2)) );
+            pxout = px - g * ( x + m_taper * 0.5_prt * (x*x + y*y) );
 
             yout = y;
             pyout = py - g * ( y + m_taper * x * y );

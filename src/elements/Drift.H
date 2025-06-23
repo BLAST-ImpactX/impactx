@@ -89,7 +89,7 @@ namespace impactx::elements
             m_slice_ds = m_ds / nslice();
 
             // find beta*gamma^2
-            m_betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            m_betgam2 = refpart.pt*refpart.pt - 1.0_prt;
 
             m_slice_bg = m_slice_ds / m_betgam2;
         }
@@ -179,7 +179,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(pt*pt - 1.0_prt);
 
             // advance position and momentum (drift)
             refpart.x = x + step*px;
@@ -209,7 +209,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = pt_ref * pt_ref - 1.0_prt;
 
             // assign linear map matrix elements
             Map6x6 R = Map6x6::Identity();

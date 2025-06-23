@@ -140,7 +140,7 @@ namespace impactx::elements
                 amrex::ParticleReal const slice_ds = m_ds / nslice();
 
                 // assign intermediate parameter
-                amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+                amrex::ParticleReal const step = slice_ds /std::sqrt(pt*pt-1.0_prt);
 
                 // advance position and momentum (drift)
                 refpart.x = x + step*px;

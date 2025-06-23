@@ -92,7 +92,8 @@ namespace impactx::elements
 
             // access reference particle values
             amrex::ParticleReal const ibet = 1.0_prt / refpart.beta();
-            amrex::ParticleReal const ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
+            amrex::ParticleReal const betgam = refpart.beta_gamma();
+            amrex::ParticleReal const ibetagam2 = 1_prt / (betgam * betgam);
 
             // treat the special case of zero field (equivalent to a drift)
             if (m_rc==0_prt) {

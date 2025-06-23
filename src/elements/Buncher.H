@@ -78,7 +78,7 @@ namespace impactx::elements
             Alignment::compute_constants(refpart);
 
             // find beta*gamma^2
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = refpart.pt * refpart.pt - 1.0_prt;
 
             m_neg_kV = -m_k * m_V;
             m_kV_r2bg2 = -m_neg_kV / (2.0_prt * betgam2);
@@ -152,7 +152,7 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
 
             // find beta*gamma^2
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = (refpart.pt * refpart.pt) - 1.0_prt;
 
             amrex::ParticleReal const neg_kV = -m_k * m_V;
             amrex::ParticleReal const kV_r2bg2 = -neg_kV / (2.0_prt * betgam2);

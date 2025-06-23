@@ -155,13 +155,13 @@ namespace impactx::elements
                   switch (m_shape)
                   {
                       case Shape::rectangular :  // default shape
-                        if (std::pow(u,2)>1 || std::pow(v,2) > 1_prt) {
+                        if (u * u > 1_prt || v * v > 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
 
                       case Shape::elliptical :
-                        if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
+                        if (u * u + v * v > 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
@@ -173,13 +173,13 @@ namespace impactx::elements
                   switch (m_shape)
                   {
                       case Shape::rectangular :  // default
-                        if (std::pow(u,2) < 1 && std::pow(v,2) < 1_prt) {
+                        if (u * u < 1 && v * v < 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
 
                      case Shape::elliptical :
-                        if (std::pow(u,2) + std::pow(v,2) < 1_prt) {
+                        if (u * u + v * v < 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;

@@ -287,7 +287,7 @@ namespace RFCavityData
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(pt*pt - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -303,7 +303,7 @@ namespace RFCavityData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(ptf*ptf - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;

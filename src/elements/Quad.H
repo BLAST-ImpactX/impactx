@@ -94,7 +94,7 @@ namespace impactx::elements
 
             amrex::ParticleReal const pt_ref = refpart.pt;
             // find beta*gamma^2
-            m_betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            m_betgam2 = pt_ref * pt_ref - 1.0_prt;
             m_slice_bg = m_slice_ds / m_betgam2;
 
             // compute phase advance per unit length in s (in rad/m)

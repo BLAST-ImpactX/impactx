@@ -93,9 +93,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
-                / std::pow(cos_psi, 3)
-                * m_g * m_K2 / std::pow(m_rc, 2);
+            amrex::ParticleReal const vf = (1.0_prt + sin_psi*sin_psi)
+                / (cos_psi * cos_psi * cos_psi)
+                * m_g * m_K2 / (m_rc * m_rc);
 
             m_R43 = vf - m_R21;
         }
@@ -165,9 +165,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
-                / std::pow(cos_psi, 3)
-                * m_g * m_K2 / std::pow(m_rc, 2);
+            amrex::ParticleReal const vf = (1.0_prt + sin_psi*sin_psi)
+                / (cos_psi * cos_psi * cos_psi)
+                * m_g * m_K2 / (m_rc * m_rc);
 
             amrex::ParticleReal const R43 = vf - R21;
 

@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import html, setup_server, vuetify
+
 server, state, ctrl = setup_server()
 
 state.total_elements = 0
@@ -19,19 +20,19 @@ state.element_counts = {}
 state.length_stats_content = ""
 state.lattice_is_empty = len(state.selected_lattice_list) == 0
 
+
 class LatticeVisualizerStatisticUtils:
-    
     @staticmethod
     def _extract_parameter_values(parameter_name: str, value_type=float):
         """
         Helper function to extract parameter values from the lattice list.
-        
+
         :param parameter_name: Name of the parameter to extract (case-insensitive)
         :param value_type: Type to convert values to (float, int, etc.)
         :return: List of extracted values
         """
         values = []
-        
+
         for element in state.selected_lattice_list:
             for param in element.get("parameters", []):
                 if param.get("parameter_name", "").lower() == parameter_name.lower():
@@ -39,9 +40,9 @@ class LatticeVisualizerStatisticUtils:
                         values.append(value_type(param.get("sim_input", 0)))
                     except (ValueError, TypeError):
                         pass
-        
+
         return values
-    
+
     @staticmethod
     def update_length_statistics() -> None:
         """
@@ -58,7 +59,7 @@ class LatticeVisualizerStatisticUtils:
             state.length_stats_content = [
                 f"Longest: {state.max_length} m",
                 f"Shortest: {state.min_length} m",
-                f"Average: {state.avg_length} m"
+                f"Average: {state.avg_length} m",
             ]
         else:
             state.total_length = None
@@ -95,6 +96,7 @@ class LatticeVisualizerStatisticUtils:
         steps = LatticeVisualizerStatisticUtils._extract_parameter_values("nslice", int)
         return sum(steps)
 
+
 class LatticeVisualizerStatisticComponents:
     @staticmethod
     def _stat(title: str) -> None:
@@ -113,7 +115,7 @@ class LatticeVisualizerStatisticComponents:
 
         with vuetify.VCardTitle(
             f"{{{{ {title_state_name} || '-' }}}}{suffix}",
-            classes="d-flex align-center justify-center my-0 py-0"
+            classes="d-flex align-center justify-center my-0 py-0",
         ):
             if is_stat_length:
                 LatticeVisualizerStatisticComponents._additional_length_stats()
@@ -156,7 +158,9 @@ class LatticeVisualizerStatisticComponents:
                         vuetify.VCardTitle("Lattice list is empty.")
                     with vuetify.Template(v_else=True):
                         with vuetify.VChipGroup():
-                            with vuetify.Template(v_for="[name, count] in element_counts", key="name"):
+                            with vuetify.Template(
+                                v_for="[name, count] in element_counts", key="name"
+                            ):
                                 vuetify.VChip(
                                     "{{ name.charAt(0).toUpperCase() + name.slice(1) }}: {{ count }}",
                                     style="font-size: 0.75rem;",

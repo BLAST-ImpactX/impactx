@@ -12,7 +12,6 @@ from trame.ui.router import RouterViewLayout
 from trame.ui.vuetify3 import SinglePageWithDrawerLayout
 from trame.widgets import router, xterm
 
-from .Input.visualization.lattice.ui import LatticeVisualizer
 from . import (
     AnalyzeSimulation,
     DistributionParameters,
@@ -26,7 +25,7 @@ from . import (
     setup_server,
     vuetify,
 )
-
+from .Input.visualization.lattice.ui import LatticeVisualizer
 from .start import main
 from .Toolbar.sim_history.ui import load_my_js
 

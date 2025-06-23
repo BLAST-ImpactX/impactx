@@ -7,7 +7,6 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import html, setup_server, vuetify
-
 from ... import CardBase
 from . import StatComponents, StatUtils
 
@@ -28,6 +27,7 @@ def _update_statistics() -> None:
 def on_lattice_list_change(**kwargs):
     _update_statistics()
 
+
 class LatticeVisualizer(CardBase):
     """
     Displays the lattice visualizer section on the inputs page of the dashboard.
@@ -35,7 +35,7 @@ class LatticeVisualizer(CardBase):
 
     def __init__(self):
         super().__init__()
-        
+
     def card_content(self):
         """
         The content of the lattice visualizer.
@@ -53,5 +53,3 @@ class LatticeVisualizer(CardBase):
                     html.Div("Lattice Statistics")
                     vuetify.VSpacer()
                 StatComponents.statistics()
-            
-

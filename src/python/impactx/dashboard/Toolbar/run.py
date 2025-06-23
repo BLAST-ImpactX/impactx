@@ -69,6 +69,7 @@ class RunToolbar:
             description=["Run Simulation", "Cancel Simulation"],
             dynamic_condition="sim_is_running",
             disabled=("disableRunSimulationButton || sim_is_generating_plots", True),
+            id="run_simulation_button",
         )
 
     @staticmethod

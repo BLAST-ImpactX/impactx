@@ -206,7 +206,6 @@ class DashboardValidation:
                         f"prob_relative[{index}]: {field['error_message']}"
                     )
 
-        @staticmethod
         def has_error_in_variables() -> bool:
             """
             Determines if state.variables contains an error message.

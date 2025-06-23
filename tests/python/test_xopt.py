@@ -7,7 +7,7 @@
 #
 # -*- coding: utf-8 -*-
 
-import importlib
+import importlib.util
 
 import numpy as np
 import pytest

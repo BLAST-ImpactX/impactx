@@ -6,6 +6,8 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+from typing import Union
+
 from .. import setup_server
 from ..Toolbar.file_imports.python.parser import DashboardParser
 from .defaults import DashboardDefaults
@@ -50,7 +52,7 @@ class generalFunctions:
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def convert_to_numeric(input: str) -> int | float:
+    def convert_to_numeric(input: str) -> Union[int, float]:
         """
         Converts string inputs to their appropriate numeric type.
         This method is needed since text fields inputs on the dashboard

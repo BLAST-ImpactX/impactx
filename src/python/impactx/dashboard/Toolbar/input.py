@@ -131,6 +131,7 @@ class InputToolbar:
 
         return vuetify.VBtn(
             "Reset",
+            id="reset_all_inputs_button",
             click=ctrl.reset_all,
             variant="outlined",
             size="small",

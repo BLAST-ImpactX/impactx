@@ -7,8 +7,8 @@
 
 set -eu -o pipefail
 
-sudo apt-get -qqq update
-sudo apt-get install -y \
+sudo apt -qqq update
+sudo apt install -y     \
     build-essential     \
     ca-certificates     \
     cmake               \
@@ -26,8 +26,8 @@ sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda
 echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64 /" \
     | sudo tee /etc/apt/sources.list.d/cuda.list
 
-sudo apt-get update
-sudo apt-get install -y          \
+sudo apt update
+sudo apt install -y              \
     cuda-command-line-tools-11-7 \
     cuda-compiler-11-7           \
     cuda-cupti-dev-11-7          \
@@ -38,6 +38,10 @@ sudo apt-get install -y          \
     libcurand-dev-11-7           \
     libcusparse-dev-11-7
 sudo ln -s cuda-11.7 /usr/local/cuda
+
+# uv
+#
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # cmake-easyinstall
 #

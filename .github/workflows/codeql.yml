@@ -37,18 +37,14 @@ jobs:
 
       - name: Install Packages
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes cmake openmpi-bin libfftw3-dev libfftw3-mpi-dev libopenmpi-dev libhdf5-openmpi-dev
+          sudo apt update
+          sudo apt install --yes cmake openmpi-bin libfftw3-dev libfftw3-mpi-dev libopenmpi-dev libhdf5-openmpi-dev
 
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade pipx
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade numpy
-          python -m pip install --upgrade mpi4py
-          python -m pip install --upgrade pytest
-          python -m pip install --upgrade pytest-benchmark
-          python -m pip install --upgrade cmake
-          python -m pipx install cmake
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH=$HOME/.local/bin:$PATH
+
+          uv pip install --system --upgrade cmake mpi4py numpy pytest pytest-benchmark wheel
+          uvx pip install cmake
 
       - name: Configure (C++)
         if: ${{ matrix.language == 'cpp' }}

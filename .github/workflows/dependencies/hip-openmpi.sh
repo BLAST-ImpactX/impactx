@@ -36,13 +36,13 @@ echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/r
   | sudo tee -a /etc/profile.d/rocm.sh
 # we should not need to export HIP_PATH=/opt/rocm/hip with those installs
 
-sudo apt-get update
+sudo apt update
 
 # Ref.: https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html#installing-development-packages-for-cross-compilation
 # meta-package: rocm-dkms
 # OpenCL: rocm-opencl
 # other: rocm-dev rocm-utils
-sudo apt-get install -y --no-install-recommends \
+sudo apt install -y --no-install-recommends \
     build-essential \
     gfortran        \
     libhdf5-openmpi-dev \
@@ -59,7 +59,7 @@ sudo apt-get install -y --no-install-recommends \
     rocsparse-dev${VERSION}
 
 # hiprand-dev is a new package that does not exist in old versions
-sudo apt-get install -y --no-install-recommends hiprand-dev${VERSION} || true
+sudo apt install -y --no-install-recommends hiprand-dev${VERSION} || true
 
 # activate
 #
@@ -67,6 +67,10 @@ source /etc/profile.d/rocm.sh
 hipcc --version
 which clang
 which clang++
+
+# uv
+#
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # cmake-easyinstall
 #

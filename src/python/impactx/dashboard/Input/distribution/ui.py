@@ -6,10 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-import inspect
+from typing import Union
 
 from impactx import distribution
-from impactx.distribution_input_helpers import twiss
 
 from ... import setup_server, vuetify
 from .. import (
@@ -21,6 +20,7 @@ from .. import (
     generalFunctions,
 )
 from ..defaults_helper import InputDefaultsHelper
+from . import DistributionFunctions
 
 server, state, ctrl = setup_server()
 
@@ -33,64 +33,44 @@ DISTRIBUTION_PARAMETERS_AND_DEFAULTS = (
     InputDefaultsHelper.class_parameters_with_defaults(DISTRIBUTION_MODULE_NAME)
 )
 
-state.selected_distribution_parameters = []
+state.selected_distribution_parameters = {}
 state.distribution_type_disable = False
-
-# -----------------------------------------------------------------------------
-# Main Functions
-# -----------------------------------------------------------------------------
 
 
 def populate_distribution_parameters():
     """
-    Populates distribution parameters based on the selected distribution.
-    :param selected_distribution (str): The name of the selected distribution
-    whose parameters need to be populated.
+    Called when `state.distribution_type` changes.
+    Populates distribution parameters based on the current `state.distribution`.
     """
+    params = {}
+    is_twiss = state.distribution_type == "Twiss"
 
-    if state.distribution_type == "Twiss":
-        sig = inspect.signature(twiss)
-        state.selected_distribution_parameters = [
-            {
-                "parameter_name": param.name,
-                "parameter_default_value": param.default
-                if param.default != param.empty
-                else None,
-                "parameter_type": "float",  # Hardcoding Twiss to 'float' type.
-                "parameter_error_message": DashboardValidation.validate_against(
-                    param.default if param.default != param.empty else None, "float"
-                ),
-                "parameter_units": generalFunctions.get_default(param.name, "units")
-                if "beta" in param.name or "emitt" in param.name
-                else "",
-                "parameter_step": generalFunctions.get_default(param.name, "steps"),
-            }
-            for param in sig.parameters.values()
-        ]
+    # Gather necessary data
+    if is_twiss:
+        param_data = DistributionFunctions.get_twiss_data()
+    else:
+        # data for quadratic (impactX native)
+        param_data = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(state.distribution, [])
 
-    else:  # when type == 'Quadratic Form'
-        selected_distribution_parameters = DISTRIBUTION_PARAMETERS_AND_DEFAULTS.get(
-            state.distribution, []
+    # Populate the UI
+    for param_name, default_value, default_type in param_data:
+        error_message = DashboardValidation.validate_against(
+            default_value, default_type
         )
+        units = DistributionFunctions.get_distribution_units(param_name)
+        step = generalFunctions.get_default(param_name, "steps")
 
-        state.selected_distribution_parameters = [
-            {
-                "parameter_name": parameter[0],
-                "parameter_default_value": parameter[1],
-                "parameter_type": parameter[2],
-                "parameter_error_message": DashboardValidation.validate_against(
-                    parameter[1], parameter[2]
-                ),
-                "parameter_units": "m"
-                if "beta" in parameter[0] or "emitt" in parameter[0]
-                else "",
-                "parameter_step": generalFunctions.get_default(parameter[0], "steps"),
-            }
-            for parameter in selected_distribution_parameters
-        ]
+        params[param_name] = {
+            "value": default_value,
+            "type": default_type,
+            "error_message": error_message,
+            "units": units,
+            "step": step,
+        }
 
+    state.selected_distribution_parameters = params
     DashboardValidation.update_simulation_validation_status()
-    return state.selected_distribution_parameters
+    return params
 
 
 # -----------------------------------------------------------------------------
@@ -124,22 +104,21 @@ def on_distribution_type_change(**kwargs):
     populate_distribution_parameters()
 
 
-@ctrl.add("updateDistributionParameters")
-def on_distribution_parameter_change(parameter_name, parameter_value, parameter_type):
-    parameter_value = generalFunctions.convert_to_numeric(parameter_value)
-    lookup_name = "lambda" if "lambda" in parameter_name else parameter_name
+@ctrl.add("update_distribution_parameter")
+def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
+    numeric_input = generalFunctions.convert_to_numeric(input)
+    lookup_name = "lambda" if "lambda" in name else name
     conditions = generalFunctions.get_default(lookup_name, "validation_condition")
     error_message = DashboardValidation.validate_against(
-        parameter_value, parameter_type, additional_conditions=conditions
+        numeric_input, type, additional_conditions=conditions
     )
 
-    for param in state.selected_distribution_parameters:
-        if param["parameter_name"] == parameter_name:
-            param["parameter_default_value"] = parameter_value
-            param["parameter_error_message"] = error_message
-
-    DashboardValidation.update_simulation_validation_status()
-    state.dirty("selected_distribution_parameters")
+    parameter = state.selected_distribution_parameters.get(name)
+    if parameter:
+        parameter["value"] = numeric_input
+        parameter["error_message"] = error_message
+        DashboardValidation.update_simulation_validation_status()
+        state.dirty("selected_distribution_parameters")
 
 
 # -----------------------------------------------------------------------------
@@ -178,28 +157,26 @@ class DistributionParameters(CardBase):
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
                     with vuetify.VCol(
-                        v_for="(parameter, index) in selected_distribution_parameters",
+                        v_for="(parameter, parameter_name) in selected_distribution_parameters",
                         cols=4,
                     ):
                         with vuetify.VTooltip(
                             location="top",
-                            text=("all_tooltips[parameter.parameter_name]",),
+                            text=("all_tooltips[parameter_name]",),
                         ):
                             with vuetify.Template(v_slot_activator="{ props }"):
                                 vuetify.VTextField(
-                                    label=("parameter.parameter_name",),
-                                    v_model=("parameter.parameter_default_value",),
-                                    id=("parameter.parameter_name",),
-                                    suffix=("parameter.parameter_units",),
+                                    label=("parameter_name",),
+                                    v_model=("parameter.value",),
+                                    id=("parameter_name",),
+                                    suffix=("parameter.units",),
                                     update_modelValue=(
-                                        ctrl.updateDistributionParameters,
-                                        "[parameter.parameter_name, $event, parameter.parameter_type]",
+                                        ctrl.update_distribution_parameter,
+                                        "[parameter_name, $event, parameter.type]",
                                     ),
-                                    error_messages=(
-                                        "parameter.parameter_error_message",
-                                    ),
+                                    error_messages=("parameter.error_message",),
                                     type="number",
-                                    step=("parameter.parameter_step",),
+                                    step=("parameter.step",),
                                     __properties=["step"],
                                     density="compact",
                                     variant="underlined",

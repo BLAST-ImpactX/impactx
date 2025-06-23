@@ -1336,6 +1336,7 @@ void init_elements(py::module& m)
             }
         )
         .def(py::init<std::string>(),
+             py::arg("name"),
              "This named element does nothing."
         )
     ;

@@ -158,6 +158,24 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
             "ValueError: No objects to concatenate"
         )
     endif()
+
+    # CI: remove test directory after run
+    if(ImpactX_TEST_CLEANUP)
+        add_test(
+            NAME ${name}.cleanup
+            COMMAND ${CMAKE_COMMAND} -P ${ImpactX_SOURCE_DIR}/examples/test_cleanup.cmake ${THIS_WORKING_DIR}
+        )
+        # test cleanup depends on test run
+        set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.run")
+        if(analysis_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.analysis")
+        endif()
+        if(plot_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.plot")
+        endif()
+    endif()
 endfunction()
 
 
@@ -681,6 +699,10 @@ add_impactx_test(solenoid.restart
     OFF  # no plot script yet
 )
 set_property(TEST solenoid.restart.run APPEND PROPERTY DEPENDS "solenoid.run")
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.cleanup")
+endif()
 
 add_impactx_test(solenoid.restart.py
     examples/solenoid_restart/run_solenoid.py
@@ -690,6 +712,10 @@ add_impactx_test(solenoid.restart.py
 )
 if(ImpactX_PYTHON)
     set_property(TEST solenoid.restart.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.py.cleanup")
 endif()
 
 

@@ -1408,7 +1408,7 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
 
 class Marker(mixin.Named, mixin.Thin):
-    def __init__(self, arg0: str) -> None:
+    def __init__(self, name: str) -> None:
         """
         This named element does nothing.
         """

@@ -168,6 +168,7 @@ class DistributionParameters(CardBase):
                                 vuetify.VTextField(
                                     label=("parameter_name",),
                                     v_model=("parameter.value",),
+                                    id=("parameter_name",),
                                     suffix=("parameter.units",),
                                     update_modelValue=(
                                         ctrl.update_distribution_parameter,

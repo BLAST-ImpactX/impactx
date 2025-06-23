@@ -92,7 +92,7 @@ class InputToolbar:
             ["mdi-collapse-all", "mdi-expand-all"],
             click=ctrl.collapse_all_sections,
             dynamic_condition="expand_all_sections",
-            description="Collapse all",
+            description=["Minimize All", "Show All"],
         )
 
     @staticmethod
@@ -148,6 +148,7 @@ class InputToolbar:
 
         return vuetify.VBtn(
             "Reset",
+            id="reset_all_inputs_button",
             click=ctrl.reset_all,
             variant="outlined",
             size="small",
@@ -189,9 +190,10 @@ class RunToolbar:
             ["mdi-play-circle", "mdi-close-circle"],
             color=("sim_is_running ? 'error' : sim_status_color",),
             click="sim_is_running ? trigger('cancel_sim') : trigger('begin_sim')",
-            description="Run Simulation",
+            description=["Run Simulation", "Cancel Simulation"],
             dynamic_condition="sim_is_running",
             disabled=("disableRunSimulationButton || sim_is_generating_plots", True),
+            id="run_simulation_button",
         )
 
     @staticmethod

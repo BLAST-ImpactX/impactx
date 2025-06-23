@@ -12,6 +12,7 @@ from trame.ui.router import RouterViewLayout
 from trame.ui.vuetify3 import SinglePageWithDrawerLayout
 from trame.widgets import router, xterm
 
+from .Input.visualization.lattice.ui import LatticeVisualizer
 from . import (
     AnalyzeSimulation,
     DistributionParameters,
@@ -25,6 +26,7 @@ from . import (
     setup_server,
     vuetify,
 )
+
 from .start import main
 from .Toolbar.sim_history.ui import load_my_js
 
@@ -80,6 +82,10 @@ with RouterViewLayout(server, "/Input"):
                 with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(cols=12, **card_column_padding):
                         lattice_config.card()
+            with vuetify.VCol(cols=12, md=6):
+                with vuetify.VRow(**card_row_padding):
+                    with vuetify.VCol():
+                        LatticeVisualizer().card()
 
 with RouterViewLayout(server, "/Analyze"):
     with vuetify.VContainer(fluid=True):

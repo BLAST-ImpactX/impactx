@@ -50,16 +50,15 @@ class LatticeVisualizerStatisticUtils:
         lattice configuration. Sums all elements' 'ds' (length) parameters.
         """
         lengths = LatticeVisualizerStatisticUtils._extract_parameter_values("ds", float)
-
         if lengths:
-            state.total_length = round(sum(lengths), 2)
-            state.min_length = round(min(lengths), 3)
-            state.max_length = round(max(lengths), 3)
-            state.avg_length = round(sum(lengths) / len(lengths), 3)
+            state.total_length = f"{round(sum(lengths), 2)}m"
+            state.min_length = f"{round(min(lengths), 3)}m"
+            state.max_length = f"{round(max(lengths), 3)}m"
+            state.avg_length = f"{round(sum(lengths) / len(lengths), 3)}m"
             state.length_stats_content = [
-                f"Longest: {state.max_length} m",
-                f"Shortest: {state.min_length} m",
-                f"Average: {state.avg_length} m",
+                f"Longest: {state.max_length}",
+                f"Shortest: {state.min_length}",
+                f"Average: {state.avg_length}",
             ]
         else:
             state.total_length = None
@@ -107,14 +106,12 @@ class LatticeVisualizerStatisticComponents:
         :param title: The statistic name
         """
         title_state_name = title.lower().replace(" ", "_")
-
         is_stat_length = "length" in title.lower()
-        suffix = " m" if is_stat_length and state.total_elements > 0 else ""
 
         vuetify.VCardSubtitle(title, classes="pb-0 mb-0")
 
         with vuetify.VCardTitle(
-            f"{{{{ {title_state_name} || '-' }}}}{suffix}",
+            f"{{{{ {title_state_name} || '-' }}}}",
             classes="d-flex align-center justify-center my-0 py-0",
         ):
             if is_stat_length:

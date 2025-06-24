@@ -18,12 +18,6 @@ import pytest
 
 from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
-#################################################
-# TEMPORARY UNTIL 25.06 was released
-# this tests needs AMReX/pyAMReX 25.07 features
-pytest.skip(allow_module_level=True)
-#################################################
-
 # benchmark config
 rounds = 5
 npart = 1_000_000  # increase this to >10M or even 100M to avoid L1/L2/L3 cache effects on some hardware.

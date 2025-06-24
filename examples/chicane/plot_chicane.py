@@ -177,4 +177,3 @@ if args.save_png:
     plt.savefig("chicane_scatter.png")
 else:
     plt.show()
-

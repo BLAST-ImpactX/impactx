@@ -103,6 +103,9 @@ namespace impactx
         {
             amrex::ParticleReal sigx, sigy, sigt, sigpx, sigpy, sigpt;
             amrex::ParticleReal muxpx = 0.0, muypy = 0.0, mutpt = 0.0;
+            amrex::ParticleReal meanx = 0.0, meany = 0.0, meant = 0.0;
+            amrex::ParticleReal meanpx = 0.0, meanpy = 0.0, meanpt = 0.0;
+            amrex::ParticleReal dispx = 0.0, disppx = 0.0, dispy = 0.0, disppy = 0.0;
 
             if (initialize_from_twiss)
             {
@@ -110,14 +113,20 @@ namespace impactx
                         pp_dist,
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy
                 );
             } else {
                 initialization::set_distribution_parameters_from_phase_space_inputs(
                         pp_dist,
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy
                 );
             }
 
@@ -125,37 +134,58 @@ namespace impactx
                 dist = distribution::Waterbag(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kurth6d") {
                 dist = distribution::Kurth6D(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "gaussian") {
                 dist = distribution::Gaussian(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kvdist") {
                 dist = distribution::KVdist(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kurth4d") {
                 dist = distribution::Kurth4D(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "semigaussian") {
                 dist = distribution::Semigaussian(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "triangle") {
                 dist = distribution::Triangle(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "empty") {
                 dist = distribution::Empty();
             } else
@@ -337,7 +367,11 @@ namespace impactx
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& sigx, amrex::ParticleReal& sigy, amrex::ParticleReal& sigt,
         amrex::ParticleReal& sigpx, amrex::ParticleReal& sigpy, amrex::ParticleReal& sigpt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
+        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
+        amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,
+        amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     )
     {
         using namespace amrex::literals; // for _rt and _prt
@@ -357,6 +391,16 @@ namespace impactx
         pp_dist.getWithParser("emittX", emittx);
         pp_dist.getWithParser("emittY", emitty);
         pp_dist.getWithParser("emittT", emittt);
+        pp_dist.queryWithParser("meanX", meanx);
+        pp_dist.queryWithParser("meanY", meany);
+        pp_dist.queryWithParser("meanT", meant);
+        pp_dist.queryWithParser("meanPx", meanpx);
+        pp_dist.queryWithParser("meanPy", meanpy);
+        pp_dist.queryWithParser("meanPt", meanpt);
+        pp_dist.queryWithParser("dispX", dispx);
+        pp_dist.queryWithParser("dispPx", disppx);
+        pp_dist.queryWithParser("dispY", dispy);
+        pp_dist.queryWithParser("dispPy", disppy);
 
         if (betax <= 0.0_prt || betay <= 0.0_prt || betat <= 0.0_prt) {
             throw std::runtime_error("Input Error: The beta function values need to be non-zero positive values in all dimensions.");
@@ -402,7 +446,11 @@ namespace impactx
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& sigx, amrex::ParticleReal& sigy, amrex::ParticleReal& sigt,
         amrex::ParticleReal& sigpx, amrex::ParticleReal& sigpy, amrex::ParticleReal& sigpt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
+        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
+        amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,
+        amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     )
     {
         pp_dist.getWithParser("lambdaX", sigx);
@@ -414,6 +462,16 @@ namespace impactx
         pp_dist.queryWithParser("muxpx", muxpx);
         pp_dist.queryWithParser("muypy", muypy);
         pp_dist.queryWithParser("mutpt", mutpt);
+        pp_dist.queryWithParser("meanX", meanx);
+        pp_dist.queryWithParser("meanY", meany);
+        pp_dist.queryWithParser("meanT", meant);
+        pp_dist.queryWithParser("meanPx", meanpx);
+        pp_dist.queryWithParser("meanPy", meanpy);
+        pp_dist.queryWithParser("meanPt", meanpt);
+        pp_dist.queryWithParser("dispX", dispx);
+        pp_dist.queryWithParser("dispPx", disppx);
+        pp_dist.queryWithParser("dispY", dispy);
+        pp_dist.queryWithParser("dispPy", disppy);
     }
 
     void ImpactX::initBeamDistributionFromInputs ()

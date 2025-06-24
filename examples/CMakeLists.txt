@@ -1482,3 +1482,35 @@ add_impactx_test(examples-long-sextupole.py
     examples/symplectic_integration/analysis_sextupole.py
     OFF  # no plot script yet
 )
+
+# Dogleg in Reverse  ##############
+#
+# no space charge
+add_impactx_test(examples-dogleg-reverse
+    examples/dogleg/input_dogleg_reverse.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-dogleg-reverse.py
+    examples/dogleg/run_dogleg_reverse.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse.py
+    OFF  # no plot script yet
+)
+
+# Dogleg with Energy Jitter ##############
+#
+# no space charge
+add_impactx_test(examples-dogleg-jitter
+    examples/dogleg/input_dogleg_jitter.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_jitter.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-dogleg-jitter.py
+    examples/dogleg/run_dogleg_jitter.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_jitter.py
+    OFF  # no plot script yet
+)

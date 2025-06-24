@@ -143,16 +143,29 @@ namespace impactx::initialization
      * @param lambdapx Reference to the variable storing the axis intersection of the phase space ellipse for momentum in x direction.
      * @param lambdapy Reference to the variable storing the axis intersection of the phase space ellipse for momentum in y direction.
      * @param lambdapt Reference to the variable storing the axis intersection of the phase space ellipse for energy.
-     * @param muxpx Reference to the variable storing the mean for momentum in x direction.
-     * @param muypy Reference to the variable storing the mean for momentum in y direction.
-     * @param mutpt Reference to the variable storing the mean for energy.
+     * @param muxpx Reference to the variable storing the correlation coefficient between the x position and the x momentum.
+     * @param muypy Reference to the variable storing the correlation coefficient between the y position and the y momentum.
+     * @param mutpt Reference to the variable storing the correlation coefficient between the t position and the t momentum.
+     * @param meanx Reference to the variable storing the mean for position in the x direction.
+     * @param meany Reference to the variable storing the mean for position in the y direction.
+     * @param meant Reference to the variable storing the mean for position in the t direction.
+     * @param meanpx Reference to the variable storing the mean for momentum in the x direction.
+     * @param meanpy Reference to the variable storing the mean for momentum in the y direction.
+     * @param meanpt Reference to the variable storing the mean for momentum in the t direction.
+     * @param dispx Reference to the variable storing the beam-based dispersion in the x direction.
+     * @param disppx Reference to the variable storing the derivative of the beam-based dispersion in the x direction.
+     * @param dispy Reference to the variable storing the beam-based dispersion in the y direction.
+     * @param disppy Reference to the variable storing the derivative of the beam-based dispersion in the y direction.
      */
     void
     set_distribution_parameters_from_phase_space_inputs (
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& lambdax, amrex::ParticleReal& lambday, amrex::ParticleReal& lambdat,
         amrex::ParticleReal& lambdapx,amrex::ParticleReal& lambdapy, amrex::ParticleReal& lambdapt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
+        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
+        amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx, amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     );
 
 
@@ -168,16 +181,29 @@ namespace impactx::initialization
      * @param lambdapx Reference to the variable storing the axis intersection of the phase space ellipse for momentum in x direction.
      * @param lambdapy Reference to the variable storing the axis intersection of the phase space ellipse for momentum in y direction.
      * @param lambdapt Reference to the variable storing the axis intersection of the phase space ellipse for energy.
-     * @param muxpx Reference to the variable storing the mean for momentum in x direction.
-     * @param muypy Reference to the variable storing the mean for momentum in y direction.
-     * @param mutpt Reference to the variable storing the mean for energy.
+     * @param muxpx Reference to the variable storing the correlation coefficient between the x position and the x momentum.
+     * @param muypy Reference to the variable storing the correlation coefficient between the y position and the y momentum.
+     * @param mutpt Reference to the variable storing the correlation coefficient between the t position and the t momentum.
+     * @param meanx Reference to the variable storing the mean for position in the x direction.
+     * @param meany Reference to the variable storing the mean for position in the y direction.
+     * @param meant Reference to the variable storing the mean for position in the t direction.
+     * @param meanpx Reference to the variable storing the mean for momentum in the x direction.
+     * @param meanpy Reference to the variable storing the mean for momentum in the y direction.
+     * @param meanpt Reference to the variable storing the mean for momentum in the t direction.
+     * @param dispx Reference to the variable storing the beam-based dispersion in the x direction.
+     * @param disppx Reference to the variable storing the derivative of the beam-based dispersion in the x direction.
+     * @param dispy Reference to the variable storing the beam-based dispersion in the y direction.
+     * @param disppy Reference to the variable storing the derivative of the beam-based dispersion in the y direction.
      */
     void
     set_distribution_parameters_from_twiss_inputs (
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& lambdax, amrex::ParticleReal& lambday, amrex::ParticleReal& lambdat,
         amrex::ParticleReal& lambdapx,amrex::ParticleReal& lambdapy, amrex::ParticleReal& lambdapt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
+        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
+        amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx, amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     );
 
 }  // namespace impactx::initialization

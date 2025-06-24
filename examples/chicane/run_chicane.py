@@ -65,7 +65,7 @@ sbend2 = elements.Sbend(name="sbend2", ds=lb, rc=rc, nslice=ns)
 dipedge1 = elements.DipEdge(name="dipedge1", psi=-psi, rc=-rc, g=0.0, K2=0.0)
 dipedge2 = elements.DipEdge(name="dipedge2", psi=psi, rc=rc, g=0.0, K2=0.0)
 
-lattice_half = [sbend1, dipedge1, dr1, dipedge2, sbend2]
+lattice_half = [sbend1, dipedge1, monitor, dr1, monitor, dipedge2, sbend2, monitor]
 # assign a segment with the first half of the lattice
 sim.lattice.append(monitor)
 sim.lattice.extend(lattice_half)
@@ -73,6 +73,7 @@ sim.lattice.append(dr2)
 lattice_half.reverse()
 # extend the lattice by a reversed half
 sim.lattice.extend(lattice_half)
+sim.lattice.append(monitor)
 sim.lattice.append(dr3)
 sim.lattice.append(monitor)
 

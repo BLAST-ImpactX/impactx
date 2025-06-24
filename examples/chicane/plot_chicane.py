@@ -13,30 +13,6 @@ import matplotlib.pyplot as plt
 import openpmd_api as io
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
-from scipy.stats import moment
-
-
-def get_moments(beam):
-    """Calculate standard deviations of beam position & momenta
-    and emittance values
-
-    Returns
-    -------
-    sigx, sigy, sigt, emittance_x, emittance_y, emittance_t
-    """
-    sigx = moment(beam["position_x"], moment=2) ** 0.5  # variance -> std dev.
-    sigpx = moment(beam["momentum_x"], moment=2) ** 0.5
-    sigy = moment(beam["position_y"], moment=2) ** 0.5
-    sigpy = moment(beam["momentum_y"], moment=2) ** 0.5
-    sigt = moment(beam["position_t"], moment=2) ** 0.5
-    sigpt = moment(beam["momentum_t"], moment=2) ** 0.5
-
-    epstrms = beam.cov(ddof=0)
-    emittance_x = (sigx**2 * sigpx**2 - epstrms["position_x"]["momentum_x"] ** 2) ** 0.5
-    emittance_y = (sigy**2 * sigpy**2 - epstrms["position_y"]["momentum_y"] ** 2) ** 0.5
-    emittance_t = (sigt**2 * sigpt**2 - epstrms["position_t"]["momentum_t"] ** 2) ** 0.5
-
-    return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
 
 def read_file(file_pattern):
@@ -64,7 +40,7 @@ def read_time_series(file_pattern):
 
 
 # options to run this script
-parser = argparse.ArgumentParser(description="Plot the chicane benchmark.")
+parser = argparse.ArgumentParser(description="Plot the FODO benchmark.")
 parser.add_argument(
     "--save-png", action="store_true", help="non-interactive run: save to PNGs"
 )
@@ -78,81 +54,61 @@ initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 ref_particle = read_time_series("diags/ref_particle.*")
 
-# scaling to units
-millimeter = 1.0e3  # m->mm
-# for "t": the time coordinate is scaled by c, and therefore has units of length (m) by default, so we can label the axis ct (mm)
-mrad = 1.0e3  # ImpactX uses "static units": momenta are normalized by the magnitude of the momentum of the reference particle p0: px/p0 (rad)
-# mm_mrad = 1.e6
-nm_rad = 1.0e9
-
-
-# select a single particle by id
-# particle_42 = beam[beam["id"] == 42]
-# print(particle_42)
-
-
 # steps & corresponding z
 steps = list(series.iterations)
 
 z = list(
     map(lambda step: ref_particle[ref_particle["step"] == step].z.values[0], steps)
 )
-x = list(
-    map(lambda step: ref_particle[ref_particle["step"] == step].x.values[0], steps)
-)
-# print(f"z={z}")
 
+# scaling to units
+millimeter = 1.0e3  # m->mm
+mrad = 1.0e3  # ImpactX uses "static units": momenta are normalized by the magnitude of the momentum of the reference particle p0: px/p0 (rad)
+# mm_mrad = 1.e6
+nm_rad = 1.0e9
 
-# beam transversal size & emittance over steps
-moments = list(
-    map(
-        lambda step: (
-            step,
-            get_moments(series.iterations[step].particles["beam"].to_df()),
-        ),
-        steps,
-    )
-)
-# print(moments)
-sigx = list(map(lambda step_val: step_val[1][0] * millimeter, moments))
-sigt = list(map(lambda step_val: step_val[1][2] * millimeter, moments))
-emittance_x = list(map(lambda step_val: step_val[1][3] * nm_rad, moments))
-emittance_t = list(map(lambda step_val: step_val[1][5] * nm_rad, moments))
+# read reduced diagnostics
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
-# print(sigx, sigt)
+s = rbc["s"]
+sig_x = rbc["sig_x"] * millimeter
+sig_y = rbc["sig_y"] * millimeter
+sig_t = rbc["sig_t"] * millimeter
+emittance_x = rbc["emittance_x"] * nm_rad
+emittance_y = rbc["emittance_y"] * nm_rad
+emittance_t = rbc["emittance_t"] * nm_rad
 
+length = len(s) - 1
 
-# print beam transversal size over steps
-f, axs = plt.subplots(
-    2, 1, figsize=(9, 4.8), sharex=True, gridspec_kw={"height_ratios": [1, 2]}
-)
-ax0 = axs[0]
-im_xz = ax0.plot(z, x, "--", lw=3, label=r"$x$")
-ax0.legend(loc="upper right")
-ax0.set_ylim([0, None])
-ax0.set_ylabel(r"$x$ [m]")
+# select a single particle by id
+# particle_42 = beam[beam["id"] == 42]
+# print(particle_42)
 
-ax1 = axs[1]
-im_sigx = ax1.plot(z, sigx, label=r"$\lambda_x$")
-im_sigt = ax1.plot(z, sigt, label=r"$\lambda_t$")
+# steps & corresponding z
+steps = list(series.iterations)
+
+# print beam transverse size over steps
+f = plt.figure(figsize=(9, 4.8))
+ax1 = f.gca()
+im_sigx = ax1.plot(s, sig_x, label=r"$\sigma_x$")
+im_sigt = ax1.plot(s, sig_t, label=r"$\sigma_t$")
 ax2 = ax1.twinx()
 ax2.set_prop_cycle(None)  # reset color cycle
-im_emittance_x = ax2.plot(z, emittance_x, ":", label=r"$\epsilon_x$")
-im_emittance_t = ax2.plot(z, emittance_t, ":", label=r"$\epsilon_t$")
+im_emittance_x = ax2.plot(s, emittance_x, ":", label=r"$\epsilon_x$")
+im_emittance_t = ax2.plot(s, emittance_t, ":", label=r"$\epsilon_t$")
 
 ax1.legend(
     handles=im_sigx + im_sigt + im_emittance_x + im_emittance_t, loc="upper right"
 )
 ax1.set_xlabel(r"$z$ [m]")
-ax1.set_ylabel(r"$\lambda_{x,t}$ [mm]")
-# ax2.set_ylabel(r"$\epsilon_{x,y}$ [mm-mrad]")
+ax1.set_ylabel(r"$\sigma_{x,t}$ [mm]")
 ax2.set_ylabel(r"$\epsilon_{x,t}$ [nm]")
-ax1.set_ylim([0, None])
-ax2.set_ylim([0, None])
+ax1.set_ylim([0.0, 2.0])
+ax2.set_ylim([0.0, 23.0])
 ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 plt.tight_layout()
 if args.save_png:
-    plt.savefig("chicane_lambda.png")
+    plt.savefig("fodo_sigma.png")
 else:
     plt.show()
 
@@ -221,3 +177,4 @@ if args.save_png:
     plt.savefig("chicane_scatter.png")
 else:
     plt.show()
+

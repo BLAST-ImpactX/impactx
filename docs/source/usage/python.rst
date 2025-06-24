@@ -218,7 +218,7 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: init_envelope(ref, distr, intensity=None)
 
       Envelope tracking mode:
-      Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
+      Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :param distr: distribution function (object from :py:mod:`impactx.distribution`)
@@ -236,6 +236,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: periods
 
       The number of periods to repeat the lattice.
+
+   .. py:property:: omp_threads
+
+      Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+
+      See the detailed `AMReX docs <https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html>`__ for details in the accepted values.
 
    .. py:property:: abort_on_warning_threshold
 
@@ -707,7 +713,7 @@ This module provides elements and methods for the accelerator lattice.
    The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is
    up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
 
-   :param R: a linear transport map to multiply with the the phase space vector :math:`(x,px,y,py,t,pt)`.
+   :param R: a linear transport map to multiply with the phase space vector :math:`(x,px,y,py,t,pt)`.
    :param ds: length associated with a user-defined linear element (defaults to 0), in m
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

@@ -9,7 +9,7 @@ from .Toolbar.general import GeneralToolbar
 from .Analyze.plotsMain import AnalyzeSimulation
 from .Input.csrConfiguration.csrMain import csrConfiguration
 from .Input.isr.ui import isrConfiguration
-from .Input.distributionParameters.distributionMain import DistributionParameters
+from .Input.distribution.ui import DistributionParameters
 from .Input.inputParameters.inputMain import InputParameters
 from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents

@@ -80,9 +80,6 @@ def populate_distribution_parameters():
 
 @state.change("distribution")
 def on_distribution_name_change(distribution, **kwargs):
-    if state.importing_file:
-        return
-
     if distribution == "Thermal" or distribution == "Empty":
         state.distribution_type = ""
         state.distribution_type_disable = True
@@ -99,8 +96,6 @@ def on_distribution_name_change(distribution, **kwargs):
 
 @state.change("distribution_type")
 def on_distribution_type_change(**kwargs):
-    if state.importing_file:
-        return
     populate_distribution_parameters()
 
 

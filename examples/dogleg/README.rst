@@ -59,7 +59,7 @@ We run the following script to analyze correctness:
 .. _examples-dogleg-reverse:
 
 Dogleg in Reverse
-===================
+=================
 
 This is the reverse of the 2-bend dogleg lattice, obtained by taking the second 1/2 of the Berlin-Zeuthen magnetic bunch compression chicane:
 https://www.desy.de/csr/
@@ -96,7 +96,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Executable: Input File
 
-       .. literalinclude:: input_dogleg.in
+       .. literalinclude:: input_dogleg_reverse.in
           :language: ini
           :caption: You can copy this file from ``examples/dogleg/input_dogleg_reverse.in``.
 
@@ -116,9 +116,9 @@ We run the following script to analyze correctness:
 .. _examples-dogleg-jitter:
 
 Dogleg with Energy Jitter
-==========================
+=========================
 
-This is identical to the example ``examples-dogleg``, except the initial beam distribution has been given a 2.5% offset in the value of mean energy.
+This is identical to the :ref:`dogleg example <examples-dogleg>`, except the initial beam distribution has been given a 2.5% offset in the value of mean energy.
 
 The primary purpose is to demonstrate the use of a beam centroid offset to study the effects of, e.g. energy jitter.
 

@@ -19,6 +19,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuComplex.H>
 
@@ -123,7 +124,7 @@ namespace impactx::elements
 
             // access reference particle values to find (beta*gamma)^2
             //amrex::ParticleReal const pt_ref = refpart.pt;
-            //amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            //amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
 
             // initialize output values
             amrex::ParticleReal xout = x;
@@ -140,7 +141,7 @@ namespace impactx::elements
             Complex const im1(0.0_prt, 1.0_prt);
 
             // compute croot = sqrt(1-zeta**2)
-            Complex croot = amrex::pow(zeta, 2);
+            Complex croot = amrex::Math::powi<2>(zeta);
             croot = re1 - croot;
             croot = amrex::sqrt(croot);
 
@@ -149,8 +150,8 @@ namespace impactx::elements
             carcsin = -im1 * amrex::log(carcsin);
 
             // compute complex function F'(zeta)
-            Complex dF = zeta / amrex::pow(croot, 2);
-            dF = dF + carcsin / amrex::pow(croot, 3);
+            Complex dF = zeta / amrex::Math::powi<2>(croot);
+            dF = dF + carcsin / amrex::Math::powi<3>(croot);
 
             // compute momentum kick
             amrex::ParticleReal const dpx = +m_kick * dF.m_real;

@@ -59,7 +59,7 @@ namespace impactx::transformation
             using namespace amrex::literals;
 
             // compute value of reference ptd = -gamma
-            amrex::ParticleReal const argd = 1.0_prt + std::pow(m_pzd, 2);
+            amrex::ParticleReal const argd = 1.0_prt + amrex::Math::powi<2>(m_pzd);
             AMREX_ASSERT_WITH_MESSAGE(argd > 0.0_prt, "invalid ptd arg (<=0)");
             amrex::ParticleReal const ptdf = argd > 0.0_prt ? -std::sqrt(argd) : -1.0_prt;
 
@@ -70,7 +70,7 @@ namespace impactx::transformation
             pz = pz * m_pzd;
 
             // compute value of particle pt = -gamma
-            amrex::ParticleReal const arg = 1.0_prt + std::pow(m_pzd + pz, 2) + std::pow(px, 2) + std::pow(py, 2);
+            amrex::ParticleReal const arg = 1.0_prt + amrex::Math::powi<2>(m_pzd + pz) + amrex::Math::powi<2>(px) + amrex::Math::powi<2>(py);
             AMREX_ASSERT_WITH_MESSAGE(arg > 0.0_prt, "invalid pt arg (<=0)");
             amrex::ParticleReal const ptf = arg > 0.0_prt ? -std::sqrt(arg) : -1.0_prt;
 

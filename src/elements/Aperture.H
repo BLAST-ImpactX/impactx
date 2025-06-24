@@ -20,6 +20,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -155,13 +156,13 @@ namespace impactx::elements
                   switch (m_shape)
                   {
                       case Shape::rectangular :  // default shape
-                        if (std::pow(u,2)>1 || std::pow(v,2) > 1_prt) {
+                        if (amrex::Math::powi<2>(u)>1 || amrex::Math::powi<2>(v) > 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
 
                       case Shape::elliptical :
-                        if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
+                        if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) > 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
@@ -173,13 +174,13 @@ namespace impactx::elements
                   switch (m_shape)
                   {
                       case Shape::rectangular :  // default
-                        if (std::pow(u,2) < 1 && std::pow(v,2) < 1_prt) {
+                        if (amrex::Math::powi<2>(u) < 1 && amrex::Math::powi<2>(v) < 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;
 
                      case Shape::elliptical :
-                        if (std::pow(u,2) + std::pow(v,2) < 1_prt) {
+                        if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) < 1_prt) {
                             amrex::ParticleIDWrapper{idcpu}.make_invalid();
                         }
                         break;

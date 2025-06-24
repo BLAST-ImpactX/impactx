@@ -21,6 +21,7 @@
 #include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Print.H>
 
@@ -110,7 +111,7 @@ namespace impactx::elements
 
             // find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            m_betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            m_betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
             m_ibetgam2 = 1_prt / m_betgam2;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
@@ -296,10 +297,10 @@ namespace impactx::elements
 
             // compute the radical in the denominator (= pz):
             amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                std::pow(pt - m_ibeta, 2) -
+                amrex::Math::powi<2>(pt - m_ibeta) -
                 m_ibetgam2 -
-                std::pow(px, 2) -
-                std::pow(py, 2)
+                amrex::Math::powi<2>(px) -
+                amrex::Math::powi<2>(py)
             );
 
             // The momenta are not affected.
@@ -338,7 +339,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -365,7 +366,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
 
             // compute phase advance per unit length in s (in rad/m)
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));

@@ -19,6 +19,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -143,7 +144,7 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + std::pow(pt,2));
+            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + amrex::Math::powi<2>(pt));
             amrex::ParticleReal a = m_a / delta1;
 
             // initialize output values
@@ -156,19 +157,19 @@ namespace impactx::elements
             // intermediate quantities to be used below
             amrex::ParticleReal x2my2 = x*x - y*y;
             amrex::ParticleReal x2py2 = x*x + y*y;
-            amrex::ParticleReal denominator = 1_prt - 9_prt*std::pow(a,2)*std::pow(x2my2,2);
+            amrex::ParticleReal denominator = 1_prt - 9_prt*amrex::Math::powi<2>(a)*amrex::Math::powi<2>(x2my2);
 
             // apply edge focusing (transverse phase space)
-            xout = x - a * (std::pow(x,3) + 3_prt * x * std::pow(y,2));
-            yout = y + a * (3_prt * std::pow(x,2) * y + std::pow(y,3));
+            xout = x - a * (amrex::Math::powi<3>(x) + 3_prt * x * amrex::Math::powi<2>(y));
+            yout = y + a * (3_prt * amrex::Math::powi<2>(x) * y + amrex::Math::powi<3>(y));
 
             pxout = (px + 3_prt*a*px*x2py2 - 6_prt*a*py*x*y) / denominator;
             pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
 
             // apply edge focusing (longitudinal phase space)
-            amrex::ParticleReal f4 = a * ( pxout * (std::pow(x,3) + 3_prt*x*std::pow(y,2))
-                                         - pyout * (std::pow(y,3) + 3_prt*y*std::pow(x,2)) );
-            tout = t + f4 * (pt - 1_prt/m_beta) / std::pow(delta1,2);
+            amrex::ParticleReal f4 = a * ( pxout * (amrex::Math::powi<3>(x) + 3_prt*x*amrex::Math::powi<2>(y))
+                                         - pyout * (amrex::Math::powi<3>(y) + 3_prt*y*amrex::Math::powi<2>(x)) );
+            tout = t + f4 * (pt - 1_prt/m_beta) / amrex::Math::powi<2>(delta1);
 
             // update output values
             x = xout;

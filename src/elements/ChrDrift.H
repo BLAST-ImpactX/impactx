@@ -20,6 +20,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -94,7 +95,7 @@ namespace impactx::elements
             m_beta = refpart.beta();
             m_gamma = refpart.gamma();
 
-            m_const1 = 1_prt / (2_prt * std::pow(m_beta,3) * std::pow(m_gamma, 2));
+            m_const1 = 1_prt / (2_prt * amrex::Math::powi<3>(m_beta) * amrex::Math::powi<2>(m_gamma));
         }
 
         /** This is a chrdrift functor, so that a variable of this type can be used like a chrdrift function.
@@ -136,7 +137,7 @@ namespace impactx::elements
             amrex::ParticleReal const ptout = pt;
 
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal const idelta1 = 1_prt / std::sqrt(1_prt - 2_prt*pt/m_beta + std::pow(pt,2));
+            amrex::ParticleReal const idelta1 = 1_prt / std::sqrt(1_prt - 2_prt*pt/m_beta + amrex::Math::powi<2>(pt));
 
             // advance transverse position and momentum (drift)
             x = xout + m_slice_ds * px * idelta1;
@@ -145,12 +146,12 @@ namespace impactx::elements
             // pyout = py;
 
             // the corresponding symplectic update to t
-            amrex::ParticleReal term = 2_prt * std::pow(pt,2) + std::pow(px,2) + std::pow(py,2);
-            term = 2_prt - 4_prt*m_beta*pt + std::pow(m_beta,2)*term;
-            term = -2_prt + std::pow(m_gamma, 2)*term;
+            amrex::ParticleReal term = 2_prt * amrex::Math::powi<2>(pt) + amrex::Math::powi<2>(px) + amrex::Math::powi<2>(py);
+            term = 2_prt - 4_prt*m_beta*pt + amrex::Math::powi<2>(m_beta)*term;
+            term = -2_prt + amrex::Math::powi<2>(m_gamma)*term;
             term = (-1_prt+m_beta*pt)*term;
             term = term * m_const1;
-            t = tout - m_slice_ds * (1_prt / m_beta + term * std::pow(idelta1, 3));
+            t = tout - m_slice_ds * (1_prt / m_beta + term * amrex::Math::powi<3>(idelta1));
             // ptout = pt;
 
             // assign updated momenta
@@ -189,7 +190,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (drift)
             refpart.x = x + step*px;

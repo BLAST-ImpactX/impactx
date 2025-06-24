@@ -98,7 +98,7 @@ namespace distribution
             amrex::ParticleReal q_e = refpart.charge_qe();
 
             // Set space charge intensity
-            m_Cintensity = q_e*bunch_charge/(std::pow(bg,2)*Erest*ablastr::constant::SI::ep0);
+            m_Cintensity = q_e*bunch_charge/(amrex::Math::powi<2>(bg)*Erest*ablastr::constant::SI::ep0);
 
             // Set minimum and maximum radius
             amrex::ParticleReal r_scale = matched_scale_radius();
@@ -108,7 +108,7 @@ namespace distribution
 
             // Scale the parameters p1 and p2
             amrex::ParticleReal rt2pi = std::sqrt(2.0_prt*pi);
-            amrex::ParticleReal p_scale = std::pow(r_scale*rt2pi,-3);
+            amrex::ParticleReal p_scale = amrex::Math::powi<-3>(r_scale*rt2pi);
             m_p1 = m_p1*p_scale;
             m_p2 = m_p2*p_scale;
 

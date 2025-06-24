@@ -14,6 +14,7 @@
 
 #include <ablastr/constant.H>
 
+#include <AMReX_Math.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -108,7 +109,7 @@ namespace impactx::distribution
             // Sample and transform to define (px,py):
             beta = amrex::Random(engine);
             beta = 2_prt*pi*beta;
-            p = std::sqrt(1_prt-pow(r,2));
+            p = std::sqrt(1_prt-amrex::Math::powi<2>(r));
             px = p * std::cos(beta);
             py = p * std::sin(beta);
 

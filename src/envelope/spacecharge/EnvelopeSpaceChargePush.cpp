@@ -12,6 +12,7 @@
 
 #include <ablastr/warn_manager/WarnManager.H>
 
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SmallMatrix.H>
 #include <AMReX_Print.H>
@@ -44,12 +45,12 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const mass = refpart.mass;
         amrex::ParticleReal const charge = refpart.charge;
         amrex::ParticleReal const pt_ref = refpart.pt;
-        amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1_prt;
+        amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1_prt;
         amrex::ParticleReal const betgam = std::sqrt(betgam2);
-        amrex::ParticleReal const betgam3 = std::pow(betgam,3);
+        amrex::ParticleReal const betgam3 = amrex::Math::powi<3>(betgam);
 
         // evaluate the beam space charge perveance from current
-        amrex::ParticleReal const IA = 4_prt * pi * ep0 * mass * std::pow(c,3) / charge;
+        amrex::ParticleReal const IA = 4_prt * pi * ep0 * mass * amrex::Math::powi<3>(c) / charge;
         amrex::ParticleReal const Kpv = std::abs(current / IA) * 2_prt / betgam3;
 
         // evaluate the linear transfer map
@@ -91,10 +92,10 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const mass = refpart.mass;
         amrex::ParticleReal const charge = refpart.charge;
         amrex::ParticleReal const pt_ref = refpart.pt;
-        amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1_prt;
+        amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1_prt;
 
         // evaluate the 3D space charge intensity parameter from bunch charge
-        amrex::ParticleReal const rcN = std::abs(charge * bunch_charge) / (4_prt * pi * ep0 * mass * std::pow(c,2));
+        amrex::ParticleReal const rcN = std::abs(charge * bunch_charge) / (4_prt * pi * ep0 * mass * amrex::Math::powi<2>(c));
         amrex::ParticleReal const coeff = ds * rcN / betgam2 * (1_prt/(5_prt * std::sqrt(5_prt)));
 
         // set parameters for elliptic integrals

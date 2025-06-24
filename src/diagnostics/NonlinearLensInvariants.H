@@ -15,6 +15,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuComplex.H>
+#include <AMReX_Math.H>
 
 #include <cmath>
 
@@ -93,7 +94,7 @@ namespace impactx::diagnostics
             Complex const im1(0.0_prt, 1.0_prt);
 
             // compute croot = sqrt(1-zeta**2)
-            Complex croot = amrex::pow(zeta, 2);
+            Complex croot = amrex::Math::powi<2>(zeta);
             croot = re1 - croot;
             croot = amrex::sqrt(croot);
 
@@ -115,9 +116,9 @@ namespace impactx::diagnostics
 
             // compute invariants H and I
             amrex::ParticleReal const Jz = xn*pyn - yn*pxn;
-            Hinv = (std::pow(xn,2) + std::pow(yn,2) + std::pow(pxn,2) + std::pow(pyn,2))/2
+            Hinv = (amrex::Math::powi<2>(xn) + amrex::Math::powi<2>(yn) + amrex::Math::powi<2>(pxn) + amrex::Math::powi<2>(pyn))/2
                  + m_tn*Hinv;
-            Iinv = std::pow(Jz,2) + std::pow(pxn,2) + std::pow(xn,2) + m_tn*Iinv;
+            Iinv = amrex::Math::powi<2>(Jz) + amrex::Math::powi<2>(pxn) + amrex::Math::powi<2>(xn) + m_tn*Iinv;
 
             return {Hinv, Iinv};
 

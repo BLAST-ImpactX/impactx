@@ -19,6 +19,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -93,9 +94,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
-                / std::pow(cos_psi, 3)
-                * m_g * m_K2 / std::pow(m_rc, 2);
+            amrex::ParticleReal const vf = (1.0_prt + amrex::Math::powi<2>(sin_psi))
+                / amrex::Math::powi<3>(cos_psi)
+                * m_g * m_K2 / amrex::Math::powi<2>(m_rc);
 
             m_R43 = vf - m_R21;
         }
@@ -165,9 +166,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
-                / std::pow(cos_psi, 3)
-                * m_g * m_K2 / std::pow(m_rc, 2);
+            amrex::ParticleReal const vf = (1.0_prt + amrex::Math::powi<2>(sin_psi))
+                / amrex::Math::powi<3>(cos_psi)
+                * m_g * m_K2 / amrex::Math::powi<2>(m_rc);
 
             amrex::ParticleReal const R43 = vf - R21;
 

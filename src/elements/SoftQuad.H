@@ -23,6 +23,7 @@
 
 #include <AMReX.H>
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
@@ -292,7 +293,7 @@ namespace SoftQuadrupoleData
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -319,7 +320,7 @@ namespace SoftQuadrupoleData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -420,7 +421,7 @@ namespace SoftQuadrupoleData
             amrex::ParticleReal const z = zeval;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/std::sqrt(1.0_prt - std::pow(pt, -2));
+                refpart.t = t + tau/std::sqrt(1.0_prt - amrex::Math::powi<-2>(pt));
                 refpart.pt = pt;
             }
             else {
@@ -444,8 +445,8 @@ namespace SoftQuadrupoleData
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/std::pow(betgam,2);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/std::pow(betgam,2);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/amrex::Math::powi<2>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/amrex::Math::powi<2>(betgam);
 
         }
 

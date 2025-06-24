@@ -20,6 +20,7 @@
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
@@ -372,7 +373,7 @@ namespace impactx
         // calculate Twiss / Courant-Snyder gammas
         amrex::Vector<amrex::ParticleReal> gammas;
         for (size_t i = 0; i < alphas.size(); i++)
-            gammas.push_back((1.0 + std::pow(alphas.at(i), 2)) / betas.at(i));
+            gammas.push_back((1.0 + amrex::Math::powi<2>(alphas.at(i))) / betas.at(i));
 
         amrex::Vector<amrex::ParticleReal> lambdas_pos;
         amrex::Vector<amrex::ParticleReal> lambdas_mom;

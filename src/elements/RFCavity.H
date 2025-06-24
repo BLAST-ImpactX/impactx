@@ -23,6 +23,7 @@
 
 #include <AMReX.H>
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
@@ -287,7 +288,7 @@ namespace RFCavityData
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -303,7 +304,7 @@ namespace RFCavityData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -394,8 +395,8 @@ namespace RFCavityData
                      sin_data[j] * std::sin(j*2*pi*z/zlen);
                  efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
                       j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
-                 efieldpp = efieldpp- std::pow(j*2*pi*cos_data[j]/zlen,2)  * std::cos(j*2*pi*z/zlen) -
-                     std::pow(j*2*pi*sin_data[j]/zlen,2)  * std::sin(j*2*pi*z/zlen);
+                 efieldpp = efieldpp- amrex::Math::powi<2>(j*2*pi*cos_data[j]/zlen)  * std::cos(j*2*pi*z/zlen) -
+                     amrex::Math::powi<2>(j*2*pi*sin_data[j]/zlen)  * std::sin(j*2*pi*z/zlen);
                  efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
                       zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
                }
@@ -431,7 +432,7 @@ namespace RFCavityData
             amrex::ParticleReal const pt = refpart.pt;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/std::sqrt(1.0_prt - std::pow(pt, -2));
+                refpart.t = t + tau/std::sqrt(1.0_prt - amrex::Math::powi<-2>(pt));
                 refpart.pt = pt;
             }
             else {
@@ -443,8 +444,8 @@ namespace RFCavityData
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/std::pow(betgam,3);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/std::pow(betgam,3);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/amrex::Math::powi<3>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/amrex::Math::powi<3>(betgam);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -486,13 +487,13 @@ namespace RFCavityData
 
             refpart.map(1,1) = (1.0_prt-s*L)*R(1,1) + s*R(2,1);
             refpart.map(1,2) = (1.0_prt-s*L)*R(1,2) + s*R(2,2);
-            refpart.map(2,1) = -s * std::pow(L,2)*R(1,1) + (1.0_prt+s*L)*R(2,1);
-            refpart.map(2,2) = -s * std::pow(L,2)*R(1,2) + (1.0_prt+s*L)*R(2,2);
+            refpart.map(2,1) = -s * amrex::Math::powi<2>(L)*R(1,1) + (1.0_prt+s*L)*R(2,1);
+            refpart.map(2,2) = -s * amrex::Math::powi<2>(L)*R(1,2) + (1.0_prt+s*L)*R(2,2);
 
             refpart.map(3,3) = (1.0_prt-s*L)*R(3,3) + s*R(4,3);
             refpart.map(3,4) = (1.0_prt-s*L)*R(3,4) + s*R(4,4);
-            refpart.map(4,3) = -s * std::pow(L,2)*R(3,3) + (1.0_prt+s*L)*R(4,3);
-            refpart.map(4,4) = -s * std::pow(L,2)*R(3,4) + (1.0_prt+s*L)*R(4,4);
+            refpart.map(4,3) = -s * amrex::Math::powi<2>(L)*R(3,3) + (1.0_prt+s*L)*R(4,3);
+            refpart.map(4,4) = -s * amrex::Math::powi<2>(L)*R(3,4) + (1.0_prt+s*L)*R(4,4);
         }
 
         /** This pushes the reference particle and the linear map matrix

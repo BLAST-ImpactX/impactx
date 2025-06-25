@@ -257,6 +257,94 @@ namespace impactx::integrators
     }
 
 
+   /** A sixth-order symplectic integrator based on a Hamiltonian
+    *  splitting H = H_1 + H_2.  The implementation below
+    *  requires a reduced number of map evaluations (15 total)
+    *  compared to direct use of the Yoshida construction, which
+    *  requires three compositions of a fourth-order integrator step,
+    *  each involving seven map evaluations (when expressed
+    *  in the form obtained by Forest and Ruth, above).
+    *  It is based on Section 5 of:
+    *
+    *  H. Yoshida, Phys. Lett. A 150, 292-268 (1990),
+    *
+    *  and appears also in Section V.3.2 (3.11) of:
+    *
+    *  E. Hairer et al, Geometric Numerical Integration, 2nd ed.,
+    *  Springer-Verlag, Berlin, 2006.
+    *
+    * @param particle  Particle phase space data in a 6-vector
+    * @param zin  Initial value of independent variable (z-location)
+    * @param zout  Final value of independent variable (z-location)
+    * @param nsteps  Number of integration steps
+    * @param element  Element defining the two maps associated with H_1 and H_2
+    */
+    template <typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void symp6_integrate_particle (
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::ParticleReal const zin,
+        amrex::ParticleReal const zout,
+        int const nsteps,
+        T_Element const & element
+    )
+    {
+        using namespace amrex::literals; // for _rt and _prt
+
+        // initialize numerical integration parameters
+        amrex::ParticleReal const dz = (zout-zin)/nsteps;
+        amrex::ParticleReal const w0 = 1.31518632068391121888424973;
+        amrex::ParticleReal const w1 = -1.17767998417887100694641568;
+        amrex::ParticleReal const w2 = 0.23557321335935813368479318;
+        amrex::ParticleReal const w3 = 0.78451361047755726381949763;
+
+        amrex::ParticleReal const tau1 = w3 * dz / 2_prt;
+        amrex::ParticleReal const tau2 = w3 * dz;
+        amrex::ParticleReal const tau3 = (w3 + w2) * dz / 2_prt;
+        amrex::ParticleReal const tau4 = w2 * dz;
+        amrex::ParticleReal const tau5 = (w2 + w1) * dz / 2_prt;
+        amrex::ParticleReal const tau6 = w1 * dz;
+        amrex::ParticleReal const tau7 = (w1 + w0) * dz / 2_prt;
+        amrex::ParticleReal const tau8 = w0 * dz;
+
+        // initialize the value of the independent variable
+        amrex::ParticleReal zeval = zin;
+
+        // loop over integration steps
+        for (int j=0; j < nsteps; ++j)
+        {
+            element.map1(tau1,particle,zeval);
+            element.map2(tau2,particle,zeval);
+            element.map1(tau3,particle,zeval);
+            element.map2(tau4,particle,zeval);
+            element.map1(tau5,particle,zeval);
+            element.map2(tau6,particle,zeval);
+            element.map1(tau7,particle,zeval);
+            element.map2(tau8,particle,zeval);
+            element.map1(tau7,particle,zeval);
+            element.map2(tau6,particle,zeval);
+            element.map1(tau5,particle,zeval);
+            element.map2(tau4,particle,zeval);
+            element.map1(tau3,particle,zeval);
+            element.map2(tau2,particle,zeval);
+            element.map1(tau1,particle,zeval);
+        }
+    }
+
+
+   /** A semiexplicit symplectic integrator for a general
+    *  Hamiltonian, which does not require splitting,  based on:
+    *  
+    *  B. Jayawardana and T. Ohsawa, "Semiexplicit symplectic
+    *  integrators for non-separable Hamiltonian systems,"
+    *  Math. Comput. 92, pp. 251-281 (2022).
+    *  
+    * @param particle  Particle phase space data in a 6-vector
+    * @param zin  Initial value of independent variable (z-location)
+    * @param zout  Final value of independent variable (z-location) 
+    * @param nsteps  Number of integration steps
+    * @param element  Element defining the two maps associated with H_1 and H_2
+    */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void semiexplicit_integrator_step(
@@ -312,7 +400,15 @@ namespace impactx::integrators
 
     }
 
-
+   /** Applying a map on the extended phase space, for use within
+    *  semiexplicit_integrator_step.  Additional documentation to be added.
+    *  
+    *
+    * @param particle1  Particle phase space data in a 6-vector
+    * @param particle2  Particle phase space data in a 6-vector  
+    * @param tau  Step size
+    * @param element  Element defining the two maps associated with H_1 and H_2
+    */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void extended_phase_space_map(

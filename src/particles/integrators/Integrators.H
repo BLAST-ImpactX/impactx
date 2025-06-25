@@ -335,14 +335,14 @@ namespace impactx::integrators
 <<<<<<< add_user_nonlinear_element
    /** A semiexplicit symplectic integrator for a general
     *  Hamiltonian, which does not require splitting,  based on:
-    *  
+    *
     *  B. Jayawardana and T. Ohsawa, "Semiexplicit symplectic
     *  integrators for non-separable Hamiltonian systems,"
     *  Math. Comput. 92, pp. 251-281 (2022).
-    *  
+    *
     * @param particle  Particle phase space data in a 6-vector
     * @param zin  Initial value of independent variable (z-location)
-    * @param zout  Final value of independent variable (z-location) 
+    * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
@@ -403,10 +403,10 @@ namespace impactx::integrators
 
    /** Applying a map on the extended phase space, for use within
     *  semiexplicit_integrator_step.  Additional documentation to be added.
-    *  
+    *
     *
     * @param particle1  Particle phase space data in a 6-vector
-    * @param particle2  Particle phase space data in a 6-vector  
+    * @param particle2  Particle phase space data in a 6-vector
     * @param tau  Step size
     * @param element  Element defining the two maps associated with H_1 and H_2
     */

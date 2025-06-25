@@ -331,8 +331,6 @@ namespace impactx::integrators
         }
     }
 
-
-<<<<<<< add_user_nonlinear_element
    /** A semiexplicit symplectic integrator for a general
     *  Hamiltonian, which does not require splitting,  based on:
     *
@@ -432,9 +430,6 @@ namespace impactx::integrators
 
     }
 
-
-=======
->>>>>>> development
 } // namespace impactx::integrators
 
 #endif // IMPACTX_INTEGRATORS_H_

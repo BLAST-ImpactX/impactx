@@ -13,7 +13,6 @@ from .components import SimulationHistoryComponents
 server, state, ctrl = setup_server()
 
 
-@staticmethod
 def view_details_tabs():
     dialog_name = "view_details_tabs"
     with NavigationComponents.create_dialog_tabs(

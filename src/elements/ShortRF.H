@@ -19,6 +19,7 @@
 #include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -91,8 +92,8 @@ namespace impactx::elements
             amrex::ParticleReal const ptf_ref = refpart.pt;
             m_V_cos_phi = m_V * std::cos(m_phi);
             amrex::ParticleReal const pti_ref = ptf_ref + m_V_cos_phi;
-            m_bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
-            m_bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
+            m_bgf = std::sqrt(amrex::Math::powi<2>(ptf_ref) - 1.0_prt);
+            m_bgi = std::sqrt(amrex::Math::powi<2>(pti_ref) - 1.0_prt);
         }
 
         /** This is a shortrf functor, so that a variable of this type can be used like a
@@ -132,7 +133,7 @@ namespace impactx::elements
             py = py * m_bgi;
             pt = pt * m_bgi;
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -193,15 +194,15 @@ namespace impactx::elements
             using ablastr::constant::math::pi;
             amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
 
-            // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            // compute initial value of beta*gamma
+            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // advance pt
             refpart.pt = pt - m_V * std::cos(phi);
 
             // compute final value of beta*gamma
             amrex::ParticleReal const ptf = refpart.pt;
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
 
             // advance position (x,y,z,t)
             refpart.x = x;
@@ -239,8 +240,8 @@ namespace impactx::elements
             // access reference particle values (final, initial):
             amrex::ParticleReal const ptf_ref = refpart.pt;
             amrex::ParticleReal const pti_ref = ptf_ref + m_V * std::cos(phi);
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf_ref) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pti_ref) - 1.0_prt);
 
             // initialize transport matrix
             Map6x6 R = Map6x6::Identity();

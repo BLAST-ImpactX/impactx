@@ -59,7 +59,7 @@ jobs:
         LD_PRELOAD: /usr/lib/clang/14/lib/linux/libclang_rt.asan-x86_64.so
       run: |
         export LSAN_OPTIONS=suppressions="$(pwd)/.github/ci/sanitizer/clang/Leak.supp:use_tls=0"
-        ctest --test-dir build -E AMReX --output-on-failure --label-exclude slow
+        ctest --test-dir build -E AMReX --output-on-failure --label-exclude "slow|dashboard"
 
 # notes:
 # * -shared-libsan because we build shared libs

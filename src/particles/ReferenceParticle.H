@@ -15,6 +15,7 @@
 #include <AMReX_BLassert.H>
 #include <AMReX_Extension.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
@@ -66,7 +67,7 @@ namespace impactx
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_beta = std::sqrt(1.0_prt - 1.0_prt / std::pow(ref_gamma, 2));
+            amrex::ParticleReal const ref_beta = std::sqrt(1.0_prt - 1.0_prt / amrex::Math::powi<2>(ref_gamma));
             return ref_beta;
         }
 
@@ -81,7 +82,7 @@ namespace impactx
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = std::sqrt(std::pow(ref_gamma, 2) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(amrex::Math::powi<2>(ref_gamma) - 1.0_prt);
             return ref_betagamma;
         }
 
@@ -118,7 +119,7 @@ namespace impactx
             if (pt != 0.0_prt)
             {
                 pt = -kin_energy_MeV() / massE - 1.0_prt;
-                pz = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+                pz = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
             }
 
             return *this;
@@ -155,7 +156,7 @@ namespace impactx
             px = 0.0;
             py = 0.0;
             pt = -kin_energy / mass_MeV() - 1.0_prt;
-            pz = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            pz = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             return *this;
         }
@@ -171,7 +172,7 @@ namespace impactx
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = std::sqrt(std::pow(ref_gamma, 2) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(amrex::Math::powi<2>(ref_gamma) - 1.0_prt);
             amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge;
             return ref_rigidity;
         }

@@ -81,6 +81,11 @@ def test_impactx_nofile():
     """
     sim = ImpactX()
 
+    # various ways to change OMP threads from the default "nosmt"
+    sim.omp_threads = 1
+    sim.omp_threads = "1"
+    sim.omp_threads = "nosmt"
+
     sim.particle_shape = 2
     sim.slice_step_diagnostics = True
     sim.init_grids()

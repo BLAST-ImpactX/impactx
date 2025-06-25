@@ -24,6 +24,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.DipEdge
     | impactx.impactx_pybind.elements.Drift
     | impactx.impactx_pybind.elements.ExactDrift
+    | impactx.impactx_pybind.elements.ExactMultipole
     | impactx.impactx_pybind.elements.ExactQuad
     | impactx.impactx_pybind.elements.ExactSbend
     | impactx.impactx_pybind.elements.Kicker
@@ -35,6 +36,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.Programmable
     | impactx.impactx_pybind.elements.PRot
     | impactx.impactx_pybind.elements.Quad
+    | impactx.impactx_pybind.elements.QuadEdge
     | impactx.impactx_pybind.elements.RFCavity
     | impactx.impactx_pybind.elements.Sbend
     | impactx.impactx_pybind.elements.ShortRF

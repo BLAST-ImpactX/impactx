@@ -158,6 +158,24 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
             "ValueError: No objects to concatenate"
         )
     endif()
+
+    # CI: remove test directory after run
+    if(ImpactX_TEST_CLEANUP)
+        add_test(
+            NAME ${name}.cleanup
+            COMMAND ${CMAKE_COMMAND} -P ${ImpactX_SOURCE_DIR}/examples/test_cleanup.cmake ${THIS_WORKING_DIR}
+        )
+        # test cleanup depends on test run
+        set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.run")
+        if(analysis_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.analysis")
+        endif()
+        if(plot_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.plot")
+        endif()
+    endif()
 endfunction()
 
 
@@ -681,6 +699,10 @@ add_impactx_test(solenoid.restart
     OFF  # no plot script yet
 )
 set_property(TEST solenoid.restart.run APPEND PROPERTY DEPENDS "solenoid.run")
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.cleanup")
+endif()
 
 add_impactx_test(solenoid.restart.py
     examples/solenoid_restart/run_solenoid.py
@@ -690,6 +712,10 @@ add_impactx_test(solenoid.restart.py
 )
 if(ImpactX_PYTHON)
     set_property(TEST solenoid.restart.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.py.cleanup")
 endif()
 
 
@@ -1424,5 +1450,67 @@ add_impactx_test(examples-exact-quad.py
     examples/symplectic_integration/run_exact_quad.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_exact_quad.py
+    OFF  # no plot script yet
+)
+
+# FODO Channel with Quads Treated as Exact Multipoles ##############
+#
+# no space charge
+add_impactx_test(examples-fodo-multipole
+    examples/symplectic_integration/input_fodo_multipole.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_fodo_multipole.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-fodo_multipole.py
+    examples/symplectic_integration/run_fodo_multipole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_fodo_multipole.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in a Long Sextupole ##############
+#
+# no space charge
+file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/initial_coords.csv
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/final_coords.csv
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
+add_impactx_test(examples-long-sextupole.py
+    examples/symplectic_integration/run_sextupole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_sextupole.py
+    OFF  # no plot script yet
+)
+
+# Dogleg in Reverse  ##############
+#
+# no space charge
+add_impactx_test(examples-dogleg-reverse
+    examples/dogleg/input_dogleg_reverse.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-dogleg-reverse.py
+    examples/dogleg/run_dogleg_reverse.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse.py
+    OFF  # no plot script yet
+)
+
+# Dogleg with Energy Jitter ##############
+#
+# no space charge
+add_impactx_test(examples-dogleg-jitter
+    examples/dogleg/input_dogleg_jitter.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_jitter.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-dogleg-jitter.py
+    examples/dogleg/run_dogleg_jitter.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_jitter.py
     OFF  # no plot script yet
 )

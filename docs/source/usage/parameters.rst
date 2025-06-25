@@ -79,6 +79,24 @@ Initial Beam Distributions
      * ``beam.emittY`` (``float``, in meters times radian) geometric (unnormalized) emittance :math:`\epsilon` in Y
      * ``beam.emittT`` (``float``, in meters times radian) geometric (unnormalized) emittance :math:`\epsilon` in T
 
+  Two additional (optional) sets of input parameters may be provided:
+
+  #. Parameters that describe the displacement of the **beam centroid** from the reference particle in phase space:
+
+     * ``beam.meanX`` (``float``, in meters) mean value of the X coordinate
+     * ``beam.meanY`` (``float``, in meters) mean value of the Y coordinate
+     * ``beam.meanT`` (``float``, in meters) mean value of the T coordinate
+     * ``beam.meanPx`` (``float``, in radians) mean value of the Px coordinate
+     * ``beam.meanPy`` (``float``, in radians) mean value of the Py coordinate
+     * ``beam.meanPt`` (``float``, in radians) mean value of the Pt coordinate
+
+  #. Parameters that describe correlations between (x,pt), (px,pt), (y,pt), and (py,pt), described by a nonzero **dispersion**
+
+     * ``beam.dispX`` (``float``, in meters) beam-based horizontal dispersion
+     * ``beam.dispPx`` (``float``, dimensionless) derivative of beam-based horizontal dispersion
+     * ``beam.dispY`` (``float``, in meters) beam-based vertical dispersion
+     * ``beam.dispPy`` (``float``, dimensionless) derivative of beam-based vertical dispersion
+
   The following distributions are available:
 
   * ``waterbag`` or ``waterbag_from_twiss`` for initial Waterbag distribution.
@@ -366,7 +384,7 @@ The internal tracking methods used by ImpactX are symplectic.  However, if a use
 This element requires these additional parameters:
 
 * ``<element_name>.R(i,j)`` (``float``, ...) matrix entries
-  a 1-indexed, 6x6, linear transport map to multiply with the the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`.
+  a 1-indexed, 6x6, linear transport map to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`.
 * ``<element_name>.ds`` (``float``, in meters) length associated with a user-defined linear element (defaults to 0)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
@@ -388,6 +406,39 @@ This requires these additional parameters:
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
+
+``multipole_exact``
+^^^^^^^^^^^^^^^^^^
+
+``multipole_exact`` for a thick multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
+The coefficients must appear in the following sequence:
+
+dipole, quadrupole, sextupole, octupole, etc...
+
+(Note: Dipole coefficients are currently ignored, and will be supported in a separate combined-function dipole element.)
+
+Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+Here :math:`H_1` is the nonlinear Hamiltonian for a drift (including the kinematic square root),
+and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
+
+This requires these additional parameters:
+
+* ``<element_name>.ds`` (``float``, in meters) the segment length
+* ``<element_name>.k_normal`` (``float``, in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of normal multipole coefficients
+* ``<element_name>.k_skew`` (``float``, in 1/meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of skew multipole coefficients
+* ``<element_name>.unit`` (``integer``) specification of units for the multipole coefficients (default: ``0``)
+  By default, the multipole coefficients are normalized by magnetic rigidity.  Use ``unit=1`` to specify using SI units.
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+* ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
+* ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
 ``nonlinear_lens``
@@ -520,8 +571,8 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2 or 4) (default: ``2``)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``10``)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -544,6 +595,27 @@ This requires these additional parameters:
 * ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
+``quadedge``
+^^^^^^^^^^^
+
+``quadedge`` for quadrupole edge focusing.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing the effect
+of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq (28) of:
+E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
+This requires these additional parameters:
+
+* ``<element_name>.k`` (``float``, in inverse meters squared OR in T/m) the quadrupole strength
+  = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if ``unit = 0``
+
+  OR = magnetic field gradient in T/m - if ``unit = 1``
+
+  * k > 0 horizontal focusing
+  * k < 0 horizontal defocusing
+
+* ``<element_name>.unit`` (``integer``) specification of units (default: ``0``)
+* ``<element_name>.flag`` (``string``) specification of edge location: ``entry`` (default) or ``exit``
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 
 ``rfcavity``
 ^^^^^^^^^^^^

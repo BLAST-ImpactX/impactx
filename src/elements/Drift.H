@@ -20,6 +20,7 @@
 #include "mixin/thick.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
@@ -89,7 +90,7 @@ namespace impactx::elements
             m_slice_ds = m_ds / nslice();
 
             // find beta*gamma^2
-            m_betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            m_betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
 
             m_slice_bg = m_slice_ds / m_betgam2;
         }
@@ -124,7 +125,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -179,7 +180,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (drift)
             refpart.x = x + step*px;
@@ -209,7 +210,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
 
             // assign linear map matrix elements
             Map6x6 R = Map6x6::Identity();

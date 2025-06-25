@@ -92,7 +92,7 @@ namespace impactx::elements
 
             // access reference particle values
             amrex::ParticleReal const ibet = 1.0_prt / refpart.beta();
-            amrex::ParticleReal const ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
+            amrex::ParticleReal const ibetagam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
 
             // treat the special case of zero field (equivalent to a drift)
             if (m_rc==0_prt) {
@@ -153,7 +153,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -229,7 +229,7 @@ namespace impactx::elements
             // treat the special case of zero field (drift)
             if (m_rc == 0.0_prt) {
                // advance position and momentum (drift)
-               amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+               amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
                refpart.x = x + step*px;
                refpart.y = y + step*py;
                refpart.z = z + step*pz;
@@ -239,7 +239,7 @@ namespace impactx::elements
 
                // assign intermediate parameter
                amrex::ParticleReal const theta = slice_ds/m_rc;
-               amrex::ParticleReal const B = std::sqrt(std::pow(pt,2)-1.0_prt)/m_rc;
+               amrex::ParticleReal const B = std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt)/m_rc;
 
                // calculate expensive terms once
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
@@ -280,7 +280,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
             amrex::ParticleReal const bet = std::sqrt(betgam2/(1.0_prt + betgam2));
 
             // initialize linear map matrix elements

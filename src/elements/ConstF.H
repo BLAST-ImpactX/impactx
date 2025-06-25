@@ -20,6 +20,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -95,7 +96,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
 
             // trigo
             auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);
@@ -145,7 +146,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -202,7 +203,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -233,7 +234,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
 
             // trigo
             auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);

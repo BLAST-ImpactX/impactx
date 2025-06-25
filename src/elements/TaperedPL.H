@@ -19,6 +19,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -107,7 +108,7 @@ namespace impactx::elements
                 g = m_k / refpart.rigidity_Tm();
             }
 
-            // intialize output values
+            // initialize output values
             amrex::ParticleReal xout = x;
             amrex::ParticleReal yout = y;
             amrex::ParticleReal tout = t;
@@ -117,7 +118,7 @@ namespace impactx::elements
 
             // advance position and momentum
             xout = x;
-            pxout = px - g * ( x + m_taper*0.5_prt * (std::pow(x, 2) + std::pow(y, 2)) );
+            pxout = px - g * ( x + m_taper*0.5_prt * (amrex::Math::powi<2>(x) + amrex::Math::powi<2>(y)) );
 
             yout = y;
             pyout = py - g * ( y + m_taper * x * y );

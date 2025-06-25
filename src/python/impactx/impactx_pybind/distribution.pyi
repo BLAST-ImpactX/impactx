@@ -34,6 +34,16 @@ class Gaussian:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A 6D Gaussian distribution
@@ -51,6 +61,16 @@ class KVdist:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A K-V distribution transversely + a uniform distribution
@@ -69,6 +89,16 @@ class Kurth4D:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A 4D Kurth distribution transversely + a uniform distribution
@@ -87,6 +117,16 @@ class Kurth6D:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A 6D Kurth distribution
@@ -107,6 +147,16 @@ class Semigaussian:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
@@ -140,6 +190,16 @@ class Triangle:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A triangle distribution for laser-plasma acceleration related applications.
@@ -160,6 +220,16 @@ class Waterbag:
         muxpx: float = 0.0,
         muypy: float = 0.0,
         mutpt: float = 0.0,
+        meanX: float = 0.0,
+        meanY: float = 0.0,
+        meanT: float = 0.0,
+        meanPx: float = 0.0,
+        meanPy: float = 0.0,
+        meanPt: float = 0.0,
+        dispX: float = 0.0,
+        dispPx: float = 0.0,
+        dispY: float = 0.0,
+        dispPy: float = 0.0,
     ) -> None:
         """
         A 6D Waterbag distribution

@@ -6,7 +6,7 @@ import sys
 import time
 
 from .. import setup_server
-from ..Toolbar.sim_history.ui import SimulationHistory
+from ..Toolbar.sim_history import save_view_details_log
 
 server, state, ctrl = setup_server()
 
@@ -47,9 +47,28 @@ class SimulationHelper:
         state.dirty("filtered_data")
         state.sim_status_color = "success"
         state.sims[state.sim_index]["status"] = "Completed"
+        state.sim_is_generating_plots = False
         state.dirty("filtered_sims")
         state.flush()
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
+
+    @staticmethod
+    def cancel_simulation(proc: asyncio.subprocess.Process):
+        if proc is not None and proc.returncode is None:
+            proc.kill()
+
+        state.sim_is_cancelled = True
+        state.sim_is_running = False
+        state.sim_progress = 0
+        state.sim_current_step = 0
+        state.sim_elapsed_time = "0.0"
+        state.sim_status_color = "warning"
+        state.sim_progress_status = "Cancelled"
+        state.sims[state.sim_index]["status"] = "Cancelled"
+        state.dirty("filtered_sims")
+        ctrl.terminal_print("Simulation cancelled.")
+        state.flush()
+        save_view_details_log()
 
     @staticmethod
     def fail_simulation() -> None:
@@ -63,10 +82,11 @@ class SimulationHelper:
         state.dirty("filtered_sims")
         state.flush()
         ctrl.terminal_print("Simulation failed due to the above error.")
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def reset():
+        state.sim_is_cancelled = False
         state.sim_is_running = True
         state.sim_progress = 0
         state.sim_current_step = 0
@@ -106,6 +126,7 @@ class SimulationProgress:
             if state.sim_current_step == 0:
                 state.sim_progress_status = "Starting..."
             elif state.sim_current_step >= state.sim_total_steps:
+                state.sim_is_generating_plots = True
                 state.sim_progress_status = "Generating plots..."
             else:
                 progress_percent = int(state.sim_progress)

@@ -131,7 +131,7 @@ namespace impactx::elements
             amrex::ParticleReal const dpx = m_xkick * m_p_scale;
             amrex::ParticleReal const dpy = m_ykick * m_p_scale;
 
-            // intialize output values of momenta
+            // initialize output values of momenta
             amrex::ParticleReal pxout = px;
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal ptout = pt;

@@ -18,6 +18,7 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -140,7 +141,7 @@ namespace impactx::elements
                 amrex::ParticleReal const slice_ds = m_ds / nslice();
 
                 // assign intermediate parameter
-                amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+                amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
 
                 // advance position and momentum (drift)
                 refpart.x = x + step*px;

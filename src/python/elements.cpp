@@ -855,6 +855,66 @@ void init_elements(py::module& m)
     ;
     register_push(py_DipEdge);
 
+    py::class_<QuadEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_QuadEdge(me, "QuadEdge");
+    py_QuadEdge
+        .def("__repr__",
+             [](QuadEdge const & quadedge) {
+                 return element_name(
+                     quadedge,
+                     std::make_pair("k", quadedge.m_k)
+                 );
+             }
+        )
+        .def("to_dict",
+            [](QuadEdge const & quadedge) {
+                return element_dict(
+                    quadedge,
+                    std::make_pair("k", quadedge.m_k),
+                    std::make_pair("unit", quadedge.m_unit),
+                    std::make_pair("flag", quadedge.m_flag)
+                );
+            }
+        )
+        .def(py::init([](
+                amrex::ParticleReal k,
+                int unit,
+                std::string const & flag,
+                amrex::ParticleReal dx,
+                amrex::ParticleReal dy,
+                amrex::ParticleReal rotation_degree,
+                std::optional<std::string> name
+             )
+             {
+                 if (flag != "entry" && flag != "exit")
+                     throw std::runtime_error(R"(flag must be "entry" or "exit")");
+
+                 QuadEdge::Location const fl = flag == "entry" ?
+                                            QuadEdge::Location::entry :
+                                            QuadEdge::Location::exit;
+                 return new QuadEdge(k, unit, fl, dx, dy, rotation_degree, name);
+             }),
+             py::arg("k"),
+             py::arg("unit") = 0,
+             py::arg("flag") = "entry",
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             R"(A thin quadrupole fringe field element. Flag must be "entry" or "exit".)"
+        )
+        .def_property("k",
+            [](QuadEdge & quadedge) { return quadedge.m_k; },
+            [](QuadEdge & quadedge, amrex::ParticleReal k) { quadedge.m_k = k; },
+            "quadrupole focusing strength (1/meter^2 OR T/m)"
+        )
+        .def_property("unit",
+            [](QuadEdge & quadedge) { return quadedge.m_unit; },
+            [](QuadEdge & quadedge, int unit) { quadedge.m_unit = unit; },
+            "unit specification for quad strength"
+        )
+    ;
+    register_push(py_QuadEdge);
+
     py::class_<Drift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Drift(me, "Drift");
     py_Drift
         .def("__repr__",
@@ -925,6 +985,75 @@ void init_elements(py::module& m)
     ;
     register_push(py_ExactDrift);
 
+    py::class_<ExactMultipole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactMultipole(me, "ExactMultipole");
+    py_ExactMultipole
+        .def("__repr__",
+             [](ExactMultipole const & exact_multipole) {
+                 return element_name(
+                     exact_multipole,
+                     std::make_pair("unit", exact_multipole.m_unit)
+                 );
+             }
+        )
+        .def("to_dict",
+             [](ExactMultipole const & exact_multipole) {
+                 return element_dict(
+                     exact_multipole,
+                     std::make_pair("unit", exact_multipole.m_unit),
+                     std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
+                     std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
+                     std::make_pair("mapsteps", exact_multipole.m_mapsteps)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                std::vector<amrex::ParticleReal>,
+                std::vector<amrex::ParticleReal>,
+                int,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::arg("ds"),
+             py::arg("k_normal"),
+             py::arg("k_skew"),
+             py::arg("unit") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
+             py::arg("int_order") = 2,
+             py::arg("mapsteps") = 5,
+             py::arg("nslice") = 1,
+             py::arg("name") = py::none(),
+             "A thick Multipole magnet using the exact nonlinear Hamiltonian."
+        )
+        .def_property("unit",
+            [](ExactMultipole & exact_multipole) { return exact_multipole.m_unit; },
+            [](ExactMultipole & exact_multipole, int unit) { exact_multipole.m_unit = unit; },
+            "unit specification for multipole strength"
+        )
+        .def_property("int_order",
+            [](ExactMultipole & exact_multipole) { return exact_multipole.m_int_order; },
+            [](ExactMultipole & exact_multipole, int int_order) { exact_multipole.m_int_order = int_order; },
+            "order of symplectic integration used for particle push in applied fields"
+        )
+        .def_property("mapsteps",
+            [](ExactMultipole & exact_multipole) { return exact_multipole.m_mapsteps; },
+            [](ExactMultipole & exact_multipole, int mapsteps) { exact_multipole.m_mapsteps = mapsteps; },
+            "number of integration steps per slice used for particle push in the applied fields"
+        )
+    ;
+    register_push(py_ExactMultipole);
+
     py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
     py_ExactQuad
         .def("__repr__",
@@ -968,7 +1097,7 @@ void init_elements(py::module& m)
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
              py::arg("int_order") = 2,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 5,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A Quadrupole magnet using the exact nonlinear Hamiltonian."
@@ -1207,6 +1336,7 @@ void init_elements(py::module& m)
             }
         )
         .def(py::init<std::string>(),
+             py::arg("name"),
              "This named element does nothing."
         )
     ;

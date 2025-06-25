@@ -7,7 +7,7 @@
 #
 # -*- coding: utf-8 -*-
 
-import importlib
+import importlib.util
 
 import matplotlib.pyplot as plt
 import pytest

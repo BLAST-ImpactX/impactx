@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 25.04)
+project(ImpactX VERSION 25.06)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -87,6 +87,10 @@ endif()
 
 option(ImpactX_MPI_THREAD_MULTIPLE "MPI thread-multiple support, i.e. for async_io" ON)
 mark_as_advanced(ImpactX_MPI_THREAD_MULTIPLE)
+
+# Advanced option to run tests
+option(ImpactX_TEST_CLEANUP "Clean up automated test directories" OFF)
+mark_as_advanced(ImpactX_TEST_CLEANUP)
 
 option(ImpactX_ablastr_internal                  "Download & build ABLASTR" ON)
 option(ImpactX_amrex_internal                    "Download & build AMReX" ON)

@@ -66,7 +66,7 @@ namespace detail
 
 void init_ImpactX (py::module& m)
 {
-    py::class_<ImpactX> impactx(m, "ImpactX");
+    py::class_<ImpactX> impactx(m, "ImpactX", py::dynamic_attr());
     impactx
         .def(py::init<>())
 
@@ -429,6 +429,20 @@ void init_ImpactX (py::module& m)
             "if there are unused parameters in the input."
         )
 
+        .def_property("omp_threads",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<std::string>("amrex", "omp_threads");
+            },
+            [](ImpactX & /* ix */, std::variant<int, std::string> omp_threads_var) {
+                std::visit([&]( auto && omp_threads) {
+                    amrex::ParmParse pp_amrex("amrex");
+                pp_amrex.add("omp_threads", omp_threads);
+                }, omp_threads_var);
+            },
+            "Controls the number of OpenMP threads to use (ImpactX default: \"nosmt\").\n"
+            "https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html."
+        )
+
         .def_property("verbose",
             [](ImpactX & /* ix */){
                 return detail::get_or_throw<int>("impactx", "verbose");
@@ -436,6 +450,9 @@ void init_ImpactX (py::module& m)
             [](ImpactX & /* ix */, int const verbose) {
                 amrex::ParmParse pp_impactx("impactx");
                 pp_impactx.add("verbose", verbose);
+                // AMReX init/finalize
+                amrex::ParmParse pp_amrex("amrex");
+                pp_amrex.add("verbose", verbose);
             },
             "Controls how much information is printed to the terminal, when running ImpactX.\n"
             "``0`` for silent, higher is more verbose. Default is ``1``."
@@ -522,7 +539,7 @@ void init_ImpactX (py::module& m)
             py::arg("ref"), py::arg("distr"), py::arg("intensity") = py::none(),
             "Envelope tracking mode:"
             "Create a 6x6 covariance matrix from a distribution and then initialize "
-            "the the simulation for envelope tracking relative to a reference particle."
+            "the simulation for envelope tracking relative to a reference particle."
         )
         .def("add_particles", &ImpactX::add_particles,
              py::arg("bunch_charge"),

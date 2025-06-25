@@ -67,7 +67,7 @@ namespace impactx::elements::mixin
                amrex::ParticleReal const v = y / m_aperture_y;
 
                // compare against the aperture boundary
-               if (std::pow(u,2) + std::pow(v,2) > 1_prt) {
+               if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) > 1_prt) {
                   amrex::ParticleIDWrapper{idcpu}.make_invalid();
                }
 

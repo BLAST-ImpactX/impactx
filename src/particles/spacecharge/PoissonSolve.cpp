@@ -13,6 +13,7 @@
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Math.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>       // for ParticleReal
 
@@ -44,7 +45,7 @@ namespace impactx::particles::spacecharge
         // prepare parameters of the MLMG Poisson Solver
         //   relativistic beta=v/c of the reference particle
         amrex::ParticleReal const pt_ref = pc.GetRefParticle().pt;
-        amrex::ParticleReal const beta_s = std::sqrt(1.0_prt - 1.0_prt/std::pow(pt_ref, 2));
+        amrex::ParticleReal const beta_s = std::sqrt(1.0_prt - 1.0_prt/amrex::Math::powi<2>(pt_ref));
         // The beam particles and the corresponding box are all given in local coordinates
         // in which z is the direction of motion - this coincides with the direction of the momentum
         // of the reference particle.

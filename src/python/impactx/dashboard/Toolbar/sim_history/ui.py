@@ -14,7 +14,7 @@ from ...Run.simulation import dashboard_sim_inputs
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
-from ..importParser import DashboardParser
+from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 
 state.curr_view_details_log = ""
 
@@ -145,7 +145,7 @@ class SimulationHistory:
             "content": sim["inputs"].encode("utf-8"),
         }
 
-        DashboardParser.populate_impactx_simulation_file_to_ui(sim_content)
+        populate_impactx_simulation_file_to_ui(sim_content)
         state.selected_sim_to_load = None
 
     @staticmethod
@@ -222,15 +222,6 @@ class SimulationHistory:
         state.curr_view_details_log += log
 
     @staticmethod
-    def save_view_details_log() -> None:
-        """
-        Updates the UI with the simulation's
-        details.
-        """
-
-        state.sims[state.sim_index]["log"] = state.curr_view_details_log
-
-    @staticmethod
     def simulation_history():
         """
         Contains the UI and functionality for the
@@ -257,7 +248,15 @@ class SimulationHistory:
                             label="Status",
                             v_model=("selected_sim_search_status", None),
                             update_modelValue=(ctrl.update_status, "[$event]"),
-                            items=(["All", "Completed", "In Progress", "Failed"],),
+                            items=(
+                                [
+                                    "All",
+                                    "Completed",
+                                    "In Progress",
+                                    "Cancelled",
+                                    "Failed",
+                                ],
+                            ),
                             clearable=True,
                             density="comfortable",
                             hide_details=True,

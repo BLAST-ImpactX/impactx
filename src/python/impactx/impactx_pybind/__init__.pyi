@@ -148,7 +148,7 @@ class ImpactX:
         intensity: float | None = None,
     ) -> None:
         """
-        Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
+        Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
         """
     def init_grids(self) -> None:
         """
@@ -367,6 +367,14 @@ class ImpactX:
         self,
         arg1: typing.Annotated[list[int], pybind11_stubgen.typing_ext.FixedSize(3)],
     ) -> None: ...
+    @property
+    def omp_threads(self) -> str:
+        """
+        Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+        https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html.
+        """
+    @omp_threads.setter
+    def omp_threads(self, arg1: int | str) -> None: ...
     @property
     def particle_lost_diagnostics_backend(self) -> str:
         """
@@ -744,6 +752,7 @@ def push(
     | elements.DipEdge
     | elements.Drift
     | elements.ExactDrift
+    | elements.ExactMultipole
     | elements.ExactQuad
     | elements.ExactSbend
     | elements.Kicker
@@ -755,6 +764,7 @@ def push(
     | elements.Programmable
     | elements.PRot
     | elements.Quad
+    | elements.QuadEdge
     | elements.RFCavity
     | elements.Sbend
     | elements.ShortRF
@@ -775,6 +785,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.04"
+__version__: str = "25.06"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

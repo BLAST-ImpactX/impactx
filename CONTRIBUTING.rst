@@ -178,7 +178,7 @@ It's the way to protect your work from adventurous developers.
 
 .. note::
 
-   TOOD: Write a workflow how to add a test.
+   TODO: Write a workflow how to add a test.
 
 Include documentation about your PR
 """""""""""""""""""""""""""""""""""

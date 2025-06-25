@@ -1,3 +1,5 @@
+from typing import List, Optional, Union
+
 from ... import html, setup_server, vuetify
 from ..defaults import DashboardDefaults, UIDefaults
 from ..generalFunctions import generalFunctions
@@ -97,24 +99,59 @@ class CardComponents:
 
     @staticmethod
     def card_button(
-        icon_name,
-        color="primary",
-        dynamic_condition=None,
-        description=None,
-        density="compact",
-        variant="text",
+        icon_name: Union[str, List[str]],
+        color: str = "primary",
+        dynamic_condition: Optional[str] = None,
+        description: Optional[Union[str, List[str]]] = None,
+        density: str = "compact",
+        variant: str = "text",
         **kwargs,
     ) -> vuetify.VBtn:
         """
-        Create a Vuetify VBtn containing an icon.
+        Creates a Vuetify VBtn as an icon button. Can be dynamically toggled
+        between two states using 'dynamic_condition'.
 
-        :param icon_name: A string for a static icon, or a list/tuple of two strings for conditional rendering.
+        :param icon_name: A string or a list of two strings for conditional rendering of the button icon.
         :param color: The button color.
-        :param dynamic_condition: A Vue expression that determines which icon to display when `icon_name` is a list/tuple.
-        :param kwargs: Extra keyword arguments for the VBtn component.
+        :param dynamic_condition: A Vue state variable (boolean) that controls which value to show in 'icon_name' and 'description'.
+        :param description: A string or a list of two strings for conditional tooltip text.
+        :param kwargs: Extra keyword arguments for the component.
         """
 
-        with vuetify.VTooltip(location="bottom", text=description):
+        def validate_dynamic_condition(prop_value: List[str], prop_name: str) -> None:
+            """
+            Ensure dynamic_condition components are a list of exactly 2 strings for dynamic toggling (e.g., expand/collapse).
+            """
+
+            if not isinstance(prop_value, (list, tuple)):
+                raise ValueError(
+                    f"When dynamic_condition is set, {prop_name} must be a list of exactly 2 strings"
+                )
+            if len(prop_value) != 2:
+                raise ValueError(
+                    f"When dynamic_condition is set, {prop_name} must contain exactly 2 elements"
+                )
+            if not all(isinstance(item, str) for item in prop_value):
+                raise ValueError(
+                    f"When dynamic_condition is set, all elements in {prop_name} must be strings"
+                )
+
+        if dynamic_condition:
+            if description is None:
+                raise ValueError(
+                    "When dynamic_condition is set, 'description' must be provided and cannot be None."
+                )
+            validate_dynamic_condition(icon_name, "icon_name")
+            validate_dynamic_condition(description, "description")
+
+        if dynamic_condition:
+            tooltip_text = (
+                f"{dynamic_condition} ? '{description[1]}' : '{description[0]}'",
+            )
+        else:
+            tooltip_text = description
+
+        with vuetify.VTooltip(location="bottom", text=tooltip_text):
             with vuetify.Template(v_slot_activator="{ props }"):
                 with vuetify.VBtn(
                     color=color,
@@ -124,7 +161,7 @@ class CardComponents:
                     v_bind="props",
                     **kwargs,
                 ):
-                    if isinstance(icon_name, (list, tuple)):
+                    if dynamic_condition:
                         with vuetify.Template(v_if=dynamic_condition):
                             vuetify.VIcon(icon_name[1])
                         with vuetify.Template(v_else=True):
@@ -176,7 +213,7 @@ class CardComponents:
             ["mdi-arrow-expand", "mdi-close"],
             click=f"{expand_state} = !{expand_state}",
             dynamic_condition=expand_state,
-            description="Expand",
+            description=["Expand", "Close"],
         )
 
     @staticmethod
@@ -195,5 +232,5 @@ class CardComponents:
             ["mdi-chevron-up", "mdi-chevron-down"],
             click=f"{collapsed_state_name} = !{collapsed_state_name}",
             dynamic_condition=collapsed_state_name,
-            description="Collapse",
+            description=["Minimize", "Show"],
         )

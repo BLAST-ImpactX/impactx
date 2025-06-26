@@ -94,6 +94,23 @@ class DashboardTester:
     def __init__(self, sb):
         self.sb = sb
 
+        # Set up the examples directory path once
+        impactx_directory = Path(get_impactx_root_dir())
+        self.examples_directory = impactx_directory / "examples"
+        self.testing_directory = impactx_directory / "tests" / "python" / "dashboard"
+
+    def load_example(self, example_path, manual=False):
+        """
+        Load an example file into the dashboard
+        """
+        base_dir = self.testing_directory if manual else self.examples_directory
+        full_path = base_dir / example_path
+
+        self.sb.choose_file('input[type="file"]', full_path)
+
+    def clear(self):
+        self.sb.click("#reset_all_inputs_button")
+
     def add_lattice_element(self, element_name: str) -> None:
         """
         Add a lattice element to the dashboard.

@@ -37,14 +37,16 @@ jobs:
         set -e
     - name: install pip dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install --upgrade build packaging setuptools[core] wheel pytest pytest-benchmark
-        python3 -m pip install --upgrade -r requirements_mpi.txt
-        python3 -m pip install --upgrade -r src/python/impactx/dashboard/requirements.txt
-        python3 -m pip install --upgrade -r examples/requirements.txt
-        python3 -m pip install --upgrade -r tests/python/requirements.txt
-        python3 -m pip install --upgrade pipx
-        python3 -m pipx install openPMD-validator
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+
+        uv pip install --system --upgrade pip
+        uv pip install --system --upgrade build packaging setuptools[core] wheel pytest pytest-benchmark
+        uv pip install --system --upgrade -r requirements_mpi.txt
+        uv pip install --system --upgrade -r src/python/impactx/dashboard/requirements.txt
+        uv pip install --system --upgrade -r examples/requirements.txt
+        uv pip install --system --upgrade -r tests/python/requirements.txt
+        uv pip install --system --upgrade pipx
+        uvx pip install openPMD-validator
     - name: CCache Cache
       uses: actions/cache@v4
       # - once stored under a key, they become immutable (even if local cache path content changes)

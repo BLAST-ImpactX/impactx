@@ -38,6 +38,8 @@ jobs:
         Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_2.tar.gz -OutFile hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar
+
+        powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Install Dependencies
       env:
         # Work-around for windows-latest GH runner issue, see
@@ -80,13 +82,14 @@ jobs:
         $env:HDF5_DIR = "C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         $env:HDF5_USE_STATIC_LIBRARIES = "ON"
 
-        python3 -m pip install -U pip
-        python3 -m pip install -U build packaging setuptools[core] wheel
-        python3 -m pip install -U -r requirements.txt
-        python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
-        python3 -m pip install -U -r examples/requirements.txt
-        python3 -m pip install -U -r tests/python/requirements.txt
-        python3 -m pip install -U openPMD-validator
+        uv venv
+        uv pip install --system -U pip
+        uv pip install --system -U build packaging setuptools[core] wheel
+        uv pip install --system -U -r requirements.txt
+        uv pip install --system -U -r src/python/impactx/dashboard/requirements.txt
+        uv pip install --system -U -r examples/requirements.txt
+        uv pip install --system -U -r tests/python/requirements.txt
+        uv pip install --system -U openPMD-validator
     - name: Build
       env:
         # Work-around for windows-latest GH runner issue, see
@@ -157,6 +160,8 @@ jobs:
         Invoke-WebRequest https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_2.tar.gz -OutFile hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar.gz
         7z.exe x -r hdf5-1_12_2.tar
+
+        powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Install Dependencies
       shell: cmd
       run: |
@@ -201,13 +206,13 @@ jobs:
         set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
         set "HDF5_USE_STATIC_LIBRARIES=ON"
 
-        python3 -m pip install -U pip
-        python3 -m pip install -U build packaging setuptools[core] wheel
-        python3 -m pip install -U -r requirements.txt
-        python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
-        python3 -m pip install -U -r examples/requirements.txt
-        python3 -m pip install -U -r tests/python/requirements.txt
-        python3 -m pip install -U openPMD-validator
+        uv pip install --system -U pip
+        uv pip install --system -U build packaging setuptools[core] wheel
+        uv pip install --system -U -r requirements.txt
+        uv pip install --system -U -r src/python/impactx/dashboard/requirements.txt
+        uv pip install --system -U -r examples/requirements.txt
+        uv pip install --system -U -r tests/python/requirements.txt
+        uv pip install --system -U openPMD-validator
     - name: Build
       shell: cmd
       env:

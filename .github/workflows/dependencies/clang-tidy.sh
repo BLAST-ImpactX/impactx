@@ -7,8 +7,8 @@
 
 set -eu -o pipefail
 
-sudo apt-get -qqq update
-sudo apt-get install -y \
+sudo apt -qqq update
+sudo apt install -y     \
     build-essential     \
     ca-certificates     \
     ccache              \
@@ -27,13 +27,14 @@ sudo apt-get install -y \
     python3-pip         \
     wget
 
-python3 -m pip install -U pip
-python3 -m pip install -U build packaging setuptools[core] wheel
-python3 -m pip install -U cmake
-python3 -m pip install -U -r requirements_mpi.txt
-python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
-python3 -m pip install -U -r examples/requirements.txt
-python3 -m pip install -U -r tests/python/requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH=$HOME/.local/bin:$PATH
+
+sudo uv pip install --system -U build cmake packaging setuptools[core] wheel
+sudo uv pip install --system -U -r requirements_mpi.txt
+sudo uv pip install --system -U -r src/python/impactx/dashboard/requirements.txt
+sudo uv pip install --system -U -r examples/requirements.txt
+sudo uv pip install --system -U -r tests/python/requirements.txt
 
 # cmake-easyinstall
 #

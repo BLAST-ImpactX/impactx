@@ -206,18 +206,9 @@ class DashboardTester:
         :param state_name: Name of the state variable to update (same as v_model_name).
         :param expected_input: Expected value of the state variable.
         """
-        js_script = """
-            if (window.trame && window.trame.state) {
-                const state = window.trame.state;
-                const state_name = arguments[0];
-                if (state.get) { return state.get(state_name); }
-                return state[state_name];
-            }
-            return null;
-        """
         for i in range(timeout):
             try:
-                value = self.sb.execute_script(js_script, state_name)
+                value = self.get_state(state_name)
             except TimeoutException:
                 value = None
 
@@ -235,3 +226,15 @@ class DashboardTester:
         raise TimeoutError(
             f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds (last value: '{value}')."
         )
+
+    def get_state(self, state_name):
+        js_script = """
+            if (window.trame && window.trame.state) {
+                const state = window.trame.state;
+                const state_name = arguments[0];
+                if (state.get) { return state.get(state_name); }
+                return state[state_name];
+            }
+            return null;
+        """
+        return self.sb.execute_script(js_script, state_name)

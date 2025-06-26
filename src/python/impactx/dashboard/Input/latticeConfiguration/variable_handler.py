@@ -53,6 +53,7 @@ class LatticeVariableHandler:
                 lattice["ui_input"],
                 lattice["parameter_type"],
             )
+        LatticeVariableHandler.update_delete_availability()
 
     # -----------------------------------------------------------------------------
     # Controllers
@@ -259,6 +260,7 @@ class LatticeVariableHandler:
                                 color="primary",
                                 description="Add Variable",
                                 click=ctrl.add_variable,
+                                id=("'add_variable_button_' + (index + 1)",),
                                 v_show="index === variables.length - 1",
                                 density="default",
                                 size="x-small",
@@ -270,6 +272,7 @@ class LatticeVariableHandler:
                                 color="secondary",
                                 description="Delete Variable",
                                 click=(ctrl.delete_variable, "[index]"),
+                                id=("'delete_variable_button_' + (index + 1)",),
                                 disabled=("is_only_variable",),
                                 density="default",
                                 size="x-small",
@@ -279,6 +282,7 @@ class LatticeVariableHandler:
                     with vuetify.VCol():
                         vuetify.VBtn(
                             "Reset Variables",
+                            id="reset_variables",
                             color="primary",
                             click=ctrl.reset_variables,
                             block=True,

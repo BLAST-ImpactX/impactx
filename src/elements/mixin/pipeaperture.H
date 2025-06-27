@@ -65,6 +65,9 @@ namespace impactx::elements::mixin
             if (m_inv_aperture_x > 0_prt && m_inv_aperture_y > 0_prt) {
 
                // scale horizontal and vertical coordinates
+               // performance optimization: we intentionally store the inverse of
+               //   the aperture, so we can do a quick multiplication (instead of a
+               //   costly division) here.
                amrex::ParticleReal const u = x * m_inv_aperture_x;
                amrex::ParticleReal const v = y * m_inv_aperture_y;
 
@@ -97,6 +100,9 @@ namespace impactx::elements::mixin
             return 1_prt / m_inv_aperture_y;
         }
 
+        // performance optimization: we intentionally store the inverse of
+        //   the aperture, so we can do a quick multiplication instead of a costly
+        //   division in the comparison operation per particle
         amrex::ParticleReal m_inv_aperture_x = 0; //! inverse of the horizontal aperture size [1/m]
         amrex::ParticleReal m_inv_aperture_y = 0; //! inverse of the vertical aperture size [1/m]
     };

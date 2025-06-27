@@ -5,7 +5,9 @@ Copyright 2024 ImpactX contributors
 Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
+
 import os
+
 from .. import setup_server, vuetify
 from ..Input import CardComponents
 from .sim_history.ui import SimulationHistory
@@ -22,6 +24,7 @@ from .run import RunToolbar
 @ctrl.trigger("force_quit")
 def _force_quit() -> None:
     os._exit(0)
+
 
 class GeneralToolbar:
     """

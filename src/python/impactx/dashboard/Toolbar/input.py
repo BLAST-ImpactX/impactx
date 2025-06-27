@@ -72,6 +72,7 @@ class InputToolbar:
             click=ctrl.collapse_all_sections,
             dynamic_condition="expand_all_sections",
             description=["Minimize All", "Show All"],
+            classes="mr-2",
         )
 
     @staticmethod

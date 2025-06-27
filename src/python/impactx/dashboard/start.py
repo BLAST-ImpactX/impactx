@@ -8,13 +8,10 @@ License: BSD-3-Clause-LBNL
 
 from . import setup_server
 from .Input.defaults import DashboardDefaults
+from .app import application
+from .Toolbar.sim_history.ui import load_my_js
 
 server, state, ctrl = setup_server()
-
-
-# -----------------------------------------------------------------------------
-# Main
-# -----------------------------------------------------------------------------
 
 
 def initialize_states():
@@ -27,10 +24,12 @@ def initialize_states():
         setattr(state, name, value)
 
 
-def main():
+def start_dashboard():
     """
     Launches Trame application server
     """
     initialize_states()
+    load_my_js(server)
+    application()
     server.start()
     return 0

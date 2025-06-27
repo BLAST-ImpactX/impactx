@@ -6,7 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .__main__ import application
+from .app import application
 
 
 class JupyterMainApplication:

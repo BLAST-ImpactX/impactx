@@ -16,18 +16,14 @@ class AnalyzeToolbar:
     """
 
     @staticmethod
-    def select_visualization() -> vuetify.VSelect:
+    def select_visualization() -> vuetify.VTabs:
         """
-        Provides the user a dropdown to select the type of visualization to view.
+        Provides the user a tab group to select the type of visualization to view.
         """
-        with html.Div(style="width: 15vw"):
-            vuetify.VSelect(
-                v_model=("active_visualization",),
-                items=("visualization_options",),
-                label="Select Visualization",
-                disabled=("!sims.length",),  # disabled if no sims are in the history
-                density="comfortable",
-                variant="solo-filled",
-                hide_details=True,
-                color="primary",
-            )
+        return vuetify.VTabs(
+            v_model=("active_visualization",),
+            items=("visualization_options",),
+            color="primary",
+            hide_slider=False,
+            disabled=("!sims.length",),  # disabled if no sims are in the history
+        )

@@ -72,9 +72,6 @@ def sim():
             self.sim.add_particles(bunch_charge_C, distr, npart)
             assert self.sim.particle_container().total_number_of_particles() == npart
 
-            # work-around, see https://github.com/AMReX-Codes/amrex/issues/4498
-            self.sim.particle_container().redistribute()
-
             self.sim.backup_beam = self.sim.particle_container().make_alike()
             assert self.sim.backup_beam.total_number_of_particles() == 0
 

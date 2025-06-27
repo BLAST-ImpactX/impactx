@@ -130,6 +130,12 @@ namespace impactx
         nthreads = omp_get_max_threads();
 #endif
 
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+            nthreads == 1 || this->do_tiling == true,
+            "OpenMP threads are used for parallelism but particles.do_tiling is set to false. "
+            "This would create invalid particle data."
+        );
+
         // When running without space charge and OpenMP parallelization,
         // we need to make sure we have enough tiles on level 0, grid 0
         // to thread over the available tiles. We try to set the tile_size

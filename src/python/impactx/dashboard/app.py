@@ -119,4 +119,3 @@ def application():
             router.RouterView()
             init_terminal()
     return layout
-

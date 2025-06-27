@@ -7,8 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from . import setup_server
-from .Input.defaults import DashboardDefaults
 from .app import application
+from .Input.defaults import DashboardDefaults
 from .Toolbar.sim_history.ui import load_my_js
 
 server, state, ctrl = setup_server()

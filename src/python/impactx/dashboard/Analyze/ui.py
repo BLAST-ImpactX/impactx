@@ -9,33 +9,13 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import plotly
 
-from . import over_s
 from .. import setup_server, vuetify
 from ..Input.components.navigation import NavigationComponents
 
 server, state, ctrl = setup_server()
 
-PLOTS = {
-    "Plot Over S": over_s.update,
-    "Phase Space Plots": None,
-}
-
-
-def available_plot_options(simulationClicked):
-    """
-    Displays plot_options for users based on status of simulation.
-    :param simulationClicked (bool): status of simulation status
-    :return: list of plot_options for users
-    """
-
-    if simulationClicked:
-        return list(PLOTS.keys())
-    else:
-        return ["Run Simulation To See Options"]
-
-
-state.plot_options = available_plot_options(simulationClicked=False)
-state.active_plot = None
+state.visualization_options = ["Plot Over S", "Phase Space Plots"]
+state.active_visualization = "Plot Over S"
 state.phase_space_png = None
 
 class AnalyzeSimulation:
@@ -57,13 +37,13 @@ class AnalyzeSimulation:
                     with NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Plot", "Data"]):
                         with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
                             with vuetify.VTabsWindowItem(): # tab1
-                                with vuetify.VContainer(style="height: 80vh; width: 100%;",):
+                                with vuetify.VContainer(style="height: calc(85vh - 8px); width: 100%;",):
                                     plotly_figure = plotly.Figure(
                                         display_mode_bar="true",
                                     )
                                     ctrl.plotly_figure_update = plotly_figure.update
                             with vuetify.VTabsWindowItem(): # tab2
-                                with vuetify.VContainer(style="height: 80vh; width: 100%;",):
+                                with vuetify.VContainer(style="height: calc(85vh - 8px); width: 100%;",):
                                     vuetify.VDataTable(
                                         headers=("over_s_table_headers",),
                                         items=("over_s_table_data", []),

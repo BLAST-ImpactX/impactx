@@ -6,10 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server, vuetify
+from .. import html, setup_server, vuetify
 
 server, state, ctrl = setup_server()
-
 
 class AnalyzeToolbar:
     """
@@ -17,19 +16,18 @@ class AnalyzeToolbar:
     """
 
     @staticmethod
-    def plot_options() -> vuetify.VSelect:
+    def select_visualization() -> vuetify.VSelect:
         """
-        Displays a dropdown menu to select the available plots
-        generated from the simulation data.
+        Provides the user a dropdown to select the type of visualization to view.
         """
-
-        return vuetify.VSelect(
-            v_model=("active_plot", "1D plots over s"),
-            items=("plot_options",),
-            label="Select plot to view",
-            hide_details=True,
-            density="compact",
-            variant="underlined",
-            style="max-width: 250px",
-            disabled=("disableRunSimulationButton", True),
-        )
+        with html.Div(style="width: 15vw"):
+            vuetify.VSelect(
+                v_model=("active_visualization",),
+                items=("visualization_options",),
+                label="Select Visualization",
+                disabled=("!sims.length",),  # disabled if no sims are in the history
+                density="comfortable",
+                variant="solo-filled",
+                hide_details=True,
+                color="primary",
+            )

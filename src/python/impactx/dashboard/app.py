@@ -75,10 +75,10 @@ with RouterViewLayout(server, "/Input"):
                         LatticeVisualizer().card()
 
 with RouterViewLayout(server, "/Analyze"):
-    with vuetify.Template(v_if="active_plot === 'Plot Over S'"):
+    with vuetify.Template(v_if="active_visualization === 'Plot Over S'"):
         AnalyzeSimulation.plot_over_s()
 
-    with vuetify.Template(v_if="active_plot === 'Phase Space Plots'"):
+    with vuetify.Template(v_if="active_visualization === 'Phase Space Plots'"):
         AnalyzeSimulation.phase_space()
 
 # ----------------------------------------------------------------------------

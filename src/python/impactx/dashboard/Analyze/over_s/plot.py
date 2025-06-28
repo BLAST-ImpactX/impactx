@@ -19,8 +19,8 @@ def over_s_plot():
     selected_headers = state.selected_headers
     over_s_data = state.over_s_table_data
 
-    x_axis = selected_headers[0] if len(selected_headers) > 1 else None
-    y_axis = selected_headers[1:] if len(selected_headers) > 2 else None
+    x_axis = selected_headers[0] if selected_headers else None
+    y_axis = selected_headers[1:]  if len(selected_headers) > 1 else []
 
     x = [row[x_axis] for row in over_s_data] if x_axis else []
 
@@ -41,9 +41,9 @@ def over_s_plot():
     return go.Figure(
         data=figure_data,
         layout=go.Layout(
-            title="Plot Over S",
+            title="Over-S Plot",
             xaxis=dict(title="s"),
-            yaxis=dict(title=""),
+            yaxis=dict(title="m"),
             margin=dict(l=20, r=20, t=25, b=30),
         ),
     )

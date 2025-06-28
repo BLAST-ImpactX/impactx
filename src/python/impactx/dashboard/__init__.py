@@ -15,7 +15,7 @@ from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
 from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
 
-from .jupyterApplication import JupyterMainApplication as JupyterApp
+from .start import JupyterApp
 # isort: on
 
 

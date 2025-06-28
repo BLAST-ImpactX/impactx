@@ -61,7 +61,7 @@ def _populate_distribution_inputs_to_ui(parsed_data):
     state.flush()  # force calls state.change("distribution") and state.change("distribution_type")
 
     for distr_param_name, distr_param_value in parsed_data["parameters"].items():
-        ctrl.updateDistributionParameters(distr_param_name, distr_param_value, "float")
+        ctrl.update_distribution_parameter(distr_param_name, distr_param_value, "float")
 
 
 @staticmethod

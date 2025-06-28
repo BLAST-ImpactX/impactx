@@ -6,9 +6,10 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .. import html, setup_server, vuetify
+from .. import setup_server, vuetify
 
 server, state, ctrl = setup_server()
+
 
 class AnalyzeToolbar:
     """

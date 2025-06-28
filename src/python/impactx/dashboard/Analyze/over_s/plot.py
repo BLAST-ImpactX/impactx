@@ -9,7 +9,9 @@ License: BSD-3-Clause-LBNL
 import plotly.graph_objects as go
 
 from ... import setup_server
+
 server, state, ctrl = setup_server()
+
 
 def over_s_plot():
     """
@@ -20,7 +22,7 @@ def over_s_plot():
     over_s_data = state.over_s_table_data
 
     x_axis = selected_headers[0] if selected_headers else None
-    y_axis = selected_headers[1:]  if len(selected_headers) > 1 else []
+    y_axis = selected_headers[1:] if len(selected_headers) > 1 else []
 
     x = [row[x_axis] for row in over_s_data] if x_axis else []
 

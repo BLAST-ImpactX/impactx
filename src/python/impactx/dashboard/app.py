@@ -81,6 +81,7 @@ with RouterViewLayout(server, "/Analyze"):
     with vuetify.Template(v_if="active_visualization === 'Phase Space Plots'"):
         AnalyzeSimulation.phase_space()
 
+
 # ----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------

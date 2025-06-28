@@ -21,6 +21,7 @@ state.sim_progress = 0
 def run_execute_impactx_sim():
     asyncio.get_running_loop().create_task(execute_impactx_sim())
 
+
 state.sim_status_color = "primary"
 
 

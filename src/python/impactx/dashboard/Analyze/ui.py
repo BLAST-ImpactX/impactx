@@ -6,7 +6,6 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-
 from trame.widgets import plotly
 
 from .. import setup_server, vuetify
@@ -17,6 +16,7 @@ server, state, ctrl = setup_server()
 state.visualization_options = ["Plot Over S", "Phase Space Plots"]
 state.active_visualization = "Plot Over S"
 state.phase_space_png = None
+
 
 class AnalyzeSimulation:
     """
@@ -34,16 +34,22 @@ class AnalyzeSimulation:
         with vuetify.VContainer(fluid=True):
             with vuetify.VRow():
                 with vuetify.VCol(cols=9, classes="d-flex flex-column"):
-                    with NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Plot", "Data"]):
+                    with NavigationComponents.create_dialog_tabs(
+                        dialog_name, 2, ["Plot", "Data"]
+                    ):
                         with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
-                            with vuetify.VTabsWindowItem(): # tab1
-                                with vuetify.VContainer(style="height: calc(84vh - 8px); width: 100%;",):
+                            with vuetify.VTabsWindowItem():  # tab1
+                                with vuetify.VContainer(
+                                    style="height: calc(84vh - 8px); width: 100%;",
+                                ):
                                     plotly_figure = plotly.Figure(
                                         display_mode_bar="true",
                                     )
                                     ctrl.plotly_figure_update = plotly_figure.update
-                            with vuetify.VTabsWindowItem(): # tab2
-                                with vuetify.VContainer(style="height: calc(84vh - 8px); width: 100%;",):
+                            with vuetify.VTabsWindowItem():  # tab2
+                                with vuetify.VContainer(
+                                    style="height: calc(84vh - 8px); width: 100%;",
+                                ):
                                     vuetify.VDataTable(
                                         headers=("over_s_table_headers",),
                                         items=("over_s_table_data", []),

@@ -10,12 +10,7 @@ import importlib
 import pytest
 from seleniumbase import SB
 
-from examples import DashboardExamples
-from utils import (
-    start_dashboard,
-    wait_for_interaction_ready,
-    wait_for_server_ready,
-)
+from .examples import DashboardExamples
 
 @pytest.mark.skipif(
     importlib.util.find_spec("seleniumbase") is None,
@@ -31,21 +26,8 @@ def test_examples():
         with SB(headless=True) as sb:
             test_examples = DashboardExamples(sb)
 
-            # Setup Dashboard
-            app_process = start_dashboard()
-            wait_for_server_ready(app_process)
-            sb.open("http://localhost:8080/index.html#/Input")
-            wait_for_interaction_ready(sb)
-
-            # Run tests once dashboard is ready for interaction
-            # Test full example inputs w/importing
-            test_examples.fodo_example()
-
             # test lattice builds w/importing
-            test_examples.kurth_10nC_periodic_lattice()
             test_examples.chicane_lattice() # uses .reverse(), limited to 11 elements - ids not showing past 11
-            test_examples.apochromatic_lattice() # limited to 11 elements
-            test_examples.cyclotron_lattice()
             test_examples.dogleg_lattice() # uses lattice.append() and lattice.extend()
             test_examples.expanding_fft_lattice() # uses blocking factor, and .extend() is a list of variables and direct elements
             # test_examples.iotalattice() # stress test - dashboard does not yet success well

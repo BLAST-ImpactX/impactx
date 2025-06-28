@@ -55,12 +55,22 @@ def test_python_import(dashboard):
     ]
 
     LATTICE_CONFIGURATION = [
+        #drit1
         ("#ds1", 0.25),
+        ("#ns1", 25),
+        ("#name1", "drift1"),
+        #quad1
         ("#ds2", 1),
         ("#k2", 1.0),
+        ("#ns2", 25),
+        ("#name2", "quad1"),
+        #lattice_configuration
+        ("#name3", "drift2"),
         ("#ds3", 0.5),
+        ("#name4", "quad2"),
         ("#ds4", 1.0),
         ("#k4", -1.0),
+        ("#name5", "drift3"),
         ("#ds5", 0.25),
     ]
 

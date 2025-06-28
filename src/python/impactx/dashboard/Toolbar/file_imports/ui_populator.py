@@ -6,6 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+from copy import error
 from ... import ctrl, state
 from ...Input.lattice.ui import add_lattice_element
 from ...Input.lattice.variable_handler import LatticeVariableHandler
@@ -21,8 +22,7 @@ def on_import_file_change(import_file, **kwargs):
             populate_impactx_simulation_file_to_ui(import_file)
         except Exception as error:
             state.import_file_error = True
-            state.import_file_error_message = "Unable to parse"
-            print(f"Error while parsing the file: {error}")
+            state.import_file_error_message = f"Unable to parse because of the following error: {error}"
         finally:
             state.importing_file = False
 

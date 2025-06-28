@@ -14,11 +14,8 @@ class DashboardLatticeParser:
 
     def parse(self) -> Dict[str, Any]:
         """
-        Extracts the lattice configuration from ImpactX simulation file content.
+        Extracts the lattice configuration from provided ImpactX simulation file.
         
-        Parses lattice operations (append, extend, reverse) and element definitions
-        to return a structured representation of the lattice elements and their parameters.
-
         Example return:
         {
             "lattice_elements": [
@@ -43,8 +40,8 @@ class DashboardLatticeParser:
                     expanded_elements.append(operation_arg)
                 case "reverse":
                     # Find the variable definition and reverse its flattened list
-                    variable_elements = self._flatten(operation_arg)
-                    expanded_elements.extend(reversed(variable_elements))
+                    reversed_expanded_elements = reversed(self._flatten(operation_arg))
+                    expanded_elements.extend(reversed_expanded_elements)
                 case _:
                     print(f"Warning: Unsupported operation type: {operation_type}")
 
@@ -105,10 +102,8 @@ class DashboardLatticeParser:
 
     def collect_lattice_operations(self, debug: bool = False) -> List[Dict[str, str]]:
         """
-        Collects lattice operations in the order they appear in the content.
-        
-        Finds sim.lattice.append(), sim.lattice.extend(), and variable.reverse() calls
-        and returns them as a chronologically ordered list of operation dictionaries.
+        Collects lattice operations (sim.lattice.append(), sim.lattice.extend(), and variable.reverse() calls)
+        in the order they appear in the content.   
 
         EX:
             sim.lattice.append(monitor) ; sim.lattice.extend([drift1, quad1]) ; lattice_half.reverse()

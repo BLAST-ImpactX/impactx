@@ -69,9 +69,10 @@ class LatticeVisualizerStatisticUtils:
     @staticmethod
     def update_element_counts() -> dict[str, int]:
         """
-        Computes the element counts in the lattice list.
+        Computes the element counts in the lattice list
+        and stores them in descending order by count.
 
-        :return: Dictionary of element names and their counts, sorted by count descending.
+        :return: Dictionary of element counts indexed by element name.
         """
         counts = {}
         for element in state.selected_lattice_list:
@@ -81,9 +82,7 @@ class LatticeVisualizerStatisticUtils:
 
         state.lattice_is_empty = len(counts) == 0
         # sort from desc. so we see top elements left to right
-        sorted_counts = dict(
-            sorted(counts.items(), key=lambda item: item[1], reverse=True)
-        )
+        sorted_counts = dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
 
         state.element_counts = sorted_counts
         return sorted_counts

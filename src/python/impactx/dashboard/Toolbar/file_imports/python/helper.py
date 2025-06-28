@@ -71,6 +71,9 @@ class DashboardParserHelper:
         """
         Parses list-based simulation parameters from the simulation file content.
 
+        Some of the dashboard inputs are lists, such as n_cell = [16, 16, 16].
+        We have to look inside of the brackets to retrieve the individual values.
+
         :param content: The content of the ImpactX simulation file.
         """
         dictionary = {}
@@ -81,7 +84,11 @@ class DashboardParserHelper:
             "blocking_factor_y",
             "blocking_factor_z",
         ]
-        list_parsing = "{}\s*=\s*(\\[.*?\\])"
+
+        # The below regex will capture everything inside of the brackets
+        # it assumes that the list will be placed in a single line (not multiple).
+        # Example: n_cell = [16, 16, 16] -->  [16, 16, 16]
+        list_parsing = r"{}\s*=\s*(\[[^\]]*\])"
 
         for input_name in list_inputs:
             match = re.search(list_parsing.format(input_name), content)

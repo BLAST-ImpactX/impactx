@@ -3,7 +3,7 @@ from trame.widgets import vuetify3 as vuetify
 
 # isort: off
 
-from .trame_setup import setup_server
+from .server import setup_server
 from .Toolbar.general import GeneralToolbar
 
 from .Analyze.ui import AnalyzeSimulation

@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 
 import pytest
 
+
 def lattice_value(state, index: int, param_name: str) -> float:
     """
     Returns the simulation value for a specific parameter
@@ -21,16 +22,19 @@ def lattice_value(state, index: int, param_name: str) -> float:
             if not isinstance(value, (int, float)):
                 raise AssertionError(f"'{param_name}' in index {index} is not numeric.")
             return value
-        
+
     raise AssertionError(f"Element {index} has no '{param_name}'")
+
 
 def variable_index(variable_name: str, dashboard) -> int:
     """
     Returns the index of the variable name.
     """
     for index, variable in enumerate(dashboard.get_state("variables"), start=1):
-        if variable["name"] == variable_name: return index
+        if variable["name"] == variable_name:
+            return index
     raise ValueError(f"Variable '{variable_name}' not found in dashboard state")
+
 
 def test_lattice_variable_handler(dashboard):
     """
@@ -52,12 +56,12 @@ def test_lattice_variable_handler(dashboard):
     ]
 
     INVALID_VARIABLES = [
-        {"name": "", "value": "3*2"}, # empty name, str
-        {"name": "123abc"}, # starts with numbers
-        {"name": "!"}, # special char name
-        {"name": "with space"}, # space in name
-        {"name": "x$"}, # symbol in name
-        {"name": "rc"} # duplicate name
+        {"name": "", "value": "3*2"},  # empty name, str
+        {"name": "123abc"},  # starts with numbers
+        {"name": "!"},  # special char name
+        {"name": "with space"},  # space in name
+        {"name": "x$"},  # symbol in name
+        {"name": "rc"},  # duplicate name
     ]
     ALL_VARIABLES = VALID_VARIABLES + INVALID_VARIABLES
 
@@ -86,7 +90,9 @@ def test_lattice_variable_handler(dashboard):
     # Verify the lattice element value is storing the variable value in the backend
     assert lattice_value(lattice_list, 0, "ds") == 0.500194828041958
     assert lattice_value(lattice_list, 0, "rc") == -10.346228368619553
-    assert all(var["name"] != "ns" for var in variables), "Variable 'ns' was not deleted"
+    assert all(var["name"] != "ns" for var in variables), (
+        "Variable 'ns' was not deleted"
+    )
 
     # Make sure nslice parameter does not have numeric value
     # since 'ns' is deleted
@@ -101,13 +107,21 @@ def test_lattice_variable_handler(dashboard):
     assert lattice_value(lattice_list_with_updated_lb, 0, "ds") == NEW_LB
 
     # Verify that the invalid variables cannot be set on the dashboard
-    for var in variables[len(VALID_VARIABLES):]:
+    for var in variables[len(VALID_VARIABLES) :]:
         assert var.get("error_message"), f"Expected an error message from {var}."
 
     # Reset variables and check state
     dashboard.sb.click("#reset_variables")
     variables_after_reset = dashboard.get_state("variables")
-    assert len(variables_after_reset) == 1, "Resetting variables should leave only one variable."
-    assert variables_after_reset[0].get("name", "") == "", "Variable name should be blank after reset."
-    assert variables_after_reset[0].get("value", "") == "", "Variable value should be blank after reset."
-    assert dashboard.get_state("is_only_variable") is True, "Expected state to be True after reset."
+    assert len(variables_after_reset) == 1, (
+        "Resetting variables should leave only one variable."
+    )
+    assert variables_after_reset[0].get("name", "") == "", (
+        "Variable name should be blank after reset."
+    )
+    assert variables_after_reset[0].get("value", "") == "", (
+        "Variable value should be blank after reset."
+    )
+    assert dashboard.get_state("is_only_variable") is True, (
+        "Expected state to be True after reset."
+    )

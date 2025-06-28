@@ -37,13 +37,13 @@ class AnalyzeSimulation:
                     with NavigationComponents.create_dialog_tabs(dialog_name, 2, ["Plot", "Data"]):
                         with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
                             with vuetify.VTabsWindowItem(): # tab1
-                                with vuetify.VContainer(style="height: calc(85vh - 8px); width: 100%;",):
+                                with vuetify.VContainer(style="height: calc(84vh - 8px); width: 100%;",):
                                     plotly_figure = plotly.Figure(
                                         display_mode_bar="true",
                                     )
                                     ctrl.plotly_figure_update = plotly_figure.update
                             with vuetify.VTabsWindowItem(): # tab2
-                                with vuetify.VContainer(style="height: calc(85vh - 8px); width: 100%;",):
+                                with vuetify.VContainer(style="height: calc(84vh - 8px); width: 100%;",):
                                     vuetify.VDataTable(
                                         headers=("over_s_table_headers",),
                                         items=("over_s_table_data", []),

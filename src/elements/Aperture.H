@@ -86,8 +86,21 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_action(action), m_aperture_x(aperture_x), m_aperture_y(aperture_y), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
+          m_shape(shape), m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
         {
+            using namespace amrex::literals; // for _rt and _prt
+
+            if (aperture_x > 0_prt) {
+                m_inv_aperture_x = 1_prt / aperture_x;
+            } else {
+                throw std::runtime_error("Aperture: aperture_x must be > 0!");
+            }
+
+            if (aperture_y > 0_prt) {
+                m_inv_aperture_y = 1_prt / aperture_y;
+            } else {
+                throw std::runtime_error("Aperture: aperture_y must be > 0!");
+            }
         }
 
         /** Push all particles */
@@ -145,8 +158,11 @@ namespace impactx::elements
             v = (m_repeat_y==0.0) ? y : (std::fmod(std::abs(y)+dy,m_repeat_y)-dy);
 
             // scale horizontal and vertical coordinates
-            u = u / m_aperture_x;
-            v = v / m_aperture_y;
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, so we can do a quick multiplication (instead of a
+            //   costly division) here.
+            u = u * m_inv_aperture_x;
+            v = v * m_inv_aperture_y;
 
             // compare against the aperture boundary
             bool inside_aperture = true;
@@ -194,8 +210,11 @@ namespace impactx::elements
 
         Shape m_shape; //! aperture type (rectangular, elliptical)
         Action m_action; //! action type (transmit, absorb)
-        amrex::ParticleReal m_aperture_x; //! maximum horizontal coordinate
-        amrex::ParticleReal m_aperture_y; //! maximum vertical coordinate
+        // performance optimization: we intentionally store the inverse of
+        //   the aperture, so we can do a quick multiplication instead of a costly
+        //   division in the comparison operation per particle
+        amrex::ParticleReal m_inv_aperture_x; //! maximum horizontal coordinate
+        amrex::ParticleReal m_inv_aperture_y; //! maximum vertical coordinate
         amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
         amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
 

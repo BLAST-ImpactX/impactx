@@ -56,6 +56,7 @@ sim.lattice.extend(
             aperture_y=1.0e-4,
             repeat_x=1.0e-3,
             repeat_y=1.0e-3,
+            shift_odd_x=True,
             shape="rectangular",
         ),
         monitor,

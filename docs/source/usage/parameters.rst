@@ -177,6 +177,7 @@ This requires these additional parameters:
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical or rectangular)
 * ``<element_name>.repeat_x`` (``float``, in meters) horizontal period for repeated aperture masking (inactive by default)
 * ``<element_name>.repeat_y`` (``float``, in meters) vertical period for repeated aperture masking (inactive by default)
+* ``<element_name>.shift_odd_x`` (``bool``) for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
 * ``<element_name>.shape`` (``string``) shape of the aperture boundary: ``rectangular`` (default) or ``elliptical``
 * ``<element_name>.action`` (``string``) action of the aperture domain: ``transmit`` (default) or ``absorb``
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error

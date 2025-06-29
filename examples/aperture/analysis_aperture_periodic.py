@@ -84,6 +84,11 @@ repeat_y = 1.0e-3
 # kept particles, shifted to the fundamental domain
 xshifted = abs(final["position_x"]) + xmax
 yshifted = abs(final["position_y"]) + ymax
+
+dx = repeat_x * 0.5
+dy = repeat_y * 0.5
+xshifted[np.fmod(np.floor((yshifted + dy) / repeat_y), 2) == 1] += dx
+
 u = np.fmod(xshifted, repeat_x) - xmax
 v = np.fmod(yshifted, repeat_y) - ymax
 

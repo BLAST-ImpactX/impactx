@@ -16,7 +16,7 @@ from .plot import over_s_plot
 
 server, state, ctrl = setup_server()
 
-DEFAULT_HEADERS = ["s", "beta_x", "beta_y"]
+DEFAULT_HEADERS = ["beta_x", "beta_y"]
 UNSELECTABLE_HEADERS = ["step", "s"]
 
 state.selected_headers = DEFAULT_HEADERS
@@ -36,8 +36,8 @@ def on_over_s_possible_headers_updated(**_):
 @state.change("selected_headers")
 def on_header_selection_change(**_):
     """
-    Called whenever the user selects or deselects headers
-    for the 'Plot Over S' visualization.
+    Called whenever the selected headers
+    for the 'Plot Over S' visualization is changed.
     """
     over_s._update_table()
 

@@ -149,45 +149,25 @@ namespace impactx::elements
             v = v / m_aperture_y;
 
             // compare against the aperture boundary
-            switch (m_action)
+            bool inside_aperture = true;
+
+            switch (m_shape)
             {
-               case Action::transmit :  // default action
+                case Shape::rectangular:  // default
+                    inside_aperture = (amrex::Math::powi<2>(u) <= 1_prt && amrex::Math::powi<2>(v) <= 1_prt);
+                    break;
 
-                  switch (m_shape)
-                  {
-                      case Shape::rectangular :  // default shape
-                        if (amrex::Math::powi<2>(u)>1 || amrex::Math::powi<2>(v) > 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-
-                      case Shape::elliptical :
-                        if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) > 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-                  }
-                  break;
-
-               case Action::absorb :
-
-                  switch (m_shape)
-                  {
-                      case Shape::rectangular :  // default
-                        if (amrex::Math::powi<2>(u) < 1 && amrex::Math::powi<2>(v) < 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-
-                     case Shape::elliptical :
-                        if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) < 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-                  }
-                  break;
+                case Shape::elliptical:
+                    inside_aperture = (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) <= 1_prt);
+                    break;
             }
 
+            // For transmit (default): invalidate if outside aperture
+            // For absorb: invalidate if inside aperture
+            if ((m_action == Action::transmit && !inside_aperture) ||
+                (m_action == Action::absorb && inside_aperture)) {
+                amrex::ParticleIDWrapper{idcpu}.make_invalid();
+            }
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

@@ -1,0 +1,51 @@
+"""
+This file is part of ImpactX
+
+Copyright 2024 ImpactX contributors
+Authors: Parthib Roy, Axel Huebl
+License: BSD-3-Clause-LBNL
+"""
+
+import plotly.graph_objects as go
+
+from ... import setup_server
+
+server, state, ctrl = setup_server()
+
+
+def over_s_plot():
+    """
+    Generates a 1D line plot using Plotly based on selected headers and filtered data.
+    """
+
+    selected_headers = state.selected_headers
+    over_s_data = state.over_s_table_data
+
+    x_axis = selected_headers[0] if selected_headers else None
+    y_axis = selected_headers[1:] if len(selected_headers) > 1 else []
+
+    x = [row[x_axis] for row in over_s_data] if x_axis else []
+
+    figure_data = []
+    if y_axis:
+        for column in y_axis:
+            y = [row[column] for row in over_s_data]
+            trace = go.Scatter(
+                x=x,
+                y=y,
+                mode="lines+markers",
+                name=column,
+                line=dict(width=2),
+                marker=dict(size=8),
+            )
+            figure_data.append(trace)
+
+    return go.Figure(
+        data=figure_data,
+        layout=go.Layout(
+            title="Over-S Plot",
+            xaxis=dict(title="s"),
+            yaxis=dict(title="m"),
+            margin=dict(l=20, r=20, t=25, b=30),
+        ),
+    )

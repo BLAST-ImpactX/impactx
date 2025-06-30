@@ -1,7 +1,5 @@
-from .analyzeFunctions import AnalyzeFunctions
-from .plot_ParameterEvolutionOverS.overS import line_plot_1d
+from .over_s.utils import over_s
 
 __all__ = [
-    "AnalyzeFunctions",
-    "line_plot_1d",
+    "over_s",
 ]

@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from .. import setup_server
+from ..Analyze import over_s
 from ..Toolbar.sim_history.ui import SimulationHistory
 from . import SimulationHelper, SimulationProgress
 from .simulation import dashboard_sim_inputs
@@ -85,5 +86,8 @@ async def execute_impactx_sim() -> None:
         SimulationHelper.fail_simulation()
         return
 
+    # Update visualizations
     SimulationHelper.display_phase_space_plots()
+    over_s.update()
+
     SimulationHelper.complete_simulation()

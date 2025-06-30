@@ -67,7 +67,7 @@ class GeneralToolbar:
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
-            AnalyzeToolbar.plot_options()
+            AnalyzeToolbar.select_visualization()
             vuetify.VDivider(vertical=True, classes="mx-2")
             GeneralToolbar.force_quit_button()
 

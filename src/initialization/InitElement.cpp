@@ -431,7 +431,7 @@ element_name) );
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment(pp_element);
             auto b = detail::query_aperture(pp_element);
-            
+
             std::vector<amrex::ParticleReal> k_normal = {0.0};
             std::vector<amrex::ParticleReal> k_skew = {0.0};
             int units = 0;
@@ -442,7 +442,7 @@ element_name) );
             pp_element.queryAddWithParser("mapsteps", mapsteps);
             detail::queryAddResize(pp_element, "k_normal", k_normal);
             detail::queryAddResize(pp_element, "k_skew", k_skew);
-            
+
             m_lattice.emplace_back( ExactCFbend(ds, k_normal, k_skew, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
         } else if (element_type == "sbend_exact")
         {

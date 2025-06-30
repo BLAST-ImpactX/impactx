@@ -172,17 +172,17 @@ namespace impactx::elements
             amrex::ParticleReal* k_normal = m_k_normal_d_data;
 #else
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
-#endif      
+#endif
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
-            amrex::ParticleReal curvature = m_unit == 1 ? k_normal[1] / m_brho : k_normal[1]; 
-            m_B = k_normal[1] * m_brho; 
+            amrex::ParticleReal curvature = m_unit == 1 ? k_normal[1] / m_brho : k_normal[1];
+            m_B = k_normal[1] * m_brho;
             m_rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
             amrex::ParticleReal const bend_sign = m_ds * m_rc / std::abs(m_ds * m_rc);
             m_slice_phi = bend_sign * m_slice_ds / m_rc;
-         
+
             // trigonometric evaluations
             auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
             m_sin_phi = sin_phi;

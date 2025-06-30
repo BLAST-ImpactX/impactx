@@ -1054,6 +1054,75 @@ void init_elements(py::module& m)
     ;
     register_push(py_ExactMultipole);
 
+    py::class_<ExactCFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactCFbend(me, "ExactCFbend");
+    py_ExactCFbend
+        .def("__repr__",
+             [](ExactCFbend const & exact_cfbend) {
+                 return element_name(
+                     exact_cfbend,
+                     std::make_pair("unit", exact_cfbend.m_unit)
+                 );
+             }
+        )
+        .def("to_dict",
+             [](ExactCFbend const & exact_cfbend) {
+                 return element_dict(
+                     exact_cfbend,
+                     std::make_pair("unit", exact_cfbend.m_unit),
+                     std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
+                     std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
+                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                std::vector<amrex::ParticleReal>,
+                std::vector<amrex::ParticleReal>,
+                int,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::arg("ds"),
+             py::arg("k_normal"),
+             py::arg("k_skew"),
+             py::arg("unit") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
+             py::arg("int_order") = 2,
+             py::arg("mapsteps") = 5,
+             py::arg("nslice") = 1,
+             py::arg("name") = py::none(),
+             "A thick combined function bending magnet using the exact nonlinear Hamiltonian."
+        )
+        .def_property("unit",
+            [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_unit; },
+            [](ExactCFbend & exact_cfbend, int unit) { exact_cfbend.m_unit = unit; },
+            "unit specification for multipole strength"
+        )
+        .def_property("int_order",
+            [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_int_order; },
+            [](ExactCFbend & exact_cfbend, int int_order) { exact_cfbend.m_int_order = int_order; },
+            "order of symplectic integration used for particle push in applied fields"
+        )
+        .def_property("mapsteps",
+            [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_mapsteps; },
+            [](ExactCFbend & exact_cfbend, int mapsteps) { exact_cfbend.m_mapsteps = mapsteps; },
+            "number of integration steps per slice used for particle push in the applied fields"
+        )
+    ;
+    register_push(py_ExactCFbend);
+
     py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
     py_ExactQuad
         .def("__repr__",

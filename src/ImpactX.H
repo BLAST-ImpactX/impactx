@@ -21,6 +21,25 @@
 #include <memory>
 
 
+// Enzyme
+//   https://enzyme.mit.edu/getting_started/Examples/
+//   https://enzyme.mit.edu/getting_started/CallingConvention/#types
+//   https://enzyme.mit.edu/getting_started/CallingConvention/#result-only-duplicated-argument
+inline int enzyme_dup;
+inline int enzyme_dupnoneed;
+inline int enzyme_in;
+inline int enzyme_out;
+inline int enzyme_const;
+
+template <typename return_type, typename ... T>
+return_type __enzyme_fwddiff (void*, T ...);
+
+template <typename return_type, typename ... T>
+return_type __enzyme_autodiff (void*, T ...);
+//
+// End Enzyme
+
+
 namespace impactx
 {
     /** An ImpactX simulation
@@ -161,15 +180,10 @@ namespace impactx
         bool m_grids_initialized = false;
     };
 
-    extern amrex::ParticleReal __enzyme_autodiff(void*, amrex::ParticleReal);
-
     amrex::ParticleReal
-    evaluate_lattice (amrex::ParticleReal q1_k);  //, amrex::ParticleReal q2_k);
+    evaluate_lattice (ImpactX *, amrex::ParticleReal q1_k);  //, amrex::ParticleReal q2_k);
 
     void my_run ();
-
-    // global var until functors work better
-    static ImpactX* active_sim = nullptr;
 
 } // namespace impactx
 

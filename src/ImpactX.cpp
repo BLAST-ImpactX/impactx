@@ -11,9 +11,9 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "particles/elements/All.H"
+#include "elements/All.H"
 #include "diagnostics/DiagnosticOutput.H"
-#include "particles/diagnostics/ReducedBeamCharacteristics.H"
+#include "diagnostics/ReducedBeamCharacteristics.H"
 #include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>
@@ -152,30 +152,31 @@ namespace impactx {
     }
 
     amrex::ParticleReal
-    evaluate_lattice (amrex::ParticleReal q1_k)  //, amrex::ParticleReal q2_k)
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal q1_k)  //, amrex::ParticleReal q2_k)
     {
-        amrex::ParticleReal q2_k = 3.0;
+        amrex::ParticleReal q2_k = 3.5;
 
         // ns = 10  // TODO: number of slices per ds in the element
 
-        auto dr1 = Drift{2.7};
-        auto q1 = Quad{0.1, q1_k};
-        auto dr2 = Drift{1.4};
-        auto q2 = Quad{0.2, q2_k};
-        auto dr3 = Drift{1.4};
-        auto q3 = Quad{0.1, q1_k};
-        auto dr4 = Drift{2.7};
+        auto dr1 = elements::Drift{2.7};
+        auto q1 = elements::Quad{0.1, q1_k};
+        auto dr2 = elements::Drift{1.4};
+        auto q2 = elements::Quad{0.2, q2_k};
+        auto dr3 = elements::Drift{1.4};
+        auto q3 = elements::Quad{0.1, q1_k};
+        auto dr4 = elements::Drift{2.7};
+
         /*
         // quadrupole triplet
         // https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
         active_sim->m_lattice = {
-            Drift{2.7},
-            Quad{0.1, q1_k},
-            Drift{1.4},
-            Quad{0.2, q2_k},
-            Drift{1.4},
-            Quad{0.1, q1_k},
-            Drift{2.7}
+            elements::Drift{2.7},
+            elements::Quad{0.1, q1_k},
+            elements::Drift{1.4},
+            elements::Quad{0.2, q2_k},
+            elements::Drift{1.4},
+            elements::Quad{0.1, q1_k},
+            elements::Drift{2.7}
         };
 
 
@@ -184,22 +185,68 @@ namespace impactx {
         */
 
         //active_sim->evolve();
-        auto & pc = *active_sim->amr_data->m_particle_container;
+        //auto & pc = *active_sim->amr_data->m_particle_container;
+        //dr1(pc, 0, 0);
 
-        dr1(pc, 0, 0);
+        // envelope mode
+        //std::cout << "before ref\n";
+        auto ref = sim->amr_data->track_envelope.m_ref.value();
+        //std::cout << "before env\n";
+        auto env = sim->amr_data->track_envelope.m_env.value();
+        //std::cout << "before cm\n";
+        auto cm = env.m_env;
+
+        // push reference particle in global coordinates
+        dr1(ref);
+        // push Covariance Matrix in external fields
+        dr1(cm, ref);
+
+        q1(ref);
+        q1(cm, ref);
+
+        dr2(ref);
+        dr2(cm, ref);
+
+        q2(ref);
+        q2(cm, ref);
+
+        dr3(ref);
+        dr3(cm, ref);
+
+        q3(ref);
+        q3(cm, ref);
+
+        dr4(ref);
+        dr4(cm, ref);
 
         /*
+        // particles
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
                 diagnostics::reduced_beam_characteristics(*active_sim->amr_data->m_particle_container);
 
         return rbc.at("alpha_x");  // TOOD: alpha_x, alpha_y, beta_x, beta_y
         */
-        return 0.0;
+
+        // envelope
+        /*
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
+            diagnostics::reduced_beam_characteristics(cm, ref);
+        return rbc.at("alpha_x");
+        */
+        return diagnostics::reduced_beam_characteristics(cm, ref);
+
+
+        // not alpha_x but instead a simple x_ms * y_ms * t_ms
+        //return cm(1,1) * cm(3,3) * cm(5,5);
     }
 
     void my_run ()
     {
         ImpactX sim;
+
+        amrex::ParmParse pp_algo("algo");
+        std::string track = "envelope";
+        pp_algo.add("track", track);
 
         sim.init_grids();
 
@@ -212,15 +259,38 @@ namespace impactx {
         // initial quad strengths
         amrex::ParticleReal q1_k = -3.0;
         //amrex::ParticleReal q2_k = 3.0;
+        amrex::Print() << "q1_k = " << q1_k << std::endl;
 
-        active_sim = &sim;
+        // note: seeded direction, this is AD and NOT a finite difference
+        amrex::ParticleReal dq1_k = 1.0;
 
+#define MYMODE 1
+
+#if MYMODE == 0
         // non-differentiable run:
-        amrex::ParticleReal const alpha_x = evaluate_lattice(q1_k);
+        amrex::ParticleReal ddx = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        amrex::ParticleReal const alpha_x = evaluate_lattice(&sim, q1_k);
         amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
 
-        // differentiable run:
-        double ddx = __enzyme_autodiff((void*) evaluate_lattice, q1_k);
+#elif MYMODE == 1
+        // forward differentiable run
+        ///*
+        amrex::ParticleReal ddx = __enzyme_fwddiff<amrex::ParticleReal>(
+            (void*)evaluate_lattice,
+            enzyme_const, &sim,
+            enzyme_dup, q1_k, dq1_k
+        );
+        //*/
+
+#elif MYMODE == 2
+        // reverse differentiable run:
+        amrex::ParticleReal ddx = __enzyme_autodiff<amrex::ParticleReal>(
+            (void*) evaluate_lattice,
+            enzyme_const, &sim,
+            enzyme_dup, q1_k, dq1_k
+        );
+#endif
+
         amrex::Print() << "ddx = " << ddx << std::endl;
 
         sim.finalize();

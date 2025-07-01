@@ -198,8 +198,8 @@ namespace impactx::diagnostics
         prepare_header(file_handler, OutputType::PrintReducedBeamCharacteristics, append);
 
         amrex::ParticleReal const s = ref_part.s;
-        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
-            diagnostics::reduced_beam_characteristics(cm, ref_part);
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc; //=
+            //diagnostics::reduced_beam_characteristics(cm, ref_part);
 
         write_rbc(file_handler, rbc, s, step);
     }

@@ -51,8 +51,8 @@ export CC="clang-16"
 export CXX="clang++-16"
 
 # one TU: Clang Plugin
-#   AMReX globals: https://enzyme.mit.edu/getting_started/UsingEnzyme/#assume-inactivity-of-unmarked-globals
-export CXXFLAGS="-fplugin=$HOME/src/Enzyme/build/Enzyme/ClangEnzyme-16.so -mllvm -enzyme-globals-default-inactive=1"
+#   Extra Enzyme options, e.g., print https://enzyme.mit.edu/getting_started/UsingEnzyme/#semantic-options
+export CXXFLAGS="-fplugin=$HOME/src/Enzyme/build/Enzyme/ClangEnzyme-16.so -mllvm -enzyme-print -mllvm -enzyme-print"
 ```
 
 With the active developer env above, inside the ImpactX source dir:
@@ -84,8 +84,8 @@ export CXX="clang++-16"
 
 # many TU: LDD Plugin
 #   https://github.com/EnzymeAD/Enzyme/blob/main/enzyme/Enzyme/CMakeLists.txt
-#   AMReX globals: https://enzyme.mit.edu/getting_started/UsingEnzyme/#assume-inactivity-of-unmarked-globals
-export CXXFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto"  # -mllvm -enzyme-globals-default-inactive=1
+#   https://enzyme.mit.edu/getting_started/UsingEnzyme/#semantic-options
+export CXXFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto"  # -mllvm -enzyme-...
 export LDFLAGS="-fuse-ld=/usr/lib/llvm-16/bin/lld-link -flto -Wl,-mllvm -Wl,-load=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so -Wl,--load-pass-plugin=$HOME/src/Enzyme/build/Enzyme/LLDEnzyme-16.so"
 ```
 

@@ -422,16 +422,17 @@ namespace impactx::diagnostics
         return data;
     }
 
-    std::unordered_map<std::string, amrex::ParticleReal>
+    //std::unordered_map<std::string, amrex::ParticleReal>
+    amrex::ParticleReal
     reduced_beam_characteristics (Map6x6 const & cm, RefPart const & ref_part)
     {
-        BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(cm)");
+        //BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(cm)");
 
         // reference particle relativistic beta*gamma
-        amrex::ParticleReal const bg = ref_part.beta_gamma();
-        amrex::ParticleReal const bg2 = bg*bg;
+        //amrex::ParticleReal const bg = ref_part.beta_gamma();
+        //amrex::ParticleReal const bg2 = bg*bg;
 
-       // mean square and correlation values
+        // mean square and correlation values
         amrex::ParticleReal const x_ms   = cm(1,1);
         amrex::ParticleReal const y_ms   = cm(3,3);
         amrex::ParticleReal const t_ms   = cm(5,5);
@@ -445,6 +446,7 @@ namespace impactx::diagnostics
         amrex::ParticleReal const pxpt   = cm(2,6);
         amrex::ParticleReal const ypt    = cm(3,6);
         amrex::ParticleReal const pypt   = cm(4,6);
+        /*
         amrex::ParticleReal const xy     = cm(1,3);
         amrex::ParticleReal const xpy    = cm(1,4);
         amrex::ParticleReal const xt     = cm(1,5);
@@ -453,20 +455,21 @@ namespace impactx::diagnostics
         amrex::ParticleReal const pxt    = cm(2,5);
         amrex::ParticleReal const yt     = cm(3,5);
         amrex::ParticleReal const pyt    = cm(4,5);
+        */
         // standard deviations of positions
-        amrex::ParticleReal const sig_x = std::sqrt(x_ms);
-        amrex::ParticleReal const sig_y = std::sqrt(y_ms);
-        amrex::ParticleReal const sig_t = std::sqrt(t_ms);
+        //amrex::ParticleReal const sig_x = std::sqrt(x_ms);
+        //amrex::ParticleReal const sig_y = std::sqrt(y_ms);
+        //amrex::ParticleReal const sig_t = std::sqrt(t_ms);
         // standard deviations of momenta
-        amrex::ParticleReal const sig_px = std::sqrt(px_ms);
-        amrex::ParticleReal const sig_py = std::sqrt(py_ms);
-        amrex::ParticleReal const sig_pt = std::sqrt(pt_ms);
+        //amrex::ParticleReal const sig_px = std::sqrt(px_ms);
+        //amrex::ParticleReal const sig_py = std::sqrt(py_ms);
+        //amrex::ParticleReal const sig_pt = std::sqrt(pt_ms);
         // RMS emittances
-        amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
-        amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
+        //amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
+        //amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
         amrex::ParticleReal const e2_t = t_ms*pt_ms-tpt*tpt;
-        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
-        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
+        //amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
+        //amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
         amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
         // Dispersion and dispersive beam moments
         amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
@@ -491,10 +494,11 @@ namespace impactx::diagnostics
         amrex::ParticleReal const alpha_t = - tpt / emittance_t;
 
         // Calculate normalized emittances
-        amrex::ParticleReal emittance_xn = emittance_x * bg;
-        amrex::ParticleReal emittance_yn = emittance_y * bg;
-        amrex::ParticleReal emittance_tn = emittance_t * bg;
+        //amrex::ParticleReal emittance_xn = emittance_x * bg;
+        //amrex::ParticleReal emittance_yn = emittance_y * bg;
+        //amrex::ParticleReal emittance_tn = emittance_t * bg;
 
+        /*
         // Determine whether to calculate eigenemittances, and initialize
         amrex::ParmParse pp_diag("diag");
         bool compute_eigenemittances = false;
@@ -548,10 +552,12 @@ namespace impactx::diagnostics
            emittance_2 = std::get<1>(emittances);
            emittance_3 = std::get<2>(emittances);
         }
+        */
 
-        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        //auto const nan = 0.0; // std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
+        /*
         data["x_mean"] = nan;
         data["x_min"] = nan;
         data["x_max"] = nan;
@@ -579,12 +585,14 @@ namespace impactx::diagnostics
         data["emittance_x"] = emittance_x;
         data["emittance_y"] = emittance_y;
         data["emittance_t"] = emittance_t;
+        */
         data["alpha_x"] = alpha_x;
         data["alpha_y"] = alpha_y;
         data["alpha_t"] = alpha_t;
         data["beta_x"] = beta_x;
         data["beta_y"] = beta_y;
         data["beta_t"] = beta_t;
+        /*
         data["dispersion_x"] = dispersion_x;
         data["dispersion_px"] = dispersion_px;
         data["dispersion_y"] = dispersion_y;
@@ -592,14 +600,18 @@ namespace impactx::diagnostics
         data["emittance_xn"] = emittance_xn;
         data["emittance_yn"] = emittance_yn;
         data["emittance_tn"] = emittance_tn;
+        */
+        /*
         if (compute_eigenemittances) {
            data["emittance_1"] = emittance_1;
            data["emittance_2"] = emittance_2;
            data["emittance_3"] = emittance_3;
         }
-        data["charge_C"] = nan;  // TODO: with space charge
+        */
+        //data["charge_C"] = nan;  // TODO: with space charge
 
-        return data;
+        return beta_x;
+        //return alpha_x;
     }
 
 } // namespace impactx::diagnostics

@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 import sys
+
 from .start import DashboardApp
 
 if __name__ == "__main__":

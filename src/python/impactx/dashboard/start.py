@@ -17,34 +17,41 @@ server, state, ctrl = setup_server()
 # Core setup logic
 # -----------------------------------------------------------------------------
 
+
 def initialize_states():
     """
     Initializes all states with default values.
-    """    
+    """
     for name, value in DashboardDefaults.DEFAULT_VALUES.items():
         setattr(state, name, value)
+
 
 def setup_dashboard():
     initialize_states()
     load_my_js(server)
     return application()
 
+
 # -----------------------------------------------------------------------------
 # Application classes
 # -----------------------------------------------------------------------------
+
 
 class DashboardApp:
     """
     Full ImpactX Dashboard app.
     """
+
     def start(self):
         setup_dashboard()
         server.start()
         return 0
 
+
 class JupyterApp:
     """
     Jupyter-compatible version of the dashboard.
     """
+
     def __init__(self):
         self.ui = setup_dashboard()

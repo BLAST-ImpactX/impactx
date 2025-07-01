@@ -67,8 +67,8 @@ class HeaderSelectorComponents:
         )
 
     def reset(self) -> vuetify.VBtn:
-        """ 
-        Creates a reset button for the header selection. 
+        """
+        Creates a reset button for the header selection.
         Resets the selected headers to the default state.
         """
 
@@ -79,7 +79,7 @@ class HeaderSelectorComponents:
         )
 
     def _status_icon(self, v_model_name: str) -> vuetify.VIcon:
-        """ Displays an icon indicating the status of the section."""
+        """Displays an icon indicating the status of the section."""
 
         return vuetify.VIcon(
             "mdi-checkbox-blank-circle",
@@ -89,7 +89,7 @@ class HeaderSelectorComponents:
         )
 
     def _count_chip(self, v_model_name: str) -> vuetify.VChip:
-        """ Displays the count of items in the section. """
+        """Displays the count of items in the section."""
 
         return vuetify.VChip(
             f"{{{{ {v_model_name}.length }}}}",

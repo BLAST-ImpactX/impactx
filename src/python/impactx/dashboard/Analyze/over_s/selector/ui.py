@@ -6,9 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .components import components
-from ..utils import DEFAULT_HEADERS, UNSELECTABLE_HEADERS
 from .... import html, setup_server, vuetify
+from ..utils import DEFAULT_HEADERS, UNSELECTABLE_HEADERS
+from .components import components
 
 server, state, ctrl = setup_server()
 
@@ -45,7 +45,9 @@ def _sync_headers():
     
     selectable_keys = [item["key"] for item in state.selectable_headers or [] if item]
 
-    state.available_headers = [h for h in selectable_keys if h not in state.selected_headers]
+    state.available_headers = [
+        h for h in selectable_keys if h not in state.selected_headers
+    ]
     state.filtered_available_headers = _filter_headers_by_query()
     state.dirty("available_headers", "filtered_available_headers")
 
@@ -67,13 +69,16 @@ def reset_selected_headers():
     """
     state.selected_headers = list(DEFAULT_HEADERS)
 
+
 @ctrl.add("add_selected_header")
 def add_selected_header(item):
     state.selected_headers = state.selected_headers + [item]
 
-@ctrl.add("remove_selected_header") 
+
+@ctrl.add("remove_selected_header")
 def remove_selected_header(item):
     state.selected_headers = [h for h in state.selected_headers if h != item]
+
 
 @state.change("over_s_header_search")
 def on_over_s_header_search_change(**kwargs):
@@ -88,29 +93,32 @@ def update_empty_states(**kwargs):
     state.no_available_items = not has_search and not state.filtered_available_headers
     state.dirty("no_results", "no_available_items")
 
-class OverSHeaderSelector:
 
+class OverSHeaderSelector:
     def selector(self):
         """
         Displays the selector for header selection.
         """
 
         with vuetify.VCard(
-            elevation=2, 
+            elevation=2,
             rounded="lg",
             classes="d-flex flex-column",
             style="height: 87vh;",
         ):
             with vuetify.VCardTitle(classes="pa- d-flex"):
-                html.Span("Select headers to plot", classes="text-subtitle-1 font-weight-bold")
+                html.Span(
+                    "Select headers to plot", classes="text-subtitle-1 font-weight-bold"
+                )
                 vuetify.VSpacer()
                 components.reset()
             vuetify.VDivider()
-            
+
             with html.Div(classes="flex-grow-1 overflow-hidden"):
                 with vuetify.VRow(no_gutters=True, classes="fill-height"):
                     components.selected_headers_column()
                     vuetify.VDivider(vertical=True)
                     components.available_headers_column()
+
 
 over_s_selector = OverSHeaderSelector()

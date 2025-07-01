@@ -8,9 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import plotly
 
-from .over_s.selector import over_s_selector
 from .. import setup_server, vuetify
 from ..Input.components.navigation import NavigationComponents
+from .over_s.selector import over_s_selector
 
 server, state, ctrl = setup_server()
 

@@ -24,7 +24,7 @@ def _filter_headers_by_query() -> list[str]:
     """
     Filters the available headers based on the search query.
     """
-    
+
     headers = state.available_headers
     query = state.over_s_header_search
 
@@ -38,11 +38,11 @@ def _filter_headers_by_query() -> list[str]:
 def _sync_headers():
     """
     Ensures that the selected headers are in sync with the available headers.
-    
+
     The available headers are those that are selectable
     and not already selected by the user.
     """
-    
+
     selectable_keys = [item["key"] for item in state.selectable_headers or [] if item]
 
     state.available_headers = [

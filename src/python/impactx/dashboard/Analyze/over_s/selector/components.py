@@ -145,7 +145,7 @@ class HeaderSelectorComponents:
 
         with vuetify.VCol(cols=6, classes="d-flex flex-column h-100"):
             components.section_header(
-                name="Available", v_model_name="filtered_available_headers"
+                name="Available", v_model_name="available_headers_on_ui"
             )
             vuetify.VDivider()
             with html.Div(classes="pa-2"):
@@ -155,8 +155,8 @@ class HeaderSelectorComponents:
                 classes="pa-2 flex-grow-1", style="min-height: 0; overflow-y: auto;"
             ):
                 with vuetify.Template(
-                    v_if="filtered_available_headers?.length > 0",
-                    v_for="item in filtered_available_headers",
+                    v_if="available_headers_on_ui?.length > 0",
+                    v_for="item in available_headers_on_ui",
                 ):
                     components.header_chip("item", "available")
 

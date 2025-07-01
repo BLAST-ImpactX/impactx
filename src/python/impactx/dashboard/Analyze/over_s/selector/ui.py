@@ -14,7 +14,7 @@ server, state, ctrl = setup_server()
 
 state.over_s_header_search = ""
 state.available_headers = []
-state.filtered_available_headers = []
+state.available_headers_on_ui = []
 state.unselectable_headers = UNSELECTABLE_HEADERS
 state.no_results = False
 state.no_available_items = False
@@ -31,7 +31,7 @@ def _filter_headers_by_query() -> list[str]:
     query = (query or "").lower()
     if query:
         return [header for header in headers if query in header.lower()]
-    state.dirty("filtered_available_headers")
+    state.dirty("available_headers_on_ui")
     return headers
 
 
@@ -48,8 +48,8 @@ def _sync_headers():
     state.available_headers = [
         h for h in selectable_keys if h not in state.selected_headers
     ]
-    state.filtered_available_headers = _filter_headers_by_query()
-    state.dirty("available_headers", "filtered_available_headers")
+    state.available_headers_on_ui = _filter_headers_by_query()
+    state.dirty("available_headers")
 
 
 @state.change("selected_headers", "selectable_headers")
@@ -82,15 +82,14 @@ def remove_selected_header(item):
 
 @state.change("over_s_header_search")
 def on_over_s_header_search_change(**kwargs):
-    state.filtered_available_headers = _filter_headers_by_query()
-    state.dirty("filtered_available_headers")
+    state.available_headers_on_ui = _filter_headers_by_query()
 
 
-@state.change("filtered_available_headers", "over_s_header_search")
+@state.change("available_headers_on_ui", "over_s_header_search")
 def update_empty_states(**kwargs):
     has_search = bool(state.over_s_header_search)
-    state.no_results = has_search and not state.filtered_available_headers
-    state.no_available_items = not has_search and not state.filtered_available_headers
+    state.no_results = has_search and not state.available_headers_on_ui
+    state.no_available_items = not has_search and not state.available_headers_on_ui
     state.dirty("no_results", "no_available_items")
 
 

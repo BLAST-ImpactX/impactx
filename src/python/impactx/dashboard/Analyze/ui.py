@@ -10,6 +10,7 @@ from trame.widgets import plotly
 
 from .. import setup_server, vuetify
 from ..Input.components.navigation import NavigationComponents
+from .over_s.selector import over_s_selector
 
 server, state, ctrl = setup_server()
 
@@ -55,16 +56,8 @@ class AnalyzeSimulation:
                                         items=("over_s_table_data", []),
                                         density="compact",
                                     )
-                with vuetify.VCol(cols=3):
-                    with vuetify.VCard(classes="pa-4 d-flex flex-column"):
-                        vuetify.VSelect(
-                            v_model=("selected_headers",),
-                            items=("selectable_headers",),
-                            label="Select data to view",
-                            multiple=True,
-                            density="comfortable",
-                            variant="outlined",
-                        )
+                with vuetify.VCol(cols=3, classes="fill-height"):
+                    over_s_selector.selector()
 
     @staticmethod
     def phase_space():

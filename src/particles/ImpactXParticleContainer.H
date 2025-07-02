@@ -24,6 +24,7 @@
 #include <AMReX_IntVect.H>
 #include <AMReX_Vector.H>
 
+#include <list>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -281,6 +282,21 @@ namespace impactx
         void
         SetCoordSystem (CoordSystem coord_system);
 
+        /** In situ record and store the beam history for every simulation step */
+        bool enable_beam_history = false;
+
+        /** Record the reduced beam diagnostics */
+        void
+        RecordRBC ();
+
+        /** Get the history of reduced beam diagnostics */
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> >
+        GetRBCHistory () { return m_rbc_history; }
+
+        /** Reset the history of the reduced beam diagnostics */
+        void
+        ResetRBCHistory () { m_rbc_history.clear(); }
+
       private:
 
         //! the reference particle for the beam in the particle container
@@ -294,6 +310,9 @@ namespace impactx
 
         //! the current coordinate system of particles in this container
         CoordSystem m_coordsystem = CoordSystem::s;
+
+        //! history of the reduced beam diagnostics over s
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_rbc_history;
 
     }; // ImpactXParticleContainer
 

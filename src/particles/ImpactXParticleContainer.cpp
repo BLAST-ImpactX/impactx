@@ -10,6 +10,7 @@
 #include "ImpactXParticleContainer.H"
 
 #include "initialization/AmrCoreData.H"
+#include "diagnostics/ReducedBeamCharacteristics.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
@@ -355,5 +356,17 @@ namespace impactx
     ImpactXParticleContainer::SetCoordSystem (CoordSystem coord_system)
     {
         m_coordsystem = coord_system;
+    }
+
+    void
+    ImpactXParticleContainer::RecordRBC ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::RecordRBC");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        m_rbc_history.push_back(rbc);
     }
 } // namespace impactx

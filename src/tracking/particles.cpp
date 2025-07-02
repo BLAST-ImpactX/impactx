@@ -47,12 +47,18 @@ namespace impactx
         // check typos in inputs after step 1
         bool early_params_checked = false;
 
+        // shortcuts
+        auto & pc = amr_data->track_particles.m_particle_container;
+
+        // diags
         amrex::ParmParse pp_diag("diag");
         bool diag_enable = true;
         pp_diag.queryAdd("enable", diag_enable);
         if (verbose > 0) {
             amrex::Print() << " Diagnostics: " << diag_enable << "\n";
         }
+
+        pc->ResetRBCHistory();
 
         if (diag_enable)
         {
@@ -140,6 +146,10 @@ namespace impactx
                     // slice-step diagnostics
                     bool slice_step_diagnostics = false;
                     pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
+
+                    if (amr_data->track_particles.m_particle_container->enable_beam_history) {
+                        amr_data->track_particles.m_particle_container->RecordRBC();
+                    }
 
                     if (diag_enable && slice_step_diagnostics) {
                         // print slice step reference particle to file

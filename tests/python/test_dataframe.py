@@ -24,7 +24,9 @@ def test_df_pandas(save_png=True):
     """
     sim = ImpactX()
 
+    sim.verbose = 0  # quiet
     sim.particle_shape = 2
+    sim.diagnostics = False  # no files
     sim.space_charge = False
     sim.slice_step_diagnostics = False
     sim.init_grids()
@@ -55,6 +57,9 @@ def test_df_pandas(save_png=True):
 
     assert pc.total_number_of_particles() == npart
 
+    # record purely in memory
+    sim.particle_container().enable_beam_history = True
+
     # init accelerator lattice
     fodo = [
         elements.Drift(name="d1", ds=0.25),
@@ -67,6 +72,17 @@ def test_df_pandas(save_png=True):
 
     # simulate
     sim.track_particles()
+
+    # look at beam history (reduced beam diagnostics)
+    beam_history = sim.particle_container().beam_history()
+
+    if amr.ParallelDescriptor.IOProcessor():
+        print(beam_history)
+        plt.plot(beam_history.s, beam_history.beta_x)
+        if save_png:
+            plt.savefig("beam_history.png")
+        else:
+            plt.show()
 
     # check local particles
     df = pc.to_df(local=True)

@@ -117,6 +117,23 @@ void init_impactxparticlecontainer(py::module& m)
              },
              "Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters."
         )
+        .def("beam_history_list",
+             [](ImpactXParticleContainer & pc) {
+                 return pc.GetRBCHistory();
+             },
+             "Return the history of the beam as calculated by the reduced beam characteristics on every step."
+        )
+        .def("reset_beam_history",
+             [](ImpactXParticleContainer & pc) {
+                 return pc.ResetRBCHistory();
+             },
+             "Reset the history of the reduced beam diagnostics with the current global simulation step."
+        )
+        .def_property("enable_beam_history",
+            [](ImpactXParticleContainer & pc){ return pc.enable_beam_history; },
+            [](ImpactXParticleContainer & pc, bool record){ pc.enable_beam_history = record; },
+            "In situ record and store the beam history for every simulation step."
+        )
 
         // TODO: cleverly pass the list of rho multifabs as references
         /*

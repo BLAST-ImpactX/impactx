@@ -390,6 +390,17 @@ Particles
       :return: beam properties with string keywords
       :rtype: dict
 
+   .. py::property:: enable_beam_history
+
+      In situ record and store the beam history for every simulation step (default: ``False``).
+
+   .. py:method:: beam_history()
+
+      Return the history of the beam as calculated by the reduced beam characteristics on every step.
+
+      :return: Pandas Dataframe of beam properties, including the global reference position s
+      :rtype: Pandas Dataframe
+
    .. py:method:: min_and_max_positions()
 
       Compute the min and max of the particle position in each dimension.

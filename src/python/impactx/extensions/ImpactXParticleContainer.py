@@ -287,7 +287,17 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     return fig
 
 
+def ix_beam_history(self):
+    """
+    Return the history of the beam as calculated by the reduced beam characteristics on every step.
+    """
+    import pandas as pd
+
+    return pd.DataFrame(self.beam_history_list())
+
+
 def register_ImpactXParticleContainer_extension(ixpc):
     """ImpactXParticleContainer helper methods"""
     # register member functions for ImpactXParticleContainer
     ixpc.plot_phasespace = ix_pc_plot_mpl_phasespace
+    ixpc.beam_history = ix_beam_history

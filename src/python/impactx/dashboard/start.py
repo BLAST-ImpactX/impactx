@@ -13,23 +13,45 @@ from .Toolbar.sim_history.ui import load_my_js
 
 server, state, ctrl = setup_server()
 
+# -----------------------------------------------------------------------------
+# Core setup logic
+# -----------------------------------------------------------------------------
+
 
 def initialize_states():
     """
-    Initializes all dashboard state values upon call.
-
-    The issue as of now is it initialize all at once instead of by section.
+    Initializes all states with default values.
     """
     for name, value in DashboardDefaults.DEFAULT_VALUES.items():
         setattr(state, name, value)
 
 
-def start_dashboard():
-    """
-    Launches Trame application server
-    """
+def setup_dashboard():
     initialize_states()
     load_my_js(server)
-    application()
-    server.start()
-    return 0
+    return application()
+
+
+# -----------------------------------------------------------------------------
+# Application classes
+# -----------------------------------------------------------------------------
+
+
+class DashboardApp:
+    """
+    Full ImpactX Dashboard app.
+    """
+
+    def start(self):
+        setup_dashboard()
+        server.start()
+        return 0
+
+
+class JupyterApp:
+    """
+    Jupyter-compatible version of the dashboard.
+    """
+
+    def __init__(self):
+        self.ui = setup_dashboard()

@@ -3,7 +3,7 @@ from trame.widgets import vuetify3 as vuetify
 
 # isort: off
 
-from .trame_setup import setup_server
+from .server import setup_server
 from .Toolbar.general import GeneralToolbar
 
 from .Analyze.ui import AnalyzeSimulation
@@ -15,7 +15,7 @@ from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
 from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
 
-from .jupyterApplication import JupyterMainApplication as JupyterApp
+from .start import JupyterApp
 # isort: on
 
 

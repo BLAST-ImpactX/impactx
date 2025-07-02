@@ -522,6 +522,16 @@ class ImpactXParticleContainer(
         :param qm: charge over mass in 1/eV
         :param bchchg: total charge within a bunch in C
         """
+    def beam_history(self):
+        """
+
+        Return the history of the beam as calculated by the reduced beam characteristics on every step.
+
+        """
+    def beam_history_list(self) -> list[dict[str, float]]:
+        """
+        Return the history of the beam as calculated by the reduced beam characteristics on every step.
+        """
     def mean_and_std_positions(self) -> tuple[float, float, float, float, float, float]:
         """
         Compute the mean and std of the particle position in each dimension.
@@ -562,6 +572,10 @@ class ImpactXParticleContainer(
         """
         Access the reference particle.
         """
+    def reset_beam_history(self) -> None:
+        """
+        Reset the history of the reduced beam diagnostics with the current global simulation step.
+        """
     def set_ref_particle(self, refpart: RefPart) -> None:
         """
         Set reference particle attributes.
@@ -571,6 +585,13 @@ class ImpactXParticleContainer(
         """
         Get the current coordinate system of particles in this container
         """
+    @property
+    def enable_beam_history(self) -> bool:
+        """
+        In situ record and store the beam history for every simulation step.
+        """
+    @enable_beam_history.setter
+    def enable_beam_history(self, arg1: bool) -> None: ...
 
 class RefPart:
     @staticmethod

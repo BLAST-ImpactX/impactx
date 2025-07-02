@@ -9,7 +9,18 @@ License: BSD-3-Clause-LBNL
 
 from __future__ import annotations
 
-__all__ = ["ix_pc_plot_mpl_phasespace", "register_ImpactXParticleContainer_extension"]
+__all__ = [
+    "ix_beam_history",
+    "ix_pc_plot_mpl_phasespace",
+    "register_ImpactXParticleContainer_extension",
+]
+
+def ix_beam_history(self):
+    """
+
+    Return the history of the beam as calculated by the reduced beam characteristics on every step.
+
+    """
 
 def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     """

@@ -102,7 +102,6 @@ namespace impactx::elements
 	    // where k[1/m^2] is in the usual MADX convention
 	    if (m_kx > 0)
 	    {
-	      std::cout << "kx+" << std::endl;
 	      auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);
 	      m_cos_kxds = cos_kxds;
 	      m_const_x  = -m_kx * sin_kxds;

@@ -49,7 +49,7 @@ namespace impactx::elements
          * @param ds Segment length in m.
          * @param k  plasma lens focusing strength in m^(-2)
          *           = (azimuthal field gradient in T/m) / (rigidity in T-m)
-         *        OR azimuthal magnetic field gradient in T/m (k > 0)
+         *        OR azimuthal magnetic field gradient in T/m
          * @param unit  Unit specification
          *           unit = 0 focusing strength in m^(-2)
          *           unit = 1 focusing strength in T/m
@@ -158,15 +158,30 @@ namespace impactx::elements
             amrex::ParticleReal p1 = px;
             amrex::ParticleReal p2 = py;
 
-            auto const [sin_ods, cos_ods] = amrex::Math::sincos(omega*m_slice_ds);
+            if (m_g >= 0)
+            {
+                auto const [sin_ods, cos_ods] = amrex::Math::sincos(omega*m_slice_ds);
 
-            // advance transverse position and momentum (focusing)
-            xout = cos_ods * x + sin_ods / (omega * delta1) * px;
-            pxout = -omega * delta1 * sin_ods * x + cos_ods * px;
+                // advance transverse position and momentum (focusing)
+                xout = cos_ods * x + sin_ods / (omega * delta1) * px;
+                pxout = -omega * delta1 * sin_ods * x + cos_ods * px;
 
-            yout = cos_ods * y + sin_ods / (omega * delta1) * py;
-            pyout = -omega * delta1 * sin_ods * y + cos_ods * py;
+                yout = cos_ods * y + sin_ods / (omega * delta1) * py;
+                pyout = -omega * delta1 * sin_ods * y + cos_ods * py;
 
+            }
+            else //m_g < 0
+            {
+                auto const sinh_ods = std::sinh(omega*m_slice_ds);
+                auto const cosh_ods = std::cosh(omega*m_slice_ds);
+
+                // advance transverse position and momentum (defocusing)
+                xout = cosh_ods * x + sinh_ods / (omega * delta1) * px;
+                pxout = +omega * delta1 * sinh_ods * x + cosh_ods * px;
+
+                yout = cosh_ods * y + sinh_ods / (omega * delta1) * py;
+                pyout = +omega * delta1 * sinh_ods * y + cosh_ods * py;
+            }
             // advance longitudinal position and momentum
 
             // the corresponding symplectic update to t

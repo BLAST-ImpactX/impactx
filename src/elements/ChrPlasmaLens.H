@@ -247,7 +247,7 @@ namespace impactx::elements
             refpart.t = t - step*pt;
 
             // advance integrated path length
-            refpart.s = s + m_slice_ds;
+            refpart.s = s + slice_ds;
         }
 
         /** This pushes the covariance matrix. */

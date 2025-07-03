@@ -174,19 +174,11 @@ namespace impactx::elements
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
 #endif
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
-            amrex::ParticleReal curvature = m_unit == 1 ? k_normal[1] / m_brho : k_normal[1];
-            m_B = k_normal[1] * m_brho;
+            amrex::ParticleReal curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
             m_rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
-            amrex::ParticleReal const bend_sign = m_ds * m_rc / std::abs(m_ds * m_rc);
-            m_slice_phi = bend_sign * m_slice_ds / m_rc;
-
-            // trigonometric evaluations
-            auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
-            m_sin_phi = sin_phi;
-            m_cos_phi = cos_phi;
 
         }
 
@@ -290,7 +282,7 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             // treat the special case of zero field
-            if (m_B==0_prt) {
+            if (m_rc==0_prt) {
                // compute the radical in the denominator (= pz):
                amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
                    amrex::Math::powi<2>(pt - m_ibeta) -
@@ -327,7 +319,7 @@ namespace impactx::elements
                {
                    amrex::ParticleReal const pperp = std::sqrt(pperp2);
                    amrex::ParticleReal const pzi = std::sqrt(amrex::Math::powi<2>(pperp) - amrex::Math::powi<2>(px));
-                   amrex::ParticleReal const rho = m_rc + xout;
+                   amrex::ParticleReal const rho = m_rc + x;
 
                    // update momenta
                    pxout = px * cos_phi + (pzi - rho / m_rc) * sin_phi;
@@ -344,11 +336,11 @@ namespace impactx::elements
 
                        // update position coordinates
                        xout = -m_rc + rho*cos_phi + m_rc*(pzf + px*sin_phi - pzi*cos_phi);
-                       yout = yout + theta * m_rc * py;
-                       tout = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - slice_phi * m_rc * m_ibeta;
+                       yout = y + theta * m_rc * py;
+                       tout = t - theta * m_rc * (pt - 1.0_prt * m_ibeta) - slice_phi * m_rc * m_ibeta;
 
-                   }
-               }
+                   } else { amrex::Print() << "Warning: outside map domain." << "\n"; }
+               } else { amrex::Print() << "Warning: outside map domain." << "\n"; }
             }
 
             // push particle coordinates
@@ -590,15 +582,11 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
-        amrex::ParticleReal m_slice_phi;      //! slice bend angle
         amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
-        amrex::ParticleReal m_B;              //! dipole magnetic field T
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
         amrex::ParticleReal m_rc;             //! magnet radius of curvature
-        amrex::ParticleReal m_cos_phi;        //! trigonometric factors
-        amrex::ParticleReal m_sin_phi;        //! trigonometric factors
     };
 
 } // namespace impactx

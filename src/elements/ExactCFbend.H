@@ -339,8 +339,8 @@ namespace impactx::elements
                        yout = y + theta * m_rc * py;
                        tout = t - theta * m_rc * (pt - 1.0_prt * m_ibeta) - slice_phi * m_rc * m_ibeta;
 
-                   } else { amrex::Print() << "Warning: outside map domain." << "\n"; }
-               } else { amrex::Print() << "Warning: outside map domain." << "\n"; }
+                   } // else { amrex::Print() << "Warning: outside map domain." << "\n"; }
+               } // else { amrex::Print() << "Warning: outside map domain." << "\n"; }
             }
 
             // push particle coordinates

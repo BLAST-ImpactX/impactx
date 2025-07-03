@@ -26,7 +26,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ConstF
@@ -101,46 +100,53 @@ namespace impactx::elements
             // trigo
 	    // Note: The convention here is m_kx[1/m] = sign(k)*sqrt(abs(k))
 	    // where k[1/m^2] is in the usual MADX convention
-	    if (m_kx > 0) {
+	    if (m_kx > 0)
+	    {
+	      std::cout << "kx+" << std::endl;
 	      auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);
 	      m_cos_kxds = cos_kxds;
 	      m_const_x  = -m_kx * sin_kxds;
-	      m_sincx    = std::sin(m_kx * slice_ds) / m_kx;
-	      
+	      m_sincx    = sin_kxds / m_kx;
 	    }
-	    else if (m_kx < 0) {
+	    else if (m_kx < 0)
+	    {
 	      auto const sinh_kxds = std::sinh(-m_kx*slice_ds);
 	      auto const cosh_kxds = std::cosh(-m_kx*slice_ds);
 	      m_cos_kxds = cosh_kxds;
 	      m_const_x  = -m_kx * sinh_kxds;
-	      m_sincx    =- std::sinh(-m_kx*slice_ds) / (-m_kx);
+	      m_sincx    = -sinh_kxds / m_kx;
 	    }
-	    else { //m_kx == 0
+	    else //m_kx == 0
+	    {
 	      m_cos_kxds = 1.0;
 	      m_const_x  = 0.0;
 	      m_sincx    = slice_ds;
 	    }
 
-	    if (m_ky > 0) {
+	    if (m_ky > 0)
+	    {
 	      auto const [sin_kyds, cos_kyds] = amrex::Math::sincos(m_ky * slice_ds);
 	      m_cos_kyds = cos_kyds;
 	      m_const_y  = -m_ky * sin_kyds;
-	      m_sincy    = std::sin(m_ky * slice_ds) / m_ky;
+	      m_sincy    = sin_kyds / m_ky;
 	    }
-	    else if (m_ky < 0) {
+	    else if (m_ky < 0)
+	    {
 	      auto const sinh_kyds = std::sinh(-m_ky*slice_ds);
 	      auto const cosh_kyds = std::cosh(-m_ky*slice_ds);
 	      m_cos_kyds = cosh_kyds;
 	      m_const_y  = -m_ky * sinh_kyds;
-	      m_sincy    =- std::sinh(-m_ky*slice_ds) / (-m_ky);
+	      m_sincy    = -sinh_kyds / m_ky;
 	    }
-	    else { //m_ky == 0
+	    else //m_ky == 0
+	    {
 	      m_cos_kyds = 1.0;
 	      m_const_y  = 0.0;
 	      m_sincy    = slice_ds;
 	    }
 
-	    if (m_kt < 0) {
+	    if (m_kt < 0)
+	    {
 	      throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
 	    }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
@@ -279,13 +285,13 @@ namespace impactx::elements
 	    if (m_kx > 0) {
 	      std::tie(sin_kxds, cos_kxds) = amrex::Math::sincos(m_kx * slice_ds);
 	      const_x = -m_kx * sin_kxds;
-	      sincx   = std::sin(m_kx * slice_ds) / m_kx;
+	      sincx   = sin_kxds / m_kx;
 	    }
 	    else if (m_kx < 0) {
 	      sin_kxds = std::sinh(-m_kx*slice_ds);
 	      cos_kxds = std::cosh(-m_kx*slice_ds);
 	      const_x  = -m_kx * sin_kxds;
-	      sincx    =- std::sinh(-m_kx*slice_ds) / (-m_kx);
+	      sincx    = -sin_kxds / m_kx;
 	    }
 	    else { //m_kx == 0
 	      cos_kxds = 1.0;
@@ -297,13 +303,13 @@ namespace impactx::elements
 	    if (m_ky > 0) {
 	      std::tie(sin_kyds, cos_kyds) = amrex::Math::sincos(m_ky * slice_ds);
 	      const_y = -m_ky * sin_kyds;
-	      sincy   = std::sin(m_ky * slice_ds) / m_ky;
+	      sincy   = sin_kyds / m_ky;
 	    }
 	    else if (m_ky < 0) {
 	      sin_kyds = std::sinh(-m_ky*slice_ds);
 	      cos_kyds = std::cosh(-m_ky*slice_ds);
 	      const_y  = -m_ky * sin_kyds;
-	      sincy    =- std::sinh(-m_ky*slice_ds) / (-m_ky);
+	      sincy    = -sin_kyds / m_ky;
 	    }
 	    else { //m_ky == 0
 	      cos_kyds = 1.0;

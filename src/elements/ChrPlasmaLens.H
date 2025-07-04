@@ -152,7 +152,7 @@ namespace impactx::elements
             amrex::ParticleReal pyout = py;
             amrex::ParticleReal const ptout = pt;
 
-            // paceholder variables
+            // placeholder variables
             amrex::ParticleReal q1 = x;
             amrex::ParticleReal q2 = y;
             amrex::ParticleReal p1 = px;

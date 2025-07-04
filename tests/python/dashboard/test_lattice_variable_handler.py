@@ -6,8 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-import pytest
 import time
+
+import pytest
 
 
 def lattice_value(state, index: int, param_name: str) -> float:
@@ -37,25 +38,30 @@ def variable_index(variable_name: str, dashboard) -> int:
     raise ValueError(f"Variable '{variable_name}' not found in dashboard state")
 
 
-def assert_lattice_param_sim_input(dashboard, lattice_index: int, param_name: str, expected_value):
+def assert_lattice_param_sim_input(
+    dashboard, lattice_index: int, param_name: str, expected_value
+):
     """
     Asserts that a lattice parameter's sim_input matches expected value, with retry logic.
     """
+
     def get_sim_input():
         lattice_list = dashboard.get_state("selected_lattice_list")
         for param in lattice_list[lattice_index]["parameters"]:
             if param["parameter_name"] == param_name:
                 return param["sim_input"]
         return None
-    
+
     # Simple retry logic similar to assert_state
     for i in range(10):
         current_value = get_sim_input()
         if current_value == expected_value:
             return
         time.sleep(1)
-    
-    raise AssertionError(f"Parameter '{param_name}' sim_input never became '{expected_value}' (got: {current_value})")
+
+    raise AssertionError(
+        f"Parameter '{param_name}' sim_input never became '{expected_value}' (got: {current_value})"
+    )
 
 
 def test_lattice_variable_handler(dashboard):
@@ -109,7 +115,7 @@ def test_lattice_variable_handler(dashboard):
     # Verify the lattice element value is storing the variable value in the backend
     assert_lattice_param_sim_input(dashboard, 0, "ds", 0.500194828041958)
     assert_lattice_param_sim_input(dashboard, 0, "rc", -10.346228368619553)
-    
+
     variables = dashboard.get_state("variables")
     assert all(var["name"] != "ns" for var in variables), (
         "Variable 'ns' was not deleted"
@@ -117,7 +123,7 @@ def test_lattice_variable_handler(dashboard):
 
     # Wait for nslice parameter to have 'ns' as sim_input (non-numeric after variable deletion)
     assert_lattice_param_sim_input(dashboard, 0, "nslice", "ns")
-    
+
     # Verify lattice_value function raises AssertionError for non-numeric sim_input
     with pytest.raises(AssertionError, match="'nslice'"):
         current_lattice_list = dashboard.get_state("selected_lattice_list")
@@ -136,7 +142,7 @@ def test_lattice_variable_handler(dashboard):
     # Reset variables and check state
     dashboard.sb.click("#reset_variables")
     dashboard.assert_state("is_only_variable", True)
-    
+
     # Retrieve variables state once the
     variables_after_reset = dashboard.get_state("variables")
     assert len(variables_after_reset) == 1, (

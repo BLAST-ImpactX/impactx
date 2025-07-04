@@ -195,6 +195,24 @@ class SimulationHistory:
         SimulationHistoryDialogs.download_options_dialog()
         SimulationHistoryDialogs.load_sim_dialog()
 
+
+    def _ensure_unique_name(base_name: str) -> str:
+        """
+        Ensures the simulation name is unique by appending _1, _2, etc., if needed.
+
+        :param base_name: The simulation name to check for uniqueness.
+        :return: Unique simulation name
+        """
+        existing_names = {sim["name"] for sim in state.sims}
+        if base_name not in existing_names:
+            return base_name
+
+        i = 1
+        while f"{base_name}_{i}" in existing_names:
+            i += 1
+
+        return f"{base_name}_{i}"
+
     @staticmethod
     def add_sim_to_history():
         """
@@ -206,6 +224,7 @@ class SimulationHistory:
         curr_num_sims = len(state.sims)
         new_sim_name = state.imported_file_name or f"Simulation_{curr_num_sims + 1}"
         current_time = datetime.utcnow().isoformat() + "Z"
+        new_sim_name = SimulationHistory._ensure_unique_name(new_sim_name)
         sim_inputs = dashboard_sim_inputs(is_exporting=True)
 
         new_sim = {

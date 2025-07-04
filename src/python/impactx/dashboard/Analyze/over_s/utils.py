@@ -12,6 +12,7 @@ import os
 import pandas as pd
 
 from ... import setup_server
+from ...Run.utils import SimulationHelper
 from .plot import over_s_plot
 
 server, state, ctrl = setup_server()
@@ -116,5 +117,6 @@ class VisualizeOverS:
         ]
         state.over_s_possible_data = data.to_dict(orient="records")
 
+        SimulationHelper.save_over_s_table_output()
 
 over_s = VisualizeOverS()

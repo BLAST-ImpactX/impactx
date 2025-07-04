@@ -9,13 +9,13 @@ License: BSD-3-Clause-LBNL
 from datetime import datetime
 from pathlib import Path
 
+from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 from ... import html, setup_server, vuetify
 from ...Run.simulation import dashboard_sim_inputs
+from ...Analyze import over_s
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
-from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
-
 state.curr_view_details_log = ""
 
 state.sims = []
@@ -153,10 +153,20 @@ class SimulationHistory:
     def load_sim_outputs():
         sim = state.selected_sim_to_load
         state.selected_sim_to_analyze = sim
-        state.phase_space_png = sim["outputs"]["phase_space_png"]
+
+        outputs = sim["outputs"] if "outputs" in sim else {}
+
+        # Load phase space PNG
+        state.phase_space_png = outputs.get("phase_space_png")
+        
+        # Load Over S plot data
+        state.over_s_possible_headers = outputs.get("over_s_table_headers")
+        state.over_s_possible_data = outputs.get("over_s_table_data")
+        over_s._update_table()
+        over_s._update_plot()
 
         state.load_sim_dialog = False
-        
+
     @staticmethod
     def filter_sim_history():
         """

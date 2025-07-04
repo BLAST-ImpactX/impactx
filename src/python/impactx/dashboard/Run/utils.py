@@ -125,6 +125,17 @@ class SimulationHelper:
             "phase_space_png": phase_space_src
         }
 
+    @staticmethod
+    def save_over_s_table_output() -> None:
+        """
+        Saves the visualization's data table into the current simulation's
+        outputs.
+        """
+
+        current_sims_output = state.sims[state.sim_index]["outputs"]
+        current_sims_output["over_s_table_headers"] = state.over_s_possible_headers
+        current_sims_output["over_s_table_data"] = state.over_s_possible_data
+
 class SimulationProgress:
     """
     Methods which facilitate providing the dashboard user

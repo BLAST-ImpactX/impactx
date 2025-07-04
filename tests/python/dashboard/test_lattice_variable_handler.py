@@ -112,6 +112,7 @@ def test_lattice_variable_handler(dashboard):
 
     # Reset variables and check state
     dashboard.sb.click("#reset_variables")
+    dashboard.assert_state("is_only_variable", True)
     variables_after_reset = dashboard.get_state("variables")
     assert len(variables_after_reset) == 1, (
         "Resetting variables should leave only one variable."

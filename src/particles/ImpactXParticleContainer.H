@@ -289,20 +289,24 @@ namespace impactx
         void
         SetCoordSystem (CoordSystem coord_system);
 
-        /** In situ record and store the beam history for every simulation step */
-        bool enable_beam_history = false;
+        /** In situ calculate and store the beam moments for every simulation step */
+        bool store_beam_moments = false;
 
-        /** Record the reduced beam diagnostics */
+        /** Calculate & record the beam moments at current s */
         void
-        RecordRBC ();
+        record_beam_moments ();
 
-        /** Get the history of reduced beam diagnostics */
+        /** Calculate beam moments at current s */
+        std::unordered_map<std::string, amrex::ParticleReal>
+        beam_moments ();
+
+        /** Get the history of beam moments */
         std::list<std::unordered_map<std::string, amrex::ParticleReal> >
-        GetRBCHistory () { return m_rbc_history; }
+        beam_moments_history () { return m_beam_moments; }
 
-        /** Reset the history of the reduced beam diagnostics */
+        /** Reset the history of the beam moments */
         void
-        ResetRBCHistory () { m_rbc_history.clear(); }
+        reset_beam_moments_history () { m_beam_moments.clear(); }
 
       private:
 
@@ -318,8 +322,8 @@ namespace impactx
         //! the current coordinate system of particles in this container
         CoordSystem m_coordsystem = CoordSystem::s;
 
-        //! history of the reduced beam diagnostics over s
-        std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_rbc_history;
+        //! history of the beam moments over s
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
 
     }; // ImpactXParticleContainer
 

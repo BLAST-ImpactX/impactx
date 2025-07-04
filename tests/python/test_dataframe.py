@@ -58,7 +58,7 @@ def test_df_pandas(save_png=True):
     assert pc.total_number_of_particles() == npart
 
     # record purely in memory
-    sim.particle_container().enable_beam_history = True
+    sim.particle_container().store_beam_moments = True
 
     # init accelerator lattice
     fodo = [
@@ -74,13 +74,13 @@ def test_df_pandas(save_png=True):
     sim.track_particles()
 
     # look at beam history (reduced beam diagnostics)
-    beam_history = sim.particle_container().beam_history()
+    beam_moments = sim.particle_container().beam_moments_history()
 
     if amr.ParallelDescriptor.IOProcessor():
-        print(beam_history)
-        plt.plot(beam_history.s, beam_history.beta_x)
+        print(beam_moments)
+        plt.plot(beam_moments.s, beam_moments.beta_x)
         if save_png:
-            plt.savefig("beam_history.png")
+            plt.savefig("beam_moments.png")
         else:
             plt.show()
 

@@ -130,7 +130,7 @@ def run(parameters: tuple, write_particles=False, write_reduced=False) -> dict:
 
     # in situ calculate the reduced beam characteristics
     beam = sim.particle_container()
-    rbc = beam.reduced_beam_characteristics()
+    rbc = beam.beam_moments()
 
     # clean shutdown
     sim.finalize()

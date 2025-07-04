@@ -8,6 +8,8 @@
 #include <particles/ImpactXParticleContainer.H>
 #include <diagnostics/ReducedBeamCharacteristics.H>
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX.H>
 #include <AMReX_MFIter.H>
 #include <AMReX_ParticleContainer.H>
@@ -117,26 +119,45 @@ void init_impactxparticlecontainer(py::module& m)
         )
         .def("reduced_beam_characteristics",
              [](ImpactXParticleContainer & pc) {
+                 ablastr::warn_manager::WMRecordWarning(
+                    "reduced_beam_characteristics",
+                    "WARNING: reduced_beam_characteristics() is deprecated. "
+                    "Use beam_moments() instead.",
+                    ablastr::warn_manager::WarnPriority::medium
+                 );
                  return diagnostics::reduced_beam_characteristics(pc);
              },
              "Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters."
         )
-        .def("beam_history_list",
+        .def("beam_moments",
              [](ImpactXParticleContainer & pc) {
-                 return pc.GetRBCHistory();
+                 return pc.beam_moments();
              },
-             "Return the history of the beam as calculated by the reduced beam characteristics on every step."
+             "Calculate beam moments at current ``s`` like the position and momentum moments of the particle "
+             "distribution, as well as emittance and Twiss parameters."
         )
-        .def("reset_beam_history",
+        .def("beam_moments_history_list",
              [](ImpactXParticleContainer & pc) {
-                 return pc.ResetRBCHistory();
+                 return pc.beam_moments_history();
              },
-             "Reset the history of the reduced beam diagnostics with the current global simulation step."
+             "Return the history of the beam moments on every step."
         )
-        .def_property("enable_beam_history",
-            [](ImpactXParticleContainer & pc){ return pc.enable_beam_history; },
-            [](ImpactXParticleContainer & pc, bool record){ pc.enable_beam_history = record; },
-            "In situ record and store the beam history for every simulation step."
+        .def("record_beam_moments",
+             [](ImpactXParticleContainer & pc) {
+                 return pc.record_beam_moments();
+             },
+             "Calculate & record the beam moments at current s"
+        )
+        .def("reset_beam_moments_history",
+             [](ImpactXParticleContainer & pc) {
+                 return pc.reset_beam_moments_history();
+             },
+             "Reset the history of the beam moments."
+        )
+        .def_property("store_beam_moments",
+            [](ImpactXParticleContainer & pc){ return pc.store_beam_moments; },
+            [](ImpactXParticleContainer & pc, bool record){ pc.store_beam_moments = record; },
+            "In situ calculate and store the beam moments for every simulation step."
         )
 
         // TODO: cleverly pass the list of rho multifabs as references

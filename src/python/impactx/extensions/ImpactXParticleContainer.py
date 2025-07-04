@@ -30,7 +30,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     from quantiphy import Quantity
 
     # Beam Characteristics
-    rbc = self.reduced_beam_characteristics()
+    rbc = self.beam_moments()
 
     # update for plot unit system
     m2mm = 1.0e3
@@ -287,17 +287,17 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     return fig
 
 
-def ix_beam_history(self):
+def ix_beam_moments_history(self):
     """
     Return the history of the beam as calculated by the reduced beam characteristics on every step.
     """
     import pandas as pd
 
-    return pd.DataFrame(self.beam_history_list())
+    return pd.DataFrame(self.beam_moments_history_list())
 
 
 def register_ImpactXParticleContainer_extension(ixpc):
     """ImpactXParticleContainer helper methods"""
     # register member functions for ImpactXParticleContainer
     ixpc.plot_phasespace = ix_pc_plot_mpl_phasespace
-    ixpc.beam_history = ix_beam_history
+    ixpc.beam_moments_history = ix_beam_moments_history

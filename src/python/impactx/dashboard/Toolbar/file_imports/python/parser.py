@@ -17,6 +17,7 @@ state.import_file_error = False
 state.importing_file = False
 state.imported_file_name = None
 
+
 class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files

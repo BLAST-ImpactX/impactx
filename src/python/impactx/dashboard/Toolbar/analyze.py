@@ -11,6 +11,7 @@ from .. import setup_server, vuetify
 server, state, ctrl = setup_server()
 state.selected_sim_to_analyze = None
 
+
 class AnalyzeToolbar:
     """
     Contains toolbar components for the 'Analyze' page.
@@ -42,4 +43,3 @@ class AnalyzeToolbar:
             color=("sim_is_running ? 'info' : 'green-darken-1'",),
             prepend_icon="mdi-check-circle-outline",
         )
-

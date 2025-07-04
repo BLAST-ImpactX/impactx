@@ -9,10 +9,10 @@ License: BSD-3-Clause-LBNL
 from datetime import datetime
 from pathlib import Path
 
-from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 from ... import html, setup_server, vuetify
-from ...Run.simulation import dashboard_sim_inputs
 from ...Analyze import over_s
+from ...Run.simulation import dashboard_sim_inputs
+from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
@@ -158,7 +158,7 @@ class SimulationHistory:
 
         # Load phase space PNG
         state.phase_space_png = outputs.get("phase_space_png")
-        
+
         # Load Over S plot data
         state.over_s_possible_headers = outputs.get("over_s_table_headers")
         state.over_s_possible_data = outputs.get("over_s_table_data")
@@ -204,7 +204,6 @@ class SimulationHistory:
         SimulationHistoryDialogs.view_details_dialog()
         SimulationHistoryDialogs.download_options_dialog()
         SimulationHistoryDialogs.load_sim_dialog()
-
 
     def _ensure_unique_name(base_name: str) -> str:
         """

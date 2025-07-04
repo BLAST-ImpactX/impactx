@@ -115,15 +115,12 @@ class SimulationHelper:
 
             os.remove("phase_space_plot.png")
 
-
     @staticmethod
     def save_phase_space_output(phase_space_src: str) -> None:
         """
         Saves the given phase space image into the current simulation's outputs.
         """
-        state.sims[state.sim_index]["outputs"] = {
-            "phase_space_png": phase_space_src
-        }
+        state.sims[state.sim_index]["outputs"] = {"phase_space_png": phase_space_src}
 
     @staticmethod
     def save_over_s_table_output() -> None:
@@ -135,6 +132,7 @@ class SimulationHelper:
         current_sims_output = state.sims[state.sim_index]["outputs"]
         current_sims_output["over_s_table_headers"] = state.over_s_possible_headers
         current_sims_output["over_s_table_data"] = state.over_s_possible_data
+
 
 class SimulationProgress:
     """

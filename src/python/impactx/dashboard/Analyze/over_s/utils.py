@@ -119,4 +119,5 @@ class VisualizeOverS:
 
         SimulationHelper.save_over_s_table_output()
 
+
 over_s = VisualizeOverS()

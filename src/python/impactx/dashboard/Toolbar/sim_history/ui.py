@@ -205,6 +205,7 @@ class SimulationHistory:
         SimulationHistoryDialogs.download_options_dialog()
         SimulationHistoryDialogs.load_sim_dialog()
 
+    @staticmethod
     def _ensure_unique_name(base_name: str) -> str:
         """
         Ensures the simulation name is unique by appending _1, _2, etc., if needed.

@@ -38,7 +38,7 @@ class AnalyzeToolbar:
         """
 
         return vuetify.VChip(
-            "{{ sim_is_running ? 'Running...' : (selected_sim_to_analyze?.name || 'No simulation') }}",
+            "{{ sim_is_running ? sim_progress_status : (selected_sim_to_analyze?.name || 'No simulation') }}",
             color=("sim_is_running ? 'info' : 'green-darken-1'",),
             prepend_icon="mdi-check-circle-outline",
         )

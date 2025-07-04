@@ -151,6 +151,13 @@ namespace impactx
          */
         void prepare ();
 
+        /** Empty the container and reset the reference particle
+         *
+         * @param keep_mass do not reset the reference particle mass
+         * @param keep_charge do not reset the reference particle charge
+         */
+        void clear (bool keep_mass=false, bool keep_charge=false);
+
         /** Add new particles to the container for fixed s.
          *
          * Note: This can only be used *after* the initialization (grids) have

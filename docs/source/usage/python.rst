@@ -353,6 +353,13 @@ Particles
 
    This class stores particles, distributed over MPI ranks.
 
+   .. py:method:: clear(keep_mass=False, keep_charge=False)
+
+      Empty the container and reset the reference particle.
+
+      :param keep_mass: do not reset the reference particle mass
+      :param keep_charge: do not reset the reference particle charge
+
    .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bchchg)
 
       Add new particles to the container for fixed s.
@@ -390,7 +397,7 @@ Particles
       :return: beam properties with string keywords
       :rtype: dict
 
-   .. py::property:: enable_beam_history
+   .. py:property:: enable_beam_history
 
       In situ record and store the beam history for every simulation step (default: ``False``).
 
@@ -475,6 +482,13 @@ Particles
    .. py:property:: qm_ratio_SI
 
       Read-only: Get reference particle charge to mass ratio (C/kg)
+
+   .. py:method:: reset(keep_mass=False, keep_charge=False)
+
+      Reset the reference particle.
+
+      :param keep_mass: do not reset the reference particle mass
+      :param keep_charge: do not reset the reference particle charge
 
    .. py:method:: set_charge_qe(charge_qe)
 
@@ -722,7 +736,7 @@ This module provides elements and methods for the accelerator lattice.
    :param unit: specification of units (``"dimensionless"`` in units of the magnetic rigidity of the reference particle or ``"T-m"``)
    :param name: an optional name for the element
 
-.. py::class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
 
    A custom, linear transport matrix.
 
@@ -795,7 +809,7 @@ This module provides elements and methods for the accelerator lattice.
 
       number of integration steps per slice used for symplectic integration
 
-.. py::class:: impactx.elements.Empty
+.. py:class:: impactx.elements.Empty
 
    This element does nothing.
 

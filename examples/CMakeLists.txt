@@ -1530,4 +1530,3 @@ add_impactx_test(examples-exact_cfbend.py
     examples/symplectic_integration/analysis_exact_cfbend.py
     OFF  # no plot script yet
 )
-

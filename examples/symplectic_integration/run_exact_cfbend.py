@@ -6,10 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from scipy.constants import c, e, m_e
 
-from impactx import ImpactX, distribution, elements, twiss
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -53,18 +51,16 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # lattice elements
 cfbend1 = elements.ExactCFbend(
-      name="cfbend1",
-      ds=1.0,
-      k_normal=[0.1, 0.0],
-      k_skew=[0.0, 0.0],
-      unit=0,
-      int_order=2,
-      mapsteps=5,
-      nslice=ns
+    name="cfbend1",
+    ds=1.0,
+    k_normal=[0.1, 0.0],
+    k_skew=[0.0, 0.0],
+    unit=0,
+    int_order=2,
+    mapsteps=5,
+    nslice=ns,
 )
-sbend1 = elements.ExactSbend(
-    name="sbend1", ds=-1.0, phi=-5.729577951308232, nslice=ns
-)
+sbend1 = elements.ExactSbend(name="sbend1", ds=-1.0, phi=-5.729577951308232, nslice=ns)
 
 # set the lattice
 sim.lattice.append(monitor)

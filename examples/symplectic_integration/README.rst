@@ -147,12 +147,12 @@ Symplectic Integration in an Exact Combined-Function Bend
 
 This benchmark tests the use of the ExactCFbend (cfbend_exact) element for integrating through a combined-function bend using the exact nonlinear Hamiltonian.
 
-This example tests the transport of a 2 GeV electron bunch through a combined function bending element with only the lowest-order (dipole) coefficient nonzero, representing the effect 
+This example tests the transport of a 2 GeV electron bunch through a combined function bending element with only the lowest-order (dipole) coefficient nonzero, representing the effect
 of a pure dipole field.  This is compared with the effect of the ExactSbend element for equivalent field strength, by applying the inverse map (ds < 0 and phi < 0).
 
 As a result, the second moments of x, y, and t and the associated emittances of the bunch (as well as individual particle coordinates) should all be exactly unchanged.
 
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with 
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with
 nominal values, to within the specified tolerance.
 
 Run
@@ -178,5 +178,3 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_exact_cfbend.in
           :language: ini
           :caption: You can copy this file from ``examples/symplectic_integration/input_exact_cfbend.in``.
-
-

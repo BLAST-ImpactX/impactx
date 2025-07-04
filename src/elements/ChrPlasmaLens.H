@@ -158,7 +158,7 @@ namespace impactx::elements
             amrex::ParticleReal p1 = px;
             amrex::ParticleReal p2 = py;
 
-            if (m_g >= 0)
+            if (m_g > 0)
             {
                 auto const [sin_ods, cos_ods] = amrex::Math::sincos(omega*m_slice_ds);
 
@@ -170,7 +170,7 @@ namespace impactx::elements
                 pyout = -omega * delta1 * sin_ods * y + cos_ods * py;
 
             }
-            else //m_g < 0
+            else if (m_g < 0)
             {
                 auto const sinh_ods = std::sinh(omega*m_slice_ds);
                 auto const cosh_ods = std::cosh(omega*m_slice_ds);
@@ -181,6 +181,13 @@ namespace impactx::elements
 
                 yout = cosh_ods * y + sinh_ods / (omega * delta1) * py;
                 pyout = +omega * delta1 * sinh_ods * y + cosh_ods * py;
+            }
+            else {
+                xout = x + px*m_slice_ds;
+                pxout = px;
+
+                yout = y + py*m_slice_ds;
+                pyout = py;
             }
             // advance longitudinal position and momentum
 

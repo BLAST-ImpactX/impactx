@@ -293,11 +293,8 @@ namespace impactx::elements
 
                // advance position and momentum (exact drift)
                xout = x + tau * px * inv_pzden;
-               // pxout = px;
                yout = y + tau * py * inv_pzden;
-               // pyout = py;
                tout = t - tau * (m_ibeta + (pt - m_ibeta) * inv_pzden);
-               // ptout = pt;
 
                // assign updated momenta
                pxout = px;
@@ -405,7 +402,7 @@ namespace impactx::elements
             int factorial = 1;
 
             // loop over array of multipole coefficients
-            for (int m = 0; m < m_ncoef; m++) {
+            for (int m = 1; m < m_ncoef; m++) {
 
                // normalize units to MAD-X convention if needed
                amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];

@@ -1,0 +1,51 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 2.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 4.0e-5
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 3.0e-5
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.0e-4
+beam.muxpx = 0.0
+beam.muypy = -beam.muxpx
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor cfbend1 sbend1 monitor
+lattice.nslice = 10
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+cfbend1.type = cfbend_exact
+cfbend1.ds = 1.0
+cfbend1.k_normal = 0.1 0.0
+cfbend1.k_skew = 0 0
+cfbend1.units = 0
+cfbend1.int_order = 2
+cfbend1.mapsteps = 5
+
+sbend1.type = sbend_exact
+sbend1.ds = -1.0
+sbend1.phi = -5.729577951308232
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.particle_shape = 2
+algo.space_charge = false
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = false

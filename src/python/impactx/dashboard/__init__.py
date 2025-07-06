@@ -4,6 +4,9 @@ from trame.widgets import vuetify3 as vuetify
 # isort: off
 
 from .server import setup_server
+
+# Create single server instance for the entire dashboard
+server, state, ctrl = setup_server()
 from .Toolbar.general import GeneralToolbar
 
 from .Analyze.ui import AnalyzeSimulation
@@ -23,6 +26,9 @@ __all__ = [
     "html",
     "JupyterApp",
     "setup_server",
+    "server",
+    "state",
+    "ctrl",
     "html",
     "vuetify",
     "AnalyzeSimulation",

@@ -6,11 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, setup_server, vuetify
+from .... import ctrl, html, state, vuetify
 from ..utils import DEFAULT_HEADERS, UNSELECTABLE_HEADERS
 from .components import components
-
-server, state, ctrl = setup_server()
 
 state.over_s_header_search = ""
 state.available_headers = []

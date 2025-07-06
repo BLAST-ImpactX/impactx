@@ -1,13 +1,11 @@
 import asyncio
 import re
 
-from .. import setup_server
+from .. import state
 from ..Analyze import over_s
 from ..Toolbar.sim_history.ui import SimulationHistory
 from . import SimulationHelper, SimulationProgress
 from .simulation import dashboard_sim_inputs
-
-server, state, ctrl = setup_server()
 
 state.sim_elapsed_time = "0.0"
 state.sim_is_running = False

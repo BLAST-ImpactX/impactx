@@ -6,11 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, setup_server, vuetify
+from .... import html, state, vuetify
 from ... import CardBase
 from . import StatComponents, StatUtils
-
-server, state, ctrl = setup_server()
 
 
 def _update_statistics() -> None:

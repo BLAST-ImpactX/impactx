@@ -6,12 +6,10 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from . import setup_server
+from . import server, state
 from .app import application
 from .Input.defaults import DashboardDefaults
 from .Toolbar.sim_history.ui import load_my_js
-
-server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
 # Core setup logic

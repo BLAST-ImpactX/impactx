@@ -6,12 +6,10 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server, vuetify
+from ... import state, vuetify
 from .. import CardBase, CardComponents, DashboardValidation, InputComponents
-from . import InputFunctions
-
-server, state, ctrl = setup_server()
 from ..defaults import TRACKING_MODE_PROPERTIES
+from . import InputFunctions
 
 
 class InputParameters(CardBase):

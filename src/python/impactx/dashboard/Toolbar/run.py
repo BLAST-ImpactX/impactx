@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import html
 
-from .. import setup_server, vuetify
+from .. import ctrl, state, vuetify
 from ..Input import CardComponents
 from ..Run.executor import run_execute_impactx_sim
-
-server, state, ctrl = setup_server()
 
 
 class RunToolbar:

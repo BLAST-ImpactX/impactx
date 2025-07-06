@@ -6,10 +6,8 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, setup_server, vuetify
+from .... import ctrl, html, vuetify
 from ....Input.components.card import CardComponents
-
-server, state, ctrl = setup_server()
 
 
 def _selector_chip(label: str, **kwargs) -> vuetify.VChip:

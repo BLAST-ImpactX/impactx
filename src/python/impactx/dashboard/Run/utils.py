@@ -5,10 +5,8 @@ import re
 import sys
 import time
 
-from .. import setup_server
+from .. import ctrl, state
 from ..Toolbar.sim_history import save_view_details_log
-
-server, state, ctrl = setup_server()
 
 state.sim_progress_status = ""
 

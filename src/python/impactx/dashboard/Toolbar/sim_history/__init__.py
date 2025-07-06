@@ -1,8 +1,6 @@
-from ... import setup_server
+from ... import state
 from .components import SimulationHistoryComponents
 from .dialogs import SimulationHistoryDialogs
-
-server, state, ctrl = setup_server()
 
 
 def save_view_details_log():

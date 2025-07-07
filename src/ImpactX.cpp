@@ -152,7 +152,7 @@ namespace impactx {
     }
 
     amrex::ParticleReal
-    evaluate_lattice (ImpactX * sim, amrex::ParticleReal q1_k)  //, amrex::ParticleReal q2_k)
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal const & q1_k)  //, amrex::ParticleReal q2_k)
     {
         amrex::ParticleReal q2_k = 3.5;
 
@@ -261,10 +261,7 @@ namespace impactx {
         //amrex::ParticleReal q2_k = 3.0;
         amrex::Print() << "q1_k = " << q1_k << std::endl;
 
-        // note: seeded direction, this is AD and NOT a finite difference
-        amrex::ParticleReal dq1_k = 1.0;
-
-#define MYMODE 1
+#define MYMODE 2
 
 #if MYMODE == 0
         // non-differentiable run:
@@ -274,20 +271,21 @@ namespace impactx {
 
 #elif MYMODE == 1
         // forward differentiable run
-        ///*
-        amrex::ParticleReal ddx = __enzyme_fwddiff<amrex::ParticleReal>(
-            (void*)evaluate_lattice,
+        //   note: seeded direction, this is AD and NOT a finite difference
+        amrex::ParticleReal dq1_k = 1.0;
+        amrex::ParticleReal ddx = __enzyme_fwddiff(
+            &evaluate_lattice,
             enzyme_const, &sim,
-            enzyme_dup, q1_k, dq1_k
+            enzyme_dup, &q1_k, &dq1_k
         );
-        //*/
 
 #elif MYMODE == 2
         // reverse differentiable run:
-        amrex::ParticleReal ddx = __enzyme_autodiff<amrex::ParticleReal>(
-            (void*) evaluate_lattice,
+        amrex::ParticleReal ddx = 0.0;  // accumulator, zero-init!
+        __enzyme_autodiff(
+            &evaluate_lattice,
             enzyme_const, &sim,
-            enzyme_dup, q1_k, dq1_k
+            enzyme_dup, &q1_k, &ddx
         );
 #endif
 

@@ -31,11 +31,8 @@ inline int enzyme_in;
 inline int enzyme_out;
 inline int enzyme_const;
 
-template <typename return_type, typename ... T>
-return_type __enzyme_fwddiff (void*, T ...);
-
-template <typename return_type, typename ... T>
-return_type __enzyme_autodiff (void*, T ...);
+amrex::ParticleReal __enzyme_fwddiff (...);
+amrex::ParticleReal __enzyme_autodiff (...);
 //
 // End Enzyme
 
@@ -181,7 +178,7 @@ namespace impactx
     };
 
     amrex::ParticleReal
-    evaluate_lattice (ImpactX *, amrex::ParticleReal q1_k);  //, amrex::ParticleReal q2_k);
+    evaluate_lattice (ImpactX *, amrex::ParticleReal const & q1_k);  //, amrex::ParticleReal q2_k);
 
     void my_run ();
 

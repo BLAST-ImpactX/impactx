@@ -458,8 +458,8 @@ namespace impactx::elements
             //m_beta = refpart.beta();
             //m_ibeta = 1_prt / m_beta;
             //m_ibetgam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
-            amrex::ParticleReal const brho = refpart.rigidity_Tm();   
-                
+            amrex::ParticleReal const brho = refpart.rigidity_Tm();
+
 #if AMREX_DEVICE_COMPILE
             amrex::ParticleReal* k_normal = m_k_normal_d_data;
 #else
@@ -468,7 +468,7 @@ namespace impactx::elements
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
             amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / brho : k_normal[0];
             amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
-            
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 

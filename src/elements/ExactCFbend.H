@@ -439,8 +439,8 @@ namespace impactx::elements
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
-
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
             using namespace amrex::literals; // for _rt and _prt
 
             // assign input reference particle values
@@ -454,21 +454,60 @@ namespace impactx::elements
             amrex::ParticleReal const pt = refpart.pt;
             amrex::ParticleReal const s = refpart.s;
 
+            // access reference particle values to find relativistic factors
+            //m_beta = refpart.beta();
+            //m_ibeta = 1_prt / m_beta;
+            //m_ibetgam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
+            amrex::ParticleReal const brho = refpart.rigidity_Tm();   
+                
+#if AMREX_DEVICE_COMPILE
+            amrex::ParticleReal* k_normal = m_k_normal_d_data;
+#else
+            amrex::ParticleReal* k_normal = m_k_normal_h_data;
+#endif
+            // find magnetic field and curvature; normalize units to MAD-X convention if needed
+            amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / brho : k_normal[0];
+            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
-            // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+            // special case of zero field = an exact drift
+            if (rc==0_prt) {
+               // advance position and momentum (drift)
+               amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+               refpart.x = x + step*px;
+               refpart.y = y + step*py;
+               refpart.z = z + step*pz;
+               refpart.t = t - step*pt;
 
-            // advance position and momentum (straight element)
-            refpart.x = x + step*px;
-            refpart.y = y + step*py;
-            refpart.z = z + step*pz;
-            refpart.t = t - step*pt;
+            } else {
+
+               // assign intermediate parameters
+               amrex::ParticleReal const B = refpart.beta_gamma() /rc;
+               amrex::ParticleReal const theta = slice_ds / rc;
+
+               // calculate expensive terms once
+               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+               // advance position and momentum (bend)
+               refpart.px = px*cos_theta - pz*sin_theta;
+               refpart.py = py;
+               refpart.pz = pz*cos_theta + px*sin_theta;
+               refpart.pt = pt;
+
+               refpart.x = x + (refpart.pz - pz)/B;
+               refpart.y = y + (theta/B)*py;
+               refpart.z = z - (refpart.px - px)/B;
+               refpart.t = t - (theta/B)*pt;
+
+            }
 
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
+
+
 
         /** This function returns the linear transport map.
          *

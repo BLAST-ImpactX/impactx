@@ -158,7 +158,7 @@ namespace impactx::elements
             amrex::ParticleReal p1 = px;
             amrex::ParticleReal p2 = py;
 
-            if (m_g > 0)
+            if (m_g > 0_prt)
             {
                 auto const [sin_ods, cos_ods] = amrex::Math::sincos(omega*m_slice_ds);
 
@@ -170,7 +170,7 @@ namespace impactx::elements
                 pyout = -omega * delta1 * sin_ods * y + cos_ods * py;
 
             }
-            else if (m_g < 0)
+            else if (m_g < 0_prt)
             {
                 auto const sinh_ods = std::sinh(omega*m_slice_ds);
                 auto const cosh_ods = std::cosh(omega*m_slice_ds);

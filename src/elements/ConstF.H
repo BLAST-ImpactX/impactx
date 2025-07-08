@@ -101,14 +101,14 @@ namespace impactx::elements
             // trigo
             // Note: The convention here is m_kx[1/m] = sign(k)*sqrt(abs(k))
             // where k[1/m^2] is in the usual MADX convention
-            if (m_kx > 0)
+            if (m_kx > 0_prt)
             {
               auto const [sin_kxds, cos_kxds] = amrex::Math::sincos(m_kx * slice_ds);
               m_cos_kxds = cos_kxds;
               m_const_x  = -m_kx * sin_kxds;
               m_sincx    = sin_kxds / m_kx;
             }
-            else if (m_kx < 0)
+            else if (m_kx < 0_prt)
             {
               auto const sinh_kxds = std::sinh(-m_kx*slice_ds);
               auto const cosh_kxds = std::cosh(-m_kx*slice_ds);
@@ -123,14 +123,14 @@ namespace impactx::elements
               m_sincx    = slice_ds;
             }
 
-            if (m_ky > 0)
+            if (m_ky > 0_prt)
             {
               auto const [sin_kyds, cos_kyds] = amrex::Math::sincos(m_ky * slice_ds);
               m_cos_kyds = cos_kyds;
               m_const_y  = -m_ky * sin_kyds;
               m_sincy    = sin_kyds / m_ky;
             }
-            else if (m_ky < 0)
+            else if (m_ky < 0_prt)
             {
               auto const sinh_kyds = std::sinh(-m_ky*slice_ds);
               auto const cosh_kyds = std::cosh(-m_ky*slice_ds);
@@ -145,7 +145,7 @@ namespace impactx::elements
               m_sincy    = slice_ds;
             }
 
-            if (m_kt < 0)
+            if (m_kt < 0_prt)
             {
               throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
             }
@@ -282,12 +282,12 @@ namespace impactx::elements
             // where k[1/m^2] is in the usual MADX convention
 
             amrex::ParticleReal sin_kxds, cos_kxds, const_x, sincx;
-            if (m_kx > 0) {
+            if (m_kx > 0_prt) {
               std::tie(sin_kxds, cos_kxds) = amrex::Math::sincos(m_kx * slice_ds);
               const_x = -m_kx * sin_kxds;
               sincx   = sin_kxds / m_kx;
             }
-            else if (m_kx < 0) {
+            else if (m_kx < 0_prt) {
               sin_kxds = std::sinh(-m_kx*slice_ds);
               cos_kxds = std::cosh(-m_kx*slice_ds);
               const_x  = -m_kx * sin_kxds;
@@ -300,12 +300,12 @@ namespace impactx::elements
             }
 
             amrex::ParticleReal sin_kyds, cos_kyds, const_y, sincy;
-            if (m_ky > 0) {
+            if (m_ky > 0_prt) {
               std::tie(sin_kyds, cos_kyds) = amrex::Math::sincos(m_ky * slice_ds);
               const_y = -m_ky * sin_kyds;
               sincy   = sin_kyds / m_ky;
             }
-            else if (m_ky < 0) {
+            else if (m_ky < 0_prt) {
               sin_kyds = std::sinh(-m_ky*slice_ds);
               cos_kyds = std::cosh(-m_ky*slice_ds);
               const_y  = -m_ky * sin_kyds;
@@ -317,7 +317,7 @@ namespace impactx::elements
               sincy    = slice_ds;
             }
 
-            if (m_kt < 0) {
+            if (m_kt < 0_prt) {
               throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
             }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);

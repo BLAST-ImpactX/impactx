@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from ..Input.inputParameters.inputMain import InputParameters
+from ..Input.input_parameters.ui import InputParameters
 from . import DashboardDefaults, DashboardValidation, generalFunctions
 
 input_parameters_defaults = list(DashboardDefaults.INPUT_PARAMETERS.keys())

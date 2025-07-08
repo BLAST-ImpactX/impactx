@@ -13,7 +13,7 @@ from .Analyze.ui import AnalyzeSimulation
 from .Input.csr.ui import CSRConfiguration
 from .Input.isr.ui import ISRConfiguration
 from .Input.distribution.ui import DistributionConfiguration
-from .Input.inputParameters.inputMain import InputParameters
+from .Input.input_parameters.ui import InputParameters
 from .Input.lattice.ui import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
 from .Input.space_charge.ui import SpaceChargeConfiguration

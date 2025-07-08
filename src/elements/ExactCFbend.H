@@ -407,13 +407,15 @@ namespace impactx::elements
                amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
                amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
+               int n = m+1;  // multipole order
+
                // define dimensionless multipole coefficients (scaled by radius of curvature)
                kn = std::pow(m_rc, m) * kn; // unable to use powi here
                ks = std::pow(m_rc, m) * ks; // unable to use powi here
 
-               switch (m) {
+               switch (n) {
 
-                  case 1:   // dipole-like contribution
+                  case 1:   // dipole-like contribution (not used - contributing to map 1)
                      dpx += -rho * kn;
                      dpy += ks;
                      break;

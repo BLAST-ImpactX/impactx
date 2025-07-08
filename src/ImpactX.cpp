@@ -12,6 +12,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
 #include "elements/All.H"
+#include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "diagnostics/DiagnosticOutput.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"
 #include "particles/wakefields/HandleWakefield.H"
@@ -196,6 +197,9 @@ namespace impactx {
         //std::cout << "before cm\n";
         auto cm = env.m_env;
 
+        auto & intensity = env.m_beam_intensity;
+        intensity = 1.0e-6;  // a big value
+
         // push reference particle in global coordinates
         dr1(ref);
         // push Covariance Matrix in external fields
@@ -210,8 +214,12 @@ namespace impactx {
         q2(ref);
         q2(cm, ref);
 
+        envelope::spacecharge::space_charge2D_push(ref, cm, intensity, q2.ds());
+
         dr3(ref);
         dr3(cm, ref);
+
+        envelope::spacecharge::space_charge3D_push(ref, cm, intensity, dr3.ds());
 
         q3(ref);
         q3(cm, ref);

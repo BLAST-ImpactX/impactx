@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import state, vuetify
+
 state.selected_sim_to_analyze = None
 
 

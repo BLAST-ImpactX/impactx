@@ -749,9 +749,9 @@ This module provides elements and methods for the accelerator lattice.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
    The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
    For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
-  
+
    T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), https://link.aps.org/doi/10.1103/PhysRevAccelBeams.20.043501
-  
+
    The coefficients must appear in the following sequence:
 
    dipole, quadrupole, sextupole, octupole, etc...
@@ -777,15 +777,15 @@ This module provides elements and methods for the accelerator lattice.
    :param name: an optional name for the element
 
    .. py:property:: unit
-   
+
       unit specification for multipole coefficients
-   
+
    .. py:property:: int_order
-   
+
       the order used for symplectic integration (2, 4, or 6)
-   
+
    .. py:property:: mapsteps
-   
+
       number of integration steps per slice used for symplectic integration
 
 

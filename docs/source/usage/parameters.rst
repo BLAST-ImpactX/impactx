@@ -277,7 +277,7 @@ T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), https://link.aps.org/doi/1
 The coefficients must appear in the following sequence:
 
 dipole, quadrupole, sextupole, octupole, etc...
-   
+
 Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
 Here :math:`H_1` is the exact nonlinear Hamiltonian for a sector bend (including the kinematic square root),
 and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
@@ -285,7 +285,7 @@ and :math:`H_2` is the term containing the vector potential, which is a superpos
 The vector potential is obtained from Table XI of the above-cited reference.
 
 This element requires these additional parameters:
-  
+
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.k_normal`` (``float``, in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of normal multipole coefficients
 * ``<element_name>.k_skew`` (``float``, in 1/meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of skew multipole coefficients

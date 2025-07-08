@@ -389,32 +389,55 @@ namespace impactx::elements
             amrex::ParticleReal* k_skew = m_k_skew_h_data;
 #endif
 
-            // a complex type with two amrex::ParticleReal
-            using Complex = amrex::GpuComplex<amrex::ParticleReal>;
-
-            // assign complex position and complex multipole strength
-            Complex const zeta(x, y);
+            // defined dimensionless variables scaled by radius of curvature
+            amrex::ParticleReal rho = 1_prt + x / m_rc;
+            amrex::ParticleReal y_scl = y / m_rc;
+            amrex::ParticleReal ln_rho = log(rho);
 
             // initialize the momentum kick
             amrex::ParticleReal dpx = 0_prt;
             amrex::ParticleReal dpy = 0_prt;
 
-            int factorial = 1;
-
             // loop over array of multipole coefficients
             for (int m = 1; m < m_ncoef; m++) {
 
                // normalize units to MAD-X convention if needed
-               amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
-               amrex::ParticleReal kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
+               amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
-               // multipole contribution to complex momentum kick
-               Complex alpha(knormal_value, kskew_value);
-               Complex kick = amrex::pow(zeta, m) * alpha;
-               dpx += -1.0_prt * kick.m_real / factorial;
-               dpy += kick.m_imag / factorial;
+               switch (m) {
 
-               factorial *= m+1;
+                  case 1:   // dipole-like contribution
+                     dpx += -rho * kn;
+                     dpy += ks;
+                     break;
+                  case 2:   // quadrupole-like contribution
+                     dpx += -rho*ln_rho*kn + y_scl*rho*ks;
+                     dpy += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks; 
+                     break;
+                  case 3:  // sextupole-like contribution
+                     dpx += 0.25_prt*rho*(1_prt + 2_prt*y_scl*y_scl + rho*rho - 2_prt*ln_rho)*kn + y_scl*rho*ln_rho*ks;
+                     dpy += 0.5_prt*y_scl*(rho*rho - 1_prt)*kn + 0.25_prt*(1_prt - 2_prt*y_scl*y_scl - rho*rho + 2_prt*rho*rho*ln_rho)*ks;
+                     break;
+                  case 4:  // octupole-like contribution
+                     dpx += -0.25_prt*(rho - amrex::Math::powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + amrex::Math::powi<3>(rho))*ln_rho)*kn
+                            -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks;
+                     dpy += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
+                            -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
+                     break;
+                  case 5:  // decapole-like contribution
+                     dpx += -1_prt/192_prt*rho*(8_prt*amrex::Math::powi<4>(y_scl) - 24_prt*amrex::Math::powi<2>(y_scl)*(-1_prt + rho*rho) 
+                            + 3_prt*(-5_prt + 4_prt*amrex::Math::powi<2>(rho) + amrex::Math::powi<4>(rho))
+                            +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
+                            +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks;
+                     dpy += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
+                            + 1_prt/192_prt*(3_prt + 8_prt*amrex::Math::powi<4>(y_scl) + 12_prt*rho*rho 
+                            - 15_prt*amrex::Math::powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
+                            +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
+                     break;
+                // default:
+                //   TODO: print a warning here that order > 5 is not currently supported
+               }
 
             }
 

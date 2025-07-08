@@ -413,7 +413,7 @@ namespace impactx::elements
                      break;
                   case 2:   // quadrupole-like contribution
                      dpx += -rho*ln_rho*kn + y_scl*rho*ks;
-                     dpy += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks; 
+                     dpy += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;
                      break;
                   case 3:  // sextupole-like contribution
                      dpx += 0.25_prt*rho*(1_prt + 2_prt*y_scl*y_scl + rho*rho - 2_prt*ln_rho)*kn + y_scl*rho*ln_rho*ks;
@@ -426,12 +426,12 @@ namespace impactx::elements
                             -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
                      break;
                   case 5:  // decapole-like contribution
-                     dpx += -1_prt/192_prt*rho*(8_prt*amrex::Math::powi<4>(y_scl) - 24_prt*amrex::Math::powi<2>(y_scl)*(-1_prt + rho*rho) 
+                     dpx += -1_prt/192_prt*rho*(8_prt*amrex::Math::powi<4>(y_scl) - 24_prt*amrex::Math::powi<2>(y_scl)*(-1_prt + rho*rho)
                             + 3_prt*(-5_prt + 4_prt*amrex::Math::powi<2>(rho) + amrex::Math::powi<4>(rho))
                             +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
                             +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks;
                      dpy += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
-                            + 1_prt/192_prt*(3_prt + 8_prt*amrex::Math::powi<4>(y_scl) + 12_prt*rho*rho 
+                            + 1_prt/192_prt*(3_prt + 8_prt*amrex::Math::powi<4>(y_scl) + 12_prt*rho*rho
                             - 15_prt*amrex::Math::powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
                             +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
                      break;

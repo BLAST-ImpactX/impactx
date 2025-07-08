@@ -10,13 +10,13 @@ server, state, ctrl = setup_server()
 from .Toolbar.general import GeneralToolbar
 
 from .Analyze.ui import AnalyzeSimulation
-from .Input.csr.ui import CSRConfiguration
-from .Input.isr.ui import ISRConfiguration
-from .Input.distribution.ui import DistributionConfiguration
-from .Input.input_parameters.ui import InputParameters
-from .Input.lattice.ui import LatticeConfiguration
+from .Input.csr import CSRConfiguration
+from .Input.isr import ISRConfiguration
+from .Input.distribution import DistributionConfiguration
+from .Input.input_parameters import InputParameters
+from .Input.lattice import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
-from .Input.space_charge.ui import SpaceChargeConfiguration
+from .Input.space_charge import SpaceChargeConfiguration
 
 from .start import JupyterApp
 # isort: on

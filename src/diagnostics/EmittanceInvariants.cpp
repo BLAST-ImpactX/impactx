@@ -99,6 +99,7 @@ namespace impactx::diagnostics
         BL_PROFILE("impactx::diagnostics::Eigenemittances");
 
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> invariants;
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> roots;
@@ -117,8 +118,8 @@ namespace impactx::diagnostics
         // doi:10.48550/arXiv.1305.1532.
         amrex::ParticleReal a = 1.0_prt;
         amrex::ParticleReal b = -I2;
-        amrex::ParticleReal c = (amrex::Math::powi<2>(I2) - I4) / 2.0_prt;
-        amrex::ParticleReal d = -amrex::Math::powi<3>(I2) / 6.0_prt + I2 * I4 / 2.0_prt - I6 / 3.0_prt;
+        amrex::ParticleReal c = (powi<2>(I2) - I4) / 2.0_prt;
+        amrex::ParticleReal d = -powi<3>(I2) / 6.0_prt + I2 * I4 / 2.0_prt - I6 / 3.0_prt;
 
         // Return the cubic coefficients
         //std::cout << "Return a,b,c,d " << a << " " << b << " " << c << " " << d << "\n";

@@ -48,6 +48,7 @@ namespace impactx::diagnostics
     )
     {
         using namespace amrex::literals;
+        using amrex::Math::powi;
         using ablastr::constant::math::pi;
 
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> roots;
@@ -55,9 +56,9 @@ namespace impactx::diagnostics
         amrex::ParticleReal x2 = 0.0_prt;
         amrex::ParticleReal x3 = 0.0_prt;
 
-        amrex::ParticleReal Q = (3.0_prt*a*c - amrex::Math::powi<2>(b))/(9.0_prt * amrex::Math::powi<2>(a));
-        amrex::ParticleReal R = (9.0_prt*a*b*c - 27_prt*amrex::Math::powi<2>(a)*d - 2.0_prt*amrex::Math::powi<3>(b))/(54.0_prt*amrex::Math::powi<3>(a));
-        amrex::ParticleReal discriminant = amrex::Math::powi<3>(Q) + amrex::Math::powi<2>(R);
+        amrex::ParticleReal Q = (3.0_prt*a*c - powi<2>(b))/(9.0_prt * powi<2>(a));
+        amrex::ParticleReal R = (9.0_prt*a*b*c - 27_prt*powi<2>(a)*d - 2.0_prt*powi<3>(b))/(54.0_prt*powi<3>(a));
+        amrex::ParticleReal discriminant = powi<3>(Q) + powi<2>(R);
 
         // Discriminant should be < 0.  Otherwise, keep theta at default and throw an error.
         amrex::ParticleReal tol = 1.0e-12;  //allow for roundoff error
@@ -83,7 +84,7 @@ namespace impactx::diagnostics
         } else {
 
            //Three real roots in trigonometric form.
-           amrex::ParticleReal theta = std::acos(R/std::sqrt(-amrex::Math::powi<3>(Q)));
+           amrex::ParticleReal theta = std::acos(R/std::sqrt(-powi<3>(Q)));
            x1 = 2.0_prt*std::sqrt(-Q)*std::cos(theta/3.0_prt) - b/(3.0_prt*a);
            x2 = 2.0_prt*std::sqrt(-Q)*std::cos(theta/3.0_prt + 2.0_prt*pi/3.0_prt) - b/(3.0_prt*a);
            x3 = 2.0_prt*std::sqrt(-Q)*std::cos(theta/3.0_prt + 4.0_prt*pi/3.0_prt) - b/(3.0_prt*a);
@@ -119,6 +120,7 @@ namespace impactx::diagnostics
     )
     {
         using namespace amrex::literals;
+        using amrex::Math::powi;
         using Complex = amrex::GpuComplex<amrex::ParticleReal>;
 
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> roots;
@@ -126,9 +128,9 @@ namespace impactx::diagnostics
         amrex::ParticleReal x2 = 0.0_prt;
         amrex::ParticleReal x3 = 0.0_prt;
 
-        amrex::ParticleReal Q = (3.0_prt*a*c - amrex::Math::powi<2>(b))/(9.0_prt * amrex::Math::powi<2>(a));
-        amrex::ParticleReal R = (9.0_prt*a*b*c - 27_prt*amrex::Math::powi<2>(a)*d - 2.0_prt*amrex::Math::powi<3>(b))/(54.0_prt*amrex::Math::powi<3>(a));
-        amrex::ParticleReal discriminant = amrex::Math::powi<3>(Q) + amrex::Math::powi<2>(R);
+        amrex::ParticleReal Q = (3.0_prt*a*c - powi<2>(b))/(9.0_prt * powi<2>(a));
+        amrex::ParticleReal R = (9.0_prt*a*b*c - 27_prt*powi<2>(a)*d - 2.0_prt*powi<3>(b))/(54.0_prt*powi<3>(a));
+        amrex::ParticleReal discriminant = powi<3>(Q) + powi<2>(R);
 
         // Define complex variable C
         Complex Qc(Q,0.0_prt);
@@ -153,7 +155,7 @@ namespace impactx::diagnostics
 
            Complex z1 = Qc/C - C;
            Complex z2 = Qc/(xi*C) - xi*C;
-           Complex z3 = Qc/(amrex::Math::powi<2>(xi)*C) - amrex::Math::powi<2>(xi)*C;
+           Complex z3 = Qc/(powi<2>(xi)*C) - powi<2>(xi)*C;
            x1 = z2.m_real - b/(3.0*a);
            x2 = z1.m_real - b/(3.0*a);
            x3 = z3.m_real - b/(3.0*a);

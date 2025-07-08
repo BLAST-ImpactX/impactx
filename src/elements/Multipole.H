@@ -138,7 +138,7 @@ namespace impactx::elements
 
             // access reference particle values to find (beta*gamma)^2
             //amrex::ParticleReal const pt_ref = refpart.pt;
-            //amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
+            //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // initialize output values
             amrex::ParticleReal xout = x;

@@ -139,12 +139,13 @@ namespace impactx::elements
         {
 
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + amrex::Math::powi<2>(pt));
+            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
             amrex::ParticleReal a = m_a / delta1;
 
             // initialize output values
@@ -157,19 +158,19 @@ namespace impactx::elements
             // intermediate quantities to be used below
             amrex::ParticleReal x2my2 = x*x - y*y;
             amrex::ParticleReal x2py2 = x*x + y*y;
-            amrex::ParticleReal denominator = 1_prt - 9_prt*amrex::Math::powi<2>(a)*amrex::Math::powi<2>(x2my2);
+            amrex::ParticleReal denominator = 1_prt - 9_prt*powi<2>(a)*powi<2>(x2my2);
 
             // apply edge focusing (transverse phase space)
-            xout = x - a * (amrex::Math::powi<3>(x) + 3_prt * x * amrex::Math::powi<2>(y));
-            yout = y + a * (3_prt * amrex::Math::powi<2>(x) * y + amrex::Math::powi<3>(y));
+            xout = x - a * (powi<3>(x) + 3_prt * x * powi<2>(y));
+            yout = y + a * (3_prt * powi<2>(x) * y + powi<3>(y));
 
             pxout = (px + 3_prt*a*px*x2py2 - 6_prt*a*py*x*y) / denominator;
             pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
 
             // apply edge focusing (longitudinal phase space)
-            amrex::ParticleReal f4 = a * ( pxout * (amrex::Math::powi<3>(x) + 3_prt*x*amrex::Math::powi<2>(y))
-                                         - pyout * (amrex::Math::powi<3>(y) + 3_prt*y*amrex::Math::powi<2>(x)) );
-            tout = t + f4 * (pt - 1_prt/m_beta) / amrex::Math::powi<2>(delta1);
+            amrex::ParticleReal f4 = a * ( pxout * (powi<3>(x) + 3_prt*x*powi<2>(y))
+                                         - pyout * (powi<3>(y) + 3_prt*y*powi<2>(x)) );
+            tout = t + f4 * (pt - 1_prt/m_beta) / powi<2>(delta1);
 
             // update output values
             x = xout;

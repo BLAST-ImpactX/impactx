@@ -86,6 +86,7 @@ namespace impactx::elements
         void compute_constants ([[maybe_unused]] RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -94,9 +95,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + amrex::Math::powi<2>(sin_psi))
-                / amrex::Math::powi<3>(cos_psi)
-                * m_g * m_K2 / amrex::Math::powi<2>(m_rc);
+            amrex::ParticleReal const vf = (1.0_prt + powi<2>(sin_psi))
+                / powi<3>(cos_psi)
+                * m_g * m_K2 / powi<2>(m_rc);
 
             m_R43 = vf - m_R21;
         }
@@ -157,6 +158,7 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
@@ -166,9 +168,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + amrex::Math::powi<2>(sin_psi))
-                / amrex::Math::powi<3>(cos_psi)
-                * m_g * m_K2 / amrex::Math::powi<2>(m_rc);
+            amrex::ParticleReal const vf = (1.0_prt + powi<2>(sin_psi))
+                / powi<3>(cos_psi)
+                * m_g * m_K2 / powi<2>(m_rc);
 
             amrex::ParticleReal const R43 = vf - R21;
 

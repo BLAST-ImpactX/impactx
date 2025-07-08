@@ -58,8 +58,10 @@ namespace impactx::elements::mixin
             amrex::ParticleReal & AMREX_RESTRICT x,
             amrex::ParticleReal & AMREX_RESTRICT y,
             uint64_t & AMREX_RESTRICT idcpu
-        ) const {
+        ) const
+        {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // skip aperture application if aperture_x <= 0 or aperture_y <= 0
             if (m_inv_aperture_x > 0_prt && m_inv_aperture_y > 0_prt) {
@@ -72,7 +74,7 @@ namespace impactx::elements::mixin
                amrex::ParticleReal const v = y * m_inv_aperture_y;
 
                // compare against the aperture boundary
-               if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) > 1_prt) {
+               if (powi<2>(u) + powi<2>(v) > 1_prt) {
                   amrex::ParticleIDWrapper{idcpu}.make_invalid();
                }
             }

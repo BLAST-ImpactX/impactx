@@ -77,6 +77,7 @@ namespace impactx::diagnostics
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // a complex type with two amrex::ParticleReal
             using Complex = amrex::GpuComplex<amrex::ParticleReal>;
@@ -94,7 +95,7 @@ namespace impactx::diagnostics
             Complex const im1(0.0_prt, 1.0_prt);
 
             // compute croot = sqrt(1-zeta**2)
-            Complex croot = amrex::Math::powi<2>(zeta);
+            Complex croot = powi<2>(zeta);
             croot = re1 - croot;
             croot = amrex::sqrt(croot);
 
@@ -116,9 +117,9 @@ namespace impactx::diagnostics
 
             // compute invariants H and I
             amrex::ParticleReal const Jz = xn*pyn - yn*pxn;
-            Hinv = (amrex::Math::powi<2>(xn) + amrex::Math::powi<2>(yn) + amrex::Math::powi<2>(pxn) + amrex::Math::powi<2>(pyn))/2
+            Hinv = (powi<2>(xn) + powi<2>(yn) + powi<2>(pxn) + powi<2>(pyn))/2
                  + m_tn*Hinv;
-            Iinv = amrex::Math::powi<2>(Jz) + amrex::Math::powi<2>(pxn) + amrex::Math::powi<2>(xn) + m_tn*Iinv;
+            Iinv = powi<2>(Jz) + powi<2>(pxn) + powi<2>(xn) + m_tn*Iinv;
 
             return {Hinv, Iinv};
 

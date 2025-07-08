@@ -274,6 +274,7 @@ namespace SoftQuadrupoleData
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -293,7 +294,7 @@ namespace SoftQuadrupoleData
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -320,7 +321,7 @@ namespace SoftQuadrupoleData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -414,6 +415,7 @@ namespace SoftQuadrupoleData
                    [[maybe_unused]] amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // push the reference particle
             amrex::ParticleReal const t = refpart.t;
@@ -421,7 +423,7 @@ namespace SoftQuadrupoleData
             amrex::ParticleReal const z = zeval;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/std::sqrt(1.0_prt - amrex::Math::powi<-2>(pt));
+                refpart.t = t + tau/std::sqrt(1.0_prt - powi<-2>(pt));
                 refpart.pt = pt;
             }
             else {
@@ -445,8 +447,8 @@ namespace SoftQuadrupoleData
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/amrex::Math::powi<2>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/amrex::Math::powi<2>(betgam);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
 
         }
 

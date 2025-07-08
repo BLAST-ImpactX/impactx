@@ -110,9 +110,10 @@ namespace impactx::particles::wakefields
     )
     {
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
-        amrex::Real const rc = amrex::Math::powi<2>(ablastr::constant::SI::q_e) / (4_rt * amrex::Real(M_PI) * ablastr::constant::SI::ep0 * ablastr::constant::SI::m_e * amrex::Math::powi<2>(ablastr::constant::SI::c));
-        amrex::Real const kappa = (2_rt * rc * ablastr::constant::SI::m_e * amrex::Math::powi<2>(ablastr::constant::SI::c)) / std::pow(3_rt, 1_rt/3_rt) / std::pow(R, 2_rt/3_rt);
+        amrex::Real const rc = powi<2>(ablastr::constant::SI::q_e) / (4_rt * amrex::Real(M_PI) * ablastr::constant::SI::ep0 * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c));
+        amrex::Real const kappa = (2_rt * rc * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c)) / std::pow(3_rt, 1_rt/3_rt) / std::pow(R, 2_rt/3_rt);
 
         return -3_rt/2_rt * kappa / bin_size * (unit_step(s + bin_size / 2_rt) * std::pow(std::abs(s + bin_size / 2_rt), 2_rt/3_rt) - unit_step(s - bin_size / 2_rt) * std::pow(std::abs(s - bin_size / 2_rt), 2_rt/3_rt));
     }

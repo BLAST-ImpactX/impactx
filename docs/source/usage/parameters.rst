@@ -264,6 +264,43 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
+``cfbend_exact``
+^^^^^^^^^^^^^^^^^^
+
+A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
+For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
+
+T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), https://link.aps.org/doi/10.1103/PhysRevAccelBeams.20.043501
+
+The coefficients must appear in the following sequence:
+
+dipole, quadrupole, sextupole, octupole, etc...
+   
+Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+Here :math:`H_1` is the exact nonlinear Hamiltonian for a sector bend (including the kinematic square root),
+and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
+
+The vector potential is obtained from Table XI of the above-cited reference.
+
+This element requires these additional parameters:
+  
+* ``<element_name>.ds`` (``float``, in meters) the segment length
+* ``<element_name>.k_normal`` (``float``, in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of normal multipole coefficients
+* ``<element_name>.k_skew`` (``float``, in 1/meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`) array of skew multipole coefficients
+* ``<element_name>.unit`` (``integer``) specification of units for the multipole coefficients (default: ``0``)
+  By default, the multipole coefficients are normalized by magnetic rigidity.  Use ``unit=1`` to specify using SI units.
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+* ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
+* ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
+
+
 ``constf``
 ^^^^^^^^^^
 

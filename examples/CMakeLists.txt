@@ -1532,7 +1532,7 @@ add_impactx_test(examples-exact_cfbend.py
 )
 
 # Symplectic Integration in an Exact Combined-Function Bend (Multipole test) ##############
-#   
+#
 # no space charge
 add_impactx_test(examples-exact-cfbend-multipole
     examples/symplectic_integration/input_exact_cfbend_multipole.in
@@ -1545,5 +1545,4 @@ add_impactx_test(examples-exact_cfbend_multipole.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_exact_cfbend_multipole.py
     OFF  # no plot script yet
-)   
-
+)

@@ -62,7 +62,7 @@ cfbend1 = elements.ExactCFbend(
 )
 
 multipole1 = elements.ExactMultipole(
-    name="quad1",  
+    name="quad1",
     ds=-1.0,
     k_normal=[0.0, 1.0, 0.0],
     k_skew=[0.0, 0.0, 0.0],

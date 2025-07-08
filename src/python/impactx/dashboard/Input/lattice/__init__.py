@@ -1,4 +1,4 @@
-from .helper import LatticeConfigurationHelper
+from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
 __all__ = [

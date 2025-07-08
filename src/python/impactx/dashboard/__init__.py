@@ -14,7 +14,7 @@ from .Input.csr.ui import csrConfiguration
 from .Input.isr.ui import isrConfiguration
 from .Input.distribution.ui import DistributionParameters
 from .Input.inputParameters.inputMain import InputParameters
-from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
+from .Input.lattice.ui import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
 from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
 

@@ -6,7 +6,7 @@ from .. import (
     DashboardValidation,
     generalFunctions,
 )
-from .helper import LatticeConfigurationHelper
+from .utils import LatticeConfigurationHelper
 
 init_value = ""
 state.variables = [

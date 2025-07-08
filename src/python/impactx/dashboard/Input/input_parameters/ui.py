@@ -7,7 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import state, vuetify
-from .. import CardBase, CardComponents, DashboardValidation, InputComponents
+from ...Input.components import CardBase, CardComponents, InputComponents
+from .. import DashboardValidation
 from ..defaults import TRACKING_MODE_PROPERTIES
 from . import InputFunctions
 

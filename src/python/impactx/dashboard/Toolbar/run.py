@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 from trame.widgets import html
 
 from .. import ctrl, state, vuetify
-from ..Input import CardComponents
+from ..Input.components import CardComponents
 from ..Run.executor import run_execute_impactx_sim
 
 

@@ -118,8 +118,8 @@ namespace impactx::elements
             }
             else //m_kx == 0
             {
-                m_cos_kxds = 1.0;
-                m_const_x  = 0.0;
+                m_cos_kxds = 1.0_prt;
+                m_const_x  = 0.0_prt;
                 m_sincx    = slice_ds;
             }
 
@@ -140,8 +140,8 @@ namespace impactx::elements
             }
             else //m_ky == 0
             {
-                m_cos_kyds = 1.0;
-                m_const_y  = 0.0;
+                m_cos_kyds = 1.0_prt;
+                m_const_y  = 0.0_prt;
                 m_sincy    = slice_ds;
             }
 
@@ -294,8 +294,8 @@ namespace impactx::elements
                 sincx    = -sin_kxds / m_kx;
             }
             else { //m_kx == 0
-                cos_kxds = 1.0;
-                const_x  = 0.0;
+                cos_kxds = 1.0_prt;
+                const_x  = 0.0_prt;
                 sincx    = slice_ds;
             }
 
@@ -312,8 +312,8 @@ namespace impactx::elements
                 sincy    = -sin_kyds / m_ky;
             }
             else { //m_ky == 0
-                cos_kyds = 1.0;
-                const_y  = 0.0;
+                cos_kyds = 1.0_prt;
+                const_y  = 0.0_prt;
                 sincy    = slice_ds;
             }
 

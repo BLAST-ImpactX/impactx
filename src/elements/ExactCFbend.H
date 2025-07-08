@@ -266,6 +266,7 @@ namespace impactx::elements
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using namespace amrex::Math;  // for powi
 
             amrex::ParticleReal const x = particle(1);
             amrex::ParticleReal const px = particle(2);
@@ -285,10 +286,10 @@ namespace impactx::elements
             if (m_rc==0_prt) {
                // compute the radical in the denominator (= pz):
                amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                   amrex::Math::powi<2>(pt - m_ibeta) -
+                   powi<2>(pt - m_ibeta) -
                    m_ibetgam2 -
-                   amrex::Math::powi<2>(px) -
-                   amrex::Math::powi<2>(py)
+                   powi<2>(px) -
+                   powi<2>(py)
                );
 
                // advance position and momentum (exact drift)
@@ -304,8 +305,8 @@ namespace impactx::elements
             } else {
 
                // assign intermediate quantities
-               amrex::ParticleReal const pperp2 = amrex::Math::powi<2>(pt)-2.0_prt * m_ibeta * pt - amrex::Math::powi<2>(py)+1.0_prt;
-               amrex::ParticleReal const px2 = amrex::Math::powi<2>(px);
+               amrex::ParticleReal const pperp2 = powi<2>(pt)-2.0_prt * m_ibeta * pt - powi<2>(py)+1.0_prt;
+               amrex::ParticleReal const px2 = powi<2>(px);
 
                // trigonometric evaluations
                amrex::ParticleReal const slice_phi = tau / m_rc;
@@ -315,7 +316,7 @@ namespace impactx::elements
                if (pperp2 > px2)
                {
                    amrex::ParticleReal const pperp = std::sqrt(pperp2);
-                   amrex::ParticleReal const pzi = std::sqrt(amrex::Math::powi<2>(pperp) - amrex::Math::powi<2>(px));
+                   amrex::ParticleReal const pzi = std::sqrt(powi<2>(pperp) - powi<2>(px));
                    amrex::ParticleReal const rho = m_rc + x;
 
                    // update momenta
@@ -324,11 +325,11 @@ namespace impactx::elements
                    ptout = pt;
 
                    // angle of momentum rotation
-                   amrex::ParticleReal const px2f = amrex::Math::powi<2>(pxout);
+                   amrex::ParticleReal const px2f = powi<2>(pxout);
                    // determine if particle lies within domain of map definition
                    if (pperp2 > px2f)
                    {
-                       amrex::ParticleReal const pzf = std::sqrt(amrex::Math::powi<2>(pperp)-amrex::Math::powi<2>(pxout));
+                       amrex::ParticleReal const pzf = std::sqrt(powi<2>(pperp)-powi<2>(pxout));
                        amrex::ParticleReal const theta = slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
 
                        // update position coordinates
@@ -366,6 +367,7 @@ namespace impactx::elements
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using namespace amrex::Math;  // for powi
 
             amrex::ParticleReal const x = particle(1);
             amrex::ParticleReal const px = particle(2);
@@ -405,6 +407,10 @@ namespace impactx::elements
                amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
                amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
+               // define dimensionless multipole coefficients (scaled by radius of curvature)
+               kn = std::pow(m_rc, m) * kn; // unable to use powi here
+               ks = std::pow(m_rc, m) * ks; // unable to use powi here
+
                switch (m) {
 
                   case 1:   // dipole-like contribution
@@ -420,19 +426,19 @@ namespace impactx::elements
                      dpy += 0.5_prt*y_scl*(rho*rho - 1_prt)*kn + 0.25_prt*(1_prt - 2_prt*y_scl*y_scl - rho*rho + 2_prt*rho*rho*ln_rho)*ks;
                      break;
                   case 4:  // octupole-like contribution
-                     dpx += -0.25_prt*(rho - amrex::Math::powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + amrex::Math::powi<3>(rho))*ln_rho)*kn
+                     dpx += -0.25_prt*(rho - powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + powi<3>(rho))*ln_rho)*kn
                             -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks;
                      dpy += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
                             -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
                      break;
                   case 5:  // decapole-like contribution
-                     dpx += -1_prt/192_prt*rho*(8_prt*amrex::Math::powi<4>(y_scl) - 24_prt*amrex::Math::powi<2>(y_scl)*(-1_prt + rho*rho)
-                            + 3_prt*(-5_prt + 4_prt*amrex::Math::powi<2>(rho) + amrex::Math::powi<4>(rho))
+                     dpx += -1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
+                            + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
                             +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
                             +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks;
                      dpy += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
-                            + 1_prt/192_prt*(3_prt + 8_prt*amrex::Math::powi<4>(y_scl) + 12_prt*rho*rho
-                            - 15_prt*amrex::Math::powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
+                            + 1_prt/192_prt*(3_prt + 8_prt*powi<4>(y_scl) + 12_prt*rho*rho
+                            - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
                             +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
                      break;
                 // default:
@@ -480,7 +486,7 @@ namespace impactx::elements
             // access reference particle values to find relativistic factors
             //m_beta = refpart.beta();
             //m_ibeta = 1_prt / m_beta;
-            //m_ibetgam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
+            //m_ibetgam2 = 1_prt / powi<2>(refpart.beta_gamma());
             amrex::ParticleReal const brho = refpart.rigidity_Tm();
 
 #if AMREX_DEVICE_COMPILE

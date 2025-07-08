@@ -10,7 +10,7 @@ server, state, ctrl = setup_server()
 from .Toolbar.general import GeneralToolbar
 
 from .Analyze.ui import AnalyzeSimulation
-from .Input.csrConfiguration.csrMain import csrConfiguration
+from .Input.csr.ui import csrConfiguration
 from .Input.isr.ui import isrConfiguration
 from .Input.distribution.ui import DistributionParameters
 from .Input.inputParameters.inputMain import InputParameters

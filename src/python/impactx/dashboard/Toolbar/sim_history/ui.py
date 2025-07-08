@@ -10,12 +10,12 @@ from datetime import datetime
 from pathlib import Path
 
 from ... import html, setup_server, vuetify
+from ...Analyze import over_s
 from ...Run.simulation import dashboard_sim_inputs
+from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
 server, state, ctrl = setup_server()
-from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
-
 state.curr_view_details_log = ""
 
 state.sims = []
@@ -149,6 +149,25 @@ class SimulationHistory:
         state.selected_sim_to_load = None
 
     @staticmethod
+    @ctrl.add("load_selected_sim_outputs")
+    def load_sim_outputs():
+        sim = state.selected_sim_to_load
+        state.selected_sim_to_analyze = sim
+
+        outputs = sim["outputs"] if "outputs" in sim else {}
+
+        # Load phase space PNG
+        state.phase_space_png = outputs.get("phase_space_png")
+
+        # Load Over S plot data
+        state.over_s_possible_headers = outputs.get("over_s_table_headers")
+        state.over_s_possible_data = outputs.get("over_s_table_data")
+        over_s._update_table()
+        over_s._update_plot()
+
+        state.load_sim_dialog = False
+
+    @staticmethod
     def filter_sim_history():
         """
         Handles the functionality to filter the sim history.
@@ -187,6 +206,24 @@ class SimulationHistory:
         SimulationHistoryDialogs.load_sim_dialog()
 
     @staticmethod
+    def _ensure_unique_name(base_name: str) -> str:
+        """
+        Ensures the simulation name is unique by appending _1, _2, etc., if needed.
+
+        :param base_name: The simulation name to check for uniqueness.
+        :return: Unique simulation name
+        """
+        existing_names = {sim["name"] for sim in state.sims}
+        if base_name not in existing_names:
+            return base_name
+
+        i = 1
+        while f"{base_name}_{i}" in existing_names:
+            i += 1
+
+        return f"{base_name}_{i}"
+
+    @staticmethod
     def add_sim_to_history():
         """
         Called once a simulation is ran.
@@ -197,6 +234,7 @@ class SimulationHistory:
         curr_num_sims = len(state.sims)
         new_sim_name = state.imported_file_name or f"Simulation_{curr_num_sims + 1}"
         current_time = datetime.utcnow().isoformat() + "Z"
+        new_sim_name = SimulationHistory._ensure_unique_name(new_sim_name)
         sim_inputs = dashboard_sim_inputs(is_exporting=True)
 
         new_sim = {
@@ -206,6 +244,7 @@ class SimulationHistory:
             "status": "In Progress",
             "inputs": sim_inputs,
             "log": "",
+            "outputs": {},
         }
 
         state.sims = state.sims + [new_sim]

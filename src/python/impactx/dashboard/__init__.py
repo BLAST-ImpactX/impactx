@@ -12,7 +12,7 @@ from .Toolbar.general import GeneralToolbar
 from .Analyze.ui import AnalyzeSimulation
 from .Input.csr.ui import csrConfiguration
 from .Input.isr.ui import isrConfiguration
-from .Input.distribution.ui import DistributionParameters
+from .Input.distribution.ui import DistributionConfiguration
 from .Input.inputParameters.inputMain import InputParameters
 from .Input.lattice.ui import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
@@ -35,7 +35,7 @@ __all__ = [
     "NavigationComponents",
     "csrConfiguration",
     "isrConfiguration",
-    "DistributionParameters",
+    "DistributionConfiguration",
     "InputParameters",
     "LatticeConfiguration",
     "SpaceChargeConfiguration",

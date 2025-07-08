@@ -4,7 +4,7 @@ from trame.widgets import router, xterm
 
 from . import (
     AnalyzeSimulation,
-    DistributionParameters,
+    DistributionConfiguration,
     GeneralToolbar,
     InputParameters,
     LatticeConfiguration,
@@ -33,7 +33,7 @@ from .Input.shared import SharedUtilities
 shared_utilities = SharedUtilities()
 
 inputParameters = InputParameters()
-distribution = DistributionParameters()
+distribution = DistributionConfiguration()
 lattice_config = LatticeConfiguration()
 space_charge = SpaceChargeConfiguration()
 csr = csrConfiguration()

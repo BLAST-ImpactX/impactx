@@ -119,7 +119,7 @@ def on_distribution_parameter_change(name: str, input: Union[float, int], type: 
 # -----------------------------------------------------------------------------
 
 
-class DistributionParameters(CardBase):
+class DistributionConfiguration(CardBase):
     """
     User-Input section for beam distribution.
     """

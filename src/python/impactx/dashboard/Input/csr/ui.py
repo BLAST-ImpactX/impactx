@@ -10,7 +10,7 @@ from ... import vuetify
 from .. import CardBase, CardComponents, InputComponents
 
 
-class csrConfiguration(CardBase):
+class CSRConfiguration(CardBase):
     HEADER_NAME = "CSR"
 
     def __init__(self):

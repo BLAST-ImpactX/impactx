@@ -10,7 +10,7 @@ from ... import vuetify
 from .. import CardBase, CardComponents, InputComponents
 
 
-class isrConfiguration(CardBase):
+class ISRConfiguration(CardBase):
     HEADER_NAME = "ISR"
 
     def __init__(self):

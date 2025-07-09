@@ -73,6 +73,10 @@ void init_impactxparticlecontainer(py::module& m)
             "ImpactX constant iterator for particle boxes (read-only)"
         )
 
+        .def("clear", &ImpactXParticleContainer::clear,
+             py::arg("keep_mass")=false, py::arg("keep_charge")=false,
+             "Empty the container and reset the reference particle"
+        )
         .def("add_n_particles",
              &ImpactXParticleContainer::AddNParticles,
              py::arg("x"), py::arg("y"), py::arg("t"),

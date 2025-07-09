@@ -44,6 +44,24 @@ namespace impactx
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
         amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
 
+        /** Reset the reference particle
+         *
+         * @param keep_mass do not reset the reference particle mass
+         * @param keep_charge do not reset the reference particle charge
+         */
+        void
+        reset (bool keep_mass=false, bool keep_charge=false)
+        {
+            auto old_mass = mass;
+            auto old_charge = charge;
+
+            RefPart zero{};
+            *this = zero;
+
+            if (keep_mass) { mass = old_mass; }
+            if (keep_charge) { charge = old_charge; }
+        }
+
         /** Get reference particle relativistic gamma
          *
          * @returns relativistic gamma

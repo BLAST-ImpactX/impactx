@@ -171,6 +171,13 @@ namespace impactx
     }
 
     void
+    ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
+    {
+        this->clearParticles();
+        m_refpart.reset(keep_mass, keep_charge);
+    }
+
+    void
     ImpactXParticleContainer::AddNParticles (
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & x,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & y,

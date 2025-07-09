@@ -6,7 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server, vuetify
+from ... import ctrl, state, vuetify
 from .. import (
     CardBase,
     CardComponents,
@@ -16,8 +16,6 @@ from .. import (
     generalFunctions,
 )
 from . import SpaceChargeFunctions
-
-server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
 # Default

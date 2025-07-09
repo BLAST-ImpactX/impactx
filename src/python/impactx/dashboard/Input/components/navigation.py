@@ -1,6 +1,4 @@
-from ... import html, setup_server, vuetify
-
-server, state, ctrl = setup_server()
+from ... import html, state, vuetify
 
 state.documentation_drawer_open = False
 state.documentation_url = ""

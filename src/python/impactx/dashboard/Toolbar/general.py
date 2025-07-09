@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 import os
 
-from .. import setup_server, vuetify
+from .. import ctrl, state, vuetify
 from ..Input import CardComponents
 from .sim_history.ui import SimulationHistory
-
-server, state, ctrl = setup_server()
 
 state.show_dashboard_alert = True
 

@@ -11,11 +11,9 @@ import os
 
 import pandas as pd
 
-from ... import setup_server
+from ... import ctrl, state
 from ...Run.utils import SimulationHelper
 from .plot import over_s_plot
-
-server, state, ctrl = setup_server()
 
 DEFAULT_HEADERS = ["beta_x", "beta_y"]
 UNSELECTABLE_HEADERS = ["step", "s"]

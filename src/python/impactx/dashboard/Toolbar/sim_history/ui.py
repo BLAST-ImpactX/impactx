@@ -9,13 +9,12 @@ License: BSD-3-Clause-LBNL
 from datetime import datetime
 from pathlib import Path
 
-from ... import html, setup_server, vuetify
+from ... import ctrl, html, state, vuetify
 from ...Analyze import over_s
 from ...Run.simulation import dashboard_sim_inputs
 from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 from . import SimulationHistoryComponents, SimulationHistoryDialogs
 
-server, state, ctrl = setup_server()
 state.curr_view_details_log = ""
 
 state.sims = []

@@ -11,10 +11,8 @@ from typing import Any, List, Tuple
 
 from impactx.distribution_input_helpers import twiss
 
-from ... import setup_server
+from ... import state
 from .. import generalFunctions
-
-server, state, ctrl = setup_server()
 
 
 class DistributionFunctions:

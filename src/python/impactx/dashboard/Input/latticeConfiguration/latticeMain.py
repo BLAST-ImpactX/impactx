@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from impactx import elements
 
-from ... import setup_server, vuetify
+from ... import ctrl, state, vuetify
 from .. import (
     CardBase,
     CardComponents,
@@ -21,7 +21,6 @@ from .. import (
 from ..defaults_helper import InputDefaultsHelper
 from . import LatticeConfigurationHelper, LatticeVariableHandler
 
-server, state, ctrl = setup_server()
 state.lattice_elements_using_variables = {}
 
 # -----------------------------------------------------------------------------

@@ -6,11 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import html, setup_server, vuetify
+from ... import ctrl, html, vuetify
 from ...Input.components.navigation import NavigationComponents
 from .components import SimulationHistoryComponents
-
-server, state, ctrl = setup_server()
 
 
 def view_details_tabs():

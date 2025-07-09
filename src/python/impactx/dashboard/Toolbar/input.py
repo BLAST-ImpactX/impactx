@@ -6,10 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .. import html, setup_server, vuetify
-
-server, state, ctrl = setup_server()
-
+from .. import ctrl, html, state, vuetify
 from ..Input.components.card import CardComponents
 from ..Input.generalFunctions import generalFunctions
 from ..Run.simulation import dashboard_sim_inputs

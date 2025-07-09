@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from typing import Union
 
-from .. import setup_server
+from .. import state
 from ..Toolbar.file_imports.python.parser import DashboardParser
 from .defaults import DashboardDefaults
-
-server, state, ctrl = setup_server()
 
 # -----------------------------------------------------------------------------
 # Code

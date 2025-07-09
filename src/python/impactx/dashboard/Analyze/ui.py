@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from trame.widgets import plotly
 
-from .. import setup_server, vuetify
+from .. import ctrl, state, vuetify
 from ..Input.components.navigation import NavigationComponents
 from .over_s.selector import over_s_selector
-
-server, state, ctrl = setup_server()
 
 state.visualization_options = ["Plot Over S", "Phase Space Plots"]
 state.active_visualization = "Plot Over S"

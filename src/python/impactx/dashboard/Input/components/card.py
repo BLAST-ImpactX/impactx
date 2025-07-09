@@ -1,10 +1,8 @@
 from typing import List, Optional, Union
 
-from ... import html, setup_server, vuetify
+from ... import html, state, vuetify
 from ..defaults import DashboardDefaults, UIDefaults
 from ..generalFunctions import generalFunctions
-
-server, state, ctrl = setup_server()
 
 state.documentation_drawer_open = False
 state.documentation_url = ""

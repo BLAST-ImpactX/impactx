@@ -6,9 +6,8 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server, vuetify
+from .. import state, vuetify
 
-server, state, ctrl = setup_server()
 state.selected_sim_to_analyze = None
 
 

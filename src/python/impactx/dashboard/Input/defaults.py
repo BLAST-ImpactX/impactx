@@ -11,10 +11,8 @@ from typing import Any
 from impactx import distribution, elements
 from impactx.impactx_pybind import ImpactX, RefPart
 
-from .. import setup_server
+from .. import state
 from .defaults_helper import InputDefaultsHelper
-
-server, state, ctrl = setup_server()
 
 DISTRIBUTION_MODULE_NAME = distribution
 LATTICE_MODULE_NAME = elements

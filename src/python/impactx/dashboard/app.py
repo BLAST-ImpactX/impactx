@@ -11,13 +11,12 @@ from . import (
     NavigationComponents,
     SpaceChargeConfiguration,
     csrConfiguration,
+    ctrl,
     isrConfiguration,
-    setup_server,
+    server,
     vuetify,
 )
 from .Input.visualization.lattice.ui import LatticeVisualizer
-
-server, state, ctrl = setup_server()
 
 server.enable_module(
     {"styles": ["https://fonts.googleapis.com/css?family=Roboto:300,400,500"]}

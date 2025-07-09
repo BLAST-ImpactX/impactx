@@ -1,9 +1,7 @@
 import keyword
 
-from ... import setup_server, vuetify
+from ... import ctrl, vuetify
 from .. import CardComponents
-
-server, state, ctrl = setup_server()
 
 
 class LatticeConfigurationHelper:

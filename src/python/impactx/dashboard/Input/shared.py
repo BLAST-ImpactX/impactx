@@ -6,12 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server
+from .. import ctrl, state
 from ..Input.inputParameters.inputMain import InputParameters
 from . import DashboardDefaults, DashboardValidation, generalFunctions
-
-server, state, ctrl = setup_server()
-
 
 input_parameters_defaults = list(DashboardDefaults.INPUT_PARAMETERS.keys())
 space_charge_defaults = list(DashboardDefaults.CSR.keys())

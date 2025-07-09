@@ -53,7 +53,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 cfbend1 = elements.ExactCFbend(
     name="cfbend1",
     ds=1.0,
-    k_normal=[1.0e-7, 1.0, 0.0],
+    k_normal=[1.0e-7, 1.0, -2.0],
     k_skew=[0.0, 0.0, 0.0],
     unit=0,
     int_order=2,
@@ -64,7 +64,7 @@ cfbend1 = elements.ExactCFbend(
 multipole1 = elements.ExactMultipole(
     name="quad1",
     ds=-1.0,
-    k_normal=[0.0, 1.0, 0.0],
+    k_normal=[0.0, 1.0, -2.0],
     k_skew=[0.0, 0.0, 0.0],
     unit=0,
     int_order=2,

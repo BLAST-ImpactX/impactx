@@ -29,16 +29,16 @@ monitor.backend = h5
 
 cfbend1.type = cfbend_exact
 cfbend1.ds = 1.0
-cfbend1.k_normal = 1.0e-7 1.0 0.0
-cfbend1.k_skew = 0 0 0
+cfbend1.k_normal = 1.0e-7 1.0 -2.0 0.0
+cfbend1.k_skew = 0 0 0 0
 cfbend1.units = 0
 cfbend1.int_order = 2
 cfbend1.mapsteps = 5
 
 multipole1.type = multipole_exact
 multipole1.ds = -1.0
-multipole1.k_normal = 0.0 1.0 0.0
-multipole1.k_skew = 0 0 0
+multipole1.k_normal = 0.0 1.0 -2.0 0.0
+multipole1.k_skew = 0 0 0 0
 multipole1.units = 0
 multipole1.int_order = 2
 multipole1.mapsteps = 5

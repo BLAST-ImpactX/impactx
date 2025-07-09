@@ -14,7 +14,7 @@ from ...Input.components import (
     NavigationComponents,
 )
 from .. import DashboardValidation, generalFunctions
-from . import SpaceChargeFunctions
+from .utils import SpaceChargeFunctions
 
 # -----------------------------------------------------------------------------
 # Default

@@ -10,7 +10,7 @@ from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardValidation
 from ..defaults import TRACKING_MODE_PROPERTIES
-from . import InputFunctions
+from .utils import InputFunctions
 
 
 class InputParameters(CardBase):

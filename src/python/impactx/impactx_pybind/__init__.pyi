@@ -532,6 +532,10 @@ class ImpactXParticleContainer(
         """
         Return the history of the beam as calculated by the reduced beam characteristics on every step.
         """
+    def clear(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Empty the container and reset the reference particle
+        """
     def mean_and_std_positions(self) -> tuple[float, float, float, float, float, float]:
         """
         Compute the mean and std of the particle position in each dimension.
@@ -609,6 +613,10 @@ class RefPart:
         This struct stores the reference particle attributes
         stored in ImpactXParticleContainer.
         """
+    def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Reset the reference particle
+        """
     def set_charge_qe(self, charge_qe: float) -> RefPart:
         """
         Set reference particle charge (positive elementary charge)
@@ -653,6 +661,15 @@ class RefPart:
         """
         Get reference particle energy (MeV)
         """
+    @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized map
+        """
+    @map.setter
+    def map(
+        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    ) -> None: ...
     @property
     def mass(self) -> float:
         """
@@ -710,6 +727,13 @@ class RefPart:
         """
     @s.setter
     def s(self, arg0: float) -> None: ...
+    @property
+    def sedge(self) -> float:
+        """
+        value of s at entrance of the current beamline element
+        """
+    @sedge.setter
+    def sedge(self, arg0: float) -> None: ...
     @property
     def t(self) -> float:
         """

@@ -4,7 +4,7 @@
  *
  * This file is part of ImpactX.
  *
- * Authors: Chad Mitchell, Axel Huebl
+ * Authors: Chad Mitchell, Axel Huebl, Kyrre Ness Sjobak
  * License: BSD-3-Clause-LBNL
  */
 #ifndef IMPACTX_QUAD_H
@@ -271,9 +271,9 @@ namespace impactx::elements
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
             } else {
-                R(1,2) = m_slice_ds;
-                R(3,4) = m_slice_ds;
-                R(5,6) = m_slice_ds / betgam2;
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
             }
 
             return R;

@@ -1,5 +1,3 @@
 from .ui import CSRConfiguration
 
-__all__ = [
-    "CSRConfiguration"
-]
+__all__ = ["CSRConfiguration"]

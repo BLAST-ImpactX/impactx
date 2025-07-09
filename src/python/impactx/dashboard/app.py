@@ -4,15 +4,15 @@ from trame.widgets import router, xterm
 
 from . import (
     AnalyzeSimulation,
+    CSRConfiguration,
     DistributionConfiguration,
     GeneralToolbar,
     InputParameters,
+    ISRConfiguration,
     LatticeConfiguration,
     NavigationComponents,
     SpaceChargeConfiguration,
-    CSRConfiguration,
     ctrl,
-    ISRConfiguration,
     server,
     vuetify,
 )

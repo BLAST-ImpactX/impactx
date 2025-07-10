@@ -79,8 +79,8 @@ namespace impactx::initialization
                                            * prob_relative[lev+1] / prob_relative[0];
         amrex::RealVect const n_cell_diff = (r_cell_n - n_cell_nup / r_ref_ratio);
 
-        amrex::RealVect const r_fine_tag_lo = amrex::RealVect(dom.smallEnd()) + n_cell_diff / 2.0;
-        amrex::RealVect const r_fine_tag_hi = amrex::RealVect(dom.bigEnd())   - n_cell_diff / 2.0;
+        amrex::RealVect const r_fine_tag_lo = amrex::RealVect(dom.smallEnd()) + n_cell_diff * 0.5;
+        amrex::RealVect const r_fine_tag_hi = amrex::RealVect(dom.bigEnd())   - n_cell_diff * 0.5;
 
         amrex::IntVect const fine_tag_lo = {
                 AMREX_D_DECL((int)std::ceil(r_fine_tag_lo[0]), (int)std::ceil(r_fine_tag_lo[1]), (int)std::ceil(r_fine_tag_lo[2]))

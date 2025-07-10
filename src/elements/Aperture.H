@@ -151,8 +151,8 @@ namespace impactx::elements
             // define intermediate variables
             amrex::ParticleReal u;
             amrex::ParticleReal v;
-            amrex::ParticleReal dx = m_repeat_x/2.0;
-            amrex::ParticleReal dy = m_repeat_y/2.0;
+            amrex::ParticleReal dx = m_repeat_x * 0.5_prt;
+            amrex::ParticleReal dy = m_repeat_y * 0.5_prt;
 
             // if the aperture is periodic, shift x,y coordinates to the fundamental domain
             u = (m_repeat_x==0.0) ? x : (std::fmod(std::abs(x)+dx,m_repeat_x)-dx);

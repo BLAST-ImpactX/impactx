@@ -98,7 +98,7 @@ namespace impactx::elements
 
             // compute phase advance per unit length (in rad/m) and
             // rotation angle (in rad)
-            amrex::ParticleReal const alpha = m_ks / 2.0_prt;
+            amrex::ParticleReal const alpha = m_ks * 0.5_prt;
             amrex::ParticleReal const theta = alpha*slice_ds;
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
@@ -257,7 +257,7 @@ namespace impactx::elements
 
             // compute phase advance per unit length (in rad/m) and
             // rotation angle (in rad)
-            amrex::ParticleReal const alpha = m_ks / 2.0_prt;
+            amrex::ParticleReal const alpha = m_ks * 0.5_prt;
             amrex::ParticleReal const theta = alpha*slice_ds;
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 

@@ -124,41 +124,41 @@ namespace impactx::diagnostics
         using Complex = amrex::GpuComplex<amrex::ParticleReal>;
 
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> roots;
-        amrex::ParticleReal x1 = 0.0_prt;
-        amrex::ParticleReal x2 = 0.0_prt;
-        amrex::ParticleReal x3 = 0.0_prt;
+        amrex::ParticleReal x1 = 0_prt;
+        amrex::ParticleReal x2 = 0_prt;
+        amrex::ParticleReal x3 = 0_prt;
 
-        amrex::ParticleReal Q = (3.0_prt*a*c - powi<2>(b))/(9.0_prt * powi<2>(a));
-        amrex::ParticleReal R = (9.0_prt*a*b*c - 27_prt*powi<2>(a)*d - 2.0_prt*powi<3>(b))/(54.0_prt*powi<3>(a));
+        amrex::ParticleReal Q = (3_prt*a*c - powi<2>(b))/(9_prt * powi<2>(a));
+        amrex::ParticleReal R = (9_prt*a*b*c - 27_prt*powi<2>(a)*d - 2_prt*powi<3>(b))/(54_prt*powi<3>(a));
         amrex::ParticleReal discriminant = powi<3>(Q) + powi<2>(R);
 
         // Define complex variable C
-        Complex Qc(Q,0.0_prt);
-        Complex Rc(R,0.0_prt);
-        Complex Dc(discriminant,0.0_prt);
-        Complex C = amrex::pow(-Rc + amrex::sqrt(Dc),1.0/3.0);
+        Complex Qc(Q,0_prt);
+        Complex Rc(R,0_prt);
+        Complex Dc(discriminant,0_prt);
+        Complex C = amrex::pow(-Rc + amrex::sqrt(Dc),1_prt/3_prt);
 
         // Define a cubic root of unity xi
-        amrex::ParticleReal xire = -1.0/2.0;
-        amrex::ParticleReal xiim = std::sqrt(3.0)/2.0;
+        amrex::ParticleReal xire = -0.5_prt;
+        amrex::ParticleReal xiim = std::sqrt(3_prt)*0.5_prt;
         Complex xi(xire,xiim);
 
         //Three roots in algebraic form.
 
-        if (C.m_real == 0.0_prt && C.m_imag == 0.0_prt) {  // Special case of a triple root
+        if (C.m_real == 0_prt && C.m_imag == 0_prt) {  // Special case of a triple root
 
-           x1 = - b/(3.0_prt*a);
-           x2 = - b/(3.0_prt*a);
-           x3 = - b/(3.0_prt*a);
+           x1 = - b/(3_prt*a);
+           x2 = - b/(3_prt*a);
+           x3 = - b/(3_prt*a);
 
         } else {
 
            Complex z1 = Qc/C - C;
            Complex z2 = Qc/(xi*C) - xi*C;
            Complex z3 = Qc/(powi<2>(xi)*C) - powi<2>(xi)*C;
-           x1 = z2.m_real - b/(3.0*a);
-           x2 = z1.m_real - b/(3.0*a);
-           x3 = z3.m_real - b/(3.0*a);
+           x1 = z2.m_real - b/(3_prt*a);
+           x2 = z1.m_real - b/(3_prt*a);
+           x3 = z3.m_real - b/(3_prt*a);
         }
 
         roots = std::make_tuple(x1,x2,x3);

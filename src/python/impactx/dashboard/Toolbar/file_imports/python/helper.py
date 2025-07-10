@@ -34,7 +34,7 @@ class DashboardParserHelper:
     @staticmethod
     def parse_single_inputs(content: str) -> dict:
         """
-        Parses individual input parameters from the simulation file content.
+        Parses individual simulation parameters from the simulation file content.
 
         :param content: The content of the ImpactX simulation file.
         """
@@ -69,7 +69,7 @@ class DashboardParserHelper:
     @staticmethod
     def parse_list_inputs(content: str) -> dict:
         """
-        Parses list-based input parameters from the simulation file content.
+        Parses list-based simulation parameters from the simulation file content.
 
         :param content: The content of the ImpactX simulation file.
         """

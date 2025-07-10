@@ -40,7 +40,7 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     parsed_variables = imported_data["variables"]
     non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
-    # Update state inputs (inputParameters, Space Charge, CSR, ISR)
+    # Update state inputs (simulation parameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)

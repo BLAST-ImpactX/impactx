@@ -10,15 +10,15 @@ from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardValidation
 from ..defaults import TRACKING_MODE_PROPERTIES
-from .utils import InputFunctions
+from .utils import SimulationFunctions
 
 
-class InputParameters(CardBase):
+class SimulationParameters(CardBase):
     """
     User-Input section for beam properties.
     """
 
-    HEADER_NAME = "Input Parameters"
+    HEADER_NAME = "Simulation Parameters"
 
     def __init__(self):
         super().__init__()
@@ -26,7 +26,7 @@ class InputParameters(CardBase):
     @state.change("kin_energy_unit")
     def on_kin_energy_unit_change(**kwargs) -> None:
         if state.kin_energy_on_ui != 0:
-            InputFunctions.update_kin_energy_sim_value()
+            SimulationFunctions.update_kin_energy_sim_value()
 
     @state.change("tracking_mode")
     def on_tracking_mode_change(**kwargs) -> None:

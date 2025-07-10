@@ -22,7 +22,7 @@ CONVERSION_FACTORS = {
 }
 
 
-class InputFunctions:
+class SimulationFunctions:
     """
     Helper functions for the beam properties.
     """

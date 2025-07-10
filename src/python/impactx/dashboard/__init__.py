@@ -13,7 +13,7 @@ from .Analyze.ui import AnalyzeSimulation
 from .Input.csr import CSRConfiguration
 from .Input.isr import ISRConfiguration
 from .Input.distribution import DistributionConfiguration
-from .Input.input_parameters import InputParameters
+from .Input.simulation_parameters import SimulationParameters
 from .Input.lattice import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
 from .Input.space_charge import SpaceChargeConfiguration
@@ -36,7 +36,7 @@ __all__ = [
     "CSRConfiguration",
     "ISRConfiguration",
     "DistributionConfiguration",
-    "InputParameters",
+    "SimulationParameters",
     "LatticeConfiguration",
     "SpaceChargeConfiguration",
     "GeneralToolbar",

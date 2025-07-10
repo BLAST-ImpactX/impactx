@@ -14,7 +14,7 @@ from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardDefaults, DashboardValidation, generalFunctions
 from ..defaults_helper import InputDefaultsHelper
-from . import DistributionFunctions
+from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
 # Helpful

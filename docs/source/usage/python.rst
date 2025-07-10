@@ -390,23 +390,27 @@ Particles
 
       :param impactx.RefPart refpart: a reference particle to copy all attributes from
 
-   .. py:method:: reduced_beam_characteristics()
+   .. py:method:: beam_moments()
 
-      Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+      Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
 
       :return: beam properties with string keywords
       :rtype: dict
 
-   .. py:property:: enable_beam_history
+   .. py:property:: store_beam_moments
 
-      In situ record and store the beam history for every simulation step (default: ``False``).
+      In situ calculate and store the beam moments for every simulation step (default: ``False``).
 
-   .. py:method:: beam_history()
+   .. py:method:: beam_moments_history()
 
-      Return the history of the beam as calculated by the reduced beam characteristics on every step.
+      Return the history of the beam moments on every step.
 
       :return: Pandas Dataframe of beam properties, including the global reference position s
       :rtype: Pandas Dataframe
+
+   .. py:method:: reset_beam_moments_history()
+
+      Reset the history of the beam moments
 
    .. py:method:: min_and_max_positions()
 

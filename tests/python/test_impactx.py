@@ -30,7 +30,7 @@ def validate_fodo(beam):
     rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 
     # in situ calculate the reduced beam characteristics
-    rbc = beam.reduced_beam_characteristics()
+    rbc = beam.beam_moments()
     ref = beam.ref_particle()
 
     print("charge=", rbc["charge_C"])

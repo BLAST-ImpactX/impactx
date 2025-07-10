@@ -58,7 +58,7 @@ namespace impactx
             amrex::Print() << " Diagnostics: " << diag_enable << "\n";
         }
 
-        pc->ResetRBCHistory();
+        pc->reset_beam_moments_history();
 
         if (diag_enable)
         {
@@ -147,8 +147,8 @@ namespace impactx
                     bool slice_step_diagnostics = false;
                     pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
 
-                    if (amr_data->track_particles.m_particle_container->enable_beam_history) {
-                        amr_data->track_particles.m_particle_container->RecordRBC();
+                    if (amr_data->track_particles.m_particle_container->store_beam_moments) {
+                        amr_data->track_particles.m_particle_container->record_beam_moments();
                     }
 
                     if (diag_enable && slice_step_diagnostics) {

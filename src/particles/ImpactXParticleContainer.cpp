@@ -366,14 +366,26 @@ namespace impactx
     }
 
     void
-    ImpactXParticleContainer::RecordRBC ()
+    ImpactXParticleContainer::record_beam_moments ()
     {
-        BL_PROFILE("ImpactXParticleContainer::RecordRBC");
+        BL_PROFILE("ImpactXParticleContainer::record_beam_moments");
 
         auto rbc = diagnostics::reduced_beam_characteristics(*this);
         amrex::ParticleReal const s = this->GetRefParticle().s;
         rbc["s"] = s;
 
-        m_rbc_history.push_back(rbc);
+        m_beam_moments.push_back(rbc);
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    ImpactXParticleContainer::beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        return rbc;
     }
 } // namespace impactx

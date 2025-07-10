@@ -30,6 +30,7 @@ namespace impactx::particles::wakefields
         BL_PROFILE("impactx::particles::wakefields::ISRPush")
 
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
         // Physical constants and reference quantities
         amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * (ablastr::constant::SI::c);
@@ -41,7 +42,7 @@ namespace impactx::particles::wakefields
 
         // Obtain constants for force normalization
         amrex::ParticleReal const B_normal = bg_ref/std::abs(rc);
-        amrex::ParticleReal const c1 = 2.0_prt/3.0_prt * r_e * slice_ds * amrex::Math::powi<2>(B_normal);
+        amrex::ParticleReal const c1 = 2.0_prt/3.0_prt * r_e * slice_ds * powi<2>(B_normal);
         amrex::ParticleReal const c2 = B_normal * lambda_e;
 
         // Coefficients of the Taylor expansion of polynomials g and h
@@ -84,7 +85,7 @@ namespace impactx::particles::wakefields
 
                     // Relativistic beta*gamma for this particle
                     amrex::ParticleReal const gamma = gamma_ref - bg_ref*pt;
-                    amrex::ParticleReal const bg = std::sqrt(amrex::Math::powi<2>(gamma)-1_prt);
+                    amrex::ParticleReal const bg = std::sqrt(powi<2>(gamma)-1_prt);
 
                     // Value of ISR kick in the total momentum (normalized by mc)
                     amrex::ParticleReal const tau = c1 * bg;
@@ -98,10 +99,10 @@ namespace impactx::particles::wakefields
                        h = h1*chi;
                     } else if (isr_order == 2) {
                        g = g0 + g1*chi;
-                       h = h1*chi + h2*amrex::Math::powi<2>(chi);
+                       h = h1*chi + h2*powi<2>(chi);
                     } else if (isr_order == 3) {
-                       g = g0 + g1*chi + g2*amrex::Math::powi<2>(chi);
-                       h = h1*chi + h2*amrex::Math::powi<2>(chi) + h3*amrex::Math::powi<3>(chi);
+                       g = g0 + g1*chi + g2*powi<2>(chi);
+                       h = h1*chi + h2*powi<2>(chi) + h3*powi<3>(chi);
                     }
 
                     // Value of the ISR kick in total momentum (relative to total momentum):
@@ -109,7 +110,7 @@ namespace impactx::particles::wakefields
 
                     // Final value of updated particle gamma:
                     amrex::ParticleReal const bg_f = bg*(1_prt + dp);
-                    amrex::ParticleReal const gamma_f = std::sqrt(1_prt + amrex::Math::powi<2>(bg_f));
+                    amrex::ParticleReal const gamma_f = std::sqrt(1_prt + powi<2>(bg_f));
 
                     // Update momentum
                     px = px * (1_prt + dp);

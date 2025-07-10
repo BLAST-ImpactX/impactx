@@ -115,6 +115,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // initialize output values
             amrex::ParticleReal xout = x;
@@ -127,9 +128,9 @@ namespace impactx::elements
             amrex::ParticleReal const pz = std::sqrt(
                 1.0_prt -
                 2.0_prt * pt * m_inv_beta +
-                amrex::Math::powi<2>(pt) -
-                amrex::Math::powi<2>(py) -
-                amrex::Math::powi<2>(px + m_sin_phi_in)
+                powi<2>(pt) -
+                powi<2>(py) -
+                powi<2>(px + m_sin_phi_in)
             );
             amrex::ParticleReal const pzf = pz * m_cos_theta - (px + m_sin_phi_in) * m_sin_theta;
 

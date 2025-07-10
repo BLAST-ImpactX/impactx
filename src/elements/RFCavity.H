@@ -269,6 +269,7 @@ namespace RFCavityData
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -288,7 +289,7 @@ namespace RFCavityData
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -304,7 +305,7 @@ namespace RFCavityData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -362,6 +363,7 @@ namespace RFCavityData
         RF_Efield (amrex::ParticleReal const zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
@@ -395,8 +397,8 @@ namespace RFCavityData
                      sin_data[j] * std::sin(j*2*pi*z/zlen);
                  efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
                       j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
-                 efieldpp = efieldpp- amrex::Math::powi<2>(j*2*pi*cos_data[j]/zlen)  * std::cos(j*2*pi*z/zlen) -
-                     amrex::Math::powi<2>(j*2*pi*sin_data[j]/zlen)  * std::sin(j*2*pi*z/zlen);
+                 efieldpp = efieldpp- powi<2>(j*2*pi*cos_data[j]/zlen)  * std::cos(j*2*pi*z/zlen) -
+                     powi<2>(j*2*pi*sin_data[j]/zlen)  * std::sin(j*2*pi*z/zlen);
                  efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
                       zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
                }
@@ -426,13 +428,14 @@ namespace RFCavityData
                    [[maybe_unused]] amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // push the reference particle
             amrex::ParticleReal const t = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/std::sqrt(1.0_prt - amrex::Math::powi<-2>(pt));
+                refpart.t = t + tau/std::sqrt(1.0_prt - powi<-2>(pt));
                 refpart.pt = pt;
             }
             else {
@@ -444,8 +447,8 @@ namespace RFCavityData
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/amrex::Math::powi<3>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/amrex::Math::powi<3>(betgam);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -462,6 +465,7 @@ namespace RFCavityData
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             amrex::ParticleReal const t = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
@@ -487,13 +491,13 @@ namespace RFCavityData
 
             refpart.map(1,1) = (1.0_prt-s*L)*R(1,1) + s*R(2,1);
             refpart.map(1,2) = (1.0_prt-s*L)*R(1,2) + s*R(2,2);
-            refpart.map(2,1) = -s * amrex::Math::powi<2>(L)*R(1,1) + (1.0_prt+s*L)*R(2,1);
-            refpart.map(2,2) = -s * amrex::Math::powi<2>(L)*R(1,2) + (1.0_prt+s*L)*R(2,2);
+            refpart.map(2,1) = -s * powi<2>(L)*R(1,1) + (1.0_prt+s*L)*R(2,1);
+            refpart.map(2,2) = -s * powi<2>(L)*R(1,2) + (1.0_prt+s*L)*R(2,2);
 
             refpart.map(3,3) = (1.0_prt-s*L)*R(3,3) + s*R(4,3);
             refpart.map(3,4) = (1.0_prt-s*L)*R(3,4) + s*R(4,4);
-            refpart.map(4,3) = -s * amrex::Math::powi<2>(L)*R(3,3) + (1.0_prt+s*L)*R(4,3);
-            refpart.map(4,4) = -s * amrex::Math::powi<2>(L)*R(3,4) + (1.0_prt+s*L)*R(4,4);
+            refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1.0_prt+s*L)*R(4,3);
+            refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1.0_prt+s*L)*R(4,4);
         }
 
         /** This pushes the reference particle and the linear map matrix

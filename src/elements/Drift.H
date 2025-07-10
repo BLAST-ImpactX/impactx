@@ -83,6 +83,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -90,7 +91,7 @@ namespace impactx::elements
             m_slice_ds = m_ds / nslice();
 
             // find beta*gamma^2
-            m_betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
+            m_betgam2 = powi<2>(refpart.pt) - 1.0_prt;
 
             m_slice_bg = m_slice_ds / m_betgam2;
         }
@@ -164,6 +165,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -180,7 +182,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (drift)
             refpart.x = x + step*px;
@@ -204,13 +206,14 @@ namespace impactx::elements
         transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // assign linear map matrix elements
             Map6x6 R = Map6x6::Identity();

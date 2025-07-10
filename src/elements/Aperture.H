@@ -143,6 +143,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -170,11 +171,11 @@ namespace impactx::elements
             switch (m_shape)
             {
                 case Shape::rectangular:  // default
-                    inside_aperture = (amrex::Math::powi<2>(u) <= 1_prt && amrex::Math::powi<2>(v) <= 1_prt);
+                    inside_aperture = (powi<2>(u) <= 1_prt && powi<2>(v) <= 1_prt);
                     break;
 
                 case Shape::elliptical:
-                    inside_aperture = (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) <= 1_prt);
+                    inside_aperture = (powi<2>(u) + powi<2>(v) <= 1_prt);
                     break;
             }
 

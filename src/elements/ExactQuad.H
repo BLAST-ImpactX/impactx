@@ -103,6 +103,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -111,7 +112,7 @@ namespace impactx::elements
 
             // find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            m_betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
+            m_betgam2 = powi<2>(pt_ref) - 1.0_prt;
             m_ibetgam2 = 1_prt / m_betgam2;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
@@ -287,6 +288,7 @@ namespace impactx::elements
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             amrex::ParticleReal const x = particle(1);
             amrex::ParticleReal const px = particle(2);
@@ -297,10 +299,10 @@ namespace impactx::elements
 
             // compute the radical in the denominator (= pz):
             amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                amrex::Math::powi<2>(pt - m_ibeta) -
+                powi<2>(pt - m_ibeta) -
                 m_ibetgam2 -
-                amrex::Math::powi<2>(px) -
-                amrex::Math::powi<2>(py)
+                powi<2>(px) -
+                powi<2>(py)
             );
 
             // The momenta are not affected.
@@ -323,6 +325,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
 
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -339,7 +342,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -360,13 +363,14 @@ namespace impactx::elements
         transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // compute phase advance per unit length in s (in rad/m)
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));

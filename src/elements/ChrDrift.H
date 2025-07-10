@@ -85,6 +85,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -95,7 +96,7 @@ namespace impactx::elements
             m_beta = refpart.beta();
             m_gamma = refpart.gamma();
 
-            m_const1 = 1_prt / (2_prt * amrex::Math::powi<3>(m_beta) * amrex::Math::powi<2>(m_gamma));
+            m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(m_gamma));
         }
 
         /** This is a chrdrift functor, so that a variable of this type can be used like a chrdrift function.
@@ -122,6 +123,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -137,7 +139,7 @@ namespace impactx::elements
             amrex::ParticleReal const ptout = pt;
 
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal const idelta1 = 1_prt / std::sqrt(1_prt - 2_prt*pt/m_beta + amrex::Math::powi<2>(pt));
+            amrex::ParticleReal const idelta1 = 1_prt / std::sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
 
             // advance transverse position and momentum (drift)
             x = xout + m_slice_ds * px * idelta1;
@@ -146,12 +148,12 @@ namespace impactx::elements
             // pyout = py;
 
             // the corresponding symplectic update to t
-            amrex::ParticleReal term = 2_prt * amrex::Math::powi<2>(pt) + amrex::Math::powi<2>(px) + amrex::Math::powi<2>(py);
-            term = 2_prt - 4_prt*m_beta*pt + amrex::Math::powi<2>(m_beta)*term;
-            term = -2_prt + amrex::Math::powi<2>(m_gamma)*term;
+            amrex::ParticleReal term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
+            term = 2_prt - 4_prt*m_beta*pt + powi<2>(m_beta)*term;
+            term = -2_prt + powi<2>(m_gamma)*term;
             term = (-1_prt+m_beta*pt)*term;
             term = term * m_const1;
-            t = tout - m_slice_ds * (1_prt / m_beta + term * amrex::Math::powi<3>(idelta1));
+            t = tout - m_slice_ds * (1_prt / m_beta + term * powi<3>(idelta1));
             // ptout = pt;
 
             // assign updated momenta
@@ -174,6 +176,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -190,7 +193,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (drift)
             refpart.x = x + step*px;

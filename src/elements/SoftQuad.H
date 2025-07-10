@@ -376,7 +376,7 @@ namespace SoftQuadrupoleData
             // specify constants
             using ablastr::constant::math::pi;
             amrex::ParticleReal const zlen = m_ds;
-            amrex::ParticleReal const zmid = zlen / 2.0_prt;
+            amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis magnetic field (z is relative to quadrupole midpoint)
             amrex::ParticleReal bfield = 0.0;

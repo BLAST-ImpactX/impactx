@@ -68,9 +68,9 @@ namespace impactx::diagnostics
         auto const S6 = S2 * S4;
 
         // Define the three kinematic invariants (should be nonnegative).
-        amrex::ParticleReal const I2 = -S2.trace() / 2.0_prt;
-        amrex::ParticleReal const I4 = +S4.trace() / 2.0_prt;
-        amrex::ParticleReal const I6 = -S6.trace() / 2.0_prt;
+        amrex::ParticleReal const I2 = -S2.trace() * 0.5_prt;
+        amrex::ParticleReal const I4 = +S4.trace() * 0.5_prt;
+        amrex::ParticleReal const I6 = -S6.trace() * 0.5_prt;
 
 
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal> invariants = std::make_tuple(I2, I4, I6);
@@ -118,8 +118,8 @@ namespace impactx::diagnostics
         // doi:10.48550/arXiv.1305.1532.
         amrex::ParticleReal a = 1.0_prt;
         amrex::ParticleReal b = -I2;
-        amrex::ParticleReal c = (powi<2>(I2) - I4) / 2.0_prt;
-        amrex::ParticleReal d = -powi<3>(I2) / 6.0_prt + I2 * I4 / 2.0_prt - I6 / 3.0_prt;
+        amrex::ParticleReal c = (powi<2>(I2) - I4) * 0.5_prt;
+        amrex::ParticleReal d = -powi<3>(I2) / 6.0_prt + I2 * I4 * 0.5_prt - I6 / 3.0_prt;
 
         // Return the cubic coefficients
         //std::cout << "Return a,b,c,d " << a << " " << b << " " << c << " " << d << "\n";

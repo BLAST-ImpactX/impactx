@@ -378,7 +378,7 @@ namespace RFCavityData
             // specify constants
             using ablastr::constant::math::pi;
             amrex::ParticleReal const zlen = m_ds;
-            amrex::ParticleReal const zmid = zlen / 2.0_prt;
+            amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis electric field (z is relative to cavity midpoint)
             amrex::ParticleReal efield = 0.0;
@@ -473,8 +473,8 @@ namespace RFCavityData
             // Define parameters and intermediate constants
             using ablastr::constant::math::pi;
             using ablastr::constant::SI::c;
-            amrex::ParticleReal const k = (2.0_prt*pi/c)*m_freq;
-            amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
+            amrex::ParticleReal const k = (2_prt*pi/c)*m_freq;
+            amrex::ParticleReal const phi = m_phase*(pi/180_prt);
             amrex::ParticleReal const E0 = m_escale;
 
             // push the reference particle
@@ -487,17 +487,17 @@ namespace RFCavityData
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const s = tau/refpart.beta_gamma();
-            amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2.0_prt*k);
+            amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2_prt*k);
 
-            refpart.map(1,1) = (1.0_prt-s*L)*R(1,1) + s*R(2,1);
-            refpart.map(1,2) = (1.0_prt-s*L)*R(1,2) + s*R(2,2);
-            refpart.map(2,1) = -s * powi<2>(L)*R(1,1) + (1.0_prt+s*L)*R(2,1);
-            refpart.map(2,2) = -s * powi<2>(L)*R(1,2) + (1.0_prt+s*L)*R(2,2);
+            refpart.map(1,1) = (1_prt-s*L)*R(1,1) + s*R(2,1);
+            refpart.map(1,2) = (1_prt-s*L)*R(1,2) + s*R(2,2);
+            refpart.map(2,1) = -s * powi<2>(L)*R(1,1) + (1_prt+s*L)*R(2,1);
+            refpart.map(2,2) = -s * powi<2>(L)*R(1,2) + (1_prt+s*L)*R(2,2);
 
-            refpart.map(3,3) = (1.0_prt-s*L)*R(3,3) + s*R(4,3);
-            refpart.map(3,4) = (1.0_prt-s*L)*R(3,4) + s*R(4,4);
-            refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1.0_prt+s*L)*R(4,3);
-            refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1.0_prt+s*L)*R(4,4);
+            refpart.map(3,3) = (1_prt-s*L)*R(3,3) + s*R(4,3);
+            refpart.map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
+            refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
+            refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -522,8 +522,8 @@ namespace RFCavityData
             // Define parameters and intermediate constants
             using ablastr::constant::math::pi;
             using ablastr::constant::SI::c;
-            amrex::ParticleReal const k = (2.0_prt*pi/c)*m_freq;
-            amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
+            amrex::ParticleReal const k = (2_prt*pi/c)*m_freq;
+            amrex::ParticleReal const phi = m_phase*(pi/180_prt);
             amrex::ParticleReal const E0 = m_escale;
 
             // push the reference particle
@@ -539,7 +539,7 @@ namespace RFCavityData
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::ParticleReal const M = E0*(ezintf-ezint)*k * std::sin(k*t+phi);
-            amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2.0_prt*k)+M/2.0_prt;
+            amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2_prt*k)+M*0.5_prt;
 
             refpart.map(2,1) = L*R(1,1) + R(2,1);
             refpart.map(2,2) = L*R(1,2) + R(2,2);

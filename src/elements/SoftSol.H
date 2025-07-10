@@ -385,7 +385,7 @@ namespace SoftSolenoidData
             // specify constants
             using ablastr::constant::math::pi;
             amrex::ParticleReal const zlen = m_ds;
-            amrex::ParticleReal const zmid = zlen / 2.0_prt;
+            amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis magnetic field (z is relative to solenoid midpoint)
             amrex::ParticleReal bfield = 0.0;
@@ -495,7 +495,7 @@ namespace SoftSolenoidData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::ParticleReal const alpha = B0*bz/2.0_prt;
+            amrex::ParticleReal const alpha = B0*bz*0.5_prt;
             amrex::ParticleReal const alpha2 = powi<2>(alpha);
 
             refpart.map(2,1) = R(2,1) - tau*alpha2*R(1,1);
@@ -544,7 +544,7 @@ namespace SoftSolenoidData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::ParticleReal const theta = tau*B0*bz/2.0_prt;
+            amrex::ParticleReal const theta = tau*B0*bz*0.5_prt;
             amrex::ParticleReal const cs = std::cos(theta);
             amrex::ParticleReal const sn = std::sin(theta);
 

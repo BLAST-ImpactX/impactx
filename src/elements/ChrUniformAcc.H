@@ -106,7 +106,7 @@ namespace impactx::elements
             m_bgi = std::sqrt(powi<2>(m_pti_ref) - 1.0_prt);
 
             // compute focusing constant (1/m) and rotation angle (in rad)
-            m_alpha = m_bz / 2.0_prt;
+            m_alpha = m_bz * 0.5_prt;
             m_alpha_iez = m_alpha / m_ez;
         }
 

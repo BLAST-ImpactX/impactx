@@ -41,11 +41,11 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
 
 class DashboardDefaults:
     """
-    Defaults for input parameters in the ImpactX dashboard.
+    Defaults for simulation parameters in the ImpactX dashboard.
     """
 
     COLLAPSABLE_SECTIONS = [
-        "collapse_input_parameters",
+        "collapse_simulation_parameters",
         "collapse_csr",
         "collapse_isr",
         "collapse_distribution_parameters",
@@ -62,7 +62,7 @@ class DashboardDefaults:
         "isr": False,
     }
 
-    INPUT_PARAMETERS = {
+    SIMULATION_PARAMETERS = {
         "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
@@ -136,7 +136,7 @@ class DashboardDefaults:
 
     DEFAULT_VALUES = {
         **SELECTION,
-        **INPUT_PARAMETERS,
+        **SIMULATION_PARAMETERS,
         **DISTRIBUTION_PARAMETERS,
         **LATTICE_CONFIGURATION,
         **SPACE_CHARGE,
@@ -190,7 +190,7 @@ class DashboardDefaults:
     }
 
     DOCUMENTATION = {
-        "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
+        "simulation_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
         "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
         "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
         "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",

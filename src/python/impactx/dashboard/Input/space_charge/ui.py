@@ -7,15 +7,14 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import ctrl, state, vuetify
-from .. import (
+from ...Input.components import (
     CardBase,
     CardComponents,
-    DashboardValidation,
     InputComponents,
     NavigationComponents,
-    generalFunctions,
 )
-from . import SpaceChargeFunctions
+from .. import DashboardValidation, generalFunctions
+from .utils import SpaceChargeFunctions
 
 # -----------------------------------------------------------------------------
 # Default

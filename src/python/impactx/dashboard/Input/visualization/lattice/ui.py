@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import html, state, vuetify
-from ... import CardBase
+from ....Input.components import CardBase
 from . import StatComponents, StatUtils
 
 

@@ -1,7 +1,7 @@
 import keyword
 
 from ... import ctrl, vuetify
-from .. import CardComponents
+from ...Input.components import CardComponents
 
 
 class LatticeConfigurationHelper:

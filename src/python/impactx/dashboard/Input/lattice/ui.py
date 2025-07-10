@@ -9,17 +9,16 @@ License: BSD-3-Clause-LBNL
 from impactx import elements
 
 from ... import ctrl, state, vuetify
-from .. import (
+from ...Input.components import (
     CardBase,
     CardComponents,
-    DashboardDefaults,
-    DashboardValidation,
     InputComponents,
     NavigationComponents,
-    generalFunctions,
 )
+from .. import DashboardDefaults, DashboardValidation, generalFunctions
 from ..defaults_helper import InputDefaultsHelper
-from . import LatticeConfigurationHelper, LatticeVariableHandler
+from .utils import LatticeConfigurationHelper
+from .variable_handler import LatticeVariableHandler
 
 state.lattice_elements_using_variables = {}
 

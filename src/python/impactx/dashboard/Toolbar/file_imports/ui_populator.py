@@ -7,8 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import ctrl, state
-from ...Input.latticeConfiguration.latticeMain import add_lattice_element
-from ...Input.latticeConfiguration.variable_handler import LatticeVariableHandler
+from ...Input.lattice.ui import add_lattice_element
+from ...Input.lattice.variable_handler import LatticeVariableHandler
 from .python.parser import DashboardParser
 
 
@@ -40,7 +40,7 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     parsed_variables = imported_data["variables"]
     non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
-    # Update state inputs (inputParameters, Space Charge, CSR, ISR)
+    # Update state inputs (simulation parameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)

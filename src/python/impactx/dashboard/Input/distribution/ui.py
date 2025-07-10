@@ -11,16 +11,10 @@ from typing import Union
 from impactx import distribution
 
 from ... import ctrl, state, vuetify
-from .. import (
-    CardBase,
-    CardComponents,
-    DashboardDefaults,
-    DashboardValidation,
-    InputComponents,
-    generalFunctions,
-)
+from ...Input.components import CardBase, CardComponents, InputComponents
+from .. import DashboardDefaults, DashboardValidation, generalFunctions
 from ..defaults_helper import InputDefaultsHelper
-from . import DistributionFunctions
+from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -119,7 +113,7 @@ def on_distribution_parameter_change(name: str, input: Union[float, int], type: 
 # -----------------------------------------------------------------------------
 
 
-class DistributionParameters(CardBase):
+class DistributionConfiguration(CardBase):
     """
     User-Input section for beam distribution.
     """

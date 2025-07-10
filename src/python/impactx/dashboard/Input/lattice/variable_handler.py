@@ -1,12 +1,9 @@
 from typing import Optional, Tuple
 
 from ... import ctrl, html, state, vuetify
-from .. import (
-    CardComponents,
-    DashboardValidation,
-    generalFunctions,
-)
-from .helper import LatticeConfigurationHelper
+from ...Input.components import CardComponents
+from .. import DashboardValidation, generalFunctions
+from .utils import LatticeConfigurationHelper
 
 init_value = ""
 state.variables = [

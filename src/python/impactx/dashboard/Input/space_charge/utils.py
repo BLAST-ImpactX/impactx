@@ -6,7 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .. import CardComponents
+from ...Input.components import CardComponents
 
 # -----------------------------------------------------------------------------
 # Functions

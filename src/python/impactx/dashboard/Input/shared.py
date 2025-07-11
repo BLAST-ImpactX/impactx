@@ -57,7 +57,7 @@ class SharedUtilities:
                     if getattr(state, state_name) != converted_value:
                         setattr(state, state_name, converted_value)
                         if state_name == "kin_energy_on_ui":
-                            SimulationParameters.on_kin_energy_unit_change()
+                            state.dirty("kin_energy_unit")
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

@@ -9,8 +9,7 @@ License: BSD-3-Clause-LBNL
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardValidation
-from ..defaults import TRACKING_MODE_PROPERTIES
-from .utils import SimulationFunctions
+from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
 
 
 class SimulationParameters(CardBase):
@@ -24,9 +23,9 @@ class SimulationParameters(CardBase):
         super().__init__()
 
     @state.change("kin_energy_unit")
-    def on_kin_energy_unit_change(**kwargs) -> None:
+    def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
         if state.kin_energy_on_ui != 0:
-            SimulationFunctions.update_kin_energy_sim_value()
+            state.kin_energy_MeV =  state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
 
     @state.change("tracking_mode")
     def on_tracking_mode_change(**kwargs) -> None:

@@ -40,6 +40,14 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
 
 BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
 
+CONVERSION_FACTORS = {
+    "meV": 1.0e-9,
+    "eV": 1.0e-6,
+    "keV": 1.0e-3,
+    "MeV": 1.0,
+    "GeV": 1.0e3,
+    "TeV": 1.0e6,
+}
 
 class DashboardDefaults:
     """

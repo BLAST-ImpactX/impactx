@@ -1170,6 +1170,10 @@ void init_elements(py::module& m)
              py::arg("name") = py::none(),
              "An ideal sector bend using the exact nonlinear map.  When B = 0, the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B."
         )
+        .def("rc", &ExactSbend::rc,
+            py::arg("ref"),
+            "Radius of curvature in m"
+        )
         .def_property("phi",
             [](ExactSbend & exact_sbend) { return exact_sbend.m_phi; },
             [](ExactSbend & exact_sbend, amrex::ParticleReal phi) { exact_sbend.m_phi = phi; },
@@ -1659,9 +1663,8 @@ void init_elements(py::module& m)
              py::arg("name") = py::none(),
              "An ideal sector bend."
         )
-        .def_property("rc",
-            [](Sbend & sbend) { return sbend.m_rc; },
-            [](Sbend & sbend, amrex::ParticleReal rc) { sbend.m_rc = rc; },
+        .def("rc", &Sbend::rc,
+            py::arg("ref") = py::none(),
             "Radius of curvature in m"
         )
     ;

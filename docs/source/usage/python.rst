@@ -623,6 +623,21 @@ This module provides elements and methods for the accelerator lattice.
       :param madx_file: file name to MAD-X file with beamline elements
       :param nslice: number of slices used for the application of space charge
 
+   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
+
+      Plot over s of all elements in the KnownElementsList.
+
+      The signs of element strengths are determined by the sign of the charge of the reference particle.
+      The projection of all element strengths is s-x ("vertical").
+
+      Either populates the matplotlib axes in ax or creates a new axes containing the plot.
+
+      :param self: The KnownElementsList class in ImpactX
+      :param ref: A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+      :param ax: A plotting area in matplotlib (called axes there).
+      :param legend: Plot a legend if true.
+      :param legend_ncols: Number of columns for lattice element types in the legend.
+
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.

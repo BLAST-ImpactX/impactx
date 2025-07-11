@@ -6,10 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server
-from .. import CardComponents
-
-server, state, ctrl = setup_server()
+from ...Input.components import CardComponents
 
 # -----------------------------------------------------------------------------
 # Functions

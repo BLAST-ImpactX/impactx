@@ -86,8 +86,21 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_action(action), m_aperture_x(aperture_x), m_aperture_y(aperture_y), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
+          m_shape(shape), m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
         {
+            using namespace amrex::literals; // for _rt and _prt
+
+            if (aperture_x > 0_prt) {
+                m_inv_aperture_x = 1_prt / aperture_x;
+            } else {
+                throw std::runtime_error("Aperture: aperture_x must be > 0!");
+            }
+
+            if (aperture_y > 0_prt) {
+                m_inv_aperture_y = 1_prt / aperture_y;
+            } else {
+                throw std::runtime_error("Aperture: aperture_y must be > 0!");
+            }
         }
 
         /** Push all particles */
@@ -130,6 +143,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -137,57 +151,40 @@ namespace impactx::elements
             // define intermediate variables
             amrex::ParticleReal u;
             amrex::ParticleReal v;
-            amrex::ParticleReal dx = m_repeat_x/2.0;
-            amrex::ParticleReal dy = m_repeat_y/2.0;
+            amrex::ParticleReal dx = m_repeat_x * 0.5_prt;
+            amrex::ParticleReal dy = m_repeat_y * 0.5_prt;
 
             // if the aperture is periodic, shift x,y coordinates to the fundamental domain
             u = (m_repeat_x==0.0) ? x : (std::fmod(std::abs(x)+dx,m_repeat_x)-dx);
             v = (m_repeat_y==0.0) ? y : (std::fmod(std::abs(y)+dy,m_repeat_y)-dy);
 
             // scale horizontal and vertical coordinates
-            u = u / m_aperture_x;
-            v = v / m_aperture_y;
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, so we can do a quick multiplication (instead of a
+            //   costly division) here.
+            u = u * m_inv_aperture_x;
+            v = v * m_inv_aperture_y;
 
             // compare against the aperture boundary
-            switch (m_action)
+            bool inside_aperture = true;
+
+            switch (m_shape)
             {
-               case Action::transmit :  // default action
+                case Shape::rectangular:  // default
+                    inside_aperture = (powi<2>(u) <= 1_prt && powi<2>(v) <= 1_prt);
+                    break;
 
-                  switch (m_shape)
-                  {
-                      case Shape::rectangular :  // default shape
-                        if (amrex::Math::powi<2>(u)>1 || amrex::Math::powi<2>(v) > 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-
-                      case Shape::elliptical :
-                        if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) > 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-                  }
-                  break;
-
-               case Action::absorb :
-
-                  switch (m_shape)
-                  {
-                      case Shape::rectangular :  // default
-                        if (amrex::Math::powi<2>(u) < 1 && amrex::Math::powi<2>(v) < 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-
-                     case Shape::elliptical :
-                        if (amrex::Math::powi<2>(u) + amrex::Math::powi<2>(v) < 1_prt) {
-                            amrex::ParticleIDWrapper{idcpu}.make_invalid();
-                        }
-                        break;
-                  }
-                  break;
+                case Shape::elliptical:
+                    inside_aperture = (powi<2>(u) + powi<2>(v) <= 1_prt);
+                    break;
             }
 
+            // For transmit (default): invalidate if outside aperture
+            // For absorb: invalidate if inside aperture
+            if ((m_action == Action::transmit && !inside_aperture) ||
+                (m_action == Action::absorb && inside_aperture)) {
+                amrex::ParticleIDWrapper{idcpu}.make_invalid();
+            }
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -214,8 +211,11 @@ namespace impactx::elements
 
         Shape m_shape; //! aperture type (rectangular, elliptical)
         Action m_action; //! action type (transmit, absorb)
-        amrex::ParticleReal m_aperture_x; //! maximum horizontal coordinate
-        amrex::ParticleReal m_aperture_y; //! maximum vertical coordinate
+        // performance optimization: we intentionally store the inverse of
+        //   the aperture, so we can do a quick multiplication instead of a costly
+        //   division in the comparison operation per particle
+        amrex::ParticleReal m_inv_aperture_x; //! maximum horizontal coordinate
+        amrex::ParticleReal m_inv_aperture_y; //! maximum vertical coordinate
         amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
         amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
 

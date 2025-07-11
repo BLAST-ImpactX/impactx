@@ -91,6 +91,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -98,13 +99,13 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2, beta
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = amrex::Math::powi<2>(bet) * amrex::Math::powi<2>(m_rc);
+            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(m_rc);
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + amrex::Math::powi<-2>(m_rc);
+            amrex::ParticleReal const gx = m_k + powi<-2>(m_rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables
@@ -212,6 +213,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -229,7 +231,7 @@ namespace impactx::elements
 
             // assign intermediate parameter
             amrex::ParticleReal const theta = slice_ds/m_rc;
-            amrex::ParticleReal const B = std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt)/m_rc;
+            amrex::ParticleReal const B = std::sqrt(powi<2>(pt)-1.0_prt)/m_rc;
 
             // calculate expensive terms once
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
@@ -262,18 +264,19 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2, beta
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = amrex::Math::powi<2>(bet) * amrex::Math::powi<2>(m_rc);
+            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(m_rc);
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + amrex::Math::powi<-2>(m_rc);
+            amrex::ParticleReal const gx = m_k + powi<-2>(m_rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables

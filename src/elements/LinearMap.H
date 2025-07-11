@@ -125,6 +125,7 @@ namespace impactx::elements
             if (m_ds > 0)  // Drift
             {
                 using namespace amrex::literals; // for _rt and _prt
+                using amrex::Math::powi;
 
                 // assign input reference particle values
                 amrex::ParticleReal const x = refpart.x;
@@ -141,7 +142,7 @@ namespace impactx::elements
                 amrex::ParticleReal const slice_ds = m_ds / nslice();
 
                 // assign intermediate parameter
-                amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+                amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
 
                 // advance position and momentum (drift)
                 refpart.x = x + step*px;

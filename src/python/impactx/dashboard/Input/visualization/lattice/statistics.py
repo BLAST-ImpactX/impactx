@@ -6,9 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, setup_server, vuetify
-
-server, state, ctrl = setup_server()
+from .... import html, state, vuetify
 
 state.total_elements = 0
 state.total_length = 0

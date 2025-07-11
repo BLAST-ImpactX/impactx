@@ -307,7 +307,7 @@ class UpdateConstF(elements.Programmable):
 
     def set_lens(self, pc, step, period):
         # get envelope parameters
-        rbc = pc.reduced_beam_characteristics()
+        rbc = pc.beam_moments()
         alpha = rbc[f"alpha_{self.x_or_y}"]
         beta = rbc[f"beta_{self.x_or_y}"]
         gamma = (1 + alpha**2) / beta

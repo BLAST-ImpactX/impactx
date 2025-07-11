@@ -413,12 +413,13 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](Aperture const & ap) {
+                using namespace amrex::literals;
                 return element_dict(
                     ap,
                     std::make_pair("shape", ap.m_shape),
                     std::make_pair("action", ap.m_action),
-                    std::make_pair("aperture_x", ap.m_aperture_x),
-                    std::make_pair("aperture_y", ap.m_aperture_y),
+                    std::make_pair("aperture_x", 1_prt / ap.m_inv_aperture_x),
+                    std::make_pair("aperture_y", 1_prt / ap.m_inv_aperture_y),
                     std::make_pair("repeat_x", ap.m_repeat_x),
                     std::make_pair("repeat_y", ap.m_repeat_y)
                 );
@@ -496,13 +497,13 @@ void init_elements(py::module& m)
             "action type (transmit, absorb)"
         )
         .def_property("aperture_x",
-            [](Aperture & ap) { return ap.m_aperture_x; },
-            [](Aperture & ap, amrex::ParticleReal aperture_x) { ap.m_aperture_x = aperture_x; },
+            [](Aperture & ap) { using namespace amrex::literals; return 1_prt / ap.m_inv_aperture_x; },
+            [](Aperture & ap, amrex::ParticleReal aperture_x) { using namespace amrex::literals; ap.m_inv_aperture_x = 1_prt / aperture_x; },
             "maximum horizontal coordinate"
         )
         .def_property("aperture_y",
-            [](Aperture & ap) { return ap.m_aperture_y; },
-            [](Aperture & ap, amrex::ParticleReal aperture_y) { ap.m_aperture_y = aperture_y; },
+            [](Aperture & ap) { using namespace amrex::literals; return 1_prt / ap.m_inv_aperture_y; },
+            [](Aperture & ap, amrex::ParticleReal aperture_y) { using namespace amrex::literals; ap.m_inv_aperture_y = 1_prt / aperture_y; },
             "maximum vertical coordinate"
         )
         .def_property("repeat_x",

@@ -121,6 +121,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -136,12 +137,12 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             // compute the function expressing dp/p in terms of pt (labeled f in Ripken etc.)
-            amrex::ParticleReal const f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt * pt / m_beta + amrex::Math::powi<2>(pt));
+            amrex::ParticleReal const f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt * pt / m_beta + powi<2>(pt));
             amrex::ParticleReal const fprime = (1.0_prt - m_beta*pt) / (m_beta * (1.0_prt + f));
 
             // advance position and momentum
             x = xout;
-            pxout = px - amrex::Math::powi<2>(m_kx) * m_ds * xout + m_kx * m_ds * f; //eq (3.2b)
+            pxout = px - powi<2>(m_kx) * m_ds * xout + m_kx * m_ds * f; //eq (3.2b)
 
             y = yout;
             pyout = py;

@@ -108,6 +108,7 @@ namespace impactx::distribution
         ) const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
             amrex::ParticleReal v,phi,r,u1,u2,ln1;
@@ -129,7 +130,7 @@ namespace impactx::distribution
             // Random samples used to define pr:
             alpha = amrex::Random(engine);
             alpha = pi*alpha;
-            pmax = 1.0_prt - amrex::Math::powi<2>((Lz/r)) - amrex::Math::powi<2>(r) + amrex::Math::powi<2>(Lz);
+            pmax = 1.0_prt - powi<2>((Lz/r)) - powi<2>(r) + powi<2>(Lz);
             pmax = std::sqrt(pmax);
             pr = pmax * std::cos(alpha);
             pphi = Lz/r;

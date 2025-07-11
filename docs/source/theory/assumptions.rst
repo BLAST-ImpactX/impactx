@@ -19,9 +19,19 @@ The elements supported currently fall into one of the following categories:
 
 Transport may be performed using one of three possible levels of approximation to the underlying Hamiltonian:
 
-* **linear transfer map (default):** obtained by expanding the Hamiltonian through terms of degree 2 in the deviation of phase space variables from those of the reference particle
-* **chromatic or paraxial approximation:** obtained by expanding the Hamiltonian through terms of degree 2 in the transverse phase space variables, while retaining the nonlinear dependence on the energy variable pt
-* **exact Hamiltonian:** obtained using the exact nonlinear Hamiltonian
+================================== ==================== =================================================
+Model                              Use Case             Notes
+================================== ==================== =================================================
+linear transfer map (default)      Fast estimates       Obtained by expanding the Hamiltonian through
+                                                        terms of degree 2 in the deviation of phase space
+                                                        variables from those of the reference particle
+chromatic (paraxial) approximation Large energy spreads Obtained by expanding the Hamiltonian through
+                                                        terms of degree 2 in the transverse phase space
+                                                        variables, while retaining the nonlinear
+                                                        dependence on the energy variable pt
+exact Hamiltonian                  Large energy spreads Obtained using the exact nonlinear Hamiltonian
+                                   and high divergence
+================================== ==================== =================================================
 
 
 Space Charge (Poisson Solver)

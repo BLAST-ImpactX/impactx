@@ -10,6 +10,7 @@
 #include "ImpactXParticleContainer.H"
 
 #include "initialization/AmrCoreData.H"
+#include "diagnostics/ReducedBeamCharacteristics.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
@@ -167,6 +168,13 @@ namespace impactx
 
         reserveData();
         resizeData();
+    }
+
+    void
+    ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
+    {
+        this->clearParticles();
+        m_refpart.reset(keep_mass, keep_charge);
     }
 
     void
@@ -355,5 +363,29 @@ namespace impactx
     ImpactXParticleContainer::SetCoordSystem (CoordSystem coord_system)
     {
         m_coordsystem = coord_system;
+    }
+
+    void
+    ImpactXParticleContainer::record_beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::record_beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        m_beam_moments.push_back(rbc);
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    ImpactXParticleContainer::beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        return rbc;
     }
 } // namespace impactx

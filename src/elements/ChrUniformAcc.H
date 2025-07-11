@@ -92,6 +92,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -101,11 +102,11 @@ namespace impactx::elements
             // access reference particle values (final, initial):
             m_ptf_ref = refpart.pt;
             m_pti_ref = m_ptf_ref + m_ez * m_slice_ds;
-            m_bgf = std::sqrt(amrex::Math::powi<2>(m_ptf_ref) - 1.0_prt);
-            m_bgi = std::sqrt(amrex::Math::powi<2>(m_pti_ref) - 1.0_prt);
+            m_bgf = std::sqrt(powi<2>(m_ptf_ref) - 1.0_prt);
+            m_bgi = std::sqrt(powi<2>(m_pti_ref) - 1.0_prt);
 
             // compute focusing constant (1/m) and rotation angle (in rad)
-            m_alpha = m_bz / 2.0_prt;
+            m_alpha = m_bz * 0.5_prt;
             m_alpha_iez = m_alpha / m_ez;
         }
 
@@ -135,6 +136,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -147,17 +149,17 @@ namespace impactx::elements
             // compute intermediate quantities related to acceleration
             amrex::ParticleReal const pti_tot = m_pti_ref + pt;
             amrex::ParticleReal const ptf_tot = m_ptf_ref + pt;
-            amrex::ParticleReal const pti_tot2 = amrex::Math::powi<2>(pti_tot);
-            amrex::ParticleReal const ptf_tot2 = amrex::Math::powi<2>(ptf_tot);
+            amrex::ParticleReal const pti_tot2 = powi<2>(pti_tot);
+            amrex::ParticleReal const ptf_tot2 = powi<2>(ptf_tot);
 
             // check whether particle lies within the domain of map definition
             if (pti_tot2 <= 1_prt || ptf_tot2 <= 1_prt) {
                 amrex::ParticleIDWrapper{idcpu}.make_invalid();
             } else {
-                amrex::ParticleReal const pzi_tot = std::sqrt(amrex::Math::powi<2>(pti_tot) - 1_prt);
-                amrex::ParticleReal const pzf_tot = std::sqrt(amrex::Math::powi<2>(ptf_tot) - 1_prt);
-                amrex::ParticleReal const pzi_ref = std::sqrt(amrex::Math::powi<2>(m_pti_ref) - 1_prt);
-                amrex::ParticleReal const pzf_ref = std::sqrt(amrex::Math::powi<2>(m_ptf_ref) - 1_prt);
+                amrex::ParticleReal const pzi_tot = std::sqrt(powi<2>(pti_tot) - 1_prt);
+                amrex::ParticleReal const pzf_tot = std::sqrt(powi<2>(ptf_tot) - 1_prt);
+                amrex::ParticleReal const pzi_ref = std::sqrt(powi<2>(m_pti_ref) - 1_prt);
+                amrex::ParticleReal const pzf_ref = std::sqrt(powi<2>(m_ptf_ref) - 1_prt);
 
                 amrex::ParticleReal const numer = -ptf_tot + pzf_tot;
                 amrex::ParticleReal const denom = -pti_tot + pzi_tot;
@@ -184,8 +186,8 @@ namespace impactx::elements
                 // the correct symplectic update for t
                 tout = t + (pzf_tot - pzf_ref - pzi_tot + pzi_ref) / m_ez;
                 tout += (1_prt/pzi_tot - 1_prt/pzf_tot)
-                      * (amrex::Math::powi<2>(py - m_alpha * x) +
-                         amrex::Math::powi<2>(px + m_alpha * y))
+                      * (powi<2>(py - m_alpha * x) +
+                         powi<2>(px + m_alpha * y))
                       / (2_prt * m_ez);
                 ptout = pt;
 
@@ -231,6 +233,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -247,14 +250,14 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // advance pt (uniform acceleration)
             refpart.pt = pt - m_ez*slice_ds;
 
             // compute final value of beta*gamma
             amrex::ParticleReal const ptf = refpart.pt;
-            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
 
             // update t
             refpart.t = t + (bgf - bgi)/m_ez;

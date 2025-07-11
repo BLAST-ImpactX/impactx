@@ -6,17 +6,14 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import setup_server
+from .... import state
 from .helper import DashboardParserHelper
-
-server, state, ctrl = setup_server()
-
-state.imported_file_name = None
 
 state.import_file = False
 state.import_file_details = None
 state.import_file_error = False
 state.importing_file = False
+state.imported_file_name = None
 
 
 class DashboardParser:
@@ -35,6 +32,7 @@ class DashboardParser:
         state.import_file_details = None
         state.import_file = None
         state.importing_file = False
+        state.imported_file_name = None
 
     @staticmethod
     def file_details(file) -> None:

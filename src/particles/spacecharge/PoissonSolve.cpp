@@ -32,6 +32,7 @@ namespace impactx::particles::spacecharge
         BL_PROFILE("impactx::spacecharge::PoissonSolve");
 
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
         // set space charge field to zero
         //   loop over refinement levels
@@ -45,7 +46,7 @@ namespace impactx::particles::spacecharge
         // prepare parameters of the MLMG Poisson Solver
         //   relativistic beta=v/c of the reference particle
         amrex::ParticleReal const pt_ref = pc.GetRefParticle().pt;
-        amrex::ParticleReal const beta_s = std::sqrt(1.0_prt - 1.0_prt/amrex::Math::powi<2>(pt_ref));
+        amrex::ParticleReal const beta_s = std::sqrt(1.0_prt - 1.0_prt/powi<2>(pt_ref));
         // The beam particles and the corresponding box are all given in local coordinates
         // in which z is the direction of motion - this coincides with the direction of the momentum
         // of the reference particle.

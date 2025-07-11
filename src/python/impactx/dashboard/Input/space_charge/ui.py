@@ -6,18 +6,15 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server, vuetify
-from .. import (
+from ... import ctrl, state, vuetify
+from ...Input.components import (
     CardBase,
     CardComponents,
-    DashboardValidation,
     InputComponents,
     NavigationComponents,
-    generalFunctions,
 )
-from . import SpaceChargeFunctions
-
-server, state, ctrl = setup_server()
+from .. import DashboardValidation, generalFunctions
+from .utils import SpaceChargeFunctions
 
 # -----------------------------------------------------------------------------
 # Default

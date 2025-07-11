@@ -82,6 +82,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -90,7 +91,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta, 1/(beta*gamma)**2
             m_ibeta = 1_prt / refpart.beta();
-            m_ibetagam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
+            m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
         }
 
         /** This is an exactdrift functor, so that a variable of this type can be used like
@@ -120,6 +121,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -136,10 +138,10 @@ namespace impactx::elements
 
             // compute the radical in the denominator (= pz):
             amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                amrex::Math::powi<2>(pt - m_ibeta) -
+                powi<2>(pt - m_ibeta) -
                 m_ibetagam2 -
-                amrex::Math::powi<2>(px) -
-                amrex::Math::powi<2>(py)
+                powi<2>(px) -
+                powi<2>(py)
             );
 
             // advance position and momentum (exact drift)
@@ -170,6 +172,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -186,7 +189,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
 
             // advance position and momentum (drift)
             refpart.x = x + step*px;

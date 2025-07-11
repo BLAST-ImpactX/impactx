@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 import os
 
-from .. import setup_server, vuetify
-from ..Input import CardComponents
+from .. import ctrl, state, vuetify
+from ..Input.components import CardComponents
 from .sim_history.ui import SimulationHistory
-
-server, state, ctrl = setup_server()
 
 state.show_dashboard_alert = True
 
@@ -68,6 +66,10 @@ class GeneralToolbar:
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
             AnalyzeToolbar.select_visualization()
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            AnalyzeToolbar.simulation_selection_indicator()
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            GeneralToolbar.simulation_history_button()
             vuetify.VDivider(vertical=True, classes="mx-2")
             GeneralToolbar.force_quit_button()
 

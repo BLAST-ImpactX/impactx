@@ -96,8 +96,8 @@ namespace impactx::elements
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -118,7 +118,7 @@ namespace impactx::elements
 
             // advance position and momentum
             xout = x;
-            pxout = px - g * ( x + m_taper*0.5_prt * (amrex::Math::powi<2>(x) + amrex::Math::powi<2>(y)) );
+            pxout = px - g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
 
             yout = y;
             pyout = py - g * ( y + m_taper * x * y );

@@ -6,18 +6,15 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server
-from ..Input.inputParameters.inputMain import InputParameters
+from .. import ctrl, state
+from ..Input.simulation_parameters import SimulationParameters
 from . import DashboardDefaults, DashboardValidation, generalFunctions
 
-server, state, ctrl = setup_server()
-
-
-input_parameters_defaults = list(DashboardDefaults.INPUT_PARAMETERS.keys())
+simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 space_charge_defaults = list(DashboardDefaults.CSR.keys())
 lattice_state_defaults = ["periods"]
 INPUT_DEFAULTS = (
-    input_parameters_defaults + space_charge_defaults + lattice_state_defaults
+    simulation_parameters_defaults + space_charge_defaults + lattice_state_defaults
 )
 
 
@@ -50,7 +47,7 @@ class SharedUtilities:
                     if getattr(state, state_name) != converted_value:
                         setattr(state, state_name, converted_value)
                         if state_name == "kin_energy_on_ui":
-                            InputParameters.on_kin_energy_unit_change()
+                            SimulationParameters.on_kin_energy_unit_change()
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

@@ -6,9 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server
-
-server, state, ctrl = setup_server()
+from ... import state
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -24,7 +22,7 @@ CONVERSION_FACTORS = {
 }
 
 
-class InputFunctions:
+class SimulationFunctions:
     """
     Helper functions for the beam properties.
     """

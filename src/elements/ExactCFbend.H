@@ -556,62 +556,63 @@ namespace impactx::elements
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
-            // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(pt_ref) - 1.0_prt;
+            // find beta*gamma^2, beta
+            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1_prt;
+            amrex::ParticleReal const bet = refpart.beta();
+            amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
 
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
 #if AMREX_DEVICE_COMPILE
             amrex::ParticleReal* k_normal = m_k_normal_d_data;
-            amrex::ParticleReal* k_skew = m_k_skew_d_data;
 #else
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
-            amrex::ParticleReal* k_skew = m_k_skew_h_data;
 #endif
 
-            // normalize quad units to MAD-X convention if needed
-            amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / refpart.rigidity_Tm() : k_normal[1];
-            amrex::ParticleReal const ks = m_unit == 1 ? k_skew[1] / refpart.rigidity_Tm() : k_skew[1];
+            // find magnetic field and curvature; normalize units to MAD-X convention if needed
+            amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
+            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / m_brho : k_normal[1];
+            amrex::ParticleReal const b2rc2 = amrex::Math::powi<2>(bet) * amrex::Math::powi<2>(rc);
 
-            amrex::ParticleReal const kabs = std::sqrt(amrex::Math::powi<2>(kn) + amrex::Math::powi<2>(ks));
-            amrex::ParticleReal const kplus = kn + kabs;
-            amrex::ParticleReal const kminus = kn - kabs;
+            // update horizontal and longitudinal phase space variables
+            amrex::ParticleReal const gx = kn + amrex::Math::powi<-2>(rc);
+            amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
-            // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(kabs);
-            amrex::ParticleReal const sin_omega_ds = std::sin(omega*slice_ds);
-            amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
-            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
-            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
+            // update vertical phase space variables
+            amrex::ParticleReal const gy = -kn;
+            amrex::ParticleReal const omega_y = std::sqrt(std::abs(gy));
+
+            // trigonometry
+            auto const [sinx, cosx] = amrex::Math::sincos(omega_x * slice_ds);
+            amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
+            amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
+            auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
+            amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
+            amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
+
+            amrex::ParticleReal const igbrc = 1_prt / (gx * bet * rc);
+            amrex::ParticleReal const iobrc = 1_prt / (omega_x * bet * rc);
+            amrex::ParticleReal const igobr = 1_prt / (gx * omega_x * b2rc2);
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            // linear matrix for a quadrupole with both normal and skew coefficients
-            R(1,1) = (kplus * cos_omega_ds - kminus * cosh_omega_ds) / (2_prt * kabs);
-            R(1,2) = (kplus * sin_omega_ds - kminus * sinh_omega_ds) / (2_prt * kabs * omega);
-            R(1,3) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
-            R(1,4) = ks * (-sin_omega_ds + sinh_omega_ds) / (2_prt * kabs * omega);
-            R(2,1) = (-kplus * sin_omega_ds - kminus * sinh_omega_ds) / (2_prt * omega);
-            R(2,2) = (kplus * cos_omega_ds - kminus * cosh_omega_ds) / (2_prt * kabs);
-            R(2,3) = ks * (sin_omega_ds + sinh_omega_ds) / (2_prt * omega);
-            R(2,4) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
-            R(3,1) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
-            R(3,2) = ks * (-sin_omega_ds + sinh_omega_ds) / (2_prt * kabs * omega);
-            R(3,3) = (-kminus * cos_omega_ds + kplus * cosh_omega_ds) / (2_prt * kabs);
-            R(3,4) = (-kminus * sin_omega_ds + kplus * sinh_omega_ds) / (2_prt * kabs * omega);
-            R(4,1) = ks * (sin_omega_ds + sinh_omega_ds) / (2_prt * omega);
-            R(4,2) = ks * (-cos_omega_ds + cosh_omega_ds) / (2_prt * kabs);
-            R(4,3) = (kminus * sin_omega_ds + kplus * sinh_omega_ds) / (2_prt * omega);
-            R(4,4) = (-kminus * cos_omega_ds + kplus * cosh_omega_ds) / (2_prt * kabs);
-            R(5,6) = slice_ds/betgam2;
-
-            for (int j=1; j<=6; j++) {
-               for (int k=1; k<=6; k++) {
-                  amrex::Print() << "R(" << j << "," << k << ") = " << R(j,k) << "\n";
-               }
-            }
+            R(1,1) = gx > 0_prt ? cosx : coshx;
+            R(1,2) = gx > 0_prt ? sinx / omega_x : sinhx / omega_x;
+            R(1,6) = gx > 0_prt ? -(1_prt - cosx) * igbrc : -(1_prt - coshx) * igbrc;
+            R(2,1) = gx > 0_prt ? -omega_x * sinx : omega_x * sinhx;
+            R(2,2) = gx > 0_prt ? cosx : coshx;
+            R(2,6) = gx > 0_prt ? -sinx * iobrc : -sinhx * iobrc;
+            R(3,3) = gy > 0_prt ? cosy : coshy;
+            R(3,4) = gy > 0_prt ? siny / omega_y : sinhy / omega_y;
+            R(4,3) = gy > 0_prt ? -omega_y * siny : omega_y * sinhy;
+            R(4,4) = gy > 0_prt ? cosy : coshy;
+            R(5,1) = gx > 0_prt ? sinx * iobrc : sinhx * iobrc;
+            R(5,2) = gx > 0_prt ? (1_prt - cosx) * igbrc : (1_prt - coshx) * igbrc;
+            R(5,6) = gx > 0_prt ?
+                slice_ds * ibetgam2 + (sinx  - omega_x * slice_ds) * igobr :
+                slice_ds * ibetgam2 + (sinhx - omega_x * slice_ds) * igobr;
 
             return R;
         }

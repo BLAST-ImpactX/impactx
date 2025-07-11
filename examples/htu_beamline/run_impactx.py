@@ -6,10 +6,11 @@
 #
 # -*- coding: utf-8 -*-
 
-from htu_lattice import get_lattice
-from impactx import ImpactX, distribution, elements, twiss
-from scipy.constants import m_e, e, c
 import numpy as np
+from htu_lattice import get_lattice
+from scipy.constants import c, e, m_e
+
+from impactx import ImpactX, distribution, twiss
 
 sim = ImpactX()
 
@@ -41,21 +42,21 @@ ref = sim.particle_container().ref_particle()
 ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV)
 
 # factors converting the beam distribution to ImpactX input
-gamma = total_energy_MeV/mass_MeV
-bg = np.sqrt(gamma**2-1.0)
-sigma_tau = 1e-6  #in m
-sigma_p = 2.5e-2  #dimensionless
-rigidity = m_e*c*bg/e
+gamma = total_energy_MeV / mass_MeV
+bg = np.sqrt(gamma**2 - 1.0)
+sigma_tau = 1e-6  # in m
+sigma_p = 2.5e-2  # dimensionless
+rigidity = m_e * c * bg / e
 
 #   particle bunch
 distr = distribution.Gaussian(
     **twiss(
         beta_x=0.002,
         beta_y=0.002,
-        beta_t=sigma_tau/sigma_p,
-        emitt_x=1.5e-6/bg,
-        emitt_y=1.5e-6/bg,
-        emitt_t=sigma_tau*sigma_p,
+        beta_t=sigma_tau / sigma_p,
+        emitt_x=1.5e-6 / bg,
+        emitt_y=1.5e-6 / bg,
+        emitt_t=sigma_tau * sigma_p,
         alpha_x=0.0,
         alpha_y=0.0,
         alpha_t=0.0,
@@ -64,7 +65,7 @@ distr = distribution.Gaussian(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # set the lattice
-sim.lattice.extend( get_lattice("impactx") )
+sim.lattice.extend(get_lattice("impactx"))
 
 # run simulation
 sim.track_particles()

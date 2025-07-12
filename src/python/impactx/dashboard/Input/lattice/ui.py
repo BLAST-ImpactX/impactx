@@ -56,13 +56,15 @@ def add_lattice_element() -> dict:
 
     parameters = []
     for name, default_value, default_type in parameters_data:
+        value = "DefaultName" if selected_lattice == "BeamMonitor" and name == "name" else default_value
+
         parameters.append({
             "parameter_name": name,
-            "ui_input": default_value,
-            "sim_input": default_value,
+            "ui_input": value,
+            "sim_input": value,
             "parameter_type": default_type,
             "parameter_error_message": DashboardValidation.validate_against(
-                default_value, default_type
+                value, default_type
             ),
         })
 
@@ -74,6 +76,7 @@ def add_lattice_element() -> dict:
     state.selected_lattice_list.append(lattice_element)
     DashboardValidation.update_simulation_validation_status()
     return lattice_element
+
 
 
 # -----------------------------------------------------------------------------

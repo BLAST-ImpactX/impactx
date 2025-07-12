@@ -56,7 +56,9 @@ def add_lattice_element() -> dict:
 
     parameters = []
     for name, default_value, default_type in parameters_data:
-        value = "DefaultName" if selected_lattice == "BeamMonitor" and name == "name" else default_value
+        default_value = "" if default_value is None else str(default_value).strip()
+        value = "DefaultName" if selected_lattice == "BeamMonitor" and name == "name" and not default_value else default_value
+
 
         parameters.append({
             "parameter_name": name,

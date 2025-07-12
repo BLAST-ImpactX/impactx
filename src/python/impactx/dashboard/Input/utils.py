@@ -12,11 +12,6 @@ from .. import state
 from ..Toolbar.file_imports.python.parser import DashboardParser
 from .defaults import DashboardDefaults
 
-# -----------------------------------------------------------------------------
-# Code
-# -----------------------------------------------------------------------------
-
-
 class GeneralFunctions:
     @staticmethod
     def normalize_for_v_model(name: str) -> str:
@@ -55,10 +50,6 @@ class GeneralFunctions:
 
         parameter_name_base = parameter.partition("_")[0]
         return parameter_type_dictionary.get(parameter_name_base)
-
-    # -----------------------------------------------------------------------------
-    # Validation functions
-    # -----------------------------------------------------------------------------
 
     @staticmethod
     def convert_to_numeric(input: str) -> Union[int, float]:

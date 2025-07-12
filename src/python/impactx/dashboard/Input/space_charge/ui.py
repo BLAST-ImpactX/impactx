@@ -16,10 +16,6 @@ from ...Input.components import (
 from .. import DashboardValidation, GeneralFunctions
 from .utils import SpaceChargeFunctions
 
-# -----------------------------------------------------------------------------
-# Default
-# -----------------------------------------------------------------------------
-
 state.prob_relative = []
 state.prob_relative_fields = []
 state.n_cell = []

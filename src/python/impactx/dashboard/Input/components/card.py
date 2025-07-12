@@ -11,14 +11,14 @@ _missing_docs = set()
 
 
 def clean_name(section_name):
-    return section_name.lower().replace(" ", "_")
+    return generalFunctions.normalize_for_v_model(section_name)
 
 
 class CardBase(UIDefaults):
     HEADER_NAME = "Base Section"
 
     def __init__(self):
-        self.header = self.HEADER_NAME.lower().replace(" ", "_")
+        self.header = generalFunctions.normalize_for_v_model(self.HEADER_NAME)
         self.collapsable = (f"collapse_{self.header}_height",)
 
         self.card_props = {"elevation": 2, "style": self.collapsable}

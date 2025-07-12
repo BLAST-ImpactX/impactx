@@ -22,7 +22,7 @@ class InputComponents:
         """
 
         if v_model_name is None:
-            v_model_name = label.lower().replace(" ", "_")
+            v_model_name = generalFunctions.normalize_for_v_model(label)
 
         if "items" in component_kwargs and component_kwargs["items"] is None:
             component_kwargs["items"] = (
@@ -84,7 +84,7 @@ class InputComponents:
         computed_v_model = (
             v_model_name
             if v_model_name is not None
-            else label.lower().replace(" ", "_")
+            else generalFunctions.normalize_for_v_model(label)
         )
         InputComponents._build_component(
             vuetify.VTextField,

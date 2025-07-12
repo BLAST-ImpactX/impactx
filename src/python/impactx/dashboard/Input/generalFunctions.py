@@ -19,6 +19,17 @@ from .defaults import DashboardDefaults
 
 class generalFunctions:
     @staticmethod
+    def normalize_for_v_model(name: str) -> str:
+        """
+        Normalizes a name for use as a v-model variable name.
+        Converts to lowercase with spaces replaced by underscores.
+        
+        :param name: The name to normalize
+        :return: Normalized v-model name
+        """
+        return name.lower().replace(" ", "_")
+
+    @staticmethod
     def open_documentation(section_name):
         """
         Retrieves the documentation link with the provided section_name

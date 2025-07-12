@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <utility>
 #include <vector>
@@ -57,8 +58,8 @@ namespace distribution
         amrex::ParticleReal m_w;  ///< weight of the secondary (halo) population
 
         // GPU data
-        static inline amrex::Gpu::DeviceVector<amrex::ParticleReal> m_d_cdf1;
-        static inline amrex::Gpu::DeviceVector<amrex::ParticleReal> m_d_cdf2;
+        static inline std::unique_ptr<amrex::Gpu::DeviceVector<amrex::ParticleReal>> m_d_cdf1;
+        static inline std::unique_ptr<amrex::Gpu::DeviceVector<amrex::ParticleReal>> m_d_cdf2;
 
         ThermalData (
             amrex::ParticleReal kin,
@@ -87,6 +88,7 @@ namespace distribution
         {
             using namespace amrex::literals;  // for _rt and _prt
             using namespace ablastr::constant::math;  // for pi
+            using amrex::Math::powi;
 
             // Get relativistic beta*gamma
             amrex::ParticleReal bg = refpart.beta_gamma();
@@ -97,7 +99,7 @@ namespace distribution
             amrex::ParticleReal q_e = refpart.charge_qe();
 
             // Set space charge intensity
-            m_Cintensity = q_e*bunch_charge/(std::pow(bg,2)*Erest*ablastr::constant::SI::ep0);
+            m_Cintensity = q_e*bunch_charge/(powi<2>(bg)*Erest*ablastr::constant::SI::ep0);
 
             // Set minimum and maximum radius
             amrex::ParticleReal r_scale = matched_scale_radius();
@@ -107,7 +109,7 @@ namespace distribution
 
             // Scale the parameters p1 and p2
             amrex::ParticleReal rt2pi = std::sqrt(2.0_prt*pi);
-            amrex::ParticleReal p_scale = std::pow(r_scale*rt2pi,-3);
+            amrex::ParticleReal p_scale = powi<-3>(r_scale*rt2pi);
             m_p1 = m_p1*p_scale;
             m_p2 = m_p2*p_scale;
 
@@ -142,14 +144,14 @@ namespace distribution
             }
 
             // copy CFD data to device
-            m_d_cdf1 = amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_nbins+1);
-            m_d_cdf2 = amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_nbins+1);
+            m_d_cdf1 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
+            m_d_cdf2 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
                                   cdf1.begin(), cdf1.end(),
-                                  m_d_cdf1.begin());
+                                  m_d_cdf1->begin());
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
                                   cdf2.begin(), cdf2.end(),
-                                  m_d_cdf2.begin());
+                                  m_d_cdf2->begin());
             amrex::Gpu::streamSynchronize();
         }
 
@@ -160,9 +162,9 @@ namespace distribution
             using namespace ablastr::constant::math;  // for pi
 
             amrex::ParticleReal k = m_k;
-            amrex::ParticleReal kT = (1.0_prt - m_w) * m_T1 + m_w * m_T2;
-            amrex::ParticleReal a = m_Cintensity/(4.0_prt*pi*5.0_prt*std::sqrt(5.0_prt));
-            amrex::ParticleReal rscale = std::sqrt(kT + std::pow(a*k,2.0/3.0))/k;
+            amrex::ParticleReal kT = (1_prt - m_w) * m_T1 + m_w * m_T2;
+            amrex::ParticleReal a = m_Cintensity/(4_prt*pi*5_prt*std::sqrt(5_prt));
+            amrex::ParticleReal rscale = std::sqrt(kT + std::pow(a*k,2_prt/3_prt))/k;
 
             return rscale;
         }
@@ -178,7 +180,7 @@ namespace distribution
 
             // initialize numerical integration parameters
             amrex::ParticleReal const tau = (out-in)/steps;
-            amrex::ParticleReal const half = tau/2.0_prt;
+            amrex::ParticleReal const half = tau*0.5_prt;
 
             // initialize the value of the independent variable
             amrex::ParticleReal reval = in;
@@ -247,12 +249,12 @@ namespace distribution
             amrex::ParticleReal const T2 = m_T2;
 
             // Define space charge intensity parameters
-            amrex::ParticleReal const c1 = (1.0_prt-w) * m_Cintensity;
+            amrex::ParticleReal const c1 = (1_prt-w) * m_Cintensity;
             amrex::ParticleReal const c2 = w * m_Cintensity;
 
             // Define intermediate quantities
-            amrex::ParticleReal potential = 0.0_prt;
-            potential = std::pow(k*r,2.0)/2.0_prt + c1*phi1 + c2*phi2;
+            amrex::ParticleReal potential = 0_prt;
+            potential = std::pow(k*r,2)*0.5_prt + c1*phi1 + c2*phi2;
             amrex::ParticleReal Pdensity1 = m_p1 * std::exp(-potential/T1);
             amrex::ParticleReal Pdensity2 = m_p2 * std::exp(-potential/T2);
             // amrex::ParticleReal Pdensity_tot = (1.0_prt-w)*Pdensity1 + w*Pdensity2;
@@ -261,8 +263,8 @@ namespace distribution
             // Apply map to update f1 and f2:
             m_phi1 = phi1;
             m_phi2 = phi2;
-            m_f1 = f1 + tau*4.0_prt*pi * std::pow(r,2.0)*Pdensity1;
-            m_f2 = f2 + tau*4.0_prt*pi * std::pow(r,2.0)*Pdensity2;
+            m_f1 = f1 + tau*4_prt*pi * std::pow(r,2)*Pdensity1;
+            m_f2 = f2 + tau*4_prt*pi * std::pow(r,2)*Pdensity2;
             reval = r;
         }
     };
@@ -320,8 +322,8 @@ namespace distribution
             m_rmax = data.m_rmax;
             m_nbins = data.m_nbins;
             m_bg = data.m_bg;
-            m_cdf1 = data.m_d_cdf1.data();
-            m_cdf2 = data.m_d_cdf2.data();
+            m_cdf1 = data.m_d_cdf1->data();
+            m_cdf2 = data.m_d_cdf2->data();
         }
 
         /** Close and deallocate all data and handles.
@@ -330,8 +332,8 @@ namespace distribution
         finalize ()
         {
             // deallocate
-            ThermalData::m_d_cdf1.clear();
-            ThermalData::m_d_cdf2.clear();
+            ThermalData::m_d_cdf1.reset();
+            ThermalData::m_d_cdf2.reset();
         }
 
         /** Return 1 6D particle coordinate

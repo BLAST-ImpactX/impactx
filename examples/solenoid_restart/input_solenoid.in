@@ -1,0 +1,44 @@
+###############################################################################
+# Reference Particle
+###############################################################################
+beam.kin_energy = 250.0
+beam.particle = proton
+
+# ignored
+beam.charge = 1.0e-9
+beam.units = static
+beam.distribution = empty
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = source monitor sols monitor
+lattice.nslice = 1
+
+source.type = source
+source.distribution = openPMD
+source.openpmd_path = "../solenoid/diags/openPMD/monitor.h5"
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+sol1.type = solenoid
+sol1.ds = 3.820395
+sol1.ks = 0.8223219329893234
+
+sols.type = line
+sols.elements = sol1
+sols.repeat = 3
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.particle_shape = 2
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

@@ -20,19 +20,23 @@ import pybind11_stubgen.typing_ext
 
 import amrex.space3d.amrex_3d_pybind
 from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 
 from . import distribution, elements, wakeconvolution
 
 __all__ = [
     "Config",
     "CoordSystem",
+    "Envelope",
     "ImpactX",
     "ImpactXParConstIter",
     "ImpactXParIter",
     "ImpactXParticleContainer",
+    "Map6x6",
     "RefPart",
     "amr",
     "coordinate_transformation",
+    "create_envelope",
     "distribution",
     "elements",
     "push",
@@ -76,6 +80,18 @@ class CoordSystem:
     @property
     def value(self) -> int: ...
 
+class Envelope:
+    beam_intensity: float
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: float,
+    ) -> None: ...
+
 class ImpactX:
     def DistributionMap(
         self, lev: int
@@ -97,7 +113,7 @@ class ImpactX:
         npart: int,
     ) -> None:
         """
-        Generate and add n particles to the particle container.
+        Particle tracking mode:Generate and add n particles to the particle container.
 
         Will also resize the geometry based on the updated particle
         distribution's extent and then redistribute particles in according
@@ -117,6 +133,23 @@ class ImpactX:
         Deallocate all contexts and data.
         """
     def init_beam_distribution_from_inputs(self) -> None: ...
+    def init_envelope(
+        self,
+        ref: RefPart,
+        distr: distribution.Empty
+        | distribution.Gaussian
+        | distribution.Kurth4D
+        | distribution.Kurth6D
+        | distribution.KVdist
+        | distribution.Thermal
+        | distribution.Triangle
+        | distribution.Semigaussian
+        | distribution.Waterbag,
+        intensity: float | None = None,
+    ) -> None:
+        """
+        Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
+        """
     def init_grids(self) -> None:
         """
         Initialize AMReX blocks/grids for domain decomposition & space charge mesh.
@@ -147,9 +180,17 @@ class ImpactX:
         """
         space charge force (vector: x,y,z) per level
         """
+    def track_envelope(self) -> None:
+        """
+        Run the envelope tracking simulation loop.
+        """
     def track_particles(self) -> None:
         """
         Run the particle tracking simulation loop.
+        """
+    def track_reference(self, arg0: RefPart) -> None:
+        """
+        Run the reference orbit tracking simulation loop.
         """
     @property
     def abort_on_unused_inputs(self) -> int:
@@ -254,6 +295,20 @@ class ImpactX:
         The currently finest level of mesh-refinement used. This is always less or equal to max_level.
         """
     @property
+    def isr(self) -> bool:
+        """
+        Enable or disable Incoherent Synchrotron Radiation (ISR) calculations (default: disabled).
+        """
+    @isr.setter
+    def isr(self, arg1: bool) -> None: ...
+    @property
+    def isr_order(self) -> bool:
+        """
+        Number of terms in the Taylor series retained for quantum effects (default: 1).
+        """
+    @isr_order.setter
+    def isr_order(self, arg1: int) -> None: ...
+    @property
     def lattice(self) -> elements.KnownElementsList:
         """
         Access the accelerator element lattice.
@@ -267,6 +322,13 @@ class ImpactX:
         """
     @max_level.setter
     def max_level(self, arg1: int) -> None: ...
+    @property
+    def memory_profiler(self) -> bool:
+        """
+        This parameter can be used to disable tiny profiler's memory arena profiling at runtime. If tiny_profiler.enabled is false, this parameter has no effects.
+        """
+    @memory_profiler.setter
+    def memory_profiler(self, arg1: bool) -> None: ...
     @property
     def mlmg_absolute_tolerance(self) -> bool:
         """
@@ -305,6 +367,14 @@ class ImpactX:
         self,
         arg1: typing.Annotated[list[int], pybind11_stubgen.typing_ext.FixedSize(3)],
     ) -> None: ...
+    @property
+    def omp_threads(self) -> str:
+        """
+        Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+        https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html.
+        """
+    @omp_threads.setter
+    def omp_threads(self, arg1: int | str) -> None: ...
     @property
     def particle_lost_diagnostics_backend(self) -> str:
         """
@@ -353,12 +423,26 @@ class ImpactX:
     @slice_step_diagnostics.setter
     def slice_step_diagnostics(self, arg1: bool) -> None: ...
     @property
-    def space_charge(self) -> bool:
+    def space_charge(self) -> str:
         """
-        Enable or disable space charge calculations (default: enabled).
+        The model to be used when calculating space charge effects. Either off, 2D, or 3D.
         """
     @space_charge.setter
-    def space_charge(self, arg1: bool) -> None: ...
+    def space_charge(self, arg1: bool | str) -> None: ...
+    @property
+    def tiny_profiler(self) -> bool:
+        """
+        This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
+        """
+    @tiny_profiler.setter
+    def tiny_profiler(self, arg1: bool) -> None: ...
+    @property
+    def tiny_profiler_file(self) -> str:
+        """
+        If this parameter is empty, the output of tiny profiling is dumped on the default out stream of AMReX. If it's not empty, it specifies the file name for the output. Note that /dev/null is a special name that mean a null file.
+        """
+    @tiny_profiler_file.setter
+    def tiny_profiler_file(self, arg1: str) -> None: ...
     @property
     def verbose(self) -> int:
         """
@@ -387,16 +471,6 @@ class ImpactXParConstIter(
     def pc(
         self,
     ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
-    def soa(self):
-        """
-        Get the StructOfArrays on the current tile
-
-            Parameters
-            ----------
-            self : ImpactXParIter or ImpactXParConstIter
-              used to query particle container component names
-
-        """
 
 class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
     @typing.overload
@@ -415,16 +489,6 @@ class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
     def pc(
         self,
     ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
-    def soa(self):
-        """
-        Get the StructOfArrays on the current tile
-
-            Parameters
-            ----------
-            self : ImpactXParIter or ImpactXParConstIter
-              used to query particle container component names
-
-        """
 
 class ImpactXParticleContainer(
     amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default
@@ -458,6 +522,24 @@ class ImpactXParticleContainer(
         :param qm: charge over mass in 1/eV
         :param bchchg: total charge within a bunch in C
         """
+    def beam_moments(self) -> dict[str, float]:
+        """
+        Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+        """
+    def beam_moments_history(self):
+        """
+
+        Return the history of the beam as calculated by the reduced beam characteristics on every step.
+
+        """
+    def beam_moments_history_list(self) -> list[dict[str, float]]:
+        """
+        Return the history of the beam moments on every step.
+        """
+    def clear(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Empty the container and reset the reference particle
+        """
     def mean_and_std_positions(self) -> tuple[float, float, float, float, float, float]:
         """
         Compute the mean and std of the particle position in each dimension.
@@ -490,11 +572,9 @@ class ImpactXParticleContainer(
         For MPI-parallel ranks, the figure is only created on the root_rank.
 
         """
-    def redistribute(
-        self, arg0: int, arg1: int, arg2: int, arg3: int, arg4: bool
-    ) -> None:
+    def record_beam_moments(self) -> None:
         """
-        Redistribute particles in the current mesh in x, y, z
+        Calculate & record the beam moments at current s
         """
     def reduced_beam_characteristics(self) -> dict[str, float]:
         """
@@ -504,14 +584,13 @@ class ImpactXParticleContainer(
         """
         Access the reference particle.
         """
+    def reset_beam_moments_history(self) -> None:
+        """
+        Reset the history of the beam moments.
+        """
     def set_ref_particle(self, refpart: RefPart) -> None:
         """
         Set reference particle attributes.
-        """
-    @property
-    def RealSoA_names(self) -> list[str]:
-        """
-        Get the name of each ParticleReal SoA component
         """
     @property
     def coord_system(self) -> CoordSystem:
@@ -519,10 +598,12 @@ class ImpactXParticleContainer(
         Get the current coordinate system of particles in this container
         """
     @property
-    def intSoA_names(self) -> list[str]:
+    def store_beam_moments(self) -> bool:
         """
-        Get the name of each int SoA component
+        In situ calculate and store the beam moments for every simulation step.
         """
+    @store_beam_moments.setter
+    def store_beam_moments(self, arg1: bool) -> None: ...
 
 class RefPart:
     @staticmethod
@@ -539,6 +620,10 @@ class RefPart:
         """
         This struct stores the reference particle attributes
         stored in ImpactXParticleContainer.
+        """
+    def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Reset the reference particle
         """
     def set_charge_qe(self, charge_qe: float) -> RefPart:
         """
@@ -584,6 +669,15 @@ class RefPart:
         """
         Get reference particle energy (MeV)
         """
+    @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized map
+        """
+    @map.setter
+    def map(
+        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    ) -> None: ...
     @property
     def mass(self) -> float:
         """
@@ -642,6 +736,13 @@ class RefPart:
     @s.setter
     def s(self, arg0: float) -> None: ...
     @property
+    def sedge(self) -> float:
+        """
+        value of s at entrance of the current beamline element
+        """
+    @sedge.setter
+    def sedge(self, arg0: float) -> None: ...
+    @property
     def t(self) -> float:
         """
         clock time * c in meters
@@ -677,6 +778,18 @@ def coordinate_transformation(
     Transform coordinates from fixed s to fixed to or vice versa.
     """
 
+def create_envelope(
+    arg0: distribution.Empty
+    | distribution.Gaussian
+    | distribution.Kurth4D
+    | distribution.Kurth6D
+    | distribution.KVdist
+    | distribution.Thermal
+    | distribution.Triangle
+    | distribution.Semigaussian
+    | distribution.Waterbag,
+    arg1: float | None,
+) -> Envelope: ...
 def push(
     pc: ImpactXParticleContainer,
     element: elements.Empty
@@ -692,8 +805,11 @@ def push(
     | elements.DipEdge
     | elements.Drift
     | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
     | elements.ExactSbend
     | elements.Kicker
+    | elements.LinearMap
     | elements.Marker
     | elements.Multipole
     | elements.NonlinearLens
@@ -701,12 +817,14 @@ def push(
     | elements.Programmable
     | elements.PRot
     | elements.Quad
+    | elements.QuadEdge
     | elements.RFCavity
     | elements.Sbend
     | elements.ShortRF
     | elements.SoftSolenoid
     | elements.SoftQuadrupole
     | elements.Sol
+    | elements.Source
     | elements.TaperedPL
     | elements.ThinDipole,
     step: int = 0,
@@ -720,6 +838,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "24.10"
+__version__: str = "25.06"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

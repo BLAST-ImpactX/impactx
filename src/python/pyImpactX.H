@@ -10,17 +10,18 @@
 #define IMPACTX_PYIMPACTX_H
 
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
+// include <pybind11/numpy.h>  // not yet used
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-#include <pybind11/functional.h>
 
-#include <particles/elements/All.H>
+#include <elements/All.H>
 
 #include <list>
 
 namespace py = pybind11;
 using namespace impactx;
 
-PYBIND11_MAKE_OPAQUE(std::list<KnownElements>)
+PYBIND11_MAKE_OPAQUE(std::list<elements::KnownElements>)
 
 #endif // IMPACTX_PYIMPACTX_H

@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 24.10)
+project(ImpactX VERSION 25.06)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -88,6 +88,10 @@ endif()
 option(ImpactX_MPI_THREAD_MULTIPLE "MPI thread-multiple support, i.e. for async_io" ON)
 mark_as_advanced(ImpactX_MPI_THREAD_MULTIPLE)
 
+# Advanced option to run tests
+option(ImpactX_TEST_CLEANUP "Clean up automated test directories" OFF)
+mark_as_advanced(ImpactX_TEST_CLEANUP)
+
 option(ImpactX_ablastr_internal                  "Download & build ABLASTR" ON)
 option(ImpactX_amrex_internal                    "Download & build AMReX" ON)
 option(ImpactX_openpmd_internal                  "Download & build openPMD-api" ON)
@@ -115,6 +119,10 @@ option(ImpactX_PYTHON_IPO
     "Compile Python bindings with interprocedural optimization (IPO) / link-time optimization (LTO)"
     ${_ImpactX_PYTHON_IPO_DEFAULT}
 )
+
+# Unity builds combine all .cpp files into a single one (a single translation
+# unit, TU).
+option(ImpactX_UNITY_BUILD          "ImpactX library as unity build" OFF)
 
 if(ImpactX_FFT)
     set(ABLASTR_FFT ON CACHE STRING "FFT-based solvers" FORCE)
@@ -164,6 +172,16 @@ set_target_properties(lib PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
+
+# Optional: build only a single TU
+if(ImpactX_UNITY_BUILD)
+    set_target_properties(lib PROPERTIES
+        UNITY_BUILD ON
+        UNITY_BUILD_MODE BATCH
+        # Number must be more than the number of .cpp files in ImpactX
+        UNITY_BUILD_BATCH_SIZE 10000
+    )
+endif()
 
 # executable application
 #   note: we currently avoid a dependency on a core library
@@ -265,7 +283,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v2.12.0/tools/pybind11Common.cmake#L397-L403
+            # https://github.com/pybind/pybind11/blob/v2.13.0/tools/pybind11Common.cmake#L407-L413
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()

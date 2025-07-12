@@ -25,11 +25,13 @@ sudo apt-get install -y \
     wget
 
 python3 -m pip install -U pip
-python3 -m pip install -U build packaging setuptools wheel
+python3 -m pip install -U build packaging setuptools[core] wheel
 python3 -m pip install -U cmake
 python3 -m pip install -U -r requirements_mpi.txt
 python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
 python3 -m pip install -U -r examples/requirements.txt
 python3 -m pip install -U -r tests/python/requirements.txt
 
+# extra tests
+python3 -m pip install -U -r examples/requirements_torch_cpu.txt
 python3 -m pip install -U openPMD-validator

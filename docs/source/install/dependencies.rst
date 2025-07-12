@@ -10,7 +10,7 @@ Please see installation instructions below.
 - `CMake 3.24.0+ <https://cmake.org>`__
 - `Git 2.18+ <https://git-scm.com>`__
 - `AMReX <https://amrex-codes.github.io>`__: we automatically download and compile a copy
-- `ABLASTR/WarpX <https://github.com/ECP-WarpX/warpx>`__: we automatically download and compile a copy
+- `ABLASTR/WarpX <https://github.com/BLAST-WarpX/warpx>`__: we automatically download and compile a copy
 
 Optional dependencies include:
 
@@ -18,17 +18,17 @@ Optional dependencies include:
 - for on-node accelerated compute *one of either*:
 
   - `OpenMP 3.1+ <https://www.openmp.org>`__: for threaded CPU execution or
-  - `CUDA Toolkit 11.0+ (11.3+ recommended) <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
+  - `CUDA Toolkit 11.7+ <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
   - `ROCm 5.2+ (5.5+ recommended) <https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-rocm-installation-readme/>`__: for AMD GPU support
 - `FFTW3 <http://www.fftw.org>`__: for algorithms such as IGF space charge solver or CSR when running on CPU or with SYCL
 
   - also needs the ``pkg-config`` tool on Unix
-- `openPMD-api 0.15.2+ <https://github.com/openPMD/openPMD-api>`__: we automatically download and compile a copy of openPMD-api for openPMD I/O support
+- `openPMD-api 0.16.1+ <https://github.com/openPMD/openPMD-api>`__: we automatically download and compile a copy of openPMD-api for openPMD I/O support
 
   - see `optional I/O backends <https://github.com/openPMD/openPMD-api#dependencies>`__
 - `CCache <https://ccache.dev>`__: to speed up rebuilds (For CUDA support, needs version 3.7.9+ and 4.2+ is recommended)
 - `Ninja <https://ninja-build.org>`__: for faster parallel compiles
-- `Python 3.8+ <https://www.python.org>`__
+- `Python 3.9+ <https://www.python.org>`__
 
   - `mpi4py <https://mpi4py.readthedocs.io>`__
   - `numpy <https://numpy.org>`__
@@ -45,20 +45,12 @@ For all other systems, we recommend to use a **package dependency manager**:
 Pick *one* of the installation methods below to install all dependencies for ImpactX development in a consistent manner.
 
 
-Conda (Linux/macOS/Windows)
----------------------------
+Conda-Forge (Linux/macOS/Windows)
+---------------------------------
 
-`Conda <https://conda.io>`__/`Mamba <https://mamba.readthedocs.io>`__ are cross-compatible, user-level package managers.
+`Conda-Forge <https://conda-forge.org/download/>`__ is a repository for cross-compatible, user-level packages.
 
 .. tip::
-
-   We recommend to configure your conda to use the faster ``libmamba`` `dependency solver <https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community>`__.
-
-   .. code-block:: bash
-
-      conda update -y -n base conda
-      conda install -y -n base conda-libmamba-solver
-      conda config --set solver libmamba
 
    We recommend to deactivate that conda self-activates its ``base`` environment.
    This `avoids interference with the system and other package managers <https://collegeville.github.io/CW20/WorkshopResources/WhitePapers/huebl-working-with-multiple-pkg-mgrs.pdf>`__.
@@ -67,13 +59,20 @@ Conda (Linux/macOS/Windows)
 
       conda config --set auto_activate_base false
 
+   In order to make sure that the conda configuration uses ``conda-forge`` as the only channel, which will help avoid issues with blocked ``defaults`` or ``anaconda`` repositories, please set the following configurations:
+
+   .. code-block:: bash
+
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+
 .. tab-set::
 
    .. tab-item:: With MPI (only Linux/macOS)
 
       .. code-block:: bash
 
-         conda create -n impactx-cpu-mpich-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp "openpmd-api=*=mpi_mpich*" python numpy pandas quantiphy scipy yt "fftw=*=mpi_mpich*" pkg-config matplotlib mamba ninja mpich pip virtualenv
+         conda create -n impactx-cpu-mpich-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp "openpmd-api=*=mpi_mpich*" packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt "fftw=*=mpi_mpich*" pkg-config matplotlib mamba ninja mpich pip virtualenv wheel
          conda activate impactx-cpu-mpich-dev
 
          # compile ImpactX with -DImpactX_MPI=ON
@@ -83,7 +82,7 @@ Conda (Linux/macOS/Windows)
 
       .. code-block:: bash
 
-         conda create -n impactx-cpu-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp openpmd-api python numpy pandas quantiphy scipy yt fftw pkg-config matplotlib mamba ninja pip virtualenv
+         conda create -n impactx-cpu-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp openpmd-api packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt fftw pkg-config matplotlib mamba ninja pip virtualenv wheel
          conda activate impactx-cpu-dev
 
          # compile ImpactX with -DImpactX_MPI=OFF
@@ -118,7 +117,7 @@ Spack (Linux/macOS)
 `Spack <https://spack.readthedocs.io>`__ is a user-level package manager.
 It is primarily written for Linux, with slightly less support for macOS, and future support for Windows.
 
-First, download a `WarpX Spack desktop development environment <https://github.com/ECP-WarpX/WarpX/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
+First, download a `WarpX Spack desktop development environment <https://github.com/BLAST-WarpX/warpx/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
 For most desktop developments, pick the OpenMP environment for CPUs unless you have a supported GPU.
 
 * **Debian/Ubuntu** Linux:
@@ -143,7 +142,7 @@ Now install the WarpX/ImpactX dependencies in a new development environment:
 .. code-block:: bash
 
    # download environment file
-   curl -sLO https://raw.githubusercontent.com/ECP-WarpX/WarpX/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
+   curl -sLO https://raw.githubusercontent.com/BLAST-WarpX/warpx/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
 
    # create new development environment
    spack env create impactx-${compute}-dev spack-${system}-${compute}.yaml

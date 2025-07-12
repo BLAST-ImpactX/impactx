@@ -24,6 +24,7 @@
 #include <AMReX_IntVect.H>
 #include <AMReX_Vector.H>
 
+#include <list>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -143,51 +144,19 @@ namespace impactx
         //! Destruct a particle container
         virtual ~ImpactXParticleContainer() = default;
 
-        /** Check if a container has a ParticleReal component
+        /** Prepares the container for use.
          *
-         * @param name component name to check
-         * @return true if found, else false
+         * This sets the tile size to a sensible default and resizes the
+         * underlying data structures.
          */
-        bool HasRealComp (std::string const & name);
+        void prepare ();
 
-        /** Check if a container has an Integer component
+        /** Empty the container and reset the reference particle
          *
-         * @param name component name to check
-         * @return true if found, else false
+         * @param keep_mass do not reset the reference particle mass
+         * @param keep_charge do not reset the reference particle charge
          */
-        bool HasIntComp (std::string const & name);
-
-        /** Get the ParticleReal SoA index of a component
-         *
-         * This throws a runtime exception if the component does not exist.
-         *
-         * @param name component name to query index for
-         * @return zero-based index
-         */
-        int GetRealCompIndex (std::string const & name);
-
-        /** Get the Integer SoA index of a component
-         *
-         * This throws a runtime exception if the component does not exist.
-         *
-         * @param name component name to query index for
-         * @return zero-based index
-         */
-        int GetIntCompIndex (std::string const & name);
-
-        /** Add a ParticleReal component
-         *
-         * @param name a unique name of the component, not colliding with RealSoA
-         * @param communicate participate in MPI communication when particles move
-         */
-        void AddRealComp (std::string const & name, bool communicate=true);
-
-        /** Add an Integer component
-         *
-         * @param name a unique name of the component, not colliding with IntSoA
-         * @param communicate participate in MPI communication when particles move
-         */
-        void AddIntComp (std::string const & name, bool communicate=true);
+        void clear (bool keep_mass=false, bool keep_charge=false);
 
         /** Add new particles to the container for fixed s.
          *
@@ -309,14 +278,6 @@ namespace impactx
         DepositCharge (std::unordered_map<int, amrex::MultiFab> & rho,
                        amrex::Vector<amrex::IntVect> const & ref_ratio);
 
-        /** Get the name of each ParticleReal SoA component */
-        std::vector<std::string>
-        RealSoA_names () const;
-
-        /** Get the name of each int SoA component */
-        std::vector<std::string>
-        intSoA_names () const;
-
         /** Get the current coordinate system of particles in this container */
         CoordSystem
         GetCoordSystem () const;
@@ -327,6 +288,25 @@ namespace impactx
          */
         void
         SetCoordSystem (CoordSystem coord_system);
+
+        /** In situ calculate and store the beam moments for every simulation step */
+        bool store_beam_moments = false;
+
+        /** Calculate & record the beam moments at current s */
+        void
+        record_beam_moments ();
+
+        /** Calculate beam moments at current s */
+        std::unordered_map<std::string, amrex::ParticleReal>
+        beam_moments ();
+
+        /** Get the history of beam moments */
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> >
+        beam_moments_history () { return m_beam_moments; }
+
+        /** Reset the history of the beam moments */
+        void
+        reset_beam_moments_history () { m_beam_moments.clear(); }
 
       private:
 
@@ -342,11 +322,8 @@ namespace impactx
         //! the current coordinate system of particles in this container
         CoordSystem m_coordsystem = CoordSystem::s;
 
-        //! ParticleReal component names
-        std::vector<std::string> m_real_soa_names;
-
-        //! Int component names
-        std::vector<std::string> m_int_soa_names;
+        //! history of the beam moments over s
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
 
     }; // ImpactXParticleContainer
 

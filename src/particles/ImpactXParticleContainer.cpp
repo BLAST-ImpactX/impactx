@@ -10,9 +10,11 @@
 #include "ImpactXParticleContainer.H"
 
 #include "initialization/AmrCoreData.H"
+#include "diagnostics/ReducedBeamCharacteristics.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <AMReX.H>
 #include <AMReX_AmrCore.H>
@@ -59,62 +61,10 @@ namespace impactx
         : amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>(amr_core->GetParGDB())
     {
         SetParticleSize();
-
-        // name compile-time attributes
-        m_real_soa_names.resize(RealSoA::names_s.size());
-        m_int_soa_names.resize(IntSoA::names_s.size());
-        std::copy(RealSoA::names_s.begin(), RealSoA::names_s.end(), m_real_soa_names.begin());
-        std::copy(IntSoA::names_s.begin(), IntSoA::names_s.end(), m_int_soa_names.begin());
-    }
-
-    bool ImpactXParticleContainer::HasRealComp (std::string const & name)
-    {
-        return std::find(m_real_soa_names.begin(), m_real_soa_names.end(), name) != std::end(m_real_soa_names);
-    }
-
-    bool ImpactXParticleContainer::HasIntComp (std::string const & name)
-    {
-        return std::find(m_int_soa_names.begin(), m_int_soa_names.end(), name) != std::end(m_int_soa_names);
-    }
-
-    int ImpactXParticleContainer::GetRealCompIndex (std::string const & name)
-    {
-        const auto it = std::find(m_real_soa_names.begin(), m_real_soa_names.end(), name);
-
-        if (it == m_real_soa_names.end())
-            throw std::runtime_error("GetRealCompIndex: Component " + name + " does not exist!");
-        else
-            return std::distance(m_real_soa_names.begin(), it);
-    }
-
-    int ImpactXParticleContainer::GetIntCompIndex (std::string const & name)
-    {
-        const auto it = std::find(m_int_soa_names.begin(), m_int_soa_names.end(), name);
-
-        if (it == m_int_soa_names.end())
-            throw std::runtime_error("GetIntCompIndex: Component " + name + " does not exist!");
-        else
-            return std::distance(m_int_soa_names.begin(), it);
-    }
-
-    void
-    ImpactXParticleContainer::AddRealComp (std::string const & name, bool communicate)
-    {
-        if (std::find(m_real_soa_names.begin(), m_real_soa_names.end(), name) != std::end(m_real_soa_names))
-            throw std::runtime_error("AddRealComp: Component " + name + " already exists!");
-
-        m_real_soa_names.push_back(name);
-        amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>::AddRealComp(communicate);
-    }
-
-    void
-    ImpactXParticleContainer::AddIntComp (std::string const & name, bool communicate)
-    {
-        if (std::find(m_int_soa_names.begin(), m_int_soa_names.end(), name) != std::end(m_int_soa_names))
-            throw std::runtime_error("AddIntComp: Component " + name + " already exists!");
-
-        m_int_soa_names.push_back(name);
-        amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>::AddIntComp(communicate);
+        SetSoACompileTimeNames(
+            {RealSoA::names_s.begin(), RealSoA::names_s.end()},
+            {IntSoA::names_s.begin(), IntSoA::names_s.end()}
+        );
     }
 
     void
@@ -153,10 +103,78 @@ namespace impactx
     {
         amrex::ParmParse const pp_algo("algo");
         int v = 0;
-        bool const has_shape = pp_algo.query("particle_shape", v);
+        bool const has_shape = pp_algo.queryWithParser("particle_shape", v);
         if (!has_shape)
             throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells.");
         SetParticleShape(v);
+    }
+
+    void
+    ImpactXParticleContainer::prepare ()
+    {
+        // make sure we have at least one box with enough tiles for each OpenMP thread
+
+        // make sure level 0, grid 0 exists
+        int lid = 0, gid = 0;
+        {
+            const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
+            auto it = std::find(pmap.begin(), pmap.end(), amrex::ParallelDescriptor::MyProc());
+            if (it == std::end(pmap)) {
+                amrex::Abort("Particle container needs to have at least one grid.");
+            } else {
+                gid = *it;
+            }
+        }
+
+        int nthreads = 1;
+#if defined(AMREX_USE_OMP)
+        nthreads = omp_get_max_threads();
+#endif
+
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+            nthreads == 1 || this->do_tiling == true,
+            "OpenMP threads are used for parallelism but particles.do_tiling is set to false. "
+            "This would create invalid particle data."
+        );
+
+        // When running without space charge and OpenMP parallelization,
+        // we need to make sure we have enough tiles on level 0, grid 0
+        // to thread over the available tiles. We try to set the tile_size
+        // appropriately here. The tiles start as (very large number, 8, 8)
+        // in (x, y, z). So we try to reduce the tile size in the y and z
+        // directions alternately until there are enough tiles for the number of threads.
+
+        const auto& ba = ParticleBoxArray(lid);
+        auto n_logical = numTilesInBox(ba[gid], true, tile_size);
+
+        int ntry = 0;
+        constexpr int max_tries = 6;
+        while ((n_logical < nthreads) && (ntry++ < max_tries)) {
+            int idim = (ntry % 2) + 1;  // alternate between 1 and 2
+            tile_size[idim] /= 2;
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(tile_size[idim] > 0,
+                                             "Failed to set proper tile size for the number of OpenMP threads. "
+                                             "Consider lowering the number of OpenMP threads via the environment variable OMP_NUM_THREADS."
+                                             );
+            n_logical = numTilesInBox(ba[gid], true, tile_size);
+        }
+
+        if (n_logical < nthreads) {
+            amrex::Abort("ImpactParticleContainer::prepare() "
+                "could not find good tile size for the number of OpenMP threads. "
+                "Consider lowering the number of OpenMP threads via the environment variable OMP_NUM_THREADS."
+            );
+        }
+
+        reserveData();
+        resizeData();
+    }
+
+    void
+    ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
+    {
+        this->clearParticles();
+        m_refpart.reset(keep_mass, keep_charge);
     }
 
     void
@@ -182,8 +200,8 @@ namespace impactx
         // number of particles to add
         int const np = x.size();
 
-        // we add particles to lev 0, tile 0 of the first box assigned to this proc
-        int lid = 0, gid = 0, tid = 0;
+        // we add particles to lev 0, grid 0
+        int lid = 0, gid = 0;
         {
             const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
             auto it = std::find(pmap.begin(), pmap.end(), amrex::ParallelDescriptor::MyProc());
@@ -193,61 +211,96 @@ namespace impactx
                 gid = *it;
             }
         }
-        auto& particle_tile = DefineAndReturnParticleTile(lid, gid, tid);
 
-        auto old_np = particle_tile.numParticles();
-        auto new_np = old_np + np;
-        particle_tile.resize(new_np);
+        int nthreads = 1;
+#if defined(AMREX_USE_OMP)
+        nthreads = omp_get_max_threads();
+#endif
 
-        // Update NextID to include particles created in this function
-        int pid;
-#ifdef AMREX_USE_OMP
-#pragma omp critical (add_beam_nextid)
+        // split up particles over nthreads tiles
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(numTilesInBox(ParticleBoxArray(lid)[gid], true, tile_size) >= nthreads, "Not enough tiles for the number of OpenMP threads - please try reducing particles.tile_size or increasing the number of cells in the domain.");
+        for (int ithr = 0; ithr < nthreads; ++ithr) {
+            DefineAndReturnParticleTile(lid, gid, ithr);
+        }
+
+        int pid = ParticleType::NextID();
+        ParticleType::NextID(pid + np);
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+            static_cast<amrex::Long>(pid) + static_cast<amrex::Long>(np) < amrex::LongParticleIds::LastParticleID,
+            "ERROR: overflow on particle id numbers"
+        );
+
+#if defined(AMREX_USE_OMP)
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
         {
-            pid = ParticleType::NextID();
-            ParticleType::NextID(pid+np);
+            int tid = 0;
+#if defined(AMREX_USE_OMP)
+            tid = omp_get_thread_num();
+#endif
+
+            // we split up the np particles onto multiple tiles.
+            // if nthreads evenly divides np, each thread will
+            // get get n_regular particles. If there are some
+            // leftovers, however, the first n_leftover threads
+            // will get one extra
+            int n_regular  = np / nthreads;
+            int n_leftover = np - n_regular*nthreads;
+
+            int num_to_add = 0; /* how many particles this tile will get*/
+            int my_offset = 0; /*  offset into global arrays x, y, etc. for this thread*/
+
+            if (tid < n_leftover) { // get n_regular+1 items
+                my_offset = tid * (n_regular + 1);
+                num_to_add = n_regular + 1;
+            } else {         // get n_regular items
+                my_offset = tid * n_regular + n_leftover;
+                num_to_add = n_regular;
+            }
+
+            auto& particle_tile = ParticlesAt(lid, gid, tid);
+            auto old_np = particle_tile.numParticles();
+            auto new_np = old_np + num_to_add;
+            particle_tile.resize(new_np);
+
+            const int cpuid = amrex::ParallelDescriptor::MyProc();
+
+            auto & soa = particle_tile.GetStructOfArrays().GetRealData();
+            amrex::ParticleReal * const AMREX_RESTRICT x_arr = soa[RealSoA::x].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT y_arr = soa[RealSoA::y].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT t_arr = soa[RealSoA::t].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT px_arr = soa[RealSoA::px].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT py_arr = soa[RealSoA::py].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT pt_arr = soa[RealSoA::pt].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT qm_arr = soa[RealSoA::qm].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT w_arr  = soa[RealSoA::w ].dataPtr();
+
+            uint64_t * const AMREX_RESTRICT idcpu_arr = particle_tile.GetStructOfArrays().GetIdCPUData().dataPtr();
+
+            amrex::ParticleReal const * const AMREX_RESTRICT x_ptr = x.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT y_ptr = y.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT t_ptr = t.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT px_ptr = px.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT py_ptr = py.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
+
+            amrex::ParallelFor(num_to_add,
+                [=] AMREX_GPU_DEVICE (int i) noexcept
+            {
+                idcpu_arr[old_np+i] = amrex::SetParticleIDandCPU(pid + my_offset + i, cpuid);
+
+                x_arr[old_np+i] = x_ptr[my_offset+i];
+                y_arr[old_np+i] = y_ptr[my_offset+i];
+                t_arr[old_np+i] = t_ptr[my_offset+i];
+
+                px_arr[old_np+i] = px_ptr[my_offset+i];
+                py_arr[old_np+i] = py_ptr[my_offset+i];
+                pt_arr[old_np+i] = pt_ptr[my_offset+i];
+
+                qm_arr[old_np+i] = qm;
+                w_arr[old_np+i]  = bchchg/ablastr::constant::SI::q_e/np;
+            });
         }
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
-        static_cast<amrex::Long>(pid) + static_cast<amrex::Long>(np) < amrex::LongParticleIds::LastParticleID,
-            "ERROR: overflow on particle id numbers");
-
-        const int cpuid = amrex::ParallelDescriptor::MyProc();
-
-        auto & soa = particle_tile.GetStructOfArrays().GetRealData();
-        amrex::ParticleReal * const AMREX_RESTRICT x_arr = soa[RealSoA::x].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT y_arr = soa[RealSoA::y].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT t_arr = soa[RealSoA::t].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT px_arr = soa[RealSoA::px].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT py_arr = soa[RealSoA::py].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT pt_arr = soa[RealSoA::pt].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT qm_arr = soa[RealSoA::qm].dataPtr();
-        amrex::ParticleReal * const AMREX_RESTRICT w_arr  = soa[RealSoA::w ].dataPtr();
-
-        uint64_t * const AMREX_RESTRICT idcpu_arr = particle_tile.GetStructOfArrays().GetIdCPUData().dataPtr();
-
-        amrex::ParticleReal const * const AMREX_RESTRICT x_ptr = x.data();
-        amrex::ParticleReal const * const AMREX_RESTRICT y_ptr = y.data();
-        amrex::ParticleReal const * const AMREX_RESTRICT t_ptr = t.data();
-        amrex::ParticleReal const * const AMREX_RESTRICT px_ptr = px.data();
-        amrex::ParticleReal const * const AMREX_RESTRICT py_ptr = py.data();
-        amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
-
-        amrex::ParallelFor(np,
-        [=] AMREX_GPU_DEVICE (int i) noexcept
-        {
-            idcpu_arr[old_np+i] = amrex::SetParticleIDandCPU(pid + i, cpuid);
-
-            x_arr[old_np+i] = x_ptr[i];
-            y_arr[old_np+i] = y_ptr[i];
-            t_arr[old_np+i] = t_ptr[i];
-
-            px_arr[old_np+i] = px_ptr[i];
-            py_arr[old_np+i] = py_ptr[i];
-            pt_arr[old_np+i] = pt_ptr[i];
-            qm_arr[old_np+i] = qm;
-            w_arr[old_np+i]  = bchchg/ablastr::constant::SI::q_e/np;
-        });
 
         // safety first: in case passed attribute arrays were temporary, we
         // want to make sure the ParallelFor has ended here
@@ -300,18 +353,6 @@ namespace impactx
         >(*this);
     }
 
-    std::vector<std::string>
-    ImpactXParticleContainer::RealSoA_names () const
-    {
-        return m_real_soa_names;
-    }
-
-    std::vector<std::string>
-    ImpactXParticleContainer::intSoA_names () const
-    {
-        return m_int_soa_names;
-    }
-
     CoordSystem
     ImpactXParticleContainer::GetCoordSystem () const
     {
@@ -322,5 +363,29 @@ namespace impactx
     ImpactXParticleContainer::SetCoordSystem (CoordSystem coord_system)
     {
         m_coordsystem = coord_system;
+    }
+
+    void
+    ImpactXParticleContainer::record_beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::record_beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        m_beam_moments.push_back(rbc);
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    ImpactXParticleContainer::beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        return rbc;
     }
 } // namespace impactx

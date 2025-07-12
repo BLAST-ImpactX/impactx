@@ -6,12 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
 from impactx import ImpactX, distribution, elements
-
-# work-around for https://github.com/ECP-WarpX/impactx/issues/499
-pp_amrex = amr.ParmParse("amrex")
-pp_amrex.add("the_arena_is_managed", 1)
 
 sim = ImpactX()
 
@@ -57,8 +52,8 @@ sim.lattice.extend(
         elements.Drift(name="drift", ds=0.123),
         elements.Aperture(
             name="pepperpot",
-            xmax=1.5e-4,
-            ymax=1.0e-4,
+            aperture_x=1.5e-4,
+            aperture_y=1.0e-4,
             repeat_x=1.0e-3,
             repeat_y=1.0e-3,
             shape="rectangular",
@@ -68,7 +63,7 @@ sim.lattice.extend(
 )
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
 sim.finalize()

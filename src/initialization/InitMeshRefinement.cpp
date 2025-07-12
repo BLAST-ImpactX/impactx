@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/Waterbag.H"
@@ -37,9 +38,9 @@ namespace detail
         amrex::ParmParse pp_geometry("geometry");
 
         int max_level = 0;
-        pp_amr.query("max_level", max_level);
+        pp_amr.queryWithParser("max_level", max_level);
 
-        std::string poisson_solver = "multigrid";
+        std::string poisson_solver = "fft";
         pp_algo.queryAdd("poisson_solver", poisson_solver);
 
         // The box is expanded beyond the min and max of the particle beam.
@@ -81,11 +82,11 @@ namespace detail
     {
         BL_PROFILE("ImpactX::ResizeMesh");
 
+        using namespace amrex::literals; // for _rt and _prt
+
         {
-            amrex::ParmParse pp_algo("algo");
-            bool space_charge = false;
-            pp_algo.query("space_charge", space_charge);
-            if (!space_charge)
+            auto space_charge = get_space_charge_algo();
+            if (space_charge == SpaceChargeAlgo::False)
                 ablastr::warn_manager::WMRecordWarning(
                     "ImpactX::ResizeMesh",
                     "This is a simulation without space charge. "
@@ -96,12 +97,12 @@ namespace detail
         }
 
         // Extract the min and max of the particle positions
-        auto const [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->m_particle_container->MinAndMaxPositions();
+        auto const [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->track_particles.m_particle_container->MinAndMaxPositions();
 
         // guard for flat beams:
-        //   https://github.com/ECP-WarpX/impactx/issues/44
+        //   https://github.com/BLAST-ImpactX/impactx/issues/44
         if (x_min == x_max || y_min == y_max || z_min == z_max)
-            throw std::runtime_error("Flat beam detected. This is not yet supported: https://github.com/ECP-WarpX/impactx/issues/44");
+            throw std::runtime_error("Flat beam detected. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
 
         amrex::ParmParse pp_geometry("geometry");
         bool dynamic_size = true;
@@ -118,7 +119,7 @@ namespace detail
             amrex::RealVect const beam_max(x_max, y_max, z_max);
             amrex::RealVect const beam_width(beam_max - beam_min);
 
-            amrex::RealVect const beam_padding = beam_width * (frac - 1.0) / 2.0;
+            amrex::RealVect const beam_padding = beam_width * (frac - 1_rt) * 0.5_rt;
             //                           added to the beam extent --^         ^-- box half above/below the beam
 
             // In AMReX, all levels have the same problem domain, that of the
@@ -159,7 +160,7 @@ namespace detail
             g.ProbDomain(rb[lev]);
             amr_data->SetGeometry(lev, g);
 
-            amr_data->m_particle_container->SetParticleGeometry(lev, g);
+            amr_data->track_particles.m_particle_container->SetParticleGeometry(lev, g);
         }
     }
 } // namespace impactx

@@ -19,15 +19,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      if: github.event_name != 'push' || github.repository != 'ECP-WarpX/impactx' || github.ref != 'refs/heads/development'
+      if: github.event_name != 'push' || github.repository != 'BLAST-ImpactX/impactx' || github.ref != 'refs/heads/development'
 
     - uses: actions/checkout@v4
-      if: github.event_name == 'push' && github.repository == 'ECP-WarpX/impactx' && github.ref == 'refs/heads/development'
+      if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:
         token: ${{ secrets.IMPACTX_PUSH_TOKEN }}
 
     - name: Pull Remote Changes
-      if: github.event_name == 'push' && github.repository == 'ECP-WarpX/impactx' && github.ref == 'refs/heads/development'
+      if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       run: git pull
 
     - uses: actions/setup-python@v5
@@ -81,10 +81,10 @@ jobs:
 
     - name: Unit tests
       run: |
-        mpiexec -np 1 python3 -m pytest tests/python/
+        mpiexec -np 1 python3 -m pytest tests/python/ --ignore=tests/python/dashboard
 
-    - uses: stefanzweifel/git-auto-commit-action@v5
+    - uses: stefanzweifel/git-auto-commit-action@v6
       name: Commit Updated Stub Files
-      if: github.event_name == 'push' && github.repository == 'ECP-WarpX/impactx' && github.ref == 'refs/heads/development'
+      if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:
         commit_message: Update Stub Files

@@ -31,9 +31,15 @@ Single Particle Dynamics
    examples/aperture/README.rst
    examples/iota_lens/README.rst
    examples/achromatic_spectrometer/README.rst
+   examples/fodo_userdef/README.rst
    examples/fodo_programmable/README.rst
    examples/dogleg/README.rst
    examples/coupled_optics/README.rst
+   examples/linear_map/README.rst
+   examples/scraping_beam/README.rst
+   examples/reversibility/README.rst
+   examples/charge_sign/README.rst
+   examples/symplectic_integration/README.rst
 
 
 Collective Effects
@@ -49,6 +55,7 @@ Space Charge
    examples/cfchannel/README.rst
    examples/kurth/README.rst
    examples/epac2004_benchmarks/README.rst
+   examples/fodo_space_charge/README.rst
 
 Coherent Synchrotron Radiation (CSR)
 """"""""""""""""""""""""""""""""""""
@@ -57,6 +64,19 @@ Coherent Synchrotron Radiation (CSR)
    :maxdepth: 1
 
    examples/chicane/README_csr.rst
+
+
+Quantum Excitation
+--------------------
+
+Incoherent Synchrotron Radiation (ISR)
+""""""""""""""""""""""""""""""""""""""
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/incoherent_synchrotron/README.rst
+   examples/chicane/README_isr.rst
 
 
 Beam Distributions
@@ -80,6 +100,7 @@ Channels & Rings
    :maxdepth: 1
 
    examples/fodo_channel/README.rst
+   examples/solenoid_restart/README.rst
 
 
 Lattice Design & Optimization
@@ -105,6 +126,7 @@ Virtual Test Stands
    examples/apochromatic/README.rst
    examples/fodo_tune/README.rst
    examples/ipac2018_mayes/README.rst
+   examples/linac_segment/README.rst
 
 
 Unit tests

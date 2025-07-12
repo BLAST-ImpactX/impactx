@@ -14,6 +14,7 @@
 
 #include <AMReX_BLProfiler.H> // for BL_PROFILE
 #include <AMReX_Extension.H>  // for AMREX_RESTRICT
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>       // for ParticleReal
 
 #include <cmath>
@@ -25,7 +26,9 @@ namespace impactx::transformation
                                    CoordSystem direction)
     {
         BL_PROFILE("impactx::transformation::CoordinateTransformation");
+
         using namespace amrex::literals; // for _rt and _prt
+        using amrex::Math::powi;
 
         if (direction == CoordSystem::s) {
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(pc.GetCoordSystem() == CoordSystem::t, "Already in fixed s coordinates!");
@@ -62,7 +65,7 @@ namespace impactx::transformation
                     amrex::ParticleReal *const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr();
 
                     // Design value of pz/mc = beta*gamma
-                    amrex::ParticleReal const pzd = std::sqrt(std::pow(pd, 2) - 1.0);
+                    amrex::ParticleReal const pzd = std::sqrt(powi<2>(pd) - 1.0);
 
                     ToFixedS const to_s(pzd);
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(long i) {

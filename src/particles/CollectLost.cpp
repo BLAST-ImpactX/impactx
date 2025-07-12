@@ -55,8 +55,37 @@ namespace impactx
         BL_PROFILE("impactX::collect_lost_particles");
 
         using SrcData = ImpactXParticleContainer::ParticleTileType::ConstParticleTileDataType;
-
         ImpactXParticleContainer& dest = *source.GetLostParticleContainer();
+
+        // Check destination has the same attributes as source + "s_lost"
+        for (auto & name : source.GetRealSoANames())
+        {
+            if (!dest.HasRealComp(name)) {
+                amrex::Print() << "adding " << name << std::endl;
+                dest.AddRealComp(name);
+            }
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(source.GetRealCompIndex(name) == dest.GetRealCompIndex(name),
+                                             "Source and destination Real attributes misaligned!");
+        }
+        for (auto & name : source.GetIntSoANames())
+        {
+            if (!dest.HasIntComp(name)) {
+                dest.AddIntComp(name);
+            }
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(source.GetIntCompIndex(name) == dest.GetIntCompIndex(name),
+                                             "Source and destination Int attributes misaligned!");
+        }
+        // the lost particles have an extra runtime attribute: s when it was lost
+        if (!dest.HasRealComp("s_lost"))
+        {
+            bool comm = true;
+            dest.AddRealComp("s_lost", comm);
+        }
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(source.GetRealSoANames().size() + 1 == dest.GetRealSoANames().size(),
+                                         "Source and destination have different Real attributes!");
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(source.GetIntSoANames().size() == dest.GetIntSoANames().size(),
+                                         "Source and destination have different Int attributes!");
+
         const int s_runtime_index = dest.GetRealCompIndex("s_lost") - dest.NArrayReal;
 
         RefPart const ref_part = source.GetRefParticle();

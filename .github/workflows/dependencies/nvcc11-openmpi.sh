@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2021-2023 The ImpactX Community
+# Copyright 2021-2025 The ImpactX Community
 #
 # License: BSD-3-Clause-LBNL
 # Authors: Axel Huebl
@@ -22,21 +22,22 @@ sudo apt-get install -y \
     pkg-config          \
     wget
 
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" \
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
+echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64 /" \
     | sudo tee /etc/apt/sources.list.d/cuda.list
 
 sudo apt-get update
 sudo apt-get install -y          \
-    cuda-command-line-tools-11-3 \
-    cuda-compiler-11-3           \
-    cuda-cupti-dev-11-3          \
-    cuda-minimal-build-11-3      \
-    cuda-nvml-dev-11-3           \
-    cuda-nvtx-11-3               \
-    libcufft-dev-11-3            \
-    libcurand-dev-11-3
-sudo ln -s cuda-11.3 /usr/local/cuda
+    cuda-command-line-tools-11-7 \
+    cuda-compiler-11-7           \
+    cuda-cupti-dev-11-7          \
+    cuda-minimal-build-11-7      \
+    cuda-nvml-dev-11-7           \
+    cuda-nvtx-11-7               \
+    libcufft-dev-11-7            \
+    libcurand-dev-11-7           \
+    libcusparse-dev-11-7
+sudo ln -s cuda-11.7 /usr/local/cuda
 
 # cmake-easyinstall
 #
@@ -48,7 +49,7 @@ export CEI_TMP="/tmp/cei"
 # ccache 4.2+
 #
 CXXFLAGS="" cmake-easyinstall --prefix=/usr/local \
-    git+https://github.com/ccache/ccache.git@v4.6 \
+    git+https://github.com/ccache/ccache.git@v4.10.2 \
     -DCMAKE_BUILD_TYPE=Release        \
     -DENABLE_DOCUMENTATION=OFF        \
     -DENABLE_TESTING=OFF              \

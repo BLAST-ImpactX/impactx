@@ -57,12 +57,13 @@ namespace impactx::transformation
             amrex::ParticleReal & pt) const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             // small tolerance to avoid NaN for pz<0:
             constexpr amrex::ParticleReal tol = 1.0e-8_prt;
 
             // compute value of reference pzd = beta*gamma
-            amrex::ParticleReal const argd = -1.0_prt + std::pow(m_ptd, 2);
+            amrex::ParticleReal const argd = -1.0_prt + powi<2>(m_ptd);
             // AMREX_ASSERT_WITH_MESSAGE(argd > 0.0_prt, "invalid pzd arg (<=0)");
             amrex::ParticleReal const pzdf = argd > 0.0_prt ? std::sqrt(argd) : tol;
 
@@ -73,7 +74,7 @@ namespace impactx::transformation
             pt = pt * pzdf;
 
             // compute value of particle pz = beta*gamma
-            amrex::ParticleReal const arg = -1.0_prt + std::pow(m_ptd+pt, 2) - std::pow(px, 2) - std::pow(py, 2);
+            amrex::ParticleReal const arg = -1.0_prt + powi<2>(m_ptd+pt) - powi<2>(px) - powi<2>(py);
             // AMREX_ASSERT_WITH_MESSAGE(arg > 0.0_prt, "invalid pz arg (<=0)");
             amrex::ParticleReal const pzf = arg > 0.0_prt ? std::sqrt(arg) : tol;
 

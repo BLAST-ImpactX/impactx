@@ -6,10 +6,11 @@
 #
 
 import argparse
-import os
+import glob
+import re
 
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
 
 # options to run this script
 parser = argparse.ArgumentParser(description="Plot the quadrupole triplet benchmark.")
@@ -18,15 +19,36 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+
+def read_file(file_pattern):
+    for filename in glob.glob(file_pattern):
+        df = pd.read_csv(filename, delimiter=r"\s+")
+        if "step" not in df.columns:
+            step = int(re.findall(r"[0-9]+", filename)[0])
+            df["step"] = step
+        yield df
+
+
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')
+
+
 # read reduced diagnostics
-rdc_name = "diags/reduced_beam_characteristics.0"
-if os.path.exists(rdc_name):
-    data = np.loadtxt(rdc_name, skiprows=1)
-else:  # OpenMP
-    data = np.loadtxt(rdc_name + ".0", skiprows=1)
-s = data[:, 1]
-beta_x = data[:, 33]
-beta_y = data[:, 34]
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
+s = rbc["s"]
+beta_x = rbc["beta_x"]
+beta_y = rbc["beta_y"]
 
 xMin = 0.0
 xMax = 8.6

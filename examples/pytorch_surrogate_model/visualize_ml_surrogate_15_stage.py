@@ -88,9 +88,9 @@ def to_t(
         dpt = data_arr_s["momentum_t"]
 
     elif type(data_arr_s) is np.ndarray:
-        assert (
-            data_arr_s.shape[1] == 6
-        ), f"data_arr_s.shape={data_arr_s.shape} but data_arr_s must be an Nx6 array"
+        assert data_arr_s.shape[1] == 6, (
+            f"data_arr_s.shape={data_arr_s.shape} but data_arr_s must be an Nx6 array"
+        )
         dx, dy, dt, dpx, dpy, dpt = data_arr_s.T
     else:
         raise Exception(
@@ -111,9 +111,9 @@ def to_t(
         print("applying reference normalization")
         dpt /= ref_pz
     elif coord_type is TCoords.GLOBAL:
-        assert (
-            ref_z is not None
-        ), "Reference particle z coordinate is required to transform to global coordinates"
+        assert ref_z is not None, (
+            "Reference particle z coordinate is required to transform to global coordinates"
+        )
         print("target global coordinates")
         dt += ref_z
         dpx *= ref_pz
@@ -128,7 +128,7 @@ def plot_beam_df(
     axT,
     unit=1e6,
     unit_z=1e3,
-    unit_label="$\mu$m",
+    unit_label=r"$\mu$m",
     unit_z_label="mm",
     alpha=1.0,
     cmap=None,
@@ -395,7 +395,7 @@ else:
 
 ######## plot phase spaces ###########
 beam_impactx_surrogate_series = io.Series(
-    "diags/openPMD/monitor.bp", io.Access.read_only
+    "diags/openPMD/monitor.h5", io.Access.read_only
 )
 impactx_surrogate_steps = list(beam_impactx_surrogate_series.iterations)
 
@@ -422,7 +422,7 @@ to_t(
 
 t_offset = impactx_surrogate_ref_particle.loc[step, "t"] * micron
 fig, axT = plt.subplots(3, 3, figsize=(10, 8))
-fig.suptitle(f"initially, ct={impactx_surrogate_ref_particle.at[step,'t']:.2f} m")
+fig.suptitle(f"initially, ct={impactx_surrogate_ref_particle.at[step, 't']:.2f} m")
 
 plot_beam_df(
     beam_at_step,
@@ -459,7 +459,7 @@ if args.stages_to_plot is not None:
         t_offset = impactx_surrogate_ref_particle.loc[step, "t"] * micron
         fig, axT = plt.subplots(3, 3, figsize=(10, 8))
         fig.suptitle(
-            f"stage {stage_i}, ct={impactx_surrogate_ref_particle.at[step,'t']:.2f} m"
+            f"stage {stage_i}, ct={impactx_surrogate_ref_particle.at[step, 't']:.2f} m"
         )
 
         plot_beam_df(
@@ -473,6 +473,6 @@ if args.stages_to_plot is not None:
             z_ticks=[-107.3, -106.6],
         )
         if args.save_png:
-            plt.savefig(f"stage_{stage_i-1}_phase_spaces.png")
+            plt.savefig(f"stage_{stage_i - 1}_phase_spaces.png")
         else:
             plt.show()

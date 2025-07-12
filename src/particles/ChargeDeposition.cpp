@@ -15,6 +15,7 @@
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
+#include <AMReX_BLProfiler.H>
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_ParticleTile.H>
 
@@ -28,6 +29,8 @@ namespace impactx
         std::unordered_map<int, amrex::MultiFab> & rho,
         amrex::Vector<amrex::IntVect> const & ref_ratio)
     {
+        BL_PROFILE("ImpactXParticleContainer::DepositCharge");
+
         using namespace amrex::literals; // for _rt and _prt
 
         // reset the values in rho to zero
@@ -54,7 +57,7 @@ namespace impactx
                 for (ParIt pti(*this, lev); pti.isValid(); ++pti) {
                     // preparing access to particle data: SoA of Reals
                     auto & AMREX_RESTRICT soa_real = pti.GetStructOfArrays().GetRealData();
-                    // after https://github.com/ECP-WarpX/WarpX/pull/2838 add const:
+                    // after https://github.com/BLAST-WarpX/warpx/pull/2838 add const:
                     auto const wp = soa_real[RealSoA::w];
                     int const * const AMREX_RESTRICT ion_lev = nullptr;
 

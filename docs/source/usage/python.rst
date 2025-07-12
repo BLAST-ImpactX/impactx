@@ -62,17 +62,27 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      The physical model of space charge used.
 
-      Whether to calculate space charge effects.
+      Options:
+
+      * ``False`` (default): space charge effects are not calculated.
+
+      * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
+
+        Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
+
+      * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
+
+        When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.
-      Either ``"multigrid"`` (default) or ``"fft"``.
+      Either ``"fft"`` (default) or ``"multigrid"``.
 
       Currently, this is a 3D solver.
-      An additional `2D/2.5D solver <https://github.com/ECP-WarpX/impactx/issues/401>`__ will be added in the near future.
+      An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).
@@ -118,9 +128,10 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr
 
-      Enable (``True``) or disable (``False``) space charge calculations (default: ``False``).
+      Enable (``True``) or disable (``False``) Coherent Synchrotron Radiation (CSR) calculations (default: ``False``).
 
       Whether to calculate Coherent Synchrotron Radiation (CSR) effects (default: disabled).
+
       Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19 of
       `E. L. Saldin et al, NIMA 398, p. 373-394 (1997), DOI:10.1016/S0168-9002(97)00822-X <https://doi.org/10.1016/S0168-9002(97)00822-X>`__).
 
@@ -132,7 +143,31 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      Enable or disable Coherent Synchrotron Radiation (CSR) calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+
+   .. py:property:: isr
+
+      Enable (``True``) or disable (``False``) Incoherent Synchrotron Radiation (ISR) calculations (default: ``False``).
+
+      Whether to calculate Incoherent Synchrotron Radiation (ISR) effects (default: disabled).
+
+      ISR effects are included in the simulation for bend lattice elements such as ``Sbend`` and ``CFbend``, and are especially important for electron or positron bunches at high energy.
+      The effects of ISR include radiation reaction due to the stochastic emission of synchrotron radiation, resulting in mean energy loss and quantum excitation of the bunch.
+      The model is based on:
+
+      `F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`__
+
+      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+
+      `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
+
+      .. note::
+
+         ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+
+   .. py:property:: isr_order
+
+      The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
 
    .. py:property:: diagnostics
 
@@ -171,7 +206,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:method:: add_particles(charge_C, distr, npart)
 
-      Generate and add n particles to the particle container.
+      Particle tracking mode: Generate and add n particles to the particle container.
       Note: Set the reference particle properties (charge, mass, energy) first.
 
       Will also resize the geometry based on the updated particle distribution's extent and then redistribute particles in according AMReX grid boxes.
@@ -179,6 +214,15 @@ Collective Effects & Overall Simulation Parameters
       :param float charge_C: bunch charge (C)
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
+
+   .. py:method:: init_envelope(ref, distr, intensity=None)
+
+      Envelope tracking mode:
+      Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+      :param distr: distribution function (object from :py:mod:`impactx.distribution`)
+      :param float intensity: the beam intensity, given as bunch charge (C) for 3D or beam current (A) for 2D space charge
 
    .. py:method:: particle_container()
 
@@ -192,6 +236,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: periods
 
       The number of periods to repeat the lattice.
+
+   .. py:property:: omp_threads
+
+      Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+
+      See the detailed `AMReX docs <https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html>`__ for details in the accepted values.
 
    .. py:property:: abort_on_warning_threshold
 
@@ -213,6 +263,23 @@ Collective Effects & Overall Simulation Parameters
       Controls how much information is printed to the terminal, when running ImpactX.
       ``0`` for silent, higher is more verbose. Default is ``1``.
 
+   .. py:property:: tiny_profiler
+
+      This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
+      Default is ``True``.
+
+   .. py:property:: memory_profiler
+
+      This parameter can be used to disable tiny profiler's memory arena profiling at runtime.
+      If ```tiny_profiler`` is ``False``, this parameter has no effects.
+      Default is ``True``.
+
+   .. py:property:: tiny_profiler_file
+
+      If this parameter is empty (default), the output of tiny profiling is dumped on the default out stream of AMReX.
+      If it's not empty, it specifies the file name for the output.
+      Note that ``"/dev/null"`` is a special name that mean no output.
+
    .. py:method:: evolve()
 
       Run the main simulation loop (deprecated, use ``track_particles``)
@@ -220,6 +287,16 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: track_particles()
 
       Run the particle tracking simulation loop.
+
+   .. py:method:: track_envelope()
+
+      Run the envelope tracking simulation loop.
+
+   .. py:method:: track_reference(ref)
+
+      Run the reference orbit tracking simulation loop.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
 
    .. py:method:: resize_mesh()
 
@@ -238,7 +315,7 @@ Collective Effects & Overall Simulation Parameters
       .. note::
 
          Particle beam particles are not yet dynamically load balanced.
-         Please see the progress in `issue 198 <https://github.com/ECP-WarpX/impactx/issues/198>`__.
+         Please see the progress in `issue 198 <https://github.com/BLAST-ImpactX/impactx/issues/198>`__.
 
    .. py:property:: have_gpu
 
@@ -276,6 +353,13 @@ Particles
 
    This class stores particles, distributed over MPI ranks.
 
+   .. py:method:: clear(keep_mass=False, keep_charge=False)
+
+      Empty the container and reset the reference particle.
+
+      :param keep_mass: do not reset the reference particle mass
+      :param keep_charge: do not reset the reference particle charge
+
    .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bchchg)
 
       Add new particles to the container for fixed s.
@@ -306,12 +390,27 @@ Particles
 
       :param impactx.RefPart refpart: a reference particle to copy all attributes from
 
-   .. py:method:: reduced_beam_characteristics()
+   .. py:method:: beam_moments()
 
-      Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+      Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
 
       :return: beam properties with string keywords
       :rtype: dict
+
+   .. py:property:: store_beam_moments
+
+      In situ calculate and store the beam moments for every simulation step (default: ``False``).
+
+   .. py:method:: beam_moments_history()
+
+      Return the history of the beam moments on every step.
+
+      :return: Pandas Dataframe of beam properties, including the global reference position s
+      :rtype: Pandas Dataframe
+
+   .. py:method:: reset_beam_moments_history()
+
+      Reset the history of the beam moments
 
    .. py:method:: min_and_max_positions()
 
@@ -388,6 +487,13 @@ Particles
 
       Read-only: Get reference particle charge to mass ratio (C/kg)
 
+   .. py:method:: reset(keep_mass=False, keep_charge=False)
+
+      Reset the reference particle.
+
+      :param keep_mass: do not reset the reference particle mass
+      :param keep_charge: do not reset the reference particle charge
+
    .. py:method:: set_charge_qe(charge_qe)
 
       Write-only: Set reference particle charge in (positive) elementary charges.
@@ -424,7 +530,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Gaussian distribution.
 
@@ -437,20 +543,30 @@ For the input from Twiss parameters in Python, please use the helper function ``
    :param muxpx: correlation length-momentum
    :param muypy: see muxpx
    :param mutpt: see muxpx
+   :param meanx: mean value of x-coordinate
+   :param meany: see meanx
+   :param meant: see meant
+   :param meanpx: mean value of x-momentum
+   :param meanpy: see meanpx
+   :param meanpt: see meanpt
+   :param dispx: beam horizontal dispersion (in meters)
+   :param disppx: beam horizontal dispersion derivative (dimensionless)
+   :param dispy: see dispx
+   :param disppy: see disppx
 
-.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 4D Kurth distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
 
-.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Kurth distribution.
 
    R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)
    C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
 
-.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A K-V distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
@@ -459,18 +575,18 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
    This distribution sets all values to zero.
 
-.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
 
-.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A triangle distribution for laser-plasma acceleration related applications.
 
    A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
    The transverse distribution is a 4D waterbag.
 
-.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Waterbag distribution.
 
@@ -482,7 +598,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 Lattice Elements
 ----------------
 
-This module provides elements for the accelerator lattice.
+This module provides elements and methods for the accelerator lattice.
 
 .. py:class:: impactx.elements.KnownElementsList
 
@@ -507,7 +623,7 @@ This module provides elements for the accelerator lattice.
       :param madx_file: file name to MAD-X file with beamline elements
       :param nslice: number of slices used for the application of space charge
 
-.. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.
 
@@ -520,10 +636,12 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ConstF(ds, kx, ky, kt, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ConstF(ds, kx, ky, kt, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A linear Constant Focusing element.
 
@@ -534,6 +652,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -570,15 +690,20 @@ This module provides elements for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Drift(ds, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Drift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift.
 
    :param ds: Segment length in m
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrDrift(ds, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrDrift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift with chromatic effects included.  The Hamiltonian is expanded
    through second order in the transverse variables (x,px,y,py), with the exact pt
@@ -588,10 +713,12 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactDrift(ds, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactDrift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift using the exact nonlinear transfer map.
 
@@ -599,6 +726,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -611,19 +740,80 @@ This module provides elements for the accelerator lattice.
    :param unit: specification of units (``"dimensionless"`` in units of the magnetic rigidity of the reference particle or ``"T-m"``)
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
 
-   A general thin multipole element.
+   A custom, linear transport matrix.
 
-   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
-   :param K_normal: Integrated normal multipole coefficient (1/meter^m)
-   :param K_skew: Integrated skew multipole coefficient (1/meter^m)
+   The matrix elements :math:`R(i,j)` are indexed beginning with 1, so that :math:`i,j=1,2,3,4,5,6`.
+
+   The matrix :math:`R` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
+   and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1)` is dimensionless, and :math:`R(1,2)` has units of m.
+
+   The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is
+   up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
+
+   :param R: a linear transport map to multiply with the phase space vector :math:`(x,px,y,py,t,pt)`.
+   :param ds: length associated with a user-defined linear element (defaults to 0), in m
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py::class:: impactx.elements.Empty
+.. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, name=None)
+
+   A general thin multipole element.
+
+   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+   :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
+                    = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
+   :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
+.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+
+   A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
+   The coefficients must appear in the following sequence:
+
+   dipole, quadrupole, sextupole, octupole, etc...
+
+   (Note: Dipole coefficients are currently ignored, and will be supported in a separate combined-function dipole element.)
+
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
+   Here H_1 is the nonlinear Hamiltonian for a drift (including the kinematic square root),
+   and H_2 is the term containing the vector potential, which is a superposition of multipole contributions.
+
+   :param ds: Segment length in m.
+   :param K_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param K_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   .. py:property:: unit
+
+      unit specification for multipole coefficients
+
+   .. py:property:: int_order
+
+      the order used for symplectic integration (2, 4, or 6)
+
+   .. py:property:: mapsteps
+
+      number of integration steps per slice used for symplectic integration
+
+.. py:class:: impactx.elements.Empty
 
    This element does nothing.
 
@@ -650,7 +840,7 @@ This module provides elements for the accelerator lattice.
    If the same element ``name`` is used multiple times, then an output series is created with multiple outputs.
 
    The `I/O backend <https://openpmd-api.readthedocs.io/en/latest/backends/overview.html>`_ for `openPMD <https://www.openPMD.org>`_ data dumps.
-   ``bp`` is the `ADIOS2 I/O library <https://csmd.ornl.gov/adios>`_, ``h5`` is the `HDF5 format <https://www.hdfgroup.org/solutions/hdf5/>`_, and ``json`` is a `simple text format <https://en.wikipedia.org/wiki/JSON>`_.
+   ``bp4``/``bp5`` is the `ADIOS2 I/O library <https://csmd.ornl.gov/adios>`_, ``h5`` is the `HDF5 format <https://www.hdfgroup.org/solutions/hdf5/>`_, and ``json`` is a `simple text format <https://en.wikipedia.org/wiki/JSON>`_.
    ``json`` only works with serial/single-rank jobs.
    By default, the first available backend in the order given above is taken.
 
@@ -687,6 +877,15 @@ This module provides elements for the accelerator lattice.
    .. py:property:: cn
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
+
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, name)
+
+   A particle source.
+   Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
+
+   :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
+   :param openpmd_path: path to the openPMD series
+   :param name: an optional name for the element
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
 
@@ -729,7 +928,7 @@ This module provides elements for the accelerator lattice.
          This function is called for the reference particle as it passes through the element.
          The reference particle is updated *before* the beam particles are pushed.
 
-.. py:class:: impactx.elements.Quad(ds, k, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Quad(ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet.
 
@@ -741,10 +940,12 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet, with chromatic effects included.  The Hamiltonian is expanded
    through second order in the transverse variables (x,px,y,py), with the exact pt
@@ -760,6 +961,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -771,7 +974,68 @@ This module provides elements for the accelerator lattice.
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+
+   A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
+   Here H_1 is the Hamiltonian for a linear quadrupole (containing all terms quadratic in the phase space variables),
+   and H_2 is the remainder (including the kinematic square root).  This suggested splitting appears for example in:
+
+   D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
+   E. Forest, J. Phys. A: Math. Gen. 39, 5321 (2006).
+
+   :param ds: Segment length in m.
+   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)
+              = (gradient in T/m) / (rigidity in T-m)
+          OR  Quadrupole strength in T/m (MaryLie convention, if unit = 1)
+              k > 0 horizontal focusing
+              k < 0 horizontal defocusing
+   :param unit: specification of units for quadrupole field strength
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   .. py:property:: k
+
+      quadrupole strength in 1/m^2 (or T/m)
+
+   .. py:property:: unit
+
+      unit specification for quad strength
+
+   .. py:property:: int_order
+
+      the order used for symplectic integration (2, 4, or 6)
+
+   .. py:property:: mapsteps
+
+      number of integration steps per slice used for symplectic integration
+
+.. py:class:: impactx.elements.QuadEdge(k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+
+   Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing
+   the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq
+   (28) of:  E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
+
+   :param k:  Quadrupole strength in m^(-2) (MADX convention, if unit = 0)
+              = (gradient in T/m) / (rigidity in T-m)
+          OR  Quadrupole strength in T/m (MaryLie convention, if unit = 1)
+              k > 0 horizontal focusing
+              k < 0 horizontal defocusing
+   :param unit: specification of units for quadrupole field strength
+   :param flag: location of edge (``"entry"`` or ``"exit"``)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
+.. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An active cylindrically symmetric plasma lens, with chromatic effects included.
    The Hamiltonian is expanded through second order in the transverse variables
@@ -780,11 +1044,13 @@ This module provides elements for the accelerator lattice.
    :param ds: Segment length in m.
    :param k:  focusing strength in m^(-2) (if unit = 0)
               = (azimuthal magnetic field gradient in T/m) / (rigidity in T-m)
-          OR  azimuthal magnetic field gradient in T/m (if unit = 1)
+              OR  azimuthal magnetic field gradient in T/m (if unit = 1)
    :param unit: specification of units for plasma lens focusing strength
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -796,7 +1062,7 @@ This module provides elements for the accelerator lattice.
 
       unit specification for plasma lens focusing strength
 
-.. py:class:: impactx.elements.ChrAcc(ds, ez, bz, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrAcc(ds, ez, bz, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    Acceleration in a uniform field Ez, with a uniform solenoidal field Bz.
 
@@ -811,6 +1077,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -822,7 +1090,7 @@ This module provides elements for the accelerator lattice.
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A radiofrequency cavity.
 
@@ -837,11 +1105,13 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param mapsteps: number of integration steps per slice used for map and reference particle push in applied fields
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sbend(ds, rc, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sbend(ds, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend.
 
@@ -850,10 +1120,12 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactSbend(ds, phi, B=0.0, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactSbend(ds, phi, B=0.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend using the exact nonlinear map.  The model consists of a uniform bending field B_y with a hard edge.  Pole faces are
    normal to the entry and exit velocity of the reference particle.
@@ -869,6 +1141,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -894,14 +1168,14 @@ This module provides elements for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, cos_coefficients, sin_coefficients, unit=0, dx=0, dy=0, rotation=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, cos_coefficients, sin_coefficients, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge solenoid.
 
    :param ds: Segment length in m.
    :param bscale: Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0)
               = (magnetic field Bz in T) / (rigidity in T-m)
-          OR  Magnetic field Bz in T (SI units, if unit = 1)
+              OR  Magnetic field Bz in T (SI units, if unit = 1)
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz
@@ -910,11 +1184,13 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param mapsteps: number of integration steps per slice used for map and reference particle push in applied fields
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sol(ds, ks, dx=0, dy=0, rotation=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sol(ds, ks, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal hard-edge Solenoid magnet.
 
@@ -923,6 +1199,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
@@ -944,15 +1222,16 @@ This module provides elements for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Aperture(xmax, ymax, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
-   :param xmax: maximum allowed value of the horizontal coordinate (meter)
-   :param ymax: maximum allowed value of the vertical coordinate (meter)
+   :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m
+   :param aperture_y: vertical half-aperture (rectangular or elliptical) in m
    :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
    :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
+   :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -962,6 +1241,10 @@ This module provides elements for the accelerator lattice.
 
       aperture type (rectangular, elliptical)
 
+   .. py:property:: action
+
+      aperture type (transmit, absorb)
+
    .. py:property:: xmax
 
       maximum horizontal coordinate
@@ -970,7 +1253,7 @@ This module provides elements for the accelerator lattice.
 
       maximum vertical coordinate
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge quadrupole.
 
@@ -983,6 +1266,8 @@ This module provides elements for the accelerator lattice.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param mapsteps: number of integration steps per slice used for map and reference particle push in applied fields
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
@@ -1035,6 +1320,23 @@ This module provides elements for the accelerator lattice.
    .. py:property:: unit
 
       unit specification for plasma lens focusing strength
+
+
+Methods
+"""""""
+
+Each lattice element provides a ``.to_dict()`` method, which can be used to serialize its configuration.
+
+
+.. py:function:: elements.transformation.insert_element_every_ds(list, ds, element)
+
+   Insert an element every s into an element list.
+
+   Splits up every element that is on s = N * ds for N>0.
+
+   :param list: element lattice list
+   :param ds: spacing in meters along s to add an element
+   :param element: the extra element to add every s
 
 
 Coordinate Transformation

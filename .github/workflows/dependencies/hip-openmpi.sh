@@ -28,7 +28,9 @@ sudo apt-key add rocm.gpg.key
 
 source /etc/os-release  # set UBUNTU_CODENAME: focal or jammy or ...
 
-echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/${1-latest} ${UBUNTU_CODENAME} main" \
+VERSION=${1-6.3.2}
+
+echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/${VERSION} ${UBUNTU_CODENAME} main" \
   | sudo tee /etc/apt/sources.list.d/rocm.list
 echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' \
   | sudo tee -a /etc/profile.d/rocm.sh
@@ -50,11 +52,14 @@ sudo apt-get install -y --no-install-recommends \
     libzstd-dev     \
     ninja-build     \
     openmpi-bin     \
-    rocm-dev        \
-    rocfft-dev      \
-    rocprim-dev     \
-    rocrand-dev     \
-    hiprand-dev
+    rocm-dev${VERSION}        \
+    rocfft-dev${VERSION}      \
+    rocprim-dev${VERSION}     \
+    rocrand-dev${VERSION}     \
+    rocsparse-dev${VERSION}
+
+# hiprand-dev is a new package that does not exist in old versions
+sudo apt-get install -y --no-install-recommends hiprand-dev${VERSION} || true
 
 # activate
 #
@@ -73,7 +78,7 @@ export CEI_TMP="/tmp/cei"
 # ccache 4.2+
 #
 CXXFLAGS="" cmake-easyinstall --prefix=/usr/local \
-    git+https://github.com/ccache/ccache.git@v4.6 \
+    git+https://github.com/ccache/ccache.git@v4.10.2 \
     -DCMAKE_BUILD_TYPE=Release        \
     -DENABLE_DOCUMENTATION=OFF        \
     -DENABLE_TESTING=OFF              \

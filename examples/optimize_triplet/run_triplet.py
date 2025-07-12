@@ -87,6 +87,7 @@ def run(parameters: tuple, write_particles=False, write_reduced=False) -> dict:
 
     if verbose is False:
         sim.verbose = 0
+        sim.tiny_profiler = False
 
     # set numerical parameters and IO control
     sim.particle_shape = 2  # B-spline order
@@ -129,7 +130,7 @@ def run(parameters: tuple, write_particles=False, write_reduced=False) -> dict:
 
     # in situ calculate the reduced beam characteristics
     beam = sim.particle_container()
-    rbc = beam.reduced_beam_characteristics()
+    rbc = beam.beam_moments()
 
     # clean shutdown
     sim.finalize()

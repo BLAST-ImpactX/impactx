@@ -16,6 +16,10 @@ For data analysis of openPMD data, see examples of `many supported tools, Python
 
 See also `WarpX' documentation on openPMD <https://warpx.readthedocs.io/en/latest/dataanalysis/formats.html>`__.
 
+At each monitor, the output for every particle in the beam is provided.
+This includes the 6 canonical phase space variables (x [m], px, y[m], py, t[m], pt), where each coordinate is measured relative to the reference particle, in the local moving frame.
+See the section :ref:`Coordinates and Units <theory-coordinates-and-units>` for additional details.
+
 .. _dataanalysis-monitor-refparticle:
 
 Additional Beam Attributes
@@ -62,7 +66,7 @@ Reduced Beam Characteristics
 ----------------------------
 
 ImpactX calculates reduced beam characteristics based on the beam moments during runtime.
-These include averaged positions, momenta, beam emittances and Courant-Snyder (Twiss) parameters.
+These include averaged positions and momenta, as well as beam emittances and Courant-Snyder (Twiss) parameters.
 For computing beam moments (as elsewhere), positions and momenta are given as deviations with respect to the reference particle (see :ref:`Coordinates and Units <theory-coordinates-and-units>`).
 
 The reduced beam characteristics are stored with the output of the beam monitor element.
@@ -98,7 +102,7 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
 * ``emittance_1``, ``emittance_2``, ``emittance_3``
     Normalized rms beam eigenemittances (aka mode emittances) (unit: meter)
     These three diagnostics are written optionally if the flag eigenemittances = True.
-* ``charge``
+* ``charge_C``
     Total beam charge (unit: Coulomb)
 
 

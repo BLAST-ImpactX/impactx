@@ -21,10 +21,14 @@ basepath = os.getcwd()
 @pytest.fixture(autouse=True, scope="function")
 def amrex_init(tmpdir):
     with tmpdir.as_cwd():
+        # warning: with an external AMReX initialize, our ImpactX overwrite_amrex_parser_defaults is never called!
         amr.initialize(
             [
                 # print AMReX status messages
-                "amrex.verbose=2",
+                # consider also 0 (silent) and 2 (FabArray and TileArray/FB/Copy/FillPatch/CrsFineCache usage)
+                "amrex.verbose=1",
+                # disable verbose profiler plots at the end of each test
+                "tiny_profiler.enabled=0",
                 # throw exceptions and create core dumps instead of
                 # AMReX backtrace files: allows to attach to
                 # debuggers
@@ -32,8 +36,13 @@ def amrex_init(tmpdir):
                 "amrex.signal_handling=0",
                 # abort GPU runs if out-of-memory instead of swapping to host RAM
                 "amrex.abort_on_out_of_gpu_memory=1",
-                # do not rely on implicit host-device memory transfers
-                "amrex.the_arena_is_managed=0",
+                # allocate GPU memory on-demand instead of pre-allocating 3/4th
+                # to enable parallel test runs on the same GPU
+                # https://amrex-codes.github.io/amrex/docs_html/RuntimeParameters.html?highlight=arena#memory
+                "amrex.the_arena_init_size=0",
+                # We override the default tiling option for particles, which is always
+                # "false" in AMReX, to "false" if running on GPU and "true" on CPU.
+                f"particles.do_tiling={0 if impactx.Config.have_gpu else 1}",
             ]
         )
         yield

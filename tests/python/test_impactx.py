@@ -22,6 +22,44 @@ from impactx import ImpactX, distribution, elements
 #    assert impactx.__version__  # version must not be empty
 
 
+def validate_fodo(beam):
+    """see examples/fodo/analysis_fodo.py"""
+    num_particles = beam.total_number_of_particles()
+    assert num_particles == 10000
+    atol = 0.0  # ignored
+    rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+
+    # in situ calculate the reduced beam characteristics
+    rbc = beam.beam_moments()
+    ref = beam.ref_particle()
+
+    print("charge=", rbc["charge_C"])
+    assert np.allclose(
+        [
+            rbc["sig_x"],
+            rbc["sig_y"],
+            rbc["sig_t"],
+            rbc["emittance_x"],
+            rbc["emittance_y"],
+            rbc["emittance_t"],
+            rbc["charge_C"],
+            ref.s,
+        ],
+        [
+            7.5451170454175073e-005,
+            7.5441588239210947e-005,
+            9.9775878164077539e-004,
+            1.9959540393751392e-009,
+            2.0175015289132990e-009,
+            2.0013820193294972e-006,
+            -1.0e-9,
+            3.0,
+        ],
+        rtol=rtol,
+        atol=atol,
+    )
+
+
 def test_impactx_fodo_file():
     """
     This tests an equivalent to main.cpp in C++
@@ -37,39 +75,7 @@ def test_impactx_fodo_file():
     sim.track_particles()
 
     # validate the results
-    beam = sim.particle_container()
-    num_particles = beam.total_number_of_particles()
-    assert num_particles == 10000
-    atol = 0.0  # ignored
-    rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
-
-    # in situ calculate the reduced beam characteristics
-    rbc = beam.reduced_beam_characteristics()
-
-    # see examples/fodo/analysis_fodo.py
-    print("charge=", rbc["charge_C"])
-    assert np.allclose(
-        [
-            rbc["sig_x"],
-            rbc["sig_y"],
-            rbc["sig_t"],
-            rbc["emittance_x"],
-            rbc["emittance_y"],
-            rbc["emittance_t"],
-            rbc["charge_C"],
-        ],
-        [
-            7.5451170454175073e-005,
-            7.5441588239210947e-005,
-            9.9775878164077539e-004,
-            1.9959540393751392e-009,
-            2.0175015289132990e-009,
-            2.0013820193294972e-006,
-            -1.0e-9,
-        ],
-        rtol=rtol,
-        atol=atol,
-    )
+    validate_fodo(sim.particle_container())
 
     # finalize simulation
     sim.finalize()
@@ -80,6 +86,11 @@ def test_impactx_nofile():
     This tests using ImpactX without an inputs file
     """
     sim = ImpactX()
+
+    # various ways to change OMP threads from the default "nosmt"
+    sim.omp_threads = 1
+    sim.omp_threads = "1"
+    sim.omp_threads = "nosmt"
 
     sim.particle_shape = 2
     sim.slice_step_diagnostics = True
@@ -108,7 +119,8 @@ def test_impactx_nofile():
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    assert sim.particle_container().total_number_of_particles() == npart
+    beam = sim.particle_container()
+    assert beam.total_number_of_particles() == npart
 
     # init accelerator lattice
     fodo = [
@@ -119,11 +131,24 @@ def test_impactx_nofile():
         elements.Drift(name="d3", ds=0.25),
     ]
     #  assign a fodo segment
-    # sim.lattice = fodo
+    sim.lattice.extend(fodo)
 
-    #  add 4 more FODO segments
-    for i in range(4):
-        sim.lattice.extend(fodo)
+    # simulate
+    sim.track_particles()
+
+    # validate the results
+    validate_fodo(beam)
+
+    # init beam again
+    beam.clear(keep_mass=True, keep_charge=True)
+    ref.set_kin_energy_MeV(kin_energy_MeV)
+    sim.add_particles(bunch_charge_C, distr, npart)
+
+    # simulate again
+    sim.track_particles()
+
+    # validate again
+    validate_fodo(beam)
 
     # add 2 more drifts
     for i in range(4):
@@ -133,7 +158,9 @@ def test_impactx_nofile():
     print(len(sim.lattice))
     assert len(sim.lattice) > 5
 
+    # simulate full lattice but keep beam global position
     sim.track_particles()
+    assert np.allclose([ref.s], [7.0])
 
     # finalize simulation
     sim.finalize()

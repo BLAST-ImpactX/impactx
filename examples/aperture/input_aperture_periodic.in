@@ -32,8 +32,8 @@ drift.ds = 0.123
 
 pepperpot.type = aperture
 pepperpot.shape = rectangular
-pepperpot.xmax = 1.5e-4
-pepperpot.ymax = 1.0e-4
+pepperpot.aperture_x = 1.5e-4
+pepperpot.aperture_y = 1.0e-4
 pepperpot.repeat_x = 1.0e-3
 pepperpot.repeat_y = 1.0e-3
 

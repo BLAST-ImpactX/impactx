@@ -81,6 +81,7 @@ class Aperture(Named, Thin, Alignment):
         repeat_x: float = 0,
         repeat_y: float = 0,
         shape: str = "rectangular",
+        action: str = "transmit",
         dx: float = 0,
         dy: float = 0,
         rotation: float = 0,
@@ -99,6 +100,13 @@ class Aperture(Named, Thin, Alignment):
         """
         Push first the reference particle, then all other particles.
         """
+    @property
+    def action(self) -> str:
+        """
+        action type (transmit, absorb)
+        """
+    @action.setter
+    def action(self, arg1: str) -> None: ...
     @property
     def repeat_x(self) -> float:
         """

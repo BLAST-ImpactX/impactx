@@ -37,7 +37,7 @@ except ImportError:
     print("Warning: Cannot import PyTorch. Skipping test.")
     import sys
 
-    sys.exit(0)
+    sys.exit(42)  # ImpactX special return code for skipped tests
 
 import zipfile
 from urllib import request
@@ -100,18 +100,19 @@ print(
 data_url = "https://zenodo.org/records/10810754/files/models.zip?download=1"
 download_and_unzip(data_url, "models.zip")
 
-# It was found that the PyTorch multithreaded defaults interfere with MPI-enabled AMReX
-# when initializing the models: https://github.com/AMReX-Codes/pyamrex/issues/322
+# It was found that the PyTorch multithreaded defaults interfere with AMReX OpenMP
+# when initializing the models or iterating elements:
+# https://github.com/AMReX-Codes/pyamrex/issues/322
+# https://github.com/BLAST-ImpactX/impactx/issues/773#issuecomment-2585043099
 # So we manually set the number of threads to serial (1).
-if Config.have_mpi:
-    n_threads = torch.get_num_threads()
-    torch.set_num_threads(1)
+# Torch threading is not a problem with GPUs and might work when MPI is disabled.
+# Could also just be a mixing of OpenMP libraries (gomp and llvm omp) when using the
+# pre-build PyTorch pip packages.
+torch.set_num_threads(1)
 model_list = [
     surrogate_model(f"models/beam_stage_{stage_i}_model.pt", device=device)
     for stage_i in range(N_stage)
 ]
-if Config.have_mpi:
-    torch.set_num_threads(n_threads)
 
 pp_amrex = amr.ParmParse("amrex")
 pp_amrex.add("the_arena_init_size", 0)
@@ -276,9 +277,9 @@ L_drift_2 = L_drift - L_drift_before_2nd_stage + dL
 
 
 def get_lattice_element_iter(sim, j):
-    assert (
-        0 <= j < len(sim.lattice)
-    ), f"Argument j must be a nonnegative integer satisfying 0 <= j < {len(sim.lattice)}, not {j}"
+    assert 0 <= j < len(sim.lattice), (
+        f"Argument j must be a nonnegative integer satisfying 0 <= j < {len(sim.lattice)}, not {j}"
+    )
     i = 0
     lat_it = sim.lattice.__iter__()
     next(lat_it)
@@ -306,7 +307,7 @@ class UpdateConstF(elements.Programmable):
 
     def set_lens(self, pc, step, period):
         # get envelope parameters
-        rbc = pc.reduced_beam_characteristics()
+        rbc = pc.beam_moments()
         alpha = rbc[f"alpha_{self.x_or_y}"]
         beta = rbc[f"beta_{self.x_or_y}"]
         gamma = (1 + alpha**2) / beta
@@ -328,9 +329,10 @@ for i in range(N_stage):
     lpa = LPASurrogateStage(i, model_list[i], L_surrogate, L_stage_period * i)
     lpa.nslice = n_slice
     lpa.ds = L_surrogate
+    lpa.threadsafe = False
     lpa_stages.append(lpa)
 
-monitor = elements.BeamMonitor("monitor")
+monitor = elements.BeamMonitor("monitor", backend="h5")
 for i in range(N_stage):
     sim.lattice.extend(
         [
@@ -357,4 +359,3 @@ sim.lattice.extend([monitor])
 
 sim.track_particles()
 sim.finalize()
-del sim

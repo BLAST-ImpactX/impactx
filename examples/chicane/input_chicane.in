@@ -14,15 +14,15 @@ beam.lambdaPx = 1.598353425e-6
 beam.lambdaPy = 2.803697378e-6
 beam.lambdaPt = 2.000000000e-6
 beam.muxpx = 0.933345606203060
-beam.muypy = 0.933345606203060
+beam.muypy = beam.muxpx
 beam.mutpt = 0.999999961419755
 
 
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.elements = monitor sbend1 dipedge1 drift1 dipedge2 sbend2 drift2      \
-                   sbend2 dipedge2 drift1 dipedge1 sbend1 drift3 monitor
+lattice.elements = monitor sbend1 dipedge1 monitor drift1 monitor dipedge2 sbend2 monitor drift2      \
+                   monitor sbend2 dipedge2 monitor drift1 monitor dipedge1 sbend1 monitor drift3 monitor
 lattice.nslice = 25
 
 sbend1.type = sbend

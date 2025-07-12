@@ -13,15 +13,14 @@
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
-#include <AMReX_Extension.H>  // for AMREX_RESTRICT
-#include <AMReX_LO_BCTYPES.H>
+#include <AMReX_Math.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>       // for ParticleReal
 
 #include <cmath>
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     void PoissonSolve (
         ImpactXParticleContainer const & pc,
@@ -30,7 +29,10 @@ namespace impactx::spacecharge
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     )
     {
+        BL_PROFILE("impactx::spacecharge::PoissonSolve");
+
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
         // set space charge field to zero
         //   loop over refinement levels
@@ -44,7 +46,7 @@ namespace impactx::spacecharge
         // prepare parameters of the MLMG Poisson Solver
         //   relativistic beta=v/c of the reference particle
         amrex::ParticleReal const pt_ref = pc.GetRefParticle().pt;
-        amrex::ParticleReal const beta_s = std::sqrt(1.0_prt - 1.0_prt/std::pow(pt_ref, 2));
+        amrex::ParticleReal const beta_s = std::sqrt(1.0_prt - 1.0_prt/powi<2>(pt_ref));
         // The beam particles and the corresponding box are all given in local coordinates
         // in which z is the direction of motion - this coincides with the direction of the momentum
         // of the reference particle.
@@ -63,13 +65,13 @@ namespace impactx::spacecharge
         // MLMG options
         amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
-        pp_algo.queryAdd("mlmg_relative_tolerance", mlmg_relative_tolerance);
-        pp_algo.queryAdd("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
+        pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
+        pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
 
         int mlmg_max_iters = 100;
         int mlmg_verbosity = 1;
-        pp_algo.queryAdd("mlmg_max_iters", mlmg_max_iters);
-        pp_algo.queryAdd("mlmg_verbosity", mlmg_verbosity);
+        pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
+        pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
         // create a vector to our fields, sorted by level
         amrex::Vector<amrex::MultiFab*> sorted_rho;
@@ -80,6 +82,7 @@ namespace impactx::spacecharge
             sorted_phi.emplace_back(&phi[lev]);
         }
 
+        const bool is_igf_2d = false;
         const bool do_single_precision_comms = false;
         const bool eb_enabled = false;
         ablastr::fields::computePhi(
@@ -95,6 +98,7 @@ namespace impactx::spacecharge
             pc.GetParGDB()->boxArray(),
             ablastr::utils::enums::GridType::Collocated,
             is_solver_igf_on_lev0,
+            is_igf_2d,
             eb_enabled,
             do_single_precision_comms,
             rel_ref_ratio
@@ -119,4 +123,4 @@ namespace impactx::spacecharge
             phi_at_level.FillBoundary(pc.GetParGDB()->Geom()[lev].periodicity());
         }
     }
-} // impactx::spacecharge
+}  // impactx::particles::spacecharge

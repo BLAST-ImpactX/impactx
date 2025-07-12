@@ -11,7 +11,7 @@
 #define IMPACT_X_H
 
 #include "particles/distribution/All.H"
-#include "particles/elements/All.H"
+#include "elements/All.H"
 
 #include "initialization/AmrCoreData.H"
 
@@ -47,6 +47,10 @@ namespace impactx
         /** Deallocate all contexts and data
          */
         void finalize ();
+
+        /** Finalize elements
+         */
+        void finalize_elements ();
 
         /** Initialize AMReX blocks/grids for domain decomposition & space charge mesh.
          *
@@ -86,7 +90,7 @@ namespace impactx
             int npart
         );
 
-        /** Validate the simulation is ready to run via @see evolve
+        /** Validate the simulation is ready to run the particle tracking loop via @see track_particles
          */
         void validate ();
 
@@ -103,6 +107,16 @@ namespace impactx
         /** Run the particle tracking simulation loop
          */
         void track_particles ();
+
+        /** Run the envelope tracking simulation loop
+         *
+         * Modeled as linear transport of the covariance matrix.
+         */
+        void track_envelope ();
+
+        /** Run the reference orbit tracking simulation loop
+         */
+        void track_reference (RefPart & ref);
 
         /** Query input for warning logger variables and set up warning logger accordingly
          *
@@ -124,7 +138,7 @@ namespace impactx
         void ResizeMesh ();
 
         /** these are elements defining the accelerator lattice */
-        std::list<KnownElements> m_lattice;
+        std::list<elements::KnownElements> m_lattice;
 
         /** Was init_grids already called?
          *

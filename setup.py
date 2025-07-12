@@ -94,9 +94,8 @@ class CMakeBuild(build_ext):
             #'-DImpactX_PARTICLES_PRECISION=' + ImpactX_PARTICLES_PRECISION,
             "-DImpactX_PYTHON:BOOL=ON",
             ## dependency control (developers & package managers)
-            #'-DImpactX_pyamrex_internal=' + ImpactX_pyamrex_internal,
-            #'-DImpactX_pyamrex_repo=' + ImpactX_pyamrex_repo,
-            #'-DImpactX_pyamrex_branch=' + ImpactX_pyamrex_branch,
+            "-DImpactX_amrex_internal=" + ImpactX_amrex_internal,
+            "-DImpactX_pyamrex_internal=" + ImpactX_pyamrex_internal,
             # PEP-440 conformant version from package
             "-DpyImpactX_VERSION_INFO=" + self.distribution.get_version(),
             #        see PICSAR and openPMD below
@@ -111,8 +110,16 @@ class CMakeBuild(build_ext):
         # further dependency control (developers & package managers)
         if ImpactX_amrex_src:
             cmake_args.append("-DImpactX_amrex_src=" + ImpactX_amrex_src)
-        # if ImpactX_pyamrex_src:
-        #    cmake_args.append('-DImpactX_pyamrex_src=' + ImpactX_pyamrex_src)
+        if ImpactX_pyamrex_src:
+            cmake_args.append("-DImpactX_pyamrex_src=" + ImpactX_pyamrex_src)
+        if ImpactX_amrex_repo:
+            cmake_args.append("-DImpactX_amrex_repo=" + ImpactX_amrex_repo)
+        if ImpactX_pyamrex_repo:
+            cmake_args.append("-DImpactX_pyamrex_repo=" + ImpactX_pyamrex_repo)
+        if ImpactX_amrex_branch:
+            cmake_args.append("-DImpactX_amrex_branch=" + ImpactX_amrex_branch)
+        if ImpactX_pyamrex_branch:
+            cmake_args.append("-DImpactX_pyamrex_branch=" + ImpactX_pyamrex_branch)
 
         if CMAKE_INTERPROCEDURAL_OPTIMIZATION is not None:
             cmake_args.append(
@@ -181,15 +188,13 @@ CMAKE_INTERPROCEDURAL_OPTIMIZATION = os.environ.get(
 # CMake dependency control (developers & package managers)
 ImpactX_amrex_src = os.environ.get("IMPACTX_AMREX_SRC")
 ImpactX_amrex_internal = os.environ.get("IMPACTX_AMREX_INTERNAL", "ON")
-ImpactX_amrex_repo = os.environ.get(
-    "IMPACTX_AMREX_REPO", "https://github.com/AMReX-Codes/amrex.git"
-)
+ImpactX_amrex_repo = os.environ.get("IMPACTX_AMREX_REPO")
 ImpactX_amrex_branch = os.environ.get("IMPACTX_AMREX_BRANCH")
-# ImpactX_pyamrex_src = os.environ.get('IMPACTX_PYAMREX_SRC')
-# ImpactX_pyamrex_internal = os.environ.get('IMPACTX_PYAMREX_INTERNAL', 'ON')
-# ImpactX_pyamrex_repo = os.environ.get('IMPACTX_PYAMREX_REPO',
-#    'https://github.com/AMReX-Codes/pyamrex.git')
-# ImpactX_pyamrex_branch = os.environ.get('IMPACTX_PYAMREX_BRANCH')
+
+ImpactX_pyamrex_src = os.environ.get("IMPACTX_PYAMREX_SRC")
+ImpactX_pyamrex_internal = os.environ.get("IMPACTX_PYAMREX_INTERNAL", "ON")
+ImpactX_pyamrex_repo = os.environ.get("IMPACTX_PYAMREX_REPO")
+ImpactX_pyamrex_branch = os.environ.get("IMPACTX_PYAMREX_BRANCH")
 
 # extra CMake arguments
 extra_cmake_args = []
@@ -230,7 +235,7 @@ with open("./requirements.txt") as f:
 setup(
     name="impactx",
     # note PEP-440 syntax: x.y.zaN but x.y.z.devN
-    version="24.10",
+    version="25.06",
     packages=["impactx"],
     # Python sources:
     package_dir={"": "src/python"},
@@ -251,17 +256,17 @@ setup(
         "Documentation": "https://impactx.readthedocs.io",
         # 'Tutorials': 'https://impactx-codes.github.io/impactx/tutorials_html/',
         "Doxygen": "https://impactx.readthedocs.io/en/latest/_static/doxyhtml",
-        "Source": "https://github.com/ECP-WarpX/impactx",
+        "Source": "https://github.com/BLAST-ImpactX/impactx",
         "DOI (source)": "https://doi.org/10.5281/zenodo.6954922",
         "DOI (paper)": "https://doi.org/10.48550/arXiv.2208.02382",
-        "Tracker": "https://github.com/ECP-WarpX/impactx/issues",
+        "Tracker": "https://github.com/BLAST-ImpactX/impactx/issues",
     },
     # CMake: self-built as extension module
     ext_modules=cxx_modules,
     cmdclass=cmdclass,
     zip_safe=False,
-    python_requires=">=3.8",
-    tests_require=["numpy", "pandas", "pytest", "scipy"],
+    python_requires=">=3.8",  # left for CI, truly ">=3.9"
+    tests_require=["numpy", "pandas", "pytest", "pytest-benchmark", "scipy"],
     install_requires=install_requires,
     # cmdclass={'test': PyTest},
     # platforms='any',
@@ -278,12 +283,13 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         (
-            "License :: OSI Approved :: " "BSD License"
+            "License :: OSI Approved :: BSD License"
         ),  # TODO: use real SPDX: BSD-3-Clause-LBNL
     ],
     # new PEP 639 format

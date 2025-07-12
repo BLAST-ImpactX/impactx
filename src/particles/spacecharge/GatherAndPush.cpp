@@ -16,7 +16,7 @@
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
 
 
-namespace impactx::spacecharge
+namespace impactx::particles::spacecharge
 {
     void GatherAndPush (
         ImpactXParticleContainer & pc,
@@ -105,4 +105,4 @@ namespace impactx::spacecharge
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }
-} // namespace impactx::spacecharge
+}  // namespace impactx::particles::spacecharge

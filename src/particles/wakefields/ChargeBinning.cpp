@@ -31,7 +31,7 @@ namespace impactx::particles::wakefields
         for (int lev = 0; lev <= nlevs; ++lev)
         {
             // TODO We could make this more efficient on CPU, see:
-            // https://github.com/ECP-WarpX/WarpX/pull/5161/files#r1735068373
+            // https://github.com/BLAST-WarpX/warpx/pull/5161/files#r1735068373
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -140,7 +140,7 @@ namespace impactx::particles::wakefields
         for (int lev = 0; lev <= nlevs; ++lev)
         {
             // TODO We could make this more efficient on CPU, see:
-            // https://github.com/ECP-WarpX/WarpX/pull/5161/files#r1735068373
+            // https://github.com/BLAST-WarpX/warpx/pull/5161/files#r1735068373
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif

@@ -6,19 +6,50 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .trame_setup import setup_server
+from . import server, state
+from .app import application
+from .Input.defaults import DashboardDefaults
+from .Toolbar.sim_history.ui import load_my_js
 
-server, state, ctrl = setup_server()
+# -----------------------------------------------------------------------------
+# Core setup logic
+# -----------------------------------------------------------------------------
+
+
+def initialize_states():
+    """
+    Initializes all states with default values.
+    """
+    for name, value in DashboardDefaults.DEFAULT_VALUES.items():
+        setattr(state, name, value)
+
+
+def setup_dashboard():
+    initialize_states()
+    load_my_js(server)
+    return application()
 
 
 # -----------------------------------------------------------------------------
-# Main
+# Application classes
 # -----------------------------------------------------------------------------
 
 
-def main():
+class DashboardApp:
     """
-    Launches Trame application server
+    Full ImpactX Dashboard app.
     """
-    server.start()
-    return 0
+
+    def start(self):
+        setup_dashboard()
+        server.start()
+        return 0
+
+
+class JupyterApp:
+    """
+    Jupyter-compatible version of the dashboard.
+    """
+
+    def __init__(self):
+        self.ui = setup_dashboard()

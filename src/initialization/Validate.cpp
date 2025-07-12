@@ -14,6 +14,7 @@
 #include <AMReX_INT.H>
 
 #include <stdexcept>
+#include <string_view>
 
 
 namespace impactx
@@ -23,7 +24,7 @@ namespace impactx
         BL_PROFILE("ImpactX::validate");
 
         // reference particle initialized?
-        auto const & ref = amr_data->m_particle_container->GetRefParticle();
+        auto const & ref = amr_data->track_particles.m_particle_container->GetRefParticle();
         if (ref.kin_energy_MeV() == 0.0)
             throw std::runtime_error("The reference particle energy is zero. Not yet initialized?");
 
@@ -34,12 +35,22 @@ namespace impactx
             int const nLevelPC = amr_data->finestLevel();
             amrex::Long nParticles = 0;
             for (int lev = 0; lev <= nLevelPC; ++lev) {
-                nParticles += amr_data->m_particle_container->NumberOfParticlesAtLevel(lev);
+                nParticles += amr_data->track_particles.m_particle_container->NumberOfParticlesAtLevel(lev);
             }
             if (nParticles == 0)
-                throw std::runtime_error("No particles found. Cannot run evolve without a beam.");
-            if (nParticles == 1)
-                throw std::runtime_error("Only one particle found. This is not yet supported: https://github.com/ECP-WarpX/impactx/issues/44");
+            {
+                // do we have a source element as the first element of the beamline?
+                auto & first_element = m_lattice.front();
+                std::visit([](auto&& element){
+                    if (std::string_view(element.type) != std::string_view("Source")) {
+                        throw std::runtime_error("No particles found. Cannot run evolve without a beam.");
+                    }
+                }, first_element);
+            }
+            else if (nParticles == 1)
+            {
+                throw std::runtime_error("Only one particle found. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
+            }
         }
 
         // elements

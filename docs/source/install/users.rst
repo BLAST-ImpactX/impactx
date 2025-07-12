@@ -6,7 +6,7 @@ Users
 .. raw:: html
 
    <style>
-   .rst-content .section>img {
+   .rst-content section>img {
        width: 30px;
        margin-bottom: 0;
        margin-top: 0;
@@ -17,7 +17,7 @@ Users
    </style>
 
 Our community is here to help.
-Please `report installation problems <https://github.com/ECP-WarpX/impactx/issues/new>`_ in case you should get stuck.
+Please `report installation problems <https://github.com/BLAST-ImpactX/impactx/issues/new>`_ in case you should get stuck.
 
 Choose **one** of the installation methods below to get started:
 
@@ -37,20 +37,12 @@ If want to use ImpactX on a specific high-performance computing (HPC) systems, j
 
    .. image:: conda.svg
 
-Using the Conda Package
------------------------
+Using the Conda-Forge Package
+-----------------------------
 
-A package for ImpactX is available via the `Conda <https://conda.io>`_ package manager.
+A package for ImpactX is available via `Conda-Forge <https://conda-forge.org/download/>`__.
 
 .. tip::
-
-   We recommend to configure your conda to use the faster ``libmamba`` `dependency solver <https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community>`__.
-
-   .. code-block:: bash
-
-      conda update -y -n base conda
-      conda install -y -n base conda-libmamba-solver
-      conda config --set solver libmamba
 
    We recommend to deactivate that conda self-activates its ``base`` environment.
    This `avoids interference with the system and other package managers <https://collegeville.github.io/CW20/WorkshopResources/WhitePapers/huebl-working-with-multiple-pkg-mgrs.pdf>`__.
@@ -59,6 +51,13 @@ A package for ImpactX is available via the `Conda <https://conda.io>`_ package m
 
       conda config --set auto_activate_base false
 
+   In order to make sure that the conda configuration uses ``conda-forge`` as the only channel, which will help avoid issues with blocked ``defaults`` or ``anaconda`` repositories, please set the following configurations:
+
+   .. code-block:: bash
+
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+
 .. code-block:: bash
 
    conda create -n impactx -c conda-forge impactx
@@ -66,7 +65,7 @@ A package for ImpactX is available via the `Conda <https://conda.io>`_ package m
 
 .. note::
 
-   The ``impactx`` `conda package <https://anaconda.org/conda-forge/impactx>`__ does not yet provide GPU support.
+   The ``impactx`` package on conda-forge does not yet provide `GPU support <https://github.com/conda-forge/impactx-feedstock/issues/4>`__.
 
 
 .. _install-spack:
@@ -92,9 +91,19 @@ Using the Spack Package
 Using the PyPI Package
 ----------------------
 
-.. note::
+Because of limitations of ``pip``, we limit our PyPI package to be a **sequential CPU build**, i.e., it does not make use of *any* of the accelerated features of ImpactX.
 
-   Coming soon.
+If you need advanced features such as:
+
+* multi-core CPU support (OpenMP)
+* GPU support (CUDA/HIP/SYCL)
+* multi-node support (MPI)
+
+then use *another installation method* listed here or in the :ref:`HPC system-specific section <install-hpc>`.
+
+.. code-block:: bash
+
+   python -m pip install impactx-noacc
 
 
 .. _install-brew:
@@ -125,7 +134,7 @@ After installing the :ref:`ImpactX dependencies <install-dependencies>`, you can
 .. code-block:: bash
 
    # get the source code
-   git clone https://github.com/ECP-WarpX/impactx.git $HOME/src/impactx
+   git clone https://github.com/BLAST-ImpactX/impactx.git $HOME/src/impactx
    cd $HOME/src/impactx
 
    # configure
@@ -151,6 +160,6 @@ Tips for macOS Users
    If you find entries in ``bin/``, ``lib/`` et al. that look like you manually installed MPI, HDF5 or other software in the past, then remove those files first.
 
    If you find software such as MPI in the same directories that are shown as symbolic links then it is likely you `brew installed <https://brew.sh/>`__ software before.
-   If you are trying annother package manager than ``brew``, run `brew unlink ... <https://docs.brew.sh/Tips-N%27-Tricks#quickly-remove-something-from-usrlocal>`__ on such packages first to avoid software incompatibilities.
+   If you are trying another package manager than ``brew``, run `brew unlink ... <https://docs.brew.sh/Tips-N%27-Tricks#quickly-remove-something-from-usrlocal>`__ on such packages first to avoid software incompatibilities.
 
 See also: A. Huebl, `Working With Multiple Package Managers <https://collegeville.github.io/CW20/WorkshopResources/WhitePapers/huebl-working-with-multiple-pkg-mgrs.pdf>`__, `Collegeville Workshop (CW20) <https://collegeville.github.io/CW20/>`_, 2020

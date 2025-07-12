@@ -6,6 +6,7 @@
 #include "pyImpactX.H"
 
 #include <ImpactX.H>
+#include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
 
 #include <AMReX.H>
@@ -15,7 +16,10 @@
 #if defined(AMREX_DEBUG) || defined(DEBUG)
 #   include <cstdio>
 #endif
+#include <optional>
 #include <string>
+#include <type_traits>
+#include <variant>
 
 
 namespace py = pybind11;
@@ -43,10 +47,16 @@ namespace detail
     template< typename T>
     auto get_or_throw (std::string const & prefix, std::string const & name)
     {
-        T value;
+        using V = std::decay_t<T>;
+        V value;
+
+        bool has_name = false;
         // TODO: if array do queryarr
-        // bool const has_name = amrex::ParmParse(prefix).queryarr(name.c_str(), value);
-        bool const has_name = amrex::ParmParse(prefix).query(name.c_str(), value);
+        // has_name = amrex::ParmParse(prefix).queryarr(name.c_str(), value);
+        if constexpr (std::is_same_v<V, bool> || std::is_same_v<V, std::string>)
+            has_name = amrex::ParmParse(prefix).query(name.c_str(), value);
+        else
+            has_name = amrex::ParmParse(prefix).queryWithParser(name.c_str(), value);
 
         if (!has_name)
             throw std::runtime_error(prefix + "." + name + " is not set yet");
@@ -56,7 +66,7 @@ namespace detail
 
 void init_ImpactX (py::module& m)
 {
-    py::class_<ImpactX> impactx(m, "ImpactX");
+    py::class_<ImpactX> impactx(m, "ImpactX", py::dynamic_attr());
     impactx
         .def(py::init<>())
 
@@ -86,6 +96,7 @@ void init_ImpactX (py::module& m)
     for (int dir : {0, 1, 2}) {
         std::string const dir_str = std::vector<std::string>{"x", "y", "z"}.at(dir);
         std::string const bf_str = "blocking_factor_" + dir_str;
+        std::string const mgs_str = "max_grid_size_" + dir_str;
         impactx
             .def_property(bf_str.c_str(),
                   [bf_str](ImpactX & /* ix */) {
@@ -95,12 +106,13 @@ void init_ImpactX (py::module& m)
 
                       return blocking_factor_dir;
                   },
-                  [bf_str](ImpactX &ix, std::vector<int> blocking_factor_dir) {
+                  [bf_str, mgs_str](ImpactX &ix, std::vector<int> blocking_factor_dir) {
                       if (ix.initialized())
                           throw std::runtime_error("Read-only parameter after init_grids was called.");
 
                       amrex::ParmParse pp_amr("amr");
                       pp_amr.addarr(bf_str.c_str(), blocking_factor_dir);
+                      pp_amr.addarr(mgs_str.c_str(), blocking_factor_dir);
                   },
                   "AMReX blocking factor for a direction, per MR level."
             );
@@ -112,7 +124,7 @@ void init_ImpactX (py::module& m)
             [](ImpactX & /* ix */){
                 int max_level = 0;
                 amrex::ParmParse pp_amr("amr");
-                pp_amr.query("max_level", max_level);
+                pp_amr.queryWithParser("max_level", max_level);
                 return max_level;
             },
             [](ImpactX & ix, int max_level) {
@@ -209,6 +221,26 @@ void init_ImpactX (py::module& m)
             },
             "Number of longitudinal bins used for CSR calculations (default: 150)."
         )
+        .def_property("isr",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "isr");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("isr", enable);
+            },
+            "Enable or disable Incoherent Synchrotron Radiation (ISR) calculations (default: disabled)."
+        )
+        .def_property("isr_order",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "isr_order");
+            },
+            [](ImpactX & /* ix */, int isr_order) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("isr_order", isr_order);
+            },
+            "Number of terms in the Taylor series retained for quantum effects (default: 1)."
+        )
         .def_property("eigenemittances",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("diag", "eigenemittances");
@@ -220,14 +252,32 @@ void init_ImpactX (py::module& m)
             "Enable or disable eigenemittance diagnostic calculations (default: disabled)."
         )
         .def_property("space_charge",
-             [](ImpactX & /* ix */) {
-                 return detail::get_or_throw<bool>("algo", "space_charge");
-             },
-             [](ImpactX & /* ix */, bool const enable) {
-                 amrex::ParmParse pp_algo("algo");
-                 pp_algo.add("space_charge", enable);
-             },
-             "Enable or disable space charge calculations (default: enabled)."
+            [](ImpactX & /* ix */) -> std::string {
+                return detail::get_or_throw<std::string>("algo", "space_charge");
+            },
+            [](ImpactX & /* ix */, std::variant<bool, std::string> space_charge_v) {
+                if (std::holds_alternative<bool>(space_charge_v)) {
+                    amrex::ParmParse pp_algo("algo");
+                    if (std::get<bool>(space_charge_v)) {
+                        // TODO: boolean True is deprecated since 25.03, remove some time after
+                        py::print("sim.space_charge = True is deprecated, please use space_charge = \"3D\"");
+                        pp_algo.add("space_charge", std::string("3D"));
+                    } else {
+                        // map boolean False to "false" / off
+                        pp_algo.add("space_charge", std::string("false"));
+                    }
+                }
+                else
+                {
+                    std::string const space_charge = std::get<std::string>(space_charge_v);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D") {
+                        throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge);
+                    }
+                    amrex::ParmParse pp_algo("algo");
+                    pp_algo.add("space_charge", space_charge);
+                }
+            },
+            "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
@@ -379,6 +429,20 @@ void init_ImpactX (py::module& m)
             "if there are unused parameters in the input."
         )
 
+        .def_property("omp_threads",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<std::string>("amrex", "omp_threads");
+            },
+            [](ImpactX & /* ix */, std::variant<int, std::string> omp_threads_var) {
+                std::visit([&]( auto && omp_threads) {
+                    amrex::ParmParse pp_amrex("amrex");
+                pp_amrex.add("omp_threads", omp_threads);
+                }, omp_threads_var);
+            },
+            "Controls the number of OpenMP threads to use (ImpactX default: \"nosmt\").\n"
+            "https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html."
+        )
+
         .def_property("verbose",
             [](ImpactX & /* ix */){
                 return detail::get_or_throw<int>("impactx", "verbose");
@@ -386,16 +450,53 @@ void init_ImpactX (py::module& m)
             [](ImpactX & /* ix */, int const verbose) {
                 amrex::ParmParse pp_impactx("impactx");
                 pp_impactx.add("verbose", verbose);
+                // AMReX init/finalize
+                amrex::ParmParse pp_amrex("amrex");
+                pp_amrex.add("verbose", verbose);
             },
             "Controls how much information is printed to the terminal, when running ImpactX.\n"
             "``0`` for silent, higher is more verbose. Default is ``1``."
+        )
+
+        .def_property("tiny_profiler",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<bool>("tiny_profiler", "enabled");
+            },
+            [](ImpactX & /* ix */, bool enabled) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("enabled", enabled);
+            },
+            "This parameter can be used to disable tiny profiling including CArena memory profiling at runtime."
+        )
+        .def_property("memory_profiler",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<bool>("tiny_profiler", "memprof_enabled");
+            },
+            [](ImpactX & /* ix */, bool memprof_enabled) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("memprof_enabled", memprof_enabled);
+            },
+            "This parameter can be used to disable tiny profiler's memory arena profiling at runtime. "
+            "If tiny_profiler.enabled is false, this parameter has no effects."
+        )
+        .def_property("tiny_profiler_file",
+            [](ImpactX & /* ix */){
+                return detail::get_or_throw<std::string>("tiny_profiler", "output_file");
+            },
+            [](ImpactX & /* ix */, std::string output_file) {
+                amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                pp_tiny_profiler.add("output_file", output_file);
+            },
+            "If this parameter is empty, the output of tiny profiling is dumped on the default out stream of AMReX. "
+            "If it's not empty, it specifies the file name for the output. "
+            "Note that /dev/null is a special name that mean a null file."
         )
 
         .def("deposit_charge",
             [](ImpactX & ix) {
                 // transform from x',y',t to x,y,z
                 transformation::CoordinateTransformation(
-                        *(ix.amr_data)->m_particle_container,
+                        *(ix.amr_data)->track_particles.m_particle_container,
                         CoordSystem::t);
 
                 // Note: The following operation assume that
@@ -405,14 +506,18 @@ void init_ImpactX (py::module& m)
                 ix.ResizeMesh();
 
                 // Redistribute particles in the new mesh in x, y, z
-                ix.amr_data->m_particle_container->Redistribute();
+                ix.amr_data->track_particles.m_particle_container->Redistribute();
 
                 // charge deposition
-                ix.amr_data->m_particle_container->DepositCharge(ix.amr_data->m_rho, ix.amr_data->refRatio());
+                ix.amr_data->track_particles.m_particle_container->DepositCharge(
+                    ix.amr_data->track_particles.m_rho,
+                    ix.amr_data->refRatio());
 
                 // transform from x,y,z to x',y',t
-                transformation::CoordinateTransformation(*(ix.amr_data)->m_particle_container,
-                                                         CoordSystem::s);
+                transformation::CoordinateTransformation(
+                    *(ix.amr_data)->track_particles.m_particle_container,
+            CoordSystem::s
+                );
             },
             "Deposit charge in x,y,z."
         )
@@ -426,20 +531,41 @@ void init_ImpactX (py::module& m)
         )
         .def("init_beam_distribution_from_inputs", &ImpactX::initBeamDistributionFromInputs)
         .def("init_lattice_elements_from_inputs", &ImpactX::initLatticeElementsFromInputs)
+        .def("init_envelope",
+            [](ImpactX & ix, RefPart ref, distribution::KnownDistributions distr, std::optional<amrex::Real> intensity) {
+                ix.amr_data->track_envelope.m_ref = ref;
+                ix.amr_data->track_envelope.m_env = initialization::create_envelope(distr, intensity);
+            },
+            py::arg("ref"), py::arg("distr"), py::arg("intensity") = py::none(),
+            "Envelope tracking mode:"
+            "Create a 6x6 covariance matrix from a distribution and then initialize "
+            "the simulation for envelope tracking relative to a reference particle."
+        )
         .def("add_particles", &ImpactX::add_particles,
              py::arg("bunch_charge"),
              py::arg("distr"), py::arg("npart"),
+             "Particle tracking mode:"
              "Generate and add n particles to the particle container.\n\n"
              "Will also resize the geometry based on the updated particle\n"
              "distribution's extent and then redistribute particles in according\n"
              "AMReX grid boxes."
         )
 
-        .def("evolve", &ImpactX::evolve,
+        .def("evolve",  /** TODO: deprecated API. Only for internal use. Remove after a few releases. */
+             [](ImpactX & ix) {
+                py::print("Warning: evolve() is deprecated and will soon be removed. Use track_particles() instead.");
+                ix.evolve();
+             },
              "Run the main simulation loop."
         )
         .def("track_particles", &ImpactX::track_particles,
              "Run the particle tracking simulation loop."
+        )
+        .def("track_envelope", &ImpactX::track_envelope,
+             "Run the envelope tracking simulation loop."
+        )
+        .def("track_reference", &ImpactX::track_reference,
+             "Run the reference orbit tracking simulation loop."
         )
 
         .def("resize_mesh", &ImpactX::ResizeMesh,
@@ -448,21 +574,21 @@ void init_ImpactX (py::module& m)
 
         .def("particle_container",
              [](ImpactX & ix) -> ImpactXParticleContainer & {
-                return *ix.amr_data->m_particle_container;
+                return *ix.amr_data->track_particles.m_particle_container;
              },
              py::return_value_policy::reference_internal,
              "Access the beam particle container."
         )
         .def(
             "rho",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->m_rho.at(lev); },
+            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_rho.at(lev); },
             py::arg("lev"),
             py::return_value_policy::reference_internal,
             "charge density per level"
         )
         .def(
             "phi",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->m_phi.at(lev); },
+            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_phi.at(lev); },
             py::arg("lev"),
             py::return_value_policy::reference_internal,
             "scalar potential per level"
@@ -470,7 +596,7 @@ void init_ImpactX (py::module& m)
         .def(
             "space_charge_field",
             [](ImpactX & ix, int lev, std::string const & comp) {
-                return &ix.amr_data->m_space_charge_field.at(lev).at(comp);
+                return &ix.amr_data->track_particles.m_space_charge_field.at(lev).at(comp);
             },
             py::arg("lev"), py::arg("comp"),
             py::return_value_policy::reference_internal,

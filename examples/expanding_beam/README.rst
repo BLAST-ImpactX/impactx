@@ -25,24 +25,38 @@ Run
 
 This example can be run **either** as:
 
-* **Python** script: ``python3 run_expanding.py`` or
-* ImpactX **executable** using an input file: ``impactx input_expanding.in``
+* **Python** script: ``python3 run_expanding_fft.py`` or
+* ImpactX **executable** using an input file: ``impactx input_expanding_fft.in``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
+We also provide the same example with the multi-grid (MLMG) Poisson solver.
+
 .. tab-set::
 
-   .. tab-item:: Python: Script
+   .. tab-item:: Python: Script (FFT)
 
-      .. literalinclude:: run_expanding.py
+      .. literalinclude:: run_expanding_fft.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding.py``.
+         :caption: You can copy this file from ``examples/expanding/run_expanding_fft.py``.
 
-   .. tab-item:: Executable: Input File
+   .. tab-item:: Python: Script (MLMG)
 
-       .. literalinclude:: input_expanding.in
+      .. literalinclude:: run_expanding_mlmg.py
+         :language: python3
+         :caption: You can copy this file from ``examples/expanding/run_expanding_mlmg.py``.
+
+   .. tab-item:: Executable: Input File (FFT)
+
+       .. literalinclude:: input_expanding_fft.in
           :language: ini
-          :caption: You can copy this file from ``examples/expanding/input_expanding.in``.
+          :caption: You can copy this file from ``examples/expanding/input_expanding_fft.in``.
+
+   .. tab-item:: Executable: Input File (MLMG)
+
+       .. literalinclude:: input_expanding_mlmg.in
+          :language: ini
+          :caption: You can copy this file from ``examples/expanding/input_expanding_mlmg.in``.
 
 
 Analyze

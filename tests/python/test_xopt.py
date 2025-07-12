@@ -7,7 +7,7 @@
 #
 # -*- coding: utf-8 -*-
 
-import importlib
+import importlib.util
 
 import numpy as np
 import pytest
@@ -130,7 +130,7 @@ def run(parameters: dict, write_particles=False, write_reduced=False) -> dict:
 
     # in situ calculate the reduced beam characteristics
     beam = sim.particle_container()
-    rbc = beam.reduced_beam_characteristics()
+    rbc = beam.beam_moments()
 
     # clean shutdown
     sim.finalize()

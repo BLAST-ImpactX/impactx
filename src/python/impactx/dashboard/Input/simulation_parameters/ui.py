@@ -25,7 +25,9 @@ class SimulationParameters(CardBase):
     @state.change("kin_energy_unit")
     def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
         if state.kin_energy_on_ui != 0:
-            state.kin_energy_MeV =  state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
+            state.kin_energy_MeV = (
+                state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
+            )
 
     @state.change("tracking_mode")
     def on_tracking_mode_change(**kwargs) -> None:

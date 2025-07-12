@@ -12,6 +12,7 @@ from .. import state
 from ..Toolbar.file_imports.python.parser import DashboardParser
 from .defaults import DashboardDefaults
 
+
 class GeneralFunctions:
     @staticmethod
     def normalize_for_v_model(name: str) -> str:

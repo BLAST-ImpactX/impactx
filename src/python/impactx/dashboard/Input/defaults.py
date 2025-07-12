@@ -49,6 +49,7 @@ CONVERSION_FACTORS = {
     "TeV": 1.0e6,
 }
 
+
 class DashboardDefaults:
     """
     Defaults for simulation parameters in the ImpactX dashboard.

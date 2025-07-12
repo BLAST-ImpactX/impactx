@@ -13,8 +13,8 @@ from impactx import distribution
 from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardDefaults, DashboardValidation
-from ..utils import GeneralFunctions
 from ..defaults_helper import InputDefaultsHelper
+from ..utils import GeneralFunctions
 from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------

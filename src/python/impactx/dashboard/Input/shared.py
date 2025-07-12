@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .. import ctrl, state
 from . import DashboardDefaults, DashboardValidation
-from .generalFunctions import GeneralFunctions
+from .utils import GeneralFunctions
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ... import vuetify
-from ..generalFunctions import GeneralFunctions
+from ..utils import GeneralFunctions
 
 
 class InputComponents:

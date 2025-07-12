@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import html, state, vuetify
-from ...generalFunctions import GeneralFunctions
+from ...utils import GeneralFunctions
 
 state.total_elements = 0
 state.total_length = 0

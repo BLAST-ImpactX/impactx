@@ -1,5 +1,5 @@
 from ..Input.components.card import CardComponents
-from ..Input.generalFunctions import GeneralFunctions
+from ..Input.utils import GeneralFunctions
 
 __all__ = [
     "CardComponents",

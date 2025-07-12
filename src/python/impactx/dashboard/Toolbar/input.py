@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .. import ctrl, html, state, vuetify
 from ..Input.components.card import CardComponents
-from ..Input.generalFunctions import GeneralFunctions
+from ..Input.utils import GeneralFunctions
 from ..Run.simulation import dashboard_sim_inputs
 
 state.expand_all_sections = False

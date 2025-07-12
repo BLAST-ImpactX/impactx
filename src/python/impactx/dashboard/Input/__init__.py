@@ -1,5 +1,5 @@
 from .defaults import DashboardDefaults
-from .generalFunctions import GeneralFunctions
+from .utils import GeneralFunctions
 from .validation import DashboardValidation
 
 __all__ = [

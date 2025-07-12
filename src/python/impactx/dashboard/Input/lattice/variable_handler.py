@@ -2,7 +2,8 @@ from typing import Optional, Tuple
 
 from ... import ctrl, html, state, vuetify
 from ...Input.components import CardComponents
-from .. import DashboardValidation, GeneralFunctions
+from .. import DashboardValidation
+from ..generalFunctions import GeneralFunctions
 from .utils import LatticeConfigurationHelper
 
 init_value = ""

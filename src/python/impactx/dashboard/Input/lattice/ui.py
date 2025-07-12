@@ -52,29 +52,30 @@ def add_lattice_element():
     """
 
     selected_lattice = state.selected_lattice
-    selected_lattice_parameters = state.listOfLatticeElementParametersAndDefault.get(
+    parameters_data = state.listOfLatticeElementParametersAndDefault.get(
         selected_lattice, []
     )
 
-    selected_lattice_element = {
+    parameters = []
+    for name, default_value, default_type in parameters_data:
+        parameters.append({
+            "parameter_name": name,
+            "ui_input": default_value,
+            "sim_input": default_value,
+            "parameter_type": default_type,
+            "parameter_error_message": DashboardValidation.validate_against(
+                default_value, default_type
+            ),
+        })
+
+    lattice_element = {
         "name": selected_lattice,
-        "parameters": [
-            {
-                "parameter_name": parameter[0],
-                "ui_input": parameter[1],
-                "sim_input": parameter[1],
-                "parameter_type": parameter[2],
-                "parameter_error_message": DashboardValidation.validate_against(
-                    parameter[1], parameter[2]
-                ),
-            }
-            for parameter in selected_lattice_parameters
-        ],
+        "parameters": parameters,
     }
 
-    state.selected_lattice_list.append(selected_lattice_element)
+    state.selected_lattice_list.append(lattice_element)
     DashboardValidation.update_simulation_validation_status()
-    return selected_lattice_element
+    return lattice_element
 
 
 # -----------------------------------------------------------------------------

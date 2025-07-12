@@ -44,11 +44,9 @@ state.nslice = ""
 # -----------------------------------------------------------------------------
 
 
-def add_lattice_element():
+def add_lattice_element() -> dict:
     """
-    Adds the selected lattice element to the list of selected
-    lattice elements along with its default parameters.
-    :return: dictionary representing the added lattice element with its parameters.
+    Appends the currently selected lattice element and its parameters to the lattice list.
     """
 
     selected_lattice = state.selected_lattice

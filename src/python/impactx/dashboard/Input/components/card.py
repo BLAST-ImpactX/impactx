@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from ... import html, state, vuetify
 from ..defaults import DashboardDefaults, UIDefaults
-from ..generalFunctions import generalFunctions
+from ..generalFunctions import GeneralFunctions
 
 state.documentation_drawer_open = False
 state.documentation_url = ""
@@ -11,14 +11,14 @@ _missing_docs = set()
 
 
 def clean_name(section_name):
-    return generalFunctions.normalize_for_v_model(section_name)
+    return GeneralFunctions.normalize_for_v_model(section_name)
 
 
 class CardBase(UIDefaults):
     HEADER_NAME = "Base Section"
 
     def __init__(self):
-        self.header = generalFunctions.normalize_for_v_model(self.HEADER_NAME)
+        self.header = GeneralFunctions.normalize_for_v_model(self.HEADER_NAME)
         self.collapsable = (f"collapse_{self.header}_height",)
 
         self.card_props = {"elevation": 2, "style": self.collapsable}
@@ -178,7 +178,7 @@ class CardComponents:
         CardComponents.card_button(
             "mdi-information",
             color="#00313C",
-            click=lambda: generalFunctions.open_documentation(section_name),
+            click=lambda: GeneralFunctions.open_documentation(section_name),
             description="Documentation",
         )
 
@@ -193,7 +193,7 @@ class CardComponents:
         CardComponents.card_button(
             "mdi-refresh",
             color="#00313C",
-            click=lambda: generalFunctions.reset_inputs(section_name),
+            click=lambda: GeneralFunctions.reset_inputs(section_name),
             description="Reset",
         )
 

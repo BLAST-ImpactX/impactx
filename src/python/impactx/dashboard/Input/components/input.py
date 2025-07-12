@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ... import vuetify
-from ..generalFunctions import generalFunctions
+from ..generalFunctions import GeneralFunctions
 
 
 class InputComponents:
@@ -22,11 +22,11 @@ class InputComponents:
         """
 
         if v_model_name is None:
-            v_model_name = generalFunctions.normalize_for_v_model(label)
+            v_model_name = GeneralFunctions.normalize_for_v_model(label)
 
         if "items" in component_kwargs and component_kwargs["items"] is None:
             component_kwargs["items"] = (
-                generalFunctions.get_default(f"{v_model_name}_list", "default_values"),
+                GeneralFunctions.get_default(f"{v_model_name}_list", "default_values"),
             )
 
         common_props = {
@@ -84,7 +84,7 @@ class InputComponents:
         computed_v_model = (
             v_model_name
             if v_model_name is not None
-            else generalFunctions.normalize_for_v_model(label)
+            else GeneralFunctions.normalize_for_v_model(label)
         )
         InputComponents._build_component(
             vuetify.VTextField,
@@ -92,8 +92,8 @@ class InputComponents:
             v_model_name,
             error_messages=(f"{computed_v_model}_error_message", []),
             type=input_type,
-            step=generalFunctions.get_default(computed_v_model, "steps"),
-            suffix=generalFunctions.get_default(computed_v_model, "units"),
+            step=GeneralFunctions.get_default(computed_v_model, "steps"),
+            suffix=GeneralFunctions.get_default(computed_v_model, "units"),
             __properties=["step"],
             **kwargs,
         )

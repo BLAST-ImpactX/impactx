@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 from ... import ctrl, html, state, vuetify
 from ...Input.components import CardComponents
-from .. import DashboardValidation, generalFunctions
+from .. import DashboardValidation, GeneralFunctions
 from .utils import LatticeConfigurationHelper
 
 init_value = ""
@@ -99,7 +99,7 @@ class LatticeVariableHandler:
                 variable["name"] = event
                 variable["value"] = variable["value"] or None
         else:
-            variable["value"] = generalFunctions.convert_to_numeric(event)
+            variable["value"] = GeneralFunctions.convert_to_numeric(event)
         state.dirty("variables")
 
     @staticmethod

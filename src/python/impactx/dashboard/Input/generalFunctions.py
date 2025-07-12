@@ -17,7 +17,7 @@ from .defaults import DashboardDefaults
 # -----------------------------------------------------------------------------
 
 
-class generalFunctions:
+class GeneralFunctions:
     @staticmethod
     def normalize_for_v_model(name: str) -> str:
         """

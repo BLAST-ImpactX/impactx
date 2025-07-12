@@ -15,7 +15,7 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardDefaults, DashboardValidation, generalFunctions
+from .. import DashboardDefaults, DashboardValidation, GeneralFunctions
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from .utils import LatticeConfigurationHelper
@@ -234,7 +234,7 @@ def on_move_latticeElementIndex_down_click(index):
 
 @ctrl.add("nsliceDefaultChange")
 def update_default_value(parameter_name, new_value):
-    data = generalFunctions.class_parameters_with_defaults(elements)
+    data = GeneralFunctions.class_parameters_with_defaults(elements)
 
     for key, parameters in data.items():
         for i, param in enumerate(parameters):

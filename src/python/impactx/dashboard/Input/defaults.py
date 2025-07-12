@@ -66,13 +66,10 @@ class DashboardDefaults:
     # Inputs by section
     # -------------------------------------------------------------------------
 
-    SELECTION = {
+    SIMULATION_PARAMETERS = {
         "space_charge": "false",
         "csr": False,
         "isr": False,
-    }
-
-    SIMULATION_PARAMETERS = {
         "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
@@ -145,7 +142,6 @@ class DashboardDefaults:
     # -------------------------------------------------------------------------
 
     DEFAULT_VALUES = {
-        **SELECTION,
         **SIMULATION_PARAMETERS,
         **DISTRIBUTION_PARAMETERS,
         **LATTICE_CONFIGURATION,

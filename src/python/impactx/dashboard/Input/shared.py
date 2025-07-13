@@ -13,24 +13,13 @@ from .validation import N_CELL_MULTIPLE_ERROR
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
-sc_multigrid_defaults = [
-    "mlmg_relative_tolerance",
-    "mlmg_absolute_tolerance",
-    "mlmg_max_iters",
-    "mlmg_verbosity",
-    "blocking_factor_x",
-    "blocking_factor_y",
-    "blocking_factor_z",
-    "n_cell_x",
-    "n_cell_y",
-    "n_cell_z",
-]
+space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
 
 lattice_state_defaults = ["periods"]
 INPUT_DEFAULTS = (
     csr_defaults
     + simulation_parameters_defaults
-    + sc_multigrid_defaults
+    + space_charge_defaults
     + lattice_state_defaults
 )
 

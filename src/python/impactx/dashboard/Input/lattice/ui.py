@@ -21,7 +21,7 @@ from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
 state.lattice_elements_using_variables = {}
-
+state.is_selected_element_invalid = True
 # -----------------------------------------------------------------------------
 # Helpful
 # -----------------------------------------------------------------------------
@@ -119,21 +119,14 @@ def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
 
 @state.change("selected_lattice")
 def on_lattice_element_name_change(selected_lattice, **kwargs):
-    return
+    lattice_list = DashboardDefaults.LISTS["lattice_list"]
+    state.is_selected_element_invalid = selected_lattice not in lattice_list
 
 
 @ctrl.add("add_latticeElement")
 def on_add_lattice_element_click():
-    lattice_list = DashboardDefaults.LISTS["lattice_list"]
-    selected_lattice = state.selected_lattice
-
-    if selected_lattice not in lattice_list:
-        state.isSelectedLatticeListEmpty = (
-            f"Lattice element '{selected_lattice}' does not exist."
-        )
-    else:
-        add_lattice_element()
-        state.dirty("selected_lattice_list")
+    add_lattice_element()
+    state.dirty("selected_lattice_list")
 
 
 def process_if_variable(index, parameter_name, ui_input, parameter_type):
@@ -291,6 +284,7 @@ class LatticeConfiguration(CardBase):
                             color="primary",
                             dense=True,
                             click=ctrl.add_latticeElement,
+                            disabled=("is_selected_element_invalid",),
                         )
                 with vuetify.VRow(
                     **self.ROW_STYLE,

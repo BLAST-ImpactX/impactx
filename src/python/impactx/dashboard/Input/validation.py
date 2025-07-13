@@ -16,6 +16,7 @@ FLOAT_ERROR_MESSAGE = "Must be a float"
 NON_ZERO_ERROR = "Must be non-zero."
 POSITIVE_ERROR = "Must be positive."
 NEGATIVE_ERROR = "Must be negative."
+N_CELL_MULTIPLE_ERROR = "Must be a multiple of blocking factor."
 
 class DashboardValidation:
     """
@@ -146,33 +147,6 @@ class DashboardValidation:
 
         return error_message
 
-    @staticmethod
-    def validate_n_cell_and_blocking_factor(direction):
-        """
-        Validation function for n_cell and blocking_factor parameters.
-        """
-        n_cell_value = getattr(state, f"n_cell_{direction}", None)
-        blocking_factor_value = getattr(state, f"blocking_factor_{direction}", None)
-
-        n_cell_errors = DashboardValidation.validate_input("n_cell", n_cell_value)
-        blocking_factor_errors = DashboardValidation.validate_input("blocking_factor", blocking_factor_value)
-
-        setattr(state, f"n_cell_{direction}_error_message", "; ".join(n_cell_errors))
-        setattr(
-            state,
-            f"blocking_factor_{direction}_error_message",
-            "; ".join(blocking_factor_errors),
-        )
-
-        if not n_cell_errors and not blocking_factor_errors:
-            n_cell_value = int(n_cell_value)
-            blocking_factor_value = int(blocking_factor_value)
-            if n_cell_value % blocking_factor_value != 0:
-                setattr(
-                    state,
-                    f"n_cell_{direction}_error_message",
-                    "Must be a multiple of blocking factor.",
-                )
 
     @staticmethod
     def update_simulation_validation_status():

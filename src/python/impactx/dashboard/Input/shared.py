@@ -12,11 +12,19 @@ from . import DashboardDefaults, DashboardValidation, generalFunctions
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
-sc_multigrid_defaults = ["mlmg_relative_tolerance", "mlmg_absolute_tolerance", "mlmg_max_iters", "mlmg_verbosity"]
+sc_multigrid_defaults = [
+    "mlmg_relative_tolerance",
+    "mlmg_absolute_tolerance",
+    "mlmg_max_iters",
+    "mlmg_verbosity",
+]
 
 lattice_state_defaults = ["periods"]
 INPUT_DEFAULTS = (
-    csr_defaults + simulation_parameters_defaults + sc_multigrid_defaults + lattice_state_defaults
+    csr_defaults
+    + simulation_parameters_defaults
+    + sc_multigrid_defaults
+    + lattice_state_defaults
 )
 
 

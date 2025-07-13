@@ -16,6 +16,7 @@ from ...Input.components import (
     NavigationComponents,
 )
 from .. import DashboardDefaults, DashboardValidation, generalFunctions
+from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
@@ -38,7 +39,6 @@ state.listOfLatticeElementParametersAndDefault = (
 
 state.selected_lattice_list = []
 state.nslice = ""
-BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
 
 # -----------------------------------------------------------------------------
 # Main Functions

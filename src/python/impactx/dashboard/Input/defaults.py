@@ -40,6 +40,7 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
 
 BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
 
+
 class DashboardDefaults:
     """
     Defaults for simulation parameters in the ImpactX dashboard.

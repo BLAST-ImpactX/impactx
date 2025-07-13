@@ -9,6 +9,7 @@ License: BSD-3-Clause-LBNL
 from .. import ctrl, state
 from . import DashboardDefaults, DashboardValidation
 from .utils import GeneralFunctions
+from .validation import N_CELL_MULTIPLE_ERROR
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
@@ -17,6 +18,12 @@ sc_multigrid_defaults = [
     "mlmg_absolute_tolerance",
     "mlmg_max_iters",
     "mlmg_verbosity",
+    "blocking_factor_x",
+    "blocking_factor_y",
+    "blocking_factor_z",
+    "n_cell_x",
+    "n_cell_y",
+    "n_cell_z",
 ]
 
 lattice_state_defaults = ["periods"]
@@ -37,11 +44,26 @@ def update_error_message_on_ui(state_name: str, error_message: str) -> None:
 
 def set_input_to_numeric(state_name: str) -> None:
     """
-    Retrieves the value of state_name, converts to a numeric and re-sets the state_name.
+    Converts the value of a state variable to a numeric type (int or float)
+    and updates the state in-place.
+
+    :param state_name: The name of the state variable to convert and update.
     """
     current_input = getattr(state, state_name)
     numeric_input = generalFunctions.convert_to_numeric(current_input)
     setattr(state, state_name, numeric_input)
+
+def update_n_cell_additional_validation(direction: str):
+    n_cell = GeneralFunctions.convert_to_numeric(getattr(state, f"n_cell_{direction}", None))
+    blocking_factor = GeneralFunctions.convert_to_numeric(getattr(state, f"blocking_factor_{direction}", None))
+
+    if blocking_factor == 0:
+        return
+
+    if n_cell % blocking_factor != 0:
+        update_error_message_on_ui(f"n_cell_{direction}", N_CELL_MULTIPLE_ERROR)
+    else:
+        update_error_message_on_ui(f"n_cell_{direction}", "")
 
 class SharedUtilities:
     @staticmethod
@@ -62,8 +84,14 @@ class SharedUtilities:
 
                 if not validation_result:
                     set_input_to_numeric(state_name)
-                    if state_name == "kin_energy_on_ui":
-                        SimulationParameters.on_kin_energy_unit_change()
+
+                    match state_name:
+                        case "kin_energy_on_ui":
+                            SimulationParameters.on_kin_energy_unit_change()
+                        case _ if "blocking_factor" or "n_cell" in state_name:
+                            direction = state_name[-1]
+                            update_n_cell_additional_validation(direction)
+
 
                 DashboardValidation.update_simulation_validation_status()
 

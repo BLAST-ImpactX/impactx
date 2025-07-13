@@ -42,15 +42,29 @@ class GeneralFunctions:
             state.documentation_drawer_open = True
 
     @staticmethod
-    def get_default(parameter, type):
+    def get_default(parameter: str, type: str) -> str | None:
+        """
+        Get the default value for a parameter by exact or base name match.
+
+        Attempts full match first, then falls back to removing the last underscore suffix.
+
+        :param parameter: Full parameter name (e.g., 'beta_x', 'blocking_factor_x').
+        :param type: Parameter group name (e.g., 'simulation_parameters', 'csr').
+        :return: Default value if found, else None.
+        """
         parameter_type_dictionary = getattr(DashboardDefaults, f"{type.upper()}", None)
-        parameter_default = parameter_type_dictionary.get(parameter)
+        if not parameter_type_dictionary:
+            return None
 
-        if parameter_default is not None:
-            return parameter_default
+        if parameter in parameter_type_dictionary:
+            return parameter_type_dictionary[parameter]
 
-        parameter_name_base = parameter.partition("_")[0]
-        return parameter_type_dictionary.get(parameter_name_base)
+        if "_" in parameter:
+            parameter_name_base = "_".join(parameter.split("_")[:-1])
+            return parameter_type_dictionary.get(parameter_name_base)
+
+        return None
+
 
     @staticmethod
     def convert_to_numeric(input: str) -> Union[int, float]:

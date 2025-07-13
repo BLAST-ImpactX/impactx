@@ -38,6 +38,7 @@ state.listOfLatticeElementParametersAndDefault = (
 
 state.selected_lattice_list = []
 state.nslice = ""
+BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
 
 # -----------------------------------------------------------------------------
 # Main Functions
@@ -56,14 +57,10 @@ def add_lattice_element() -> dict:
 
     parameters = []
     for name, default_value, default_type in parameters_data:
-        default_value = "" if default_value is None else str(default_value).strip()
-        value = (
-            "DefaultName"
-            if selected_lattice == "BeamMonitor"
-            and name == "name"
-            and not default_value
-            else default_value
-        )
+        value = default_value
+
+        if selected_lattice == "BeamMonitor" and name == "name" and not value:
+            value = BEAM_MONITOR_DEFAULT_NAME
 
         parameters.append(
             {

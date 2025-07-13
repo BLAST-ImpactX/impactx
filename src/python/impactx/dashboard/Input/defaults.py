@@ -156,6 +156,10 @@ class DashboardDefaults:
         "emitt": "float",
         "alpha": "float",
         "periods": "int",
+        "mlmg_relative_tolerance": "float",
+        "mlmg_absolute_tolerance": "float",
+        "mlmg_max_iters": "int",
+        "mlmg_verbosity": "int",
     }
 
     VALIDATION_CONDITION = {
@@ -166,6 +170,8 @@ class DashboardDefaults:
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],
         "periods": ["positive"],
+        "mlmg_relative_tolerance": ["positive"],
+        "mlmg_max_iters": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

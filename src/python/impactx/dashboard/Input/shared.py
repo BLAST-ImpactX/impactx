@@ -28,6 +28,21 @@ INPUT_DEFAULTS = (
 )
 
 
+def update_error_message_on_ui(state_name: str, error_message: str) -> None:
+    """
+    Called when we want to set an error message to an input
+    """
+    validation_name = f"{state_name}_error_message"
+    setattr(state, validation_name, error_message)
+
+def set_input_to_numeric(state_name: str) -> None:
+    """
+    Retrieves the value of state_name, converts to a numeric and re-sets the state_name.
+    """
+    current_input = getattr(state, state_name)
+    numeric_input = generalFunctions.convert_to_numeric(current_input)
+    setattr(state, state_name, numeric_input)
+
 class SharedUtilities:
     @staticmethod
     @state.change(*INPUT_DEFAULTS)
@@ -39,21 +54,18 @@ class SharedUtilities:
         for state_name in state_changes:
             if type(state[state_name]) is str:
                 input = getattr(state, state_name)
-                validation_name = f"{state_name}_error_message"
 
                 validation_result = DashboardValidation.validate_input(
                     state_name, input
                 )
-                setattr(state, validation_name, validation_result)
+                update_error_message_on_ui(state_name, validation_result)
+
+                if not validation_result:
+                    set_input_to_numeric(state_name)
+                    if state_name == "kin_energy_on_ui":
+                        SimulationParameters.on_kin_energy_unit_change()
+
                 DashboardValidation.update_simulation_validation_status()
-
-                if validation_result == []:
-                    converted_value = GeneralFunctions.convert_to_numeric(input)
-
-                    if getattr(state, state_name) != converted_value:
-                        setattr(state, state_name, converted_value)
-                        if state_name == "kin_energy_on_ui":
-                            state.dirty("kin_energy_unit")
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

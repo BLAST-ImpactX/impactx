@@ -281,7 +281,6 @@ class LatticeConfiguration(CardBase):
                             "ADD",
                             id="add_lattice_element",
                             color="primary",
-                            dense=True,
                             click=ctrl.add_latticeElement,
                             disabled=("is_selected_element_invalid",),
                         )

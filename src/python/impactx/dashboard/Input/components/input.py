@@ -116,14 +116,14 @@ class InputComponents:
         )
 
     @staticmethod
-    def combobox(
+    def autocomplete(
         label: str,
         v_model_name: Optional[str] = None,
         items: Optional[list] = None,
         **kwargs,
-    ) -> vuetify.VCombobox:
+    ) -> vuetify.VAutocomplete:
         """
-        Creates a Vuetify VCombobox component with default properties.
+        Creates a Vuetify VAutocomplete component with default properties.
 
         :param label: The label to display.
         :param v_model_name: Optional binding name for v_model. Defaults to a lowercase version
@@ -133,5 +133,5 @@ class InputComponents:
         """
 
         InputComponents._build_component(
-            vuetify.VCombobox, label, v_model_name, items=items, **kwargs
+            vuetify.VAutocomplete, label, v_model_name, items=items, **kwargs
         )

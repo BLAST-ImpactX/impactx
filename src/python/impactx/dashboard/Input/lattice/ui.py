@@ -278,7 +278,7 @@ class LatticeConfiguration(CardBase):
                         )
                     vuetify.VDivider(vertical=True)
                     with vuetify.VCol(cols=True):
-                        InputComponents.combobox(
+                        InputComponents.autocomplete(
                             label="Select Accelerator Lattice",
                             v_model_name="selected_lattice",
                             items=("lattice_list",),

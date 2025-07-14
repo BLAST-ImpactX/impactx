@@ -1525,5 +1525,4 @@ add_impactx_test(examples-htu-beamline.py
     ON   # ImpactX MPI-parallel
     examples/htu_beamline/analysis_htu_beamline.py
     OFF  # no plot script yet
-)   
-
+)

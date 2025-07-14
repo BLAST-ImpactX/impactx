@@ -37,7 +37,7 @@ def get_moments(beam):
 # initial/final beam
 series1 = io.Series("diags/openPMD/TCPhosphor.h5", io.Access.read_only)
 last_step = list(series1.iterations)[-1]
-initial = series1.iterations[last_step].particles["beam"].to_df()   
+initial = series1.iterations[last_step].particles["beam"].to_df()
 
 series2 = io.Series("diags/openPMD/UC_VisaEBeam8.h5", io.Access.read_only)
 last_step = list(series2.iterations)[-1]
@@ -100,7 +100,7 @@ assert np.allclose(
         6.167234e-07,
         2.858550e-06,
         9.459980,
-        1.956951e+02,
+        1.956951e02,
     ],
     rtol=rtol,
     atol=atol,

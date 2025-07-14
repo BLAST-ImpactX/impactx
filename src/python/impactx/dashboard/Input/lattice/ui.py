@@ -16,6 +16,7 @@ from ...Input.components import (
     NavigationComponents,
 )
 from .. import DashboardDefaults, DashboardValidation, generalFunctions
+from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
@@ -44,37 +45,43 @@ state.nslice = ""
 # -----------------------------------------------------------------------------
 
 
-def add_lattice_element():
+def add_lattice_element() -> dict:
     """
-    Adds the selected lattice element to the list of selected
-    lattice elements along with its default parameters.
-    :return: dictionary representing the added lattice element with its parameters.
+    Appends the currently selected lattice element and its parameters to the lattice list.
     """
 
     selected_lattice = state.selected_lattice
-    selected_lattice_parameters = state.listOfLatticeElementParametersAndDefault.get(
+    parameters_data = state.listOfLatticeElementParametersAndDefault.get(
         selected_lattice, []
     )
 
-    selected_lattice_element = {
-        "name": selected_lattice,
-        "parameters": [
+    parameters = []
+    for name, default_value, default_type in parameters_data:
+        value = default_value
+
+        if selected_lattice == "BeamMonitor" and name == "name" and not value:
+            value = BEAM_MONITOR_DEFAULT_NAME
+
+        parameters.append(
             {
-                "parameter_name": parameter[0],
-                "ui_input": parameter[1],
-                "sim_input": parameter[1],
-                "parameter_type": parameter[2],
+                "parameter_name": name,
+                "ui_input": value,
+                "sim_input": value,
+                "parameter_type": default_type,
                 "parameter_error_message": DashboardValidation.validate_against(
-                    parameter[1], parameter[2]
+                    value, default_type
                 ),
             }
-            for parameter in selected_lattice_parameters
-        ],
+        )
+
+    lattice_element = {
+        "name": selected_lattice,
+        "parameters": parameters,
     }
 
-    state.selected_lattice_list.append(selected_lattice_element)
+    state.selected_lattice_list.append(lattice_element)
     DashboardValidation.update_simulation_validation_status()
-    return selected_lattice_element
+    return lattice_element
 
 
 # -----------------------------------------------------------------------------

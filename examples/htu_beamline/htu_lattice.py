@@ -8,12 +8,6 @@ from impactx import elements
 
 impactx_available = True
 
-tracking_method = {
-    "cheetah": "bmadx",
-    "cheetah-linear": "cheetah",
-}
-
-
 def get_lattice(
     code,
     vs_current_x=[0] * 8,
@@ -22,15 +16,13 @@ def get_lattice(
     chicane_r56=200.0,
     from_element=None,
     to_element=None,
-    experiment_configuration_file=None,
-    experiment_analysis_settings=None,
 ):
     """
     Get the lattice for the HTU accelerator.
 
     Parameters:
         code (str):
-            "impactx", "cheetah" (uses tracking_method="bmadx") or "cheetah-linear" (uses tracking_method="cheetah")
+            "impactx", ....
         vs_current_x (list of 8 elements):
             The current in the VISA horizontal steering magnets, in amps.
         vs_current_y (list of 8 elements):
@@ -58,68 +50,46 @@ def get_lattice(
     Aline1 = screen(
         "UC_ALineEbeam1",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     Aline2 = screen(
         "UC_ALineEBeam2",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     Aline3 = screen(
         "UC_ALineEBeam3",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam1 = screen(
         "UC_VisaEBeam1",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam2 = screen(
         "UC_VisaEBeam2",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam3 = screen(
         "UC_VisaEBeam3",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam4 = screen(
         "UC_VisaEBeam4",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam5 = screen(
         "UC_VisaEBeam5",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam6 = screen(
         "UC_VisaEBeam6",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam7 = screen(
         "UC_VisaEBeam7",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
     VisaEBeam8 = screen(
         "UC_VisaEBeam8",
         code,
-        experiment_configuration_file,
-        experiment_analysis_settings,
     )
 
     # Distance from the plasma source to the first PMQ, when Jetz=6.8
@@ -393,58 +363,12 @@ def get_lattice(
 
 # Define a screen element
 def screen(
-    name, code, experiment_configuration_file=None, experiment_analysis_settings=True
+    name, code
 ):
     """
     Define a screen element.
     """
-    # If the experimental configuration file is provided, extract the crosshair coordinates, image size and spatial calibration
-    if experiment_configuration_file is not None:
-        with open(experiment_configuration_file, "r") as f:
-            text = f.read()
-        crosshair_x, crosshair_y = extract_crosshair_coordinates(name, text)
-        spatial_calibration = extract_spatial_calibration(name, text)
-        image_size_x, image_size_y = extract_image_size(name, text)
-        # If the experiment analysis settings are given, crop the image
-        if experiment_analysis_settings is not None:
-            # When cropping, we need to measure the count the position
-            # of the crosshair with respect to the edge of the *cropped* image
-            crosshair_x -= experiment_analysis_settings[name]["Left ROI"]
-            crosshair_y -= experiment_analysis_settings[name]["Top ROI"]
-            # Use the cropped image size
-            image_size_x = experiment_analysis_settings[name]["Size_X"]
-            image_size_y = experiment_analysis_settings[name]["Size_Y"]
-        # Convert to meters
-        spatial_calibration *= 1e-6
-    else:
-        spatial_calibration = 7e-6
-        image_size_x, image_size_y = 1024, 1024
-        crosshair_x, crosshair_y = image_size_x / 2, image_size_y / 2
-    # In the simulation, we need to misalign the screen, so that the position
-    # of the crosshair corresponds to the reference axis of the beamline
-    # The position of the crosshair is measured in pixels
-    # In x, it is measured from the left of the image
-    # For instance, if crosshair_x is 0, the axis is at the left edge of the image
-    # Thus, misaligment_x must be positive
-    misalignment_x = -spatial_calibration * (crosshair_x - image_size_x / 2)
-    # In y, it is measured from the top of the image (not from the bottom, hence the + sign
-    # For instance, if crosshair_y is 0, the axis is at the top of the image
-    # Thus, misaligment_y must be negative
-    misalignment_y = spatial_calibration * (crosshair_y - image_size_y / 2)
-
-    # Define the screen element
-    if code.startswith("cheetah") and cheetah_available:
-        return Screen(
-            name=name,
-            resolution=(image_size_x, image_size_y),
-            pixel_size=torch.tensor([spatial_calibration, spatial_calibration]),
-            misalignment=torch.tensor([misalignment_x, misalignment_y]),
-            binning=1,
-            is_active=True,
-            method="kde",
-            kde_bandwidth=torch.tensor(2 * spatial_calibration),
-        )
-    elif code == "impactx" and impactx_available:
+    if code == "impactx" and impactx_available:
         return elements.BeamMonitor(name=name, backend="h5")
     else:
         raise ValueError(f"Unsupported code: {code}")
@@ -517,14 +441,7 @@ def quadrupole(
         k1 = peakfield_to_k(bore_radius, B, reference_energy_eV)
     elif k1 is None:
         k1 = current_to_k(current, design, reference_energy_eV)
-    if code.startswith("cheetah") and cheetah_available:
-        return Quadrupole(
-            name=name,
-            length=torch.tensor(L),
-            k1=torch.tensor(k1),
-            tracking_method=tracking_method[code],
-        )
-    elif code == "impactx" and impactx_available:
+    if code == "impactx" and impactx_available:
         return elements.ChrQuad(name=name, ds=L, k=k1, nslice=20)
     else:
         raise ValueError(f"Unsupported code: {code}")
@@ -535,11 +452,7 @@ def drift(name, L, code):
     """
     Define a drift element.
     """
-    if code.startswith("cheetah") and cheetah_available:
-        return Drift(
-            name=name, length=torch.tensor(L), tracking_method=tracking_method[code]
-        )
-    elif code == "impactx" and impactx_available:
+    if code == "impactx" and impactx_available:
         return elements.ExactDrift(name=name, ds=L, nslice=10)
     else:
         raise ValueError(f"Unsupported code: {code}")
@@ -571,19 +484,7 @@ def kicker(
     angle_v = current_to_angle(
         current_v, max_current, max_integrated_field, reference_energy_eV
     )
-    if code.startswith("cheetah") and cheetah_available:
-        return Segment(
-            name=name,
-            elements=[
-                HorizontalCorrector(
-                    length=torch.tensor(0.0), angle=torch.tensor(angle_h)
-                ),
-                VerticalCorrector(
-                    length=torch.tensor(0.0), angle=torch.tensor(angle_v)
-                ),
-            ],
-        )
-    elif code == "impactx" and impactx_available:
+    if code == "impactx" and impactx_available:
         return elements.Kicker(
             name=name, xkick=angle_h, ykick=angle_v, unit="dimensionless"
         )
@@ -596,14 +497,7 @@ def dipole(name, L, angle, code):
     """
     Define a dipole element.
     """
-    if code.startswith("cheetah") and cheetah_available:
-        return Dipole(
-            name=name,
-            length=torch.tensor(L),
-            angle=torch.tensor(angle),
-            tracking_method=tracking_method[code],
-        )
-    elif code == "impactx" and impactx_available:
+    if code == "impactx" and impactx_available:
         angle_deg = angle * 180.0 / (3.1415926535898)
         return elements.ExactSbend(name=name, ds=L, phi=angle_deg, nslice=10)
     else:

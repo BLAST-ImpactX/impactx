@@ -19,7 +19,7 @@ class GeneralFunctions:
         """
         Normalizes a name for use as a v-model variable name.
         Converts to lowercase with spaces replaced by underscores.
-        
+
         :param name: The name to normalize
         :return: Normalized v-model name
         """

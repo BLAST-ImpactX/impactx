@@ -152,6 +152,8 @@ class DashboardDefaults:
     }
 
     TYPES = {
+        "distribution": "float",
+        "lattice": "float",
         "npart": "int",
         "kin_energy_on_ui": "float",
         "bunch_charge_C": "float",

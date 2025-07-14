@@ -108,7 +108,7 @@ class DashboardValidation:
         return []
 
     @staticmethod
-    def _validate_additional_conditions(input_name: str, value):
+    def _validate_additional_conditions(input_name: str, value: float | int | None) -> list[str]:
         """
         Validate additional conditions (ie. non-zero, positive, negative).
         """

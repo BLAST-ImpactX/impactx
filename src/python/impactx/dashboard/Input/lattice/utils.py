@@ -1,5 +1,3 @@
-import keyword
-
 from ... import ctrl, vuetify
 from ...Input.components import CardComponents
 
@@ -64,12 +62,3 @@ class LatticeConfigurationHelper:
             color=LatticeConfigurationHelper.BUTTON_COLOR,
             click=(ctrl.deleteLatticeElement, "[index]"),
         )
-
-    @staticmethod
-    def is_valid_input_name(user_input: str) -> bool:
-        """
-        Check if the user input is a valid Python name.
-        """
-        if user_input is None:
-            return True
-        return user_input.isidentifier() and not keyword.iskeyword(user_input)

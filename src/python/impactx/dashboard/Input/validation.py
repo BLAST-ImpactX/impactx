@@ -5,7 +5,7 @@ Copyright 2025 ImpactX contributors
 Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
-
+import keyword
 from typing import Union
 
 from .. import state
@@ -167,6 +167,16 @@ class DashboardValidation:
                 errors.append(NEGATIVE_ERROR)
 
         return errors
+
+    @staticmethod
+    def is_valid_input_name(user_input: str) -> bool:
+        """
+        Check if the user input is a valid Python name.
+        """
+        if user_input is None:
+            return True
+        return user_input.isidentifier() and not keyword.iskeyword(user_input)
+
 
     @staticmethod
     def update_n_cell_additional_validation(direction: str) -> None:

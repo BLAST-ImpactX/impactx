@@ -8,6 +8,7 @@ from impactx import elements
 
 impactx_available = True
 
+
 def get_lattice(
     code,
     vs_current_x=[0] * 8,
@@ -362,9 +363,7 @@ def get_lattice(
 
 
 # Define a screen element
-def screen(
-    name, code
-):
+def screen(name, code):
     """
     Define a screen element.
     """

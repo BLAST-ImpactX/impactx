@@ -19,6 +19,7 @@ NON_ZERO_ERROR = "Must be non-zero"
 POSITIVE_ERROR = "Must be positive"
 NEGATIVE_ERROR = "Must be negative"
 N_CELL_MULTIPLE_ERROR = "Must be a multiple of its blocking factor"
+PYTHON_IDENTIFIER_ERROR = "Must be a valid Python identifier"
 
 # Utilized in prob_relative validation
 GREATER_THAN_THREE_ERROR = "Must be greater than 3"
@@ -73,8 +74,9 @@ class DashboardValidation:
             return [f"Unknown or unsupported type '{input_type}'"]
 
         if input_type == "str":
-            no_errors = []
-            return no_errors
+            if not DashboardValidation.is_valid_input_name(str(input_value)):
+                return [PYTHON_IDENTIFIER_ERROR]
+            return []
 
         numeric_input = generalFunctions.convert_to_numeric(input_value)
         type_errors = DashboardValidation._validate_type(numeric_input, input_type)

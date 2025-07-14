@@ -7,9 +7,15 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
+<<<<<<< HEAD
 from . import DashboardDefaults, DashboardValidation
 from .utils import GeneralFunctions
 from .validation import N_CELL_MULTIPLE_ERROR
+=======
+from ..Input.simulation_parameters import SimulationParameters
+from . import DashboardDefaults, DashboardValidation, generalFunctions
+from .validation import DashboardValidation
+>>>>>>> fc0fb0de (cleanup)
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
@@ -24,13 +30,6 @@ INPUT_DEFAULTS = (
 )
 
 
-def update_error_message_on_ui(state_name: str, error_message: str) -> None:
-    """
-    Called when we want to set an error message to an input
-    """
-    validation_name = f"{state_name}_error_message"
-    setattr(state, validation_name, error_message)
-
 def set_input_to_numeric(state_name: str) -> None:
     """
     Converts the value of a state variable to a numeric type (int or float)
@@ -42,6 +41,7 @@ def set_input_to_numeric(state_name: str) -> None:
     numeric_input = generalFunctions.convert_to_numeric(current_input)
     setattr(state, state_name, numeric_input)
 
+<<<<<<< HEAD
 def update_n_cell_additional_validation(direction: str):
     n_cell = GeneralFunctions.convert_to_numeric(getattr(state, f"n_cell_{direction}", None))
     blocking_factor = GeneralFunctions.convert_to_numeric(getattr(state, f"blocking_factor_{direction}", None))
@@ -54,6 +54,8 @@ def update_n_cell_additional_validation(direction: str):
     else:
         update_error_message_on_ui(f"n_cell_{direction}", "")
 
+=======
+>>>>>>> fc0fb0de (cleanup)
 class SharedUtilities:
     @staticmethod
     @state.change(*INPUT_DEFAULTS)
@@ -66,10 +68,8 @@ class SharedUtilities:
             if type(state[state_name]) is str:
                 input = getattr(state, state_name)
 
-                validation_result = DashboardValidation.validate_input(
-                    state_name, input
-                )
-                update_error_message_on_ui(state_name, validation_result)
+                validation_result = DashboardValidation.validate_input(state_name, input)
+                DashboardValidation.update_error_message_on_ui(state_name, validation_result)
 
                 if not validation_result:
                     set_input_to_numeric(state_name)
@@ -79,7 +79,7 @@ class SharedUtilities:
                             SimulationParameters.on_kin_energy_unit_change()
                         case _ if "blocking_factor" or "n_cell" in state_name:
                             direction = state_name[-1]
-                            update_n_cell_additional_validation(direction)
+                            DashboardValidation.update_n_cell_additional_validation(direction)
 
 
                 DashboardValidation.update_simulation_validation_status()

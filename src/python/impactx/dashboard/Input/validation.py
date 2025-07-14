@@ -8,15 +8,15 @@ License: BSD-3-Clause-LBNL
 
 from .. import state
 
-from . import generalFunctions
+from .utils import GeneralFunctions
 
 ALLOWED_INPUT_TYPES = {"int", "float", "str"}
 INT_ERROR_MESSAGE = "Must be an integer"
 FLOAT_ERROR_MESSAGE = "Must be a float"
-NON_ZERO_ERROR = "Must be non-zero."
-POSITIVE_ERROR = "Must be positive."
-NEGATIVE_ERROR = "Must be negative."
-N_CELL_MULTIPLE_ERROR = "Must be a multiple of blocking factor."
+NON_ZERO_ERROR = "Must be non-zero"
+POSITIVE_ERROR = "Must be positive"
+NEGATIVE_ERROR = "Must be negative"
+N_CELL_MULTIPLE_ERROR = "Must be a multiple of its blocking factor"
 
 class DashboardValidation:
     """
@@ -24,11 +24,20 @@ class DashboardValidation:
     """
 
     @staticmethod
-    def validate_input(input_name: str, input_value, category=None, parameter_type=None):
+    def update_error_message_on_ui(state_name: str, error_message: str) -> None:
         """
-        Validates the input value against the desired type and additional conditions.
+        Updates the state's error message.
+        """
+        validation_name = f"{state_name}_error_message"
+        setattr(state, validation_name, error_message)
 
-        :param input_name: The name of the parameter being validated.
+
+    @staticmethod
+    def validate_input(input_name: str, input_value, category: str | None = None, parameter_type: str | None = None) -> list[str]:
+        """
+        Validates the input value against its default type and any additional conditions.
+
+        :param input_name: The name of the parameter to validate.
         :param input_value: The value to validate.
         :param category: The category of validation (e.g., 'distribution', 'lattice').
         :param parameter_type: The explicit type to use ('int', 'float', 'str'). If provided, overrides type lookup.
@@ -44,54 +53,59 @@ class DashboardValidation:
             return no_errors
         
         numeric_input = generalFunctions.convert_to_numeric(input_value)
-        value, type_errors = DashboardValidation._validate_type(numeric_input, input_type)
+        type_errors = DashboardValidation._validate_type(numeric_input, input_type)
 
         if type_errors:
             return type_errors
 
-        additional_validation = DashboardValidation._validate_additional_conditions(input_name, value)
+        additional_validation = DashboardValidation._validate_additional_conditions(input_name, numeric_input)
         return additional_validation
 
     @staticmethod
-    def _get_input_type(input_name: str, category, parameter_type):
+    def _get_input_type(input_name: str, category: str | None, parameter_type: str | None) -> str:
         """
-        Helper method to determine the input type.
+        Retrieve the default type for the input.
         """
         if parameter_type is not None:
             return parameter_type
     
         if category in ["distribution", "lattice"]:
-            input_type = "float"
+            input_type = generalFunctions.get_default(category, "types")
         else:
             input_type = generalFunctions.get_default(input_name, "types")
 
         return input_type
 
     @staticmethod
-    def _validate_type(numeric_input, value_type):
+    def _validate_type(numeric_input: float | int | None, value_type: str) -> list[str]:
         """
-        Helper method to validate the numeric_input.
+        Validates a numeric input against the expected type ('int' or 'float').
+
+        :param numeric_input: The value to validate (already converted to numeric or None).
+        :param value_type: The expected type ('int' or 'float').
+        :return: A list of error messages. Empty if valid.
         """
+
         if numeric_input is None:
             error_message = (
                 INT_ERROR_MESSAGE if value_type == "int" else FLOAT_ERROR_MESSAGE
             )
-            return None, [error_message]
+            return [error_message]
 
         is_int = isinstance(numeric_input, int)
         is_float = isinstance(numeric_input, (int, float))
 
         if value_type == "int" and not is_int:
-            return None, [INT_ERROR_MESSAGE]
+            return [INT_ERROR_MESSAGE]
         elif value_type == "float" and not is_float:
-            return None, [FLOAT_ERROR_MESSAGE]
+            return [FLOAT_ERROR_MESSAGE]
 
-        return numeric_input, []
+        return []
 
     @staticmethod
     def _validate_additional_conditions(input_name: str, value):
         """
-        Helper method to validate additional conditions (ie. non-zero, positive, negative).
+        Validate additional conditions (ie. non-zero, positive, negative).
         """
 
         if value is None:
@@ -110,6 +124,23 @@ class DashboardValidation:
                 errors.append(NEGATIVE_ERROR)
                 
         return errors
+
+    @staticmethod
+    def update_n_cell_additional_validation(direction: str) -> None:
+        """
+        Validation to see if n_cell is still a multiple of blocking factor.
+        """
+
+        n_cell = GeneralFunctions.convert_to_numeric(getattr(state, f"n_cell_{direction}", None))
+        blocking_factor = GeneralFunctions.convert_to_numeric(getattr(state, f"blocking_factor_{direction}", None))
+
+        if blocking_factor is None or blocking_factor == 0:
+            return
+
+        if n_cell % blocking_factor != 0:
+            DashboardValidation.update_error_message_on_ui(f"n_cell_{direction}", N_CELL_MULTIPLE_ERROR)
+        else:
+            DashboardValidation.update_error_message_on_ui(f"n_cell_{direction}", "")
 
     @staticmethod
     def validate_prob_relative_fields(index, prob_relative_value):

@@ -170,6 +170,7 @@ class DashboardDefaults:
         "mlmg_absolute_tolerance": "float",
         "mlmg_max_iters": "int",
         "mlmg_verbosity": "int",
+        "prob_relative": "float",
     }
 
     VALIDATION_CONDITION = {
@@ -183,6 +184,7 @@ class DashboardDefaults:
         "periods": ["positive"],
         "mlmg_relative_tolerance": ["positive"],
         "mlmg_max_iters": ["positive"],
+        "prob_relative": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

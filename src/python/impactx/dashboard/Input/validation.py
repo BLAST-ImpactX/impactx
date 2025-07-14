@@ -18,6 +18,11 @@ POSITIVE_ERROR = "Must be positive"
 NEGATIVE_ERROR = "Must be negative"
 N_CELL_MULTIPLE_ERROR = "Must be a multiple of its blocking factor"
 
+# Utilized in prob_relative validation
+GREATER_THAN_THREE_ERROR = "Must be greater than 3"
+GREATER_THAN_ONE_ERROR = "Must be greater than 1"
+LESS_THAN_PREVIOUS_ERROR = "Must be less than previous value"
+
 class DashboardValidation:
     """
     Contains all validation logic for the ImpactX dashboard inputs.
@@ -143,13 +148,13 @@ class DashboardValidation:
             DashboardValidation.update_error_message_on_ui(f"n_cell_{direction}", "")
 
     @staticmethod
-    def validate_prob_relative_fields(index, prob_relative_value):
+    def validate_prob_relative_fields(index: int, prob_relative_value: float) -> str:
         """
-        This function checks specific validation requirements
-        for prob_relative_fields.
-        :param index: The index of the prob_relative_field modified.
-        :param prob_relative_value: The numerical value entered by the user.
-        :return: An error message. An empty string if there is no error.
+        Validates the prob_relative_fields based on the index and solver type.
+
+        :param index: Index of the modified prob_relative_field.
+        :param prob_relative_value: User-provided value to validate.
+        :return: Error message if invalid.
         """
         error_message = ""
 
@@ -160,21 +165,19 @@ class DashboardValidation:
             if index == 0:
                 if poisson_solver == "multigrid":
                     if prob_relative_value <= 3:
-                        error_message = "Must be greater than 3."
+                        error_message = GREATER_THAN_THREE_ERROR
                 elif poisson_solver == "fft":
                     if prob_relative_value <= 1:
-                        error_message = "Must be greater than 1."
+                        error_message = GREATER_THAN_ONE_ERROR
             else:
                 previous_value = float(state.prob_relative[index - 1])
                 if prob_relative_value >= previous_value:
-                    error_message = (
-                        f"Must be less than previous value ({previous_value})."
-                    )
+                    error_message = f"{LESS_THAN_PREVIOUS_ERROR} ({previous_value})"
                 else:
                     if prob_relative_value <= 1:
-                        error_message = "Must be greater than 1."
+                        error_message = GREATER_THAN_ONE_ERROR
         except ValueError:
-            error_message = "Must be a float."
+            error_message = FLOAT_ERROR_MESSAGE
 
         return error_message
 

@@ -4,7 +4,6 @@ from ... import ctrl, html, state, vuetify
 from ...Input.components import CardComponents
 from .. import DashboardValidation
 from ..utils import GeneralFunctions
-from .utils import LatticeConfigurationHelper
 
 init_value = ""
 state.variables = [
@@ -162,7 +161,7 @@ class LatticeVariableHandler:
             state.variables[idx]["error_message"] = message
             state.dirty("variables")
 
-        if not LatticeConfigurationHelper.is_valid_input_name(new_name):
+        if not DashboardValidation.is_valid_input_name(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
             DashboardValidation.update_simulation_validation_status()
             state.dirty("variables")

@@ -32,10 +32,6 @@ state.listOfLatticeElementParametersAndDefault = (
 state.selected_lattice_list = []
 state.nslice = ""
 
-# -----------------------------------------------------------------------------
-# Main Functions
-# -----------------------------------------------------------------------------
-
 
 def add_lattice_element() -> dict:
     """

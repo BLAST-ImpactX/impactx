@@ -56,6 +56,7 @@ namespace impactx::particles::spacecharge
                 auto scf_arr_y = space_charge_field[lev]["y"][mfi].array();
                 auto scf_arr_z = space_charge_field[lev]["z"][mfi].array();
 
+                /*
                 if (space_charge == SpaceChargeAlgo::True_2D) {
                     AMREX_ALWAYS_ASSERT_WITH_MESSAGE(bx.size()[2] == 1,
                                                      "2D space charge requires exactly 1 slice in z");
@@ -66,12 +67,13 @@ namespace impactx::particles::spacecharge
                 }
 
                 if (space_charge == SpaceChargeAlgo::True_3D) {
+                */
                     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept {
                         scf_arr_x(i, j, k) = inv2dr[0] * (phi_arr(i-1, j, k) - phi_arr(i+1, j, k));
                         scf_arr_y(i, j, k) = inv2dr[1] * (phi_arr(i, j-1, k) - phi_arr(i, j+1, k));
                         scf_arr_z(i, j, k) = inv2dr[2] * (phi_arr(i, j, k-1) - phi_arr(i, j, k+1));
                     });
-                }
+                //}
             }
         }
     }

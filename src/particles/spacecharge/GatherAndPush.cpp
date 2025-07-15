@@ -80,9 +80,10 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
 
                 // gather to each particle and push momentum
+                /*
                 if (space_charge == SpaceChargeAlgo::True_2D) {
                     // flatten 3rd dimension
-                    auto prob_lo_2D = prob_lo_2D;
+                    auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;
 
                     // TODO: add in z-dependent scaling by current?
@@ -114,6 +115,7 @@ namespace impactx::particles::spacecharge
                     });
                 }
                 if (space_charge == SpaceChargeAlgo::True_3D) {
+                */
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
                         amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
@@ -139,7 +141,7 @@ namespace impactx::particles::spacecharge
 
                         // push position is done in the lattice elements
                     });
-                }
+                //}
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }

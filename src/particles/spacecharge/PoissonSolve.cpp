@@ -9,11 +9,14 @@
  */
 #include "PoissonSolve.H"
 
+#include "initialization/Algorithms.H"
+
 #include <ablastr/constant.H>
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
 #include <AMReX_Math.H>
+#include <AMReX_MultiFabUtil.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>       // for ParticleReal
 
@@ -33,6 +36,8 @@ namespace impactx::particles::spacecharge
 
         using namespace amrex::literals;
         using amrex::Math::powi;
+
+        auto space_charge = get_space_charge_algo();
 
         // set space charge field to zero
         //   loop over refinement levels
@@ -77,12 +82,38 @@ namespace impactx::particles::spacecharge
         amrex::Vector<amrex::MultiFab*> sorted_rho;
         amrex::Vector<amrex::MultiFab*> sorted_phi;
 
+        auto geom_3d = pc.GetParGDB()->Geom();
+
+        amrex::Vector<std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        amrex::Vector<amrex::MultiFab> phi_2d;
         for (int lev = 0; lev <= finest_level; ++lev) {
-            sorted_rho.emplace_back(&rho[lev]);
-            sorted_phi.emplace_back(&phi[lev]);
+            if (space_charge == SpaceChargeAlgo::True_2D) {
+                // flattened rho
+                auto const& ma = rho[lev].const_arrays();
+                amrex::Box domain_lev = lev == 0 ? geom_3d[lev].Domain() : phi[lev].boxArray().minimalBox();
+                rho_2d.emplace_back(amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
+                    (2, domain_lev, rho[lev], [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
+                    {
+                        return ma[b](i,j,k);
+                    })
+                );
+
+                // 2D phi
+                auto & r2d = rho_2d.back().second;
+                auto nGrow = phi[lev].nGrowVect();
+                nGrow[2] = 0;
+                phi_2d.emplace_back(r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow);
+
+                sorted_rho.emplace_back(&rho_2d.back().second);
+                sorted_phi.emplace_back(&phi_2d.back());
+            }
+            else if (space_charge == SpaceChargeAlgo::True_3D) {
+                sorted_rho.emplace_back(&rho[lev]);
+                sorted_phi.emplace_back(&phi[lev]);
+            }
         }
 
-        const bool is_igf_2d = false;
+        const bool is_igf_2d = space_charge == SpaceChargeAlgo::True_2D;
         const bool do_single_precision_comms = false;
         const bool eb_enabled = false;
         ablastr::fields::computePhi(
@@ -120,6 +151,24 @@ namespace impactx::particles::spacecharge
         for (int lev=0; lev<=finest_level; lev++)
         {
             amrex::MultiFab & phi_at_level = phi.at(lev);
+
+            if (space_charge == SpaceChargeAlgo::True_2D) {
+                rho_2d[lev].first.ParallelCopy(phi_2d[lev]);
+
+                for (amrex::MFIter mfi(phi_at_level); mfi.isValid(); ++mfi) {
+                    auto const & src = rho_2d[lev].first[mfi].const_array();
+                    auto const & dst = phi_at_level[mfi].array();
+
+                    // spread out the same x-y values over all z (s)
+                    // TODO: later on we can keep phi flat 2D, but need to update the gather for that to not use
+                    //       a stencil in z
+                    auto bx = mfi.validbox();
+                    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept {
+                        dst(i,j,k) = src(i,j,0);
+                    });
+                }
+            }
+
             phi_at_level.FillBoundary(pc.GetParGDB()->Geom()[lev].periodicity());
         }
     }

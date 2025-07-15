@@ -42,25 +42,35 @@ namespace impactx::particles::spacecharge
         if (amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false) < 2) { return; }
 
         // transform from x',y',t to x,y,z
-        transformation::CoordinateTransformation(
-            *amr_data->track_particles.m_particle_container,
-            CoordSystem::t
-        );
+        if (space_charge == SpaceChargeAlgo::True_3D) {
+            transformation::CoordinateTransformation(
+                *amr_data->track_particles.m_particle_container,
+                CoordSystem::t
+            );
 
-        // Note: The following operation assume that
-        // the particles are in x, y, z coordinates.
+            // Note: The following operation assume that
+            // the particles are in x, y, z coordinates.
 
-        // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
-        ResizeMesh();
+            // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
+            ResizeMesh();
 
-        // Redistribute particles in the new mesh in x, y, z
-        amr_data->track_particles.m_particle_container->Redistribute();
+            // Redistribute particles in the new mesh in x, y, z
+            amr_data->track_particles.m_particle_container->Redistribute();
+        } else if (space_charge == SpaceChargeAlgo::True_2D) {
+            // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
+            ResizeMesh();
+
+            // Redistribute particles in the new mesh in x, y, t
+            amr_data->track_particles.m_particle_container->Redistribute();
+        }
 
         // charge deposition
         amr_data->track_particles.m_particle_container->DepositCharge(
             amr_data->track_particles.m_rho,
             amr_data->refRatio()
         );
+
+        // TODO for 2D/2.5D: deposit charge/current in 1D array
 
         // poisson solve in x,y,z
         spacecharge::PoissonSolve(
@@ -87,11 +97,13 @@ namespace impactx::particles::spacecharge
             slice_ds
         );
 
-        // transform from x,y,z to x',y',t
-        transformation::CoordinateTransformation(
-            *amr_data->track_particles.m_particle_container,
-            CoordSystem::s
-        );
+        if (space_charge == SpaceChargeAlgo::True_3D) {
+            // transform from x,y,z to x',y',t
+            transformation::CoordinateTransformation(
+                *amr_data->track_particles.m_particle_container,
+                CoordSystem::s
+            );
+        }
 
         // for later: original Impact implementation as an option
         // Redistribute particles in x',y',t

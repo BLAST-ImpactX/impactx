@@ -88,7 +88,7 @@ namespace impactx::elements::mixin
         amrex::ParticleReal aperture_x () const
         {
             using namespace amrex::literals; // for _prt
-            return 1_prt / m_inv_aperture_x;
+            return m_inv_aperture_x > 0_prt ? 1_prt / m_inv_aperture_x : 0_prt;
         }
 
         /** Vertical aperture size
@@ -99,7 +99,7 @@ namespace impactx::elements::mixin
         amrex::ParticleReal aperture_y () const
         {
             using namespace amrex::literals; // for _prt
-            return 1_prt / m_inv_aperture_y;
+            return m_inv_aperture_y > 0_prt ? 1_prt / m_inv_aperture_y : 0_prt;
         }
 
         // performance optimization: we intentionally store the inverse of

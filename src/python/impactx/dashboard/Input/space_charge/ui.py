@@ -13,12 +13,8 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardValidation, generalFunctions
+from .. import DashboardValidation, GeneralFunctions
 from .utils import SpaceChargeFunctions
-
-# -----------------------------------------------------------------------------
-# Default
-# -----------------------------------------------------------------------------
 
 state.prob_relative = []
 state.prob_relative_fields = []
@@ -32,10 +28,10 @@ state.n_cell = []
 
 def populate_prob_relative_fields():
     tot_num_prob_relative_fields = int(state.max_level) + 1
-    fft_first_field_value = generalFunctions.get_default(
+    fft_first_field_value = GeneralFunctions.get_default(
         "prob_relative_first_value_fft", "default_values"
     )
-    multigrid_first_field_value = generalFunctions.get_default(
+    multigrid_first_field_value = GeneralFunctions.get_default(
         "prob_relative_first_value_multigrid", "default_values"
     )
     first_field_value = 0
@@ -63,7 +59,7 @@ def populate_prob_relative_fields():
             "error_message": DashboardValidation.validate_prob_relative_fields(
                 i, state.prob_relative[i]
             ),
-            "step": generalFunctions.get_default("prob_relative", "steps"),
+            "step": GeneralFunctions.get_default("prob_relative", "steps"),
         }
         for i in range(tot_num_prob_relative_fields)
     ]

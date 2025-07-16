@@ -40,6 +40,14 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
 
 BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
 
+CONVERSION_FACTORS = {
+    "eV": 1.0e-6,
+    "keV": 1.0e-3,
+    "MeV": 1.0,
+    "GeV": 1.0e3,
+    "TeV": 1.0e6,
+}
+
 
 class DashboardDefaults:
     """
@@ -58,13 +66,10 @@ class DashboardDefaults:
     # Inputs by section
     # -------------------------------------------------------------------------
 
-    SELECTION = {
+    SIMULATION_PARAMETERS = {
         "space_charge": "false",
         "csr": False,
         "isr": False,
-    }
-
-    SIMULATION_PARAMETERS = {
         "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
@@ -137,7 +142,6 @@ class DashboardDefaults:
     # -------------------------------------------------------------------------
 
     DEFAULT_VALUES = {
-        **SELECTION,
         **SIMULATION_PARAMETERS,
         **DISTRIBUTION_PARAMETERS,
         **LATTICE_CONFIGURATION,

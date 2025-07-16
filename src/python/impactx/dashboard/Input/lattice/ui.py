@@ -15,7 +15,7 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardDefaults, DashboardValidation, generalFunctions
+from .. import DashboardDefaults, DashboardValidation
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from .utils import LatticeConfigurationHelper
@@ -23,26 +23,14 @@ from .variable_handler import LatticeVariableHandler
 
 state.lattice_elements_using_variables = {}
 state.is_selected_element_invalid = True
-# -----------------------------------------------------------------------------
-# Helpful
-# -----------------------------------------------------------------------------
 
 LATTICE_ELEMENTS_MODULE_NAME = elements
-
 state.listOfLatticeElementParametersAndDefault = (
     InputDefaultsHelper.class_parameters_with_defaults(LATTICE_ELEMENTS_MODULE_NAME)
 )
 
-# -----------------------------------------------------------------------------
-# Default
-# -----------------------------------------------------------------------------
-
 state.selected_lattice_list = []
 state.nslice = ""
-
-# -----------------------------------------------------------------------------
-# Main Functions
-# -----------------------------------------------------------------------------
 
 
 def add_lattice_element() -> dict:
@@ -234,7 +222,7 @@ def on_move_latticeElementIndex_down_click(index):
 
 @ctrl.add("nsliceDefaultChange")
 def update_default_value(parameter_name, new_value):
-    data = generalFunctions.class_parameters_with_defaults(elements)
+    data = InputDefaultsHelper.class_parameters_with_defaults(elements)
 
     for key, parameters in data.items():
         for i, param in enumerate(parameters):
@@ -289,7 +277,6 @@ class LatticeConfiguration(CardBase):
                             "ADD",
                             id="add_lattice_element",
                             color="primary",
-                            dense=True,
                             click=ctrl.add_latticeElement,
                             disabled=("is_selected_element_invalid",),
                         )

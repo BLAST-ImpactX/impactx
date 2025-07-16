@@ -422,9 +422,9 @@ namespace impactx::integrators
         amrex::ParticleReal const tau2 = tau;
 
         // Apply the map on the extended phase space
-        element.map(particle1,tau1);
-        element.map(particle2,tau2);
-        element.map(particle1,tau1);
+        element.map(particle1,particle2,tau1);
+        element.map(particle2,particle1,tau2);
+        element.map(particle1,particle2,tau1);
 
     }
 

@@ -11,12 +11,14 @@ from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardValidation
 from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
 
+
 @state.change("kin_energy_unit")
 def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
     if state.kin_energy_on_ui != 0:
         state.kin_energy_MeV = (
             state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
         )
+
 
 @state.change("tracking_mode")
 def on_tracking_mode_change(**kwargs) -> None:
@@ -32,7 +34,8 @@ def on_tracking_mode_change(**kwargs) -> None:
     if state.space_charge not in current_sc_list:
         state.space_charge = current_sc_list[0]
     DashboardValidation.update_simulation_validation_status()
-        
+
+
 class SimulationParameters(CardBase):
     """
     User-Input section for beam properties.

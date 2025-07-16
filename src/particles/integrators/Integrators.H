@@ -339,9 +339,7 @@ namespace impactx::integrators
     *  Math. Comput. 92, pp. 251-281 (2022).
     *
     * @param particle  Particle phase space data in a 6-vector
-    * @param zin  Initial value of independent variable (z-location)
-    * @param zout  Final value of independent variable (z-location)
-    * @param nsteps  Number of integration steps
+    * @param tau  Size of the step
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Element>

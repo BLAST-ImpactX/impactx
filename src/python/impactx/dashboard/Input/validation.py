@@ -9,7 +9,6 @@ import keyword
 from typing import Union
 
 from .. import state
-
 from .utils import GeneralFunctions
 
 ALLOWED_INPUT_TYPES = {"int", "float", "str"}
@@ -78,7 +77,7 @@ class DashboardValidation:
                 return [PYTHON_IDENTIFIER_ERROR]
             return []
 
-        numeric_input = generalFunctions.convert_to_numeric(input_value)
+        numeric_input = GeneralFunctions.convert_to_numeric(input_value)
         type_errors = DashboardValidation._validate_type(numeric_input, input_type)
 
         if type_errors:
@@ -107,9 +106,9 @@ class DashboardValidation:
 
         input_type = None
         if category in {"distribution", "lattice"}:
-            input_type = generalFunctions.get_default(category, "types")
+            input_type = GeneralFunctions.get_default(category, "types")
         else:
-            input_type = generalFunctions.get_default(input_name, "types")
+            input_type = GeneralFunctions.get_default(input_name, "types")
 
         return input_type if input_type in ALLOWED_INPUT_TYPES else "str"
 
@@ -156,7 +155,7 @@ class DashboardValidation:
 
         lookup_name = "lambda" if "lambda" in input_name else input_name
         additional_conditions = (
-            generalFunctions.get_default(lookup_name, "validation_condition") or []
+            GeneralFunctions.get_default(lookup_name, "validation_condition") or []
         )
 
         errors = []

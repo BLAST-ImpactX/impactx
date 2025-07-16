@@ -7,15 +7,10 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-<<<<<<< HEAD
+from ..Input.simulation_parameters import SimulationParameters
 from . import DashboardDefaults, DashboardValidation
 from .utils import GeneralFunctions
-from .validation import N_CELL_MULTIPLE_ERROR
-=======
-from ..Input.simulation_parameters import SimulationParameters
-from . import DashboardDefaults, DashboardValidation, generalFunctions
 from .validation import DashboardValidation
->>>>>>> fc0fb0de (cleanup)
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
@@ -38,24 +33,9 @@ def set_input_to_numeric(state_name: str) -> None:
     :param state_name: The name of the state variable to convert and update.
     """
     current_input = getattr(state, state_name)
-    numeric_input = generalFunctions.convert_to_numeric(current_input)
+    numeric_input = GeneralFunctions.convert_to_numeric(current_input)
     setattr(state, state_name, numeric_input)
 
-<<<<<<< HEAD
-def update_n_cell_additional_validation(direction: str):
-    n_cell = GeneralFunctions.convert_to_numeric(getattr(state, f"n_cell_{direction}", None))
-    blocking_factor = GeneralFunctions.convert_to_numeric(getattr(state, f"blocking_factor_{direction}", None))
-
-    if blocking_factor == 0:
-        return
-
-    if n_cell % blocking_factor != 0:
-        update_error_message_on_ui(f"n_cell_{direction}", N_CELL_MULTIPLE_ERROR)
-    else:
-        update_error_message_on_ui(f"n_cell_{direction}", "")
-
-=======
->>>>>>> fc0fb0de (cleanup)
 class SharedUtilities:
     @staticmethod
     @state.change(*INPUT_DEFAULTS)

@@ -143,12 +143,12 @@ We run the following script to analyze correctness:
 .. _examples-exact-cfbend:
 
 Symplectic Integration in an Exact Combined-Function Bend
-==========================================================
+=========================================================
 
-This benchmark tests the use of the ExactCFbend (cfbend_exact) element for integrating through a combined-function bend using the exact nonlinear Hamiltonian.
+This benchmark tests the use of the ``ExactCFbend`` (``cfbend_exact``) element for integrating through a combined-function bend using the exact nonlinear Hamiltonian.
 
 This example tests the transport of a 2 GeV electron bunch through a combined function bending element with only the lowest-order (dipole) coefficient nonzero, representing the effect
-of a pure dipole field.  This is compared with the effect of the ExactSbend element for equivalent field strength, by applying the inverse map (ds < 0 and phi < 0).
+of a pure dipole field.  This is compared with the effect of the ``ExactSbend`` element for equivalent field strength, by applying the inverse map (ds < 0 and phi < 0).
 
 As a result, the second moments of x, y, and t and the associated emittances of the bunch (as well as individual particle coordinates) should all be exactly unchanged.
 

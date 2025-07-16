@@ -265,14 +265,14 @@ This requires these additional parameters:
 
 
 ``cfbend_exact``
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
 The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
 The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
 For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
-T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), https://link.aps.org/doi/10.1103/PhysRevAccelBeams.20.043501
+T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), `DOI:10.1103/PhysRevAccelBeams.20.043501 <https://link.aps.org/doi/10.1103/PhysRevAccelBeams.20.043501>`__
 
 The coefficients must appear in the following sequence:
 

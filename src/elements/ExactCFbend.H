@@ -212,10 +212,6 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // coordinates within the multipole (not needed)
-            //amrex::ParticleReal const s = refpart.s;
-            //amrex::ParticleReal const sedge = refpart.sedge;
-
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
             amrex::ParticleReal const zout = m_slice_ds;
@@ -394,7 +390,7 @@ namespace impactx::elements
             // defined dimensionless variables scaled by radius of curvature
             amrex::ParticleReal rho = 1_prt + x / m_rc;
             amrex::ParticleReal y_scl = y / m_rc;
-            amrex::ParticleReal ln_rho = log(rho);
+            amrex::ParticleReal ln_rho = std::log(rho);
 
             // initialize the momentum kick
             amrex::ParticleReal dpx = 0_prt;
@@ -412,8 +408,8 @@ namespace impactx::elements
                //amrex::Print() << "n, kn, ks before scaling: " << n << ", " << kn << ", " << ks << "\n";
 
                // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, m) * kn; // unable to use powi here
-               ks = std::pow(m_rc, m) * ks; // unable to use powi here
+               kn = std::pow(m_rc, m) * kn;
+               ks = std::pow(m_rc, m) * ks;
 
                switch (n) {
 
@@ -487,11 +483,6 @@ namespace impactx::elements
             amrex::ParticleReal const t = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
             amrex::ParticleReal const s = refpart.s;
-
-            // access reference particle values to find relativistic factors
-            //m_beta = refpart.beta();
-            //m_ibeta = 1_prt / m_beta;
-            //m_ibetgam2 = 1_prt / powi<2>(refpart.beta_gamma());
             amrex::ParticleReal const brho = refpart.rigidity_Tm();
 
 #if AMREX_DEVICE_COMPILE
@@ -509,7 +500,7 @@ namespace impactx::elements
             // special case of zero field = an exact drift
             if (rc==0_prt) {
                // advance position and momentum (drift)
-               amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+               amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
                refpart.x = x + step*px;
                refpart.y = y + step*py;
                refpart.z = z + step*pz;

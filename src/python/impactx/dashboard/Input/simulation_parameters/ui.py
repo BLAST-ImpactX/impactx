@@ -11,7 +11,28 @@ from ...Input.components import CardBase, CardComponents, InputComponents
 from .. import DashboardValidation
 from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
 
+@state.change("kin_energy_unit")
+def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
+    if state.kin_energy_on_ui != 0:
+        state.kin_energy_MeV = (
+            state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
+        )
 
+@state.change("tracking_mode")
+def on_tracking_mode_change(**kwargs) -> None:
+    """
+    Sync the relevant UI components whenever
+    the user selects a new tracking mode.
+    """
+    ui_props = TRACKING_MODE_PROPERTIES[state.tracking_mode]
+    for prop_name, prop in ui_props.items():
+        setattr(state, prop_name, prop)
+
+    current_sc_list = ui_props.get("space_charge_list", [])
+    if state.space_charge not in current_sc_list:
+        state.space_charge = current_sc_list[0]
+    DashboardValidation.update_simulation_validation_status()
+        
 class SimulationParameters(CardBase):
     """
     User-Input section for beam properties.
@@ -21,28 +42,6 @@ class SimulationParameters(CardBase):
 
     def __init__(self):
         super().__init__()
-
-    @state.change("kin_energy_unit")
-    def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
-        if state.kin_energy_on_ui != 0:
-            state.kin_energy_MeV = (
-                state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
-            )
-
-    @state.change("tracking_mode")
-    def on_tracking_mode_change(**kwargs) -> None:
-        """
-        Sync the relevant UI components whenever
-        the user selects a new tracking mode.
-        """
-        ui_props = TRACKING_MODE_PROPERTIES[state.tracking_mode]
-        for prop_name, prop in ui_props.items():
-            setattr(state, prop_name, prop)
-
-        current_sc_list = ui_props.get("space_charge_list", [])
-        if state.space_charge not in current_sc_list:
-            state.space_charge = current_sc_list[0]
-        DashboardValidation.update_simulation_validation_status()
 
     def card_content(self):
         with vuetify.VCard(**self.card_props):

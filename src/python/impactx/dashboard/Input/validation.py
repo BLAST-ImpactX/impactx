@@ -163,7 +163,6 @@ class DashboardValidation:
             if condition == "non_zero" and value == 0:
                 errors.append(NON_ZERO_ERROR)
             elif condition == "positive" and value <= 0:
-                print(" ok this condition is positive for the input name:{} and value:{}".format(input_name, round(value, 12)))
                 errors.append(POSITIVE_ERROR)
             elif condition == "negative" and value >= 0:
                 errors.append(NEGATIVE_ERROR)

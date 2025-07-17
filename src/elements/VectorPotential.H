@@ -258,15 +258,21 @@ namespace impactx::elements
 
         /** This evaluates the derivatives of the Hamiltonian at a point.
          *
-         * @param tau Map step size in m
-         * @param[in,out] particle1 particle phase space 6-vector, copy 1
-         * @param[in,out] particle2 particle phase space 6-vector, copy 2
+         * @param x horizontal coordinate in m
+         * @param px horizontal momentum
+         * @param y vertical coordinate in m
+         * @param py vertical momentum
+         * @param t temporal coordinate in m
+         * @param pt temporal momentum (energy deviation)
+         * @param zeval lattice position in m
+         * @param[out] tuple containing derivatives of the Hamiltonian
          */
         std::tuple <amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>
-        Hamiltonian_Gradient (amrex::ParticleReal x, amrex::ParticleReal px, amrex::ParticleReal y,
-                   amrex::ParticleReal py, amrex::ParticleReal t, amrex::ParticleReal pt,
-                   amrex::ParticleReal zeval) const
+        Hamiltonian_Gradient (amrex::ParticleReal x, amrex::ParticleReal px,
+                   amrex::ParticleReal y, amrex::ParticleReal py,
+                   [[maybe_unused]] amrex::ParticleReal t, amrex::ParticleReal pt,
+                   [[maybe_unused]] amrex::ParticleReal zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
 

@@ -65,7 +65,6 @@ class GeneralFunctions:
 
         return None
 
-
     @staticmethod
     def convert_to_numeric(input: str) -> Union[int, float]:
         """

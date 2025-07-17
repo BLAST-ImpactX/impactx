@@ -1,8 +1,8 @@
 from typing import Optional
 
 from ... import vuetify
-from ..utils import GeneralFunctions
 from ..shared import DROPDOWN_INPUTS
+from ..utils import GeneralFunctions
 
 
 class InputComponents:
@@ -66,7 +66,7 @@ class InputComponents:
 
         if v_model_name is None:
             v_model_name = GeneralFunctions.normalize_for_v_model(label)
-        
+
         DROPDOWN_INPUTS.add(v_model_name)
 
         InputComponents._build_component(

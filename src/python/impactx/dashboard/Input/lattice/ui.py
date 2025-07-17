@@ -179,7 +179,9 @@ def on_lattice_element_parameter_change(
     else:
         state.lattice_elements_using_variables.pop(key, None)
 
-    error_message = DashboardValidation.validate_input(parameter_name, sim_input, category="lattice", parameter_type=parameter_type)
+    error_message = DashboardValidation.validate_input(
+        parameter_name, sim_input, category="lattice", parameter_type=parameter_type
+    )
 
     for param in state.selected_lattice_list[index]["parameters"]:
         if param["parameter_name"] == parameter_name:

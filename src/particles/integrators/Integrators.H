@@ -429,7 +429,7 @@ namespace impactx::integrators
        }
 
        // A statement for debugging:
-       amrex::Print() << "Number of iterations required: " << count << "\n";
+       // amrex::Print() << "Number of iterations required: " << count << "\n";
 
     }
 

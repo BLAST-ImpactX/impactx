@@ -177,17 +177,7 @@ namespace impactx::elements
             };
 
             // call integrator to advance through slice (int_order = 2, 4 or 6, otherwise default 2)
-            if (m_int_order == 2) {
-                integrators::symp_integrate_semiexplicit(particle,zin,zout,nsteps,*this);
-            } else {
-               ablastr::warn_manager::WMRecordWarning(
-                       "Impactx::elements::VectorPotential",
-                       "Currently only the second-order integrator is "
-                       "supported.  This will be extended in the future "
-                       "to support through sixth order.",
-                       ablastr::warn_manager::WarnPriority::medium
-               );
-            }
+            integrators::symp_integrate_semiexplicit(particle,zin,zout,nsteps,*this);
 
             // assign updated values
             x = particle(1);

@@ -129,7 +129,7 @@ class DashboardDefaults:
             DISTRIBUTION_MODULE_NAME
         ),
         "lattice_list": InputDefaultsHelper.select_classes(LATTICE_MODULE_NAME),
-        "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
+        "kin_energy_unit_list": ["eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],

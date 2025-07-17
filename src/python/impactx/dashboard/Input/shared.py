@@ -7,7 +7,6 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from ..Input.simulation_parameters import SimulationParameters
 from . import DashboardDefaults, DashboardValidation
 from .utils import GeneralFunctions
 from .validation import DashboardValidation
@@ -23,18 +22,6 @@ INPUT_DEFAULTS = (
     + space_charge_defaults
     + lattice_state_defaults
 )
-
-
-def set_input_to_numeric(state_name: str) -> None:
-    """
-    Converts the value of a state variable to a numeric type (int or float)
-    and updates the state in-place.
-
-    :param state_name: The name of the state variable to convert and update.
-    """
-    current_input = getattr(state, state_name)
-    numeric_input = GeneralFunctions.convert_to_numeric(current_input)
-    setattr(state, state_name, numeric_input)
 
 class SharedUtilities:
     @staticmethod
@@ -52,11 +39,11 @@ class SharedUtilities:
                 DashboardValidation.update_error_message_on_ui(state_name, validation_result)
 
                 if not validation_result:
-                    set_input_to_numeric(state_name)
+                    GeneralFunctions.set_state_to_numeric(state_name)
 
                     match state_name:
                         case "kin_energy_on_ui":
-                            SimulationParameters.on_kin_energy_unit_change()
+                            state.dirty("kin_energy_unit")
                         case _ if "blocking_factor" or "n_cell" in state_name:
                             direction = state_name[-1]
                             DashboardValidation.update_n_cell_additional_validation(direction)

@@ -81,7 +81,9 @@ class LatticeVisualizerStatisticUtils:
 
         state.lattice_is_empty = len(counts) == 0
         # sort from desc. so we see top elements left to right
-        sorted_counts = dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
+        sorted_counts = dict(
+            sorted(counts.items(), key=lambda item: item[1], reverse=True)
+        )
 
         state.element_counts = sorted_counts
         return sorted_counts

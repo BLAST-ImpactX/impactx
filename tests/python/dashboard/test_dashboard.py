@@ -73,11 +73,11 @@ def test_dashboard(dashboard):
         "total_elements": 5,
         "total_length": "3.0m",
         "max_length": "1.0m",
-        "avg_length" : "0.6m",
+        "avg_length": "0.6m",
         "min_length": "0.25m",
         "total_steps": 125,
         "periods": 1,
-        "element_counts": {'drift': 3, 'quad': 2}
+        "element_counts": {"drift": 3, "quad": 2},
     }
 
     for state_name, expected_value in EXPECTED_LATTICE_STATS.items():

@@ -46,12 +46,12 @@ def add_lattice_element() -> dict:
     parameters = []
     for name, default_value, default_type in parameters_data:
         value = default_value
-        error_message = DashboardValidation.validate_input(
-                name, default_value, category="lattice", parameter_type=default_type
-        )
-
         if selected_lattice == "BeamMonitor" and name == "name" and not value:
             value = BEAM_MONITOR_DEFAULT_NAME
+
+        error_message = DashboardValidation.validate_input(
+            name, value, category="lattice", parameter_type=default_type
+        )
 
         parameters.append(
             {

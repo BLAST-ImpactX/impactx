@@ -297,7 +297,7 @@ namespace impactx::elements
             dHdx = - (pxmech * daxdx + pymech * daydx) / radical - dazdx;
             dHdy = - (pxmech * daxdy + pymech * daydy) / radical - dazdy;
             dHdt = 0_prt;
-            
+
             dHdpx = pxmech / radical;
             dHdpy = pymech / radical;
             dHdpt = - m_ibeta + (m_ibeta - pt) / radical;
@@ -306,7 +306,7 @@ namespace impactx::elements
 
          }
 
-            
+
         /** This evaluates the vector potential and derivatives at a point.
          *
          * @param x horizontal coordinate in m
@@ -314,7 +314,7 @@ namespace impactx::elements
          * @param t temporal coordinate in m
          * @param zeval lattice position in m
          * @param[out] tuple containing the vector potential and derivatives
-         */ 
+         */
         std::tuple <amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal,
@@ -322,25 +322,25 @@ namespace impactx::elements
         vector_potential_eval (amrex::ParticleReal x, amrex::ParticleReal y,
                    [[maybe_unused]] amrex::ParticleReal t,
                    [[maybe_unused]] amrex::ParticleReal zeval) const
-        { 
+        {
             using namespace amrex::literals; // for _rt and _prt
-           
+
             // Test: for the simplest case of a quadrupole:
-        
-            amrex::ParticleReal az = 0.5_prt * m_k * (y*y - x*x);                 
+
+            amrex::ParticleReal az = 0.5_prt * m_k * (y*y - x*x);
             amrex::ParticleReal ax = 0_prt;
             amrex::ParticleReal ay = 0_prt;
-            
+
             amrex::ParticleReal daxdx = 0_prt;
             amrex::ParticleReal daxdy = 0_prt;
             amrex::ParticleReal daydx = 0_prt;
             amrex::ParticleReal daydy = 0_prt;
             amrex::ParticleReal dazdx = -m_k*x;
             amrex::ParticleReal dazdy = m_k*y;
- 
+
             return std::make_tuple(ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy);
-            
-         } 
+
+         }
 
 
         /** This pushes the reference particle.

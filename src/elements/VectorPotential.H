@@ -315,7 +315,7 @@ namespace impactx::elements
 
             // Test: for the simplest case of a quadrupole:
 
-            // amrex::ParticleReal az = 0.5_prt * m_k * (y*y - x*x);
+            // amrex::ParticleReal az = 0.5_prt * m_g * (y*y - x*x);
             amrex::ParticleReal ax = 0_prt;
             amrex::ParticleReal ay = 0_prt;
 
@@ -323,8 +323,8 @@ namespace impactx::elements
             amrex::ParticleReal daxdy = 0_prt;
             amrex::ParticleReal daydx = 0_prt;
             amrex::ParticleReal daydy = 0_prt;
-            amrex::ParticleReal dazdx = -m_k*x;
-            amrex::ParticleReal dazdy = m_k*y;
+            amrex::ParticleReal dazdx = -m_g*x;
+            amrex::ParticleReal dazdy = m_g*y;
 
             return std::make_tuple(ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy);
 

@@ -83,6 +83,9 @@ class GeneralFunctions:
         :return: The input converted to a numeric type.
         """
 
+        if isinstance(input, (int, float)):
+            return input
+
         try:
             return int(input)
         except (ValueError, TypeError):

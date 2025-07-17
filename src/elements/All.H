@@ -44,6 +44,7 @@
 #include "Source.H"
 #include "TaperedPL.H"
 #include "ThinDipole.H"
+#include "VectorPotential.H"
 #include "diagnostics/BeamMonitor.H"
 
 #include <variant>
@@ -86,7 +87,8 @@ namespace impactx::elements
         Sol,
         Source,
         TaperedPL,
-        ThinDipole
+        ThinDipole,
+        VectorPotential
     >;
 
 } // namespace impactx

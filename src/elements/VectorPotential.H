@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <tuple>
 
 namespace impactx::elements
 {
@@ -175,11 +176,9 @@ namespace impactx::elements
 
             // call integrator to advance through slice (int_order = 2, 4 or 6, otherwise default 2)
             if (m_int_order == 2) {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
-            } else if (m_int_order == 4) {
-                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp_integrate_semiexplicit(particle,zin,zout,nsteps,*this);
             } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                amrex::Print() << "int_order > 2 not yet supported in VectorPotential element" << "\n";
             }
 
             // assign updated values
@@ -197,125 +196,91 @@ namespace impactx::elements
             shift_out(x, y, px, py);
         }
 
-        /** This pushes a particle in an ExactQuad element through
-         *  the symplectic map associated with H_1 in the Hamiltonian
-         *  splitting H = H_1 + H_2.  This is exactly the linear
-         *  map of a quadrupole.
+        /** This pushes two copies of the particle coordinates in the
+         *  extended (doubled) phase space using the derivatives of
+         *  the specified Hamiltonian.
          *
          * @param tau Map step size in m
-         * @param[in,out] particle particle phase space 6-vector
-         * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in,out] particle1 particle phase space 6-vector, copy 1
+         * @param[in,out] particle2 particle phase space 6-vector, copy 2
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map1 (amrex::ParticleReal const tau,
-                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        void map (amrex::ParticleReal const tau,
+                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
+                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            amrex::ParticleReal const x = particle(1);
-            amrex::ParticleReal const px = particle(2);
-            amrex::ParticleReal const y = particle(3);
-            amrex::ParticleReal const py = particle(4);
-            amrex::ParticleReal const t = particle(5);
-            amrex::ParticleReal const pt = particle(6);
+            amrex::ParticleReal const x1 = particle1(1);
+            amrex::ParticleReal const px1 = particle1(2);
+            amrex::ParticleReal const y1 = particle1(3);
+            amrex::ParticleReal const py1 = particle1(4);
+            amrex::ParticleReal const t1 = particle1(5);
+            amrex::ParticleReal const pt1 = particle1(6);
 
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal ptout = pt;
+            amrex::ParticleReal const x2 = particle2(1);
+            amrex::ParticleReal const px2 = particle2(2);
+            amrex::ParticleReal const y2 = particle2(3);
+            amrex::ParticleReal const py2 = particle2(4);
+            amrex::ParticleReal const t2 = particle2(5);
+            amrex::ParticleReal const pt2 = particle2(6);
 
-            amrex::ParticleReal const sin_omega_ds = std::sin(m_omega*tau);
-            amrex::ParticleReal const cos_omega_ds = std::cos(m_omega*tau);
-            amrex::ParticleReal const sinh_omega_ds = std::sinh(m_omega*tau);
-            amrex::ParticleReal const cosh_omega_ds = std::cosh(m_omega*tau);
-            amrex::ParticleReal const slice_bg = tau / m_betgam2;
+            // Evaluate the derivatives of the Hamiltonian.
+            auto [dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt] = Hamiltonian_Gradient(x1,px2,y1,py2,t1,pt2,zeval);
 
-            if (m_g > 0.0_prt)
-            {
-                // advance position and momentum (focusing quad)
-                xout = cos_omega_ds*x + sin_omega_ds/m_omega*px;
-                pxout = -m_omega*sin_omega_ds*x + cos_omega_ds*px;
+            // Update particle coordinates and momenta.
+            particle1(1) = x1;
+            particle1(2) = px1 - tau * dHdx;
+            particle1(3) = y1;
+            particle1(4) = py1 - tau * dHdy;
+            particle1(5) = t1;
+            particle1(6) = pt1 - tau * dHdt;
 
-                yout = cosh_omega_ds*y + sinh_omega_ds/m_omega*py;
-                pyout = m_omega*sinh_omega_ds*y + cosh_omega_ds*py;
-
-                tout = t + (slice_bg)*pt;
-                // ptout = pt;
-            } else if (m_g < 0.0_prt)
-            {
-                // advance position and momentum (defocusing quad)
-                xout = cosh_omega_ds*x + sinh_omega_ds/m_omega*px;
-                pxout = m_omega*sinh_omega_ds*x + cosh_omega_ds*px;
-
-                yout = cos_omega_ds*y + sin_omega_ds/m_omega*py;
-                pyout = -m_omega*sin_omega_ds*y + cos_omega_ds*py;
-
-                tout = t + slice_bg*pt;
-                // ptout = pt;
-            } else {
-                // advance position and momentum (zero strength = drift)
-                xout = x + tau * px;
-                // pxout = px;
-                yout = y + tau * py;
-                // pyout = py;
-                tout = t + slice_bg * pt;
-                // ptout = pt;
-            }
-
-            // push particle coordinates
-            particle(1) = xout;
-            particle(2) = pxout;
-            particle(3) = yout;
-            particle(4) = pyout;
-            particle(5) = tout;
-            particle(6) = ptout;
-
-            zeval += 0_prt;
-        }
-
-        /** This pushes a particle in an ExactQuad element through
-         *  the symplectic map associated with H_2 in the Hamiltonian
-         *  splitting H = H_1 + H_2.
-         *
-         * @param tau Map step size in m
-         * @param[in,out] particle particle phase space 6-vector
-         * @param[in,out] zeval Longitudinal on-axis location in m
-         */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map2 (amrex::ParticleReal const tau,
-                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-
-            amrex::ParticleReal const x = particle(1);
-            amrex::ParticleReal const px = particle(2);
-            amrex::ParticleReal const y = particle(3);
-            amrex::ParticleReal const py = particle(4);
-            amrex::ParticleReal const t = particle(5);
-            amrex::ParticleReal const pt = particle(6);
-
-            // compute the radical in the denominator (= pz):
-            amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                std::pow(pt - m_ibeta, 2) -
-                m_ibetgam2 -
-                std::pow(px, 2) -
-                std::pow(py, 2)
-            );
-
-            // The momenta are not affected.
-            particle(1) = x + tau * px * (-1_prt + inv_pzden);
-            particle(2) = px;
-            particle(3) = y + tau * py * (-1_prt + inv_pzden);
-            particle(4) = py;
-            particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta));
-            particle(6) = pt;
+            particle2(1) = x2 + tau * dHdpx;
+            particle2(2) = px2;
+            particle2(3) = y2 + tau * dHdpy;
+            particle2(4) = py2;
+            particle2(5) = t2 + tau * dHdpt;
+            particle2(6) = pt2;
 
             zeval += tau;
         }
+
+            
+        /** This evaluates the derivatives of the Hamiltonian at a point.
+         *
+         * @param tau Map step size in m
+         * @param[in,out] particle1 particle phase space 6-vector, copy 1
+         * @param[in,out] particle2 particle phase space 6-vector, copy 2
+         */
+        std::tuple <amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+               amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>        
+        Hamiltonian_Gradient (amrex::ParticleReal x, amrex::ParticleReal px, amrex::ParticleReal y,
+                   amrex::ParticleReal py, amrex::ParticleReal t, amrex::ParticleReal pt,
+                   amrex::ParticleReal zeval) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            
+            amrex::ParticleReal dHdx = 0_prt;
+            amrex::ParticleReal dHdpx = 0_prt;
+            amrex::ParticleReal dHdy = 0_prt;
+            amrex::ParticleReal dHdpy = 0_prt;
+            amrex::ParticleReal dHdt = 0_prt;
+            amrex::ParticleReal dHdpt = 0_prt;
+
+            // Test this first, using exact nonlinear quad Hamiltonian (beta is assumed to be 1 here):
+            amrex::ParticleReal const radical = std::sqrt(1_prt + pt*pt - px*px - py*py - 2_prt*pt);
+            dHdx = m_k*x;
+            dHdpx = px/radical;
+            dHdy = -m_k*y;
+            dHdpy = py/radical;
+            dHdt = 0_prt;
+            dHdpt = 0_prt;
+
+            return std::make_tuple(dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt);
+
+         }
 
 
         /** This pushes the reference particle.

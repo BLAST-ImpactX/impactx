@@ -331,6 +331,41 @@ namespace impactx::integrators
         }
     }
 
+
+   /** Applying a map on the extended phase space, for use within
+    *  semiexplicit_integrator_step.  Additional documentation to be added.
+    *
+    *
+    * @param tau  Step size
+    * @param particle1  Particle phase space data in a 6-vector
+    * @param particle2  Particle phase space data in a 6-vector
+    * @param element  Element defining the two maps associated with H_1 and H_2
+    * @param element zeval Evaluation point in s
+    */
+    template <typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void extended_phase_space_map(
+        amrex::ParticleReal const tau,
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
+        T_Element const & element,
+        amrex::ParticleReal & zeval
+    )
+    {
+        using namespace amrex::literals; // for _rt and _prt
+
+        // initialize numerical integration parameters
+        amrex::ParticleReal const tau1 = tau/2.0_prt;
+        amrex::ParticleReal const tau2 = tau;
+
+        // Apply the map on the extended phase space
+        element.map(tau1,particle1,particle2,zeval);
+        element.map(tau2,particle2,particle1,zeval);
+        element.map(tau1,particle1,particle2,zeval);
+
+    }
+
+
    /** A semiexplicit symplectic integrator for a general
     *  Hamiltonian, which does not require splitting,  based on:
     *
@@ -347,7 +382,8 @@ namespace impactx::integrators
     void semiexplicit_integrator_step(
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const tau,
-        T_Element const & element
+        T_Element const & element,
+        amrex::ParticleReal & zeval
     )
     {
         using namespace amrex::literals; // for _rt and _prt
@@ -369,7 +405,7 @@ namespace impactx::integrators
            amrex::SmallVector<amrex::ParticleReal, 6, 1> particle_copy2 = particle - perturbation;
 
            // Apply the map for a step of size tau on the extended phase space.
-           extended_phase_space_map(particle_copy1,particle_copy2,tau,element);
+           integrators::extended_phase_space_map(tau,particle_copy1,particle_copy2,element,zeval);
 
            // Apply the final perturbation, and evaluate the defect (difference between copies)
            particle_copy1 = particle_copy1 + perturbation;
@@ -397,36 +433,46 @@ namespace impactx::integrators
 
     }
 
-   /** Applying a map on the extended phase space, for use within
-    *  semiexplicit_integrator_step.  Additional documentation to be added.
+   /** A second-order symplectic integrator based on a Hamiltonian
+    *  splitting H = H_1 + H_2.  This is a generalization of the second-
+    *  order leapfrog algorithm.  For a detailed overview:
     *
+    *  E. Hairer et al, Geometric Numerical Integration:  Structure-
+    *  Preserving Algorithms for Ordinary Differential Equations,
+    *  2nd ed, Springer, Berlin, 2006.
     *
-    * @param particle1  Particle phase space data in a 6-vector
-    * @param particle2  Particle phase space data in a 6-vector
-    * @param tau  Step size
+    * @param refpart  Reference particle data
+    * @param zin  Initial value of independent variable (z-location)
+    * @param zout  Final value of independent variable (z-location)
+    * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-    void extended_phase_space_map(
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
-        amrex::ParticleReal const tau,
+    void symp_integrate_semiexplicit (
+        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::ParticleReal const zin,
+        amrex::ParticleReal const zout,
+        int const nsteps,
         T_Element const & element
     )
     {
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const tau1 = tau/2.0_prt;
-        amrex::ParticleReal const tau2 = tau;
+        amrex::ParticleReal const dz = (zout-zin)/nsteps;
 
-        // Apply the map on the extended phase space
-        element.map(particle1,particle2,tau1);
-        element.map(particle2,particle1,tau2);
-        element.map(particle1,particle2,tau1);
+        // initialize the value of the independent variable
+        amrex::ParticleReal zeval = zin;
 
+        // loop over integration steps
+        for(int j=0; j < nsteps; ++j)
+        {
+            semiexplicit_integrator_step(particle,dz,element,zeval);
+        }
     }
+
+
 
 } // namespace impactx::integrators
 

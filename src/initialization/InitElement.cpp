@@ -458,6 +458,22 @@ element_name) );
             pp_element.getWithParser("rc", rc);
 
             m_lattice.emplace_back( ThinDipole(theta, rc, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+        } else if (element_type == "vector_potential")
+        {
+            auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
+            auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
+
+            amrex::ParticleReal k;
+            int units = 0;   
+            int int_order = 2;
+            int mapsteps = mapsteps_default;
+            pp_element.getWithParser("k", k);
+            pp_element.queryAddWithParser("units", units);
+            pp_element.queryAddWithParser("int_order", int_order);
+            pp_element.queryAddWithParser("mapsteps", mapsteps);
+
+            m_lattice.emplace_back( VectorPotential(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) ); 
         } else if (element_type == "kicker")
         {
             auto a = detail::query_alignment(pp_element);

@@ -16,7 +16,7 @@ csr_defaults = list(DashboardDefaults.CSR.keys())
 space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
 
 lattice_state_defaults = ["periods"]
-INPUT_DEFAULTS = (
+STATE_INPUTS = (
     csr_defaults
     + simulation_parameters_defaults
     + space_charge_defaults
@@ -29,12 +29,12 @@ DROPDOWN_INPUTS = set()
 
 class SharedUtilities:
     @staticmethod
-    @state.change(*INPUT_DEFAULTS)
+    @state.change(*STATE_INPUTS)
     def on_input_state_change(**_):
         """
         Called when any non-nested state variables are modified.
         """
-        non_dropdown_inputs = set(INPUT_DEFAULTS) - DROPDOWN_INPUTS
+        non_dropdown_inputs = set(STATE_INPUTS) - DROPDOWN_INPUTS
         state_changes = state.modified_keys & non_dropdown_inputs
 
         for state_name in state_changes:

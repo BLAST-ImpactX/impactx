@@ -10,6 +10,8 @@
 #ifndef IMPACTX_VECTORPOTENTIAL_H
 #define IMPACTX_VECTORPOTENTIAL_H
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
@@ -178,7 +180,13 @@ namespace impactx::elements
             if (m_int_order == 2) {
                 integrators::symp_integrate_semiexplicit(particle,zin,zout,nsteps,*this);
             } else {
-                amrex::Print() << "int_order > 2 not yet supported in VectorPotential element" << "\n";
+               ablastr::warn_manager::WMRecordWarning(
+                       "Impactx::elements::VectorPotential",
+                       "Currently only the second-order integrator is "
+                       "supported.  This will be extended in the future "
+                       "to support through sixth order.",
+                       ablastr::warn_manager::WarnPriority::medium
+               );
             }
 
             // assign updated values

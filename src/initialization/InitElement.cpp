@@ -465,7 +465,7 @@ element_name) );
             auto b = detail::query_aperture(pp_element);
 
             amrex::ParticleReal k;
-            int units = 0;   
+            int units = 0;
             int int_order = 2;
             int mapsteps = mapsteps_default;
             pp_element.getWithParser("k", k);
@@ -473,7 +473,7 @@ element_name) );
             pp_element.queryAddWithParser("int_order", int_order);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
 
-            m_lattice.emplace_back( VectorPotential(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) ); 
+            m_lattice.emplace_back( VectorPotential(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
         } else if (element_type == "kicker")
         {
             auto a = detail::query_alignment(pp_element);

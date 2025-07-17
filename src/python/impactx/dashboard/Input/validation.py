@@ -180,7 +180,7 @@ class DashboardValidation:
 
 
     @staticmethod
-    def update_n_cell_additional_validation(direction: str) -> None:
+    def update_n_cell_validation(direction: str) -> None:
         """
         Validates whether the 'n_cell_<direction>' value is a multiple of 'blocking_factor_<direction>'.
 

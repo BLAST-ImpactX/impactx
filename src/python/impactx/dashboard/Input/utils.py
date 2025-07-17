@@ -124,3 +124,15 @@ class GeneralFunctions:
             state.dirty("max_level")
             state.variables = [{"name": "", "value": "", "error_message": ""}]
             state.dirty("variables")
+
+    @staticmethod
+    def set_state_to_numeric(state_name: str) -> None:
+        """
+        Converts the value of a state variable to a numeric type (int or float)
+        and updates the state in-place.
+
+        :param state_name: The name of the state variable to convert and update.
+        """
+        current_input = getattr(state, state_name)
+        numeric_input = GeneralFunctions.convert_to_numeric(current_input)
+        setattr(state, state_name, numeric_input)

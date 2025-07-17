@@ -23,6 +23,10 @@ INPUT_DEFAULTS = (
     + lattice_state_defaults
 )
 
+# Set of dropdown input state variables, automatically populated when InputComponents.select() is called
+# Used to exclude dropdown inputs from validation since they're constrained to valid options
+DROPDOWN_INPUTS = set()
+
 class SharedUtilities:
     @staticmethod
     @state.change(*INPUT_DEFAULTS)
@@ -30,11 +34,12 @@ class SharedUtilities:
         """
         Called when any non-nested state variables are modified.
         """
-        state_changes = state.modified_keys & set(INPUT_DEFAULTS)
-        for state_name in state_changes:
-            if type(state[state_name]) is str:
-                input = getattr(state, state_name)
+        non_dropdown_inputs = set(INPUT_DEFAULTS) - DROPDOWN_INPUTS
+        state_changes = state.modified_keys & non_dropdown_inputs
 
+        for state_name in state_changes:
+            input = getattr(state, state_name)
+            if type(input) is str: # to prevent another state call when the state converts to numeric
                 validation_result = DashboardValidation.validate_input(state_name, input)
                 DashboardValidation.update_error_message_on_ui(state_name, validation_result)
 

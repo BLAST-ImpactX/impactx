@@ -39,7 +39,7 @@ class SharedUtilities:
 
         for state_name in state_changes:
             input = getattr(state, state_name)
-            if type(input) is str: # to prevent another state call when the state converts to numeric
+            if type(input) is str:
                 validation_result = DashboardValidation.validate_input(state_name, input)
                 DashboardValidation.update_error_message_on_ui(state_name, validation_result)
 
@@ -51,7 +51,7 @@ class SharedUtilities:
                             state.dirty("kin_energy_unit")
                         case _ if "blocking_factor" or "n_cell" in state_name:
                             direction = state_name[-1]
-                            DashboardValidation.update_n_cell_additional_validation(direction)
+                            DashboardValidation.update_n_cell_validation(direction)
 
 
                 DashboardValidation.update_simulation_validation_status()

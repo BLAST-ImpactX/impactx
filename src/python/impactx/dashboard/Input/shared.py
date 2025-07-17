@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from . import DashboardDefaults, DashboardValidation
+from . import DashboardDefaults
 from .utils import GeneralFunctions
 from .validation import DashboardValidation
 

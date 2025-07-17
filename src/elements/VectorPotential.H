@@ -273,18 +273,74 @@ namespace impactx::elements
             amrex::ParticleReal dHdt = 0_prt;
             amrex::ParticleReal dHdpt = 0_prt;
 
-            // Test this first, using exact nonlinear quad Hamiltonian (beta is assumed to be 1 here):
-            amrex::ParticleReal const radical = std::sqrt(1_prt + pt*pt - px*px - py*py - 2_prt*pt);
-            dHdx = m_k*x;
-            dHdpx = px/radical;
-            dHdy = -m_k*y;
-            dHdpy = py/radical;
+            // Evaluate the vector potential and its derivatives
+            auto [ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy] = vector_potential_eval(x,y,t,zeval);
+            // Test: for the simplest case of a quadrupole:
+
+           // amrex::ParticleReal az = 0.5_prt * m_k * (y*y - x*x);
+           // amrex::ParticleReal ax = 0_prt;
+           // amrex::ParticleReal ay = 0_prt;
+
+           // amrex::ParticleReal daxdx = 0_prt;
+           // amrex::ParticleReal daxdy = 0_prt;
+           // amrex::ParticleReal daydx = 0_prt;
+           // amrex::ParticleReal daydy = 0_prt;
+           // amrex::ParticleReal dazdx = -m_k*x;
+           // amrex::ParticleReal dazdy = m_k*y;
+
+            // Implementation of derivatives for rectilinear magnetostatic element (static units):
+            // Radical appearing in the Hamiltonian (equal to the value of pz):
+            amrex::ParticleReal const pxmech = px - ax;
+            amrex::ParticleReal const pymech = py - ay;
+            amrex::ParticleReal const radical = std::sqrt(1_prt + pt*pt - px*px - py*py - 2_prt*pt*m_ibeta);
+
+            dHdx = - (pxmech * daxdx + pymech * daydx) / radical - dazdx;
+            dHdy = - (pxmech * daxdy + pymech * daydy) / radical - dazdy;
             dHdt = 0_prt;
-            dHdpt = 0_prt;
+            
+            dHdpx = pxmech / radical;
+            dHdpy = pymech / radical;
+            dHdpt = - m_ibeta + (m_ibeta - pt) / radical;
 
             return std::make_tuple(dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt);
 
          }
+
+            
+        /** This evaluates the vector potential and derivatives at a point.
+         *
+         * @param x horizontal coordinate in m
+         * @param y vertical coordinate in m
+         * @param t temporal coordinate in m
+         * @param zeval lattice position in m
+         * @param[out] tuple containing the vector potential and derivatives
+         */ 
+        std::tuple <amrex::ParticleReal, amrex::ParticleReal,
+               amrex::ParticleReal, amrex::ParticleReal,
+               amrex::ParticleReal, amrex::ParticleReal,
+               amrex::ParticleReal, amrex::ParticleReal>
+        vector_potential_eval (amrex::ParticleReal x, amrex::ParticleReal y,
+                   [[maybe_unused]] amrex::ParticleReal t,
+                   [[maybe_unused]] amrex::ParticleReal zeval) const
+        { 
+            using namespace amrex::literals; // for _rt and _prt
+           
+            // Test: for the simplest case of a quadrupole:
+        
+            amrex::ParticleReal az = 0.5_prt * m_k * (y*y - x*x);                 
+            amrex::ParticleReal ax = 0_prt;
+            amrex::ParticleReal ay = 0_prt;
+            
+            amrex::ParticleReal daxdx = 0_prt;
+            amrex::ParticleReal daxdy = 0_prt;
+            amrex::ParticleReal daydx = 0_prt;
+            amrex::ParticleReal daydy = 0_prt;
+            amrex::ParticleReal dazdx = -m_k*x;
+            amrex::ParticleReal dazdy = m_k*y;
+ 
+            return std::make_tuple(ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy);
+            
+         } 
 
 
         /** This pushes the reference particle.

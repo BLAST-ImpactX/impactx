@@ -61,6 +61,8 @@ class SharedUtilities:
                 match state_name:
                     case _ if state_name in csr_defaults:
                         section_name = "CSR"
+                    case _ if state_name in space_charge_defaults:
+                        section_name = "Space Charge"
                     case "periods":
                         section_name = "Lattice Configuration"
                     case _:

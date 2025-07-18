@@ -12,7 +12,7 @@ from typing import Any, List, Tuple
 from impactx.distribution_input_helpers import twiss
 
 from ... import state
-from ..utils import GeneralFunctions
+from .. import GeneralFunctions
 
 
 class DistributionFunctions:

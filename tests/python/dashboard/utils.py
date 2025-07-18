@@ -135,6 +135,14 @@ class DashboardTester:
         :param element_id: ID of the input element to set. The id is the same as the v_model_name.
         :param new_input: New value to set for the input element.
         """
+        # Check for existence before touching value
+        exists = self.sb.execute_script(
+            f'return document.getElementById("{element_id}") !== null;'
+        )
+        if not exists:
+            raise ValueError(f"Element with id '{element_id}' not found in DOM")
+
+        # Safe to proceed
         self.sb.execute_script(
             f'document.getElementById("{element_id}").value = "{new_input}";'
         )

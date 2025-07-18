@@ -181,6 +181,7 @@ class SpaceChargeConfiguration(CardBase):
                             error_messages=("field.error_message",),
                             type="number",
                             step=("field.step",),
+                            id=("'prob_relative_' + index",),
                             __properties=["step"],
                             density="compact",
                             variant="underlined",

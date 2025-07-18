@@ -17,5 +17,6 @@ class SpaceChargeFunctions:
             color="grey-darken-2",
             click="space_charge_dialog_settings = true",
             v_if="poisson_solver == 'multigrid'",
+            id="multigrid_settings_button",
             documentation="Settings",
         )

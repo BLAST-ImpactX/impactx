@@ -135,17 +135,12 @@ class DashboardTester:
         :param element_id: ID of the input element to set. The id is the same as the v_model_name.
         :param new_input: New value to set for the input element.
         """
-        try:
-            self.sb.execute_script(
-                f'document.getElementById("{element_id}").value = "{new_input}";'
-            )
-            self.sb.execute_script(
-                f'document.getElementById("{element_id}").dispatchEvent(new Event("input"));'
-            )
-        except Exception as error:
-            raise Exception(
-                f"Unable to set input for lattice element '{element_id}': {str(error)}"
-            )
+        self.sb.execute_script(
+            f'document.getElementById("{element_id}").value = "{new_input}";'
+        )
+        self.sb.execute_script(
+            f'document.getElementById("{element_id}").dispatchEvent(new Event("input"));'
+        )
 
     def set_state(self, state_name: str, state_value):
         """

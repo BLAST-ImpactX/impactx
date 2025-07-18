@@ -85,6 +85,15 @@ class ErrorsTracker:
             if field.get("error_message"):
                 errors.append(f"prob_relative[{i}]: {field['error_message']}")
 
+        # Check MLMG settings if using multigrid poisson solver
+        if getattr(state, "poisson_solver", None) == "multigrid":
+            mlmg_fields = ["mlmg_relative_tolerance", "mlmg_absolute_tolerance", 
+                          "mlmg_max_iters", "mlmg_verbosity"]
+            for field in mlmg_fields:
+                error = self._get_error_message(field)
+                if error:
+                    errors.append(f"{field}: {error}")
+
         return errors
 
     def _check_variables_errors(self) -> list[str]:

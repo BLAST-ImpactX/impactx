@@ -28,6 +28,19 @@ STATE_INPUTS = (
 DROPDOWN_INPUTS = set()
 
 
+def determine_section_name(state_name: str) -> str:
+    """
+    Determines the section name based on the state variable name.
+    """
+    if state_name in csr_defaults:
+        return "CSR"
+    elif state_name in space_charge_defaults:
+        return "Space Charge"
+    elif state_name == "periods":
+        return "Lattice Configuration"
+    else:
+        return "Simulation Parameters"
+    
 class SharedUtilities:
     @staticmethod
     @state.change(*STATE_INPUTS)
@@ -56,18 +69,7 @@ class SharedUtilities:
                             direction = state_name[-1]
                             InputsValidator.update_n_cell_validation(direction)
 
-
-                # Determine section using match
-                match state_name:
-                    case _ if state_name in csr_defaults:
-                        section_name = "CSR"
-                    case _ if state_name in space_charge_defaults:
-                        section_name = "Space Charge"
-                    case "periods":
-                        section_name = "Lattice Configuration"
-                    case _:
-                        section_name = "Simulation Parameters"
-
+                section_name = determine_section_name(state_name)
                 errors_tracker.update(section_name)
 
     @ctrl.add("collapse_all_sections")

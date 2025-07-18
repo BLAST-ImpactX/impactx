@@ -52,7 +52,7 @@ class SharedUtilities:
                     match state_name:
                         case "kin_energy_on_ui":
                             state.dirty("kin_energy_unit")
-                        case _ if "blocking_factor" or "n_cell" in state_name:
+                        case _ if "blocking_factor" in state_name or "n_cell" in state_name:
                             direction = state_name[-1]
                             InputsValidator.update_n_cell_validation(direction)
 

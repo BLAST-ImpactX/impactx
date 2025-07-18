@@ -41,9 +41,7 @@ class SharedUtilities:
         for state_name in state_changes:
             input = getattr(state, state_name)
             if type(input) is str:
-                validation_result = DashboardValidation.validate_input(
-                    state_name, input
-                )
+                validation_result = DashboardValidation.validate(state_name, input)
                 DashboardValidation.update_error_message_on_ui(
                     state_name, validation_result
                 )

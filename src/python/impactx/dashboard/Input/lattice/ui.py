@@ -49,7 +49,7 @@ def add_lattice_element() -> dict:
         if selected_lattice == "BeamMonitor" and name == "name" and not value:
             value = BEAM_MONITOR_DEFAULT_NAME
 
-        error_message = DashboardValidation.validate_input(
+        error_message = DashboardValidation.validate(
             name, value, category="lattice", parameter_type=default_type
         )
 
@@ -179,7 +179,7 @@ def on_lattice_element_parameter_change(
     else:
         state.lattice_elements_using_variables.pop(key, None)
 
-    error_message = DashboardValidation.validate_input(
+    error_message = DashboardValidation.validate(
         parameter_name, sim_input, category="lattice", parameter_type=parameter_type
     )
 

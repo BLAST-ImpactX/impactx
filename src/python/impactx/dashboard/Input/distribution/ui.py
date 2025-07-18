@@ -47,7 +47,7 @@ def populate_distribution_parameters():
 
     # Populate the UI
     for param_name, default_value, default_type in param_data:
-        error_message = DashboardValidation.validate_input(
+        error_message = DashboardValidation.validate(
             param_name, default_value, category="distribution"
         )
         units = DistributionFunctions.get_distribution_units(param_name)
@@ -95,7 +95,7 @@ def on_distribution_type_change(**kwargs):
 @ctrl.add("update_distribution_parameter")
 def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
     numeric_input = GeneralFunctions.convert_to_numeric(input)
-    error_message = DashboardValidation.validate_input(
+    error_message = DashboardValidation.validate(
         name, numeric_input, category="distribution"
     )
 

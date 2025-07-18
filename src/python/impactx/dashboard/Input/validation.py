@@ -51,7 +51,7 @@ class DashboardValidation:
             setattr(state, validation_name, error_message)
 
     @staticmethod
-    def validate_input(
+    def validate(
         input_name: str,
         input_value: Union[float, int],
         category: str | None = None,

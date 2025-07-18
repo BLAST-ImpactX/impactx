@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import state
+from ..utils import GeneralFunctions
 from ..defaults import INPUT_LABELS, DashboardDefaults
 
 
@@ -18,28 +19,19 @@ class ErrorsTracker:
     def __init__(self):
         self.errors = {section: [] for section in DashboardDefaults.INPUT_SECTIONS}
 
-    def _normalize_input_name(self, name: str) -> str:
-        """
-        Converts a section name to a normalized format suitable for use as a v_model_name.
-        EX: "Simulation Parameters" -> "simulation_parameters"
-
-        :param name: The name of a section/input name to normalize.
-        """
-        return name.lower().replace(" ", "_")
-
     def _get_error_message(self, input_name: str) -> str:
         """
         Retrieves the error v_model_name for the input_name.
 
         :param input_name: The name of the input field that is modified.
         """
-        normalized = self._normalize_input_name(input_name)
+        normalized = GeneralFunctions.normalize_for_v_model(input_name)
         return getattr(state, f"{normalized}_error_message", "")
 
     def _get_validation_method(self, section_name: str):
         METHOD_OVERRIDE = {"Simulation Parameters": "_check_input_params_errors"}
 
-        normalized = self._normalize_input_name(section_name)
+        normalized = GeneralFunctions.normalize_for_v_model(section_name)
         method_name = METHOD_OVERRIDE.get(section_name, f"_check_{normalized}_errors")
         return getattr(self, method_name, None), method_name
 

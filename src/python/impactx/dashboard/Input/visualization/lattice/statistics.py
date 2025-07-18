@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import html, state, vuetify
+from ...utils import GeneralFunctions
 
 state.total_elements = 0
 state.total_length = 0
@@ -103,7 +104,7 @@ class LatticeVisualizerStatisticComponents:
 
         :param title: The statistic name
         """
-        title_state_name = title.lower().replace(" ", "_")
+        title_state_name = GeneralFunctions.normalize_for_v_model(title)
         is_stat_length = "length" in title.lower()
 
         vuetify.VCardSubtitle(title, classes="pb-0 mb-0")

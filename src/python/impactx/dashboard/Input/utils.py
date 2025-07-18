@@ -12,12 +12,19 @@ from .. import state
 from ..Toolbar.file_imports.python.parser import DashboardParser
 from .defaults import DashboardDefaults
 
-# -----------------------------------------------------------------------------
-# Code
-# -----------------------------------------------------------------------------
 
+class GeneralFunctions:
+    @staticmethod
+    def normalize_for_v_model(name: str) -> str:
+        """
+        Normalizes a name for use as a v-model variable name.
+        Converts to lowercase with spaces replaced by underscores.
 
-class generalFunctions:
+        :param name: The name to normalize
+        :return: Normalized v-model name
+        """
+        return name.lower().replace(" ", "_")
+
     @staticmethod
     def open_documentation(section_name):
         """
@@ -44,10 +51,6 @@ class generalFunctions:
 
         parameter_name_base = parameter.partition("_")[0]
         return parameter_type_dictionary.get(parameter_name_base)
-
-    # -----------------------------------------------------------------------------
-    # Validation functions
-    # -----------------------------------------------------------------------------
 
     @staticmethod
     def convert_to_numeric(input: str) -> Union[int, float]:

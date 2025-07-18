@@ -12,8 +12,7 @@ from ..defaults import INPUT_LABELS, DashboardDefaults
 
 class ErrorsTracker:
     """
-    Helps determine whether the simulation can be run based on the current input errors, as well
-    as displaying the errors on the UI.
+    Helps track the input errors across the dashboard.
     """
 
     def __init__(self):

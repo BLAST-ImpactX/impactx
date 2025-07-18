@@ -15,10 +15,10 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardDefaults, DashboardValidation
+from .. import DashboardDefaults
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
-from ..validation import sim_validator
+from ..validation import InputsValidator, errors_tracker
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
@@ -50,7 +50,7 @@ def add_lattice_element() -> dict:
         if selected_lattice == "BeamMonitor" and name == "name" and not value:
             value = BEAM_MONITOR_DEFAULT_NAME
 
-        error_message = DashboardValidation.validate(
+        error_message = InputsValidator.validate(
             name, value, category="lattice", parameter_type=default_type
         )
 
@@ -70,7 +70,7 @@ def add_lattice_element() -> dict:
     }
 
     state.selected_lattice_list.append(lattice_element)
-    sim_validator.update(LatticeConfiguration.HEADER_NAME)
+    errors_tracker.update(LatticeConfiguration.HEADER_NAME)
     return lattice_element
 
 
@@ -109,7 +109,7 @@ def parameter_input_checker_for_lattice(latticeElement):
 def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
     if selected_lattice_list == []:
         state.isSelectedLatticeListEmpty = "Please select a lattice element"
-        sim_validator.update(LatticeConfiguration.HEADER_NAME)
+        errors_tracker.update(LatticeConfiguration.HEADER_NAME)
     else:
         state.isSelectedLatticeListEmpty = ""
 
@@ -148,7 +148,7 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
     is_variable, variable_index = LatticeVariableHandler.determine_if_existing_variable(
         var_name
     )
-    is_potential_variable = DashboardValidation.is_valid_input_name(var_name)
+    is_potential_variable = InputsValidator.is_valid_input_name(var_name)
 
     if is_variable:
         sim_value = state.variables[variable_index]["value"]
@@ -180,7 +180,7 @@ def on_lattice_element_parameter_change(
     else:
         state.lattice_elements_using_variables.pop(key, None)
 
-    error_message = DashboardValidation.validate(
+    error_message = InputsValidator.validate(
         parameter_name, sim_input, category="lattice", parameter_type=parameter_type
     )
 
@@ -190,14 +190,14 @@ def on_lattice_element_parameter_change(
             param["sim_input"] = sim_input
             param["parameter_error_message"] = error_message
 
-    sim_validator.update(LatticeConfiguration.HEADER_NAME)
+    errors_tracker.update(LatticeConfiguration.HEADER_NAME)
     state.dirty("selected_lattice_list")
 
 
 @ctrl.add("deleteLatticeElement")
 def on_delete_LatticeElement_click(index):
     state.selected_lattice_list.pop(index)
-    sim_validator.update(LatticeConfiguration.HEADER_NAME)
+    errors_tracker.update(LatticeConfiguration.HEADER_NAME)
     state.dirty("selected_lattice_list")
 
 

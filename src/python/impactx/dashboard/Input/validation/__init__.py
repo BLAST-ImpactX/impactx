@@ -1,7 +1,7 @@
-from .inputs import DashboardValidation
-from .errors_tracker import sim_validator
+from .inputs import InputsValidator
+from .errors_tracker import errors_tracker
 
 __all__ = [
-    "DashboardValidation",
-    "sim_validator",
+    "errors_tracker",
+    "InputsValidator",
 ]

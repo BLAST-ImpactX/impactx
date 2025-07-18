@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 from .. import ctrl, state
 from . import DashboardDefaults
 from .utils import GeneralFunctions
-from .validation import DashboardValidation, sim_validator
+from .validation import InputsValidator, errors_tracker
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
@@ -41,8 +41,8 @@ class SharedUtilities:
         for state_name in state_changes:
             input = getattr(state, state_name)
             if type(input) is str:
-                validation_result = DashboardValidation.validate(state_name, input)
-                DashboardValidation.update_error_message_on_ui(
+                validation_result = InputsValidator.validate(state_name, input)
+                InputsValidator.update_error_message_on_ui(
                     state_name, validation_result
                 )
 
@@ -54,7 +54,7 @@ class SharedUtilities:
                             state.dirty("kin_energy_unit")
                         case _ if "blocking_factor" or "n_cell" in state_name:
                             direction = state_name[-1]
-                            DashboardValidation.update_n_cell_validation(direction)
+                            InputsValidator.update_n_cell_validation(direction)
 
 
                 # Determine section using match
@@ -66,7 +66,7 @@ class SharedUtilities:
                     case _:
                         section_name = "Simulation Parameters"
 
-                sim_validator.update(section_name)
+                errors_tracker.update(section_name)
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

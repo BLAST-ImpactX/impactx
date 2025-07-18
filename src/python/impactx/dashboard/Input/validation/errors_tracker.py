@@ -10,7 +10,7 @@ from ... import state
 from ..defaults import INPUT_LABELS, DashboardDefaults
 
 
-class InputValidator:
+class ErrorsTracker:
     """
     Helps determine whether the simulation can be run based on the current input errors, as well
     as displaying the errors on the UI.
@@ -160,5 +160,4 @@ class InputValidator:
         state.disable_simulation = bool(categorized_errors)
         state.input_errors = categorized_errors
 
-
-sim_validator = InputValidator()
+errors_tracker = ErrorsTracker()

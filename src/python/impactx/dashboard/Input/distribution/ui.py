@@ -10,10 +10,10 @@ from impactx import distribution
 
 from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from .. import DashboardDefaults, DashboardValidation
+from .. import DashboardDefaults
 from ..defaults_helper import InputDefaultsHelper
 from ..utils import GeneralFunctions
-from ..validation import sim_validator
+from ..validation import InputsValidator, errors_tracker
 from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ def populate_distribution_parameters():
 
     # Populate the UI
     for param_name, default_value, default_type in param_data:
-        error_message = DashboardValidation.validate(
+        error_message = InputsValidator.validate(
             param_name, default_value, category="distribution"
         )
         units = DistributionFunctions.get_distribution_units(param_name)
@@ -61,7 +61,7 @@ def populate_distribution_parameters():
         }
 
     state.selected_distribution_parameters = params
-    sim_validator.update(DistributionConfiguration.HEADER_NAME)
+    errors_tracker.update(DistributionConfiguration.HEADER_NAME)
     return params
 
 
@@ -94,7 +94,7 @@ def on_distribution_type_change(**kwargs):
 @ctrl.add("update_distribution_parameter")
 def on_distribution_parameter_change(name: str, input: str):
     numeric_input = GeneralFunctions.convert_to_numeric(input)
-    error_message = DashboardValidation.validate(
+    error_message = InputsValidator.validate(
         name, numeric_input, category="distribution"
     )
 
@@ -102,7 +102,7 @@ def on_distribution_parameter_change(name: str, input: str):
     if parameter:
         parameter["value"] = numeric_input
         parameter["error_message"] = error_message
-        sim_validator.update(DistributionConfiguration.HEADER_NAME)
+        errors_tracker.update(DistributionConfiguration.HEADER_NAME)
         state.dirty("selected_distribution_parameters")
 
 

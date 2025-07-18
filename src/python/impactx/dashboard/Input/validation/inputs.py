@@ -27,7 +27,7 @@ GREATER_THAN_ONE_ERROR = "Must be greater than 1"
 LESS_THAN_PREVIOUS_ERROR = "Must be less than previous value"
 
 
-class DashboardValidation:
+class InputsValidator:
     """
     Contains all validation logic for the ImpactX dashboard inputs.
     """
@@ -66,7 +66,7 @@ class DashboardValidation:
         :param parameter_type: The explicit type to use ('int', 'float', 'str'). If provided, overrides type lookup.
         :return: A list of error messages. An empty list if there are no errors.
         """
-        input_type = DashboardValidation._get_input_type(
+        input_type = InputsValidator._get_input_type(
             input_name, category, parameter_type
         )
 
@@ -74,17 +74,17 @@ class DashboardValidation:
             return [f"Unknown or unsupported type '{input_type}'"]
 
         if input_type == "str":
-            if not DashboardValidation.is_valid_input_name(str(input_value)):
+            if not InputsValidator.is_valid_input_name(str(input_value)):
                 return [PYTHON_IDENTIFIER_ERROR]
             return []
 
         numeric_input = GeneralFunctions.convert_to_numeric(input_value)
-        type_errors = DashboardValidation._validate_type(numeric_input, input_type)
+        type_errors = InputsValidator._validate_type(numeric_input, input_type)
 
         if type_errors:
             return type_errors
 
-        additional_validation = DashboardValidation._validate_additional_conditions(
+        additional_validation = InputsValidator._validate_additional_conditions(
             input_name, numeric_input
         )
         return additional_validation
@@ -198,11 +198,11 @@ class DashboardValidation:
             return
 
         if n_cell % blocking_factor != 0:
-            DashboardValidation.update_error_message_on_ui(
+            InputsValidator.update_error_message_on_ui(
                 f"n_cell_{direction}", N_CELL_MULTIPLE_ERROR
             )
         else:
-            DashboardValidation.update_error_message_on_ui(f"n_cell_{direction}", "")
+            InputsValidator.update_error_message_on_ui(f"n_cell_{direction}", "")
 
     @staticmethod
     def validate_prob_relative_fields(index: int, prob_relative_value: float) -> str:

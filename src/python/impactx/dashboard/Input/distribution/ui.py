@@ -93,7 +93,7 @@ def on_distribution_type_change(**kwargs):
 
 
 @ctrl.add("update_distribution_parameter")
-def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
+def on_distribution_parameter_change(name: str, input: str):
     numeric_input = GeneralFunctions.convert_to_numeric(input)
     error_message = DashboardValidation.validate(
         name, numeric_input, category="distribution"
@@ -158,7 +158,7 @@ class DistributionConfiguration(CardBase):
                                     suffix=("parameter.units",),
                                     update_modelValue=(
                                         ctrl.update_distribution_parameter,
-                                        "[parameter_name, $event, parameter.type]",
+                                        "[parameter_name, $event]",
                                     ),
                                     error_messages=("parameter.error_message",),
                                     type="number",

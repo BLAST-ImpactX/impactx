@@ -6,8 +6,6 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from typing import Union
-
 from impactx import distribution
 
 from ... import ctrl, state, vuetify

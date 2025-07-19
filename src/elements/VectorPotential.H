@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -10,8 +10,6 @@
 #ifndef IMPACTX_VECTORPOTENTIAL_H
 #define IMPACTX_VECTORPOTENTIAL_H
 
-#include <ablastr/warn_manager/WarnManager.H>
-
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
@@ -19,27 +17,61 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/named.H"
-#include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX_Extension.H>
+#include <AMReX_Parser.H>
 #include <AMReX_REAL.H>
-#include <AMReX_Print.H>
+#include <AMReX_Vector.H>
 
 #include <cmath>
-#include <stdexcept>
+#include <string>
 #include <tuple>
+
 
 namespace impactx::elements
 {
+/** Dynamic data for the vector potential elements
+ *
+ * The function parser exists out of two parts: a host-only amrex::Parser and
+ * a device-executuable amrex::ParserExecutor<N>. We keep a lookup table here
+ * for all the host data, which we clean up in the end.
+ */
+namespace VectorPotentialData
+{
+    //! last used id for a created vector potential element
+    inline int next_id = 0;
+
+    // user-provided functions & derivatives with 4 independent variables x,y,t,zeval
+
+    //! host: vector potential in x
+    inline std::map<int, amrex::Parser> m_parser_ax;
+    //! host: vector potential in y
+    inline std::map<int, amrex::Parser> m_parser_ay;
+    //! host: vector potential derivative dA_x/dx
+    inline std::map<int, amrex::Parser> m_parser_daxdx;
+    //! host: vector potential derivative dA_x/dy
+    inline std::map<int, amrex::Parser> m_parser_daxdy;
+    //! host: vector potential derivative dA_y/dx
+    inline std::map<int, amrex::Parser> m_parser_daydx;
+    //! host: vector potential derivative dA_y/dy
+    inline std::map<int, amrex::Parser> m_parser_daydy;
+    //! host: vector potential derivative dA_z/dx
+    inline std::map<int, amrex::Parser> m_parser_dazdx;
+    //! host: vector potential derivative dA_z/dy
+    inline std::map<int, amrex::Parser> m_parser_dazdy;
+
+} // namespace VectorPotentialData
+
     struct VectorPotential
     : public mixin::Named,
       public mixin::BeamOptic<VectorPotential>,
       public mixin::LinearTransport<VectorPotential>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::PipeAperture,
-      public mixin::NoFinalize
+      public mixin::PipeAperture
     {
         static constexpr auto type = "VectorPotential";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -65,6 +97,14 @@ namespace impactx::elements
          * @param unit  Unit specification
          *           unit = 0 MADX convention (default)
          *           unit = 1 MaryLie convention
+         * @param str_ax function string for A_x(x,y,t,zeval)
+         * @param str_ay function string for A_y(x,y,t,zeval)
+         * @param str_daxdx function string for dA_x/dx(x,y,t,zeval)
+         * @param str_daxdy function string for dA_x/dy(x,y,t,zeval)
+         * @param str_daydx function string for dA_y/dx(x,y,t,zeval)
+         * @param str_daydy function string for dA_y/dy(x,y,t,zeval)
+         * @param str_dazdx function string for dA_z/dx(x,y,t,zeval)
+         * @param str_dazdy function string for dA_z/dy(x,y,t,zeval)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -80,6 +120,14 @@ namespace impactx::elements
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
             int unit,
+            std::string str_ax = "0",
+            std::string str_ay = "0",
+            std::string str_daxdx = "0",
+            std::string str_daxdy = "0",
+            std::string str_daydx = "0",
+            std::string str_daydy = "0",
+            std::string str_dazdx = "0",
+            std::string str_dazdy = "0",
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -94,8 +142,36 @@ namespace impactx::elements
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_k(k),m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps)
+          m_k(k),m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),
+          m_id(VectorPotentialData::next_id)
         {
+            // next created vector potential element has another id for its functions
+            VectorPotentialData::next_id++;
+
+            // variables of the function
+            amrex::Vector<std::string> const varnames = {"x", "y", "t", "zeval"};
+
+            // host data
+            amrex::ParmParse const pp;
+            VectorPotentialData::m_parser_ax[m_id] = pp.makeParser(str_ax, varnames);
+            VectorPotentialData::m_parser_ay[m_id] = pp.makeParser(str_ay, varnames);
+            VectorPotentialData::m_parser_daxdx[m_id] = pp.makeParser(str_daxdx, varnames);
+            VectorPotentialData::m_parser_daxdy[m_id] = pp.makeParser(str_daxdy, varnames);
+            VectorPotentialData::m_parser_daydx[m_id] = pp.makeParser(str_daydx, varnames);
+            VectorPotentialData::m_parser_daydy[m_id] = pp.makeParser(str_daydy, varnames);
+            VectorPotentialData::m_parser_dazdx[m_id] = pp.makeParser(str_dazdx, varnames);
+            VectorPotentialData::m_parser_dazdy[m_id] = pp.makeParser(str_dazdy, varnames);
+
+            // device functions
+            constexpr int num_vars = 4;
+            m_dfunc_ax = VectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
+            m_dfunc_ay = VectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
+            m_dfunc_daxdx = VectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
+            m_dfunc_daxdy = VectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
+            m_dfunc_daydx = VectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
+            m_dfunc_daydy = VectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
+            m_dfunc_dazdx = VectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
+            m_dfunc_dazdy = VectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
         }
 
         /** Push all particles */
@@ -130,6 +206,16 @@ namespace impactx::elements
             // compute phase advance per unit length in s (in rad/m)
             m_omega = std::sqrt(std::abs(m_g));
 
+            // device functions (cached after first compile, unless user changed it interactively)
+            constexpr int num_vars = 4;
+            m_dfunc_ax = VectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
+            m_dfunc_ay = VectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
+            m_dfunc_daxdx = VectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
+            m_dfunc_daxdy = VectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
+            m_dfunc_daydx = VectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
+            m_dfunc_daydy = VectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
+            m_dfunc_dazdx = VectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
+            m_dfunc_dazdy = VectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
         }
 
         /** This is a quad functor, so that a variable of this type can be used like a quad function.
@@ -257,6 +343,7 @@ namespace impactx::elements
          * @param zeval lattice position in m
          * @param[out] tuple containing derivatives of the Hamiltonian
          */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         std::tuple <amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>
         Hamiltonian_Gradient (amrex::ParticleReal x, amrex::ParticleReal px,
@@ -274,7 +361,15 @@ namespace impactx::elements
             amrex::ParticleReal dHdpt = 0_prt;
 
             // Evaluate the vector potential and its derivatives
-            auto [ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy] = vector_potential_eval(x,y,t,zeval);
+            //auto [ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy] = vector_potential_eval(x,y,t,zeval);
+            auto const ax = m_dfunc_ax(x, y, t, zeval);
+            auto const ay = m_dfunc_ay(x, y, t, zeval);
+            auto const daxdx = m_dfunc_daxdx(x, y, t, zeval);
+            auto const daxdy = m_dfunc_daxdy(x, y, t, zeval);
+            auto const daydx = m_dfunc_daydx(x, y, t, zeval);
+            auto const daydy = m_dfunc_daydy(x, y, t, zeval);
+            auto const dazdx = m_dfunc_dazdx(x, y, t, zeval);
+            auto const dazdy = m_dfunc_dazdy(x, y, t, zeval);
 
             // Implementation of derivatives for rectilinear magnetostatic element (static units):
             // Radical appearing in the Hamiltonian (equal to the value of pz):
@@ -422,10 +517,45 @@ namespace impactx::elements
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
+        /** Close and deallocate all functions and handles.
+         */
+        void
+        finalize ()
+        {
+            // remove from unique function map
+            if (VectorPotentialData::m_parser_ax.count(m_id) != 0u)
+                VectorPotentialData::m_parser_ax.erase(m_id);
+            if (VectorPotentialData::m_parser_ay.count(m_id) != 0u)
+                VectorPotentialData::m_parser_ay.erase(m_id);
+            if (VectorPotentialData::m_parser_daxdx.count(m_id) != 0u)
+                VectorPotentialData::m_parser_daxdx.erase(m_id);
+            if (VectorPotentialData::m_parser_daxdy.count(m_id) != 0u)
+                VectorPotentialData::m_parser_daxdy.erase(m_id);
+            if (VectorPotentialData::m_parser_daydx.count(m_id) != 0u)
+                VectorPotentialData::m_parser_daydx.erase(m_id);
+            if (VectorPotentialData::m_parser_daydy.count(m_id) != 0u)
+                VectorPotentialData::m_parser_daydy.erase(m_id);
+            if (VectorPotentialData::m_parser_dazdx.count(m_id) != 0u)
+                VectorPotentialData::m_parser_dazdx.erase(m_id);
+            if (VectorPotentialData::m_parser_dazdy.count(m_id) != 0u)
+                VectorPotentialData::m_parser_dazdy.erase(m_id);
+        }
+
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
         int m_unit; //! unit specification for quad strength
         int m_int_order; //! order used for the symplectic integration (2 or 4)
         int m_mapsteps; //! number of integration steps per slice
+
+        // user-provided functions & derivatives with 4 independent variables x,y,t,zeval
+        int m_id; //! unique vector potential element id used for function lookup map
+        amrex::ParserExecutor<4> m_dfunc_ax;  //! A_x(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_ay;  //! A_y(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_daxdx;  //! dA_x/dx(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_daxdy;  //! dA_x/dy(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_daydx;  //! dA_y/dx(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_daydy;  //! dA_y/dy(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_dazdx;  //! dA_z/dx(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_dazdy;  //! dA_z/dy(x,y,t,zeval)
 
     private:
         // constants that are independent of the individually tracked particle,

@@ -470,10 +470,50 @@ element_name) );
             int mapsteps = mapsteps_default;
             pp_element.getWithParser("k", k);
             pp_element.queryAddWithParser("units", units);
+
+            std::string ax = "0";
+            std::string ay = "0";
+            std::string daxdx = "0";
+            std::string daxdy = "0";
+            std::string daydx = "0";
+            std::string daydy = "0";
+            std::string dazdx = "0";
+            std::string dazdy = "0";
+            // TODO: check if this wild syntax with / and _ is accepted by ParmParse. Ok are (,) for sure.
+            pp_element.query("A_x(x,y,t,zeval)", ax);
+            pp_element.query("A_y(x,y,t,zeval)", ay);
+            pp_element.query("dA_x/dx(x,y,t,zeval)", daxdx);
+            pp_element.query("dA_x/dy(x,y,t,zeval)", daxdy);
+            pp_element.query("dA_y/dx(x,y,t,zeval)", daydx);
+            pp_element.query("dA_y/dy(x,y,t,zeval)", daydy);
+            pp_element.query("dA_z/dx(x,y,t,zeval)", dazdx);
+            pp_element.query("dA_z/dy(x,y,t,zeval)", dazdy);
+
             pp_element.queryAddWithParser("int_order", int_order);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
 
-            m_lattice.emplace_back( VectorPotential(ds, k, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
+            m_lattice.emplace_back(VectorPotential(
+                ds,
+                k,
+                units,
+                ax,
+                ay,
+                daxdx,
+                daxdy,
+                daydx,
+                daydy,
+                dazdx,
+                dazdy,
+                a["dx"],
+                a["dy"],
+                a["rotation_degree"],
+                b["aperture_x"],
+                b["aperture_y"],
+                int_order,
+                mapsteps,
+                nslice,
+                element_name
+            ));
         } else if (element_type == "kicker")
         {
             auto a = detail::query_alignment(pp_element);

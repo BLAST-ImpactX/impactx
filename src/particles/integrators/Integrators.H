@@ -336,11 +336,11 @@ namespace impactx::integrators
     *  semiexplicit_integrator_step.  Additional documentation to be added.
     *
     *
-    * @param tau  Step size
-    * @param particle1  Particle phase space data in a 6-vector
-    * @param particle2  Particle phase space data in a 6-vector
-    * @param element  Element defining the two maps associated with H_1 and H_2
-    * @param element zeval Evaluation point in s
+    * @param tau Step size
+    * @param particle1 Particle phase space data in a 6-vector
+    * @param particle2 Particle phase space data in a 6-vector
+    * @param element Element defining the two maps associated with H_1 and H_2
+    * @param zeval Evaluation point in s
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -373,9 +373,10 @@ namespace impactx::integrators
     *  integrators for non-separable Hamiltonian systems,"
     *  Math. Comput. 92, pp. 251-281 (2022).
     *
-    * @param particle  Particle phase space data in a 6-vector
-    * @param tau  Size of the step
-    * @param element  Element defining the two maps associated with H_1 and H_2
+    * @param particle Particle phase space data in a 6-vector
+    * @param tau Size of the step
+    * @param element Element defining the two maps associated with H_1 and H_2
+    * @param zeval Evaluation point in s
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -441,11 +442,11 @@ namespace impactx::integrators
     *  Preserving Algorithms for Ordinary Differential Equations,
     *  2nd ed, Springer, Berlin, 2006.
     *
-    * @param refpart  Reference particle data
-    * @param zin  Initial value of independent variable (z-location)
-    * @param zout  Final value of independent variable (z-location)
-    * @param nsteps  Number of integration steps
-    * @param element  Element defining the two maps associated with H_1 and H_2
+    * @param particle Particle phase space data in a 6-vector
+    * @param zin Initial value of independent variable (z-location)
+    * @param zout Final value of independent variable (z-location)
+    * @param nsteps Number of integration steps
+    * @param element Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE

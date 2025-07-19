@@ -287,6 +287,7 @@ namespace VectorPotentialData
          * @param tau Map step size in m
          * @param[in,out] particle1 particle phase space 6-vector, copy 1
          * @param[in,out] particle2 particle phase space 6-vector, copy 2
+         * @param[in,out] zeval lattice position in m
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map (amrex::ParticleReal const tau,
@@ -341,7 +342,7 @@ namespace VectorPotentialData
          * @param t temporal coordinate in m
          * @param pt temporal momentum (energy deviation)
          * @param zeval lattice position in m
-         * @param[out] tuple containing derivatives of the Hamiltonian
+         * @returns tuple containing derivatives of the Hamiltonian
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         std::tuple <amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
@@ -396,15 +397,18 @@ namespace VectorPotentialData
          * @param y vertical coordinate in m
          * @param t temporal coordinate in m
          * @param zeval lattice position in m
-         * @param[out] tuple containing the vector potential and derivatives
+         * @returns tuple containing the vector potential and derivatives
          */
-        std::tuple <amrex::ParticleReal, amrex::ParticleReal,
+        std::tuple<amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal,
                amrex::ParticleReal, amrex::ParticleReal>
-        vector_potential_eval (amrex::ParticleReal x, amrex::ParticleReal y,
-                   [[maybe_unused]] amrex::ParticleReal t,
-                   [[maybe_unused]] amrex::ParticleReal zeval) const
+        vector_potential_eval (
+            amrex::ParticleReal x,
+            amrex::ParticleReal y,
+            [[maybe_unused]] amrex::ParticleReal t,
+            [[maybe_unused]] amrex::ParticleReal zeval
+        ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 

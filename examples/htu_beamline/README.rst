@@ -5,7 +5,7 @@ Dynamics in the HTU Beamline
 
 This example involves tracking a 25 pC electron bunch with 100 MeV total energy through the HTU beamline at LBNL.
 
-The bunch is generated in practice from a laser-plasma accelerator stage, resulting in a small intial rms beam size (3.9, 3.9, 1.0) microns, 2 mrad transverse divergence and 2.5% energy spread.  Due 
+The bunch is generated in practice from a laser-plasma accelerator stage, resulting in a small intial rms beam size (3.9, 3.9, 1.0) microns, 2 mrad transverse divergence and 2.5% energy spread.  Due
 to the large energy spread, chromatic focusing effects are important.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
@@ -39,5 +39,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_htu_beamline.py
       :language: python3
       :caption: You can copy this file from ``examples/htu_beamline/analysis_htu_beamline.py``.
-
-

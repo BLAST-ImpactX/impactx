@@ -196,35 +196,6 @@ def test_impactx_noparticles():
     sim.finalize()
 
 
-def test_impactx_noshape():
-    """
-    This tests using ImpactX without particle shape:
-    must throw a user-friendly runtime error
-    """
-    sim = ImpactX()
-
-    # "sim.particle_shape = order" is intentionally missing
-
-    with pytest.raises(
-        RuntimeError,
-        match="particle_shape is not set, cannot initialize grids with guard cells.",
-    ):
-        sim.init_grids()
-
-    with pytest.raises(
-        RuntimeError,
-        match="algo.particle_shape is not set yet",
-    ):
-        print(sim.particle_shape)
-
-    # correct the mistake and keep going
-    sim.particle_shape = 2
-    sim.init_grids()
-
-    # finalize simulation
-    sim.finalize()
-
-
 def test_impactx_resting_refparticle():
     """
     This tests using ImpactX with a resting reference particle:

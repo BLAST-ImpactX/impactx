@@ -10,6 +10,7 @@
 #include "ImpactXParticleContainer.H"
 
 #include "initialization/AmrCoreData.H"
+#include "initialization/Algorithms.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"
 
 #include <ablastr/constant.H>
@@ -92,8 +93,8 @@ namespace impactx
                 "ImpactXParticleContainer::SetParticleShape This was already called before and cannot be changed.");
         } else
         {
-            if (order < 1 || order > 3) {
-                amrex::Abort("algo.particle_shape order can be only 1, 2, or 3");
+            if (order < 0 || order > 3) {
+                amrex::Abort("algo.particle_shape order can be only 0, 1, 2, or 3");
             }
             m_particle_shape = order;
         }
@@ -104,8 +105,18 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         int v = 0;
         bool const has_shape = pp_algo.queryWithParser("particle_shape", v);
-        if (!has_shape)
-            throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells.");
+        if (!has_shape) {
+            bool csr = false;
+            pp_algo.query("csr", csr);
+            auto space_charge = get_space_charge_algo();
+            std::string track = "particles";
+            pp_algo.query("track", track);
+            if (csr ||
+                (space_charge != SpaceChargeAlgo::False && track == "particles"))
+            {
+                throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells for collective effects.");
+            }
+        }
         SetParticleShape(v);
     }
 

@@ -804,6 +804,7 @@ def push(
     | elements.BeamMonitor
     | elements.DipEdge
     | elements.Drift
+    | elements.ExactCFbend
     | elements.ExactDrift
     | elements.ExactMultipole
     | elements.ExactQuad

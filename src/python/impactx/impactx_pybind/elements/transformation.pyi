@@ -23,6 +23,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.BeamMonitor
     | impactx.impactx_pybind.elements.DipEdge
     | impactx.impactx_pybind.elements.Drift
+    | impactx.impactx_pybind.elements.ExactCFbend
     | impactx.impactx_pybind.elements.ExactDrift
     | impactx.impactx_pybind.elements.ExactMultipole
     | impactx.impactx_pybind.elements.ExactQuad

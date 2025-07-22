@@ -12,7 +12,7 @@ def plot_survey(
 ):
     """Plot over s of all elements in the KnownElementsList.
 
-    The signs of element strengths are determined by the sign of the charge of the reference particle.
+    A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
     The projection of all element strengths is s-x ("vertical").
 
     Parameters

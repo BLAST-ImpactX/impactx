@@ -172,11 +172,8 @@ namespace impactx::elements
             m_ibetgam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
             m_brho = refpart.rigidity_Tm();
 
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* k_normal = m_k_normal_d_data;
-#else
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
-#endif
+
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
             amrex::ParticleReal curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
             m_rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
@@ -381,13 +378,8 @@ namespace impactx::elements
             amrex::ParticleReal tout = t;
             amrex::ParticleReal ptout = pt;
 
-#if AMREX_DEVICE_COMPILE
             amrex::ParticleReal* k_normal = m_k_normal_d_data;
             amrex::ParticleReal* k_skew = m_k_skew_d_data;
-#else
-            amrex::ParticleReal* k_normal = m_k_normal_h_data;
-            amrex::ParticleReal* k_skew = m_k_skew_h_data;
-#endif
 
             // defined dimensionless variables scaled by radius of curvature
             amrex::ParticleReal rho = 1_prt + x / m_rc;
@@ -554,13 +546,7 @@ namespace impactx::elements
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
 
-            // pick the right data depending if we are on the host side
-            // (reference particle push) or device side (particles):
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* k_normal = m_k_normal_d_data;
-#else
             amrex::ParticleReal* k_normal = m_k_normal_h_data;
-#endif
 
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
             amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];

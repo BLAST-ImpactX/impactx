@@ -118,6 +118,10 @@ namespace impactx::elements
             // next created ExactCFbend has another id for its data
             ExactCFbendData::next_id++;
 
+            // validate symplectic integration order is implemented
+            if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
+                throw std::runtime_error("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
+
             // validate normal and skew coefficients are the same length
             m_ncoef = int(k_normal.size());
             if (m_ncoef != int(k_skew.size()))

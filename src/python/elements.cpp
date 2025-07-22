@@ -1112,7 +1112,11 @@ void init_elements(py::module& m)
         )
         .def_property("int_order",
             [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_int_order; },
-            [](ExactCFbend & exact_cfbend, int int_order) { exact_cfbend.m_int_order = int_order; },
+            [](ExactCFbend & exact_cfbend, int int_order) {
+                if (int_order != 2 && int_order != 4 && int_order != 6)
+                    throw std::runtime_error("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
+                exact_cfbend.m_int_order = int_order;
+            },
             "order of symplectic integration used for particle push in applied fields"
         )
         .def_property("mapsteps",

@@ -1,7 +1,7 @@
 .. _examples-htu-beamline:
 
 Dynamics in the HTU Beamline
-==============================
+============================
 
 This example involves tracking a 25 pC electron bunch with 100 MeV total energy through the `BELLA Hundred-Terawatt Undulator (HTU) beamline at LBNL <https://doi.org/10.1117/12.3056776>`__.
 

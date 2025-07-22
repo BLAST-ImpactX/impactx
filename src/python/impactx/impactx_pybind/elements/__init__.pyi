@@ -1106,6 +1106,10 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def rc(self, ref: impactx.impactx_pybind.RefPart) -> float:
+        """
+        Radius of curvature in m
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1341,6 +1345,34 @@ class KnownElementsList:
         Add a list of elements to the list.
         """
     def load_file(self, madx_file, nslice=1): ...
+    def plot_survey(
+        self, ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc"
+    ):
+        """
+        Plot over s of all elements in the KnownElementsList.
+
+            A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
+
+            Parameters
+            ----------
+            self : ImpactXParticleContainer_*
+                The KnownElementsList class in ImpactX
+            ref : RefPart
+                A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+            ax : matplotlib axes
+                A plotting area in matplotlib (called axes there).
+            legend: bool
+                Plot a legend if true.
+            legend_ncols: int
+                Number of columns for lattice element types in the legend.
+            palette: string
+                Color palette.
+
+            Returns
+            -------
+            Either populates the matplotlib axes in ax or creates a new axes containing the plot.
+
+        """
     def pop_back(self) -> None:
         """
         Return and remove the last element of the list.
@@ -2010,6 +2042,10 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def rc(self, ref: impactx.impactx_pybind.RefPart = None) -> float:
+        """
+        Radius of curvature in m
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2024,13 +2060,6 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
         | None,
     ]: ...
-    @property
-    def rc(self) -> float:
-        """
-        Radius of curvature in m
-        """
-    @rc.setter
-    def rc(self, arg1: float) -> None: ...
 
 class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(

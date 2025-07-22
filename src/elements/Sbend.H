@@ -71,6 +71,17 @@ namespace impactx::elements
         {
         }
 
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        amrex::ParticleReal
+        rc ([[maybe_unused]] RefPart const & refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // TODO: as in ExactSbend
+            // return m_B != 0_prt ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
+            return m_rc;
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 

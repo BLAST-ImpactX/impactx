@@ -59,6 +59,7 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         aperture_y: float,
         repeat_x: float = 0,
         repeat_y: float = 0,
+        shift_odd_x: bool = False,
         shape: str = "rectangular",
         action: str = "transmit",
         dx: float = 0,
@@ -145,6 +146,13 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     @shape.setter
     def shape(self, arg1: str) -> None: ...
+    @property
+    def shift_odd_x(self) -> bool:
+        """
+        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+        """
+    @shift_odd_x.setter
+    def shift_odd_x(self, arg1: bool) -> None: ...
 
 class BeamMonitor(mixin.Thin):
     def __init__(

@@ -481,6 +481,7 @@ element_name) );
             amrex::Real aperture_x, aperture_y;
             amrex::ParticleReal repeat_x = 0.0;
             amrex::ParticleReal repeat_y = 0.0;
+            bool shift_odd_x = false;
             std::string shape_str = "rectangular";
             std::string action_str = "transmit";
 
@@ -511,9 +512,9 @@ element_name) );
                 pp_element.getWithParser("aperture_y", aperture_y);
             }
 
-            pp_element.queryAddWithParser("repeat_y", repeat_y);
             pp_element.queryAddWithParser("repeat_x", repeat_x);
             pp_element.queryAddWithParser("repeat_y", repeat_y);
+            pp_element.queryAdd("shift_odd_x", shift_odd_x);  // https://github.com/AMReX-Codes/amrex/issues/4535
             pp_element.queryAdd("shape", shape_str);
             pp_element.queryAdd("action", action_str);
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(shape_str == "rectangular" || shape_str == "elliptical",
@@ -527,7 +528,7 @@ element_name) );
                                         Aperture::Action::transmit :
                                         Aperture::Action::absorb;
 
-            m_lattice.emplace_back( Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "beam_monitor")
         {
             std::string openpmd_name = element_name;

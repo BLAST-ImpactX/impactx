@@ -55,13 +55,14 @@ We run the following script to analyze correctness:
 .. _examples-aperture-periodic:
 
 Aperture Collimation with Periodic Masking
-===========================================
+==========================================
 
 Proton beam undergoing collimation by a periodic array of rectangular apertures, such as those used in a pepperpot emittance measurement.
 
 We use a 250 MeV proton beam with a horizontal rms beam size of 1.56 mm and a vertical rms beam size of 2.21 mm.
 
 After a short drift of 0.123 m, the beam intercepts a periodic array of apertures of period 1 mm (in the horizontal and vertical), each of which is 0.15 mm x 0.1 mm in size.
+Every 2nd row of the aperture pattern (rows -3, -1, 1, 3, ...) is shifted horizontally by half the horizontal period, creating a `hexagonal / triangular pattern <https://github.com/BLAST-ImpactX/impactx/pull/1019>`__.
 
 In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 The test fails if:

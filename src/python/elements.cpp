@@ -421,7 +421,8 @@ void init_elements(py::module& m)
                     std::make_pair("aperture_x", 1_prt / ap.m_inv_aperture_x),
                     std::make_pair("aperture_y", 1_prt / ap.m_inv_aperture_y),
                     std::make_pair("repeat_x", ap.m_repeat_x),
-                    std::make_pair("repeat_y", ap.m_repeat_y)
+                    std::make_pair("repeat_y", ap.m_repeat_y),
+                    std::make_pair("shift_odd_x", ap.m_shift_odd_x)
                 );
             }
         )
@@ -430,6 +431,7 @@ void init_elements(py::module& m)
                  amrex::ParticleReal aperture_y,
                  amrex::ParticleReal repeat_x,
                  amrex::ParticleReal repeat_y,
+                 bool shift_odd_x,
                  std::string const & shape,
                  std::string const & action,
                  amrex::ParticleReal dx,
@@ -450,12 +452,13 @@ void init_elements(py::module& m)
                  Aperture::Action const a = action == "transmit" ?
                      Aperture::Action::transmit :
                      Aperture::Action::absorb;
-                 return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, s, a, dx, dy, rotation_degree, name);
+                 return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, s, a, dx, dy, rotation_degree, name);
              }),
              py::arg("aperture_x"),
              py::arg("aperture_y"),
              py::arg("repeat_x") = 0,
              py::arg("repeat_y") = 0,
+             py::arg("shift_odd_x") = false,
              py::arg("shape") = "rectangular",
              py::arg("action") = "transmit",
              py::arg("dx") = 0,
@@ -515,6 +518,12 @@ void init_elements(py::module& m)
             [](Aperture & ap) { return ap.m_repeat_y; },
             [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
             "vertical period for repeated aperture masking"
+        )
+        .def_property("shift_odd_x",
+            [](Aperture & ap) { return ap.m_shift_odd_x; },
+            [](Aperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
+            "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. "
+            "Use alignment offsets dx,dy to move whole mask as needed."
         )
     ;
     register_push(py_Aperture);

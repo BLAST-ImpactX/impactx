@@ -233,8 +233,6 @@ namespace impactx::elements
                 integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
             } else if (m_int_order == 6) {
                 integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
-            } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
             }
 
             // assign updated values

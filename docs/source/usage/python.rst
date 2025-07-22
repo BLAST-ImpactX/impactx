@@ -628,7 +628,6 @@ This module provides elements and methods for the accelerator lattice.
       Plot over s of all elements in the KnownElementsList.
 
       A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
-      The projection of all element strengths is s-x ("vertical").
 
       Either populates the matplotlib axes in ax or creates a new axes containing the plot.
 

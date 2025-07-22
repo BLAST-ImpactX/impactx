@@ -3,7 +3,7 @@
 Dynamics in the HTU Beamline
 ==============================
 
-This example involves tracking a 25 pC electron bunch with 100 MeV total energy through the HTU beamline at LBNL.
+This example involves tracking a 25 pC electron bunch with 100 MeV total energy through the `BELLA Hundred-Terawatt Undulator (HTU) beamline at LBNL <https://doi.org/10.1117/12.3056776>`__.
 
 The bunch is generated in practice from a laser-plasma accelerator stage, resulting in a small intial rms beam size (3.9, 3.9, 1.0) microns, 2 mrad transverse divergence and 2.5% energy spread.  Due
 to the large energy spread, chromatic focusing effects are important.

@@ -24,9 +24,18 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_impactx.py
-          :language: python3
-          :caption: You can copy this file from ``examples/htu_beamline/run_impactx.py``.
+      .. dropdown:: HTU Beamline: Lattice File
+         :color: light
+         :icon: info
+         :animate: fade-in-slide-down
+
+         .. literalinclude:: htu_lattice.py
+            :language: python3
+            :caption: You can copy this file from ``examples/htu_beamline/htu_lattice.py``.
+
+      .. literalinclude:: run_impactx.py
+         :language: python3
+         :caption: You can copy this file from ``examples/htu_beamline/run_impactx.py``.
 
 
 Analyze

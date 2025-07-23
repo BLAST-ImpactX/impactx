@@ -1515,6 +1515,18 @@ add_impactx_test(examples-dogleg-jitter.py
     OFF  # no plot script yet
 )
 
+# HTU Beamline Model ##############
+#
+# no space charge
+file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-htu-beamline.py)
+add_impactx_test(examples-htu-beamline.py
+    examples/htu_beamline/run_impactx.py
+    ON   # ImpactX MPI-parallel
+    examples/htu_beamline/analysis_htu_beamline.py
+    OFF  # no plot script yet
+)
+
 # Symplectic Integration in an Exact Combined-Function Bend ##############
 #
 # no space charge

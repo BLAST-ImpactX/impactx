@@ -220,7 +220,6 @@ monitor.nonlinear_lens_invariants = true
 ###############################################################################
 # Algorithms
 ###############################################################################
-algo.particle_shape = 2
 algo.space_charge = false
 
 

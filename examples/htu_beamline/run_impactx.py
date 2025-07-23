@@ -4,6 +4,10 @@
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
+# HTU References:
+# - https://doi.org/10.1103/vh62-gz1p
+# - https://doi.org/10.1117/12.3056776
+#
 # -*- coding: utf-8 -*-
 
 import numpy as np

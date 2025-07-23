@@ -1,5 +1,9 @@
 """
 Define the lattice for the HTU accelerator.
+
+References:
+- https://doi.org/10.1103/vh62-gz1p
+- https://doi.org/10.1117/12.3056776
 """
 
 from scipy.constants import c, e, m_e

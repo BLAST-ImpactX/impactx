@@ -7,10 +7,10 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import vuetify
-from .. import CardBase, CardComponents, InputComponents
+from ...Input.components import CardBase, CardComponents, InputComponents
 
 
-class csrConfiguration(CardBase):
+class CSRConfiguration(CardBase):
     HEADER_NAME = "CSR"
 
     def __init__(self):

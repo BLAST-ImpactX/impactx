@@ -24,6 +24,7 @@ __all__ = [
     "DipEdge",
     "Drift",
     "Empty",
+    "ExactCFbend",
     "ExactDrift",
     "ExactMultipole",
     "ExactQuad",
@@ -59,6 +60,7 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         aperture_y: float,
         repeat_x: float = 0,
         repeat_y: float = 0,
+        shift_odd_x: bool = False,
         shape: str = "rectangular",
         action: str = "transmit",
         dx: float = 0,
@@ -145,6 +147,13 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     @shape.setter
     def shape(self, arg1: str) -> None: ...
+    @property
+    def shift_odd_x(self) -> bool:
+        """
+        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+        """
+    @shift_odd_x.setter
+    def shift_odd_x(self, arg1: bool) -> None: ...
 
 class BeamMonitor(mixin.Thin):
     def __init__(
@@ -853,6 +862,82 @@ class Empty(mixin.Thin):
         | None,
     ]: ...
 
+class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: float,
+        k_normal: list[float],
+        k_skew: list[float],
+        unit: int = 0,
+        dx: float = 0,
+        dy: float = 0,
+        rotation: float = 0,
+        aperture_x: float = 0,
+        aperture_y: float = 0,
+        int_order: int = 2,
+        mapsteps: int = 5,
+        nslice: int = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        A thick combined function bending magnet using the exact nonlinear Hamiltonian.
+        """
+    def __repr__(self) -> str: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: int = 0,
+        period: int = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def int_order(self) -> int:
+        """
+        order of symplectic integration used for particle push in applied fields
+        """
+    @int_order.setter
+    def int_order(self, arg1: int) -> None: ...
+    @property
+    def mapsteps(self) -> int:
+        """
+        number of integration steps per slice used for particle push in the applied fields
+        """
+    @mapsteps.setter
+    def mapsteps(self, arg1: int) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        unit specification for multipole strength
+        """
+    @unit.setter
+    def unit(self, arg1: int) -> None: ...
+
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
@@ -1098,6 +1183,10 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def rc(self, ref: impactx.impactx_pybind.RefPart) -> float:
+        """
+        Radius of curvature in m
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1208,6 +1297,7 @@ class KnownElementsList:
         | BeamMonitor
         | DipEdge
         | Drift
+        | ExactCFbend
         | ExactDrift
         | ExactMultipole
         | ExactQuad
@@ -1249,6 +1339,7 @@ class KnownElementsList:
         | BeamMonitor
         | DipEdge
         | Drift
+        | ExactCFbend
         | ExactDrift
         | ExactMultipole
         | ExactQuad
@@ -1291,6 +1382,7 @@ class KnownElementsList:
         | BeamMonitor
         | DipEdge
         | Drift
+        | ExactCFbend
         | ExactDrift
         | ExactMultipole
         | ExactQuad
@@ -1333,6 +1425,34 @@ class KnownElementsList:
         Add a list of elements to the list.
         """
     def load_file(self, madx_file, nslice=1): ...
+    def plot_survey(
+        self, ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc"
+    ):
+        """
+        Plot over s of all elements in the KnownElementsList.
+
+            A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
+
+            Parameters
+            ----------
+            self : ImpactXParticleContainer_*
+                The KnownElementsList class in ImpactX
+            ref : RefPart
+                A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+            ax : matplotlib axes
+                A plotting area in matplotlib (called axes there).
+            legend: bool
+                Plot a legend if true.
+            legend_ncols: int
+                Number of columns for lattice element types in the legend.
+            palette: string
+                Color palette.
+
+            Returns
+            -------
+            Either populates the matplotlib axes in ax or creates a new axes containing the plot.
+
+        """
     def pop_back(self) -> None:
         """
         Return and remove the last element of the list.
@@ -2002,6 +2122,10 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def rc(self, ref: impactx.impactx_pybind.RefPart = None) -> float:
+        """
+        Radius of curvature in m
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2016,13 +2140,6 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
         | None,
     ]: ...
-    @property
-    def rc(self) -> float:
-        """
-        Radius of curvature in m
-        """
-    @rc.setter
-    def rc(self, arg1: float) -> None: ...
 
 class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(

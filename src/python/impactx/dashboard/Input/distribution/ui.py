@@ -11,16 +11,11 @@ from typing import Union
 from impactx import distribution
 
 from ... import ctrl, state, vuetify
-from .. import (
-    CardBase,
-    CardComponents,
-    DashboardDefaults,
-    DashboardValidation,
-    InputComponents,
-    generalFunctions,
-)
+from ...Input.components import CardBase, CardComponents, InputComponents
+from .. import DashboardDefaults, DashboardValidation
 from ..defaults_helper import InputDefaultsHelper
-from . import DistributionFunctions
+from ..utils import GeneralFunctions
+from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
 # Helpful
@@ -56,7 +51,7 @@ def populate_distribution_parameters():
             default_value, default_type
         )
         units = DistributionFunctions.get_distribution_units(param_name)
-        step = generalFunctions.get_default(param_name, "steps")
+        step = GeneralFunctions.get_default(param_name, "steps")
 
         params[param_name] = {
             "value": default_value,
@@ -99,9 +94,9 @@ def on_distribution_type_change(**kwargs):
 
 @ctrl.add("update_distribution_parameter")
 def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
-    numeric_input = generalFunctions.convert_to_numeric(input)
+    numeric_input = GeneralFunctions.convert_to_numeric(input)
     lookup_name = "lambda" if "lambda" in name else name
-    conditions = generalFunctions.get_default(lookup_name, "validation_condition")
+    conditions = GeneralFunctions.get_default(lookup_name, "validation_condition")
     error_message = DashboardValidation.validate_against(
         numeric_input, type, additional_conditions=conditions
     )
@@ -119,7 +114,7 @@ def on_distribution_parameter_change(name: str, input: Union[float, int], type: 
 # -----------------------------------------------------------------------------
 
 
-class DistributionParameters(CardBase):
+class DistributionConfiguration(CardBase):
     """
     User-Input section for beam distribution.
     """

@@ -426,6 +426,24 @@ element_name) );
             detail::queryAddResize(pp_element, "k_skew", k_skew);
 
             m_lattice.emplace_back( ExactMultipole(ds, k_normal, k_skew, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
+        } else if (element_type == "cfbend_exact")
+        {
+            auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
+            auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
+
+            std::vector<amrex::ParticleReal> k_normal = {0.0};
+            std::vector<amrex::ParticleReal> k_skew = {0.0};
+            int units = 0;
+            int int_order = 2;
+            int mapsteps = mapsteps_default;
+            pp_element.queryAddWithParser("units", units);
+            pp_element.queryAddWithParser("int_order", int_order);
+            pp_element.queryAddWithParser("mapsteps", mapsteps);
+            detail::queryAddResize(pp_element, "k_normal", k_normal);
+            detail::queryAddResize(pp_element, "k_skew", k_skew);
+
+            m_lattice.emplace_back( ExactCFbend(ds, k_normal, k_skew, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
         } else if (element_type == "sbend_exact")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
@@ -481,6 +499,7 @@ element_name) );
             amrex::Real aperture_x, aperture_y;
             amrex::ParticleReal repeat_x = 0.0;
             amrex::ParticleReal repeat_y = 0.0;
+            bool shift_odd_x = false;
             std::string shape_str = "rectangular";
             std::string action_str = "transmit";
 
@@ -511,9 +530,9 @@ element_name) );
                 pp_element.getWithParser("aperture_y", aperture_y);
             }
 
-            pp_element.queryAddWithParser("repeat_y", repeat_y);
             pp_element.queryAddWithParser("repeat_x", repeat_x);
             pp_element.queryAddWithParser("repeat_y", repeat_y);
+            pp_element.queryAdd("shift_odd_x", shift_odd_x);  // https://github.com/AMReX-Codes/amrex/issues/4535
             pp_element.queryAdd("shape", shape_str);
             pp_element.queryAdd("action", action_str);
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(shape_str == "rectangular" || shape_str == "elliptical",
@@ -527,7 +546,7 @@ element_name) );
                                         Aperture::Action::transmit :
                                         Aperture::Action::absorb;
 
-            m_lattice.emplace_back( Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "beam_monitor")
         {
             std::string openpmd_name = element_name;

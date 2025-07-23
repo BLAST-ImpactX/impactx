@@ -4,15 +4,15 @@ from trame.widgets import router, xterm
 
 from . import (
     AnalyzeSimulation,
-    DistributionParameters,
+    CSRConfiguration,
+    DistributionConfiguration,
     GeneralToolbar,
-    InputParameters,
+    ISRConfiguration,
     LatticeConfiguration,
     NavigationComponents,
+    SimulationParameters,
     SpaceChargeConfiguration,
-    csrConfiguration,
     ctrl,
-    isrConfiguration,
     server,
     vuetify,
 )
@@ -32,12 +32,12 @@ from .Input.shared import SharedUtilities
 
 shared_utilities = SharedUtilities()
 
-inputParameters = InputParameters()
-distribution = DistributionParameters()
+simulationParameters = SimulationParameters()
+distribution = DistributionConfiguration()
 lattice_config = LatticeConfiguration()
 space_charge = SpaceChargeConfiguration()
-csr = csrConfiguration()
-isr = isrConfiguration()
+csr = CSRConfiguration()
+isr = ISRConfiguration()
 
 card_column_padding = {"classes": "pa-2"}
 card_row_padding = {"classes": "ma-2"}
@@ -49,7 +49,7 @@ with RouterViewLayout(server, "/Input"):
             with vuetify.VCol(cols=12, md=6):
                 with vuetify.VRow(**card_row_padding):
                     with vuetify.VCol(**{**card_breakpoints, **card_column_padding}):
-                        inputParameters.card()
+                        simulationParameters.card()
                     with vuetify.VCol(
                         **{**card_breakpoints, **card_column_padding},
                         v_show="space_charge !== 'false'",

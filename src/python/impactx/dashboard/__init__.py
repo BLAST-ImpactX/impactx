@@ -10,13 +10,13 @@ server, state, ctrl = setup_server()
 from .Toolbar.general import GeneralToolbar
 
 from .Analyze.ui import AnalyzeSimulation
-from .Input.csrConfiguration.csrMain import csrConfiguration
-from .Input.isr.ui import isrConfiguration
-from .Input.distribution.ui import DistributionParameters
-from .Input.inputParameters.inputMain import InputParameters
-from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
+from .Input.csr import CSRConfiguration
+from .Input.isr import ISRConfiguration
+from .Input.distribution import DistributionConfiguration
+from .Input.simulation_parameters import SimulationParameters
+from .Input.lattice import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
-from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
+from .Input.space_charge import SpaceChargeConfiguration
 
 from .start import JupyterApp
 # isort: on
@@ -33,10 +33,10 @@ __all__ = [
     "vuetify",
     "AnalyzeSimulation",
     "NavigationComponents",
-    "csrConfiguration",
-    "isrConfiguration",
-    "DistributionParameters",
-    "InputParameters",
+    "CSRConfiguration",
+    "ISRConfiguration",
+    "DistributionConfiguration",
+    "SimulationParameters",
     "LatticeConfiguration",
     "SpaceChargeConfiguration",
     "GeneralToolbar",

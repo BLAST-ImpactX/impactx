@@ -623,6 +623,20 @@ This module provides elements and methods for the accelerator lattice.
       :param madx_file: file name to MAD-X file with beamline elements
       :param nslice: number of slices used for the application of space charge
 
+   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
+
+      Plot over s of all elements in the KnownElementsList.
+
+      A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
+
+      Either populates the matplotlib axes in ax or creates a new axes containing the plot.
+
+      :param self: The KnownElementsList class in ImpactX
+      :param ref: A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+      :param ax: A plotting area in matplotlib (called axes there).
+      :param legend: Plot a legend if true.
+      :param legend_ncols: Number of columns for lattice element types in the legend.
+
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.
@@ -771,6 +785,52 @@ This module provides elements and methods for the accelerator lattice.
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
+
+.. py:class:: impactx.elements.ExactCFbend(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+
+   A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+   The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
+   For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
+
+   T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), `DOI:10.1103/PhysRevAccelBeams.20.043501 <https://link.aps.org/doi/10.1103/PhysRevAccelBeams.20.043501>`__
+
+   The coefficients must appear in the following sequence:
+
+   dipole, quadrupole, sextupole, octupole, etc...
+
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+   Here :math:`H_1` is the exact nonlinear Hamiltonian for a sector bend (including the kinematic square root),
+   and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
+
+   The vector potential is obtained from Table XI of the above-cited reference.
+
+   :param ds: Segment length in m.
+   :param K_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param K_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   .. py:property:: unit
+
+      unit specification for multipole coefficients
+
+   .. py:property:: int_order
+
+      the order used for symplectic integration (2, 4, or 6)
+
+   .. py:property:: mapsteps
+
+      number of integration steps per slice used for symplectic integration
+
 
 .. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
@@ -1222,7 +1282,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
@@ -1230,6 +1290,7 @@ This module provides elements and methods for the accelerator lattice.
    :param aperture_y: vertical half-aperture (rectangular or elliptical) in m
    :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
    :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m

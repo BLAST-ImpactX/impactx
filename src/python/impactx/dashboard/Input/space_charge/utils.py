@@ -6,11 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .. import CardComponents
-
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
+from ...Input.components import CardComponents
 
 
 class SpaceChargeFunctions:

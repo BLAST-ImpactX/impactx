@@ -1526,3 +1526,35 @@ add_impactx_test(examples-htu-beamline.py
     examples/htu_beamline/analysis_htu_beamline.py
     OFF  # no plot script yet
 )
+
+# Symplectic Integration in an Exact Combined-Function Bend ##############
+#
+# no space charge
+add_impactx_test(examples-exact-cfbend
+    examples/symplectic_integration/input_exact_cfbend.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-exact_cfbend.py
+    examples/symplectic_integration/run_exact_cfbend.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in an Exact Combined-Function Bend (Multipole test) ##############
+#
+# no space charge
+add_impactx_test(examples-exact-cfbend-multipole
+    examples/symplectic_integration/input_exact_cfbend_multipole.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend_multipole.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-exact_cfbend_multipole.py
+    examples/symplectic_integration/run_exact_cfbend_multipole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend_multipole.py
+    OFF  # no plot script yet
+)

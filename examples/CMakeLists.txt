@@ -1521,7 +1521,7 @@ add_impactx_test(examples-dogleg-jitter.py
 add_impactx_test(examples-fodo-vector-potential
     examples/vector_potential/input_fodo_vector_potential.in
     ON   # ImpactX MPI-parallel
-    examples/vector_potential/analysis_vector_potential.py
+    examples/vector_potential/analysis_fodo_vector_potential.py
     OFF  # no plot script yet
 )
 add_impactx_test(examples-fodo-vector-potential.py
@@ -1541,7 +1541,7 @@ add_impactx_test(examples-exact-quad-vector-potential
     OFF  # no plot script yet
 )
 add_impactx_test(examples-exact-quad-vector-potential.py
-    examples/dogleg/run_exact_quad_vector_potential.py
+    examples/vector_potential/run_exact_quad_vector_potential.py
     ON   # ImpactX MPI-parallel
     examples/vector_potential/analysis_exact_quad_vector_potential.py
     OFF  # no plot script yet

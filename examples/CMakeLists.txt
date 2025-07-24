@@ -1516,7 +1516,7 @@ add_impactx_test(examples-dogleg-jitter.py
 )
 
 # Symplectic Integration in a FODO Cell Based on User-Provided Vector Potential ##############
-#   
+#
 # no space charge
 add_impactx_test(examples-fodo-vector-potential
     examples/vector_potential/input_fodo_vector_potential.in
@@ -1532,7 +1532,7 @@ add_impactx_test(examples-fodo-vector-potential.py
 )
 
 # Symplectic Integration in Exact Quads Based on User-Provided Vector Potential ##############
-# 
+#
 # no space charge
 add_impactx_test(examples-exact-quad-vector-potential
     examples/vector_potential/input_exact_quad_vector_potential.in
@@ -1545,7 +1545,7 @@ add_impactx_test(examples-exact-quad-vector-potential.py
     ON   # ImpactX MPI-parallel
     examples/vector_potential/analysis_exact_quad_vector_potential.py
     OFF  # no plot script yet
-)   
+)
 
 # HTU Beamline Model ##############
 #

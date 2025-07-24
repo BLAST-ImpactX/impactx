@@ -89,14 +89,9 @@ namespace VectorPotentialData
          *  https://doi.org/10.1090/mcom/3778
          *
          * @param ds Segment length in m.
-         * @param k  Quadrupole strength in m^(-2) (MADX convention)
-         *           = (gradient in T/m) / (rigidity in T-m)
-         *        OR Quadrupole strength in T/m (MaryLie convention)
-         *           k > 0 horizontal focusing
-         *           k < 0 horizontal defocusing
-         * @param unit  Unit specification
-         *           unit = 0 MADX convention (default)
-         *           unit = 1 MaryLie convention
+         * @param unit  Unit specification for vector potential
+         *           unit = 0 dimensionless (default)
+         *           unit = 1 SI units of T-m
          * @param str_ax function string for A_x(x,y,t,zeval)
          * @param str_ay function string for A_y(x,y,t,zeval)
          * @param str_daxdx function string for dA_x/dx(x,y,t,zeval)
@@ -118,7 +113,6 @@ namespace VectorPotentialData
          */
         VectorPotential (
             amrex::ParticleReal ds,
-            amrex::ParticleReal k,
             int unit,
             std::string str_ax = "0",
             std::string str_ay = "0",
@@ -142,7 +136,7 @@ namespace VectorPotentialData
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_k(k),m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),
+          m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),
           m_id(VectorPotentialData::next_id)
         {
             // next created vector potential element has another id for its functions
@@ -200,11 +194,8 @@ namespace VectorPotentialData
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
 
-            // normalize quad units to MAD-X convention if needed
-            m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
-
-            // compute phase advance per unit length in s (in rad/m)
-            m_omega = std::sqrt(std::abs(m_g));
+            // normalize vector potential if SI units are specified
+            m_scale =  m_unit == 1 ? 1_prt / refpart.rigidity_Tm() : 1_prt;
 
             // device functions (cached after first compile, unless user changed it interactively)
             constexpr int num_vars = 4;
@@ -362,15 +353,14 @@ namespace VectorPotentialData
             amrex::ParticleReal dHdpt = 0_prt;
 
             // Evaluate the vector potential and its derivatives
-            //auto [ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy] = vector_potential_eval(x,y,t,zeval);
-            auto const ax = m_dfunc_ax(x, y, t, zeval);
-            auto const ay = m_dfunc_ay(x, y, t, zeval);
-            auto const daxdx = m_dfunc_daxdx(x, y, t, zeval);
-            auto const daxdy = m_dfunc_daxdy(x, y, t, zeval);
-            auto const daydx = m_dfunc_daydx(x, y, t, zeval);
-            auto const daydy = m_dfunc_daydy(x, y, t, zeval);
-            auto const dazdx = m_dfunc_dazdx(x, y, t, zeval);
-            auto const dazdy = m_dfunc_dazdy(x, y, t, zeval);
+            auto const ax = m_dfunc_ax(x, y, t, zeval) * m_scale;
+            auto const ay = m_dfunc_ay(x, y, t, zeval) * m_scale;
+            auto const daxdx = m_dfunc_daxdx(x, y, t, zeval) * m_scale;
+            auto const daxdy = m_dfunc_daxdy(x, y, t, zeval) * m_scale;
+            auto const daydx = m_dfunc_daydx(x, y, t, zeval) * m_scale;
+            auto const daydy = m_dfunc_daydy(x, y, t, zeval) * m_scale;
+            auto const dazdx = m_dfunc_dazdx(x, y, t, zeval) * m_scale;
+            auto const dazdy = m_dfunc_dazdy(x, y, t, zeval) * m_scale;
 
             // Implementation of derivatives for rectilinear magnetostatic element (static units):
             // Radical appearing in the Hamiltonian (equal to the value of pz):
@@ -387,45 +377,6 @@ namespace VectorPotentialData
             dHdpt = - m_ibeta + (m_ibeta - pt) / radical;
 
             return std::make_tuple(dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt);
-
-         }
-
-
-        /** This evaluates the vector potential and derivatives at a point.
-         *
-         * @param x horizontal coordinate in m
-         * @param y vertical coordinate in m
-         * @param t temporal coordinate in m
-         * @param zeval lattice position in m
-         * @returns tuple containing the vector potential and derivatives
-         */
-        std::tuple<amrex::ParticleReal, amrex::ParticleReal,
-               amrex::ParticleReal, amrex::ParticleReal,
-               amrex::ParticleReal, amrex::ParticleReal,
-               amrex::ParticleReal, amrex::ParticleReal>
-        vector_potential_eval (
-            amrex::ParticleReal x,
-            amrex::ParticleReal y,
-            [[maybe_unused]] amrex::ParticleReal t,
-            [[maybe_unused]] amrex::ParticleReal zeval
-        ) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-
-            // Test: for the simplest case of a quadrupole:
-
-            // amrex::ParticleReal az = 0.5_prt * m_g * (y*y - x*x);
-            amrex::ParticleReal ax = 0_prt;
-            amrex::ParticleReal ay = 0_prt;
-
-            amrex::ParticleReal daxdx = 0_prt;
-            amrex::ParticleReal daxdy = 0_prt;
-            amrex::ParticleReal daydx = 0_prt;
-            amrex::ParticleReal daydy = 0_prt;
-            amrex::ParticleReal dazdx = -m_g*x;
-            amrex::ParticleReal dazdy = m_g*y;
-
-            return std::make_tuple(ax,ay,daxdx,daxdy,daydx,daydy,dazdx,dazdy);
 
          }
 
@@ -477,43 +428,14 @@ namespace VectorPotentialData
             using namespace amrex::literals; // for _rt and _prt
 
             // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
+            //amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // access reference particle values to find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-
-            // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+            //amrex::ParticleReal const pt_ref = refpart.pt;
+            //amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
-
-            if (m_k > 0.0) {
-                R(1,1) = std::cos(omega*slice_ds);
-                R(1,2) = std::sin(omega*slice_ds)/omega;
-                R(2,1) = -omega*std::sin(omega*slice_ds);
-                R(2,2) = std::cos(omega*slice_ds);
-                R(3,3) = std::cosh(omega*slice_ds);
-                R(3,4) = std::sinh(omega*slice_ds)/omega;
-                R(4,3) = omega*std::sinh(omega*slice_ds);
-                R(4,4) = std::cosh(omega*slice_ds);
-                R(5,6) = slice_ds/betgam2;
-            } else if (m_k < 0.0) {
-                R(1,1) = std::cosh(omega*slice_ds);
-                R(1,2) = std::sinh(omega*slice_ds)/omega;
-                R(2,1) = omega*std::sinh(omega*slice_ds);
-                R(2,2) = std::cosh(omega*slice_ds);
-                R(3,3) = std::cos(omega*slice_ds);
-                R(3,4) = std::sin(omega*slice_ds)/omega;
-                R(4,3) = -omega*std::sin(omega*slice_ds);
-                R(4,4) = std::cos(omega*slice_ds);
-                R(5,6) = slice_ds/betgam2;
-            } else {
-                R(1,2) = m_slice_ds;
-                R(3,4) = m_slice_ds;
-                R(5,6) = m_slice_ds / betgam2;
-            }
 
             return R;
         }
@@ -569,8 +491,7 @@ namespace VectorPotentialData
         amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
-        amrex::ParticleReal m_g;              //! quadrupole strength in 1/m^2
-        amrex::ParticleReal m_omega;
+        amrex::ParticleReal m_scale;          //! scale factor defining vector potential units
     };
 
 } // namespace impactx

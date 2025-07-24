@@ -2267,8 +2267,7 @@ void init_elements(py::module& m)
         .def("__repr__",
              [](VectorPotential const & vp) {
                  return element_name(
-                     vp,
-                     std::make_pair("k", vp.m_k)
+                     vp
                  );
              }
         )
@@ -2276,13 +2275,11 @@ void init_elements(py::module& m)
             [](VectorPotential const & vp) {
                 return element_dict(
                     vp,
-                    std::make_pair("k", vp.m_k),
                     std::make_pair("unit", vp.m_unit)
                 );
             }
         )
         .def(py::init<
-                amrex::ParticleReal,
                 amrex::ParticleReal,
                 int,
                 std::string,
@@ -2304,7 +2301,6 @@ void init_elements(py::module& m)
                 std::optional<std::string>
              >(),
              py::arg("ds"),
-             py::arg("k"),
              py::arg("unit") = 0,
              py::arg("ax") = "0",
              py::arg("ay") = "0",

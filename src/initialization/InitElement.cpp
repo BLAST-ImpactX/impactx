@@ -464,11 +464,9 @@ element_name) );
             auto a = detail::query_alignment(pp_element);
             auto b = detail::query_aperture(pp_element);
 
-            amrex::ParticleReal k;
             int units = 0;
             int int_order = 2;
             int mapsteps = mapsteps_default;
-            pp_element.getWithParser("k", k);
             pp_element.queryAddWithParser("units", units);
 
             std::string ax = "0";
@@ -494,7 +492,6 @@ element_name) );
 
             m_lattice.emplace_back(VectorPotential(
                 ds,
-                k,
                 units,
                 ax,
                 ay,

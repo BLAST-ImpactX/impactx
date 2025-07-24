@@ -36,12 +36,12 @@ pepperpot.aperture_x = 1.5e-4
 pepperpot.aperture_y = 1.0e-4
 pepperpot.repeat_x = 1.0e-3
 pepperpot.repeat_y = 1.0e-3
+pepperpot.shift_odd_x = true
 
 
 ###############################################################################
 # Algorithms
 ###############################################################################
-algo.particle_shape = 2
 algo.space_charge = false
 
 

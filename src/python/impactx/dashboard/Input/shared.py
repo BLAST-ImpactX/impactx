@@ -6,18 +6,25 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server
-from ..Input.inputParameters.inputMain import InputParameters
-from . import DashboardDefaults, DashboardValidation, generalFunctions
+from .. import ctrl, state
+from . import DashboardDefaults, DashboardValidation
+from .utils import GeneralFunctions
 
-server, state, ctrl = setup_server()
+simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
+csr_defaults = list(DashboardDefaults.CSR.keys())
+sc_multigrid_defaults = [
+    "mlmg_relative_tolerance",
+    "mlmg_absolute_tolerance",
+    "mlmg_max_iters",
+    "mlmg_verbosity",
+]
 
-
-input_parameters_defaults = list(DashboardDefaults.INPUT_PARAMETERS.keys())
-space_charge_defaults = list(DashboardDefaults.CSR.keys())
 lattice_state_defaults = ["periods"]
 INPUT_DEFAULTS = (
-    input_parameters_defaults + space_charge_defaults + lattice_state_defaults
+    csr_defaults
+    + simulation_parameters_defaults
+    + sc_multigrid_defaults
+    + lattice_state_defaults
 )
 
 
@@ -45,12 +52,12 @@ class SharedUtilities:
                 DashboardValidation.update_simulation_validation_status()
 
                 if validation_result == []:
-                    converted_value = generalFunctions.convert_to_numeric(input)
+                    converted_value = GeneralFunctions.convert_to_numeric(input)
 
                     if getattr(state, state_name) != converted_value:
                         setattr(state, state_name, converted_value)
                         if state_name == "kin_energy_on_ui":
-                            InputParameters.on_kin_energy_unit_change()
+                            state.dirty("kin_energy_unit")
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

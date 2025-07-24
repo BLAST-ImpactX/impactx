@@ -75,11 +75,12 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
             // find beta*gamma^2
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1.0_prt;
 
             m_neg_kV = -m_k * m_V;
             m_kV_r2bg2 = -m_neg_kV / (2.0_prt * betgam2);
@@ -151,9 +152,10 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // find beta*gamma^2
-            amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1.0_prt;
 
             amrex::ParticleReal const neg_kV = -m_k * m_V;
             amrex::ParticleReal const kV_r2bg2 = -neg_kV / (2.0_prt * betgam2);

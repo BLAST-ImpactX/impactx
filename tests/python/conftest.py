@@ -21,6 +21,7 @@ basepath = os.getcwd()
 @pytest.fixture(autouse=True, scope="function")
 def amrex_init(tmpdir):
     with tmpdir.as_cwd():
+        # warning: with an external AMReX initialize, our ImpactX overwrite_amrex_parser_defaults is never called!
         amr.initialize(
             [
                 # print AMReX status messages
@@ -39,6 +40,9 @@ def amrex_init(tmpdir):
                 # to enable parallel test runs on the same GPU
                 # https://amrex-codes.github.io/amrex/docs_html/RuntimeParameters.html?highlight=arena#memory
                 "amrex.the_arena_init_size=0",
+                # We override the default tiling option for particles, which is always
+                # "false" in AMReX, to "false" if running on GPU and "true" on CPU.
+                f"particles.do_tiling={0 if impactx.Config.have_gpu else 1}",
             ]
         )
         yield

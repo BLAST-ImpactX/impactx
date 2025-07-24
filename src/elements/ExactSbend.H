@@ -108,6 +108,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -126,7 +127,7 @@ namespace impactx::elements
 
             // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
-            m_ibetagam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
+            m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
         }
 
@@ -154,6 +155,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -172,10 +174,10 @@ namespace impactx::elements
             if (m_phi==0_prt && m_B==0_prt) {
                // compute the radical in the denominator (= pz):
                amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                   amrex::Math::powi<2>(pt - m_ibeta) -
+                   powi<2>(pt - m_ibeta) -
                    m_ibetagam2 -
-                   amrex::Math::powi<2>(px) -
-                   amrex::Math::powi<2>(py)
+                   powi<2>(px) -
+                   powi<2>(py)
                );
 
                // advance position and momentum (exact drift)
@@ -194,8 +196,8 @@ namespace impactx::elements
             } else {
 
                // assign intermediate quantities
-               amrex::ParticleReal const pperp2 = amrex::Math::powi<2>(pt)-2.0_prt * m_ibeta * pt - amrex::Math::powi<2>(py)+1.0_prt;
-               amrex::ParticleReal const px2 = amrex::Math::powi<2>(px);
+               amrex::ParticleReal const pperp2 = powi<2>(pt)-2.0_prt * m_ibeta * pt - powi<2>(py)+1.0_prt;
+               amrex::ParticleReal const px2 = powi<2>(px);
                // determine if particle lies within the domain of map definition
                if (pperp2 <= px2)
                {
@@ -203,7 +205,7 @@ namespace impactx::elements
                } else
                {
                    amrex::ParticleReal const pperp = std::sqrt(pperp2);
-                   amrex::ParticleReal const pzi = std::sqrt(amrex::Math::powi<2>(pperp) - amrex::Math::powi<2>(px));
+                   amrex::ParticleReal const pzi = std::sqrt(powi<2>(pperp) - powi<2>(px));
                    amrex::ParticleReal const rho = m_rc + xout;
 
                    // update momenta
@@ -212,14 +214,14 @@ namespace impactx::elements
                    ptout = pt;
 
                    // angle of momentum rotation
-                   amrex::ParticleReal const px2f = amrex::Math::powi<2>(pxout);
+                   amrex::ParticleReal const px2f = powi<2>(pxout);
                    // determine if particle lies within domain of map definition
                    if (pperp2 <= px2f)
                    {
                        amrex::ParticleIDWrapper{idcpu}.make_invalid();
                    } else
                    {
-                       amrex::ParticleReal const pzf = std::sqrt(amrex::Math::powi<2>(pperp)-amrex::Math::powi<2>(pxout));
+                       amrex::ParticleReal const pzf = std::sqrt(powi<2>(pperp)-powi<2>(pxout));
                        amrex::ParticleReal const theta = m_slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
 
                        // update position coordinates
@@ -250,6 +252,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -268,7 +271,7 @@ namespace impactx::elements
             // special case of zero field = an exact drift
             if (m_phi==0_prt && m_B==0_prt) {
                // advance position and momentum (drift)
-               amrex::ParticleReal const step = slice_ds /std::sqrt(amrex::Math::powi<2>(pt)-1.0_prt);
+               amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
                refpart.x = x + step*px;
                refpart.y = y + step*py;
                refpart.z = z + step*pz;

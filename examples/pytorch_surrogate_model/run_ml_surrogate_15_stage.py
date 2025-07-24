@@ -121,7 +121,6 @@ pp_amrex.add("the_device_arena_init_size", 0)
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 sim.diagnostics = True  # benchmarking
 sim.slice_step_diagnostics = True
@@ -307,7 +306,7 @@ class UpdateConstF(elements.Programmable):
 
     def set_lens(self, pc, step, period):
         # get envelope parameters
-        rbc = pc.reduced_beam_characteristics()
+        rbc = pc.beam_moments()
         alpha = rbc[f"alpha_{self.x_or_y}"]
         beta = rbc[f"beta_{self.x_or_y}"]
         gamma = (1 + alpha**2) / beta

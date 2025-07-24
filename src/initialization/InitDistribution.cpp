@@ -375,6 +375,7 @@ namespace impactx
     )
     {
         using namespace amrex::literals; // for _rt and _prt
+        using amrex::Math::powi;
 
         // Values to be read from input
         amrex::ParticleReal betax, betay, betat, emittx, emitty, emittt;
@@ -417,7 +418,7 @@ namespace impactx
         // calculate Twiss / Courant-Snyder gammas
         amrex::Vector<amrex::ParticleReal> gammas;
         for (size_t i = 0; i < alphas.size(); i++)
-            gammas.push_back((1.0 + amrex::Math::powi<2>(alphas.at(i))) / betas.at(i));
+            gammas.push_back((1.0 + powi<2>(alphas.at(i))) / betas.at(i));
 
         amrex::Vector<amrex::ParticleReal> lambdas_pos;
         amrex::Vector<amrex::ParticleReal> lambdas_mom;

@@ -413,14 +413,16 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](Aperture const & ap) {
+                using namespace amrex::literals;
                 return element_dict(
                     ap,
                     std::make_pair("shape", ap.m_shape),
                     std::make_pair("action", ap.m_action),
-                    std::make_pair("aperture_x", ap.m_aperture_x),
-                    std::make_pair("aperture_y", ap.m_aperture_y),
+                    std::make_pair("aperture_x", 1_prt / ap.m_inv_aperture_x),
+                    std::make_pair("aperture_y", 1_prt / ap.m_inv_aperture_y),
                     std::make_pair("repeat_x", ap.m_repeat_x),
-                    std::make_pair("repeat_y", ap.m_repeat_y)
+                    std::make_pair("repeat_y", ap.m_repeat_y),
+                    std::make_pair("shift_odd_x", ap.m_shift_odd_x)
                 );
             }
         )
@@ -429,6 +431,7 @@ void init_elements(py::module& m)
                  amrex::ParticleReal aperture_y,
                  amrex::ParticleReal repeat_x,
                  amrex::ParticleReal repeat_y,
+                 bool shift_odd_x,
                  std::string const & shape,
                  std::string const & action,
                  amrex::ParticleReal dx,
@@ -449,12 +452,13 @@ void init_elements(py::module& m)
                  Aperture::Action const a = action == "transmit" ?
                      Aperture::Action::transmit :
                      Aperture::Action::absorb;
-                 return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, s, a, dx, dy, rotation_degree, name);
+                 return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, s, a, dx, dy, rotation_degree, name);
              }),
              py::arg("aperture_x"),
              py::arg("aperture_y"),
              py::arg("repeat_x") = 0,
              py::arg("repeat_y") = 0,
+             py::arg("shift_odd_x") = false,
              py::arg("shape") = "rectangular",
              py::arg("action") = "transmit",
              py::arg("dx") = 0,
@@ -496,13 +500,13 @@ void init_elements(py::module& m)
             "action type (transmit, absorb)"
         )
         .def_property("aperture_x",
-            [](Aperture & ap) { return ap.m_aperture_x; },
-            [](Aperture & ap, amrex::ParticleReal aperture_x) { ap.m_aperture_x = aperture_x; },
+            [](Aperture & ap) { using namespace amrex::literals; return 1_prt / ap.m_inv_aperture_x; },
+            [](Aperture & ap, amrex::ParticleReal aperture_x) { using namespace amrex::literals; ap.m_inv_aperture_x = 1_prt / aperture_x; },
             "maximum horizontal coordinate"
         )
         .def_property("aperture_y",
-            [](Aperture & ap) { return ap.m_aperture_y; },
-            [](Aperture & ap, amrex::ParticleReal aperture_y) { ap.m_aperture_y = aperture_y; },
+            [](Aperture & ap) { using namespace amrex::literals; return 1_prt / ap.m_inv_aperture_y; },
+            [](Aperture & ap, amrex::ParticleReal aperture_y) { using namespace amrex::literals; ap.m_inv_aperture_y = 1_prt / aperture_y; },
             "maximum vertical coordinate"
         )
         .def_property("repeat_x",
@@ -514,6 +518,12 @@ void init_elements(py::module& m)
             [](Aperture & ap) { return ap.m_repeat_y; },
             [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
             "vertical period for repeated aperture masking"
+        )
+        .def_property("shift_odd_x",
+            [](Aperture & ap) { return ap.m_shift_odd_x; },
+            [](Aperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
+            "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. "
+            "Use alignment offsets dx,dy to move whole mask as needed."
         )
     ;
     register_push(py_Aperture);
@@ -1054,6 +1064,79 @@ void init_elements(py::module& m)
     ;
     register_push(py_ExactMultipole);
 
+    py::class_<ExactCFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactCFbend(me, "ExactCFbend");
+    py_ExactCFbend
+        .def("__repr__",
+             [](ExactCFbend const & exact_cfbend) {
+                 return element_name(
+                     exact_cfbend,
+                     std::make_pair("unit", exact_cfbend.m_unit)
+                 );
+             }
+        )
+        .def("to_dict",
+             [](ExactCFbend const & exact_cfbend) {
+                 return element_dict(
+                     exact_cfbend,
+                     std::make_pair("unit", exact_cfbend.m_unit),
+                     std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
+                     std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
+                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps)
+                 );
+             }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                std::vector<amrex::ParticleReal>,
+                std::vector<amrex::ParticleReal>,
+                int,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::arg("ds"),
+             py::arg("k_normal"),
+             py::arg("k_skew"),
+             py::arg("unit") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
+             py::arg("int_order") = 2,
+             py::arg("mapsteps") = 5,
+             py::arg("nslice") = 1,
+             py::arg("name") = py::none(),
+             "A thick combined function bending magnet using the exact nonlinear Hamiltonian."
+        )
+        .def_property("unit",
+            [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_unit; },
+            [](ExactCFbend & exact_cfbend, int unit) { exact_cfbend.m_unit = unit; },
+            "unit specification for multipole strength"
+        )
+        .def_property("int_order",
+            [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_int_order; },
+            [](ExactCFbend & exact_cfbend, int int_order) {
+                if (int_order != 2 && int_order != 4 && int_order != 6)
+                    throw std::runtime_error("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
+                exact_cfbend.m_int_order = int_order;
+            },
+            "order of symplectic integration used for particle push in applied fields"
+        )
+        .def_property("mapsteps",
+            [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_mapsteps; },
+            [](ExactCFbend & exact_cfbend, int mapsteps) { exact_cfbend.m_mapsteps = mapsteps; },
+            "number of integration steps per slice used for particle push in the applied fields"
+        )
+    ;
+    register_push(py_ExactCFbend);
+
     py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
     py_ExactQuad
         .def("__repr__",
@@ -1168,6 +1251,10 @@ void init_elements(py::module& m)
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An ideal sector bend using the exact nonlinear map.  When B = 0, the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B."
+        )
+        .def("rc", &ExactSbend::rc,
+            py::arg("ref"),
+            "Radius of curvature in m"
         )
         .def_property("phi",
             [](ExactSbend & exact_sbend) { return exact_sbend.m_phi; },
@@ -1658,9 +1745,8 @@ void init_elements(py::module& m)
              py::arg("name") = py::none(),
              "An ideal sector bend."
         )
-        .def_property("rc",
-            [](Sbend & sbend) { return sbend.m_rc; },
-            [](Sbend & sbend, amrex::ParticleReal rc) { sbend.m_rc = rc; },
+        .def("rc", &Sbend::rc,
+            py::arg("ref") = py::none(),
             "Radius of curvature in m"
         )
     ;

@@ -24,7 +24,9 @@ def test_df_pandas(save_png=True):
     """
     sim = ImpactX()
 
+    sim.verbose = 0  # quiet
     sim.particle_shape = 2
+    sim.diagnostics = False  # no files
     sim.space_charge = False
     sim.slice_step_diagnostics = False
     sim.init_grids()
@@ -55,6 +57,9 @@ def test_df_pandas(save_png=True):
 
     assert pc.total_number_of_particles() == npart
 
+    # record purely in memory
+    sim.particle_container().store_beam_moments = True
+
     # init accelerator lattice
     fodo = [
         elements.Drift(name="d1", ds=0.25),
@@ -65,8 +70,29 @@ def test_df_pandas(save_png=True):
     ]
     sim.lattice.extend(fodo)
 
+    # plot lattice survey
+    if amr.ParallelDescriptor.IOProcessor():
+        sim.lattice.plot_survey(ref=ref)
+        if save_png:
+            plt.gcf().savefig("lattice_survey.png")
+            plt.close(plt.gcf())
+        else:
+            plt.show()
+
     # simulate
     sim.track_particles()
+
+    # look at beam history (reduced beam diagnostics)
+    beam_moments = sim.particle_container().beam_moments_history()
+
+    if amr.ParallelDescriptor.IOProcessor():
+        print(beam_moments)
+        plt.plot(beam_moments.s, beam_moments.beta_x)
+        if save_png:
+            plt.gcf().savefig("beam_moments.png")
+            plt.close(plt.gcf())
+        else:
+            plt.show()
 
     # check local particles
     df = pc.to_df(local=True)
@@ -97,7 +123,6 @@ def test_df_pandas(save_png=True):
 
     #   note: figure data available on MPI rank zero
     if fig is not None:
-        fig.savefig("phase_space.png")
         if save_png:
             fig.savefig("phase_space.png")
         else:

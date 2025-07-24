@@ -6,16 +6,22 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server, vuetify
-from .sim_history.ui import SimulationHistory
+import os
 
-server, state, ctrl = setup_server()
+from .. import ctrl, state, vuetify
+from ..Input.components import CardComponents
+from .sim_history.ui import SimulationHistory
 
 state.show_dashboard_alert = True
 
 from .analyze import AnalyzeToolbar
 from .input import InputToolbar
 from .run import RunToolbar
+
+
+@ctrl.trigger("force_quit")
+def _force_quit() -> None:
+    os._exit(0)
 
 
 class GeneralToolbar:
@@ -47,16 +53,25 @@ class GeneralToolbar:
             GeneralToolbar.simulation_history_button()
             vuetify.VDivider(vertical=True, classes="mr-2")
             InputToolbar.collapse_all_sections_button()
+            GeneralToolbar.force_quit_button()
         elif toolbar_name == "run":
             (GeneralToolbar.dashboard_info(),)
             (vuetify.VSpacer(),)
             (RunToolbar.run_simulation(),)
             vuetify.VDivider(vertical=True, classes="mx-2")
             (GeneralToolbar.simulation_history_button())
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            (GeneralToolbar.force_quit_button())
         elif toolbar_name == "analyze":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
-            AnalyzeToolbar.plot_options()
+            AnalyzeToolbar.select_visualization()
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            AnalyzeToolbar.simulation_selection_indicator()
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            GeneralToolbar.simulation_history_button()
+            vuetify.VDivider(vertical=True, classes="mx-2")
+            GeneralToolbar.force_quit_button()
 
     @staticmethod
     def dashboard_info() -> vuetify.VAlert:
@@ -97,4 +112,16 @@ class GeneralToolbar:
             size="small",
             variant="elevated",
             disabled=("!sims.length",),
+        )
+
+    @staticmethod
+    def force_quit_button():
+        """
+        Displays a button to force quit the dashboard.
+        """
+        return CardComponents.card_button(
+            icon_name="mdi-power",
+            click="trigger('force_quit')",
+            description="Force Quit",
+            color="error",
         )

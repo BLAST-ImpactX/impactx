@@ -10,6 +10,8 @@
 #include "ImpactXParticleContainer.H"
 
 #include "initialization/AmrCoreData.H"
+#include "initialization/Algorithms.H"
+#include "diagnostics/ReducedBeamCharacteristics.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
@@ -91,8 +93,8 @@ namespace impactx
                 "ImpactXParticleContainer::SetParticleShape This was already called before and cannot be changed.");
         } else
         {
-            if (order < 1 || order > 3) {
-                amrex::Abort("algo.particle_shape order can be only 1, 2, or 3");
+            if (order < 0 || order > 3) {
+                amrex::Abort("algo.particle_shape order can be only 0, 1, 2, or 3");
             }
             m_particle_shape = order;
         }
@@ -103,8 +105,18 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         int v = 0;
         bool const has_shape = pp_algo.queryWithParser("particle_shape", v);
-        if (!has_shape)
-            throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells.");
+        if (!has_shape) {
+            bool csr = false;
+            pp_algo.query("csr", csr);
+            auto space_charge = get_space_charge_algo();
+            std::string track = "particles";
+            pp_algo.query("track", track);
+            if (csr ||
+                (space_charge != SpaceChargeAlgo::False && track == "particles"))
+            {
+                throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells for collective effects.");
+            }
+        }
         SetParticleShape(v);
     }
 
@@ -129,6 +141,12 @@ namespace impactx
 #if defined(AMREX_USE_OMP)
         nthreads = omp_get_max_threads();
 #endif
+
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+            nthreads == 1 || this->do_tiling == true,
+            "OpenMP threads are used for parallelism but particles.do_tiling is set to false. "
+            "This would create invalid particle data."
+        );
 
         // When running without space charge and OpenMP parallelization,
         // we need to make sure we have enough tiles on level 0, grid 0
@@ -161,6 +179,13 @@ namespace impactx
 
         reserveData();
         resizeData();
+    }
+
+    void
+    ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
+    {
+        this->clearParticles();
+        m_refpart.reset(keep_mass, keep_charge);
     }
 
     void
@@ -349,5 +374,29 @@ namespace impactx
     ImpactXParticleContainer::SetCoordSystem (CoordSystem coord_system)
     {
         m_coordsystem = coord_system;
+    }
+
+    void
+    ImpactXParticleContainer::record_beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::record_beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        m_beam_moments.push_back(rbc);
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    ImpactXParticleContainer::beam_moments ()
+    {
+        BL_PROFILE("ImpactXParticleContainer::beam_moments");
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        return rbc;
     }
 } // namespace impactx

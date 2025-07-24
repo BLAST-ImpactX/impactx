@@ -41,10 +41,11 @@ namespace impactx::particles::wakefields
     )
     {
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
         amrex::Real const s0 = (0.169_rt * std::pow(a, 1.79_rt) * std::pow(g, 0.38_rt)) / std::pow(L, 1.17_rt);
         amrex::Real const term = std::sqrt(std::abs(s) / s0) * std::exp(-std::sqrt(std::abs(s) / s0));
-        return (4_rt * impactx::particles::wakefields::Z0 * ablastr::constant::SI::c * s0 * unit_step(s)) / (amrex::Real(M_PI) * amrex::Math::powi<4>(a)) * term;
+        return (4_rt * impactx::particles::wakefields::Z0 * ablastr::constant::SI::c * s0 * unit_step(s)) / (amrex::Real(M_PI) * powi<4>(a)) * term;
     }
 
     amrex::Real w_l_rf (
@@ -55,9 +56,10 @@ namespace impactx::particles::wakefields
     )
     {
         using namespace amrex::literals;
+        using amrex::Math::powi;
 
-        amrex::Real const s00 = g * amrex::Math::powi<2>((a / (alpha(g / L) * L))) / 8.0_rt;
-        return (impactx::particles::wakefields::Z0 * ablastr::constant::SI::c * unit_step(s) * std::exp(-std::sqrt(std::abs(s) / s00))) / (amrex::Real(M_PI) * amrex::Math::powi<2>(a));
+        amrex::Real const s00 = g * powi<2>((a / (alpha(g / L) * L))) / 8.0_rt;
+        return (impactx::particles::wakefields::Z0 * ablastr::constant::SI::c * unit_step(s) * std::exp(-std::sqrt(std::abs(s) / s00))) / (amrex::Real(M_PI) * powi<2>(a));
     }
 
     amrex::Gpu::DeviceVector<amrex::Real>

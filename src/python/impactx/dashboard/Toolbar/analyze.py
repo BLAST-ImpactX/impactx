@@ -6,9 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .. import setup_server, vuetify
+from .. import state, vuetify
 
-server, state, ctrl = setup_server()
+state.selected_sim_to_analyze = None
 
 
 class AnalyzeToolbar:
@@ -17,19 +17,28 @@ class AnalyzeToolbar:
     """
 
     @staticmethod
-    def plot_options() -> vuetify.VSelect:
+    def select_visualization() -> vuetify.VTabs:
         """
-        Displays a dropdown menu to select the available plots
-        generated from the simulation data.
+        Provides the user a tab group to select the type of visualization to view.
+        """
+        return vuetify.VTabs(
+            v_model=("active_visualization",),
+            items=("visualization_options",),
+            color="primary",
+            hide_slider=False,
+            disabled=("!sims.length",),  # disabled if no sims are in the history
+        )
+
+    @staticmethod
+    def simulation_selection_indicator() -> vuetify.VChip:
+        """
+        Displays the selected simulation for analysis.
+
+        By default, it shows the most recently run simulation if one is available.
         """
 
-        return vuetify.VSelect(
-            v_model=("active_plot", "1D plots over s"),
-            items=("plot_options",),
-            label="Select plot to view",
-            hide_details=True,
-            density="compact",
-            variant="underlined",
-            style="max-width: 250px",
-            disabled=("disableRunSimulationButton", True),
+        return vuetify.VChip(
+            "{{ sim_is_running ? sim_progress_status : (selected_sim_to_analyze?.name || 'No simulation') }}",
+            color=("sim_is_running ? 'info' : 'green-darken-1'",),
+            prepend_icon="mdi-check-circle-outline",
         )

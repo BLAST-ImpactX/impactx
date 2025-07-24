@@ -6,9 +6,8 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, setup_server, vuetify
-
-server, state, ctrl = setup_server()
+from .... import html, state, vuetify
+from ...utils import GeneralFunctions
 
 state.total_elements = 0
 state.total_length = 0
@@ -68,11 +67,11 @@ class LatticeVisualizerStatisticUtils:
             state.length_stats_content = []
 
     @staticmethod
-    def update_element_counts() -> list[tuple[str, int]]:
+    def update_element_counts() -> dict[str, int]:
         """
         Computes the element counts in the lattice list.
 
-        :return: List of (element name, count) tuples, sorted by count descending.
+        :return: Dictionary of element names and their counts, sorted by count descending.
         """
         counts = {}
         for element in state.selected_lattice_list:
@@ -82,7 +81,12 @@ class LatticeVisualizerStatisticUtils:
 
         state.lattice_is_empty = len(counts) == 0
         # sort from desc. so we see top elements left to right
-        return sorted(counts.items(), key=lambda item: item[1], reverse=True)
+        sorted_counts = dict(
+            sorted(counts.items(), key=lambda item: item[1], reverse=True)
+        )
+
+        state.element_counts = sorted_counts
+        return sorted_counts
 
     @staticmethod
     def update_total_steps() -> int:
@@ -105,7 +109,7 @@ class LatticeVisualizerStatisticComponents:
 
         :param title: The statistic name
         """
-        title_state_name = title.lower().replace(" ", "_")
+        title_state_name = GeneralFunctions.normalize_for_v_model(title)
         is_stat_length = "length" in title.lower()
 
         vuetify.VCardSubtitle(title, classes="pb-0 mb-0")
@@ -156,7 +160,7 @@ class LatticeVisualizerStatisticComponents:
                     with vuetify.Template(v_else=True):
                         with vuetify.VChipGroup():
                             with vuetify.Template(
-                                v_for="[name, count] in element_counts", key="name"
+                                v_for="(count, name) in element_counts", key="name"
                             ):
                                 vuetify.VChip(
                                     "{{ name.charAt(0).toUpperCase() + name.slice(1) }}: {{ count }}",

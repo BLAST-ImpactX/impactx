@@ -22,6 +22,7 @@ from impactx.distribution_input_helpers import twiss
 from impactx.extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
+from impactx.extensions.KnownElementsList import register_KnownElementsList_extension
 from impactx.impactx_pybind import (
     Config,
     CoordSystem,
@@ -38,7 +39,7 @@ from impactx.impactx_pybind import (
     push,
     wakeconvolution,
 )
-from impactx.madx_to_impactx import read_beam, read_lattice
+from impactx.madx_to_impactx import read_beam
 
 from . import (
     MADXParser,
@@ -46,6 +47,7 @@ from . import (
     extensions,
     impactx_pybind,
     madx_to_impactx,
+    plot,
 )
 
 __all__ = [
@@ -70,10 +72,11 @@ __all__ = [
     "impactx_pybind",
     "madx_to_impactx",
     "os",
+    "plot",
     "push",
     "read_beam",
-    "read_lattice",
     "register_ImpactXParticleContainer_extension",
+    "register_KnownElementsList_extension",
     "s",
     "t",
     "twiss",
@@ -83,7 +86,7 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.06"
+__version__: str = "25.07"
 s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
 t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>
 cxx = impactx_pybind

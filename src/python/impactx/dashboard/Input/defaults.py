@@ -11,10 +11,8 @@ from typing import Any
 from impactx import distribution, elements
 from impactx.impactx_pybind import ImpactX, RefPart
 
-from .. import setup_server
+from .. import state
 from .defaults_helper import InputDefaultsHelper
-
-server, state, ctrl = setup_server()
 
 DISTRIBUTION_MODULE_NAME = distribution
 LATTICE_MODULE_NAME = elements
@@ -40,14 +38,24 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     },
 }
 
+BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
+
+CONVERSION_FACTORS = {
+    "eV": 1.0e-6,
+    "keV": 1.0e-3,
+    "MeV": 1.0,
+    "GeV": 1.0e3,
+    "TeV": 1.0e6,
+}
+
 
 class DashboardDefaults:
     """
-    Defaults for input parameters in the ImpactX dashboard.
+    Defaults for simulation parameters in the ImpactX dashboard.
     """
 
     COLLAPSABLE_SECTIONS = [
-        "collapse_input_parameters",
+        "collapse_simulation_parameters",
         "collapse_csr",
         "collapse_isr",
         "collapse_distribution_parameters",
@@ -58,13 +66,10 @@ class DashboardDefaults:
     # Inputs by section
     # -------------------------------------------------------------------------
 
-    SELECTION = {
+    SIMULATION_PARAMETERS = {
         "space_charge": "false",
         "csr": False,
         "isr": False,
-    }
-
-    INPUT_PARAMETERS = {
         "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
@@ -137,8 +142,7 @@ class DashboardDefaults:
     # -------------------------------------------------------------------------
 
     DEFAULT_VALUES = {
-        **SELECTION,
-        **INPUT_PARAMETERS,
+        **SIMULATION_PARAMETERS,
         **DISTRIBUTION_PARAMETERS,
         **LATTICE_CONFIGURATION,
         **SPACE_CHARGE,
@@ -158,6 +162,10 @@ class DashboardDefaults:
         "emitt": "float",
         "alpha": "float",
         "periods": "int",
+        "mlmg_relative_tolerance": "float",
+        "mlmg_absolute_tolerance": "float",
+        "mlmg_max_iters": "int",
+        "mlmg_verbosity": "int",
     }
 
     VALIDATION_CONDITION = {
@@ -168,6 +176,8 @@ class DashboardDefaults:
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],
         "periods": ["positive"],
+        "mlmg_relative_tolerance": ["positive"],
+        "mlmg_max_iters": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.
@@ -192,7 +202,7 @@ class DashboardDefaults:
     }
 
     DOCUMENTATION = {
-        "input_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
+        "simulation_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#impactx.ImpactX",
         "lattice_configuration": "https://impactx.readthedocs.io/en/latest/usage/python.html#lattice-elements",
         "distribution_parameters": "https://impactx.readthedocs.io/en/latest/usage/python.html#initial-beam-distributions",
         "space_charge": "https://impactx.readthedocs.io/en/latest/usage/parameters.html#space-charge",

@@ -11,10 +11,8 @@ from typing import Any, List, Tuple
 
 from impactx.distribution_input_helpers import twiss
 
-from ... import setup_server
-from .. import generalFunctions
-
-server, state, ctrl = setup_server()
+from ... import state
+from .. import GeneralFunctions
 
 
 class DistributionFunctions:
@@ -46,7 +44,7 @@ class DistributionFunctions:
         selected_distribution == Twiss.
         """
         if "beta" in name or "emitt" in name:
-            return generalFunctions.get_default(name, "units")
+            return GeneralFunctions.get_default(name, "units")
         return ""
 
     @staticmethod
@@ -64,6 +62,6 @@ class DistributionFunctions:
             default_value = (
                 parameter.default if parameter.default != inspect._empty else None
             )
-            default_type = generalFunctions.get_default(name, "types")
+            default_type = GeneralFunctions.get_default(name, "types")
             param_data.append((name, default_value, default_type))
         return param_data

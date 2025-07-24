@@ -110,6 +110,7 @@ namespace impactx::distribution
         ) const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
             amrex::ParticleReal v,costheta,sintheta,phi,r;
@@ -120,7 +121,7 @@ namespace impactx::distribution
             v = amrex::Random(engine);
             costheta = amrex::Random(engine);
             costheta = 2_prt*(costheta-0.5_prt);
-            sintheta = std::sqrt(1_prt-amrex::Math::powi<2>(costheta));
+            sintheta = std::sqrt(1_prt-powi<2>(costheta));
             phi = amrex::Random(engine);
             phi = 2_prt*pi*phi;
 
@@ -137,7 +138,7 @@ namespace impactx::distribution
             // Random samples used to define pr:
             alpha = amrex::Random(engine);
             alpha = pi*alpha;
-            pmax = 1_prt - amrex::Math::powi<2>(L/r) - amrex::Math::powi<2>(r) + amrex::Math::powi<2>(L);
+            pmax = 1_prt - powi<2>(L/r) - powi<2>(r) + powi<2>(L);
             pmax = std::sqrt(pmax);
             pr = pmax * std::cos(alpha);
 

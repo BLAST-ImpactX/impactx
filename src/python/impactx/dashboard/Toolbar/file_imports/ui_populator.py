@@ -6,12 +6,10 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server
-from ...Input.latticeConfiguration.latticeMain import add_lattice_element
-from ...Input.latticeConfiguration.variable_handler import LatticeVariableHandler
+from ... import ctrl, state
+from ...Input.lattice.ui import add_lattice_element
+from ...Input.lattice.variable_handler import LatticeVariableHandler
 from .python.parser import DashboardParser
-
-server, state, ctrl = setup_server()
 
 
 @state.change("import_file")
@@ -42,7 +40,7 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     parsed_variables = imported_data["variables"]
     non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
-    # Update state inputs (inputParameters, Space Charge, CSR, ISR)
+    # Update state inputs (simulation parameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)
@@ -61,7 +59,7 @@ def _populate_distribution_inputs_to_ui(parsed_data):
     state.flush()  # force calls state.change("distribution") and state.change("distribution_type")
 
     for distr_param_name, distr_param_value in parsed_data["parameters"].items():
-        ctrl.updateDistributionParameters(distr_param_name, distr_param_value, "float")
+        ctrl.update_distribution_parameter(distr_param_name, distr_param_value, "float")
 
 
 @staticmethod

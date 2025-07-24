@@ -79,6 +79,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -92,8 +93,8 @@ namespace impactx::elements
             amrex::ParticleReal const ptf_ref = refpart.pt;
             m_V_cos_phi = m_V * std::cos(m_phi);
             amrex::ParticleReal const pti_ref = ptf_ref + m_V_cos_phi;
-            m_bgf = std::sqrt(amrex::Math::powi<2>(ptf_ref) - 1.0_prt);
-            m_bgi = std::sqrt(amrex::Math::powi<2>(pti_ref) - 1.0_prt);
+            m_bgf = std::sqrt(powi<2>(ptf_ref) - 1.0_prt);
+            m_bgi = std::sqrt(powi<2>(pti_ref) - 1.0_prt);
         }
 
         /** This is a shortrf functor, so that a variable of this type can be used like a
@@ -179,6 +180,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -195,14 +197,14 @@ namespace impactx::elements
             amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
 
             // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // advance pt
             refpart.pt = pt - m_V * std::cos(phi);
 
             // compute final value of beta*gamma
             amrex::ParticleReal const ptf = refpart.pt;
-            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
 
             // advance position (x,y,z,t)
             refpart.x = x;
@@ -230,6 +232,7 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // Define parameters and intermediate constants
             using ablastr::constant::math::pi;
@@ -240,8 +243,8 @@ namespace impactx::elements
             // access reference particle values (final, initial):
             amrex::ParticleReal const ptf_ref = refpart.pt;
             amrex::ParticleReal const pti_ref = ptf_ref + m_V * std::cos(phi);
-            amrex::ParticleReal const bgf = std::sqrt(amrex::Math::powi<2>(ptf_ref) - 1.0_prt);
-            amrex::ParticleReal const bgi = std::sqrt(amrex::Math::powi<2>(pti_ref) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf_ref) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pti_ref) - 1.0_prt);
 
             // initialize transport matrix
             Map6x6 R = Map6x6::Identity();

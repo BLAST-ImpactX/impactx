@@ -11,7 +11,6 @@ from impactx import ImpactX, distribution, elements
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -56,6 +55,7 @@ sim.lattice.extend(
             aperture_y=1.0e-4,
             repeat_x=1.0e-3,
             repeat_y=1.0e-3,
+            shift_odd_x=True,
             shape="rectangular",
         ),
         monitor,

@@ -21,6 +21,7 @@
 #include "DipEdge.H"
 #include "Drift.H"
 #include "Empty.H"
+#include "ExactCFbend.H"
 #include "ExactDrift.H"
 #include "ExactMultipole.H"
 #include "ExactQuad.H"
@@ -65,6 +66,7 @@ namespace impactx::elements
         diagnostics::BeamMonitor,
         DipEdge,
         Drift,
+        ExactCFbend,
         ExactDrift,
         ExactMultipole,
         ExactQuad,

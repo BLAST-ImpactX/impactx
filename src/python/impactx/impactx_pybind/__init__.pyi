@@ -522,6 +522,24 @@ class ImpactXParticleContainer(
         :param qm: charge over mass in 1/eV
         :param bchchg: total charge within a bunch in C
         """
+    def beam_moments(self) -> dict[str, float]:
+        """
+        Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+        """
+    def beam_moments_history(self):
+        """
+
+        Return the history of the beam as calculated by the reduced beam characteristics on every step.
+
+        """
+    def beam_moments_history_list(self) -> list[dict[str, float]]:
+        """
+        Return the history of the beam moments on every step.
+        """
+    def clear(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Empty the container and reset the reference particle
+        """
     def mean_and_std_positions(self) -> tuple[float, float, float, float, float, float]:
         """
         Compute the mean and std of the particle position in each dimension.
@@ -554,6 +572,10 @@ class ImpactXParticleContainer(
         For MPI-parallel ranks, the figure is only created on the root_rank.
 
         """
+    def record_beam_moments(self) -> None:
+        """
+        Calculate & record the beam moments at current s
+        """
     def reduced_beam_characteristics(self) -> dict[str, float]:
         """
         Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
@@ -561,6 +583,10 @@ class ImpactXParticleContainer(
     def ref_particle(self) -> RefPart:
         """
         Access the reference particle.
+        """
+    def reset_beam_moments_history(self) -> None:
+        """
+        Reset the history of the beam moments.
         """
     def set_ref_particle(self, refpart: RefPart) -> None:
         """
@@ -571,6 +597,13 @@ class ImpactXParticleContainer(
         """
         Get the current coordinate system of particles in this container
         """
+    @property
+    def store_beam_moments(self) -> bool:
+        """
+        In situ calculate and store the beam moments for every simulation step.
+        """
+    @store_beam_moments.setter
+    def store_beam_moments(self, arg1: bool) -> None: ...
 
 class RefPart:
     @staticmethod
@@ -587,6 +620,10 @@ class RefPart:
         """
         This struct stores the reference particle attributes
         stored in ImpactXParticleContainer.
+        """
+    def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Reset the reference particle
         """
     def set_charge_qe(self, charge_qe: float) -> RefPart:
         """
@@ -632,6 +669,15 @@ class RefPart:
         """
         Get reference particle energy (MeV)
         """
+    @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized map
+        """
+    @map.setter
+    def map(
+        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    ) -> None: ...
     @property
     def mass(self) -> float:
         """
@@ -689,6 +735,13 @@ class RefPart:
         """
     @s.setter
     def s(self, arg0: float) -> None: ...
+    @property
+    def sedge(self) -> float:
+        """
+        value of s at entrance of the current beamline element
+        """
+    @sedge.setter
+    def sedge(self, arg0: float) -> None: ...
     @property
     def t(self) -> float:
         """
@@ -751,6 +804,7 @@ def push(
     | elements.BeamMonitor
     | elements.DipEdge
     | elements.Drift
+    | elements.ExactCFbend
     | elements.ExactDrift
     | elements.ExactMultipole
     | elements.ExactQuad
@@ -785,6 +839,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.06"
+__version__: str = "25.07"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

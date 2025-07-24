@@ -94,6 +94,23 @@ class DashboardTester:
     def __init__(self, sb):
         self.sb = sb
 
+        # Set up the examples directory path once
+        impactx_directory = Path(get_impactx_root_dir())
+        self.examples_directory = impactx_directory / "examples"
+        self.testing_directory = impactx_directory / "tests" / "python" / "dashboard"
+
+    def load_example(self, example_path, manual=False):
+        """
+        Load an example file into the dashboard
+        """
+        base_dir = self.testing_directory if manual else self.examples_directory
+        full_path = base_dir / example_path
+
+        self.sb.choose_file('input[type="file"]', full_path)
+
+    def clear(self):
+        self.sb.click("#reset_all_inputs_button")
+
     def add_lattice_element(self, element_name: str) -> None:
         """
         Add a lattice element to the dashboard.
@@ -189,18 +206,9 @@ class DashboardTester:
         :param state_name: Name of the state variable to update (same as v_model_name).
         :param expected_input: Expected value of the state variable.
         """
-        js_script = """
-            if (window.trame && window.trame.state) {
-                const state = window.trame.state;
-                const state_name = arguments[0];
-                if (state.get) { return state.get(state_name); }
-                return state[state_name];
-            }
-            return null;
-        """
         for i in range(timeout):
             try:
-                value = self.sb.execute_script(js_script, state_name)
+                value = self.get_state(state_name)
             except TimeoutException:
                 value = None
 
@@ -211,10 +219,22 @@ class DashboardTester:
                 return
 
             print(
-                f"Waiting for state['{state_name}'] to become '{expected_input}' - ({i + 1}s elapsed)"
+                f"Waiting for state['{state_name}'] to become '{expected_input}' - (current value: '{value}') - ({i + 1}s elapsed)"
             )
             time.sleep(1)
 
         raise TimeoutError(
             f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds (last value: '{value}')."
         )
+
+    def get_state(self, state_name):
+        js_script = """
+            if (window.trame && window.trame.state) {
+                const state = window.trame.state;
+                const state_name = arguments[0];
+                if (state.get) { return state.get(state_name); }
+                return state[state_name];
+            }
+            return null;
+        """
+        return self.sb.execute_script(js_script, state_name)

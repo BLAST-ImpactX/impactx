@@ -44,6 +44,24 @@ namespace impactx
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
         amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
 
+        /** Reset the reference particle
+         *
+         * @param keep_mass do not reset the reference particle mass
+         * @param keep_charge do not reset the reference particle charge
+         */
+        void
+        reset (bool keep_mass=false, bool keep_charge=false)
+        {
+            auto old_mass = mass;
+            auto old_charge = charge;
+
+            RefPart zero{};
+            *this = zero;
+
+            if (keep_mass) { mass = old_mass; }
+            if (keep_charge) { charge = old_charge; }
+        }
+
         /** Get reference particle relativistic gamma
          *
          * @returns relativistic gamma
@@ -65,9 +83,10 @@ namespace impactx
         beta () const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_beta = std::sqrt(1.0_prt - 1.0_prt / amrex::Math::powi<2>(ref_gamma));
+            amrex::ParticleReal const ref_beta = std::sqrt(1.0_prt - 1.0_prt / powi<2>(ref_gamma));
             return ref_beta;
         }
 
@@ -80,9 +99,10 @@ namespace impactx
         beta_gamma () const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = std::sqrt(amrex::Math::powi<2>(ref_gamma) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(powi<2>(ref_gamma) - 1.0_prt);
             return ref_betagamma;
         }
 
@@ -109,6 +129,7 @@ namespace impactx
         set_mass_MeV (amrex::ParticleReal const massE)
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             AMREX_ASSERT_WITH_MESSAGE(massE != 0.0_prt,
                                       "set_mass_MeV: Mass cannot be zero!");
@@ -119,7 +140,7 @@ namespace impactx
             if (pt != 0.0_prt)
             {
                 pt = -kin_energy_MeV() / massE - 1.0_prt;
-                pz = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
+                pz = std::sqrt(powi<2>(pt) - 1.0_prt);
             }
 
             return *this;
@@ -149,6 +170,7 @@ namespace impactx
         set_kin_energy_MeV (amrex::ParticleReal const kin_energy)
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             AMREX_ASSERT_WITH_MESSAGE(mass != 0.0_prt,
                                       "set_kin_energy_MeV: Set mass first!");
@@ -156,7 +178,7 @@ namespace impactx
             px = 0.0;
             py = 0.0;
             pt = -kin_energy / mass_MeV() - 1.0_prt;
-            pz = std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
+            pz = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             return *this;
         }
@@ -170,9 +192,10 @@ namespace impactx
         rigidity_Tm () const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = std::sqrt(amrex::Math::powi<2>(ref_gamma) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(powi<2>(ref_gamma) - 1.0_prt);
             amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge;
             return ref_rigidity;
         }

@@ -127,6 +127,7 @@ Virtual Test Stands
    examples/apochromatic/README.rst
    examples/fodo_tune/README.rst
    examples/linac_segment/README.rst
+   examples/htu_beamline/README.rst
 
 
 Unit tests

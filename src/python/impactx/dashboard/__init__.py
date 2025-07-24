@@ -3,19 +3,22 @@ from trame.widgets import vuetify3 as vuetify
 
 # isort: off
 
-from .trame_setup import setup_server
+from .server import setup_server
+
+# Create single server instance for the entire dashboard
+server, state, ctrl = setup_server()
 from .Toolbar.general import GeneralToolbar
 
-from .Analyze.plotsMain import AnalyzeSimulation
-from .Input.csrConfiguration.csrMain import csrConfiguration
-from .Input.isr.ui import isrConfiguration
-from .Input.distribution.ui import DistributionParameters
-from .Input.inputParameters.inputMain import InputParameters
-from .Input.latticeConfiguration.latticeMain import LatticeConfiguration
+from .Analyze.ui import AnalyzeSimulation
+from .Input.csr import CSRConfiguration
+from .Input.isr import ISRConfiguration
+from .Input.distribution import DistributionConfiguration
+from .Input.simulation_parameters import SimulationParameters
+from .Input.lattice import LatticeConfiguration
 from .Input.components.navigation import NavigationComponents
-from .Input.space_charge_configuration.spaceChargeMain import SpaceChargeConfiguration
+from .Input.space_charge import SpaceChargeConfiguration
 
-from .jupyterApplication import JupyterMainApplication as JupyterApp
+from .start import JupyterApp
 # isort: on
 
 
@@ -23,14 +26,17 @@ __all__ = [
     "html",
     "JupyterApp",
     "setup_server",
+    "server",
+    "state",
+    "ctrl",
     "html",
     "vuetify",
     "AnalyzeSimulation",
     "NavigationComponents",
-    "csrConfiguration",
-    "isrConfiguration",
-    "DistributionParameters",
-    "InputParameters",
+    "CSRConfiguration",
+    "ISRConfiguration",
+    "DistributionConfiguration",
+    "SimulationParameters",
     "LatticeConfiguration",
     "SpaceChargeConfiguration",
     "GeneralToolbar",

@@ -1525,7 +1525,7 @@ add_impactx_test(examples-fodo-vector-potential
     OFF  # no plot script yet
 )
 add_impactx_test(examples-fodo-vector-potential.py
-    examples/dogleg/run_fodo_vector_potential.py
+    examples/vector_potential/run_fodo_vector_potential.py
     ON   # ImpactX MPI-parallel
     examples/vector_potential/analysis_fodo_vector_potential.py
     OFF  # no plot script yet

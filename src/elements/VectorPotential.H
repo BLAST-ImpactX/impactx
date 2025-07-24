@@ -44,7 +44,7 @@ namespace VectorPotentialData
     //! last used id for a created vector potential element
     inline int next_id = 0;
 
-    // user-provided functions & derivatives with 4 independent variables x,y,t,zeval
+    // user-provided functions & derivatives with 4 independent variables x,y,t,z
 
     //! host: vector potential in x
     inline std::map<int, amrex::Parser> m_parser_ax;
@@ -92,14 +92,14 @@ namespace VectorPotentialData
          * @param unit  Unit specification for vector potential
          *           unit = 0 dimensionless (default)
          *           unit = 1 SI units of T-m
-         * @param str_ax function string for A_x(x,y,t,zeval)
-         * @param str_ay function string for A_y(x,y,t,zeval)
-         * @param str_daxdx function string for dA_x/dx(x,y,t,zeval)
-         * @param str_daxdy function string for dA_x/dy(x,y,t,zeval)
-         * @param str_daydx function string for dA_y/dx(x,y,t,zeval)
-         * @param str_daydy function string for dA_y/dy(x,y,t,zeval)
-         * @param str_dazdx function string for dA_z/dx(x,y,t,zeval)
-         * @param str_dazdy function string for dA_z/dy(x,y,t,zeval)
+         * @param str_ax function string for A_x(x,y,t,z)
+         * @param str_ay function string for A_y(x,y,t,z)
+         * @param str_daxdx function string for dA_x/dx(x,y,t,z)
+         * @param str_daxdy function string for dA_x/dy(x,y,t,z)
+         * @param str_daydx function string for dA_y/dx(x,y,t,z)
+         * @param str_daydy function string for dA_y/dy(x,y,t,z)
+         * @param str_dazdx function string for dA_z/dx(x,y,t,z)
+         * @param str_dazdy function string for dA_z/dy(x,y,t,z)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -143,7 +143,7 @@ namespace VectorPotentialData
             VectorPotentialData::next_id++;
 
             // variables of the function
-            amrex::Vector<std::string> const varnames = {"x", "y", "t", "zeval"};
+            amrex::Vector<std::string> const varnames = {"x", "y", "t", "z"};
 
             // host data
             amrex::ParmParse const pp;
@@ -351,16 +351,17 @@ namespace VectorPotentialData
             amrex::ParticleReal dHdpy = 0_prt;
             amrex::ParticleReal dHdt = 0_prt;
             amrex::ParticleReal dHdpt = 0_prt;
+            amrex::ParticleReal z = zeval;
 
             // Evaluate the vector potential and its derivatives
-            auto const ax = m_dfunc_ax(x, y, t, zeval) * m_scale;
-            auto const ay = m_dfunc_ay(x, y, t, zeval) * m_scale;
-            auto const daxdx = m_dfunc_daxdx(x, y, t, zeval) * m_scale;
-            auto const daxdy = m_dfunc_daxdy(x, y, t, zeval) * m_scale;
-            auto const daydx = m_dfunc_daydx(x, y, t, zeval) * m_scale;
-            auto const daydy = m_dfunc_daydy(x, y, t, zeval) * m_scale;
-            auto const dazdx = m_dfunc_dazdx(x, y, t, zeval) * m_scale;
-            auto const dazdy = m_dfunc_dazdy(x, y, t, zeval) * m_scale;
+            auto const ax = m_dfunc_ax(x, y, t, z) * m_scale;
+            auto const ay = m_dfunc_ay(x, y, t, z) * m_scale;
+            auto const daxdx = m_dfunc_daxdx(x, y, t, z) * m_scale;
+            auto const daxdy = m_dfunc_daxdy(x, y, t, z) * m_scale;
+            auto const daydx = m_dfunc_daydx(x, y, t, z) * m_scale;
+            auto const daydy = m_dfunc_daydy(x, y, t, z) * m_scale;
+            auto const dazdx = m_dfunc_dazdx(x, y, t, z) * m_scale;
+            auto const dazdy = m_dfunc_dazdy(x, y, t, z) * m_scale;
 
             // Implementation of derivatives for rectilinear magnetostatic element (static units):
             // Radical appearing in the Hamiltonian (equal to the value of pz):
@@ -472,16 +473,16 @@ namespace VectorPotentialData
         int m_int_order; //! order used for the symplectic integration (2 or 4)
         int m_mapsteps; //! number of integration steps per slice
 
-        // user-provided functions & derivatives with 4 independent variables x,y,t,zeval
+        // user-provided functions & derivatives with 4 independent variables x,y,t,z
         int m_id; //! unique vector potential element id used for function lookup map
-        amrex::ParserExecutor<4> m_dfunc_ax;  //! A_x(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_ay;  //! A_y(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_daxdx;  //! dA_x/dx(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_daxdy;  //! dA_x/dy(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_daydx;  //! dA_y/dx(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_daydy;  //! dA_y/dy(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_dazdx;  //! dA_z/dx(x,y,t,zeval)
-        amrex::ParserExecutor<4> m_dfunc_dazdy;  //! dA_z/dy(x,y,t,zeval)
+        amrex::ParserExecutor<4> m_dfunc_ax;  //! A_x(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_ay;  //! A_y(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_daxdx;  //! dA_x/dx(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_daxdy;  //! dA_x/dy(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_daydx;  //! dA_y/dx(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_daydy;  //! dA_y/dy(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_dazdx;  //! dA_z/dx(x,y,t,z)
+        amrex::ParserExecutor<4> m_dfunc_dazdy;  //! dA_z/dy(x,y,t,z)
 
     private:
         // constants that are independent of the individually tracked particle,

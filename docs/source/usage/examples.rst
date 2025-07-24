@@ -40,6 +40,7 @@ Single Particle Dynamics
    examples/reversibility/README.rst
    examples/charge_sign/README.rst
    examples/symplectic_integration/README.rst
+   examples/vector_potential/README.rst
 
 
 Collective Effects

@@ -477,15 +477,14 @@ element_name) );
             std::string daydy = "0";
             std::string dazdx = "0";
             std::string dazdy = "0";
-            // TODO: check if this wild syntax with / and _ is accepted by ParmParse. Ok are (,) for sure.
-            pp_element.query("A_x(x,y,t,zeval)", ax);
-            pp_element.query("A_y(x,y,t,zeval)", ay);
-            pp_element.query("dA_x/dx(x,y,t,zeval)", daxdx);
-            pp_element.query("dA_x/dy(x,y,t,zeval)", daxdy);
-            pp_element.query("dA_y/dx(x,y,t,zeval)", daydx);
-            pp_element.query("dA_y/dy(x,y,t,zeval)", daydy);
-            pp_element.query("dA_z/dx(x,y,t,zeval)", dazdx);
-            pp_element.query("dA_z/dy(x,y,t,zeval)", dazdy);
+            pp_element.query("A_x(x,y,t,z)", ax);
+            pp_element.query("A_y(x,y,t,z)", ay);
+            pp_element.query("dA_x/dx(x,y,t,z)", daxdx);
+            pp_element.query("dA_x/dy(x,y,t,z)", daxdy);
+            pp_element.query("dA_y/dx(x,y,t,z)", daydx);
+            pp_element.query("dA_y/dy(x,y,t,z)", daydy);
+            pp_element.query("dA_z/dx(x,y,t,z)", dazdx);
+            pp_element.query("dA_z/dy(x,y,t,z)", dazdy);
 
             pp_element.queryAddWithParser("int_order", int_order);
             pp_element.queryAddWithParser("mapsteps", mapsteps);

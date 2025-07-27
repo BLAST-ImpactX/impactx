@@ -1590,3 +1590,20 @@ add_impactx_test(examples-exact_cfbend_multipole.py
     examples/symplectic_integration/analysis_exact_cfbend_multipole.py
     OFF  # no plot script yet
 )
+
+# Symplectic Integration Through a Soft-Edge Solenoid Using a User-Provided Vector Potential ##############
+#
+# no space charge
+add_impactx_test(examples-solenoid-vector-potential
+    examples/vector_potential/input_solenoid_vector_potential.in
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_solenoid_vector_potential.py
+    OFF  # no plot script yet
+)
+add_impactx_test(examples-solenoid-vector-potential.py
+    examples/vector_potential/run_solenoid_vector_potential.py
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_solenoid_vector_potential.py
+    OFF  # no plot script yet
+)
+

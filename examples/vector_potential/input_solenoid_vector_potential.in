@@ -1,0 +1,55 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 250.0
+beam.charge = 1.0e-9
+beam.particle = proton
+beam.distribution = waterbag
+beam.lambdaX = 1.559531175539e-3
+beam.lambdaY = 2.205510139392e-3
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 6.41218345413e-4
+beam.lambdaPy = 9.06819680526e-4
+beam.lambdaPt = 1.0e-3
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor sol1 monitor
+lattice.nslice = 1
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+sol1.type = vector_potential
+sol1.ds = 6.0
+sol1.A_x(x,y,t,z) = -0.790585*y*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))
+sol1.A_y(x,y,t,z) = 0.790585*x*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))
+sol1.dA_x/dy(x,y,t,z) = -0.790585*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))
+sol1.dA_y/dx(x,y,t,z) = 0.790585*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))
+#sol1.A_x(x,y,t,z) = -0.790585*y
+#sol1.A_y(x,y,t,z) = 0.790585*x
+#sol1.dA_x/dy(x,y,t,z) = -0.790585
+#sol1.dA_y/dx(x,y,t,z) = 0.790585
+sol1.units = 1
+sol1.int_order = 2
+sol1.mapsteps = 20
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.particle_shape = 2
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

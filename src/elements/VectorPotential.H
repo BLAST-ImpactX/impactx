@@ -278,7 +278,8 @@ namespace VectorPotentialData
          * @param tau Map step size in m
          * @param[in,out] particle1 particle phase space 6-vector, copy 1
          * @param[in,out] particle2 particle phase space 6-vector, copy 2
-         * @param[in,out] zeval lattice position in m
+         * @param[in,out] zeval1 lattice position in m for particle1
+         * @param[in,out] zeval2 lattice position in m for particle2
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map (amrex::ParticleReal const tau,

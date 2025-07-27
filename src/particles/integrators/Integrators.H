@@ -357,11 +357,16 @@ namespace impactx::integrators
         // initialize numerical integration parameters
         amrex::ParticleReal const tau1 = tau/2.0_prt;
         amrex::ParticleReal const tau2 = tau;
+        amrex::ParticleReal zeval1 = zeval;
+        amrex::ParticleReal zeval2 = zeval;
 
         // Apply the map on the extended phase space
-        element.map(tau1,particle1,particle2,zeval);
-        element.map(tau2,particle2,particle1,zeval);
-        element.map(tau1,particle1,particle2,zeval);
+        element.map(tau1,particle1,particle2,zeval1,zeval2);
+        element.map(tau2,particle2,particle1,zeval2,zeval1);
+        element.map(tau1,particle1,particle2,zeval1,zeval2);
+
+        //zeval = zeval2;
+        //zeval = zeval + tau;
 
     }
 
@@ -470,6 +475,7 @@ namespace impactx::integrators
         for(int j=0; j < nsteps; ++j)
         {
             semiexplicit_integrator_step(particle,dz,element,zeval);
+            zeval = zeval + dz;
         }
     }
 

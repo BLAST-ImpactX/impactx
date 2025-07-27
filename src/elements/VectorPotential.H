@@ -239,13 +239,13 @@ namespace VectorPotentialData
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // coordinates within the quad (not needed)
-            //amrex::ParticleReal const s = refpart.s;
-            //amrex::ParticleReal const sedge = refpart.sedge;
+            // coordinates within the element
+            amrex::ParticleReal const s = refpart.s - m_slice_ds;
+            amrex::ParticleReal const sedge = refpart.sedge;
 
             // numerical integration parameters
-            amrex::ParticleReal const zin = 0_prt;
-            amrex::ParticleReal const zout = m_slice_ds;
+            amrex::ParticleReal const zin = s - sedge - m_ds/2_prt;
+            amrex::ParticleReal const zout = zin + m_slice_ds;
             int const nsteps = m_mapsteps;
 
             // initialize phase space 6-vector
@@ -284,7 +284,8 @@ namespace VectorPotentialData
         void map (amrex::ParticleReal const tau,
                    amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
                    amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval1,
+                   amrex::ParticleReal & zeval2) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
@@ -303,7 +304,7 @@ namespace VectorPotentialData
             amrex::ParticleReal const pt2 = particle2(6);
 
             // Evaluate the derivatives of the Hamiltonian.
-            auto [dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt] = Hamiltonian_Gradient(x1,px2,y1,py2,t1,pt2,zeval);
+            auto [dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt] = Hamiltonian_Gradient(x1,px2,y1,py2,t1,pt2,zeval1);
 
             // Update particle coordinates and momenta.
             particle1(1) = x1;
@@ -320,7 +321,7 @@ namespace VectorPotentialData
             particle2(5) = t2 + tau * dHdpt;
             particle2(6) = pt2;
 
-            zeval += tau;
+            zeval2 += tau;
         }
 
 

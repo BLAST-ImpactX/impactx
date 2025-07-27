@@ -126,5 +126,3 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_solenoid_vector_potential.in
           :language: ini
           :caption: You can copy this file from ``examples/vector_potential/input_solenoid_vector_potential.in``.
-
-

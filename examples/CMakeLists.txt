@@ -1606,4 +1606,3 @@ add_impactx_test(examples-solenoid-vector-potential.py
     examples/vector_potential/analysis_solenoid_vector_potential.py
     OFF  # no plot script yet
 )
-

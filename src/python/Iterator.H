@@ -27,7 +27,7 @@ namespace pyImpactX
      * explicitly, otherwise we will jump directly to the 2nd element. We do
      * this the same way as pybind11 does this, via a little state:
      *   https://github.com/AMReX-Codes/pyamrex/pull/50
-     *   https://github.com/pybind/pybind11/blob/v2.10.0/include/pybind11/pybind11.h#L2269-L2282
+     *   https://github.com/pybind/pybind11/blob/v3.0.0/include/pybind11/pybind11.h#L2954-L2967
      *
      * To avoid unnecessary (and expensive) copies, remember to only call this
      * helper always with py::return_value_policy::reference_internal!

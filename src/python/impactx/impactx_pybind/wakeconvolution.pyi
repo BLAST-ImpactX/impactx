@@ -1,9 +1,7 @@
 from __future__ import annotations
-
-import typing
-
 import amrex.space3d.amrex_3d_pybind
 import impactx.impactx_pybind
+import typing
 
 __all__ = [
     "alpha",

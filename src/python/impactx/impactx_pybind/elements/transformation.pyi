@@ -3,10 +3,8 @@ Transform and modify lattices
 """
 
 from __future__ import annotations
-
-import typing
-
 import impactx.impactx_pybind.elements
+import typing
 
 __all__ = ["insert_element_every_ds"]
 

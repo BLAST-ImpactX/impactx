@@ -13,15 +13,14 @@ impactx_pybind
 """
 
 from __future__ import annotations
-
+from amrex import space3d as amr
+import amrex.space3d.amrex_3d_pybind
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 import collections.abc
 import typing
-
-import amrex.space3d.amrex_3d_pybind
-from amrex import space3d as amr
-from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
-
-from . import distribution, elements, wakeconvolution
+from . import distribution
+from . import elements
+from . import wakeconvolution
 
 __all__ = [
     "Config",

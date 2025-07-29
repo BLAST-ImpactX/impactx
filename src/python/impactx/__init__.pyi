@@ -32,12 +32,14 @@ from impactx.impactx_pybind import (
     ImpactXParIter,
     ImpactXParticleContainer,
     RefPart,
-    coordinate_transformation,
-    create_envelope,
     distribution,
     elements,
-    push,
     wakeconvolution,
+)
+from impactx.impactx_pybind.pybind11_detail_function_record_v1_system_libstdcpp_gxx_abi_1xxx_use_cxx11_abi_1 import (
+    coordinate_transformation,
+    create_envelope,
+    push,
 )
 from impactx.madx_to_impactx import read_beam
 

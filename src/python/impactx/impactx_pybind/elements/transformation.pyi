@@ -4,13 +4,15 @@ Transform and modify lattices
 
 from __future__ import annotations
 
+import typing
+
 import impactx.impactx_pybind.elements
 
 __all__ = ["insert_element_every_ds"]
 
 def insert_element_every_ds(
     list: impactx.impactx_pybind.elements.KnownElementsList,
-    ds: float,
+    ds: typing.SupportsFloat,
     element: impactx.impactx_pybind.elements.Empty
     | impactx.impactx_pybind.elements.Aperture
     | impactx.impactx_pybind.elements.Buncher

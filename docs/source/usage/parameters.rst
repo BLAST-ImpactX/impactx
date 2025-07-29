@@ -447,8 +447,8 @@ This element requires these additional parameters:
 * ``<element_name>.A_x(x,y,z)`` (``float``, dimensionless OR in Tesla-meters) formula for horizontal component of vector potential
 * ``<element_name>.A_y(x,y,z)`` (``float``, dimensionless OR in Tesla-meters) formula for vertical component of vector potential
 * ``<element_name>.dA_x/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_x component
-* ``<element_name>.dA_x/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_x component         
-* ``<element_name>.dA_y/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_y component         
+* ``<element_name>.dA_x/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_x component
+* ``<element_name>.dA_y/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_y component
 * ``<element_name>.dA_y/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_y component
 * ``<element_name>.dA_z/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_z component
 * ``<element_name>.dA_z/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_z component

@@ -1095,10 +1095,10 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-      
-.. py:class:: impactx.elements.MagnetostaticVectorPotential(ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0, 
+
+.. py:class:: impactx.elements.MagnetostaticVectorPotential(ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0,
 aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
-   
+
    Symplectic integration in a user-defined magnetostatic vector potential, using the exact Hamiltonian, which includes all
    nonlinear kinematic effects.  Integration is performed with respect to a Cartesian coordinate system local to the body of
    the element.  A symmetric, semi-explicit symplectic integration scheme is used, based on:
@@ -1107,7 +1107,7 @@ aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
    Math. Comput. 92, pp. 251-281 (2022), `DOI:10.1090/mcom/3778 <https://doi.org/10.1090/mcom/3778>`__
 
    This element requires these additional parameters:
-   
+
    :param ds: Segment length in m.
    :param unit: specification of units for the vector potential and its derivatives
               0 (default) normalize all quantities by the magnetic rigidity
@@ -1129,23 +1129,23 @@ aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
    :param mapsteps: number of integration steps per slice used for symplectic integration
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
-   
+
    .. py:property:: k
-   
+
       quadrupole strength in 1/m^2 (or T/m)
-              
+
    .. py:property:: unit
-              
+
       unit specification for quad strength
-   
+
    .. py:property:: int_order
-   
+
       the order used for symplectic integration (2, 4, or 6)
-   
+
    .. py:property:: mapsteps
-   
+
       number of integration steps per slice used for symplectic integration
-      
+
 
 .. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 

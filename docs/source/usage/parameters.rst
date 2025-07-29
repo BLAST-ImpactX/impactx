@@ -429,6 +429,39 @@ This element requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 
 
+``magnetostatic_vector_potential``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Symplectic integration in a user-defined magnetostatic vector potential, using the exact Hamiltonian, which includes all
+nonlinear kinematic effects.  Integration is performed with respect to a Cartesian coordinate system local to the body of
+the element.  A symmetric, semi-explicit symplectic integration scheme is used, based on:
+
+B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic integrators for non-separable Hamiltonian systems,"
+Math. Comput. 92, pp. 251-281 (2022), `DOI:10.1090/mcom/3778 <https://doi.org/10.1090/mcom/3778>`__
+
+This element requires these additional parameters:
+
+* ``<element_name>.ds`` (``float``, in meters) the segment length
+* ``<element_name>.unit`` (``integer``) specification of units for the vector potential (default: ``0``)
+  By default, the vector potential is normalized by magnetic rigidity.  Use ``unit=1`` to specify using SI units.
+* ``<element_name>.A_x(x,y,z)`` (``float``, dimensionless OR in Tesla-meters) formula for horizontal component of vector potential
+* ``<element_name>.A_y(x,y,z)`` (``float``, dimensionless OR in Tesla-meters) formula for vertical component of vector potential
+* ``<element_name>.dA_x/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_x component
+* ``<element_name>.dA_x/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_x component         
+* ``<element_name>.dA_y/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_y component         
+* ``<element_name>.dA_y/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_y component
+* ``<element_name>.dA_z/dx(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for x-derivative of A_z component
+* ``<element_name>.dA_z/dy(x,y,z)`` (``float``, in 1/meters OR in Tesla) formula for y-derivative of A_z component
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+* ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
+* ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
+* ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
+
+
 ``multipole``
 ^^^^^^^^^^^^^
 

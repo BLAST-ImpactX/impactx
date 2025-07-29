@@ -1095,6 +1095,58 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
+      
+.. py:class:: impactx.elements.MagnetostaticVectorPotential(ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0, 
+aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+   
+   Symplectic integration in a user-defined magnetostatic vector potential, using the exact Hamiltonian, which includes all
+   nonlinear kinematic effects.  Integration is performed with respect to a Cartesian coordinate system local to the body of
+   the element.  A symmetric, semi-explicit symplectic integration scheme is used, based on:
+
+   B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic integrators for non-separable Hamiltonian systems,"
+   Math. Comput. 92, pp. 251-281 (2022), `DOI:10.1090/mcom/3778 <https://doi.org/10.1090/mcom/3778>`__
+
+   This element requires these additional parameters:
+   
+   :param ds: Segment length in m.
+   :param unit: specification of units for the vector potential and its derivatives
+              0 (default) normalize all quantities by the magnetic rigidity
+              1 provide all quantities in SI units
+   :param ax: formula for horizontal component of vector potential (dimensionless, if unit = 0 OR in T-m if unit = 1)
+   :param ay: formula for vertical component of vector potential (dimensionless, if unit = 0 OR in T-m if unit = 1)
+   :param daxdx: formula for x-derivative of A_x component (in 1/meter, if unit = 0 OR in T if unit = 1)
+   :param daxdy: formula for y-derivative of A_x component (in 1/meter, if unit = 0 OR in T if unit = 1)
+   :param daydx: formula for x-derivative of A_y component (in 1/meter, if unit = 0 OR in T if unit = 1)
+   :param daydy: formula for y-derivative of A_y component (in 1/meter, if unit = 0 OR in T if unit = 1)
+   :param dazdx: formula for x-derivative of A_z component (in 1/meter, if unit = 0 OR in T if unit = 1)
+   :param dazdy: formula for y-derivative of A_z component (in 1/meter, if unit = 0 OR in T if unit = 1)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+   
+   .. py:property:: k
+   
+      quadrupole strength in 1/m^2 (or T/m)
+              
+   .. py:property:: unit
+              
+      unit specification for quad strength
+   
+   .. py:property:: int_order
+   
+      the order used for symplectic integration (2, 4, or 6)
+   
+   .. py:property:: mapsteps
+   
+      number of integration steps per slice used for symplectic integration
+      
+
 .. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An active cylindrically symmetric plasma lens, with chromatic effects included.

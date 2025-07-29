@@ -3,8 +3,8 @@
 Symplectic Integration in a FODO Cell Based on User-Provided Vector Potential
 =============================================================================
 
-This benchmark tests the implementation of the element VectorPotential, which uses symplectic integration based on the exact nonlinear Hamiltonian for a user-provided vector potential.
-The physical example is identical to examples-fodo, except that the vector potential in the quadrupoles is provided in formulae by the user.
+This benchmark tests the implementation of the element MagnetostaticVectorPotential, which uses symplectic integration based on the exact nonlinear Hamiltonian for a user-provided vector 
+potential.  The physical example is identical to examples-fodo, except that the vector potential in the quadrupoles is provided in formulae by the user.
 
 The analysis script is identical to the analysis script used for ``examples-fodo``.
 
@@ -50,8 +50,8 @@ We run the following script to analyze correctness:
 Symplectic Integration in Exact Quads Based on User-Provided Vector Potential
 =============================================================================
 
-This benchmark tests the implementation of the element VectorPotential, which uses symplectic integration based on the exact nonlinear Hamiltonian for a user-provided vector potential.
-The physical example is identical to examples-exact-quad, except that the vector potential in the quadrupoles is provided in formulae by the user.
+This benchmark tests the implementation of the element MagnetostaticVectorPotential, which uses symplectic integration based on the exact nonlinear Hamiltonian for a user-provided vector 
+potential.  The physical example is identical to examples-exact-quad, except that the vector potential in the quadrupoles is provided in formulae by the user.
 
 The analysis script is identical to the analysis script used for ``examples-exact-quad``.
 
@@ -98,8 +98,8 @@ We run the following script to analyze correctness:
 Symplectic Integration Through a Soft-Edge Solenoid Based on User-Provided Vector Potential
 ============================================================================================
 
-This benchmark tests the implementation of the element VectorPotential, which uses symplectic integration based on the exact nonlinear Hamiltonian for a user-provided vector potential.
-The physical example is identical to examples-solenoid-softedge, except that the vector potential of the solenoid is provided in formulae by the user.
+This benchmark tests the implementation of the element MagnetostaticVectorPotential, which uses symplectic integration based on the exact nonlinear Hamiltonian for a user-provided vector 
+potential.  The physical example is identical to examples-solenoid-softedge, except that the vector potential of the solenoid is provided in formulae by the user.
 
 The analysis script is identical to the analysis script used for ``examples-solenoid-softedge``.
 

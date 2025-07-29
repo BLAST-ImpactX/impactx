@@ -35,17 +35,17 @@ monitor1.backend = h5
 drift1.type = drift_exact
 drift1.ds = 0.046
 
-quad1.type = vector_potential
+quad1.type = magnetostatic_vector_potential
 quad1.ds = 0.02903
-quad1.dA_z/dx(x,y,t,z) = -207.0*x
-quad1.dA_z/dy(x,y,t,z) = 207.0*y
+quad1.dA_z/dx(x,y,z) = -207.0*x
+quad1.dA_z/dy(x,y,z) = 207.0*y
 quad1.units = 1
 quad1.mapsteps = 5
 
-quad2.type = vector_potential
+quad2.type = magnetostatic_vector_potential
 quad2.ds = 0.02903
-quad2.dA_z/dx(x,y,t,z) = 207.0*x
-quad2.dA_z/dy(x,y,t,z) = -207.0*y
+quad2.dA_z/dx(x,y,z) = 207.0*x
+quad2.dA_z/dy(x,y,z) = -207.0*y
 quad2.units = 1
 quad2.mapsteps = 5
 

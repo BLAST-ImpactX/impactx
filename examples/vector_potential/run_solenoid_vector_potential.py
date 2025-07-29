@@ -44,7 +44,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 # design the accelerator lattice
 ns = 1
 
-sol = elements.VectorPotential(
+sol = elements.MagnetostaticVectorPotential(
     name="sol1",
     ds=6.0,
     ax="-0.790585*y*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))",

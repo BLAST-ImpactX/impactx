@@ -52,7 +52,7 @@ fodo = [
     monitor,
     elements.Drift(name="drift1", ds=0.25, nslice=ns),
     monitor,
-    elements.VectorPotential(
+    elements.MagnetostaticVectorPotential(
         name="quad1",
         ds=1.0,
         unit=0,
@@ -70,7 +70,7 @@ fodo = [
     monitor,
     elements.Drift(name="drift2", ds=0.5, nslice=ns),
     monitor,
-    elements.VectorPotential(
+    elements.MagnetostaticVectorPotential(
         name="quad2",
         ds=1.0,
         unit=0,

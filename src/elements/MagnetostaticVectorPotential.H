@@ -7,8 +7,8 @@
  * Authors: Chad Mitchell, Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_VECTORPOTENTIAL_H
-#define IMPACTX_VECTORPOTENTIAL_H
+#ifndef IMPACTX_MAGNETOSTATIC_VECTOR_POTENTIAL_H
+#define IMPACTX_MAGNETOSTATIC_VECTOR_POTENTIAL_H
 
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
@@ -39,12 +39,13 @@ namespace impactx::elements
  * a device-executuable amrex::ParserExecutor<N>. We keep a lookup table here
  * for all the host data, which we clean up in the end.
  */
-namespace VectorPotentialData
+namespace MagnetostaticVectorPotentialData
 {
     //! last used id for a created vector potential element
     inline int next_id = 0;
 
-    // user-provided functions & derivatives with 4 independent variables x,y,t,z
+    // user-provided functions & derivatives with 3 independent variables x,y,z
+    // (a fourth available variable t is not used here)
 
     //! host: vector potential in x
     inline std::map<int, amrex::Parser> m_parser_ax;
@@ -63,24 +64,24 @@ namespace VectorPotentialData
     //! host: vector potential derivative dA_z/dy
     inline std::map<int, amrex::Parser> m_parser_dazdy;
 
-} // namespace VectorPotentialData
+} // namespace MagnetostaticVectorPotentialData
 
-    struct VectorPotential
+    struct MagnetostaticVectorPotential
     : public mixin::Named,
-      public mixin::BeamOptic<VectorPotential>,
-      public mixin::LinearTransport<VectorPotential>,
+      public mixin::BeamOptic<MagnetostaticVectorPotential>,
+      public mixin::LinearTransport<MagnetostaticVectorPotential>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture
     {
-        static constexpr auto type = "VectorPotential";
+        static constexpr auto type = "MagnetostaticVectorPotential";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        /** Symplectic integration in a user-defined vector potential,
-         *  using the exact Hamiltonian, which includes all nonlinear
-         *  kinematic effects.  Integration is performed with respect
-         *  to a Cartesian coordinate system local to the body of the
-         *  element.  A symmetric, semi-explicit symplectic integration
+        /** Symplectic integration in a user-defined magnetostatic vector 
+         *  potential, using the exact Hamiltonian, which includes all 
+         *  nonlinear kinematic effects.  Integration is performed with 
+         *  respect to a Cartesian coordinate system local to the body of 
+         *  the element.  A symmetric, semi-explicit symplectic integration
          *  scheme is used, based on:
          *
          *  B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic
@@ -92,14 +93,14 @@ namespace VectorPotentialData
          * @param unit  Unit specification for vector potential
          *           unit = 0 dimensionless (default)
          *           unit = 1 SI units of T-m
-         * @param str_ax function string for A_x(x,y,t,z)
-         * @param str_ay function string for A_y(x,y,t,z)
-         * @param str_daxdx function string for dA_x/dx(x,y,t,z)
-         * @param str_daxdy function string for dA_x/dy(x,y,t,z)
-         * @param str_daydx function string for dA_y/dx(x,y,t,z)
-         * @param str_daydy function string for dA_y/dy(x,y,t,z)
-         * @param str_dazdx function string for dA_z/dx(x,y,t,z)
-         * @param str_dazdy function string for dA_z/dy(x,y,t,z)
+         * @param str_ax function string for A_x(x,y,z)
+         * @param str_ay function string for A_y(x,y,z)
+         * @param str_daxdx function string for dA_x/dx(x,y,z)
+         * @param str_daxdy function string for dA_x/dy(x,y,z)
+         * @param str_daydx function string for dA_y/dx(x,y,z)
+         * @param str_daydy function string for dA_y/dy(x,y,z)
+         * @param str_dazdx function string for dA_z/dx(x,y,z)
+         * @param str_dazdy function string for dA_z/dy(x,y,z)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -111,7 +112,7 @@ namespace VectorPotentialData
          * @param nslice number of slices used for the application of space charge
          * @param name a user defined and not necessarily unique name of the element
          */
-        VectorPotential (
+        MagnetostaticVectorPotential (
             amrex::ParticleReal ds,
             int unit,
             std::string str_ax = "0",
@@ -137,35 +138,35 @@ namespace VectorPotentialData
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),
-          m_id(VectorPotentialData::next_id)
+          m_id(MagnetostaticVectorPotentialData::next_id)
         {
             // next created vector potential element has another id for its functions
-            VectorPotentialData::next_id++;
+            MagnetostaticVectorPotentialData::next_id++;
 
-            // variables of the function
+            // variables of the function (note: t-dependence is not used in this element)
             amrex::Vector<std::string> const varnames = {"x", "y", "t", "z"};
 
             // host data
             amrex::ParmParse const pp;
-            VectorPotentialData::m_parser_ax[m_id] = pp.makeParser(str_ax, varnames);
-            VectorPotentialData::m_parser_ay[m_id] = pp.makeParser(str_ay, varnames);
-            VectorPotentialData::m_parser_daxdx[m_id] = pp.makeParser(str_daxdx, varnames);
-            VectorPotentialData::m_parser_daxdy[m_id] = pp.makeParser(str_daxdy, varnames);
-            VectorPotentialData::m_parser_daydx[m_id] = pp.makeParser(str_daydx, varnames);
-            VectorPotentialData::m_parser_daydy[m_id] = pp.makeParser(str_daydy, varnames);
-            VectorPotentialData::m_parser_dazdx[m_id] = pp.makeParser(str_dazdx, varnames);
-            VectorPotentialData::m_parser_dazdy[m_id] = pp.makeParser(str_dazdy, varnames);
+            MagnetostaticVectorPotentialData::m_parser_ax[m_id] = pp.makeParser(str_ax, varnames);
+            MagnetostaticVectorPotentialData::m_parser_ay[m_id] = pp.makeParser(str_ay, varnames);
+            MagnetostaticVectorPotentialData::m_parser_daxdx[m_id] = pp.makeParser(str_daxdx, varnames);
+            MagnetostaticVectorPotentialData::m_parser_daxdy[m_id] = pp.makeParser(str_daxdy, varnames);
+            MagnetostaticVectorPotentialData::m_parser_daydx[m_id] = pp.makeParser(str_daydx, varnames);
+            MagnetostaticVectorPotentialData::m_parser_daydy[m_id] = pp.makeParser(str_daydy, varnames);
+            MagnetostaticVectorPotentialData::m_parser_dazdx[m_id] = pp.makeParser(str_dazdx, varnames);
+            MagnetostaticVectorPotentialData::m_parser_dazdy[m_id] = pp.makeParser(str_dazdy, varnames);
 
             // device functions
             constexpr int num_vars = 4;
-            m_dfunc_ax = VectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
-            m_dfunc_ay = VectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
-            m_dfunc_daxdx = VectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
-            m_dfunc_daxdy = VectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
-            m_dfunc_daydx = VectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
-            m_dfunc_daydy = VectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
-            m_dfunc_dazdx = VectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
-            m_dfunc_dazdy = VectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
+            m_dfunc_ax = MagnetostaticVectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
+            m_dfunc_ay = MagnetostaticVectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
+            m_dfunc_daxdx = MagnetostaticVectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
+            m_dfunc_daxdy = MagnetostaticVectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
+            m_dfunc_daydx = MagnetostaticVectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
+            m_dfunc_daydy = MagnetostaticVectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
+            m_dfunc_dazdx = MagnetostaticVectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
+            m_dfunc_dazdy = MagnetostaticVectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
         }
 
         /** Push all particles */
@@ -199,14 +200,14 @@ namespace VectorPotentialData
 
             // device functions (cached after first compile, unless user changed it interactively)
             constexpr int num_vars = 4;
-            m_dfunc_ax = VectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
-            m_dfunc_ay = VectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
-            m_dfunc_daxdx = VectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
-            m_dfunc_daxdy = VectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
-            m_dfunc_daydx = VectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
-            m_dfunc_daydy = VectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
-            m_dfunc_dazdx = VectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
-            m_dfunc_dazdy = VectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
+            m_dfunc_ax = MagnetostaticVectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
+            m_dfunc_ay = MagnetostaticVectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
+            m_dfunc_daxdx = MagnetostaticVectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
+            m_dfunc_daxdy = MagnetostaticVectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
+            m_dfunc_daydx = MagnetostaticVectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
+            m_dfunc_daydy = MagnetostaticVectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
+            m_dfunc_dazdx = MagnetostaticVectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
+            m_dfunc_dazdy = MagnetostaticVectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
         }
 
         /** This is a quad functor, so that a variable of this type can be used like a quad function.
@@ -389,7 +390,7 @@ namespace VectorPotentialData
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
+        void operator() (RefPart & AMREX_RESTRICT refpart) const {
 
             using namespace amrex::literals; // for _rt and _prt
 
@@ -440,6 +441,8 @@ namespace VectorPotentialData
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
+            // TODO
+
             return R;
         }
 
@@ -452,22 +455,22 @@ namespace VectorPotentialData
         finalize ()
         {
             // remove from unique function map
-            if (VectorPotentialData::m_parser_ax.count(m_id) != 0u)
-                VectorPotentialData::m_parser_ax.erase(m_id);
-            if (VectorPotentialData::m_parser_ay.count(m_id) != 0u)
-                VectorPotentialData::m_parser_ay.erase(m_id);
-            if (VectorPotentialData::m_parser_daxdx.count(m_id) != 0u)
-                VectorPotentialData::m_parser_daxdx.erase(m_id);
-            if (VectorPotentialData::m_parser_daxdy.count(m_id) != 0u)
-                VectorPotentialData::m_parser_daxdy.erase(m_id);
-            if (VectorPotentialData::m_parser_daydx.count(m_id) != 0u)
-                VectorPotentialData::m_parser_daydx.erase(m_id);
-            if (VectorPotentialData::m_parser_daydy.count(m_id) != 0u)
-                VectorPotentialData::m_parser_daydy.erase(m_id);
-            if (VectorPotentialData::m_parser_dazdx.count(m_id) != 0u)
-                VectorPotentialData::m_parser_dazdx.erase(m_id);
-            if (VectorPotentialData::m_parser_dazdy.count(m_id) != 0u)
-                VectorPotentialData::m_parser_dazdy.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_ax.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_ax.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_ay.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_ay.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_daxdx.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_daxdx.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_daxdy.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_daxdy.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_daydx.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_daydx.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_daydy.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_daydy.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_dazdx.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_dazdx.erase(m_id);
+            if (MagnetostaticVectorPotentialData::m_parser_dazdy.count(m_id) != 0u)
+                MagnetostaticVectorPotentialData::m_parser_dazdy.erase(m_id);
         }
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
@@ -475,7 +478,7 @@ namespace VectorPotentialData
         int m_int_order; //! order used for the symplectic integration (2 or 4)
         int m_mapsteps; //! number of integration steps per slice
 
-        // user-provided functions & derivatives with 4 independent variables x,y,t,z
+        // user-provided functions & derivatives with 3 independent variables x,y,z
         int m_id; //! unique vector potential element id used for function lookup map
         amrex::ParserExecutor<4> m_dfunc_ax;  //! A_x(x,y,t,z)
         amrex::ParserExecutor<4> m_dfunc_ay;  //! A_y(x,y,t,z)
@@ -499,4 +502,4 @@ namespace VectorPotentialData
 
 } // namespace impactx
 
-#endif // IMPACTX_VECTORPOTENTIAL_H
+#endif // IMPACTX_MAGNETOSTATIC_VECTOR_POTENTIAL_H

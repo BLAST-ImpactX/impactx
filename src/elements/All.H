@@ -28,6 +28,7 @@
 #include "ExactSbend.H"
 #include "Kicker.H"
 #include "LinearMap.H"
+#include "MagnetostaticVectorPotential.H"
 #include "Marker.H"
 #include "Multipole.H"
 #include "NonlinearLens.H"
@@ -45,7 +46,6 @@
 #include "Source.H"
 #include "TaperedPL.H"
 #include "ThinDipole.H"
-#include "VectorPotential.H"
 #include "diagnostics/BeamMonitor.H"
 
 #include <variant>
@@ -73,6 +73,7 @@ namespace impactx::elements
         ExactSbend,
         Kicker,
         LinearMap,
+        MagnetostaticVectorPotential,
         Marker,
         Multipole,
         NonlinearLens,
@@ -89,8 +90,7 @@ namespace impactx::elements
         Sol,
         Source,
         TaperedPL,
-        ThinDipole,
-        VectorPotential
+        ThinDipole
     >;
 
 } // namespace impactx

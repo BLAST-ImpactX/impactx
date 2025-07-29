@@ -2348,17 +2348,17 @@ void init_elements(py::module& m)
      register_push(py_LinearMap);
 
 
-    py::class_<VectorPotential, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_VectorPotential(me, "VectorPotential");
-    py_VectorPotential
+    py::class_<MagnetostaticVectorPotential, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_MagnetostaticVectorPotential(me, "MagnetostaticVectorPotential");
+    py_MagnetostaticVectorPotential
         .def("__repr__",
-             [](VectorPotential const & vp) {
+             [](MagnetostaticVectorPotential const & vp) {
                  return element_name(
                      vp
                  );
              }
         )
         .def("to_dict",
-            [](VectorPotential const & vp) {
+            [](MagnetostaticVectorPotential const & vp) {
                 return element_dict(
                     vp,
                     std::make_pair("unit", vp.m_unit)
@@ -2419,17 +2419,17 @@ void init_elements(py::module& m)
              )doc"
         )
         .def_property("k",
-            [](VectorPotential & vp) { return vp.m_k; },
-            [](VectorPotential & vp, amrex::ParticleReal k) { vp.m_k = k; },
+            [](MagnetostaticVectorPotential & vp) { return vp.m_k; },
+            [](MagnetostaticVectorPotential & vp, amrex::ParticleReal k) { vp.m_k = k; },
             "Quadrupole strength in m^(-2) (MADX convention)"
         )
         .def_property("unit",
-            [](VectorPotential & vp) { return vp.m_unit; },
-            [](VectorPotential & vp, int unit) { vp.m_unit = unit; },
+            [](MagnetostaticVectorPotential & vp) { return vp.m_unit; },
+            [](MagnetostaticVectorPotential & vp, int unit) { vp.m_unit = unit; },
             "Unit specification: 0 (MAD-X), 1 (MaryLie)"
         )
     ;
-    register_push(py_VectorPotential);
+    register_push(py_MagnetostaticVectorPotential);
 
     // freestanding push function
     m.def("push", &Push,

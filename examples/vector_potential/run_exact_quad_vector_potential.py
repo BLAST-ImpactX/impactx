@@ -65,7 +65,7 @@ monitor1 = elements.BeamMonitor("monitor", backend="h5")
 # element names consistent with HTU_base_lattice_matched.lte Elegant input
 
 drift1 = elements.ExactDrift(name="drift1", ds=0.046, nslice=ns)
-quad1 = elements.VectorPotential(
+quad1 = elements.MagnetostaticVectorPotential(
     name="quad1",
     ds=0.02903,
     ax="0",
@@ -80,7 +80,7 @@ quad1 = elements.VectorPotential(
     mapsteps=5,
     nslice=ns,
 )
-quad2 = elements.VectorPotential(
+quad2 = elements.MagnetostaticVectorPotential(
     name="quad2",
     ds=0.02890,
     ax="0",

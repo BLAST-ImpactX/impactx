@@ -77,10 +77,10 @@ namespace MagnetostaticVectorPotentialData
         static constexpr auto type = "MagnetostaticVectorPotential";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        /** Symplectic integration in a user-defined magnetostatic vector 
-         *  potential, using the exact Hamiltonian, which includes all 
-         *  nonlinear kinematic effects.  Integration is performed with 
-         *  respect to a Cartesian coordinate system local to the body of 
+        /** Symplectic integration in a user-defined magnetostatic vector
+         *  potential, using the exact Hamiltonian, which includes all
+         *  nonlinear kinematic effects.  Integration is performed with
+         *  respect to a Cartesian coordinate system local to the body of
          *  the element.  A symmetric, semi-explicit symplectic integration
          *  scheme is used, based on:
          *

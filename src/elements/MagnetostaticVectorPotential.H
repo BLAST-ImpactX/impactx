@@ -45,7 +45,6 @@ namespace MagnetostaticVectorPotentialData
     inline int next_id = 0;
 
     // user-provided functions & derivatives with 3 independent variables x,y,z
-    // (a fourth available variable t is not used here)
 
     //! host: vector potential in x
     inline std::map<int, amrex::Parser> m_parser_ax;
@@ -143,8 +142,8 @@ namespace MagnetostaticVectorPotentialData
             // next created vector potential element has another id for its functions
             MagnetostaticVectorPotentialData::next_id++;
 
-            // variables of the function (note: t-dependence is not used in this element)
-            amrex::Vector<std::string> const varnames = {"x", "y", "t", "z"};
+            // variables of the function
+            amrex::Vector<std::string> const varnames = {"x", "y", "z"};
 
             // host data
             amrex::ParmParse const pp;
@@ -158,7 +157,7 @@ namespace MagnetostaticVectorPotentialData
             MagnetostaticVectorPotentialData::m_parser_dazdy[m_id] = pp.makeParser(str_dazdy, varnames);
 
             // device functions
-            constexpr int num_vars = 4;
+            constexpr int num_vars = 3;
             m_dfunc_ax = MagnetostaticVectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
             m_dfunc_ay = MagnetostaticVectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
             m_dfunc_daxdx = MagnetostaticVectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
@@ -199,7 +198,7 @@ namespace MagnetostaticVectorPotentialData
             m_scale =  m_unit == 1 ? 1_prt / refpart.rigidity_Tm() : 1_prt;
 
             // device functions (cached after first compile, unless user changed it interactively)
-            constexpr int num_vars = 4;
+            constexpr int num_vars = 3;
             m_dfunc_ax = MagnetostaticVectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
             m_dfunc_ay = MagnetostaticVectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
             m_dfunc_daxdx = MagnetostaticVectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
@@ -357,14 +356,14 @@ namespace MagnetostaticVectorPotentialData
             amrex::ParticleReal z = zeval;
 
             // Evaluate the vector potential and its derivatives
-            auto const ax = m_dfunc_ax(x, y, t, z) * m_scale;
-            auto const ay = m_dfunc_ay(x, y, t, z) * m_scale;
-            auto const daxdx = m_dfunc_daxdx(x, y, t, z) * m_scale;
-            auto const daxdy = m_dfunc_daxdy(x, y, t, z) * m_scale;
-            auto const daydx = m_dfunc_daydx(x, y, t, z) * m_scale;
-            auto const daydy = m_dfunc_daydy(x, y, t, z) * m_scale;
-            auto const dazdx = m_dfunc_dazdx(x, y, t, z) * m_scale;
-            auto const dazdy = m_dfunc_dazdy(x, y, t, z) * m_scale;
+            auto const ax = m_dfunc_ax(x, y, z) * m_scale;
+            auto const ay = m_dfunc_ay(x, y, z) * m_scale;
+            auto const daxdx = m_dfunc_daxdx(x, y, z) * m_scale;
+            auto const daxdy = m_dfunc_daxdy(x, y, z) * m_scale;
+            auto const daydx = m_dfunc_daydx(x, y, z) * m_scale;
+            auto const daydy = m_dfunc_daydy(x, y, z) * m_scale;
+            auto const dazdx = m_dfunc_dazdx(x, y, z) * m_scale;
+            auto const dazdy = m_dfunc_dazdy(x, y, z) * m_scale;
 
             // Implementation of derivatives for rectilinear magnetostatic element (static units):
             // Radical appearing in the Hamiltonian (equal to the value of pz):
@@ -480,14 +479,14 @@ namespace MagnetostaticVectorPotentialData
 
         // user-provided functions & derivatives with 3 independent variables x,y,z
         int m_id; //! unique vector potential element id used for function lookup map
-        amrex::ParserExecutor<4> m_dfunc_ax;  //! A_x(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_ay;  //! A_y(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_daxdx;  //! dA_x/dx(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_daxdy;  //! dA_x/dy(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_daydx;  //! dA_y/dx(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_daydy;  //! dA_y/dy(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_dazdx;  //! dA_z/dx(x,y,t,z)
-        amrex::ParserExecutor<4> m_dfunc_dazdy;  //! dA_z/dy(x,y,t,z)
+        amrex::ParserExecutor<3> m_dfunc_ax;  //! A_x(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_ay;  //! A_y(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_daxdx;  //! dA_x/dx(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_daxdy;  //! dA_x/dy(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_daydx;  //! dA_y/dx(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_daydy;  //! dA_y/dy(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_dazdx;  //! dA_z/dx(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_dazdy;  //! dA_z/dy(x,y,z)
 
     private:
         // constants that are independent of the individually tracked particle,

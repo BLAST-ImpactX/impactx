@@ -618,10 +618,17 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:method:: load_file(madx_file, nslice=1)
 
-      Load and append an accelerator lattice description from a MAD-X file.
+      Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
 
-      :param madx_file: file name to MAD-X file with beamline elements
-      :param nslice: number of slices used for the application of space charge
+      :param filename: filename to file with beamline elements
+      :param nslice: number of slices used for the application of collective effects
+
+   .. py:method:: from_pals(pals_line, nslice=1)
+
+      Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python Line.
+
+      :param pals_line: PALS Python Line with beamline elements
+      :param nslice: number of slices used for the application of collective effects
 
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 

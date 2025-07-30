@@ -1,6 +1,6 @@
 from __future__ import annotations
-import numpy
 import numpy as np
+import numpy
 
 __all__ = ["np", "twiss"]
 

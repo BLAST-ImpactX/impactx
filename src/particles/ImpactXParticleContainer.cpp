@@ -12,6 +12,7 @@
 #include "initialization/AmrCoreData.H"
 #include "initialization/Algorithms.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"
+#include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
@@ -255,19 +256,13 @@ namespace impactx
             // get get n_regular particles. If there are some
             // leftovers, however, the first n_leftover threads
             // will get one extra
-            int n_regular  = np / nthreads;
-            int n_leftover = np - n_regular*nthreads;
-
-            int num_to_add = 0; /* how many particles this tile will get*/
-            int my_offset = 0; /*  offset into global arrays x, y, etc. for this thread*/
-
-            if (tid < n_leftover) { // get n_regular+1 items
-                my_offset = tid * (n_regular + 1);
-                num_to_add = n_regular + 1;
-            } else {         // get n_regular items
-                my_offset = tid * n_regular + n_leftover;
-                num_to_add = n_regular;
-            }
+            ParticleChunk thread_chunk = split_equally(
+                np,
+                tid,
+                nthreads
+            );
+            int const my_offset = thread_chunk.offset;
+            int const num_to_add = thread_chunk.size;
 
             auto& particle_tile = ParticlesAt(lid, gid, tid);
             auto old_np = particle_tile.numParticles();

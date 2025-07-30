@@ -14,6 +14,7 @@
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
+#include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/warn_manager/WarnManager.H>
@@ -307,11 +308,12 @@ namespace impactx
         // position, per MPI rank. We then measure the distribution's spatial
         // extent, create a grid, resize it to fit the beam, and then
         // redistribute particles so that they reside on the correct MPI rank.
-        int const myproc = amrex::ParallelDescriptor::MyProc();
-        int const nprocs = amrex::ParallelDescriptor::NProcs();
-        int const navg = npart / nprocs;  // note: integer division
-        int const nleft = npart - navg * nprocs;
-        int const npart_this_proc = (myproc < nleft) ? navg+1 : navg;  // add 1 to each proc until distributed
+        ParticleChunk proc_chunk = split_equally(
+            npart,
+            amrex::ParallelDescriptor::MyProc(),
+            amrex::ParallelDescriptor::NProcs()
+        );
+        int const npart_this_proc = proc_chunk.size;
         auto const rel_part_this_proc =
             amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
@@ -342,24 +344,16 @@ namespace impactx
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
             {
+                int npart_this_thread = npart_this_proc;
                 int my_offset = 0;  // offset into global arrays x, y, etc. for this thread
-
 #ifdef AMREX_USE_OMP
-                int const nthreads = omp_get_max_threads();
-                int const tid = omp_get_thread_num();
-
-                int const navg_thread = npart_this_proc / nthreads;  // note: integer division
-                int const nleft_thread = npart_this_proc - navg_thread * nthreads;
-                int const npart_this_thread = (tid < nleft_thread) ? navg_thread+1 : navg_thread;  // add 1 to each thread until distributed
-
-                if (tid < nleft_thread) { // get navg_thread+1 items
-                    my_offset = tid * (navg_thread + 1);
-                } else {                  // get navg_thread items
-                    my_offset = tid * navg_thread + nleft_thread;
-                }
-
-#else
-                int const npart_this_thread = npart_this_proc;
+                ParticleChunk thread_chunk = split_equally(
+                    npart_this_proc,
+                    omp_get_thread_num(),
+                    omp_get_max_threads()
+                );
+                my_offset = thread_chunk.offset;
+                npart_this_thread = thread_chunk.size;
 #endif
 
                 initialization::InitSingleParticleData<Distribution> const init_single_particle_data(

@@ -19,6 +19,8 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 // TODO: #include <AMReX_SIMD.H>
+//   SIMD will require better complex math support in vir-simd / C++26
+//   https://github.com/mattkretz/vir-simd/issues/42
 
 #include <functional>
 #include <stdexcept>

@@ -127,6 +127,7 @@ namespace detail
 
             // initialize vector registers
             // TODO stdx::vector_aligned needs alignment guarantees
+            //      https://github.com/AMReX-Codes/amrex/issues/4592
             //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
             part_x.copy_from(&m_part_x[i], stdx::element_aligned);
             part_y.copy_from(&m_part_y[i], stdx::element_aligned);
@@ -141,6 +142,7 @@ namespace detail
 
             // write back to memory
             // TODO stdx::vector_aligned needs alignment guarantees
+            //      https://github.com/AMReX-Codes/amrex/issues/4592
             //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
             if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 0))
                 part_x.copy_to(&m_part_x[i], stdx::element_aligned);

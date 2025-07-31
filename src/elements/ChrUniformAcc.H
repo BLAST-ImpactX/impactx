@@ -159,9 +159,8 @@ namespace impactx::elements
 
             // check whether particle lies within the domain of map definition
             auto const mask = pti_tot2 <= 1_prt || ptf_tot2 <= 1_prt;
-            if (stdx::any_of(mask) == true) {
-                amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
-            } else {
+            amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
+            {
                 T_Real const pzi_tot = sqrt(powi<2>(pti_tot) - 1_prt);
                 T_Real const pzf_tot = sqrt(powi<2>(ptf_tot) - 1_prt);
                 T_Real const pzi_ref = sqrt(powi<2>(m_pti_ref) - 1_prt);

@@ -207,8 +207,7 @@ namespace impactx::elements
             // For transmit (default): invalidate if outside aperture
             // For absorb: invalidate if inside aperture
             auto const invalid_mask = m_action == Action::transmit ? !inside_aperture : inside_aperture;
-            if (stdx::any_of(invalid_mask) == true)
-                amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
+            amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);

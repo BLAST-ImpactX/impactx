@@ -205,10 +205,7 @@ namespace impactx::elements
                T_Real const px2 = powi<2>(px);
                // determine if particle lies within the domain of map definition
                auto const mask = pperp2 <= px2;
-               if (stdx::any_of(mask) == true)
-               {
-                   amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
-               } else
+               amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
                {
                    T_Real const pperp = sqrt(pperp2);
                    T_Real const pzi = sqrt(powi<2>(pperp) - powi<2>(px));
@@ -223,10 +220,7 @@ namespace impactx::elements
                    T_Real const px2f = powi<2>(pxout);
                    // determine if particle lies within domain of map definition
                    auto const mask2 = pperp2 <= px2f;
-                   if (stdx::any_of(mask2) == true)
-                   {
-                       amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask2);
-                   } else
+                   amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask2);
                    {
                        T_Real const pzf = sqrt(powi<2>(pperp)-powi<2>(pxout));
                        T_Real const theta = m_slice_phi + asin(px/pperp) - asin(pxout/pperp);

@@ -78,9 +78,7 @@ namespace impactx::elements::mixin
 
                 // compare against the aperture boundary
                 auto const mask = u*u + v*v > 1_prt;
-                if (stdx::any_of(mask) == true) {
-                    amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
-                }
+                amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
             }
         }
 

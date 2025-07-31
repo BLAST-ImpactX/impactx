@@ -107,7 +107,7 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // normalize focusing strength units to MAD-X convention if needed
-            T_Real g = m_k;
+            amrex::ParticleReal g = m_k;
             if (m_unit == 1) {
                 g = m_k / refpart.rigidity_Tm();
             }

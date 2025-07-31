@@ -130,8 +130,8 @@ namespace impactx::elements
             T_Real const tout = t;
 
             // normalize quad units to MAD-X convention if needed
-            T_Real const dpx = m_xkick * m_p_scale;
-            T_Real const dpy = m_ykick * m_p_scale;
+            amrex::ParticleReal const dpx = m_xkick * m_p_scale;
+            amrex::ParticleReal const dpy = m_ykick * m_p_scale;
 
             // initialize output values of momenta
             T_Real pxout = px;

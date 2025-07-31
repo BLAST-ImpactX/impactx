@@ -139,8 +139,8 @@ namespace impactx::elements
             using Complex = amrex::GpuComplex<T_Real>;
 
             // access reference particle values to find (beta*gamma)^2
-            //T_Real const pt_ref = refpart.pt;
-            //T_Real const betgam2 = powi<2>(pt_ref) - 1.0_prt;
+            //amrex::ParticleReal const pt_ref = refpart.pt;
+            //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // initialize output values
             T_Real xout = x;

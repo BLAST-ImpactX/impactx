@@ -159,12 +159,12 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // coordinates within the quad (not needed)
-            //T_Real const s = refpart.s;
-            //T_Real const sedge = refpart.sedge;
+            //amrex::ParticleReal const s = refpart.s;
+            //amrex::ParticleReal const sedge = refpart.sedge;
 
             // numerical integration parameters
-            T_Real const zin = 0_prt;
-            T_Real const zout = m_slice_ds;
+            amrex::ParticleReal const zin = 0_prt;
+            amrex::ParticleReal const zout = m_slice_ds;
             int const nsteps = m_mapsteps;
 
             // initialize phase space 6-vector
@@ -209,9 +209,9 @@ namespace impactx::elements
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map1 (T_Real const tau,
+        void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   T_Real & zeval) const
+                   amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
@@ -229,11 +229,11 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-            T_Real const sin_omega_ds = sin(m_omega*tau);
-            T_Real const cos_omega_ds = cos(m_omega*tau);
-            T_Real const sinh_omega_ds = sinh(m_omega*tau);
-            T_Real const cosh_omega_ds = cosh(m_omega*tau);
-            T_Real const slice_bg = tau / m_betgam2;
+            amrex::ParticleReal const sin_omega_ds = sin(m_omega*tau);
+            amrex::ParticleReal const cos_omega_ds = cos(m_omega*tau);
+            amrex::ParticleReal const sinh_omega_ds = sinh(m_omega*tau);
+            amrex::ParticleReal const cosh_omega_ds = cosh(m_omega*tau);
+            amrex::ParticleReal const slice_bg = tau / m_betgam2;
 
             if (m_g > 0.0_prt)
             {
@@ -288,9 +288,9 @@ namespace impactx::elements
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map2 (T_Real const tau,
+        void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   T_Real & zeval) const
+                   amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)

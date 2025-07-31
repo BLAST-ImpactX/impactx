@@ -211,12 +211,12 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // coordinates within the multipole (not needed)
-            //T_Real const s = refpart.s;
-            //T_Real const sedge = refpart.sedge;
+            //amrex::ParticleReal const s = refpart.s;
+            //amrex::ParticleReal const sedge = refpart.sedge;
 
             // numerical integration parameters
-            T_Real const zin = 0_prt;
-            T_Real const zout = m_slice_ds;
+            amrex::ParticleReal const zin = 0_prt;
+            amrex::ParticleReal const zout = m_slice_ds;
             int const nsteps = m_mapsteps;
 
             // initialize phase space 6-vector
@@ -260,9 +260,9 @@ namespace impactx::elements
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map1 (T_Real const tau,
+        void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   T_Real & zeval) const
+                   amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
@@ -320,9 +320,9 @@ namespace impactx::elements
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void map2 (T_Real const tau,
+        void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   T_Real & zeval) const
+                   amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
@@ -365,8 +365,8 @@ namespace impactx::elements
             for (int m = 0; m < m_ncoef; m++) {
 
                // normalize units to MAD-X convention if needed
-               T_Real knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
-               T_Real kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
+               amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               amrex::ParticleReal kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
                // multipole contribution to complex momentum kick
                Complex alpha(knormal_value, kskew_value);

@@ -341,6 +341,7 @@ namespace impactx::integrators
     * @param particle2 Particle phase space data in a 6-vector
     * @param element Element defining the two maps associated with H_1 and H_2
     * @param zeval Evaluation point in s
+    * @param int_order Order used for symplectic integration (2 or 4)
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -349,24 +350,82 @@ namespace impactx::integrators
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
         T_Element const & element,
-        amrex::ParticleReal & zeval
+        amrex::ParticleReal & zeval,
+        int const int_order
     )
     {
         using namespace amrex::literals; // for _rt and _prt
 
-        // initialize numerical integration parameters
-        amrex::ParticleReal const tau1 = tau/2.0_prt;
-        amrex::ParticleReal const tau2 = tau;
-        amrex::ParticleReal zeval1 = zeval;
-        amrex::ParticleReal zeval2 = zeval;
+        if (int_order==2) {
 
-        // Apply the map on the extended phase space
-        element.map(tau1,particle1,particle2,zeval1,zeval2);
-        element.map(tau2,particle2,particle1,zeval2,zeval1);
-        element.map(tau1,particle1,particle2,zeval1,zeval2);
+           // initialize numerical integration parameters
+           amrex::ParticleReal const tau1 = tau/2.0_prt;
+           amrex::ParticleReal const tau2 = tau;
+           amrex::ParticleReal zeval1 = zeval;
+           amrex::ParticleReal zeval2 = zeval;
 
-        //zeval = zeval2;
-        //zeval = zeval + tau;
+           // Apply the map on the extended phase space
+           element.map(tau1,particle1,particle2,zeval1,zeval2);
+           element.map(tau2,particle2,particle1,zeval2,zeval1);
+           element.map(tau1,particle1,particle2,zeval1,zeval2);
+
+        } else if (int_order==4) {
+
+           // initialize numerical integration parameters
+           amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
+           amrex::ParticleReal const tau2 = tau/(1_prt + alpha);
+           amrex::ParticleReal const tau1 = tau2*0.5_prt;
+           amrex::ParticleReal const tau3 = alpha*tau1;
+           amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
+           amrex::ParticleReal zeval1 = zeval;
+           amrex::ParticleReal zeval2 = zeval;
+        
+           // Apply the map on the extended phase space        
+           element.map(tau1,particle1,particle2,zeval1,zeval2);
+           element.map(tau2,particle2,particle1,zeval2,zeval1);
+           element.map(tau3,particle1,particle2,zeval1,zeval2);
+           element.map(tau4,particle2,particle1,zeval2,zeval1);
+           element.map(tau3,particle1,particle2,zeval1,zeval2);
+           element.map(tau2,particle2,particle1,zeval2,zeval1);
+           element.map(tau1,particle1,particle2,zeval1,zeval2);
+
+        } else {
+
+           // initialize numerical integration parameters (int_order = 6)
+           amrex::ParticleReal const w0 = 1.31518632068391121888424973;
+           amrex::ParticleReal const w1 = -1.17767998417887100694641568;
+           amrex::ParticleReal const w2 = 0.23557321335935813368479318;
+           amrex::ParticleReal const w3 = 0.78451361047755726381949763;
+    
+           amrex::ParticleReal const tau1 = w3 * tau / 2_prt;
+           amrex::ParticleReal const tau2 = w3 * tau;
+           amrex::ParticleReal const tau3 = (w3 + w2) * tau / 2_prt;
+           amrex::ParticleReal const tau4 = w2 * tau;
+           amrex::ParticleReal const tau5 = (w2 + w1) * tau / 2_prt;
+           amrex::ParticleReal const tau6 = w1 * tau;
+           amrex::ParticleReal const tau7 = (w1 + w0) * tau / 2_prt;
+           amrex::ParticleReal const tau8 = w0 * tau;
+           amrex::ParticleReal zeval1 = zeval;
+           amrex::ParticleReal zeval2 = zeval;
+
+           // Apply the map on the extended phase space        
+           element.map(tau1,particle1,particle2,zeval1,zeval2);
+           element.map(tau2,particle2,particle1,zeval2,zeval1);
+           element.map(tau3,particle1,particle2,zeval1,zeval2);
+           element.map(tau4,particle2,particle1,zeval2,zeval1);
+           element.map(tau5,particle1,particle2,zeval1,zeval2);
+           element.map(tau6,particle2,particle1,zeval2,zeval1);
+           element.map(tau7,particle1,particle2,zeval1,zeval2);
+           element.map(tau8,particle2,particle1,zeval2,zeval1);
+           element.map(tau7,particle1,particle2,zeval1,zeval2);
+           element.map(tau6,particle2,particle1,zeval2,zeval1);
+           element.map(tau5,particle1,particle2,zeval1,zeval2);
+           element.map(tau4,particle2,particle1,zeval2,zeval1);
+           element.map(tau3,particle1,particle2,zeval1,zeval2);   
+           element.map(tau2,particle2,particle1,zeval2,zeval1);
+           element.map(tau1,particle1,particle2,zeval1,zeval2);   
+
+        }
 
     }
 
@@ -382,6 +441,7 @@ namespace impactx::integrators
     * @param tau Size of the step
     * @param element Element defining the two maps associated with H_1 and H_2
     * @param zeval Evaluation point in s
+    * @param int_order Order used for symplectic integration (2 or 4)
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -389,7 +449,8 @@ namespace impactx::integrators
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const tau,
         T_Element const & element,
-        amrex::ParticleReal & zeval
+        amrex::ParticleReal & zeval,
+        int const int_order
     )
     {
         using namespace amrex::literals; // for _rt and _prt
@@ -411,7 +472,7 @@ namespace impactx::integrators
            amrex::SmallVector<amrex::ParticleReal, 6, 1> particle_copy2 = particle - perturbation;
 
            // Apply the map for a step of size tau on the extended phase space.
-           integrators::extended_phase_space_map(tau,particle_copy1,particle_copy2,element,zeval);
+           integrators::extended_phase_space_map(tau,particle_copy1,particle_copy2,element,zeval,int_order);
 
            // Apply the final perturbation, and evaluate the defect (difference between copies)
            particle_copy1 = particle_copy1 + perturbation;
@@ -450,6 +511,7 @@ namespace impactx::integrators
     * @param particle Particle phase space data in a 6-vector
     * @param zin Initial value of independent variable (z-location)
     * @param zout Final value of independent variable (z-location)
+    * @param int_order Order used for symplectic integration (2 or 4)
     * @param nsteps Number of integration steps
     * @param element Element defining the two maps associated with H_1 and H_2
     */
@@ -459,6 +521,7 @@ namespace impactx::integrators
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
+        int const int_order,
         int const nsteps,
         T_Element const & element
     )
@@ -474,7 +537,7 @@ namespace impactx::integrators
         // loop over integration steps
         for(int j=0; j < nsteps; ++j)
         {
-            semiexplicit_integrator_step(particle,dz,element,zeval);
+            semiexplicit_integrator_step(particle,dz,element,zeval,int_order);
             zeval = zeval + dz;
         }
     }

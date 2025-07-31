@@ -254,7 +254,7 @@ namespace MagnetostaticVectorPotentialData
             };
 
             // call integrator to advance through slice (int_order = 2, 4 or 6, otherwise default 2)
-            integrators::symp_integrate_semiexplicit(particle,zin,zout,nsteps,*this);
+            integrators::symp_integrate_semiexplicit(particle,zin,zout,m_int_order,nsteps,*this);
 
             // assign updated values
             x = particle(1);

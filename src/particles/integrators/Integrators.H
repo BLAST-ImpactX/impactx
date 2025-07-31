@@ -379,8 +379,8 @@ namespace impactx::integrators
            amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
            amrex::ParticleReal zeval1 = zeval;
            amrex::ParticleReal zeval2 = zeval;
-        
-           // Apply the map on the extended phase space        
+
+           // Apply the map on the extended phase space
            element.map(tau1,particle1,particle2,zeval1,zeval2);
            element.map(tau2,particle2,particle1,zeval2,zeval1);
            element.map(tau3,particle1,particle2,zeval1,zeval2);
@@ -396,7 +396,7 @@ namespace impactx::integrators
            amrex::ParticleReal const w1 = -1.17767998417887100694641568;
            amrex::ParticleReal const w2 = 0.23557321335935813368479318;
            amrex::ParticleReal const w3 = 0.78451361047755726381949763;
-    
+
            amrex::ParticleReal const tau1 = w3 * tau / 2_prt;
            amrex::ParticleReal const tau2 = w3 * tau;
            amrex::ParticleReal const tau3 = (w3 + w2) * tau / 2_prt;
@@ -408,7 +408,7 @@ namespace impactx::integrators
            amrex::ParticleReal zeval1 = zeval;
            amrex::ParticleReal zeval2 = zeval;
 
-           // Apply the map on the extended phase space        
+           // Apply the map on the extended phase space
            element.map(tau1,particle1,particle2,zeval1,zeval2);
            element.map(tau2,particle2,particle1,zeval2,zeval1);
            element.map(tau3,particle1,particle2,zeval1,zeval2);
@@ -421,9 +421,9 @@ namespace impactx::integrators
            element.map(tau6,particle2,particle1,zeval2,zeval1);
            element.map(tau5,particle1,particle2,zeval1,zeval2);
            element.map(tau4,particle2,particle1,zeval2,zeval1);
-           element.map(tau3,particle1,particle2,zeval1,zeval2);   
+           element.map(tau3,particle1,particle2,zeval1,zeval2);
            element.map(tau2,particle2,particle1,zeval2,zeval1);
-           element.map(tau1,particle1,particle2,zeval1,zeval2);   
+           element.map(tau1,particle1,particle2,zeval1,zeval2);
 
         }
 

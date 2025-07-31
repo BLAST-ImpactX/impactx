@@ -36,8 +36,12 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::NoFinalize,
-      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+      public mixin::NoFinalize
+      // At least on Intel AVX512, there is a small overhead to vectorize this element for DP and a gain for SP, see
+      // https://github.com/BLAST-ImpactX/impactx/pull/1002
+#ifdef AMREX_SINGLE_PRECISION_PARTICLES
+      , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+#endif
     {
         static constexpr auto type = "Quad";
         using PType = ImpactXParticleContainer::ParticleType;

@@ -35,8 +35,10 @@ namespace impactx::elements
       public mixin::LinearTransport<Buncher>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize,
-      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+      public mixin::NoFinalize
+      // At least on Intel AVX512, there is a small overhead to vectorize this element, see
+      // https://github.com/BLAST-ImpactX/impactx/pull/1002
+      // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Buncher";
         using PType = ImpactXParticleContainer::ParticleType;

@@ -278,7 +278,7 @@ namespace impactx
     ImpactX::add_particles (
         amrex::ParticleReal bunch_charge,
         distribution::KnownDistributions distr,
-        int npart
+        amrex::Long npart
     )
     {
         BL_PROFILE("ImpactX::add_particles");
@@ -313,7 +313,7 @@ namespace impactx
             amrex::ParallelDescriptor::MyProc(),
             amrex::ParallelDescriptor::NProcs()
         );
-        int const npart_this_proc = proc_chunk.size;
+        amrex::Long const npart_this_proc = proc_chunk.size;
         auto const rel_part_this_proc =
             amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
@@ -344,8 +344,8 @@ namespace impactx
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
             {
-                int npart_this_thread = npart_this_proc;
-                int my_offset = 0;  // offset into global arrays x, y, etc. for this thread
+                amrex::Long npart_this_thread = npart_this_proc;
+                amrex::Long my_offset = 0;  // offset into global arrays x, y, etc. for this thread
 #ifdef AMREX_USE_OMP
                 ParticleChunk thread_chunk = split_equally(
                     npart_this_proc,
@@ -530,7 +530,7 @@ namespace impactx
             std::string distribution;
             pp_dist.get("distribution", distribution);
 
-            int npart = 0;  // Number of simulation particles
+            amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
             {
                 pp_dist.getWithParser("npart", npart);

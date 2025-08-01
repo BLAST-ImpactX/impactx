@@ -210,7 +210,7 @@ namespace impactx
         AMREX_ALWAYS_ASSERT(x.size() == pt.size());
 
         // number of particles to add
-        int const np = x.size();
+        amrex::Long const np = x.size();
 
         // we add particles to lev 0, grid 0
         int lid = 0, gid = 0;
@@ -235,10 +235,10 @@ namespace impactx
             DefineAndReturnParticleTile(lid, gid, ithr);
         }
 
-        int pid = ParticleType::NextID();
+        amrex::Long pid = ParticleType::NextID();
         ParticleType::NextID(pid + np);
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
-            static_cast<amrex::Long>(pid) + static_cast<amrex::Long>(np) < amrex::LongParticleIds::LastParticleID,
+            pid + np < amrex::LongParticleIds::LastParticleID,
             "ERROR: overflow on particle id numbers"
         );
 
@@ -261,15 +261,15 @@ namespace impactx
                 tid,
                 nthreads
             );
-            int const my_offset = thread_chunk.offset;
-            int const num_to_add = thread_chunk.size;
+            amrex::Long const my_offset = thread_chunk.offset;
+            amrex::Long const num_to_add = thread_chunk.size;
 
             auto& particle_tile = ParticlesAt(lid, gid, tid);
             auto old_np = particle_tile.numParticles();
             auto new_np = old_np + num_to_add;
             particle_tile.resize(new_np);
 
-            const int cpuid = amrex::ParallelDescriptor::MyProc();
+            const amrex::Long cpuid = amrex::ParallelDescriptor::MyProc();
 
             auto & soa = particle_tile.GetStructOfArrays().GetRealData();
             amrex::ParticleReal * const AMREX_RESTRICT x_arr = soa[RealSoA::x].dataPtr();
@@ -291,7 +291,7 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
 
             amrex::ParallelFor(num_to_add,
-                [=] AMREX_GPU_DEVICE (int i) noexcept
+                [=] AMREX_GPU_DEVICE (amrex::Long i) noexcept
             {
                 idcpu_arr[old_np+i] = amrex::SetParticleIDandCPU(pid + my_offset + i, cpuid);
 

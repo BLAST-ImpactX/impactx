@@ -10,13 +10,15 @@
 #ifndef IMPACTX_SPLIT_EQUALLY_H
 #define IMPACTX_SPLIT_EQUALLY_H
 
+#include <AMReX_INT.H>
+
 namespace impactx
 {
     /** Offset and size of a chunk in a contigous array (e.g., of particle properties) */
     struct ParticleChunk
     {
-        int offset = 0;  //! where to start in the array, in elements
-        int size = 0;    //! how large is my chunk, counted from offset, in elements
+        amrex::Long offset = 0;  //! where to start in the array, in elements
+        amrex::Long size = 0;    //! how large is my chunk, counted from offset, in elements
     };
 
     /** Split an array of contiguous elements into well-balanched chunks.
@@ -33,7 +35,7 @@ namespace impactx
      * @return offset and size of the chunk for a specific index
      */
     ParticleChunk
-    split_equally (int npart, int index, int size);
+    split_equally (amrex::Long npart, amrex::Long index, amrex::Long size);
 
 } // namespace impactx
 

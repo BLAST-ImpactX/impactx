@@ -12,12 +12,12 @@
 namespace impactx
 {
     ParticleChunk
-    split_equally (int npart, int index, int size)
+    split_equally (amrex::Long npart, amrex::Long index, amrex::Long size)
     {
         ParticleChunk my_chunk;
 
-        int const navg = npart / size;  // note: integer division
-        int const nleft = npart - navg * size;
+        amrex::Long const navg = npart / size;  // note: integer division
+        amrex::Long const nleft = npart - navg * size;
         my_chunk.size = (index < nleft) ? navg+1 : navg;  // add 1 to each chunk (proc/thread) until distributed
 
         if (index < nleft) { // get navg+1 items

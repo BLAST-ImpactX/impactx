@@ -167,7 +167,7 @@ class GeneralToolbar:
         MESSAGE_1 = "This dashboard is a web-based interface for monitoring and analyzing particle accelerator simulations based on Trame."
         MESSAGE_2 = "This dashboard provides visualization and analysis tools for ImpactX simulations, however it is a subset of the complete ImpactX ecosystem."
         HEADER_2 = "Get the Full ImpactX Experience"
-        MESSAGE_3 = "For complete simulation capabilities, and local installations:"
+        MESSAGE_3 = "For complete simulation capabilities and local installations:"
         HEADER_3 = "Documentation"
         BUG_MESSAGE = "Found a bug or have a feature request? "
 

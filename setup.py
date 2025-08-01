@@ -93,6 +93,7 @@ class CMakeBuild(build_ext):
             "-DImpactX_PRECISION=" + ImpactX_PRECISION,
             #'-DImpactX_PARTICLES_PRECISION=' + ImpactX_PARTICLES_PRECISION,
             "-DImpactX_PYTHON:BOOL=ON",
+            "-DImpactX_SIMD=" + ImpactX_SIMD,
             ## dependency control (developers & package managers)
             "-DImpactX_amrex_internal=" + ImpactX_amrex_internal,
             "-DImpactX_pyamrex_internal=" + ImpactX_pyamrex_internal,
@@ -179,6 +180,7 @@ ImpactX_COMPUTE = os.environ.get("IMPACTX_COMPUTE", "OMP")
 ImpactX_FFT = os.environ.get("IMPACTX_FFT", "OFF")
 ImpactX_MPI = os.environ.get("IMPACTX_MPI", "OFF")
 ImpactX_PRECISION = os.environ.get("IMPACTX_PRECISION", "DOUBLE")
+ImpactX_SIMD = os.environ.get("IMPACTX_SIMD", "OFF")
 #   already prepared as a list 1;2;3
 ImpactX_SPACEDIM = os.environ.get("IMPACTX_SPACEDIM", "3")
 BUILD_SHARED_LIBS = os.environ.get("IMPACTX_BUILD_SHARED_LIBS", "OFF")

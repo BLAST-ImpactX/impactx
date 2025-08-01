@@ -669,6 +669,15 @@ void init_ImpactX (py::module& m)
 #endif
             })
         .def_property_readonly_static(
+            "have_simd",
+            [](py::object const &){
+#ifdef AMREX_USE_SIMD
+                return true;
+#else
+                return false;
+#endif
+            })
+        .def_property_readonly_static(
             "gpu_backend",
             [](py::object const &){
 #ifdef AMREX_USE_CUDA

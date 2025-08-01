@@ -48,6 +48,7 @@ class Config:
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
+    have_simd: typing.ClassVar[bool] = False
 
 class CoordSystem:
     """

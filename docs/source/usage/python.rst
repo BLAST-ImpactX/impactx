@@ -809,7 +809,7 @@ This module provides elements and methods for the accelerator lattice.
    :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
    :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
 
-      The arrays k_normal and k_skew must have the same number of elements.
+   The arrays k_normal and k_skew must have the same number of elements.
 
    :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
    :param dx: horizontal translation error in m

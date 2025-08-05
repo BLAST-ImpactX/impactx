@@ -1,6 +1,6 @@
 .. _examples-fodo-pals:
 
-FODO Cell with a PALS Lattice 
+FODO Cell with a PALS Lattice
 =============================
 
 This is a duplicate of the FODO cell example ``examples-fodo``, except that the lattice file is specified in PALS-compliant format.

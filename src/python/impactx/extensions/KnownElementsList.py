@@ -68,11 +68,11 @@ def from_pals(self, pals_line, nslice=1):
     ix_line = []
     for pals_element in pals_line:
         if isinstance(pals_element, DriftElement):
-            ix.line.append(
+            ix_line.append(
                 elements.Drift(name=pals_element.name, ds=pals_element.length)
             )
         elif isinstance(pals_element, QuadrupoleElement):
-            ix.line.append(
+            ix_line.append(
                 elements.ChrQuad(
                     name=pals_element.name,
                     ds=pals_element.length,

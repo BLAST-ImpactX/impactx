@@ -8,7 +8,6 @@ License: BSD-3-Clause-LBNL
 
 import os
 
-
 def load_file(self, filename, nslice=1):
     """Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats."""
 
@@ -25,7 +24,8 @@ def load_file(self, filename, nslice=1):
         return
 
     elif extension_inner == ".pals":
-        import pals
+        #import pals_schema
+        from pals_schema.Line import Line
 
         # example: fodo.pals.yaml
         if extension == ".json":
@@ -35,7 +35,7 @@ def load_file(self, filename, nslice=1):
             with open(filename, "r") as file:
                 json_data = json.loads(file.read())
             # Parse the JSON data back into a Line object
-            self.from_pals(pals.Line(**json_data), nslice)
+            self.from_pals(Line(**json_data), nslice)
             return
 
         elif extension == ".yaml":
@@ -45,7 +45,7 @@ def load_file(self, filename, nslice=1):
             with open(filename, "r") as file:
                 yaml_data = yaml.safe_load(file)
             # Parse the JSON data back into a Line object
-            self.from_pals(pals.Line(**yaml_data), nslice)
+            self.from_pals(Line(**yaml_data), nslice)
             return
 
         # TODO: toml, xml
@@ -60,8 +60,20 @@ def from_pals(self, pals_line, nslice=1):
 
     https://github.com/campa-consortium/pals-python
     """
-    # TODO: Loop over the pals_line and create a new ImpactX KnownElementsList from it.
+    from pals_schema.MagneticMultipoleParameters import MagneticMultipoleParameters
+    from pals_schema.DriftElement import DriftElement
+    from pals_schema.QuadrupoleElement import QuadrupoleElement
+
+    # Loop over the pals_line and create a new ImpactX KnownElementsList from it.
     #       Use self.extend(...) on the latter.
+    ix_line = []
+    for pals_element in pals_line:
+        if isinstance(pals_element, DriftElement):
+            ix.line.append(elements.Drift(name=pals_element.name,ds=pals_element.length))
+        elif isinstance(pals_element, QuadrupoleElement):
+            ix.line.append(elements.Quad(name=pals_element.name,ds=pals_element.length,k=pals_element.MagneticMultipoleParameters.Bn1,unit=1))
+
+    self.extend(ix_line)
     pass
 
 

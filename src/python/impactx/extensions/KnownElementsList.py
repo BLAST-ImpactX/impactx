@@ -25,7 +25,6 @@ def load_file(self, filename, nslice=1):
         return
 
     elif extension_inner == ".pals":
-        # import pals_schema
         from pals_schema.Line import Line
 
         # example: fodo.pals.yaml
@@ -42,10 +41,10 @@ def load_file(self, filename, nslice=1):
         elif extension == ".yaml":
             import yaml
 
-            # Read the JSON data from the test file
+            # Read the YAML data from the test file
             with open(filename, "r") as file:
                 yaml_data = yaml.safe_load(file)
-            # Parse the JSON data back into a Line object
+            # Parse the YAML data back into a Line object
             self.from_pals(Line(**yaml_data), nslice)
             return
 
@@ -74,7 +73,7 @@ def from_pals(self, pals_line, nslice=1):
             )
         elif isinstance(pals_element, QuadrupoleElement):
             ix.line.append(
-                elements.Quad(
+                elements.ChrQuad(
                     name=pals_element.name,
                     ds=pals_element.length,
                     k=pals_element.MagneticMultipoleParameters.Bn1,
@@ -83,7 +82,6 @@ def from_pals(self, pals_line, nslice=1):
             )
 
     self.extend(ix_line)
-    pass
 
 
 def register_KnownElementsList_extension(kel):

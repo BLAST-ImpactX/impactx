@@ -808,9 +808,6 @@ This module provides elements and methods for the accelerator lattice.
    :param ds: Segment length in m.
    :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
    :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
-
-   The arrays k_normal and k_skew must have the same number of elements.
-
    :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -821,6 +818,8 @@ This module provides elements and methods for the accelerator lattice.
    :param mapsteps: number of integration steps per slice used for symplectic integration
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
+
+   The arrays k_normal and k_skew must have the same number of elements.
 
    .. py:property:: unit
 

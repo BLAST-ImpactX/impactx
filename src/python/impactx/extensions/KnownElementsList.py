@@ -67,23 +67,23 @@ def from_pals(self, pals_line, nslice=1):
 
     # Loop over the pals_line and create a new ImpactX KnownElementsList from it.
     #       Use self.extend(...) on the latter.
+    print(nslice)
     ix_line = []
     for pals_element in pals_line.line:
         if isinstance(pals_element, DriftElement):
             ix_line.append(
-                elements.Drift(name=pals_element.name, ds=pals_element.length)
+                elements.Drift(name=pals_element.name, ds=pals_element.length, nslice=nslice)
             )
         elif isinstance(pals_element, QuadrupoleElement):
-            print(pals_element.MagneticMultipoleP.Bn1)
             ix_line.append(
                 elements.ChrQuad(
                     name=pals_element.name,
                     ds=pals_element.length,
                     k=pals_element.MagneticMultipoleP.Bn1,
-                    unit=1,
+                    unit=0,
+                    nslice=nslice
                 )
             )
-            pass
 
     self.extend(ix_line)
 

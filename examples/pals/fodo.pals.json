@@ -34,7 +34,7 @@
     {
       "drift3": {
         "kind": "Drift",
-        "length": 0.5
+        "length": 0.25
       }
     }
   ]

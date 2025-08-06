@@ -15,7 +15,7 @@ Run
 
 This example can be run as:
 
-* **Python** script: ``python3 run_fodo_pals_yaml.py``
+* **Python** script: ``python3 run_fodo_pals_yaml.py`` or ``python3 run_fodo_pals_json.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
@@ -26,6 +26,9 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: run_fodo_pals_yaml.py
           :language: python3
           :caption: You can copy this file from ``examples/pals/run_fodo_pals_yaml.py``.
+       .. literalinclude:: run_fodo_pals_json.py
+          :language: python3
+          :caption: You can copy this file from ``examples/pals/run_fodo_pals_json.py``.
 
 
 Analyze

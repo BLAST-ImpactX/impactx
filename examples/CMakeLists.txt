@@ -1560,7 +1560,7 @@ add_impactx_test(examples-exact_cfbend_multipole.py
 )
 
 # FODO Cell Based on PALS-Compliant Lattice Input ##############
-#   
+#
 # no space charge
 add_impactx_test(examples-fodo-pals-yaml.py
     examples/pals/run_fodo_pals_yaml.py

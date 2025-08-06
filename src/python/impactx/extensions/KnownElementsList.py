@@ -72,7 +72,9 @@ def from_pals(self, pals_line, nslice=1):
     for pals_element in pals_line.line:
         if isinstance(pals_element, DriftElement):
             ix_line.append(
-                elements.Drift(name=pals_element.name, ds=pals_element.length, nslice=nslice)
+                elements.Drift(
+                    name=pals_element.name, ds=pals_element.length, nslice=nslice
+                )
             )
         elif isinstance(pals_element, QuadrupoleElement):
             ix_line.append(
@@ -81,7 +83,7 @@ def from_pals(self, pals_line, nslice=1):
                     ds=pals_element.length,
                     k=pals_element.MagneticMultipoleP.Bn1,
                     unit=0,
-                    nslice=nslice
+                    nslice=nslice,
                 )
             )
 

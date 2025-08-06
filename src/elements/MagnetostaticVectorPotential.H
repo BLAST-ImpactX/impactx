@@ -27,6 +27,7 @@
 #include <AMReX_Vector.H>
 
 #include <cmath>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 
@@ -155,17 +156,6 @@ namespace MagnetostaticVectorPotentialData
             MagnetostaticVectorPotentialData::m_parser_daydy[m_id] = pp.makeParser(str_daydy, varnames);
             MagnetostaticVectorPotentialData::m_parser_dazdx[m_id] = pp.makeParser(str_dazdx, varnames);
             MagnetostaticVectorPotentialData::m_parser_dazdy[m_id] = pp.makeParser(str_dazdy, varnames);
-
-            // device functions
-            constexpr int num_vars = 3;
-            m_dfunc_ax = MagnetostaticVectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
-            m_dfunc_ay = MagnetostaticVectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
-            m_dfunc_daxdx = MagnetostaticVectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
-            m_dfunc_daxdy = MagnetostaticVectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
-            m_dfunc_daydx = MagnetostaticVectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
-            m_dfunc_daydy = MagnetostaticVectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
-            m_dfunc_dazdx = MagnetostaticVectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
-            m_dfunc_dazdy = MagnetostaticVectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
         }
 
         /** Push all particles */
@@ -428,21 +418,8 @@ namespace MagnetostaticVectorPotentialData
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            using namespace amrex::literals; // for _rt and _prt
-
-            // length of the current slice
-            //amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // access reference particle values to find beta*gamma^2
-            //amrex::ParticleReal const pt_ref = refpart.pt;
-            //amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-
-            // initialize linear map matrix elements
-            Map6x6 R = Map6x6::Identity();
-
-            // TODO
-
-            return R;
+            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
+            return Map6x6::Identity();
         }
 
         /** This pushes the covariance matrix. */

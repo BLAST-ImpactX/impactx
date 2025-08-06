@@ -219,7 +219,7 @@ class DashboardTester:
                 return
 
             print(
-                f"Waiting for state['{state_name}'] to become '{expected_input}' - ({i + 1}s elapsed)"
+                f"Waiting for state['{state_name}'] to become '{expected_input}' - (current value: '{value}') - ({i + 1}s elapsed)"
             )
             time.sleep(1)
 

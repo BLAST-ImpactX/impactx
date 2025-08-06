@@ -56,7 +56,6 @@ drift3.ds = 0.25
 ###############################################################################
 # Algorithms
 ###############################################################################
-algo.particle_shape = 2
 algo.space_charge = false
 #algo.track = envelope  #to test in envelope mode
 

@@ -10,6 +10,14 @@ import sys
 
 from .start import DashboardApp
 
-if __name__ == "__main__":
+
+def main() -> int:
+    """
+    Entry point for dashboard.
+    """
     app = DashboardApp()
-    sys.exit(app.start())
+    return app.start()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -35,7 +36,8 @@ namespace impactx::elements
       public mixin::LinearTransport<Aperture>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Aperture";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -67,6 +69,7 @@ namespace impactx::elements
          * @param aperture_y vertical half-aperture (m)
          * @param repeat_x horizontal period for repeated masking, optional (m)
          * @param repeat_y vertical period for repeated masking, optional (m)
+         * @param shift_odd_x for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -77,6 +80,7 @@ namespace impactx::elements
             amrex::ParticleReal aperture_y,
             amrex::ParticleReal repeat_x,
             amrex::ParticleReal repeat_y,
+            bool shift_odd_x,
             Shape shape,
             Action action,
             amrex::ParticleReal dx = 0,
@@ -86,7 +90,7 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y)
+          m_shape(shape), m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y), m_shift_odd_x(shift_odd_x)
         {
             using namespace amrex::literals; // for _rt and _prt
 
@@ -100,6 +104,10 @@ namespace impactx::elements
                 m_inv_aperture_y = 1_prt / aperture_y;
             } else {
                 throw std::runtime_error("Aperture: aperture_y must be > 0!");
+            }
+
+            if (m_repeat_y == 0_prt && m_shift_odd_x) {
+                throw std::runtime_error("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
             }
         }
 
@@ -130,33 +138,46 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            namespace stdx = amrex::simd::stdx;
             using amrex::Math::powi;
+            using std::fmod;
+            using std::abs;
+            using VBool = decltype(x>0_prt);
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // define intermediate variables
-            amrex::ParticleReal u;
-            amrex::ParticleReal v;
-            amrex::ParticleReal dx = m_repeat_x * 0.5_prt;
-            amrex::ParticleReal dy = m_repeat_y * 0.5_prt;
+            amrex::ParticleReal const dx = m_repeat_x * 0.5_prt;
+            amrex::ParticleReal const dy = m_repeat_y * 0.5_prt;
 
-            // if the aperture is periodic, shift x,y coordinates to the fundamental domain
-            u = (m_repeat_x==0.0) ? x : (std::fmod(std::abs(x)+dx,m_repeat_x)-dx);
-            v = (m_repeat_y==0.0) ? y : (std::fmod(std::abs(y)+dy,m_repeat_y)-dy);
+            // shift every 2nd row by half of m_repeat_x
+            T_Real sx = x;
+            T_Real const sy = y;
+            VBool const shift_x = m_shift_odd_x == false ? VBool{false} : fmod(floor((y+dy)/m_repeat_y), 2) != T_Real{0};
+#ifdef AMREX_USE_SIMD
+            amrex::simd::stdx::where(shift_x.__cvt(), sx) += dx;
+#else
+            sx += shift_x ? dx : 0_prt;
+#endif
+
+            // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
+            T_Real u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
+            T_Real v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
 
             // scale horizontal and vertical coordinates
             // performance optimization: we intentionally store the inverse of
@@ -166,7 +187,7 @@ namespace impactx::elements
             v = v * m_inv_aperture_y;
 
             // compare against the aperture boundary
-            bool inside_aperture = true;
+            VBool inside_aperture;
 
             switch (m_shape)
             {
@@ -177,14 +198,16 @@ namespace impactx::elements
                 case Shape::elliptical:
                     inside_aperture = (powi<2>(u) + powi<2>(v) <= 1_prt);
                     break;
+
+                default:
+                    inside_aperture = VBool{true};
+                    break;
             }
 
             // For transmit (default): invalidate if outside aperture
             // For absorb: invalidate if inside aperture
-            if ((m_action == Action::transmit && !inside_aperture) ||
-                (m_action == Action::absorb && inside_aperture)) {
-                amrex::ParticleIDWrapper{idcpu}.make_invalid();
-            }
+            auto const invalid_mask = m_action == Action::transmit ? !inside_aperture : inside_aperture;
+            amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -218,6 +241,7 @@ namespace impactx::elements
         amrex::ParticleReal m_inv_aperture_y; //! maximum vertical coordinate
         amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
         amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
+        bool m_shift_odd_x; //! for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by m_repeat_x / 2. Use Alignment offsets to move whole mask as needed.
 
     };
 

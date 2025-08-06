@@ -153,24 +153,22 @@ namespace impactx {
     }
 
     amrex::ParticleReal
-    evaluate_lattice (ImpactX * sim, amrex::ParticleReal const & q1_k)  //, amrex::ParticleReal q2_k)
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal const & q1_k, amrex::ParticleReal const & q2_k)
     {
-        amrex::ParticleReal q2_k = 3.5;
+        // Example from:
+        // https://impactx.readthedocs.io/en/latest/usage/examples/fodo_space_charge/README.html
 
-        // ns = 10  // TODO: number of slices per ds in the element
+        int nslice = 50;
 
-        auto dr1 = elements::Drift{2.7};
-        auto q1 = elements::Quad{0.1, q1_k};
-        auto dr2 = elements::Drift{1.4};
-        auto q2 = elements::Quad{0.2, q2_k};
-        auto dr3 = elements::Drift{1.4};
-        auto q3 = elements::Quad{0.1, q1_k};
-        auto dr4 = elements::Drift{2.7};
+        auto dr1 = elements::Drift{7.44e-2};
+        auto q1 = elements::Quad{6.10e-2, q1_k};
+        auto dr2 = elements::Drift{14.88e-2};
+        auto q2 = elements::Quad{6.10e-2, q2_k};
 
         /*
         // quadrupole triplet
         // https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
-        active_sim->m_lattice = {
+        sim->m_lattice = {
             elements::Drift{2.7},
             elements::Quad{0.1, q1_k},
             elements::Drift{1.4},
@@ -191,41 +189,50 @@ namespace impactx {
 
         // envelope mode
         //std::cout << "before ref\n";
-        auto ref = sim->amr_data->track_envelope.m_ref.value();
+        RefPart & ref = sim->amr_data->track_envelope.m_ref.value();
         //std::cout << "before env\n";
         auto env = sim->amr_data->track_envelope.m_env.value();
         //std::cout << "before cm\n";
         auto cm = env.m_env;
 
         auto & intensity = env.m_beam_intensity;
-        intensity = 1.0e-6;  // a big value
+        intensity = 0.5;  // Ampere
 
-        // push reference particle in global coordinates
-        dr1(ref);
-        // push Covariance Matrix in external fields
-        dr1(cm, ref);
+        // sub-steps for space charge within the element
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, dr1.ds() / nslice);
+            dr1(ref);
+            dr1(cm, ref);
+        }
 
-        q1(ref);
-        q1(cm, ref);
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, q1.ds() / nslice);
+            q1(ref);
+            q1(cm, ref);
+        }
 
-        dr2(ref);
-        dr2(cm, ref);
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, dr2.ds() / nslice);
+            dr2(ref);
+            dr2(cm, ref);
+        }
 
-        q2(ref);
-        q2(cm, ref);
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, q2.ds() / nslice);
+            q2(ref);
+            q2(cm, ref);
+        }
 
-        envelope::spacecharge::space_charge2D_push(ref, cm, intensity, q2.ds());
-
-        dr3(ref);
-        dr3(cm, ref);
-
-        envelope::spacecharge::space_charge3D_push(ref, cm, intensity, dr3.ds());
-
-        q3(ref);
-        q3(cm, ref);
-
-        dr4(ref);
-        dr4(cm, ref);
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, dr1.ds() / nslice);
+            dr1(ref);
+            dr1(cm, ref);
+        }
 
         /*
         // particles
@@ -258,46 +265,58 @@ namespace impactx {
 
         sim.init_grids();
 
-        // TODO: replace with beam params from https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
+        // TODO: replace with beam params from https://impactx.readthedocs.io/en/latest/usage/examples/fodo_space_charge/README.html
         sim.initBeamDistributionFromInputs();
 
         // design the accelerator lattice
         // sim.initLatticeElementsFromInputs();
 
         // initial quad strengths
-        amrex::ParticleReal q1_k = -3.0;
-        //amrex::ParticleReal q2_k = 3.0;
-        amrex::Print() << "q1_k = " << q1_k << std::endl;
+        amrex::ParticleReal q1_k = -80.0;
+        amrex::ParticleReal q2_k = 120.0;
+        amrex::Print() << "q1_k = " << q1_k << "\n"
+                       << "q2_k = " << q2_k
+                       << std::endl;
 
 #define MYMODE 2
 
 #if MYMODE == 0
         // non-differentiable run:
-        amrex::ParticleReal ddx = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
-        amrex::ParticleReal const alpha_x = evaluate_lattice(&sim, q1_k);
+        amrex::ParticleReal dq1_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        amrex::ParticleReal dq2_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        amrex::ParticleReal const alpha_x = evaluate_lattice(&sim, q1_k, q2_k);
         amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
 
 #elif MYMODE == 1
         // forward differentiable run
         //   note: seeded direction, this is AD and NOT a finite difference
         amrex::ParticleReal dq1_k = 1.0;
+        amrex::ParticleReal dq2_k = 1.0;
         amrex::ParticleReal ddx = __enzyme_fwddiff(
             &evaluate_lattice,
             enzyme_const, &sim,
-            enzyme_dup, &q1_k, &dq1_k
+            enzyme_dup,
+            &q1_k, &dq1_k,
+            &q2_k, &dq2_k
         );
 
 #elif MYMODE == 2
         // reverse differentiable run:
-        amrex::ParticleReal ddx = 0.0;  // accumulator, zero-init!
+        amrex::ParticleReal dq1_k = 0.0;  // accumulator, zero-init!
+        amrex::ParticleReal dq2_k = 0.0;  // accumulator, zero-init!
         __enzyme_autodiff(
             &evaluate_lattice,
             enzyme_const, &sim,
-            enzyme_dup, &q1_k, &ddx
+            enzyme_dup,
+            &q1_k, &dq1_k,
+            &q2_k, &dq2_k
         );
 #endif
 
-        amrex::Print() << "ddx = " << ddx << std::endl;
+        //amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
+        amrex::Print() << "dq1_k = " << dq1_k << "\n"
+                       << "dq2_k = " << dq2_k
+                       << std::endl;
 
         sim.finalize();
     }

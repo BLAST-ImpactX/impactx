@@ -178,7 +178,7 @@ namespace impactx
     };
 
     amrex::ParticleReal
-    evaluate_lattice (ImpactX *, amrex::ParticleReal const & q1_k);  //, amrex::ParticleReal q2_k);
+    evaluate_lattice (ImpactX *, amrex::ParticleReal const & q1_k, amrex::ParticleReal const & q2_k);
 
     void my_run ();
 

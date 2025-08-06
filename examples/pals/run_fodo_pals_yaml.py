@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 
-from impactx import ImpactX, distribution
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -43,8 +43,13 @@ distr = distribution.Waterbag(
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
+# add beam diagnostics
+monitor = elements.BeamMonitor("monitor", backend="h5")
+
 # design the accelerator lattice
+sim.lattice.append(monitor)
 sim.lattice.load_file("fodo.pals.yaml", nslice=25)
+sim.lattice.append(monitor)
 
 # run simulation
 sim.track_particles()

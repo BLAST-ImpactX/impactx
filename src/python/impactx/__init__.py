@@ -17,14 +17,14 @@ if os.name == "nt":
             os.add_dll_directory(p_abs)
 
 # import core bindings to C++
-from . import impactx_pybind as cxx
+from . import impactx_pybind
 from .impactx_pybind import *  # noqa
 from .madx_to_impactx import read_beam  # noqa
 
-__version__ = cxx.__version__
-__doc__ = cxx.__doc__
-__license__ = cxx.__license__
-__author__ = cxx.__author__
+__version__ = impactx_pybind.__version__
+__doc__ = impactx_pybind.__doc__
+__license__ = impactx_pybind.__license__
+__author__ = impactx_pybind.__author__
 
 from .distribution_input_helpers import twiss  # noqa
 from .extensions.KnownElementsList import (
@@ -38,10 +38,10 @@ from .extensions.ImpactXParticleContainer import (
 # in pure Python or add some other Python logic
 
 # MAD-X file reader for beamline lattice elements
-register_KnownElementsList_extension(cxx.elements.KnownElementsList)
+register_KnownElementsList_extension(impactx_pybind.elements.KnownElementsList)
 
 # MAD-X file reader for reference particle
 RefPart.load_file = read_beam  # noqa
 
 # Pure Python extensions to ImpactX types
-register_ImpactXParticleContainer_extension(cxx.ImpactXParticleContainer)
+register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContainer)

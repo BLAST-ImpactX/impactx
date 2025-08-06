@@ -337,9 +337,43 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
 
             using Distribution = std::decay_t<decltype(distribution)>;
-            initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
-                distribution, x_ptr, y_ptr, t_ptr, px_ptr, py_ptr, pt_ptr);
-            amrex::ParallelForRNG(npart_this_proc, init_single_particle_data);
+
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+            {
+                int my_offset = 0;  // offset into global arrays x, y, etc. for this thread
+
+#ifdef AMREX_USE_OMP
+                int const nthreads = omp_get_max_threads();
+                int const tid = omp_get_thread_num();
+
+                int const navg_thread = npart_this_proc / nthreads;  // note: integer division
+                int const nleft_thread = npart_this_proc - navg_thread * nthreads;
+                int const npart_this_thread = (tid < nleft_thread) ? navg_thread+1 : navg_thread;  // add 1 to each thread until distributed
+
+                if (tid < nleft_thread) { // get navg_thread+1 items
+                    my_offset = tid * (navg_thread + 1);
+                } else {                  // get navg_thread items
+                    my_offset = tid * navg_thread + nleft_thread;
+                }
+
+#else
+                int const npart_this_thread = npart_this_proc;
+#endif
+
+                initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
+                    distribution,
+                    x_ptr + my_offset,
+                    y_ptr + my_offset,
+                    t_ptr + my_offset,
+                    px_ptr + my_offset,
+                    py_ptr + my_offset,
+                    pt_ptr + my_offset
+                );
+
+                amrex::ParallelForRNG(npart_this_thread, init_single_particle_data);
+            }
 
             // finalize distributions and deallocate temporary device global memory
             amrex::Gpu::streamSynchronize();

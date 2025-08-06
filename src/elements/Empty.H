@@ -17,6 +17,7 @@
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <stdexcept>
 #include <string>
@@ -27,7 +28,8 @@ namespace impactx::elements
     struct Empty
     : public mixin::Thin,
       public mixin::LinearTransport<Empty>,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "None";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -95,15 +97,16 @@ namespace impactx::elements
          * @param idcpu particle global index (unused)
          * @param refpart reference particle
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT x,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT y,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT px,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT py,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {

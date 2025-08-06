@@ -25,6 +25,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 #include <AMReX_SmallMatrix.H>
 
 #include <cmath>
@@ -119,7 +120,8 @@ namespace SoftQuadrupoleData
       public mixin::LinearTransport<SoftQuadrupole>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::PipeAperture
+      public mixin::PipeAperture,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "SoftQuadrupole";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -221,15 +223,16 @@ namespace SoftQuadrupoleData
          * @param idcpu particle global index
          * @param refpart reference particle
          */
+    template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -246,7 +249,7 @@ namespace SoftQuadrupoleData
             // https://uspas.fnal.gov/materials/09UNM/ComputationalMethods.pdf .
             // R denotes the transfer matrix in the basis (x,px,y,py,t,pt),
             // so that, e.g., R(3,4) = dyf/dpyi.
-            amrex::SmallVector<amrex::ParticleReal, 6, 1> const v{x, px, y, py, t, pt};
+            amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
 
             // push particles using the linear map
             auto const out = R * v;

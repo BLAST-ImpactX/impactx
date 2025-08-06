@@ -173,10 +173,10 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp2_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
@@ -220,10 +220,10 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp4_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
@@ -279,10 +279,10 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp6_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,

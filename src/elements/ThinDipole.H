@@ -21,6 +21,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -34,7 +35,8 @@ namespace impactx::elements
       public mixin::LinearTransport<ThinDipole>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ThinDipole";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -108,37 +110,39 @@ namespace impactx::elements
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // access position data
-            amrex::ParticleReal const xout = x;
-            amrex::ParticleReal const yout = y;
-            amrex::ParticleReal const tout = t;
+            T_Real const xout = x;
+            T_Real const yout = y;
+            T_Real const tout = t;
 
             // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            T_Real ptout = pt;
 
             // compute the function expressing dp/p in terms of pt (labeled f in Ripken etc.)
-            amrex::ParticleReal const f = -1.0_prt + std::sqrt(1.0_prt - 2.0_prt * pt / m_beta + powi<2>(pt));
-            amrex::ParticleReal const fprime = (1.0_prt - m_beta*pt) / (m_beta * (1.0_prt + f));
+            T_Real const f = -1.0_prt + sqrt(1.0_prt - 2.0_prt * pt / m_beta + powi<2>(pt));
+            T_Real const fprime = (1.0_prt - m_beta*pt) / (m_beta * (1.0_prt + f));
 
             // advance position and momentum
             x = xout;

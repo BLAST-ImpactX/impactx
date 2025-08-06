@@ -18,6 +18,9 @@
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+// TODO: #include <AMReX_SIMD.H>
+//   SIMD will require better complex math support in vir-simd / C++26
+//   https://github.com/mattkretz/vir-simd/issues/42
 
 #include <functional>
 #include <stdexcept>
@@ -28,6 +31,7 @@ namespace impactx::elements
     struct Programmable
     : public mixin::Named,
       public mixin::LinearTransport<Programmable>
+      // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;

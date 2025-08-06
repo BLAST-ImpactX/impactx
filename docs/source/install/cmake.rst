@@ -111,6 +111,7 @@ CMake Option                    Default & Values                             Des
 ``ImpactX_OPENPMD``             **ON**/OFF                                   openPMD I/O (HDF5, ADIOS)
 ``ImpactX_PRECISION``           SINGLE/**DOUBLE**                            Floating point precision (single/double)
 ``ImpactX_PYTHON``              ON/**OFF**                                   Python bindings
+``ImpactX_SIMD```               ON/**OFF**                                   CPU SIMD Acceleration (requires ``vir-simd``)
 ``Python_EXECUTABLE``           (newest found)                               Path to Python executable
 ``PY_PIP_OPTIONS``              ``-v``                                       Additional options for ``pip``, e.g., ``-vvv;-q``
 ``PY_PIP_INSTALL_OPTIONS``                                                   Additional options for ``pip install``, e.g., ``--user;-q``

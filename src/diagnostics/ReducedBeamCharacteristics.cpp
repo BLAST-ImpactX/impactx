@@ -422,8 +422,8 @@ namespace impactx::diagnostics
         return data;
     }
 
-    //std::unordered_map<std::string, amrex::ParticleReal>
-    amrex::ParticleReal
+    std::unordered_map<std::string, amrex::ParticleReal>
+    //amrex::ParticleReal
     reduced_beam_characteristics (Map6x6 const & cm, RefPart const & ref_part)
     {
         //BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(cm)");
@@ -610,7 +610,8 @@ namespace impactx::diagnostics
         */
         //data["charge_C"] = nan;  // TODO: with space charge
 
-        return beta_x;
+        return data;
+        //return beta_x;
         //return alpha_x;
     }
 

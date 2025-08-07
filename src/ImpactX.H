@@ -30,6 +30,7 @@ inline int enzyme_dupnoneed;
 inline int enzyme_in;
 inline int enzyme_out;
 inline int enzyme_const;
+inline int enzyme_width;
 
 amrex::ParticleReal __enzyme_fwddiff (...);
 amrex::ParticleReal __enzyme_autodiff (...);
@@ -177,8 +178,8 @@ namespace impactx
         bool m_grids_initialized = false;
     };
 
-    amrex::ParticleReal
-    evaluate_lattice (ImpactX *, amrex::ParticleReal const & q1_k, amrex::ParticleReal const & q2_k);
+    void
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal * error, amrex::ParticleReal const * q1_k, amrex::ParticleReal const * q2_k);
 
     void my_run ();
 

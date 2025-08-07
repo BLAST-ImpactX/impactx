@@ -20,11 +20,13 @@
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Math.H>
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
 #include <AMReX_Utility.H>
 
+#include <array>
 #include <iostream>
 #include <memory>
 
@@ -152,18 +154,24 @@ namespace impactx {
         }
     }
 
-    amrex::ParticleReal
-    evaluate_lattice (ImpactX * sim, amrex::ParticleReal const & q1_k, amrex::ParticleReal const & q2_k)
-    {
+    void
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal * error, amrex::ParticleReal const * q1_k, amrex::ParticleReal const * q2_k) {
         // Example from:
         // https://impactx.readthedocs.io/en/latest/usage/examples/fodo_space_charge/README.html
 
+        // reference
+        // RefPart & ref = sim->amr_data->track_envelope.m_ref.value();
+        // auto & env = sim->amr_data->track_envelope.m_env.value();
+        // copy
+        RefPart ref = sim->amr_data->track_envelope.m_ref.value();
+        Envelope env = sim->amr_data->track_envelope.m_env.value();
+
         int nslice = 50;
 
-        auto dr1 = elements::Drift{7.44e-2};
-        auto q1 = elements::Quad{6.10e-2, q1_k};
-        auto dr2 = elements::Drift{14.88e-2};
-        auto q2 = elements::Quad{6.10e-2, q2_k};
+        auto dr1 = elements::Drift{7.44e-2, 0, 0, 0, 0, 0, nslice};
+        auto q1 = elements::Quad{6.10e-2, *q1_k, 0, 0, 0, 0, 0, nslice};
+        auto dr2 = elements::Drift{14.88e-2, 0, 0, 0, 0, 0, nslice};
+        auto q2 = elements::Quad{6.10e-2, *q2_k, 0, 0, 0, 0, 0, nslice};
 
         /*
         // quadrupole triplet
@@ -183,20 +191,28 @@ namespace impactx {
         // for (auto & e : sim.m_lattice) { e.m_nslice = ns; }
         */
 
-        //active_sim->evolve();
-        //auto & pc = *active_sim->amr_data->m_particle_container;
+        //sim->evolve();
+        //auto & pc = *sim->amr_data->m_particle_container;
         //dr1(pc, 0, 0);
 
         // envelope mode
         //std::cout << "before ref\n";
-        RefPart & ref = sim->amr_data->track_envelope.m_ref.value();
-        //std::cout << "before env\n";
-        auto env = sim->amr_data->track_envelope.m_env.value();
         //std::cout << "before cm\n";
         auto cm = env.m_env;
 
         auto & intensity = env.m_beam_intensity;
         intensity = 0.5;  // Ampere
+
+        // initial values alpha and beta
+        // goal: periodic solution where the resulting alpha and beta are the same as the initial ones.
+        //       the resulting -q1_k should be equal to q2_k (but we intentionally do not enforce that
+        //       during the simulation loop here, and leave that to the optimizer to find out).
+        auto rbc_goal = diagnostics::reduced_beam_characteristics(cm, ref);
+        amrex::ParticleReal const alpha_x_goal = rbc_goal["alpha_x"];
+        amrex::ParticleReal const alpha_y_goal = rbc_goal["alpha_y"];
+        amrex::ParticleReal const beta_x_goal = rbc_goal["beta_x"];
+        amrex::ParticleReal const beta_y_goal = rbc_goal["beta_y"];
+        std::array<amrex::ParticleReal, 4> alpha_beta_goal = {alpha_x_goal, alpha_y_goal, beta_x_goal, beta_y_goal};
 
         // sub-steps for space charge within the element
         for (int slice_step = 0; slice_step < nslice; ++slice_step)
@@ -248,11 +264,19 @@ namespace impactx {
             diagnostics::reduced_beam_characteristics(cm, ref);
         return rbc.at("alpha_x");
         */
-        return diagnostics::reduced_beam_characteristics(cm, ref);
 
+        auto rbc_is = diagnostics::reduced_beam_characteristics(cm, ref);
+        amrex::ParticleReal const alpha_x = rbc_is["alpha_x"];
+        amrex::ParticleReal const alpha_y = rbc_is["alpha_y"];
+        amrex::ParticleReal const beta_x = rbc_is["beta_x"];
+        amrex::ParticleReal const beta_y = rbc_is["beta_y"];
+        std::array<amrex::ParticleReal, 4> alpha_beta_is = {alpha_x, alpha_y, beta_x, beta_y};
 
-        // not alpha_x but instead a simple x_ms * y_ms * t_ms
-        //return cm(1,1) * cm(3,3) * cm(5,5);
+        *error =
+            amrex::Math::powi<2>(alpha_beta_is[0] - alpha_beta_goal[0]) +
+            amrex::Math::powi<2>(alpha_beta_is[1] - alpha_beta_goal[1]) +
+            amrex::Math::powi<2>(alpha_beta_is[2] - alpha_beta_goal[2]) +
+            amrex::Math::powi<2>(alpha_beta_is[3] - alpha_beta_goal[3]);
     }
 
     void my_run ()
@@ -272,50 +296,71 @@ namespace impactx {
         // sim.initLatticeElementsFromInputs();
 
         // initial quad strengths
-        amrex::ParticleReal q1_k = -80.0;
-        amrex::ParticleReal q2_k = 120.0;
+        //amrex::ParticleReal q1_k = -103.12574100336;
+        //amrex::ParticleReal q2_k = -q1_k;
+        amrex::ParticleReal q1_k = -85;
+        amrex::ParticleReal q2_k = 80;
         amrex::Print() << "q1_k = " << q1_k << "\n"
                        << "q2_k = " << q2_k
                        << std::endl;
+
+        amrex::ParticleReal derror_dq1_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        amrex::ParticleReal derror_dq2_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
 #define MYMODE 2
 
 #if MYMODE == 0
         // non-differentiable run:
+        amrex::Print() << "Gradient-free run\n";
         amrex::ParticleReal dq1_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
         amrex::ParticleReal dq2_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
-        amrex::ParticleReal const alpha_x = evaluate_lattice(&sim, q1_k, q2_k);
-        amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
+        amrex::ParticleReal derror = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        amrex::ParticleReal error = 0.0;
+        evaluate_lattice(&sim, &error, &q1_k, &q2_k);
 
 #elif MYMODE == 1
         // forward differentiable run
+        amrex::Print() << "Forward differentiable run\n";
+        amrex::ParticleReal error = 0.0;
+        amrex::ParticleReal derror = 0.0;
+
+        // in forward-mode, usually use one variable at a time, but enzyme_width allows batching
+        // two first order derivatives.
         //   note: seeded direction, this is AD and NOT a finite difference
-        amrex::ParticleReal dq1_k = 1.0;
-        amrex::ParticleReal dq2_k = 1.0;
-        amrex::ParticleReal ddx = __enzyme_fwddiff(
+        amrex::ParticleReal dq1_k = 1.0;  // derror += 1.0 * df/dq1_k
+        amrex::ParticleReal dq2_k = 1.0;  // derror += 1.0 * df/dq1_k
+        amrex::ParticleReal zero = 0.0;  // derror += 0.0 * df/dq*_k
+        __enzyme_fwddiff(
             &evaluate_lattice,
             enzyme_const, &sim,
-            enzyme_dup,
-            &q1_k, &dq1_k,
-            &q2_k, &dq2_k
+            enzyme_width, 2,  // 2x batched: first df/dq1_k then df/dq2_k
+            // variable, batch 1, batch 2:
+            enzyme_dup, &error, &derror_dq1_k, &derror_dq2_k,
+            enzyme_dup, &q1_k, &dq1_k, &zero,
+            enzyme_dup, &q2_k, &zero, &dq2_k
         );
 
 #elif MYMODE == 2
         // reverse differentiable run:
+        amrex::Print() << "Reverse differentiable run\n";
         amrex::ParticleReal dq1_k = 0.0;  // accumulator, zero-init!
         amrex::ParticleReal dq2_k = 0.0;  // accumulator, zero-init!
+        amrex::ParticleReal error = 0.0;
+        amrex::ParticleReal derror = 1.0;  // variable to back-prop: derror * df/dx
         __enzyme_autodiff(
             &evaluate_lattice,
             enzyme_const, &sim,
-            enzyme_dup,
-            &q1_k, &dq1_k,
-            &q2_k, &dq2_k
+            enzyme_dup, &error, &derror,
+            enzyme_dup, &q1_k, &dq1_k,
+            enzyme_dup, &q2_k, &dq2_k
         );
+        derror_dq1_k = dq1_k;
+        derror_dq2_k = dq2_k;
 #endif
 
-        //amrex::Print() << "final alpha_x = " << alpha_x << std::endl;
-        amrex::Print() << "dq1_k = " << dq1_k << "\n"
-                       << "dq2_k = " << dq2_k
+        amrex::Print() << "error = " << error << "\n"
+                       << "derror_dq1_k = " << derror_dq1_k << "\n"
+                       << "derror_dq2_k = " << derror_dq2_k << "\n"
                        << std::endl;
 
         sim.finalize();

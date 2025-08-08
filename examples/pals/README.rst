@@ -3,7 +3,7 @@
 FODO Cell with a PALS Lattice
 =============================
 
-This is a duplicate of the FODO cell example ``examples-fodo``, except that the lattice file is specified in `PALS <https://pals-project.readthedocs.io>`__-compliant format.
+This is a duplicate of the :ref:`FODO cell example <examples-fodo>`, except that the lattice file is specified in `PALS <https://pals-project.readthedocs.io>`__-compliant format.
 
 The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected due to noise due to statistical sampling.
 
@@ -15,7 +15,7 @@ Run
 
 This example can be run as:
 
-* **Python** script: ``python3 run_fodo_pals_yaml.py`` or ``python3 run_fodo_pals_json.py``
+* **Python** script: ``python3 run_fodo_pals.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
@@ -23,12 +23,9 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_fodo_pals_yaml.py
+       .. literalinclude:: run_fodo_pals.py
           :language: python3
-          :caption: You can copy this file from ``examples/pals/run_fodo_pals_yaml.py``.
-       .. literalinclude:: run_fodo_pals_json.py
-          :language: python3
-          :caption: You can copy this file from ``examples/pals/run_fodo_pals_json.py``.
+          :caption: You can copy this file from ``examples/pals/run_fodo_pals.py``.
 
 
 Analyze

@@ -32,6 +32,7 @@ Optional dependencies include:
 
   - `mpi4py <https://mpi4py.readthedocs.io>`__
   - `numpy <https://numpy.org>`__
+  - `pals-schema <https://github.com/campa-consortium/pals-python>`__
   - `quantiphy <https://quantiphy.readthedocs.io/>`__
   - `openPMD-api <https://github.com/openPMD/openPMD-api>`__
   - see our ``requirements.txt`` file for compatible versions

@@ -1,4 +1,4 @@
-kind: Line
+kind: BeamLine
 line:
 - drift1:
     kind: Drift

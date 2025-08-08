@@ -2,7 +2,7 @@
 This file is part of ImpactX
 
 Copyright 2025 ImpactX contributors
-Authors: Axel Huebl
+Authors: Axel Huebl, Chad Mitchell, Edoardo Zoni
 License: BSD-3-Clause-LBNL
 """
 
@@ -27,59 +27,54 @@ def load_file(self, filename, nslice=1):
         return
 
     elif extension_inner == ".pals":
-        from pals_schema.Line import Line
+        from pals_schema.BeamLine import BeamLine
 
-        # example: fodo.pals.yaml
-        if extension == ".json":
-            import json
+        # examples: fodo.pals.yaml, fodo.pals.json
+        with open(filename, "r") as file:
+            if extension == ".json":
+                import json
 
-            # Read the JSON data from the test file
-            with open(filename, "r") as file:
-                json_data = json.loads(file.read())
-            # Parse the JSON data back into a Line object
-            # (data validation happens here automatically)
-            self.from_pals(Line(**json_data), nslice)
-            return
+                pals_data = json.loads(file.read())
+            elif extension == ".yaml":
+                import yaml
 
-        elif extension == ".yaml":
-            import yaml
+                pals_data = yaml.safe_load(file)
+            # TODO: toml, xml
+            else:
+                raise RuntimeError(
+                    f"load_file: No support for PALS file {filename} with extension {extension} yet."
+                )
 
-            # Read the YAML data from the test file
-            with open(filename, "r") as file:
-                yaml_data = yaml.safe_load(file)
-            # Parse the YAML data back into a Line object
-            # (data validation happens here automatically)
-            self.from_pals(Line(**yaml_data), nslice)
-            return
-
-        # TODO: toml, xml
+        # Parse the data dictionary back into a PALS `BeamLine` object.
+        # The automatically PALS data validation happens here.
+        self.from_pals(BeamLine(**pals_data), nslice)
+        return
 
     raise RuntimeError(
         f"load_file: No support for file {filename} with extension {extension} yet."
     )
 
 
-def from_pals(self, pals_line, nslice=1):
-    """Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python Line.
+def from_pals(self, pals_beamline, nslice=1):
+    """Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
 
     https://github.com/campa-consortium/pals-python
     """
     from pals_schema.DriftElement import DriftElement
     from pals_schema.QuadrupoleElement import QuadrupoleElement
 
-    # Loop over the pals_line and create a new ImpactX KnownElementsList from it.
+    # Loop over the pals_beamline and create a new ImpactX KnownElementsList from it.
     #       Use self.extend(...) on the latter.
-    print(nslice)
-    ix_line = []
-    for pals_element in pals_line.line:
+    ix_beamline = []
+    for pals_element in pals_beamline.line:
         if isinstance(pals_element, DriftElement):
-            ix_line.append(
+            ix_beamline.append(
                 elements.Drift(
                     name=pals_element.name, ds=pals_element.length, nslice=nslice
                 )
             )
         elif isinstance(pals_element, QuadrupoleElement):
-            ix_line.append(
+            ix_beamline.append(
                 elements.ChrQuad(
                     name=pals_element.name,
                     ds=pals_element.length,
@@ -88,8 +83,12 @@ def from_pals(self, pals_line, nslice=1):
                     nslice=nslice,
                 )
             )
+        else:
+            raise RuntimeError(
+                f"from_pals: No support for elements of kind {type(pals_element)} yet."
+            )
 
-    self.extend(ix_line)
+    self.extend(ix_beamline)
 
 
 def register_KnownElementsList_extension(kel):

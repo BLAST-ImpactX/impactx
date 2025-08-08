@@ -27,15 +27,16 @@ class CardBase(UIDefaults):
         """
         Creates UI content for a section.
         """
-
-        if (
-            self.header not in DashboardDefaults.DOCUMENTATION
-            and self.header not in _missing_docs
-        ):
-            print(
-                f"WARNING: Card '{self.header}' has no doc link in DashboardDefaults.DOCUMENTATION"
-            )
-            _missing_docs.add(self.header)
+        # Allow subclasses to suppress missing documentation warning
+        if not getattr(self, "SUPPRESS_DOC_WARNING", False):
+            if (
+                self.header not in DashboardDefaults.DOCUMENTATION
+                and self.header not in _missing_docs
+            ):
+                print(
+                    f"WARNING: Card '{self.header}' has no doc link in DashboardDefaults.DOCUMENTATION"
+                )
+                _missing_docs.add(self.header)
 
         self.init_dialog(self.HEADER_NAME, self.card_content)
         self.card_content()

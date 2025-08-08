@@ -29,6 +29,13 @@ ln -s /usr/lib/llvm-16/bin/lld-link lld
 ln -s $(which ld.lld-16) ld.lld  # note: not sufficient yet... somehow hard-coded in compiler detection... use docker
                                  # manually linking /usr/bin/ld.lld-16 as /usr/bin/ld.lld works...
 export PATH=$PWD:$PATH
+
+# optional: create a venv for Python
+rm -rf ~/src/venv-impactx-enzyme
+python3 -m venv ~/src/venv-impactx-enzyme
+source ~/src/venv-impactx-enzyme/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade scipy numpy packaging setuptools[core] wheel pytest pytest-benchmark matplotlib PyQt6
 ```
 
 
@@ -46,13 +53,15 @@ From the [homepage](https://enzyme.mit.edu/getting_started/UsingEnzyme/):
 ### Always
 
 ```bash
-export PATH=$HOME/.local/pipx/venvs/cmake/bin:$PATH
+source ~/src/venv-impactx-enzyme/bin/activate
+alias cmake=$HOME/.local/pipx/venvs/cmake/bin/cmake
 export CC="clang-16"
 export CXX="clang++-16"
 
 # one TU: Clang Plugin
 #   Extra Enzyme options, e.g., print https://enzyme.mit.edu/getting_started/UsingEnzyme/#semantic-options
-export CXXFLAGS="-fplugin=$HOME/src/Enzyme/build/Enzyme/ClangEnzyme-16.so -mllvm -enzyme-print -mllvm -enzyme-print"
+#   optional add for verbose output: -mllvm -enzyme-print
+export CXXFLAGS="-fplugin=$HOME/src/Enzyme/build/Enzyme/ClangEnzyme-16.so"
 ```
 
 With the active developer env above, inside the ImpactX source dir:
@@ -66,8 +75,13 @@ cmake --fresh \
   -DImpactX_OPENPMD=OFF   \
   -DCMAKE_LINKER_TYPE=LLD \
   -DCMAKE_LINKER=/usr/lib/llvm-16/bin/lld-link
+# optional:
+#   -DImpactX_PYTHON=ON -DpyAMReX_IPO=OFF -DImpactX_PYTHON_IPO=OFF
 
 cmake --build build -j 6
+
+# optional:
+cmake --build build -j 6 --target pip_install
 ```
 
 

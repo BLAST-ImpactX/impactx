@@ -279,15 +279,28 @@ namespace impactx {
             amrex::Math::powi<2>(alpha_beta_is[3] - alpha_beta_goal[3]);
     }
 
-    void my_run ()
-    {
+    std::map<std::string, amrex::ParticleReal>
+    my_run (amrex::ParticleReal q1_k, amrex::ParticleReal q2_k, std::string mode, std::string inputs_file, bool verbose) {
+        amrex::ParmParse pp_ix("impactx");
+        pp_ix.add("verbose", 0);
+        amrex::ParmParse pp_amr("amrex");
+        pp_amr.add("verbose", 0);
+
         ImpactX sim;
 
         amrex::ParmParse pp_algo("algo");
         std::string track = "envelope";
         pp_algo.add("track", track);
+        pp_algo.add("particle_shape", 2);  // unused
 
         sim.init_grids();
+
+        if (inputs_file != "") {
+            if (!amrex::FileExists(inputs_file)) {
+                throw std::runtime_error("my_run: inputs_file does not exist: " + inputs_file);
+            }
+            amrex::ParmParse::addfile(inputs_file);
+        }
 
         // TODO: replace with beam params from https://impactx.readthedocs.io/en/latest/usage/examples/fodo_space_charge/README.html
         sim.initBeamDistributionFromInputs();
@@ -296,73 +309,81 @@ namespace impactx {
         // sim.initLatticeElementsFromInputs();
 
         // initial quad strengths
-        //amrex::ParticleReal q1_k = -103.12574100336;
-        //amrex::ParticleReal q2_k = -q1_k;
-        amrex::ParticleReal q1_k = -85;
-        amrex::ParticleReal q2_k = 80;
-        amrex::Print() << "q1_k = " << q1_k << "\n"
-                       << "q2_k = " << q2_k
-                       << std::endl;
+        // optimal solution is:
+        //q1_k = -103.12574100336;
+        //q2_k = -q1_k;
 
+        amrex::ParticleReal error = 0.0;
         amrex::ParticleReal derror_dq1_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
         amrex::ParticleReal derror_dq2_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
-#define MYMODE 2
+        //mode = "forward";
+        //mode = "backward";
 
-#if MYMODE == 0
-        // non-differentiable run:
-        amrex::Print() << "Gradient-free run\n";
-        amrex::ParticleReal dq1_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
-        amrex::ParticleReal dq2_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
-        amrex::ParticleReal derror = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
-        amrex::ParticleReal error = 0.0;
-        evaluate_lattice(&sim, &error, &q1_k, &q2_k);
+        if (mode == "gradient-free")
+        {
+            // non-differentiable run:
+            if (verbose) amrex::Print() << "Gradient-free run\n";
+            evaluate_lattice(&sim, &error, &q1_k, &q2_k);
+        }
+        else if (mode == "forward")
+        {
+            // forward differentiable run
+            if (verbose) amrex::Print() << "Forward differentiable run\n";
 
-#elif MYMODE == 1
-        // forward differentiable run
-        amrex::Print() << "Forward differentiable run\n";
-        amrex::ParticleReal error = 0.0;
-        amrex::ParticleReal derror = 0.0;
-
-        // in forward-mode, usually use one variable at a time, but enzyme_width allows batching
-        // two first order derivatives.
-        //   note: seeded direction, this is AD and NOT a finite difference
-        amrex::ParticleReal dq1_k = 1.0;  // derror += 1.0 * df/dq1_k
-        amrex::ParticleReal dq2_k = 1.0;  // derror += 1.0 * df/dq1_k
-        amrex::ParticleReal zero = 0.0;  // derror += 0.0 * df/dq*_k
-        __enzyme_fwddiff(
-            &evaluate_lattice,
-            enzyme_const, &sim,
-            enzyme_width, 2,  // 2x batched: first df/dq1_k then df/dq2_k
-            // variable, batch 1, batch 2:
-            enzyme_dup, &error, &derror_dq1_k, &derror_dq2_k,
-            enzyme_dup, &q1_k, &dq1_k, &zero,
-            enzyme_dup, &q2_k, &zero, &dq2_k
-        );
-
-#elif MYMODE == 2
-        // reverse differentiable run:
-        amrex::Print() << "Reverse differentiable run\n";
-        amrex::ParticleReal dq1_k = 0.0;  // accumulator, zero-init!
-        amrex::ParticleReal dq2_k = 0.0;  // accumulator, zero-init!
-        amrex::ParticleReal error = 0.0;
-        amrex::ParticleReal derror = 1.0;  // variable to back-prop: derror * df/dx
-        __enzyme_autodiff(
-            &evaluate_lattice,
-            enzyme_const, &sim,
-            enzyme_dup, &error, &derror,
-            enzyme_dup, &q1_k, &dq1_k,
-            enzyme_dup, &q2_k, &dq2_k
-        );
-        derror_dq1_k = dq1_k;
-        derror_dq2_k = dq2_k;
-#endif
-
-        amrex::Print() << "error = " << error << "\n"
-                       << "derror_dq1_k = " << derror_dq1_k << "\n"
-                       << "derror_dq2_k = " << derror_dq2_k << "\n"
-                       << std::endl;
+            // in forward-mode, usually use one variable at a time, but enzyme_width allows batching
+            // two first order derivatives.
+            //   note: seeded direction, this is AD and NOT a finite difference
+            amrex::ParticleReal dq1_k = 1.0;  // derror += 1.0 * df/dq1_k
+            amrex::ParticleReal dq2_k = 1.0;  // derror += 1.0 * df/dq1_k
+            amrex::ParticleReal zero = 0.0;  // derror += 0.0 * df/dq*_k
+            __enzyme_fwddiff(
+                &evaluate_lattice,
+                enzyme_const, &sim,
+                enzyme_width, 2,  // 2x batched: first df/dq1_k then df/dq2_k
+                // variable, batch 1, batch 2:
+                enzyme_dup, &error, &derror_dq1_k, &derror_dq2_k,
+                enzyme_dup, &q1_k, &dq1_k, &zero,
+                enzyme_dup, &q2_k, &zero, &dq2_k
+            );
+        }
+        else if (mode == "backward")
+        {
+            // reverse differentiable run:
+            if (verbose) amrex::Print() << "Reverse differentiable run\n";
+            amrex::ParticleReal dq1_k = 0.0;  // accumulator, zero-init!
+            amrex::ParticleReal dq2_k = 0.0;  // accumulator, zero-init!
+            amrex::ParticleReal derror = 1.0;  // variable to back-prop: derror * df/dx
+            __enzyme_autodiff(
+                &evaluate_lattice,
+                enzyme_const, &sim,
+                enzyme_dup, &error, &derror,
+                enzyme_dup, &q1_k, &dq1_k,
+                enzyme_dup, &q2_k, &dq2_k
+            );
+            derror_dq1_k = dq1_k;
+            derror_dq2_k = dq2_k;
+        }
+        else {
+            throw std::runtime_error("Unknown mode: " + mode);
+        }
 
         sim.finalize();
+
+        if (verbose) {
+            amrex::Print() << "q1_k = " << q1_k << "\n"
+                           << "q2_k = " << q2_k
+                           << std::endl;
+            amrex::Print() << "error = " << error << "\n"
+                           << "derror_dq1_k = " << derror_dq1_k << "\n"
+                           << "derror_dq2_k = " << derror_dq2_k << "\n"
+                           << std::endl;
+        }
+
+        std::map<std::string, amrex::ParticleReal> result;
+        result["error"] = error;
+        result["derror_dq1_k"] = derror_dq1_k;
+        result["derror_dq2_k"] = derror_dq2_k;
+        return result;
     }
 } // namespace impactx

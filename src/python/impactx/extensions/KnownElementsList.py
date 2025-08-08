@@ -37,6 +37,7 @@ def load_file(self, filename, nslice=1):
             with open(filename, "r") as file:
                 json_data = json.loads(file.read())
             # Parse the JSON data back into a Line object
+            # (data validation happens here automatically)
             self.from_pals(Line(**json_data), nslice)
             return
 
@@ -47,6 +48,7 @@ def load_file(self, filename, nslice=1):
             with open(filename, "r") as file:
                 yaml_data = yaml.safe_load(file)
             # Parse the YAML data back into a Line object
+            # (data validation happens here automatically)
             self.from_pals(Line(**yaml_data), nslice)
             return
 

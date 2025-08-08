@@ -3,7 +3,7 @@
 FODO Cell with a PALS Lattice
 =============================
 
-This is a duplicate of the FODO cell example ``examples-fodo``, except that the lattice file is specified in PALS-compliant format.
+This is a duplicate of the FODO cell example ``examples-fodo``, except that the lattice file is specified in `PALS <https://pals-project.readthedocs.io>`__-compliant format.
 
 The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected due to noise due to statistical sampling.
 

@@ -10,10 +10,10 @@ import os
 
 from .. import ctrl, html, state, vuetify
 from ..Input.components import CardComponents
-from .sim_history.ui import SimulationHistory
 from .analyze import AnalyzeToolbar
 from .input import InputToolbar
 from .run import RunToolbar
+from .sim_history.ui import SimulationHistory
 
 state.show_dashboard_alert = True
 state.about_dialog = False
@@ -24,7 +24,9 @@ def _force_quit() -> None:
     os._exit(0)
 
 
-def _about_button(icon_name: str, text: str, link: str, color: str = "primary") -> vuetify.VBtn:
+def _about_button(
+    icon_name: str, text: str, link: str, color: str = "primary"
+) -> vuetify.VBtn:
     """
     Returns a button for the about section.
     """
@@ -172,24 +174,23 @@ class GeneralToolbar:
         BUG_MESSAGE = "Found a bug or have a feature request? "
 
         IMPACTX_DOCUMENTATION_URL = "https://impactx.readthedocs.io/"
-        IMPACTX_EXAMPLES_URL = "https://impactx.readthedocs.io/en/latest/usage/examples.html"
+        IMPACTX_EXAMPLES_URL = (
+            "https://impactx.readthedocs.io/en/latest/usage/examples.html"
+        )
         GITHUB_URL = "https://github.com/BLAST-ImpactX/impactx"
         GITHUB_ISSUES_URL = "https://github.com/BLAST-ImpactX/impactx/issues/new"
         DISCUSSIONS_URL = "https://github.com/orgs/BLAST-ImpactX/discussions"
 
         with vuetify.VDialog(v_model=("about_dialog", False), max_width="500px"):
             with vuetify.VCard(elevation=10, classes="rounded-lg"):
-                with vuetify.VToolbar(
-                    color="primary",
-                    classes="px-4"
-                ):
+                with vuetify.VToolbar(color="primary", classes="px-4"):
                     html.Div(
                         HEADER_1,
                         style="font-size: 1.125rem;",
                     )
                     vuetify.VSpacer()
                     vuetify.VBtn(icon="mdi-close", click="about_dialog = false")
-                
+
                 with vuetify.VCardText(classes="pa-6"):
                     with html.Div(classes="mb-4"):
                         html.P(MESSAGE_1, classes="mb-3")
@@ -224,7 +225,9 @@ class GeneralToolbar:
                             color="settings",
                         )
 
-                    with vuetify.VAlert(type="info", variant="tonal", density="compact"):
+                    with vuetify.VAlert(
+                        type="info", variant="tonal", density="compact"
+                    ):
                         with vuetify.Template(v_slot_prepend=True):
                             vuetify.VIcon("mdi-bug-outline")
                         html.Span(BUG_MESSAGE)
@@ -233,5 +236,5 @@ class GeneralToolbar:
                             href=GITHUB_ISSUES_URL,
                             target="_blank",
                             classes="text-decoration-underline",
-                            style="color: #1976d2; cursor: pointer;"
+                            style="color: #1976d2; cursor: pointer;",
                         )

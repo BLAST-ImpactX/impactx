@@ -175,6 +175,7 @@ class GeneralToolbar:
         IMPACTX_EXAMPLES_URL = "https://impactx.readthedocs.io/en/latest/usage/examples.html"
         GITHUB_URL = "https://github.com/BLAST-ImpactX/impactx"
         GITHUB_ISSUES_URL = "https://github.com/BLAST-ImpactX/impactx/issues/new"
+        DISCUSSIONS_URL = "https://github.com/orgs/BLAST-ImpactX/discussions"
 
         with vuetify.VDialog(v_model=("about_dialog", False), max_width="500px"):
             with vuetify.VCard(elevation=10, classes="rounded-lg"):
@@ -216,7 +217,13 @@ class GeneralToolbar:
                             link=IMPACTX_EXAMPLES_URL,
                             color="settings",
                         )
-                    
+                        _about_button(
+                            icon_name="mdi-comment-question-outline",
+                            text="Questions & Answers",
+                            link=DISCUSSIONS_URL,
+                            color="settings",
+                        )
+
                     with vuetify.VAlert(type="info", variant="tonal", density="compact"):
                         with vuetify.Template(v_slot_prepend=True):
                             vuetify.VIcon("mdi-bug-outline")

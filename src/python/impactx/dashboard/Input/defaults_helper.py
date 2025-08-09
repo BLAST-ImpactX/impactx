@@ -159,8 +159,16 @@ class InputDefaultsHelper:
                 else:
                     parameter_type = type_and_default
 
-            if "Optional" in parameter_type:
-                parameter_type = parameter_type[len("Optional[") : -1]
+            match parameter_type:
+                case optional_type if "Optional" in optional_type:
+                    parameter_type = parameter_type[len("Optional[") : -1]
+                case "typing.SupportsFloat":
+                    parameter_type = "float"
+                case "typing.SupportsInt":
+                    parameter_type = "int"
+                case "str | None":
+                    parameter_type = "str"
+
             parameters.append((name, default, parameter_type))
 
         return parameters

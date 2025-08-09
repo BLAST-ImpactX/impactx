@@ -215,7 +215,7 @@ class GeneralToolbar:
                             icon_name="mdi-play-circle-outline",
                             text="Examples",
                             link=IMPACTX_EXAMPLES_URL,
-                            color="settings",
+                            color="info",
                         )
                         _about_button(
                             icon_name="mdi-comment-question-outline",

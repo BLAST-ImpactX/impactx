@@ -70,7 +70,8 @@ class SharedUtilities:
                             InputsValidator.update_n_cell_validation(direction)
 
                 section_name = determine_section_name(state_name)
-                errors_tracker.update(section_name)
+                errors_tracker.update(section_name, is_state=True, state_name=state_name)
+
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

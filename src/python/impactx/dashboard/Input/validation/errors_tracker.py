@@ -128,11 +128,9 @@ class ErrorsTracker:
 
         return errors
 
-    def update(self, section_name: str) -> None:
+    def update(self, section_name: str, is_state=False, state_name=False) -> None:
         """
         Updates the state that contains all input errors displaying on the dashboard.
-
-        Helpful for determining if a simulation can be ran on the dashboard and if/what are the input errors.
         """
         section_errors = []
         checker_method, expected_method_name = self._get_validation_method(section_name)
@@ -153,10 +151,15 @@ class ErrorsTracker:
             if errors
         ]
 
+        self._apply_state_updates(categorized_errors)
+
+    def _apply_state_updates(self, categorized_errors: list[dict]) -> None:
+        """
+        Helper to sync the dashboard state with current errors.
+        """
         state.number_of_input_errors = sum(
             len(item["errors"]) for item in categorized_errors
         )
-
         state.disable_simulation = bool(categorized_errors)
         state.input_errors = categorized_errors
 

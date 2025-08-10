@@ -9,6 +9,7 @@ License: BSD-3-Clause-LBNL
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
+from ..validation import errors_tracker
 
 
 @state.change("kin_energy_unit")
@@ -33,6 +34,10 @@ def on_tracking_mode_change(**kwargs) -> None:
         if state.space_charge not in current_sc_list:
             state.space_charge = current_sc_list[0]
 
+@state.change("csr")
+def on_csr_change(csr, **kwargs) -> None:
+    if csr == False:
+        errors_tracker.clear_category("CSR")
 
 from ..defaults import INPUT_LABELS
 

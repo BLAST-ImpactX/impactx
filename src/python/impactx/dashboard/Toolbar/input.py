@@ -162,7 +162,7 @@ class InputToolbar:
                     )
                 with html.Div():
                     with html.Div(
-                        v_for="(category_group, category_index) in input_errors",
+                        v_for="(category_group, category_index) in input_errors_list",
                     ):
                         html.Div(
                             "{{ category_group.category }}", style="color: #e65100;"

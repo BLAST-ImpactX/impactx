@@ -11,6 +11,25 @@ from ..utils import GeneralFunctions
 from ..defaults import INPUT_LABELS, DashboardDefaults
 
 
+simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
+csr_defaults = list(DashboardDefaults.CSR.keys())
+space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
+
+
+def determine_section_name(state_name: str) -> str:
+    """
+    Determines the section name based on the state variable name.
+    """
+    if state_name in csr_defaults:
+        return "CSR"
+    elif state_name in space_charge_defaults:
+        return "Space Charge"
+    elif state_name == "periods":
+        return "Lattice Configuration"
+    else:
+        return "Simulation Parameters"
+    
+
 class ErrorsTracker:
     """
     Helps track the input errors across the dashboard.
@@ -28,24 +47,48 @@ class ErrorsTracker:
         normalized = GeneralFunctions.normalize_for_v_model(input_name)
         return getattr(state, f"{normalized}_error_message", "")
 
+    def clear_category(self, category: str) -> None:
+        self.errors[category] = []
+        self._update_ui()
+
+    def _clear_error(self, category: str, input_name: str) -> None:
+        """
+        Clears any error messages for a specific input in the errors tracker.
+
+        :param category: The dashboard section name.
+        :param input_name: The UI label (e.g., "CSR Bins", "Max Level").
+        """
+        self.errors[category] = [msg for msg in self.errors[category] if not msg.startswith(f"{input_name}:")]
+
     def _get_validation_method(self, section_name: str):
-        METHOD_OVERRIDE = {"Simulation Parameters": "_check_input_params_errors"}
+        """
+        Returns the validation method for a section and the expected method name.
+        """
+        method_override = {
+            "Simulation Parameters": "_check_input_params_errors",
+        }
 
         normalized = GeneralFunctions.normalize_for_v_model(section_name)
-        method_name = METHOD_OVERRIDE.get(section_name, f"_check_{normalized}_errors")
+        method_name = method_override.get(section_name, f"_check_{normalized}_errors")
+
         return getattr(self, method_name, None), method_name
 
-    def _check_state_errors(self, category: str, input_ui_name: str) -> None:
+    def _check_state_errors(self,  input_name: str) -> None:
         """
         Appends any error for a UI input to its category.
 
         :param category: The dashboard section name.
-        :param input_ui_name: The UI label (e.g., "CSR Bins", "Max Level").
+        :param input_name: The UI label (e.g., "CSR Bins", "Max Level").
         """
-        error = self._get_error_message(input_ui_name)
-        print(error)
+        print(f"check state errors is called")
+        category = determine_section_name(input_name)
+        print(f" the category of {input_name} is {category}")
+        self._clear_error(category, input_name)
+        error = self._get_error_message(input_name)
+        print(f" the error of {input_name} is {error}")
         if error:
-            self.errors[category].append(f"{input_ui_name}: {error}")
+            print(f"appending error to {category}")
+            self.errors[category].append(f"{input_name}: {error}")
 
     def _check_input_params_errors(self) -> list[str]:
         errors: list[str] = []
@@ -94,16 +137,23 @@ class ErrorsTracker:
         return []
 
     def _check_csr_errors(self) -> list[str]:
-        # Clear previous CSR errors
-        self.errors["CSR"] = []
-
-        # If CSR is disabled, return no errors
-        if not getattr(state, "csr", False):
+        """
+        Returns a list of current CSR-related input errors.
+        Only called when the csr section is enabled/disabled or a csr input is modified
+        """
+        if getattr(state, "csr", None) in ("false", False):
             return []
 
-        self._check_state_errors("CSR", "csr_bins")
-        return self.errors["CSR"]
+        errors = []
+        for field_name in csr_defaults:
+            error_message = self._get_error_message(field_name)
+            if isinstance(error_message, list):
+                error_message = "; ".join(error_message)
+            if error_message:
+                errors.append(f"{field_name}: {error_message}")
+        return errors
 
+        
     def _check_distribution_parameters_errors(self) -> list[str]:
         errors = []
         for name, param in state.selected_distribution_parameters.items():
@@ -128,39 +178,40 @@ class ErrorsTracker:
 
         return errors
 
-    def update(self, section_name: str, is_state=False, state_name=False) -> None:
-        """
-        Updates the state that contains all input errors displaying on the dashboard.
-        """
-        section_errors = []
+    def update(self, section_name: str, state_name: str | bool = False) -> None:
         checker_method, expected_method_name = self._get_validation_method(section_name)
 
-        if callable(checker_method):
-            section_errors = checker_method()
+        if isinstance(state_name, str) and state_name:
+            self._check_state_errors(state_name)
         else:
-            print(
-                f"[WARNING] No validation method found for section '{section_name}'. "
-                f"Expected method: '{expected_method_name}'"
-            )
+            if callable(checker_method):
+                self.errors[section_name] = checker_method()
+            else:
+                print(
+                    f"[WARNING] No validation method found for section '{section_name}'. "
+                    f"Expected method: '{expected_method_name}'"
+                )
+                self.errors.setdefault(section_name, [])
 
-        self.errors[section_name] = section_errors
+        self._update_ui()
 
-        categorized_errors = [
-            {"category": category, "errors": errors}
-            for category, errors in self.errors.items()
-            if errors
-        ]
-
-        self._apply_state_updates(categorized_errors)
-
-    def _apply_state_updates(self, categorized_errors: list[dict]) -> None:
+    def _update_ui(self) -> None:
         """
-        Helper to sync the dashboard state with current errors.
+        Rebuilds categorized error data and updates the dashboard state counters/flags.
         """
-        state.number_of_input_errors = sum(
-            len(item["errors"]) for item in categorized_errors
-        )
+        categorized_errors = []
+        total_errors = 0
+
+        for category, errors in self.errors.items():
+            if errors:
+                categorized_errors.append({
+                    "category": category,
+                    "errors": errors
+                })
+                total_errors += len(errors)
+
+        state.number_of_input_errors = total_errors
         state.disable_simulation = bool(categorized_errors)
-        state.input_errors = categorized_errors
+        state.input_errors_list = categorized_errors
 
 errors_tracker = ErrorsTracker()

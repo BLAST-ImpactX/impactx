@@ -8,8 +8,8 @@ License: BSD-3-Clause-LBNL
 
 from ... import state
 
-class ErrorsTracker:
 
+class ErrorsTracker:
     def update_simulation_validation_status(self):
         """
         Checks if any input fields are not provided with the correct input type.
@@ -94,5 +94,6 @@ class ErrorsTracker:
             error_details.append("error")
 
         state.disableRunSimulationButton = bool(error_details)
+
 
 errors_tracker = ErrorsTracker()

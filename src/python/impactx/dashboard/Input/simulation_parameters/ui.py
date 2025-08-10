@@ -9,7 +9,6 @@ License: BSD-3-Clause-LBNL
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
 from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
-from ..validation import errors_tracker
 
 
 @state.change("kin_energy_unit")

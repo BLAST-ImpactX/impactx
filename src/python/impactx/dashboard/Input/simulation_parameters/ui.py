@@ -8,8 +8,8 @@ License: BSD-3-Clause-LBNL
 
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from .. import DashboardValidation
 from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
+from ..validation import errors_tracker
 
 
 @state.change("kin_energy_unit")
@@ -33,7 +33,6 @@ def on_tracking_mode_change(**kwargs) -> None:
     current_sc_list = ui_props.get("space_charge_list", [])
     if state.space_charge not in current_sc_list:
         state.space_charge = current_sc_list[0]
-    DashboardValidation.update_simulation_validation_status()
 
 
 class SimulationParameters(CardBase):

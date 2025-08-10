@@ -15,9 +15,10 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardDefaults, DashboardValidation
+from .. import DashboardDefaults
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
+from ..validation import DashboardValidation, errors_tracker
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
@@ -69,7 +70,7 @@ def add_lattice_element() -> dict:
     }
 
     state.selected_lattice_list.append(lattice_element)
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
     return lattice_element
 
 
@@ -82,7 +83,7 @@ def add_lattice_element() -> dict:
 def on_selected_lattice_list_change(selected_lattice_list, **kwargs):
     if selected_lattice_list == []:
         state.isSelectedLatticeListEmpty = "Please select a lattice element"
-        DashboardValidation.update_simulation_validation_status()
+        errors_tracker.update_simulation_validation_status()
     else:
         state.isSelectedLatticeListEmpty = ""
 
@@ -163,7 +164,7 @@ def on_lattice_element_parameter_change(
             param["sim_input"] = sim_input
             param["parameter_error_message"] = error_message
 
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
     state.dirty("selected_lattice_list")
 
 

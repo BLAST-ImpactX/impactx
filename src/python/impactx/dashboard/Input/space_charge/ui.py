@@ -13,7 +13,8 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardValidation, GeneralFunctions
+from .. import GeneralFunctions
+from ..validation import DashboardValidation, errors_tracker
 from .utils import SpaceChargeFunctions
 
 state.prob_relative = []
@@ -72,19 +73,19 @@ def populate_prob_relative_fields():
 def on_poisson_solver_change(poisson_solver, **kwargs):
     populate_prob_relative_fields()
     state.dirty("prob_relative_fields")
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 @state.change("space_charge")
 def on_space_charge_change(space_charge, **kwargs):
     state.dynamic_size = space_charge != "false"
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 @state.change("max_level")
 def on_max_level_change(max_level, **kwargs):
     populate_prob_relative_fields()
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 @ctrl.add("update_prob_relative")
@@ -116,7 +117,7 @@ def on_update_prob_relative_call(index, value):
         state.prob_relative_fields[index + 1]["error_message"] = next_error_message
 
     state.dirty("prob_relative_fields")
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 # -----------------------------------------------------------------------------

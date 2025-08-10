@@ -6,15 +6,14 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from typing import Union
-
 from impactx import distribution
 
 from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from .. import DashboardDefaults, DashboardValidation
+from .. import DashboardDefaults
 from ..defaults_helper import InputDefaultsHelper
 from ..utils import GeneralFunctions
+from ..validation import DashboardValidation, errors_tracker
 from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
@@ -62,7 +61,7 @@ def populate_distribution_parameters():
         }
 
     state.selected_distribution_parameters = params
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
     return params
 
 
@@ -103,7 +102,7 @@ def on_distribution_parameter_change(name: str, input: str):
     if parameter:
         parameter["value"] = numeric_input
         parameter["error_message"] = error_message
-        DashboardValidation.update_simulation_validation_status()
+        errors_tracker.update_simulation_validation_status()
         state.dirty("selected_distribution_parameters")
 
 

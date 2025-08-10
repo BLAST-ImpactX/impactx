@@ -6,7 +6,7 @@ from impactx.impactx_pybind import elements
 import typing
 import warnings as warnings
 
-__all__ = [
+__all__: list[str] = [
     "MADXParser",
     "RefPart",
     "beam",

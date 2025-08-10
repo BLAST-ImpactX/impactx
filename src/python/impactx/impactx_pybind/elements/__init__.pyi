@@ -10,7 +10,7 @@ import typing
 from . import mixin
 from . import transformation
 
-__all__ = [
+__all__: list[str] = [
     "Aperture",
     "BeamMonitor",
     "Buncher",

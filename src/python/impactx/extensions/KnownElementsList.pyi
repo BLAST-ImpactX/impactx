@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 
 from __future__ import annotations
 
-__all__ = ["register_KnownElementsList_extension"]
+__all__: list[str] = ["register_KnownElementsList_extension"]
 
 def register_KnownElementsList_extension(kel):
     """

@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 import numpy
 
-__all__ = ["np", "twiss"]
+__all__: list[str] = ["np", "twiss"]
 
 def twiss(
     beta_x: numpy.float64,

@@ -9,8 +9,8 @@ License: BSD-3-Clause-LBNL
 import keyword
 from typing import Union
 
-from .. import state
-from .utils import GeneralFunctions
+from ... import state
+from ..utils import GeneralFunctions
 
 ALLOWED_INPUT_TYPES = {"int", "float", "str"}
 INT_ERROR_MESSAGE = "Must be an integer"

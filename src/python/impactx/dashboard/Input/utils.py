@@ -42,15 +42,28 @@ class GeneralFunctions:
             state.documentation_drawer_open = True
 
     @staticmethod
-    def get_default(parameter, type):
+    def get_default(parameter: str, type: str) -> str | None:
+        """
+        Get the default value for a parameter by exact or base name match.
+
+        Attempts full match first, then falls back to removing the last underscore suffix.
+
+        :param parameter: Full parameter name (e.g., 'beta_x', 'blocking_factor_x').
+        :param type: Parameter group name (e.g., 'simulation_parameters', 'csr').
+        :return: Default value if found, else None.
+        """
         parameter_type_dictionary = getattr(DashboardDefaults, f"{type.upper()}", None)
-        parameter_default = parameter_type_dictionary.get(parameter)
+        if not parameter_type_dictionary:
+            return None
 
-        if parameter_default is not None:
-            return parameter_default
+        if parameter in parameter_type_dictionary:
+            return parameter_type_dictionary[parameter]
 
-        parameter_name_base = parameter.partition("_")[0]
-        return parameter_type_dictionary.get(parameter_name_base)
+        if "_" in parameter:
+            parameter_name_base = "_".join(parameter.split("_")[:-1])
+            return parameter_type_dictionary.get(parameter_name_base)
+
+        return None
 
     @staticmethod
     def convert_to_numeric(input: str) -> Union[int, float]:
@@ -69,12 +82,15 @@ class GeneralFunctions:
         :return: The input converted to a numeric type.
         """
 
+        if isinstance(input, (int, float)):
+            return input
+
         try:
             return int(input)
-        except ValueError:
+        except (ValueError, TypeError):
             try:
                 return float(input)
-            except ValueError:
+            except (ValueError, TypeError):
                 return None
 
     @staticmethod
@@ -110,3 +126,15 @@ class GeneralFunctions:
             state.dirty("max_level")
             state.variables = [{"name": "", "value": "", "error_message": ""}]
             state.dirty("variables")
+
+    @staticmethod
+    def set_state_to_numeric(state_name: str) -> None:
+        """
+        Converts the value of a state variable to a numeric type (int or float)
+        and updates the state in-place.
+
+        :param state_name: The name of the state variable to convert and update.
+        """
+        current_input = getattr(state, state_name)
+        numeric_input = GeneralFunctions.convert_to_numeric(current_input)
+        setattr(state, state_name, numeric_input)

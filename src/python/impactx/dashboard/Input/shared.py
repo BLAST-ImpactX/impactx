@@ -7,57 +7,56 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from . import DashboardDefaults, DashboardValidation
+from . import DashboardDefaults
 from .utils import GeneralFunctions
+from .validation import DashboardValidation, errors_tracker
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
-sc_multigrid_defaults = [
-    "mlmg_relative_tolerance",
-    "mlmg_absolute_tolerance",
-    "mlmg_max_iters",
-    "mlmg_verbosity",
-]
+space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
 
 lattice_state_defaults = ["periods"]
-INPUT_DEFAULTS = (
+STATE_INPUTS = (
     csr_defaults
     + simulation_parameters_defaults
-    + sc_multigrid_defaults
+    + space_charge_defaults
     + lattice_state_defaults
 )
+
+# Set of dropdown input state variables, automatically populated when InputComponents.select() is called
+# Used to exclude dropdown inputs from validation since they're constrained to valid options
+DROPDOWN_INPUTS = set()
 
 
 class SharedUtilities:
     @staticmethod
-    @state.change(*INPUT_DEFAULTS)
+    @state.change(*STATE_INPUTS)
     def on_input_state_change(**_):
         """
         Called when any non-nested state variables are modified.
         """
-        state_changes = state.modified_keys & set(INPUT_DEFAULTS)
+        non_dropdown_inputs = set(STATE_INPUTS) - DROPDOWN_INPUTS
+        state_changes = state.modified_keys & non_dropdown_inputs
+
         for state_name in state_changes:
-            if type(state[state_name]) is str:
-                input = getattr(state, state_name)
-                desired_type = DashboardDefaults.TYPES.get(state_name, None)
-                validation_name = f"{state_name}_error_message"
-                conditions = DashboardDefaults.VALIDATION_CONDITION.get(
-                    state_name, None
+            input = getattr(state, state_name)
+            if type(input) is str:
+                validation_result = DashboardValidation.validate(state_name, input)
+                DashboardValidation.update_error_message_on_ui(
+                    state_name, validation_result
                 )
 
-                validation_result = DashboardValidation.validate_against(
-                    input, desired_type, conditions
-                )
-                setattr(state, validation_name, validation_result)
-                DashboardValidation.update_simulation_validation_status()
+                if not validation_result:
+                    GeneralFunctions.set_state_to_numeric(state_name)
 
-                if validation_result == []:
-                    converted_value = GeneralFunctions.convert_to_numeric(input)
-
-                    if getattr(state, state_name) != converted_value:
-                        setattr(state, state_name, converted_value)
-                        if state_name == "kin_energy_on_ui":
+                    match state_name:
+                        case "kin_energy_on_ui":
                             state.dirty("kin_energy_unit")
+                        case _ if "blocking_factor" or "n_cell" in state_name:
+                            direction = state_name[-1]
+                            DashboardValidation.update_n_cell_validation(direction)
+
+                errors_tracker.update_simulation_validation_status()
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

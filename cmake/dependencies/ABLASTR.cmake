@@ -60,6 +60,8 @@ macro(find_ablastr)
 
         set(ABLASTR_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
         set(AMReX_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        # TODO: set consistently (AMReX default: ON)
+        #set(AMReX_CUDA_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
         set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
 

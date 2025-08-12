@@ -1558,3 +1558,15 @@ add_impactx_test(exact-cfbend_multipole.py
     examples/symplectic_integration/analysis_exact_cfbend_multipole.py
     OFF  # no plot script yet
 )
+
+# FODO Cell Based on PALS-Compliant Lattice Input ##############
+#
+# copy PALS lattice file
+file(COPY ${ImpactX_SOURCE_DIR}/examples/pals/fodo.pals.yaml
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/fodo-pals.py)
+add_impactx_test(fodo-pals.py
+    examples/pals/run_fodo_pals.py
+    ON   # ImpactX MPI-parallel
+    examples/pals/analysis_fodo_pals.py
+    OFF  # no plot script yet
+)

@@ -3,7 +3,7 @@ import amrex.space3d.amrex_3d_pybind
 import impactx.impactx_pybind
 import typing
 
-__all__ = [
+__all__: list[str] = [
     "alpha",
     "convolve_fft",
     "deposit_charge",

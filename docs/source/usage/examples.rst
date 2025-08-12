@@ -14,6 +14,7 @@ Single Particle Dynamics
    :maxdepth: 1
 
    examples/fodo/README.rst
+   examples/pals/README.rst
    examples/chicane/README.rst
    examples/alignment/README.rst
    examples/rotation/README.rst

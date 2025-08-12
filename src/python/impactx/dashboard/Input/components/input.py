@@ -1,6 +1,7 @@
 from typing import Optional
 
 from ... import vuetify
+from ..shared import DROPDOWN_INPUTS
 from ..utils import GeneralFunctions
 
 
@@ -62,6 +63,11 @@ class InputComponents:
         :param items: Optional list of items. If None, default items from defaults.py will be used.
         :param kwargs: Additional keyword arguments to pass to the component.
         """
+
+        if v_model_name is None:
+            v_model_name = GeneralFunctions.normalize_for_v_model(label)
+
+        DROPDOWN_INPUTS.add(v_model_name)
 
         InputComponents._build_component(
             vuetify.VSelect, label, v_model_name, items=items, **kwargs

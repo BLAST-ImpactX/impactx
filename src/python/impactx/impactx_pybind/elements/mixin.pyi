@@ -5,7 +5,7 @@ Mixin classes for accelerator lattice elements in ImpactX
 from __future__ import annotations
 import typing
 
-__all__ = ["Alignment", "Named", "PipeAperture", "Thick", "Thin"]
+__all__: list[str] = ["Alignment", "Named", "PipeAperture", "Thick", "Thin"]
 
 class Alignment:
     @property

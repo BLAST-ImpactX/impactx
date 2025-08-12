@@ -28,17 +28,11 @@ from impactx.impactx_pybind import ImpactXParConstIter
 from impactx.impactx_pybind import ImpactXParIter
 from impactx.impactx_pybind import ImpactXParticleContainer
 from impactx.impactx_pybind import RefPart
+from impactx.impactx_pybind import coordinate_transformation
+from impactx.impactx_pybind import create_envelope
 from impactx.impactx_pybind import distribution
 from impactx.impactx_pybind import elements
-from impactx.impactx_pybind.pybind11_detail_function_record_v1_system_libstdcpp_gxx_abi_1xxx_use_cxx11_abi_1 import (
-    coordinate_transformation,
-)
-from impactx.impactx_pybind.pybind11_detail_function_record_v1_system_libstdcpp_gxx_abi_1xxx_use_cxx11_abi_1 import (
-    create_envelope,
-)
-from impactx.impactx_pybind.pybind11_detail_function_record_v1_system_libstdcpp_gxx_abi_1xxx_use_cxx11_abi_1 import (
-    push,
-)
+from impactx.impactx_pybind import push
 from impactx.impactx_pybind import wakeconvolution
 from impactx.madx_to_impactx import read_beam
 import os as os
@@ -49,7 +43,7 @@ from . import impactx_pybind
 from . import madx_to_impactx
 from . import plot
 
-__all__ = [
+__all__: list[str] = [
     "Config",
     "CoordSystem",
     "Envelope",

@@ -87,7 +87,7 @@ namespace impactx
         add_particles (
             amrex::ParticleReal bunch_charge,
             distribution::KnownDistributions distr,
-            int npart
+            amrex::Long npart
         );
 
         /** Validate the simulation is ready to run the particle tracking loop via @see track_particles

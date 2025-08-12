@@ -6,7 +6,7 @@ from __future__ import annotations
 import impactx.impactx_pybind.elements
 import typing
 
-__all__ = ["insert_element_every_ds"]
+__all__: list[str] = ["insert_element_every_ds"]
 
 def insert_element_every_ds(
     list: impactx.impactx_pybind.elements.KnownElementsList,

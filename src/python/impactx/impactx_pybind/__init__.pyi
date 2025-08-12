@@ -22,7 +22,7 @@ from . import distribution
 from . import elements
 from . import wakeconvolution
 
-__all__ = [
+__all__: list[str] = [
     "Config",
     "CoordSystem",
     "Envelope",

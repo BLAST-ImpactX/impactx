@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
     if: github.event.pull_request.draft == false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions/setup-python@v5
       name: Install Python
       with:
@@ -130,7 +130,7 @@ jobs:
     runs-on: windows-2025
     if: github.event.pull_request.draft == false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions/setup-python@v5
       name: Install Python
       with:

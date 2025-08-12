@@ -33,7 +33,6 @@ hwr_fragment.type = line
 hwr_fragment.elements = D1b SOL1b D2b RF1b D3b SOL2b D4b
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 D1.type = drift
 D1.ds = 0.17414

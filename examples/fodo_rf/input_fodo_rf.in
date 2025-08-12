@@ -25,7 +25,6 @@ lattice.elements = monitor quad1 drift1 shortrf1 drift1 quad2 drift1          \
                    shortrf1 drift1 quad1 monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 quad1.type = quad
 quad1.ds = 0.15

@@ -42,7 +42,7 @@ distr = distribution.Kurth6D(
 sim.init_envelope(ref, distr, bunch_charge_C)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # design the accelerator lattice
 sim.lattice.extend([monitor, elements.Drift(name="d1", ds=6.0, nslice=40), monitor])

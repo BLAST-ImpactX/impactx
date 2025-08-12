@@ -25,7 +25,6 @@ lattice.elements = monitor drift collimator monitor
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 drift.type = drift
 drift.ds = 0.123

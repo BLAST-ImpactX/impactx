@@ -22,7 +22,6 @@ lattice.elements = monitor drift1 quad1 drift2 quad2 drift1 monitor
 lattice.nslice = 50
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 drift1.type = drift
 drift1.ds = 7.44e-2

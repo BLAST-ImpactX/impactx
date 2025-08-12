@@ -24,7 +24,6 @@ lattice.nslice = 50
 #lattice.nslice = 60 # optional for increased precision
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 constf1.type = constf
 constf1.ds = 2.0

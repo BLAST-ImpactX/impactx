@@ -55,7 +55,6 @@ dipedge2.g = 0.0
 dipedge2.K2 = 0.0
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 
 ###############################################################################

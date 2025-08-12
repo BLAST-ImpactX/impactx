@@ -21,7 +21,6 @@ beam.lambdaPt = 2.0e-3
 lattice.elements = monitor rotation1 drift1 rotation2 monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 drift1.type = drift
 drift1.ds = 2.0

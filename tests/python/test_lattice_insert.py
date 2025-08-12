@@ -15,7 +15,7 @@ def test_element_insert():
     """
     This tests the lattice element insert every ds elements.
     """
-    monitor = elements.BeamMonitor("monitor", backend="h5")
+    monitor = elements.BeamMonitor("monitor")
 
     fodo = [
         elements.Drift(name="drift1", ds=0.25),

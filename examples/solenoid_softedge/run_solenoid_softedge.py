@@ -124,7 +124,7 @@ sol = elements.SoftSolenoid(
 )
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 sim.lattice.extend(
     [

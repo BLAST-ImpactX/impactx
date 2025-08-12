@@ -22,7 +22,6 @@ beam.mutpt = 0.0
 lattice.elements = monitor fquad dr gapa1 dr dquad dr gapb1 dr fquad monitor
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 dr.type = drift
 dr.ds = 0.1

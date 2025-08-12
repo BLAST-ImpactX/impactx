@@ -34,7 +34,7 @@ def get_moments(beam):
 
 
 # initial/final beam
-series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+series = io.Series("diags/openPMD/monitor.%E", io.Access.read_only)
 first_step = list(series.iterations)[0]
 last_step = list(series.iterations)[-1]
 initial = series.iterations[first_step].particles["beam"].to_df()

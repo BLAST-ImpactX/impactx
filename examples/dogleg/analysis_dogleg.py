@@ -53,7 +53,7 @@ def get_twiss(openpmd_beam):
 
 
 # initial/final beam
-series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+series = io.Series("diags/openPMD/monitor.%E", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
 final_beam = series.iterations[last_step].particles["beam"]

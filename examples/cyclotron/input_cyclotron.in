@@ -26,7 +26,6 @@ lattice.periods = 150
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 half.type = line
 half.elements = gap bend

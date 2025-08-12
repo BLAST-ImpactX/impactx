@@ -55,7 +55,7 @@ def build_lattice(parameters: dict, write_particles: bool) -> list:
     ]
 
     if write_particles:
-        monitor = elements.BeamMonitor("monitor", backend="h5")
+        monitor = elements.BeamMonitor("monitor")
         line = [monitor] + line + [monitor]
 
     return line

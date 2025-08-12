@@ -25,7 +25,6 @@ lattice.elements = monitor bend inverse_bend monitor
 lattice.nslice = 1
 
 monitor.type = beam_monitor
-monitor.backend = h5
 
 #90 degree sbend using drift-kick-drift:
 bend.type = line

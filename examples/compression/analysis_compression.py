@@ -34,7 +34,7 @@ def get_moments(beam):
 
 
 # openPMD data series at the beam monitors
-series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+series = io.Series("diags/openPMD/monitor.%E", io.Access.read_only)
 
 # first and last step
 final_step = list(series.iterations)[-1]

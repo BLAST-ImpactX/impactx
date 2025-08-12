@@ -395,7 +395,7 @@ else:
 
 ######## plot phase spaces ###########
 beam_impactx_surrogate_series = io.Series(
-    "diags/openPMD/monitor.h5", io.Access.read_only
+    "diags/openPMD/monitor.%E", io.Access.read_only
 )
 impactx_surrogate_steps = list(beam_impactx_surrogate_series.iterations)
 

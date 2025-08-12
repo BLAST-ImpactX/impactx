@@ -10,7 +10,7 @@ import openpmd_api as io
 import PyNAFF as pnf
 
 # Collect beam data series
-series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+series = io.Series("diags/openPMD/monitor.%E", io.Access.read_only)
 
 # Specify time series for particle j
 j = 5

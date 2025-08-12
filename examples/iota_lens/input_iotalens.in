@@ -44,7 +44,6 @@ const.ky = 1.0
 const.kt = 1.0e-12
 
 monitor.type = beam_monitor
-monitor.backend = h5
 monitor.nonlinear_lens_invariants = true
 monitor.alpha = 0.0
 monitor.beta = 1.0

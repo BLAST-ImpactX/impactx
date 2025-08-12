@@ -64,7 +64,7 @@ distr = distribution.Gaussian(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("monitor")
 
 # field coefficients
 QWR_sin_coefs = [

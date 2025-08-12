@@ -1423,7 +1423,17 @@ class KnownElementsList:
         """
         Add a list of elements to the list.
         """
-    def load_file(self, madx_file, nslice=1): ...
+    def from_pals(self, pals_beamline, nslice=1):
+        """
+        Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+
+            https://github.com/campa-consortium/pals-python
+
+        """
+    def load_file(self, filename, nslice=1):
+        """
+        Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+        """
     def plot_survey(
         self, ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc"
     ):

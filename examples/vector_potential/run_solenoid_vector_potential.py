@@ -11,7 +11,6 @@ from impactx import ImpactX, distribution, elements
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -49,13 +48,10 @@ sol = elements.MagnetostaticVectorPotential(
     ds=6.0,
     ax="-0.790585*y*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))",
     ay="0.790585*x*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))",
-    daxdx="0",
     daxdy="-0.790585*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))",
     daydx="0.790585*((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))",
-    daydy="0",
-    dazdx="0",
-    dazdy="0",
     unit=1,
+    int_order=2,
     mapsteps=20,
     nslice=ns,
 )

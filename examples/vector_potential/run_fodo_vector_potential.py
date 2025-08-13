@@ -11,7 +11,6 @@ from impactx import ImpactX, distribution, elements
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -47,7 +46,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
-ns = 25  # number of slices per ds in the element
+ns = 10  # number of slices per ds in the element
 fodo = [
     monitor,
     elements.Drift(name="drift1", ds=0.25, nslice=ns),
@@ -56,15 +55,10 @@ fodo = [
         name="quad1",
         ds=1.0,
         unit=0,
-        ax="0",
-        ay="0",
-        daxdx="0",
-        daxdy="0",
-        daydx="0",
-        daydy="0",
         dazdx="-x",
         dazdy="y",
-        mapsteps=5,
+        int_order=4,
+        mapsteps=4,
         nslice=ns,
     ),
     monitor,
@@ -74,15 +68,10 @@ fodo = [
         name="quad2",
         ds=1.0,
         unit=0,
-        ax="0",
-        ay="0",
-        daxdx="0",
-        daxdy="0",
-        daydx="0",
-        daydy="0",
         dazdx="x",
         dazdy="-y",
-        mapsteps=5,
+        int_order=4,
+        mapsteps=4,
         nslice=ns,
     ),
     monitor,

@@ -48,16 +48,21 @@ def test_dashboard(dashboard):
     LATTICE_PARAMS = {
         "ds1": 0.25,
         "nslice1": "ns",
+        "name1": "drift1",
         "ds2": 1.0,
         "k2": 1.0,
         "nslice2": "ns",
+        "name2": "quad1",
         "ds3": 0.5,
         "nslice3": "ns",
+        "name3": "drift2",
         "ds4": 1.0,
         "k4": -1.0,
         "nslice4": "ns",
+        "name4": "quad2",
         "ds5": 0.25,
         "nslice5": "ns",
+        "name5": "drift3",
     }
     for param_id, value in LATTICE_PARAMS.items():
         dashboard.set_input(param_id, value)

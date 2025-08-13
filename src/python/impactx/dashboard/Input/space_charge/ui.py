@@ -13,7 +13,8 @@ from ...Input.components import (
     InputComponents,
     NavigationComponents,
 )
-from .. import DashboardValidation, GeneralFunctions
+from .. import GeneralFunctions
+from ..validation import DashboardValidation, errors_tracker
 from .utils import SpaceChargeFunctions
 
 state.prob_relative = []
@@ -65,35 +66,6 @@ def populate_prob_relative_fields():
     ]
 
 
-def update_blocking_factor_and_n_cell(category, kwargs):
-    directions = ["x", "y", "z"]
-
-    for state_name, value in kwargs.items():
-        if any(state_name == f"{category}_{dir}" for dir in directions):
-            direction = state_name.split("_")[-1]
-            DashboardValidation.validate_n_cell_and_blocking_factor(direction)
-
-            n_cell_error = getattr(state, f"n_cell_{direction}_error_message")
-            blocking_factor_error = getattr(
-                state, f"blocking_factor_{direction}_error_message"
-            )
-
-            if not n_cell_error:
-                n_cell_value = getattr(state, f"n_cell_{direction}")
-                setattr(state, f"n_cell_{direction}", int(n_cell_value))
-
-            if not blocking_factor_error:
-                blocking_factor_value = getattr(state, f"blocking_factor_{direction}")
-                setattr(
-                    state, f"blocking_factor_{direction}", int(blocking_factor_value)
-                )
-
-    state.n_cell = [getattr(state, f"n_cell_{dir}", 0) for dir in directions]
-    state.blocking_factor = [
-        getattr(state, f"blocking_factor_{dir}", 0) for dir in directions
-    ]
-
-
 # -----------------------------------------------------------------------------
 # Decorators
 # -----------------------------------------------------------------------------
@@ -101,31 +73,19 @@ def update_blocking_factor_and_n_cell(category, kwargs):
 def on_poisson_solver_change(poisson_solver, **kwargs):
     populate_prob_relative_fields()
     state.dirty("prob_relative_fields")
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 @state.change("space_charge")
 def on_space_charge_change(space_charge, **kwargs):
     state.dynamic_size = space_charge != "false"
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 @state.change("max_level")
 def on_max_level_change(max_level, **kwargs):
     populate_prob_relative_fields()
-    DashboardValidation.update_simulation_validation_status()
-
-
-@state.change("blocking_factor_x", "blocking_factor_y", "blocking_factor_z")
-def on_blocking_factor_change(**kwargs):
-    update_blocking_factor_and_n_cell("blocking_factor", kwargs)
-    DashboardValidation.update_simulation_validation_status()
-
-
-@state.change("n_cell_x", "n_cell_y", "n_cell_z")
-def on_n_cell_change(**kwargs):
-    update_blocking_factor_and_n_cell("n_cell", kwargs)
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 @ctrl.add("update_prob_relative")
@@ -157,7 +117,7 @@ def on_update_prob_relative_call(index, value):
         state.prob_relative_fields[index + 1]["error_message"] = next_error_message
 
     state.dirty("prob_relative_fields")
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
 
 
 # -----------------------------------------------------------------------------

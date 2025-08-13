@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 
 from __future__ import annotations
 
-__all__ = [
+__all__: list[str] = [
     "ix_beam_moments_history",
     "ix_pc_plot_mpl_phasespace",
     "register_ImpactXParticleContainer_extension",

@@ -129,7 +129,7 @@ class DashboardDefaults:
             DISTRIBUTION_MODULE_NAME
         ),
         "lattice_list": InputDefaultsHelper.select_classes(LATTICE_MODULE_NAME),
-        "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
+        "kin_energy_unit_list": ["eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
@@ -152,12 +152,16 @@ class DashboardDefaults:
     }
 
     TYPES = {
+        "distribution": "float",
+        "lattice": "float",
         "npart": "int",
         "kin_energy_on_ui": "float",
         "bunch_charge_C": "float",
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
+        "n_cell": "int",
+        "blocking_factor": "int",
         "beta": "float",
         "emitt": "float",
         "alpha": "float",
@@ -166,6 +170,7 @@ class DashboardDefaults:
         "mlmg_absolute_tolerance": "float",
         "mlmg_max_iters": "int",
         "mlmg_verbosity": "int",
+        "prob_relative": "float",
     }
 
     VALIDATION_CONDITION = {
@@ -175,9 +180,11 @@ class DashboardDefaults:
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],
+        "blocking_factor": ["positive"],
         "periods": ["positive"],
         "mlmg_relative_tolerance": ["positive"],
         "mlmg_max_iters": ["positive"],
+        "prob_relative": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.

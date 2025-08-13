@@ -165,7 +165,7 @@ namespace impactx::elements
             T_Real pyout = py;
             T_Real const ptout = pt;
 
-            // paceholder variables
+            // placeholder variables
             T_Real q1 = xout;
             T_Real q2 = yout;
             T_Real p1 = px;
@@ -193,10 +193,6 @@ namespace impactx::elements
                    sin(omega*m_slice_ds) / (omega*delta1) * py;
                pyout = -omega * delta1 * sin(omega*m_slice_ds) * yout + cos(omega * m_slice_ds) * py;
 
-               q1 = yout;
-               q2 = xout;
-               p1 = py;
-               p2 = px;
             } else
             {
                // advance transverse position and momentum (zero focusing strength = drift)

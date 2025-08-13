@@ -58,6 +58,10 @@ macro(find_ablastr)
     if(ImpactX_ablastr_internal OR ImpactX_ablastr_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+        set(ABLASTR_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        set(AMReX_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        # TODO: set consistently (AMReX default: ON)
+        #set(AMReX_CUDA_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
         set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
 
@@ -174,7 +178,7 @@ set(ImpactX_openpmd_src ""
 set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "06feda8131de7b97f2cc16a6e244d1d4f9874c3b"
+set(ImpactX_ablastr_branch "25.08"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 

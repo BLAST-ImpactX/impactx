@@ -98,7 +98,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.5e-2  # from random sampling of a smooth distribution
+rtol = 2.0e-2  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

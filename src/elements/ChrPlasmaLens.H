@@ -188,10 +188,10 @@ namespace impactx::elements
                 pyout = +omega * delta1 * sinh_ods * y + cosh_ods * py;
             }
             else {
-                xout = x + px*m_slice_ds;
+                xout = x + px*m_slice_ds / delta1;
                 pxout = px;
 
-                yout = y + py*m_slice_ds;
+                yout = y + py*m_slice_ds / delta1;
                 pyout = py;
             }
             // advance longitudinal position and momentum

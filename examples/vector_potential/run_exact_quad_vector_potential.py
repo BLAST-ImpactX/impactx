@@ -14,7 +14,6 @@ from impactx import ImpactX, distribution, elements, twiss
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 sim.slice_step_diagnostics = True
 
@@ -68,12 +67,6 @@ drift1 = elements.ExactDrift(name="drift1", ds=0.046, nslice=ns)
 quad1 = elements.MagnetostaticVectorPotential(
     name="quad1",
     ds=0.02903,
-    ax="0",
-    ay="0",
-    daxdx="0",
-    daxdy="0",
-    daydx="0",
-    daydy="0",
     dazdx="-207.0*x",
     dazdy="207.0*y",
     unit=1,
@@ -82,13 +75,7 @@ quad1 = elements.MagnetostaticVectorPotential(
 )
 quad2 = elements.MagnetostaticVectorPotential(
     name="quad2",
-    ds=0.02890,
-    ax="0",
-    ay="0",
-    daxdx="0",
-    daxdy="0",
-    daydx="0",
-    daydy="0",
+    ds=0.02903,
     dazdx="207.0*x",
     dazdy="-207.0*y",
     unit=1,

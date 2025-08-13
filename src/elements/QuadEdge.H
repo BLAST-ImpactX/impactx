@@ -110,7 +110,7 @@ namespace impactx::elements
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
             // the global scale constant; sign depends on entry or exit
-            m_a = m_flag * (-1_prt * m_g / 12.0_prt);
+            m_a = static_cast<amrex::ParticleReal>(m_flag) * (-1_prt * m_g / 12.0_prt);
         }
 
         /** This is a quadedge functor, so that a variable of this type can be used like a

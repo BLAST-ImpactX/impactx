@@ -264,7 +264,13 @@ add_subdirectory(src)
 
 # C++ properties: at least a C++17 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    if(ImpactX_SIMD)
+        # vir::cvt
+        # https://github.com/mattkretz/vir-simd/issues/45
+        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
+    else()
+        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    endif()
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF

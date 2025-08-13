@@ -170,7 +170,7 @@ namespace impactx::elements
             T_Real const sy = y;
             VBool const shift_x = m_shift_odd_x == false ? VBool{false} : fmod(floor((y+dy)/m_repeat_y), 2) != T_Real{0};
 #ifdef AMREX_USE_SIMD
-            amrex::simd::stdx::where(shift_x.__cvt(), sx) += dx;
+            amrex::simd::stdx::where(shift_x, sx) += dx;
 #else
             sx += shift_x ? dx : 0_prt;
 #endif

@@ -35,8 +35,11 @@ namespace impactx::elements
       public mixin::LinearTransport<Multipole>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize,
-      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+      public mixin::NoFinalize
+#ifndef _WIN32
+      // https://github.com/AMReX-Codes/amrex/issues/4609
+      , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+#endif
     {
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;

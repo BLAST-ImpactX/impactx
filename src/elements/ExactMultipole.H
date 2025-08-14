@@ -66,8 +66,11 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::NoFinalize,
-      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+      public mixin::NoFinalize
+#ifndef _WIN32
+      // https://github.com/AMReX-Codes/amrex/issues/4609
+      , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+#endif
     {
         static constexpr auto type = "ExactMultipole";
         using PType = ImpactXParticleContainer::ParticleType;

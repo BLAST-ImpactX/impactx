@@ -7,13 +7,15 @@ License: BSD-3-Clause-LBNL
 """
 
 import plotly.graph_objects as go
+
+from ..... import setup_server
 from . import LatticeVisualizerElements as DrawElements
 from . import LatticeVisualizerUtils as Utils
-from ..... import setup_server
 
 server, state, ctrl = setup_server()
 draw = DrawElements()
 utils = Utils()
+
 
 def _error_plot(fig: go.Figure) -> go.Figure:
     """
@@ -26,8 +28,10 @@ def _error_plot(fig: go.Figure) -> go.Figure:
         showarrow=False,
         font=dict(size=16, color="red"),
         align="center",
-        xref="paper", yref="paper",
-        x=0.5, y=0.5
+        xref="paper",
+        yref="paper",
+        x=0.5,
+        y=0.5,
     )
     fig.update_layout(
         title="Lattice Visualization - Error",
@@ -43,7 +47,7 @@ def lattice_visualizer():
     """
     Displays the lattice visualization using a plotly figure.
     Called every time the lattice list is modified.
-    
+
     The current parameters which affect the visualization are:
     - `ds`: Length of the element (default 1.0 m)
     - `dx`: X offset of the element (default 0.0 m)
@@ -68,21 +72,25 @@ def lattice_visualizer():
     - more parameters as needed
     """
     fig = go.Figure()
-    
+
     if not state.selected_lattice_list:
         return _error_plot(fig)
-    
+
     try:
         x, y, rotation = 0, 0, 0
         draw.reset_legend()
-        
+
         # Check if we should show labels based on element count
         element_count = len(state.selected_lattice_list)
         draw.set_show_labels(element_count <= 20)
 
         for index, element in enumerate(state.selected_lattice_list, 1):
-            element_name = element.get("name", "").lower()  # This gets the actual element name
-            element_label = utils.get_element_name_param(element)  # This gets the name from parameters
+            element_name = element.get(
+                "name", ""
+            ).lower()  # This gets the actual element name
+            element_label = utils.get_element_name_param(
+                element
+            )  # This gets the name from parameters
             ds = utils.get_element_param(element, "ds", 1.0)
             dx = utils.get_element_param(element, "dx", 0.0)
             dy = utils.get_element_param(element, "dy", 0.0)
@@ -91,26 +99,97 @@ def lattice_visualizer():
 
             # Classify and draw element based on name
             if "drift" in element_name:
-                x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index, element_name)
+                x, y, rotation = draw.drift(
+                    fig,
+                    x,
+                    y,
+                    ds,
+                    dx,
+                    dy,
+                    rotation_total,
+                    element_label,
+                    index,
+                    element_name,
+                )
             elif "quad" in element_name:
                 k = utils.get_element_param(element, "k", 0.0)
-                x, y, rotation = draw.quad(fig, x, y, k, ds, dx, dy, rotation_total, element_label, index, element_name)
+                x, y, rotation = draw.quad(
+                    fig,
+                    x,
+                    y,
+                    k,
+                    ds,
+                    dx,
+                    dy,
+                    rotation_total,
+                    element_label,
+                    index,
+                    element_name,
+                )
             elif "bend" in element_name or "dipole" in element_name:
                 if element_name.startswith("sbend"):
                     rc = utils.get_element_param(element, "rc", 0.0)
-                    x, y, rotation = draw.sBend(fig, x, y, ds, dx, dy, rotation_total, rc, element_label, index, element_name)
+                    x, y, rotation = draw.sBend(
+                        fig,
+                        x,
+                        y,
+                        ds,
+                        dx,
+                        dy,
+                        rotation_total,
+                        rc,
+                        element_label,
+                        index,
+                        element_name,
+                    )
                 elif element_name.startswith("exactsbend"):
                     phi = utils.get_element_param(element, "phi", 0)
-                    x, y, rotation = draw.exactSBend(fig, x, y, ds, dx, dy, rotation_total, phi, element_label, index, element_name)
+                    x, y, rotation = draw.exactSBend(
+                        fig,
+                        x,
+                        y,
+                        ds,
+                        dx,
+                        dy,
+                        rotation_total,
+                        phi,
+                        element_label,
+                        index,
+                        element_name,
+                    )
                 else:
                     # Default bend handling
-                    x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index, element_name)
+                    x, y, rotation = draw.drift(
+                        fig,
+                        x,
+                        y,
+                        ds,
+                        dx,
+                        dy,
+                        rotation_total,
+                        element_label,
+                        index,
+                        element_name,
+                    )
             elif "monitor" in element_name or "bpm" in element_name:
-                x, y, rotation = draw.beam_monitor(fig, x, y, rotation_total, ds, element_label, index, element_name)
+                x, y, rotation = draw.beam_monitor(
+                    fig, x, y, rotation_total, ds, element_label, index, element_name
+                )
             else:
                 # Default fallback to drift
-                x, y, rotation = draw.drift(fig, x, y, ds, dx, dy, rotation_total, element_label, index, element_name)
-                
+                x, y, rotation = draw.drift(
+                    fig,
+                    x,
+                    y,
+                    ds,
+                    dx,
+                    dy,
+                    rotation_total,
+                    element_label,
+                    index,
+                    element_name,
+                )
+
     except ValueError:
         return _error_plot(fig)
 
@@ -121,5 +200,5 @@ def lattice_visualizer():
         plot_bgcolor="white",
         margin=dict(l=30, r=30, t=40, b=40),
     )
-    
+
     return fig

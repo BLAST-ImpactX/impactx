@@ -21,7 +21,9 @@ def transform(x, y, rotation_deg, dx):
     return x_new, y_new
 
 
-def rotate_corners(x: float, y: float, rotation_deg: float, ds: float = 1.0, width: float = 0.1) -> np.ndarray:
+def rotate_corners(
+    x: float, y: float, rotation_deg: float, ds: float = 1.0, width: float = 0.1
+) -> np.ndarray:
     """
     Generates rectangle's corners after applying rotation matrix.
     This is utilized to properly visualize a rotated lattice element in Plotly.
@@ -35,18 +37,22 @@ def rotate_corners(x: float, y: float, rotation_deg: float, ds: float = 1.0, wid
     """
     rotation_rad = np.radians(rotation_deg)
 
-    corners = np.array([
-        [0, -width],
-        [ds, -width],
-        [ds, width],
-        [0, width],
-        [0, -width]  # close polygon
-    ])
+    corners = np.array(
+        [
+            [0, -width],
+            [ds, -width],
+            [ds, width],
+            [0, width],
+            [0, -width],  # close polygon
+        ]
+    )
 
-    R = np.array([
-        [np.cos(rotation_rad), -np.sin(rotation_rad)],
-        [np.sin(rotation_rad),  np.cos(rotation_rad)],
-    ])
+    R = np.array(
+        [
+            [np.cos(rotation_rad), -np.sin(rotation_rad)],
+            [np.sin(rotation_rad), np.cos(rotation_rad)],
+        ]
+    )
 
     rotated = corners @ R.T + [x, y]
     return rotated

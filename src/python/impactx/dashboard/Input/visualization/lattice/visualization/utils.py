@@ -6,8 +6,8 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-class LatticeVisualizerUtils:
 
+class LatticeVisualizerUtils:
     @staticmethod
     def get_element_param(element, name, default=0.0):
         for param in element.get("parameters", []):
@@ -15,7 +15,9 @@ class LatticeVisualizerUtils:
                 try:
                     return float(param.get("sim_input", default))
                 except (ValueError, TypeError):
-                    raise ValueError(f"Invalid value for {name}: {param.get('sim_input', default)}")
+                    raise ValueError(
+                        f"Invalid value for {name}: {param.get('sim_input', default)}"
+                    )
         return default
 
     @staticmethod
@@ -26,7 +28,7 @@ class LatticeVisualizerUtils:
                 name_value = param.get("sim_input", "")
                 if name_value and name_value.strip():  # Check if name is not empty
                     return name_value
-        
+
         # If no name parameter found or it's empty, create a meaningful fallback
         element_type = element.get("name", "")
         return f"{element_type}"  # Use the element type as fallback

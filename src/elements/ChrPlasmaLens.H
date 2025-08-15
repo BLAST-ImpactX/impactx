@@ -96,17 +96,22 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
-            // access reference particle values to find beta
+            // access reference particle values to find beta and gamma
             m_beta = refpart.beta();
+            m_gamma = refpart.gamma();
 
             // normalize focusing strength units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
+            //For m_g=0 time propagation
+            m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(m_gamma));
         }
 
         /** This is a chrplasmalens functor, so that a variable of this type can be used like a chrplasmalens function.
@@ -151,6 +156,7 @@ namespace impactx::elements
             // initialize output values
             T_Real xout = x;
             T_Real yout = y;
+            T_Real tout = t;
 
             // initialize output values of momenta
             T_Real pxout = px;
@@ -197,24 +203,37 @@ namespace impactx::elements
             // advance longitudinal position and momentum
 
             // the corresponding symplectic update to t
-            T_Real const term = pt + delta/m_beta;
-            T_Real const t0 = t - term*m_slice_ds/delta1;
+            if (m_g == 0) {
+               // the corresponding symplectic update to t (zero strength = drift),
+               // avoiding division by 0
+               T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
+               term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
+               term = -2_prt + powi<2>(m_gamma)*term;
+               term = (-1_prt + m_beta * pt) * term;
+               term = term * m_const1;
+               tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
+            }
+            else {
+              //Copied from ChrQuad, which does swap x/y for q1/q2 and p1/p2 in (horizontal) defocusing mode. Hm.
+              T_Real const term = pt + delta/m_beta;
+              T_Real const t0 = t - term*m_slice_ds/delta1;
 
-            T_Real const w = omega*delta1;
-            T_Real const term1 = -(powi<2>(p2)-powi<2>(q2) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-            T_Real const term2 = -(powi<2>(p1)-powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-            T_Real const term3 = -2_prt*q2*p2*w * cos(2_prt*m_slice_ds*omega);
-            T_Real const term4 = -2_prt*q1*p1*w * cos(2_prt*m_slice_ds*omega);
-            T_Real const term5 = 2_prt*omega*(q1*p1*delta1 + q2*p2*delta1
-                                        -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
-            t = t0 + (-1_prt+m_beta*pt)/(8_prt*m_beta * powi<3>(delta1)*omega)
-                     *(term1+term2+term3+term4+term5);
+              T_Real const w = omega*delta1;
+              T_Real const term1 = -(powi<2>(p2)-powi<2>(q2) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
+              T_Real const term2 = -(powi<2>(p1)-powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
+              T_Real const term3 = -2_prt*q2*p2*w * cos(2_prt*m_slice_ds*omega);
+              T_Real const term4 = -2_prt*q1*p1*w * cos(2_prt*m_slice_ds*omega);
+              T_Real const term5 = 2_prt*omega*(q1*p1*delta1 + q2*p2*delta1
+                                                -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
+              tout = t0 + (-1_prt+m_beta*pt)/(8_prt*m_beta * powi<3>(delta1)*omega)
+                *(term1+term2+term3+term4+term5);
 
-            // ptout = pt;
+            }
 
             // assign updated position & momenta
             x = xout;
             y = yout;
+            t = tout;
             px = pxout;
             py = pyout;
             pt = ptout;
@@ -287,7 +306,9 @@ namespace impactx::elements
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
         amrex::ParticleReal m_beta;
+        amrex::ParticleReal m_gamma;
         amrex::ParticleReal m_g;
+        amrex::ParticleReal m_const1;
     };
 
 } // namespace impactx

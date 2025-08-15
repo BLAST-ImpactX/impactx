@@ -163,7 +163,7 @@ namespace impactx::elements
             T_Real pyout = py;
             T_Real const ptout = pt;
 
-            // placeholder variables
+            // placeholder variables -- canonical position and momentum
             T_Real q1 = x;
             T_Real q2 = y;
             T_Real p1 = px;
@@ -180,6 +180,21 @@ namespace impactx::elements
                 yout = cos_ods * y + sin_ods / (omega * delta1) * py;
                 pyout = -omega * delta1 * sin_ods * y + cos_ods * py;
 
+                // the corresponding symplectic update to t (focusing both x and y)
+                T_Real const term = pt + delta/m_beta;
+                T_Real const t0 = t - term*m_slice_ds/delta1;
+
+                T_Real const w = omega*delta1;
+                T_Real const term1 = -(powi<2>(p2) - powi<2>(q2) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
+                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
+                T_Real const term3 = -2_prt * q2 * p2 * w * cos(2_prt*m_slice_ds*omega);
+                T_Real const term4 = -2_prt * q1 * p1 * w * cos(2_prt*m_slice_ds*omega);
+                T_Real const term5 = 2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
+                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
+                tout = t0 + (-1_prt+m_beta*pt)
+                          / (8_prt*m_beta * powi<3>(delta1)*omega)
+                          * (term1+term2+term3+term4+term5);
+
             }
             else if (m_g < 0_prt)
             {
@@ -192,6 +207,21 @@ namespace impactx::elements
 
                 yout = cosh_ods * y + sinh_ods / (omega * delta1) * py;
                 pyout = +omega * delta1 * sinh_ods * y + cosh_ods * py;
+
+                // the corresponding symplectic update to t (defocusing both x and y)
+                T_Real const term = pt + delta/m_beta;
+                T_Real const t0 = t - term*m_slice_ds/delta1;
+
+                T_Real const w = omega*delta1;
+                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * sinh(2_prt*m_slice_ds*omega);
+                T_Real const term2 = -(powi<2>(p1) + powi<2>(q1) * powi<2>(w)) * sinh(2_prt*m_slice_ds*omega);
+                T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt*m_slice_ds*omega);
+                T_Real const term4 = -2_prt * q1 * p1 * w * cosh(2_prt*m_slice_ds*omega);
+                T_Real const term5 = 2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
+                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
+                tout = t0 + (-1_prt+m_beta*pt)
+                          / (8_prt*m_beta * powi<3>(delta1)*omega)
+                          * (term1+term2+term3+term4+term5);
             }
             else {
                 xout = x + px*m_slice_ds / delta1;
@@ -199,36 +229,18 @@ namespace impactx::elements
 
                 yout = y + py*m_slice_ds / delta1;
                 pyout = py;
+
+                // the corresponding symplectic update to t (zero strength = drift),
+                // avoiding division by 0
+                T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
+                term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
+                term = -2_prt + powi<2>(m_gamma)*term;
+                term = (-1_prt + m_beta * pt) * term;
+                term = term * m_const1;
+                tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
             }
             // advance longitudinal position and momentum
 
-            // the corresponding symplectic update to t
-            if (m_g == 0) {
-               // the corresponding symplectic update to t (zero strength = drift),
-               // avoiding division by 0
-               T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
-               term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
-               term = -2_prt + powi<2>(m_gamma)*term;
-               term = (-1_prt + m_beta * pt) * term;
-               term = term * m_const1;
-               tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
-            }
-            else {
-              //Copied from ChrQuad, which does swap x/y for q1/q2 and p1/p2 in (horizontal) defocusing mode. Hm.
-              T_Real const term = pt + delta/m_beta;
-              T_Real const t0 = t - term*m_slice_ds/delta1;
-
-              T_Real const w = omega*delta1;
-              T_Real const term1 = -(powi<2>(p2)-powi<2>(q2) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-              T_Real const term2 = -(powi<2>(p1)-powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-              T_Real const term3 = -2_prt*q2*p2*w * cos(2_prt*m_slice_ds*omega);
-              T_Real const term4 = -2_prt*q1*p1*w * cos(2_prt*m_slice_ds*omega);
-              T_Real const term5 = 2_prt*omega*(q1*p1*delta1 + q2*p2*delta1
-                                                -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
-              tout = t0 + (-1_prt+m_beta*pt)/(8_prt*m_beta * powi<3>(delta1)*omega)
-                *(term1+term2+term3+term4+term5);
-
-            }
 
             // assign updated position & momenta
             x = xout;

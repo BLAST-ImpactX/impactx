@@ -45,7 +45,7 @@ namespace impactx::integrators
 
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz/2.0_prt;
+        amrex::ParticleReal const tau1 = dz*0.5_prt;
         amrex::ParticleReal const tau2 = dz;
 
         // initialize the value of the independent variable
@@ -88,8 +88,8 @@ namespace impactx::integrators
 
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz/2.0_prt;
-        amrex::ParticleReal const tau2 = dz/2.0_prt;
+        amrex::ParticleReal const tau1 = dz*0.5_prt;
+        amrex::ParticleReal const tau2 = dz*0.5_prt;
         amrex::ParticleReal const tau3 = dz;
 
         // initialize the value of the independent variable
@@ -137,11 +137,11 @@ namespace impactx::integrators
 
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1.0_prt - std::pow(2.0_prt,1.0/3.0);
-        amrex::ParticleReal const tau2 = dz/(1.0_prt + alpha);
-        amrex::ParticleReal const tau1 = tau2/2.0_prt;
+        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
+        amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
+        amrex::ParticleReal const tau1 = tau2*0.5_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
-        amrex::ParticleReal const tau4 = (alpha - 1.0_prt)*tau2;
+        amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
 
         // initialize the value of the independent variable
         amrex::ParticleReal zeval = zin;
@@ -173,10 +173,10 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp2_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
@@ -187,7 +187,7 @@ namespace impactx::integrators
 
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz/2.0_prt;
+        amrex::ParticleReal const tau1 = dz*0.5_prt;
         amrex::ParticleReal const tau2 = dz;
 
         // initialize the value of the independent variable
@@ -220,10 +220,10 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp4_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
@@ -234,11 +234,11 @@ namespace impactx::integrators
 
         // initialize numerical integration parameters
         amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1.0_prt - std::pow(2.0_prt,1.0/3.0);
-        amrex::ParticleReal const tau2 = dz/(1.0_prt + alpha);
-        amrex::ParticleReal const tau1 = tau2/2.0_prt;
+        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
+        amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
+        amrex::ParticleReal const tau1 = tau2*0.5_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
-        amrex::ParticleReal const tau4 = (alpha - 1.0_prt)*tau2;
+        amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
 
         // initialize the value of the independent variable
         amrex::ParticleReal zeval = zin;
@@ -279,10 +279,10 @@ namespace impactx::integrators
     * @param nsteps  Number of integration steps
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
-    template <typename T_Element>
+    template <typename T_Real, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp6_integrate_particle (
-        amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,

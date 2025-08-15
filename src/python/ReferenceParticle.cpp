@@ -31,6 +31,9 @@ void init_refparticle(py::module& m)
         .def_readwrite("mass", &RefPart::charge, "reference rest mass, in kg")
         .def_readwrite("charge", &RefPart::mass, "reference charge, in C")
 
+        .def_readwrite("sedge", &RefPart::sedge, "value of s at entrance of the current beamline element")
+        .def_readwrite("map", &RefPart::map, "linearized map")
+
         .def_property_readonly("charge_qe", &RefPart::charge_qe, "Get reference particle charge (positive elementary charge)")
         .def_property_readonly("gamma", &RefPart::gamma, "Get reference particle relativistic gamma")
         .def_property_readonly("beta", &RefPart::beta, "Get reference particle relativistic beta")
@@ -40,6 +43,9 @@ void init_refparticle(py::module& m)
         .def_property_readonly("rigidity_Tm", &RefPart::rigidity_Tm, "Get reference particle magnetic rigidity Brho (T*m)")
         .def_property_readonly("qm_ratio_SI", &RefPart::qm_ratio_SI, "Get reference particle charge to mass ratio (C/kg)")
 
+        .def("reset", &RefPart::reset,
+             py::arg("keep_mass")=false, py::arg("keep_charge")=false,
+             "Reset the reference particle")
         .def("set_charge_qe", &RefPart::set_charge_qe,
              py::return_value_policy::reference_internal,
              "Set reference particle charge (positive elementary charge)", py::arg("charge_qe"))

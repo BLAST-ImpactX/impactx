@@ -6,14 +6,13 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, setup_server, vuetify
 from trame.widgets import plotly
 
-from ... import CardBase, NavigationComponents
+from .... import ctrl, html, state, vuetify
+from ....Input.components.card import CardBase
+from ....Input.components.navigation import NavigationComponents
 from . import Dialogs, StatComponents, StatUtils
 from .visualization.plot import lattice_visualizer
-
-server, state, ctrl = setup_server()
 
 
 def _update_statistics() -> None:
@@ -25,16 +24,19 @@ def _update_statistics() -> None:
     state.element_counts = StatUtils.update_element_counts()
     StatUtils.update_length_statistics()
 
+
 def _update_lattice_visualization() -> None:
     """
     Updates the plotly figure with an updated lattice visualization.
     """
     ctrl.lattice_figure_update(lattice_visualizer())
 
+
 @state.change("selected_lattice_list")
 def on_lattice_list_change(**kwargs):
     _update_statistics()
     _update_lattice_visualization()
+
 
 class LatticeVisualizer(CardBase):
     """
@@ -43,7 +45,7 @@ class LatticeVisualizer(CardBase):
 
     def __init__(self):
         super().__init__()
-        
+
     def card_content(self):
         """
         The content of the lattice visualizer.
@@ -66,12 +68,11 @@ class LatticeVisualizer(CardBase):
                     vuetify.VSpacer()
                     Dialogs.settings()
                 StatComponents.statistics()
-            
+
             with vuetify.VCard(color="#002949"):
                 with vuetify.VCardText():
                     ctrl.lattice_figure_update = plotly.Figure(
-                        display_mode_bar="true",
-                        style="width: 100%; height: 50vh"
+                        display_mode_bar="true", style="width: 100%; height: 50vh"
                     ).update
 
     @staticmethod

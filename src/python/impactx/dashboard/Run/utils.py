@@ -5,10 +5,8 @@ import re
 import sys
 import time
 
-from .. import setup_server
-from ..Toolbar.sim_history.ui import SimulationHistory
-
-server, state, ctrl = setup_server()
+from .. import ctrl, state
+from ..Toolbar.sim_history import save_view_details_log
 
 state.sim_progress_status = ""
 
@@ -49,8 +47,9 @@ class SimulationHelper:
         state.sims[state.sim_index]["status"] = "Completed"
         state.sim_is_generating_plots = False
         state.dirty("filtered_sims")
+        state.selected_sim_to_analyze = state.sims[state.sim_index]
         state.flush()
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def cancel_simulation(proc: asyncio.subprocess.Process):
@@ -68,7 +67,7 @@ class SimulationHelper:
         state.dirty("filtered_sims")
         ctrl.terminal_print("Simulation cancelled.")
         state.flush()
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def fail_simulation() -> None:
@@ -82,7 +81,7 @@ class SimulationHelper:
         state.dirty("filtered_sims")
         state.flush()
         ctrl.terminal_print("Simulation failed due to the above error.")
-        SimulationHistory.save_view_details_log()
+        save_view_details_log()
 
     @staticmethod
     def reset():
@@ -106,10 +105,31 @@ class SimulationHelper:
             with open("phase_space_plot.png", "rb") as f:
                 image_data = f.read()
                 image_base64 = base64.b64encode(image_data).decode()
-                state.phase_space_png = f"data:image/png;base64, {image_base64}"
+                phase_space_src = f"data:image/png;base64, {image_base64}"
+                state.phase_space_png = phase_space_src
                 state.flush()
 
+            SimulationHelper.save_phase_space_output(phase_space_src)
+
             os.remove("phase_space_plot.png")
+
+    @staticmethod
+    def save_phase_space_output(phase_space_src: str) -> None:
+        """
+        Saves the given phase space image into the current simulation's outputs.
+        """
+        state.sims[state.sim_index]["outputs"] = {"phase_space_png": phase_space_src}
+
+    @staticmethod
+    def save_over_s_table_output() -> None:
+        """
+        Saves the visualization's data table into the current simulation's
+        outputs.
+        """
+
+        current_sims_output = state.sims[state.sim_index]["outputs"]
+        current_sims_output["over_s_table_headers"] = state.over_s_possible_headers
+        current_sims_output["over_s_table_data"] = state.over_s_possible_data
 
 
 class SimulationProgress:

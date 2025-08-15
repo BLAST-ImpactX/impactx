@@ -8,11 +8,9 @@ License: BSD-3-Clause-LBNL
 
 from contextlib import contextmanager
 
-from ... import html, setup_server, vuetify
+from ... import html, vuetify
 from ...Input.components.card import CardComponents
 from ...Input.components.input import InputComponents
-
-server, state, ctrl = setup_server()
 
 
 class SimulationHistoryComponents:

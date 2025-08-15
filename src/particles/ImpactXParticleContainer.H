@@ -24,6 +24,7 @@
 #include <AMReX_IntVect.H>
 #include <AMReX_Vector.H>
 
+#include <list>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -149,6 +150,13 @@ namespace impactx
          * underlying data structures.
          */
         void prepare ();
+
+        /** Empty the container and reset the reference particle
+         *
+         * @param keep_mass do not reset the reference particle mass
+         * @param keep_charge do not reset the reference particle charge
+         */
+        void clear (bool keep_mass=false, bool keep_charge=false);
 
         /** Add new particles to the container for fixed s.
          *
@@ -281,6 +289,25 @@ namespace impactx
         void
         SetCoordSystem (CoordSystem coord_system);
 
+        /** In situ calculate and store the beam moments for every simulation step */
+        bool store_beam_moments = false;
+
+        /** Calculate & record the beam moments at current s */
+        void
+        record_beam_moments ();
+
+        /** Calculate beam moments at current s */
+        std::unordered_map<std::string, amrex::ParticleReal>
+        beam_moments ();
+
+        /** Get the history of beam moments */
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> >
+        beam_moments_history () { return m_beam_moments; }
+
+        /** Reset the history of the beam moments */
+        void
+        reset_beam_moments_history () { m_beam_moments.clear(); }
+
       private:
 
         //! the reference particle for the beam in the particle container
@@ -294,6 +321,9 @@ namespace impactx
 
         //! the current coordinate system of particles in this container
         CoordSystem m_coordsystem = CoordSystem::s;
+
+        //! history of the beam moments over s
+        std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
 
     }; // ImpactXParticleContainer
 

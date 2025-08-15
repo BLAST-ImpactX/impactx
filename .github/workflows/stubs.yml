@@ -18,10 +18,10 @@ jobs:
       OMP_NUM_THREAD: 4
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: github.event_name != 'push' || github.repository != 'BLAST-ImpactX/impactx' || github.ref != 'refs/heads/development'
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:
         token: ${{ secrets.IMPACTX_PUSH_TOKEN }}
@@ -81,9 +81,9 @@ jobs:
 
     - name: Unit tests
       run: |
-        mpiexec -np 1 python3 -m pytest tests/python/
+        mpiexec -np 1 python3 -m pytest tests/python/ --ignore=tests/python/dashboard
 
-    - uses: stefanzweifel/git-auto-commit-action@v5
+    - uses: stefanzweifel/git-auto-commit-action@v6
       name: Commit Updated Stub Files
       if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:

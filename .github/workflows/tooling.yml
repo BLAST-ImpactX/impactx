@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: github.event.pull_request.draft == false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: install dependencies
       run: |
@@ -59,7 +59,7 @@ jobs:
         LD_PRELOAD: /usr/lib/clang/14/lib/linux/libclang_rt.asan-x86_64.so
       run: |
         export LSAN_OPTIONS=suppressions="$(pwd)/.github/ci/sanitizer/clang/Leak.supp:use_tls=0"
-        ctest --test-dir build -E AMReX --output-on-failure --label-exclude slow
+        ctest --test-dir build -E AMReX --output-on-failure --label-exclude "slow|dashboard"
 
 # notes:
 # * -shared-libsan because we build shared libs

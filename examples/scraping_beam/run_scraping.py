@@ -17,7 +17,6 @@ sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]
 
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 sim.poisson_solver = "fft"
 sim.dynamic_size = True

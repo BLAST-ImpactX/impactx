@@ -108,7 +108,7 @@ Examples:
     impactx input_fodo.in
 
   In the current working directory, there is a file "input_fodo.in" and the
-  "impactx" executable. We want to voerwrite the segment length of the beamline
+  "impactx" executable. We want to overwrite the segment length of the beamline
   element "quad1" that is already defined in it. We also want to change the
   radius of curvature of the bending magnet "sbend1" to a different value than
   in the file "input_fodo.in".
@@ -121,7 +121,7 @@ Examples:
 In order to run our tests, you need to have a few Python packages installed:
 ```console
 python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade build packaging setuptools[core] wheel pytest
+python3 -m pip install --upgrade build packaging setuptools[core] wheel pytest pytest-benchmark
 python3 -m pip install --upgrade -r tests/python/requirements.txt
 ```
 

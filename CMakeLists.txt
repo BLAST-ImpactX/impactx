@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 25.05)
+project(ImpactX VERSION 25.08)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -66,8 +66,10 @@ impactx_set_default_install_dirs()
 #
 include(CMakeDependentOption)
 option(ImpactX_APP           "Build the ImpactX executable application"     ON)
+option(ImpactX_FASTMATH      "Enable fast-math optimizations"               OFF)
 option(ImpactX_FFT           "FFT-based solvers (IGF Space Charge, CSR)"    OFF)
 option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)
+option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
 
@@ -87,6 +89,10 @@ endif()
 
 option(ImpactX_MPI_THREAD_MULTIPLE "MPI thread-multiple support, i.e. for async_io" ON)
 mark_as_advanced(ImpactX_MPI_THREAD_MULTIPLE)
+
+# Advanced option to run tests
+option(ImpactX_TEST_CLEANUP "Clean up automated test directories" OFF)
+mark_as_advanced(ImpactX_TEST_CLEANUP)
 
 option(ImpactX_ablastr_internal                  "Download & build ABLASTR" ON)
 option(ImpactX_amrex_internal                    "Download & build AMReX" ON)
@@ -258,7 +264,13 @@ add_subdirectory(src)
 
 # C++ properties: at least a C++17 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    if(ImpactX_SIMD)
+        # vir::cvt
+        # https://github.com/mattkretz/vir-simd/issues/45
+        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
+    else()
+        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    endif()
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF
@@ -279,7 +291,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v2.13.0/tools/pybind11Common.cmake#L407-L413
+            # https://github.com/pybind/pybind11/blob/v3.0.0/tools/pybind11Common.cmake#L420-L426
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()

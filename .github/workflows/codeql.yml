@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         name: Install Python
@@ -46,6 +46,7 @@ jobs:
           python -m pip install --upgrade numpy
           python -m pip install --upgrade mpi4py
           python -m pip install --upgrade pytest
+          python -m pip install --upgrade pytest-benchmark
           python -m pip install --upgrade cmake
           python -m pipx install cmake
 

@@ -16,7 +16,18 @@ jobs:
       CXXFLAGS: "-Werror"
       OMP_NUM_THREADS: 2
     steps:
-    - uses: actions/checkout@v4
+    - name: Free More Disk Space
+      uses: ax3l/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false  # apt takes ~1:30min
+        docker-images: true
+        swap-storage: false
+
+    - uses: actions/checkout@v5
 
     - name: install dependencies
       run: |
@@ -45,10 +56,11 @@ jobs:
         cmake -S . -B build            \
           -DCMAKE_BUILD_TYPE=Debug     \
           -DBUILD_SHARED_LIBS=ON       \
-          -DCMAKE_INSTALL_PREFIX=/usr  \
+          -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_PYTHON=ON          \
+          -DImpactX_TEST_CLEANUP=ON    \
           -DImpactX_UNITY_BUILD=ON     \
           -DMPIEXEC_POSTFLAGS="--use-hwthread-cpus"
         cmake --build build -j 4
@@ -59,7 +71,9 @@ jobs:
 
     - name: run installed app
       run: |
-        sudo cmake --build build --target install
+        cmake --build build --target install
+        export PATH=$HOME/.local/bin:$PATH
+        export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
         impactx.MPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }
@@ -78,7 +92,7 @@ jobs:
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}
 
   build_gcc_python:
-    name: GCC w/o MPI w/ Python
+    name: GCC w/ SIMD w/o MPI w/ Python
     runs-on: ubuntu-22.04
     if: github.event.pull_request.draft == false
     env:
@@ -86,7 +100,18 @@ jobs:
       CXXFLAGS: "-Werror"
       OMP_NUM_THREADS: 2
     steps:
-    - uses: actions/checkout@v4
+    - name: Free More Disk Space
+      uses: ax3l/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false  # apt takes ~1:30min
+        docker-images: true
+        swap-storage: false
+
+    - uses: actions/checkout@v5
 
     - name: install dependencies
       run: |
@@ -110,11 +135,13 @@ jobs:
         cmake -S . -B build            \
           -DBUILD_SHARED_LIBS=ON       \
           -DCMAKE_BUILD_TYPE=Debug     \
-          -DCMAKE_INSTALL_PREFIX=/usr  \
+          -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_MPI=OFF            \
-          -DImpactX_PYTHON=ON
+          -DImpactX_PYTHON=ON          \
+          -DImpactX_SIMD=ON            \
+          -DImpactX_TEST_CLEANUP=ON
         cmake --build build -j 4
 
     - name: run tests
@@ -123,7 +150,9 @@ jobs:
 
     - name: run installed app
       run: |
-        sudo cmake --build build --target install
+        cmake --build build --target install
+        export PATH=$HOME/.local/bin:$PATH
+        export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
         impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }
@@ -140,3 +169,18 @@ jobs:
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}
+
+    - name: build ImpactX (SP) w/o running
+      run: |
+        cmake -S . -B build_sp         \
+          -DBUILD_SHARED_LIBS=ON       \
+          -DCMAKE_BUILD_TYPE=Release   \
+          -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
+          -DCMAKE_VERBOSE_MAKEFILE=ON  \
+          -DImpactX_FFT=ON             \
+          -DImpactX_MPI=OFF            \
+          -DImpactX_PRECISION=SINGLE   \
+          -DImpactX_PYTHON=ON          \
+          -DImpactX_SIMD=ON            \
+          -DImpactX_TEST_CLEANUP=ON
+        cmake --build build_sp -j 4

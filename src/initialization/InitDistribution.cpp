@@ -14,12 +14,14 @@
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
+#include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/warn_manager/WarnManager.H>
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
@@ -102,6 +104,9 @@ namespace impactx
         {
             amrex::ParticleReal sigx, sigy, sigt, sigpx, sigpy, sigpt;
             amrex::ParticleReal muxpx = 0.0, muypy = 0.0, mutpt = 0.0;
+            amrex::ParticleReal meanx = 0.0, meany = 0.0, meant = 0.0;
+            amrex::ParticleReal meanpx = 0.0, meanpy = 0.0, meanpt = 0.0;
+            amrex::ParticleReal dispx = 0.0, disppx = 0.0, dispy = 0.0, disppy = 0.0;
 
             if (initialize_from_twiss)
             {
@@ -109,14 +114,20 @@ namespace impactx
                         pp_dist,
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy
                 );
             } else {
                 initialization::set_distribution_parameters_from_phase_space_inputs(
                         pp_dist,
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy
                 );
             }
 
@@ -124,37 +135,58 @@ namespace impactx
                 dist = distribution::Waterbag(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kurth6d") {
                 dist = distribution::Kurth6D(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "gaussian") {
                 dist = distribution::Gaussian(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kvdist") {
                 dist = distribution::KVdist(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "kurth4d") {
                 dist = distribution::Kurth4D(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "semigaussian") {
                 dist = distribution::Semigaussian(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "triangle") {
                 dist = distribution::Triangle(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
-                        muxpx, muypy, mutpt);
+                        muxpx, muypy, mutpt,
+                        meanx, meany, meant,
+                        meanpx, meanpy, meanpt,
+                        dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "empty") {
                 dist = distribution::Empty();
             } else
@@ -246,7 +278,7 @@ namespace impactx
     ImpactX::add_particles (
         amrex::ParticleReal bunch_charge,
         distribution::KnownDistributions distr,
-        int npart
+        amrex::Long npart
     )
     {
         BL_PROFILE("ImpactX::add_particles");
@@ -276,11 +308,12 @@ namespace impactx
         // position, per MPI rank. We then measure the distribution's spatial
         // extent, create a grid, resize it to fit the beam, and then
         // redistribute particles so that they reside on the correct MPI rank.
-        int const myproc = amrex::ParallelDescriptor::MyProc();
-        int const nprocs = amrex::ParallelDescriptor::NProcs();
-        int const navg = npart / nprocs;  // note: integer division
-        int const nleft = npart - navg * nprocs;
-        int const npart_this_proc = (myproc < nleft) ? navg+1 : navg;  // add 1 to each proc until distributed
+        ParticleChunk proc_chunk = split_equally(
+            npart,
+            amrex::ParallelDescriptor::MyProc(),
+            amrex::ParallelDescriptor::NProcs()
+        );
+        amrex::Long const npart_this_proc = proc_chunk.size;
         auto const rel_part_this_proc =
             amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
@@ -306,9 +339,35 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
 
             using Distribution = std::decay_t<decltype(distribution)>;
-            initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
-                distribution, x_ptr, y_ptr, t_ptr, px_ptr, py_ptr, pt_ptr);
-            amrex::ParallelForRNG(npart_this_proc, init_single_particle_data);
+
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+            {
+                amrex::Long npart_this_thread = npart_this_proc;
+                amrex::Long my_offset = 0;  // offset into global arrays x, y, etc. for this thread
+#ifdef AMREX_USE_OMP
+                ParticleChunk thread_chunk = split_equally(
+                    npart_this_proc,
+                    omp_get_thread_num(),
+                    omp_get_max_threads()
+                );
+                my_offset = thread_chunk.offset;
+                npart_this_thread = thread_chunk.size;
+#endif
+
+                initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
+                    distribution,
+                    x_ptr + my_offset,
+                    y_ptr + my_offset,
+                    t_ptr + my_offset,
+                    px_ptr + my_offset,
+                    py_ptr + my_offset,
+                    pt_ptr + my_offset
+                );
+
+                amrex::ParallelForRNG(npart_this_thread, init_single_particle_data);
+            }
 
             // finalize distributions and deallocate temporary device global memory
             amrex::Gpu::streamSynchronize();
@@ -336,10 +395,15 @@ namespace impactx
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& sigx, amrex::ParticleReal& sigy, amrex::ParticleReal& sigt,
         amrex::ParticleReal& sigpx, amrex::ParticleReal& sigpy, amrex::ParticleReal& sigpt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
+        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
+        amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,
+        amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     )
     {
         using namespace amrex::literals; // for _rt and _prt
+        using amrex::Math::powi;
 
         // Values to be read from input
         amrex::ParticleReal betax, betay, betat, emittx, emitty, emittt;
@@ -356,6 +420,16 @@ namespace impactx
         pp_dist.getWithParser("emittX", emittx);
         pp_dist.getWithParser("emittY", emitty);
         pp_dist.getWithParser("emittT", emittt);
+        pp_dist.queryWithParser("meanX", meanx);
+        pp_dist.queryWithParser("meanY", meany);
+        pp_dist.queryWithParser("meanT", meant);
+        pp_dist.queryWithParser("meanPx", meanpx);
+        pp_dist.queryWithParser("meanPy", meanpy);
+        pp_dist.queryWithParser("meanPt", meanpt);
+        pp_dist.queryWithParser("dispX", dispx);
+        pp_dist.queryWithParser("dispPx", disppx);
+        pp_dist.queryWithParser("dispY", dispy);
+        pp_dist.queryWithParser("dispPy", disppy);
 
         if (betax <= 0.0_prt || betay <= 0.0_prt || betat <= 0.0_prt) {
             throw std::runtime_error("Input Error: The beta function values need to be non-zero positive values in all dimensions.");
@@ -372,7 +446,7 @@ namespace impactx
         // calculate Twiss / Courant-Snyder gammas
         amrex::Vector<amrex::ParticleReal> gammas;
         for (size_t i = 0; i < alphas.size(); i++)
-            gammas.push_back((1.0 + std::pow(alphas.at(i), 2)) / betas.at(i));
+            gammas.push_back((1.0 + powi<2>(alphas.at(i))) / betas.at(i));
 
         amrex::Vector<amrex::ParticleReal> lambdas_pos;
         amrex::Vector<amrex::ParticleReal> lambdas_mom;
@@ -401,7 +475,11 @@ namespace impactx
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& sigx, amrex::ParticleReal& sigy, amrex::ParticleReal& sigt,
         amrex::ParticleReal& sigpx, amrex::ParticleReal& sigpy, amrex::ParticleReal& sigpt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt
+        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
+        amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
+        amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,
+        amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
     )
     {
         pp_dist.getWithParser("lambdaX", sigx);
@@ -413,6 +491,16 @@ namespace impactx
         pp_dist.queryWithParser("muxpx", muxpx);
         pp_dist.queryWithParser("muypy", muypy);
         pp_dist.queryWithParser("mutpt", mutpt);
+        pp_dist.queryWithParser("meanX", meanx);
+        pp_dist.queryWithParser("meanY", meany);
+        pp_dist.queryWithParser("meanT", meant);
+        pp_dist.queryWithParser("meanPx", meanpx);
+        pp_dist.queryWithParser("meanPy", meanpy);
+        pp_dist.queryWithParser("meanPt", meanpt);
+        pp_dist.queryWithParser("dispX", dispx);
+        pp_dist.queryWithParser("dispPx", disppx);
+        pp_dist.queryWithParser("dispY", dispy);
+        pp_dist.queryWithParser("dispPy", disppy);
     }
 
     void ImpactX::initBeamDistributionFromInputs ()
@@ -442,7 +530,7 @@ namespace impactx
             std::string distribution;
             pp_dist.get("distribution", distribution);
 
-            int npart = 0;  // Number of simulation particles
+            amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
             {
                 pp_dist.getWithParser("npart", npart);

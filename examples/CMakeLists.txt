@@ -158,6 +158,24 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
             "ValueError: No objects to concatenate"
         )
     endif()
+
+    # CI: remove test directory after run
+    if(ImpactX_TEST_CLEANUP)
+        add_test(
+            NAME ${name}.cleanup
+            COMMAND ${CMAKE_COMMAND} -P ${ImpactX_SOURCE_DIR}/examples/test_cleanup.cmake ${THIS_WORKING_DIR}
+        )
+        # test cleanup depends on test run
+        set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.run")
+        if(analysis_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.analysis")
+        endif()
+        if(plot_script)
+            # test cleanup depends on test analysis
+            set_property(TEST ${name}.cleanup APPEND PROPERTY DEPENDS "${name}.plot")
+        endif()
+    endif()
 endfunction()
 
 
@@ -681,6 +699,10 @@ add_impactx_test(solenoid.restart
     OFF  # no plot script yet
 )
 set_property(TEST solenoid.restart.run APPEND PROPERTY DEPENDS "solenoid.run")
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.cleanup")
+endif()
 
 add_impactx_test(solenoid.restart.py
     examples/solenoid_restart/run_solenoid.py
@@ -690,6 +712,10 @@ add_impactx_test(solenoid.restart.py
 )
 if(ImpactX_PYTHON)
     set_property(TEST solenoid.restart.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.py.cleanup")
 endif()
 
 
@@ -1319,13 +1345,13 @@ add_impactx_test(iotalattice.envelope.py
 # Expanding beam scraping against a vacuum pipe ##############################
 #
 # w/o space charge
-add_impactx_test(examples-scraping
+add_impactx_test(scraping
     examples/scraping_beam/input_scraping.in
     ON   # ImpactX MPI-parallel
     examples/scraping_beam/analysis_scraping.py
     OFF  # no plot script yet
 )
-add_impactx_test(examples-scraping.py
+add_impactx_test(scraping.py
     examples/scraping_beam/run_scraping.py
     OFF   # ImpactX MPI-parallel
     examples/scraping_beam/analysis_scraping.py
@@ -1383,13 +1409,13 @@ add_impactx_test(zero-bend-inverse.py
 # Testing Charge and Field Sign Consistency ######################
 #
 # no space charge
-add_impactx_test(examples-charge-sign
+add_impactx_test(charge-sign
     examples/charge_sign/input_charge_sign.in
     ON   # ImpactX MPI-parallel
     examples/charge_sign/analysis_charge_sign.py
     OFF  # no plot script yet
 )
-add_impactx_test(examples-charge-sign.py
+add_impactx_test(charge-sign.py
     examples/charge_sign/run_charge_sign.py
     ON   # ImpactX MPI-parallel
     examples/charge_sign/analysis_charge_sign.py
@@ -1414,13 +1440,13 @@ add_impactx_test(chicane_isr.py
 # Symplectic Integration in an Exact Nonlinear Quadrupole ##############
 #
 # no space charge
-add_impactx_test(examples-exact-quad
+add_impactx_test(exact-quad
     examples/symplectic_integration/input_exact_quad.in
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_exact_quad.py
     OFF  # no plot script yet
 )
-add_impactx_test(examples-exact-quad.py
+add_impactx_test(exact-quad.py
     examples/symplectic_integration/run_exact_quad.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_exact_quad.py
@@ -1430,13 +1456,13 @@ add_impactx_test(examples-exact-quad.py
 # FODO Channel with Quads Treated as Exact Multipoles ##############
 #
 # no space charge
-add_impactx_test(examples-fodo-multipole
+add_impactx_test(fodo-multipole
     examples/symplectic_integration/input_fodo_multipole.in
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_fodo_multipole.py
     OFF  # no plot script yet
 )
-add_impactx_test(examples-fodo_multipole.py
+add_impactx_test(fodo_multipole.py
     examples/symplectic_integration/run_fodo_multipole.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_fodo_multipole.py
@@ -1447,12 +1473,100 @@ add_impactx_test(examples-fodo_multipole.py
 #
 # no space charge
 file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/initial_coords.csv
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/long-sextupole.py)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/final_coords.csv
-        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/examples-long-sextupole.py)
-add_impactx_test(examples-long-sextupole.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/long-sextupole.py)
+add_impactx_test(long-sextupole.py
     examples/symplectic_integration/run_sextupole.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_sextupole.py
+    OFF  # no plot script yet
+)
+
+# Dogleg in Reverse  ##############
+#
+# no space charge
+add_impactx_test(dogleg-reverse
+    examples/dogleg/input_dogleg_reverse.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-reverse.py
+    examples/dogleg/run_dogleg_reverse.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse.py
+    OFF  # no plot script yet
+)
+
+# Dogleg with Energy Jitter ##############
+#
+# no space charge
+add_impactx_test(dogleg-jitter
+    examples/dogleg/input_dogleg_jitter.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_jitter.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-jitter.py
+    examples/dogleg/run_dogleg_jitter.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_jitter.py
+    OFF  # no plot script yet
+)
+
+# HTU Beamline Model ##############
+#
+# no space charge
+file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/htu-beamline.py)
+add_impactx_test(htu-beamline.py
+    examples/htu_beamline/run_impactx.py
+    ON   # ImpactX MPI-parallel
+    examples/htu_beamline/analysis_htu_beamline.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in an Exact Combined-Function Bend ##############
+#
+# no space charge
+add_impactx_test(exact-cfbend
+    examples/symplectic_integration/input_exact_cfbend.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend.py
+    OFF  # no plot script yet
+)
+add_impactx_test(exact-cfbend.py
+    examples/symplectic_integration/run_exact_cfbend.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in an Exact Combined-Function Bend (Multipole test) ##############
+#
+# no space charge
+add_impactx_test(exact-cfbend-multipole
+    examples/symplectic_integration/input_exact_cfbend_multipole.in
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend_multipole.py
+    OFF  # no plot script yet
+)
+add_impactx_test(exact-cfbend_multipole.py
+    examples/symplectic_integration/run_exact_cfbend_multipole.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_cfbend_multipole.py
+    OFF  # no plot script yet
+)
+
+# FODO Cell Based on PALS-Compliant Lattice Input ##############
+#
+# copy PALS lattice file
+file(COPY ${ImpactX_SOURCE_DIR}/examples/pals/fodo.pals.yaml
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/fodo-pals.py)
+add_impactx_test(fodo-pals.py
+    examples/pals/run_fodo_pals.py
+    ON   # ImpactX MPI-parallel
+    examples/pals/analysis_fodo_pals.py
     OFF  # no plot script yet
 )

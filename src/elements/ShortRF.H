@@ -19,7 +19,9 @@
 #include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 
@@ -32,7 +34,8 @@ namespace impactx::elements
       public mixin::LinearTransport<ShortRF>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ShortRF";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -78,6 +81,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -91,8 +95,8 @@ namespace impactx::elements
             amrex::ParticleReal const ptf_ref = refpart.pt;
             m_V_cos_phi = m_V * std::cos(m_phi);
             amrex::ParticleReal const pti_ref = ptf_ref + m_V_cos_phi;
-            m_bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
-            m_bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
+            m_bgf = std::sqrt(powi<2>(ptf_ref) - 1.0_prt);
+            m_bgi = std::sqrt(powi<2>(pti_ref) - 1.0_prt);
         }
 
         /** This is a shortrf functor, so that a variable of this type can be used like a
@@ -109,20 +113,22 @@ namespace impactx::elements
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
 
             using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
@@ -132,13 +138,13 @@ namespace impactx::elements
             py = py * m_bgi;
             pt = pt * m_bgi;
 
-            // intialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
+            // initialize output values
+            T_Real xout = x;
+            T_Real yout = y;
+            T_Real tout = t;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            T_Real ptout = pt;
 
             // advance position and momentum in dynamic units
             // xout = x;
@@ -148,7 +154,7 @@ namespace impactx::elements
             pyout = py;
 
             // tout = t;
-            ptout = pt - m_V * std::cos(m_k * t + m_phi) + m_V_cos_phi;
+            ptout = pt - m_V * cos(m_k * t + m_phi) + m_V_cos_phi;
 
             // assign updated values
             x = xout;
@@ -178,6 +184,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -193,15 +200,15 @@ namespace impactx::elements
             using ablastr::constant::math::pi;
             amrex::ParticleReal const phi = m_phase*(pi/180.0_prt);
 
-            // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            // compute initial value of beta*gamma
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // advance pt
             refpart.pt = pt - m_V * std::cos(phi);
 
             // compute final value of beta*gamma
             amrex::ParticleReal const ptf = refpart.pt;
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
 
             // advance position (x,y,z,t)
             refpart.x = x;
@@ -229,6 +236,7 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // Define parameters and intermediate constants
             using ablastr::constant::math::pi;
@@ -239,8 +247,8 @@ namespace impactx::elements
             // access reference particle values (final, initial):
             amrex::ParticleReal const ptf_ref = refpart.pt;
             amrex::ParticleReal const pti_ref = ptf_ref + m_V * std::cos(phi);
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf_ref, 2) - 1.0_prt);
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pti_ref, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf_ref) - 1.0_prt);
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pti_ref) - 1.0_prt);
 
             // initialize transport matrix
             Map6x6 R = Map6x6::Identity();

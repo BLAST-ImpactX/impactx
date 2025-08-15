@@ -6,14 +6,11 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import CardComponents
-from .... import setup_server, vuetify
-
-server, state, ctrl = setup_server()
+from .... import vuetify
+from ....Input.components.card import CardComponents
 
 
 class LatticeVisualizerDialogs:
-
     @staticmethod
     def settings():
         """

@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -37,6 +38,9 @@ namespace impactx::elements
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::NoFinalize
+      // At least on Intel AVX512, there is a small overhead to vectorize this element, see
+      // https://github.com/BLAST-ImpactX/impactx/pull/1002
+      // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "CFbend";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -91,6 +95,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -98,13 +103,13 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2, beta
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = std::pow(bet, 2) * std::pow(m_rc, 2);
+            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(m_rc);
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + std::pow(m_rc,-2);
+            amrex::ParticleReal const gx = m_k + powi<-2>(m_rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables
@@ -153,15 +158,16 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -171,14 +177,14 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // initialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
+            T_Real xout = x;
+            T_Real yout = y;
+            T_Real tout = t;
 
             // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal ptout = pt;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            T_Real ptout = pt;
 
             // update horizontal and longitudinal phase space variables
             //   advance position and momentum: (de)focusing
@@ -212,6 +218,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -229,7 +236,7 @@ namespace impactx::elements
 
             // assign intermediate parameter
             amrex::ParticleReal const theta = slice_ds/m_rc;
-            amrex::ParticleReal const B = std::sqrt(std::pow(pt,2)-1.0_prt)/m_rc;
+            amrex::ParticleReal const B = std::sqrt(powi<2>(pt)-1.0_prt)/m_rc;
 
             // calculate expensive terms once
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
@@ -262,18 +269,19 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // find beta*gamma^2, beta
-            amrex::ParticleReal const betgam2 = std::pow(refpart.pt, 2) - 1_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = std::pow(bet, 2) * std::pow(m_rc, 2);
+            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(m_rc);
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + std::pow(m_rc,-2);
+            amrex::ParticleReal const gx = m_k + powi<-2>(m_rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables

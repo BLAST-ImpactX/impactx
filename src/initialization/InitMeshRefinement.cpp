@@ -82,6 +82,8 @@ namespace detail
     {
         BL_PROFILE("ImpactX::ResizeMesh");
 
+        using namespace amrex::literals; // for _rt and _prt
+
         {
             auto space_charge = get_space_charge_algo();
             if (space_charge == SpaceChargeAlgo::False)
@@ -117,7 +119,7 @@ namespace detail
             amrex::RealVect const beam_max(x_max, y_max, z_max);
             amrex::RealVect const beam_width(beam_max - beam_min);
 
-            amrex::RealVect const beam_padding = beam_width * (frac - 1.0) / 2.0;
+            amrex::RealVect const beam_padding = beam_width * (frac - 1_rt) * 0.5_rt;
             //                           added to the beam extent --^         ^-- box half above/below the beam
 
             // In AMReX, all levels have the same problem domain, that of the

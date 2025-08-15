@@ -58,6 +58,10 @@ macro(find_ablastr)
     if(ImpactX_ablastr_internal OR ImpactX_ablastr_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+        set(ABLASTR_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        set(AMReX_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        # TODO: set consistently (AMReX default: ON)
+        #set(AMReX_CUDA_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
         set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
 
@@ -65,6 +69,7 @@ macro(find_ablastr)
         set(WarpX_LIB OFF CACHE BOOL "" FORCE)
         set(WarpX_QED OFF CACHE BOOL "" FORCE)
         set(WarpX_COMPUTE ${ImpactX_COMPUTE} CACHE INTERNAL "" FORCE)
+        set(WarpX_SIMD ${ImpactX_SIMD} CACHE INTERNAL "" FORCE)
         set(WarpX_DIMS 3 CACHE INTERNAL "" FORCE)
         set(WarpX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(WarpX_OPENPMD ${ImpactX_OPENPMD} CACHE INTERNAL "" FORCE)
@@ -134,7 +139,7 @@ macro(find_ablastr)
         set(COMPONENT_DIM 3D)
         set(COMPONENT_PRECISION ${ImpactX_PRECISION} P${ImpactX_PRECISION})
 
-        find_package(ABLASTR 25.05 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
+        find_package(ABLASTR 25.08 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
         message(STATUS "ABLASTR: Found version '${ABLASTR_VERSION}'")
     endif()
 
@@ -173,7 +178,7 @@ set(ImpactX_openpmd_src ""
 set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "25.05"
+set(ImpactX_ablastr_branch "25.08"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 

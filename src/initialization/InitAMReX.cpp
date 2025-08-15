@@ -18,6 +18,7 @@
 #   include <mpi.h>
 #else
 #   include <AMReX_ccse-mpi.H>
+using amrex::mpidatatypes::MPI_COMM_WORLD;
 #endif
 
 

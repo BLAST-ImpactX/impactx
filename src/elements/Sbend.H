@@ -22,6 +22,7 @@
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 
@@ -36,6 +37,9 @@ namespace impactx::elements
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::NoFinalize
+      // At least on Intel AVX512, there is a small overhead to vectorize this element in DP, and no benefit in SP, see
+      // https://github.com/BLAST-ImpactX/impactx/pull/1002
+      // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Sbend";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -71,6 +75,17 @@ namespace impactx::elements
         {
         }
 
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        amrex::ParticleReal
+        rc ([[maybe_unused]] RefPart const & refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // TODO: as in ExactSbend
+            // return m_B != 0_prt ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
+            return m_rc;
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -84,6 +99,7 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -92,7 +108,7 @@ namespace impactx::elements
 
             // access reference particle values
             amrex::ParticleReal const ibet = 1.0_prt / refpart.beta();
-            amrex::ParticleReal const ibetagam2 = 1_prt / std::pow(refpart.beta_gamma(), 2);
+            amrex::ParticleReal const ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
             // treat the special case of zero field (equivalent to a drift)
             if (m_rc==0_prt) {
@@ -136,15 +152,16 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -153,20 +170,20 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // intialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
+            // initialize output values
+            T_Real xout = x;
+            T_Real yout = y;
+            T_Real tout = t;
 
             // initialize output values of momenta
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal const pyout = py;
-            amrex::ParticleReal const ptout = pt;
+            T_Real pxout = px;
+            T_Real const pyout = py;
+            T_Real const ptout = pt;
 
             // advance position and momentum (sector bend)
-            amrex::ParticleReal const R22 =  m_R11;
-            amrex::ParticleReal const R51 = -m_R26;
-            amrex::ParticleReal const R52 = -m_R16;
+            T_Real const R22 =  m_R11;
+            T_Real const R51 = -m_R26;
+            T_Real const R52 = -m_R16;
 
             xout = m_R11 * x
                  + m_R12 * px
@@ -211,6 +228,7 @@ namespace impactx::elements
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -229,7 +247,7 @@ namespace impactx::elements
             // treat the special case of zero field (drift)
             if (m_rc == 0.0_prt) {
                // advance position and momentum (drift)
-               amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+               amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
                refpart.x = x + step*px;
                refpart.y = y + step*py;
                refpart.z = z + step*pz;
@@ -239,7 +257,7 @@ namespace impactx::elements
 
                // assign intermediate parameter
                amrex::ParticleReal const theta = slice_ds/m_rc;
-               amrex::ParticleReal const B = std::sqrt(std::pow(pt,2)-1.0_prt)/m_rc;
+               amrex::ParticleReal const B = std::sqrt(powi<2>(pt)-1.0_prt)/m_rc;
 
                // calculate expensive terms once
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
@@ -274,13 +292,14 @@ namespace impactx::elements
         transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
             amrex::ParticleReal const bet = std::sqrt(betgam2/(1.0_prt + betgam2));
 
             // initialize linear map matrix elements

@@ -6,13 +6,11 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import setup_server, vuetify
-from .. import CardBase, CardComponents, InputComponents
-
-server, state, ctrl = setup_server()
+from ... import vuetify
+from ...Input.components import CardBase, CardComponents, InputComponents
 
 
-class isrConfiguration(CardBase):
+class ISRConfiguration(CardBase):
     HEADER_NAME = "ISR"
 
     def __init__(self):

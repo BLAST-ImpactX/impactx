@@ -59,7 +59,7 @@ namespace impactx::particles::wakefields
                 amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
 
                 // Obtain constants for force normalization
-                amrex::ParticleReal const push_consts = 1.0 / ((ablastr::constant::SI::c) * pz_ref_SI);
+                amrex::ParticleReal const push_consts = 1_prt / ((ablastr::constant::SI::c) * pz_ref_SI);
 
                 // Gather particles and push momentum
                 const amrex::Real* wakefield_ptr = convolved_wakefield.data();

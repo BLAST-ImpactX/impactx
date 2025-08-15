@@ -3,8 +3,9 @@ Particle beam distributions in ImpactX
 """
 
 from __future__ import annotations
+import typing
 
-__all__ = [
+__all__: list[str] = [
     "Empty",
     "Gaussian",
     "KVdist",
@@ -25,15 +26,25 @@ class Empty:
 class Gaussian:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A 6D Gaussian distribution
@@ -42,15 +53,25 @@ class Gaussian:
 class KVdist:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A K-V distribution transversely + a uniform distribution
@@ -60,15 +81,25 @@ class KVdist:
 class Kurth4D:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A 4D Kurth distribution transversely + a uniform distribution
@@ -78,15 +109,25 @@ class Kurth4D:
 class Kurth6D:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A 6D Kurth distribution
@@ -98,15 +139,25 @@ class Kurth6D:
 class Semigaussian:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
@@ -115,12 +166,12 @@ class Semigaussian:
 class Thermal:
     def __init__(
         self,
-        k: float,
-        kT: float,
-        kT_halo: float,
-        normalize: float,
-        normalize_halo: float,
-        halo: float = 0.0,
+        k: typing.SupportsFloat,
+        kT: typing.SupportsFloat,
+        kT_halo: typing.SupportsFloat,
+        normalize: typing.SupportsFloat,
+        normalize_halo: typing.SupportsFloat,
+        halo: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A stationary thermal or bithermal distribution
@@ -131,15 +182,25 @@ class Thermal:
 class Triangle:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A triangle distribution for laser-plasma acceleration related applications.
@@ -151,15 +212,25 @@ class Triangle:
 class Waterbag:
     def __init__(
         self,
-        lambdaX: float,
-        lambdaY: float,
-        lambdaT: float,
-        lambdaPx: float,
-        lambdaPy: float,
-        lambdaPt: float,
-        muxpx: float = 0.0,
-        muypy: float = 0.0,
-        mutpt: float = 0.0,
+        lambdaX: typing.SupportsFloat,
+        lambdaY: typing.SupportsFloat,
+        lambdaT: typing.SupportsFloat,
+        lambdaPx: typing.SupportsFloat,
+        lambdaPy: typing.SupportsFloat,
+        lambdaPt: typing.SupportsFloat,
+        muxpx: typing.SupportsFloat = 0.0,
+        muypy: typing.SupportsFloat = 0.0,
+        mutpt: typing.SupportsFloat = 0.0,
+        meanX: typing.SupportsFloat = 0.0,
+        meanY: typing.SupportsFloat = 0.0,
+        meanT: typing.SupportsFloat = 0.0,
+        meanPx: typing.SupportsFloat = 0.0,
+        meanPy: typing.SupportsFloat = 0.0,
+        meanPt: typing.SupportsFloat = 0.0,
+        dispX: typing.SupportsFloat = 0.0,
+        dispPx: typing.SupportsFloat = 0.0,
+        dispY: typing.SupportsFloat = 0.0,
+        dispPy: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A 6D Waterbag distribution

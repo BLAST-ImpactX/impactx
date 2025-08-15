@@ -18,7 +18,9 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -31,7 +33,8 @@ namespace impactx::elements
       public mixin::BeamOptic<LinearMap>,
       public mixin::LinearTransport<LinearMap>,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "LinearMap";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -78,15 +81,16 @@ namespace impactx::elements
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -96,11 +100,12 @@ namespace impactx::elements
             shift_in(x, y, px, py);
 
             // input and output phase space vectors
-            amrex::SmallVector<amrex::ParticleReal, 6, 1> vectorin{
+            amrex::SmallVector<T_Real, 6, 1> vectorin{
                 x, px, y, py, t, pt
             };
 
-            amrex::SmallVector<amrex::ParticleReal, 6, 1> const vectorout = m_transport_map * vectorin;
+            // TODO amrex::SmallMatrix::operator* overloads on T for SIMD*scalar / scalar*SIMD
+            amrex::SmallVector<T_Real, 6, 1> const vectorout = m_transport_map * vectorin;
 
             // assign updated values
             x = vectorout(1);
@@ -124,6 +129,7 @@ namespace impactx::elements
             if (m_ds > 0)  // Drift
             {
                 using namespace amrex::literals; // for _rt and _prt
+                using amrex::Math::powi;
 
                 // assign input reference particle values
                 amrex::ParticleReal const x = refpart.x;
@@ -140,7 +146,7 @@ namespace impactx::elements
                 amrex::ParticleReal const slice_ds = m_ds / nslice();
 
                 // assign intermediate parameter
-                amrex::ParticleReal const step = slice_ds /std::sqrt(std::pow(pt,2)-1.0_prt);
+                amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
 
                 // advance position and momentum (drift)
                 refpart.x = x + step*px;

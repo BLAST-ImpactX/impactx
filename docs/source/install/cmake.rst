@@ -36,7 +36,7 @@ ImpactX depends on popular third party software.
    .. code-block:: bash
 
       python3 -m pip install -U pip
-      python3 -m pip install -U build packaging setuptools[core] wheel pytest
+      python3 -m pip install -U build packaging setuptools[core] wheel pytest pytest-benchmark
       python3 -m pip install -U -r examples/requirements.txt
 
 
@@ -111,6 +111,7 @@ CMake Option                    Default & Values                             Des
 ``ImpactX_OPENPMD``             **ON**/OFF                                   openPMD I/O (HDF5, ADIOS)
 ``ImpactX_PRECISION``           SINGLE/**DOUBLE**                            Floating point precision (single/double)
 ``ImpactX_PYTHON``              ON/**OFF**                                   Python bindings
+``ImpactX_SIMD```               ON/**OFF**                                   CPU SIMD Acceleration (requires ``vir-simd``)
 ``Python_EXECUTABLE``           (newest found)                               Path to Python executable
 ``PY_PIP_OPTIONS``              ``-v``                                       Additional options for ``pip``, e.g., ``-vvv;-q``
 ``PY_PIP_INSTALL_OPTIONS``                                                   Additional options for ``pip install``, e.g., ``--user;-q``
@@ -148,6 +149,7 @@ CMake Option                  Default & Values                               Des
 ``ImpactX_pybind11_repo``     ``https://github.com/pybind/pybind11.git``     Repository URI to pull and build pybind11 from
 ``ImpactX_pybind11_branch``   *we set and maintain a compatible commit*      Repository branch for ``ImpactX_pybind11_repo``
 ``ImpactX_pybind11_internal`` **ON**/OFF                                     Needs a pre-installed pybind11 library if set to ``OFF``
+``ImpactX_TEST_CLEANUP``      ON/**OFF**                                     Clean up automated test directories
 ============================= ============================================== ===========================================================
 
 For example, one can also build against a local AMReX copy.

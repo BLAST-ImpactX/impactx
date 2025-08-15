@@ -1,6 +1,4 @@
-from ... import html, setup_server, vuetify
-
-server, state, ctrl = setup_server()
+from ... import html, state, vuetify
 
 state.documentation_drawer_open = False
 state.documentation_url = ""
@@ -27,6 +25,7 @@ class NavigationComponents:
 
         return vuetify.VListItem(
             to=to,
+            id=(f"{route_title}_route"),
             click=click,
             prepend_icon=mdi_icon,
             title=route_title,

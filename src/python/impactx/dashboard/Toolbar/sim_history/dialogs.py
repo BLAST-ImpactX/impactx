@@ -6,14 +6,11 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from ... import html, setup_server, vuetify
+from ... import ctrl, html, vuetify
 from ...Input.components.navigation import NavigationComponents
 from .components import SimulationHistoryComponents
 
-server, state, ctrl = setup_server()
 
-
-@staticmethod
 def view_details_tabs():
     dialog_name = "view_details_tabs"
     with NavigationComponents.create_dialog_tabs(
@@ -137,4 +134,12 @@ class SimulationHistoryDialogs:
                         title="Load Inputs",
                         prepend_icon="mdi-file-code",
                         click=(ctrl.load_selected_sim),
+                    )
+                with vuetify.VList(
+                    v_show="selected_sim_to_load.status === 'Completed'"
+                ):
+                    vuetify.VListItem(
+                        title="Load Outputs",
+                        prepend_icon="mdi-folder-open",
+                        click=(ctrl.load_selected_sim_outputs),
                     )

@@ -11,7 +11,7 @@ from impactx import ImpactX, distribution, elements
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
+sim.particle_shape = 0  # B-spline order
 sim.space_charge = "3D"
 sim.dynamic_size = True
 

@@ -160,6 +160,6 @@ Tips for macOS Users
    If you find entries in ``bin/``, ``lib/`` et al. that look like you manually installed MPI, HDF5 or other software in the past, then remove those files first.
 
    If you find software such as MPI in the same directories that are shown as symbolic links then it is likely you `brew installed <https://brew.sh/>`__ software before.
-   If you are trying annother package manager than ``brew``, run `brew unlink ... <https://docs.brew.sh/Tips-N%27-Tricks#quickly-remove-something-from-usrlocal>`__ on such packages first to avoid software incompatibilities.
+   If you are trying another package manager than ``brew``, run `brew unlink ... <https://docs.brew.sh/Tips-N%27-Tricks#quickly-remove-something-from-usrlocal>`__ on such packages first to avoid software incompatibilities.
 
 See also: A. Huebl, `Working With Multiple Package Managers <https://collegeville.github.io/CW20/WorkshopResources/WhitePapers/huebl-working-with-multiple-pkg-mgrs.pdf>`__, `Collegeville Workshop (CW20) <https://collegeville.github.io/CW20/>`_, 2020

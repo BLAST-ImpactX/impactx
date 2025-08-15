@@ -501,7 +501,7 @@ class MADXParser:
         Combine to one list of all basic
         elements.
 
-        return a list of of element dictionaries
+        return a list of element dictionaries
         """
 
         l1 = self.__lattice[0]

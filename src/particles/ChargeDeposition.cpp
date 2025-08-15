@@ -33,6 +33,9 @@ namespace impactx
 
         using namespace amrex::literals; // for _rt and _prt
 
+        if (m_particle_shape.value() < 1)
+            throw std::runtime_error("DepositCharge: Particle shape must be >=1");
+
         // reset the values in rho to zero
         int const nLevel = this->finestLevel();
         for (int lev = 0; lev <= nLevel; ++lev) {

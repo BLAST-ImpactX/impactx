@@ -1,0 +1,68 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 5.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag_from_twiss
+beam.alphaX = 1.33858302795180
+beam.alphaY = -1.347910457923642
+beam.alphaT = 92.624347459105241
+beam.betaX = 14.37407309218588
+beam.betaY = 4.600362059144475
+beam.betaT = 1.4153999755967554
+beam.emittX = 8.180911194584674375e-11
+beam.emittY = 1.020438927769593e-10
+beam.emittT = 8.5698645128164239e-09
+beam.dispX = -0.2667
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor sbend1 dipedge1 drift1 dipedge2 sbend2 drift2 monitor
+lattice.reverse = true
+lattice.nslice = 25
+
+sbend1.type = sbend
+sbend1.ds = 0.500194828041958       # projected length 0.5 m, angle 2.77 deg
+sbend1.rc = -10.3462283686195526
+
+drift1.type = drift
+drift1.ds = 5.0058489435            # projected length 5 m
+
+sbend2.type = sbend
+sbend2.ds = sbend1.ds               # projected length 0.5 m, angle 2.77 deg
+sbend2.rc = -sbend1.rc
+
+drift2.type = drift
+drift2.ds = 0.5
+
+dipedge1.type = dipedge   # dipole edge focusing
+dipedge1.psi = -0.048345620280243
+dipedge1.rc = -10.3462283686195526
+dipedge1.g = 0.0
+dipedge1.K2 = 0.0
+
+dipedge2.type = dipedge
+dipedge2.psi = -dipedge1.psi
+dipedge2.rc = -dipedge1.rc
+dipedge2.g = 0.0
+dipedge2.K2 = 0.0
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true
+diag.eigenemittances = true

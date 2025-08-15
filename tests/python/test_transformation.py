@@ -53,7 +53,7 @@ def test_transformation():
         mutpt=0.8,
     )
     sim.add_particles(bunch_charge_C, distr, npart)
-    rbc_s0 = pc.reduced_beam_characteristics()
+    rbc_s0 = pc.beam_moments()
 
     # this must fail: we cannot transform from s to s
     with pytest.raises(Exception):
@@ -61,7 +61,7 @@ def test_transformation():
 
     # transform to t
     coordinate_transformation(pc, direction=CoordSystem.t)
-    rbc_t = pc.reduced_beam_characteristics()
+    rbc_t = pc.beam_moments()
 
     # this must fail: we cannot transform from t to t
     with pytest.raises(Exception):
@@ -69,7 +69,7 @@ def test_transformation():
 
     # transform back to s
     coordinate_transformation(pc, direction=CoordSystem.s)
-    rbc_s = pc.reduced_beam_characteristics()
+    rbc_s = pc.beam_moments()
 
     # finalize simulation
     sim.finalize()

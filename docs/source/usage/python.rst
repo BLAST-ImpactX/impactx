@@ -218,7 +218,7 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: init_envelope(ref, distr, intensity=None)
 
       Envelope tracking mode:
-      Create a 6x6 covariance matrix from a distribution and then initialize the the simulation for envelope tracking relative to a reference particle.
+      Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :param distr: distribution function (object from :py:mod:`impactx.distribution`)
@@ -236,6 +236,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: periods
 
       The number of periods to repeat the lattice.
+
+   .. py:property:: omp_threads
+
+      Controls the number of OpenMP threads to use (ImpactX default: "nosmt").
+
+      See the detailed `AMReX docs <https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html>`__ for details in the accepted values.
 
    .. py:property:: abort_on_warning_threshold
 
@@ -347,6 +353,13 @@ Particles
 
    This class stores particles, distributed over MPI ranks.
 
+   .. py:method:: clear(keep_mass=False, keep_charge=False)
+
+      Empty the container and reset the reference particle.
+
+      :param keep_mass: do not reset the reference particle mass
+      :param keep_charge: do not reset the reference particle charge
+
    .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bchchg)
 
       Add new particles to the container for fixed s.
@@ -377,12 +390,27 @@ Particles
 
       :param impactx.RefPart refpart: a reference particle to copy all attributes from
 
-   .. py:method:: reduced_beam_characteristics()
+   .. py:method:: beam_moments()
 
-      Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+      Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
 
       :return: beam properties with string keywords
       :rtype: dict
+
+   .. py:property:: store_beam_moments
+
+      In situ calculate and store the beam moments for every simulation step (default: ``False``).
+
+   .. py:method:: beam_moments_history()
+
+      Return the history of the beam moments on every step.
+
+      :return: Pandas Dataframe of beam properties, including the global reference position s
+      :rtype: Pandas Dataframe
+
+   .. py:method:: reset_beam_moments_history()
+
+      Reset the history of the beam moments
 
    .. py:method:: min_and_max_positions()
 
@@ -459,6 +487,13 @@ Particles
 
       Read-only: Get reference particle charge to mass ratio (C/kg)
 
+   .. py:method:: reset(keep_mass=False, keep_charge=False)
+
+      Reset the reference particle.
+
+      :param keep_mass: do not reset the reference particle mass
+      :param keep_charge: do not reset the reference particle charge
+
    .. py:method:: set_charge_qe(charge_qe)
 
       Write-only: Set reference particle charge in (positive) elementary charges.
@@ -495,7 +530,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Gaussian distribution.
 
@@ -508,20 +543,30 @@ For the input from Twiss parameters in Python, please use the helper function ``
    :param muxpx: correlation length-momentum
    :param muypy: see muxpx
    :param mutpt: see muxpx
+   :param meanx: mean value of x-coordinate
+   :param meany: see meanx
+   :param meant: see meant
+   :param meanpx: mean value of x-momentum
+   :param meanpy: see meanpx
+   :param meanpt: see meanpt
+   :param dispx: beam horizontal dispersion (in meters)
+   :param disppx: beam horizontal dispersion derivative (dimensionless)
+   :param dispy: see dispx
+   :param disppy: see disppx
 
-.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 4D Kurth distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
 
-.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Kurth distribution.
 
    R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)
    C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
 
-.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A K-V distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
@@ -530,18 +575,18 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
    This distribution sets all values to zero.
 
-.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
 
-.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A triangle distribution for laser-plasma acceleration related applications.
 
    A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
    The transverse distribution is a 4D waterbag.
 
-.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0)
+.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
 
    A 6D Waterbag distribution.
 
@@ -573,10 +618,31 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:method:: load_file(madx_file, nslice=1)
 
-      Load and append an accelerator lattice description from a MAD-X file.
+      Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
 
-      :param madx_file: file name to MAD-X file with beamline elements
-      :param nslice: number of slices used for the application of space charge
+      :param filename: filename to file with beamline elements
+      :param nslice: number of slices used for the application of collective effects
+
+   .. py:method:: from_pals(pals_line, nslice=1)
+
+      Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python Line.
+
+      :param pals_line: PALS Python Line with beamline elements
+      :param nslice: number of slices used for the application of collective effects
+
+   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
+
+      Plot over s of all elements in the KnownElementsList.
+
+      A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
+
+      Either populates the matplotlib axes in ax or creates a new axes containing the plot.
+
+      :param self: The KnownElementsList class in ImpactX
+      :param ref: A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+      :param ax: A plotting area in matplotlib (called axes there).
+      :param legend: Plot a legend if true.
+      :param legend_ncols: Number of columns for lattice element types in the legend.
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
@@ -695,7 +761,7 @@ This module provides elements and methods for the accelerator lattice.
    :param unit: specification of units (``"dimensionless"`` in units of the magnetic rigidity of the reference particle or ``"T-m"``)
    :param name: an optional name for the element
 
-.. py::class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
 
    A custom, linear transport matrix.
 
@@ -707,7 +773,7 @@ This module provides elements and methods for the accelerator lattice.
    The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is
    up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
 
-   :param R: a linear transport map to multiply with the the phase space vector :math:`(x,px,y,py,t,pt)`.
+   :param R: a linear transport map to multiply with the phase space vector :math:`(x,px,y,py,t,pt)`.
    :param ds: length associated with a user-defined linear element (defaults to 0), in m
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -726,6 +792,54 @@ This module provides elements and methods for the accelerator lattice.
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
+
+.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+
+   A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+   The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
+   For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
+
+   T. Zolkin, Phys. Rev. Accel. Beams 20, 043501 (2017), `DOI:10.1103/PhysRevAccelBeams.20.043501 <https://link.aps.org/doi/10.1103/PhysRevAccelBeams.20.043501>`__
+
+   The coefficients must appear in the following sequence:
+
+   dipole, quadrupole, sextupole, octupole, etc...
+
+   Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
+   Here :math:`H_1` is the exact nonlinear Hamiltonian for a sector bend (including the kinematic square root),
+   and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
+
+   The vector potential is obtained from Table XI of the above-cited reference.
+
+   :param ds: Segment length in m.
+   :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param int_order: the order used for symplectic integration (2, 4, or 6)
+   :param mapsteps: number of integration steps per slice used for symplectic integration
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+   The arrays k_normal and k_skew must have the same number of elements.
+
+   .. py:property:: unit
+
+      unit specification for multipole coefficients
+
+   .. py:property:: int_order
+
+      the order used for symplectic integration (2, 4, or 6)
+
+   .. py:property:: mapsteps
+
+      number of integration steps per slice used for symplectic integration
+
 
 .. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
@@ -768,7 +882,7 @@ This module provides elements and methods for the accelerator lattice.
 
       number of integration steps per slice used for symplectic integration
 
-.. py::class:: impactx.elements.Empty
+.. py:class:: impactx.elements.Empty
 
    This element does nothing.
 
@@ -1177,7 +1291,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
@@ -1185,6 +1299,7 @@ This module provides elements and methods for the accelerator lattice.
    :param aperture_y: vertical half-aperture (rectangular or elliptical) in m
    :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
    :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m

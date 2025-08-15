@@ -14,6 +14,7 @@ Single Particle Dynamics
    :maxdepth: 1
 
    examples/fodo/README.rst
+   examples/pals/README.rst
    examples/chicane/README.rst
    examples/alignment/README.rst
    examples/rotation/README.rst
@@ -126,6 +127,7 @@ Virtual Test Stands
    examples/apochromatic/README.rst
    examples/fodo_tune/README.rst
    examples/linac_segment/README.rst
+   examples/htu_beamline/README.rst
 
 
 Unit tests

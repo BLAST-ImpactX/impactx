@@ -23,7 +23,9 @@
 
 #include <AMReX.H>
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 #include <AMReX_SmallMatrix.H>
 
 #include <cmath>
@@ -123,7 +125,8 @@ namespace SoftSolenoidData
       public mixin::LinearTransport<SoftSolenoid>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::PipeAperture
+      public mixin::PipeAperture,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -231,15 +234,16 @@ namespace SoftSolenoidData
          * @param idcpu particle global index
          * @param refpart reference particle
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -256,7 +260,7 @@ namespace SoftSolenoidData
             // https://uspas.fnal.gov/materials/09UNM/ComputationalMethods.pdf.
             // R denotes the transfer matrix in the basis (x,px,y,py,t,pt),
             // so that, e.g., R(3,4) = dyf/dpyi.
-            amrex::SmallVector<amrex::ParticleReal, 6, 1> const v{x, px, y, py, t, pt};
+            amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
 
             // push particles using the linear map
             auto const out = R * v;
@@ -284,6 +288,7 @@ namespace SoftSolenoidData
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
@@ -302,8 +307,8 @@ namespace SoftSolenoidData
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
-            // compute intial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(std::pow(pt, 2) - 1.0_prt);
+            // compute initial value of beta*gamma
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
             amrex::ParticleReal const zin = s - sedge;
@@ -328,7 +333,7 @@ namespace SoftSolenoidData
             refpart.z = z + slice_ds*pz/bgi;
 
             // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(std::pow(ptf, 2) - 1.0_prt);
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
 
             // advance momentum (px,py,pz)
             refpart.px = px*bgf/bgi;
@@ -383,7 +388,7 @@ namespace SoftSolenoidData
             // specify constants
             using ablastr::constant::math::pi;
             amrex::ParticleReal const zlen = m_ds;
-            amrex::ParticleReal const zmid = zlen / 2.0_prt;
+            amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis magnetic field (z is relative to solenoid midpoint)
             amrex::ParticleReal bfield = 0.0;
@@ -422,6 +427,7 @@ namespace SoftSolenoidData
                    [[maybe_unused]] amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // push the reference particle
             amrex::ParticleReal const t = refpart.t;
@@ -429,7 +435,7 @@ namespace SoftSolenoidData
             amrex::ParticleReal const z = zeval;
 
             if (pt < -1.0_prt) {
-                refpart.t = t + tau/std::sqrt(1.0_prt - std::pow(pt, -2));
+                refpart.t = t + tau/std::sqrt(1.0_prt - powi<-2>(pt));
                 refpart.pt = pt;
             }
             else {
@@ -453,8 +459,8 @@ namespace SoftSolenoidData
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/std::pow(betgam,2);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/std::pow(betgam,2);
+            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
 
         }
 
@@ -472,6 +478,7 @@ namespace SoftSolenoidData
                    amrex::ParticleReal & zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             amrex::ParticleReal const t = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
@@ -491,8 +498,8 @@ namespace SoftSolenoidData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::ParticleReal const alpha = B0*bz/2.0_prt;
-            amrex::ParticleReal const alpha2 = std::pow(alpha,2);
+            amrex::ParticleReal const alpha = B0*bz*0.5_prt;
+            amrex::ParticleReal const alpha2 = powi<2>(alpha);
 
             refpart.map(2,1) = R(2,1) - tau*alpha2*R(1,1);
             refpart.map(2,2) = R(2,2) - tau*alpha2*R(1,2);
@@ -540,7 +547,7 @@ namespace SoftSolenoidData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::ParticleReal const theta = tau*B0*bz/2.0_prt;
+            amrex::ParticleReal const theta = tau*B0*bz*0.5_prt;
             amrex::ParticleReal const cs = std::cos(theta);
             amrex::ParticleReal const sn = std::sin(theta);
 

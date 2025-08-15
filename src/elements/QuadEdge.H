@@ -19,7 +19,9 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -33,7 +35,8 @@ namespace impactx::elements
       public mixin::LinearTransport<QuadEdge>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::NoFinalize,
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "QuadEdge";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -107,7 +110,7 @@ namespace impactx::elements
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
             // the global scale constant; sign depends on entry or exit
-            m_a = m_flag * (-1_prt * m_g / 12.0_prt);
+            m_a = static_cast<amrex::ParticleReal>(m_flag) * (-1_prt * m_g / 12.0_prt);
         }
 
         /** This is a quadedge functor, so that a variable of this type can be used like a
@@ -124,51 +127,54 @@ namespace impactx::elements
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
 
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+            using namespace std; // for cmath(float)
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
             // compute particle momentum deviation delta + 1
-            amrex::ParticleReal const delta1 = std::sqrt(1_prt - 2_prt*pt/m_beta + std::pow(pt,2));
-            amrex::ParticleReal a = m_a / delta1;
+            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+            T_Real a = m_a / delta1;
 
-            // intialize output values
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal pyout = py;
+            // initialize output values
+            T_Real xout = x;
+            T_Real yout = y;
+            T_Real tout = t;
+            T_Real pxout = px;
+            T_Real pyout = py;
 
             // intermediate quantities to be used below
-            amrex::ParticleReal x2my2 = x*x - y*y;
-            amrex::ParticleReal x2py2 = x*x + y*y;
-            amrex::ParticleReal denominator = 1_prt - 9_prt*std::pow(a,2)*std::pow(x2my2,2);
+            T_Real x2my2 = x*x - y*y;
+            T_Real x2py2 = x*x + y*y;
+            T_Real denominator = 1_prt - 9_prt*powi<2>(a)*powi<2>(x2my2);
 
             // apply edge focusing (transverse phase space)
-            xout = x - a * (std::pow(x,3) + 3_prt * x * std::pow(y,2));
-            yout = y + a * (3_prt * std::pow(x,2) * y + std::pow(y,3));
+            xout = x - a * (powi<3>(x) + 3_prt * x * powi<2>(y));
+            yout = y + a * (3_prt * powi<2>(x) * y + powi<3>(y));
 
             pxout = (px + 3_prt*a*px*x2py2 - 6_prt*a*py*x*y) / denominator;
             pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
 
             // apply edge focusing (longitudinal phase space)
-            amrex::ParticleReal f4 = a * ( pxout * (std::pow(x,3) + 3_prt*x*std::pow(y,2))
-                                         - pyout * (std::pow(y,3) + 3_prt*y*std::pow(x,2)) );
-            tout = t + f4 * (pt - 1_prt/m_beta) / std::pow(delta1,2);
+            T_Real f4 = a * ( pxout * (powi<3>(x) + 3_prt*x*powi<2>(y))
+                                         - pyout * (powi<3>(y) + 3_prt*y*powi<2>(x)) );
+            tout = t + f4 * (pt - 1_prt/m_beta) / powi<2>(delta1);
 
             // update output values
             x = xout;

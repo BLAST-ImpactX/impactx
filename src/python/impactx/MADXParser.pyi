@@ -1,10 +1,9 @@
 from __future__ import annotations
-
 import os as os
 import re as re
 import warnings as warnings
 
-__all__ = [
+__all__: list[str] = [
     "MADXInputError",
     "MADXInputWarning",
     "MADXParser",
@@ -35,7 +34,7 @@ class MADXParser:
         Combine to one list of all basic
         elements.
 
-        return a list of of element dictionaries
+        return a list of element dictionaries
 
         """
     def _flatten(self, line):

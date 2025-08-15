@@ -19,7 +19,9 @@
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -34,6 +36,9 @@ namespace impactx::elements
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize
+      // At least on Intel AVX512, there is a small overhead to vectorize this element, see
+      // https://github.com/BLAST-ImpactX/impactx/pull/1002
+      // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "DipEdge";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -85,6 +90,7 @@ namespace impactx::elements
         void compute_constants ([[maybe_unused]] RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -93,9 +99,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
-                / std::pow(cos_psi, 3)
-                * m_g * m_K2 / std::pow(m_rc, 2);
+            amrex::ParticleReal const vf = (1.0_prt + powi<2>(sin_psi))
+                / powi<3>(cos_psi)
+                * m_g * m_K2 / powi<2>(m_rc);
 
             m_R43 = vf - m_R21;
         }
@@ -114,15 +120,16 @@ namespace impactx::elements
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & AMREX_RESTRICT x,
-            amrex::ParticleReal & AMREX_RESTRICT y,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT t,
-            amrex::ParticleReal & AMREX_RESTRICT px,
-            amrex::ParticleReal & AMREX_RESTRICT py,
-            [[maybe_unused]] amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -156,6 +163,7 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
@@ -165,9 +173,9 @@ namespace impactx::elements
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
-            amrex::ParticleReal const vf = (1.0_prt + std::pow(sin_psi, 2))
-                / std::pow(cos_psi, 3)
-                * m_g * m_K2 / std::pow(m_rc, 2);
+            amrex::ParticleReal const vf = (1.0_prt + powi<2>(sin_psi))
+                / powi<3>(cos_psi)
+                * m_g * m_K2 / powi<2>(m_rc);
 
             amrex::ParticleReal const R43 = vf - R21;
 

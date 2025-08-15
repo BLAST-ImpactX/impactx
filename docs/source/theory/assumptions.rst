@@ -5,11 +5,13 @@ Assumptions
 
 This is an overview of physical assumptions implemented in the numerics of ImpactX.
 
+ImpactX supports multiple :ref:`tracking modes <usage_run-tracking-mode>`.
+This section focuses on *particle tracking*.
 
-Tracking and Lattice Optics
----------------------------
+Particle Tracking and Lattice Optics
+------------------------------------
 
-Tracking through lattice optics in ImpactX is performed by updating the canonical phase space variables (x,px,y,py,t,pt) using symplectic transport.
+Particle tracking through lattice optics in ImpactX is performed by updating the canonical phase space variables (x,px,y,py,t,pt) using symplectic transport.
 The elements supported currently fall into one of the following categories:
 
 * **zero-length (thin) elements**, such as multipole kicks and coordinate transformations
@@ -17,11 +19,21 @@ The elements supported currently fall into one of the following categories:
 * **soft-edge elements** described by :math:`s`-dependent, user-provided field data, such as RF cavities
 * **ML surrogate models** using a trained neural network (not necessarily symplectic)
 
-Transport may be performed using one of three possible levels of approximation to the underlying Hamiltonian:
+Particle tracking may be performed using one of three possible levels of approximation to the underlying Hamiltonian:
 
-* **linear transfer map (default):** obtained by expanding the Hamiltonian through terms of degree 2 in the deviation of phase space variables from those of the reference particle
-* **chromatic or paraxial approximation:** obtained by expanding the Hamiltonian through terms of degree 2 in the transverse phase space variables, while retaining the nonlinear dependence on the energy variable pt
-* **exact Hamiltonian:** obtained using the exact nonlinear Hamiltonian
+================================== ==================== =================================================
+Model                              Use Case             Notes
+================================== ==================== =================================================
+linear transfer map (default)      Fast estimates       Obtained by expanding the Hamiltonian through
+                                                        terms of degree 2 in the deviation of phase space
+                                                        variables from those of the reference particle
+chromatic (paraxial) approximation Large energy spreads Obtained by expanding the Hamiltonian through
+                                                        terms of degree 2 in the transverse phase space
+                                                        variables, while retaining the nonlinear
+                                                        dependence on the energy variable pt
+exact Hamiltonian                  Large energy spreads Obtained using the exact nonlinear Hamiltonian
+                                   and high divergence
+================================== ==================== =================================================
 
 
 Space Charge (Poisson Solver)

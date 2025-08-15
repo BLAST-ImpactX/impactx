@@ -22,7 +22,7 @@ namespace impactx::distribution
     {
         /** This distribution sets all values to zero.
          */
-        Empty()
+        Empty ()
         {
         }
 

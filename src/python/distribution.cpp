@@ -34,13 +34,13 @@ void init_distribution(py::module& m)
                 amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A 6D Gaussian distribution"
         );
 
@@ -54,13 +54,13 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
          >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A 4D Kurth distribution transversely + a uniform distribution\n"
              "in t + a Gaussian distribution in pt"
         );
@@ -75,13 +75,13 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A 6D Kurth distribution\n\n"
              "R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)\n"
              "C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)"
@@ -97,13 +97,13 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A K-V distribution transversely + a uniform distribution\n"
              "in t + a Gaussian distribution in pt"
         );
@@ -123,13 +123,13 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum)."
         );
 
@@ -155,13 +155,13 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A triangle distribution for laser-plasma acceleration related applications.\n\n"
              "A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).\n"
              "The transverse distribution is a 4D waterbag."
@@ -177,13 +177,13 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
-             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
-             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
-             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
-             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
-             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
-             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("lambda_x"), py::arg("lambda_y"), py::arg("lambda_t"),
+             py::arg("lambda_px"), py::arg("lambda_py"), py::arg("lambda_pt"),
+             py::arg("mu_x_px")=0.0, py::arg("mu_y_py")=0.0, py::arg("mu_t_pt")=0.0,
+             py::arg("mean_x")=0.0, py::arg("mean_y")=0.0, py::arg("mean_t")=0.0,
+             py::arg("mean_px")=0.0, py::arg("mean_py")=0.0, py::arg("mean_pt")=0.0,
+             py::arg("dispersion_x")=0.0, py::arg("dispersion_px")=0.0,
+             py::arg("dispersion_y")=0.0, py::arg("dispersion_py")=0.0,
              "A 6D Waterbag distribution"
         );
 

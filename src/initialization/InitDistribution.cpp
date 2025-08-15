@@ -236,15 +236,15 @@ namespace impactx
             {
                 throw std::runtime_error("Empty and Thermal type cannot create Covariance matrices!");
             } else {
-                amrex::ParticleReal lambdaX = distribution.m_lambdaX;
-                amrex::ParticleReal lambdaY = distribution.m_lambdaY;
-                amrex::ParticleReal lambdaT = distribution.m_lambdaT;
-                amrex::ParticleReal lambdaPx = distribution.m_lambdaPx;
-                amrex::ParticleReal lambdaPy = distribution.m_lambdaPy;
-                amrex::ParticleReal lambdaPt = distribution.m_lambdaPt;
-                amrex::ParticleReal muxpx = distribution.m_muxpx;
-                amrex::ParticleReal muypy = distribution.m_muypy;
-                amrex::ParticleReal mutpt = distribution.m_mutpt;
+                amrex::ParticleReal lambdaX = distribution.m_lambda_x;
+                amrex::ParticleReal lambdaY = distribution.m_lambda_y;
+                amrex::ParticleReal lambdaT = distribution.m_lambda_t;
+                amrex::ParticleReal lambdaPx = distribution.m_lambda_px;
+                amrex::ParticleReal lambdaPy = distribution.m_lambda_py;
+                amrex::ParticleReal lambdaPt = distribution.m_lambda_pt;
+                amrex::ParticleReal muxpx = distribution.m_mu_x_px;
+                amrex::ParticleReal muypy = distribution.m_mu_y_py;
+                amrex::ParticleReal mutpt = distribution.m_mu_t_pt;
 
                 // use distribution inputs to populate a 6x6 covariance matrix
                 amrex::ParticleReal denom_x = 1.0 - muxpx*muxpx;

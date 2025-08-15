@@ -19,16 +19,16 @@ def twiss(
     alpha_x: np.float64 = 0.0,
     alpha_y: np.float64 = 0.0,
     alpha_t: np.float64 = 0.0,
-    meanX: np.float64 = 0.0,
-    meanY: np.float64 = 0.0,
-    meanT: np.float64 = 0.0,
-    meanPx: np.float64 = 0.0,
-    meanPy: np.float64 = 0.0,
-    meanPt: np.float64 = 0.0,
-    dispX: np.float64 = 0.0,
-    dispY: np.float64 = 0.0,
-    dispPx: np.float64 = 0.0,
-    dispPy: np.float64 = 0.0,
+    mean_x: np.float64 = 0.0,
+    mean_y: np.float64 = 0.0,
+    mean_t: np.float64 = 0.0,
+    mean_px: np.float64 = 0.0,
+    mean_py: np.float64 = 0.0,
+    mean_pt: np.float64 = 0.0,
+    dispersion_x: np.float64 = 0.0,
+    dispersion_y: np.float64 = 0.0,
+    dispersion_px: np.float64 = 0.0,
+    dispersion_py: np.float64 = 0.0,
 ):
     """
     Helper function to convert Courant-Snyder / Twiss input into phase space ellipse input.
@@ -42,16 +42,16 @@ def twiss(
     :param alpha_x: Alpha function value () in the x dimension, default is 0.0.
     :param alpha_y: Alpha function value in the y dimension, default is 0.0.
     :param alpha_t: Alpha function value in the t dimension, default is 0.0.
-    :param meanX: offset of the mean (centroid) position in x from that of the reference particle
-    :param meanY: offset of the mean (centroid) position in y from that of the reference particle
-    :param meanT: offset of the mean (centroid) position in t from that of the reference particle
-    :param meanPx: offset of the mean (centroid) momentum in x from that of the reference particle
-    :param meanPy: offset of the mean (centroid) momentum in y from that of the reference particle
-    :param meanPt: offset of the mean (centroid) momentum in t from that of the reference particle
-    :param dispX: dispersion and its derivative in horizontal and vertical directions
-    :param dispY: dispersion and its derivative in horizontal and vertical directions
-    :param dispPx: dispersion and its derivative in horizontal and vertical directions
-    :param dispPy: dispersion and its derivative in horizontal and vertical directions
+    :param mean_x: offset of the mean (centroid) position in x from that of the reference particle
+    :param mean_y: offset of the mean (centroid) position in y from that of the reference particle
+    :param mean_t: offset of the mean (centroid) position in t from that of the reference particle
+    :param mean_px: offset of the mean (centroid) momentum in x from that of the reference particle
+    :param mean_py: offset of the mean (centroid) momentum in y from that of the reference particle
+    :param mean_pt: offset of the mean (centroid) momentum in t from that of the reference particle
+    :param dispersion_x: dispersion and its derivative in horizontal and vertical directions
+    :param dispersion_y: dispersion and its derivative in horizontal and vertical directions
+    :param dispersion_px: dispersion and its derivative in horizontal and vertical directions
+    :param dispersion_py: dispersion and its derivative in horizontal and vertical directions
     :return: A dictionary containing calculated phase space input: 'lambdaX', 'lambdaY', 'lambdaT', 'lambdaPx', 'lambdaPy', 'lambdaPt', 'muxpx', 'muypy', 'mutpt'.
     """
     if beta_x <= 0.0 or beta_y <= 0.0 or beta_t <= 0.0:
@@ -74,23 +74,23 @@ def twiss(
     gamma_x, gamma_y, gamma_t = gammas
 
     return {
-        "lambdaX": np.sqrt(emitt_x / gamma_x),
-        "lambdaY": np.sqrt(emitt_y / gamma_y),
-        "lambdaT": np.sqrt(emitt_t / gamma_t),
-        "lambdaPx": np.sqrt(emitt_x / beta_x),
-        "lambdaPy": np.sqrt(emitt_y / beta_y),
-        "lambdaPt": np.sqrt(emitt_t / beta_t),
-        "muxpx": alpha_x / np.sqrt(beta_x * gamma_x),
-        "muypy": alpha_y / np.sqrt(beta_y * gamma_y),
-        "mutpt": alpha_t / np.sqrt(beta_t * gamma_t),
-        "meanX": meanX,
-        "meanY": meanY,
-        "meanT": meanT,
-        "meanPx": meanPx,
-        "meanPy": meanPy,
-        "meanPt": meanPt,
-        "dispX": dispX,
-        "dispY": dispY,
-        "dispPx": dispPx,
-        "dispPy": dispPy,
+        "lambda_x": np.sqrt(emitt_x / gamma_x),
+        "lambda_y": np.sqrt(emitt_y / gamma_y),
+        "lambda_t": np.sqrt(emitt_t / gamma_t),
+        "lambda_px": np.sqrt(emitt_x / beta_x),
+        "lambda_py": np.sqrt(emitt_y / beta_y),
+        "lambda_pt": np.sqrt(emitt_t / beta_t),
+        "mu_x_px": alpha_x / np.sqrt(beta_x * gamma_x),
+        "mu_y_py": alpha_y / np.sqrt(beta_y * gamma_y),
+        "mu_t_pt": alpha_t / np.sqrt(beta_t * gamma_t),
+        "mean_x": mean_x,
+        "mean_y": mean_y,
+        "mean_t": mean_t,
+        "mean_px": mean_px,
+        "mean_py": mean_py,
+        "mean_pt": mean_pt,
+        "dispersion_x": dispersion_x,
+        "dispersion_y": dispersion_y,
+        "dispersion_px": dispersion_px,
+        "dispersion_py": dispersion_py,
     }

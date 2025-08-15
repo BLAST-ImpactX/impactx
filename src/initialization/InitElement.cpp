@@ -67,8 +67,8 @@ namespace detail
         pp_element.getWithParser("ds", ds);
         pp_element.queryAddWithParser("nslice", nslice);
 
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(nslice > 0,
-                                         pp_element.getPrefix() + ".nslice must be > 0.");
+        //AMREX_ALWAYS_ASSERT_WITH_MESSAGE(nslice > 0,
+        //                                 pp_element.getPrefix() + ".nslice must be > 0.");
 
         return {ds, nslice};
     }

@@ -40,8 +40,8 @@ distr = distribution.Waterbag(
         alpha_x=1.3385830279518021,
         alpha_y=-1.3479109197361046,
         alpha_t=92.624347459169869,
+        dispX=-0.26669723385388505,
     ),
-    dispX=-0.26669723385388505,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 

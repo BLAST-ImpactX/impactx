@@ -13,20 +13,66 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/CovarianceMatrix.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_REAL.H>
 
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 
 namespace impactx::diagnostics
 {
+    /** Which moments to calculate for particles */
+    AMREX_ENUM(MomentSelection,
+        None = 0,
+        Moment = 1,          /**< mean, sigma */
+        MinMax = 2,          /**< min/max */
+        Dispersion = 4,      /**< dispersion */
+        Covariance = 8,      /**< cross-plane correlations: emittance, alpha, beta */
+        Eigenemittance = 16  /**< eigenemittance */
+    );
+
+    template<class E>
+    constexpr auto to_underlying (E e) noexcept
+    {
+        return static_cast<std::underlying_type_t<E>>(e);
+    }
+
+    constexpr MomentSelection operator| (MomentSelection lhs, MomentSelection rhs) noexcept
+    {
+        return static_cast<MomentSelection>(to_underlying(lhs) | to_underlying(rhs));
+    }
+
+    constexpr MomentSelection operator& (MomentSelection lhs, MomentSelection rhs) noexcept
+    {
+        return static_cast<MomentSelection>(to_underlying(lhs) & to_underlying(rhs));
+    }
+
+    constexpr MomentSelection operator~ (MomentSelection v) noexcept
+    {
+        return static_cast<MomentSelection>(~to_underlying(v));
+    }
+
+    constexpr bool is_set (MomentSelection selection, MomentSelection flag) noexcept
+    {
+        return (selection & flag) != MomentSelection::None;
+    }
+
     /** Compute moments of the beam distribution from particle data
      *
      * This uses an MPI Allreduce and returns a result on all ranks.
      */
     std::unordered_map<std::string, amrex::ParticleReal>
-    reduced_beam_characteristics (ImpactXParticleContainer const & pc);
+    reduced_beam_characteristics (
+        ImpactXParticleContainer const & pc,
+        MomentSelection selection = (
+            MomentSelection::Moment |
+            MomentSelection::MinMax |
+            MomentSelection::Dispersion |
+            MomentSelection::Covariance
+        )
+    );
 
     /** Compute moments of the beam distribution from covariance matrix
      */

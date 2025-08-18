@@ -29,6 +29,28 @@
 
 namespace impactx::diagnostics
 {
+namespace detail
+{
+    /** prepare reduction operations for calculation of mean and min/max values in 6D phase space */
+    template<std::size_t num_red_ops_1_sum, std::size_t num_red_ops_1_min, std::size_t num_red_ops_1_max>
+    constexpr auto
+    get_reduce_ops1 ()
+    {
+        if constexpr (num_red_ops_1_min + num_red_ops_1_max > 0) {
+            return amrex::TypeMultiplier<amrex::ReduceOps,
+                amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt
+                amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
+                amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
+            >{};
+        } else {
+            return amrex::TypeMultiplier<amrex::ReduceOps,
+                amrex::ReduceOpSum[num_red_ops_1_sum]  // preparing mean values for w, x, y, t, px, py, pt
+            >{};
+        }
+    }
+} // namespace detail
+
+    template<MomentSelection selection>
     std::unordered_map<std::string, amrex::ParticleReal>
     reduced_beam_characteristics (ImpactXParticleContainer const & pc)
     {
@@ -50,15 +72,11 @@ namespace impactx::diagnostics
          */
         // numbers of same type reduction operations in first concurrent batch
         static constexpr std::size_t num_red_ops_1_sum = 7;  // summation
-        static constexpr std::size_t num_red_ops_1_min = 6;  // minimum
-        static constexpr std::size_t num_red_ops_1_max = 6;  // maximum
+        static constexpr std::size_t num_red_ops_1_min = is_set(selection, MomentSelection::MinMax) ? 6 : 0;  // minimum
+        static constexpr std::size_t num_red_ops_1_max = is_set(selection, MomentSelection::MinMax) ? 6 : 0;  // maximum
 
         // prepare reduction operations for calculation of mean and min/max values in 6D phase space
-        amrex::TypeMultiplier<amrex::ReduceOps,
-            amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt
-            amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
-            amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
-        > reduce_ops_1;
+        auto reduce_ops_1 = detail::get_reduce_ops1<num_red_ops_1_sum, num_red_ops_1_min, num_red_ops_1_max>();
         using ReducedDataT1 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_1_sum + num_red_ops_1_min + num_red_ops_1_max]>;
 
         auto r1 = amrex::ParticleReduce<ReducedDataT1>(
@@ -85,11 +103,17 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_py_mean = p_py * p_w;
                 const amrex::ParticleReal p_pt_mean = p_pt * p_w;
 
-                return {p_w,
-                        p_x_mean, p_y_mean, p_t_mean,
-                        p_px_mean, p_py_mean, p_pt_mean,
-                        p_x, p_y, p_t, p_px, p_py, p_pt,
-                        p_x, p_y, p_t, p_px, p_py, p_pt};
+                if constexpr (is_set(selection, MomentSelection::MinMax)) {
+                    return {p_w,
+                            p_x_mean, p_y_mean, p_t_mean,
+                            p_px_mean, p_py_mean, p_pt_mean,
+                            p_x, p_y, p_t, p_px, p_py, p_pt,
+                            p_x, p_y, p_t, p_px, p_py, p_pt};
+                } else {
+                    return {p_w,
+                            p_x_mean, p_y_mean, p_t_mean,
+                            p_px_mean, p_py_mean, p_pt_mean};
+                }
             },
             reduce_ops_1
         );
@@ -238,20 +262,26 @@ namespace impactx::diagnostics
             amrex::ParallelDescriptor::Communicator()
         );
 
-        // minimum values
-        amrex::ParticleReal const x_min = values_per_rank_min.at(0);
-        amrex::ParticleReal const y_min = values_per_rank_min.at(1);
-        amrex::ParticleReal const t_min = values_per_rank_min.at(2);
-        amrex::ParticleReal const px_min = values_per_rank_min.at(3);
-        amrex::ParticleReal const py_min = values_per_rank_min.at(4);
-        amrex::ParticleReal const pt_min = values_per_rank_min.at(5);
-        // maximum values
-        amrex::ParticleReal const x_max = values_per_rank_max.at(0);
-        amrex::ParticleReal const y_max = values_per_rank_max.at(1);
-        amrex::ParticleReal const t_max = values_per_rank_max.at(2);
-        amrex::ParticleReal const px_max = values_per_rank_max.at(3);
-        amrex::ParticleReal const py_max = values_per_rank_max.at(4);
-        amrex::ParticleReal const pt_max = values_per_rank_max.at(5);
+        [[maybe_unused]] amrex::ParticleReal x_min, y_min, t_min,
+                                             px_min, py_min, pt_min,
+                                             x_max, y_max, t_max,
+                                             px_max, py_max, pt_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            // minimum values
+            x_min = values_per_rank_min.at(0);
+            y_min = values_per_rank_min.at(1);
+            t_min = values_per_rank_min.at(2);
+            px_min = values_per_rank_min.at(3);
+            py_min = values_per_rank_min.at(4);
+            pt_min = values_per_rank_min.at(5);
+            // maximum values
+            x_max = values_per_rank_max.at(0);
+            y_max = values_per_rank_max.at(1);
+            t_max = values_per_rank_max.at(2);
+            px_max = values_per_rank_max.at(3);
+            py_max = values_per_rank_max.at(4);
+            pt_max = values_per_rank_max.at(5);
+        }
         // mean square and correlation values
         amrex::ParticleReal const x_ms   = values_per_rank_2nd.at(0) /= w_sum;
         amrex::ParticleReal const y_ms   = values_per_rank_2nd.at(1) /= w_sum;
@@ -373,26 +403,38 @@ namespace impactx::diagnostics
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
         data["x_mean"] = x_mean;
-        data["x_min"] = x_min;
-        data["x_max"] = x_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            data["x_min"] = x_min;
+            data["x_max"] = x_max;
+        }
         data["y_mean"] = y_mean;
-        data["y_min"] = y_min;
-        data["y_max"] = y_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            data["y_min"] = y_min;
+            data["y_max"] = y_max;
+        }
         data["t_mean"] = t_mean;
-        data["t_min"] = t_min;
-        data["t_max"] = t_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            data["t_min"] = t_min;
+            data["t_max"] = t_max;
+        }
         data["sig_x"] = sig_x;
         data["sig_y"] = sig_y;
         data["sig_t"] = sig_t;
         data["px_mean"] = px_mean;
-        data["px_min"] = px_min;
-        data["px_max"] = px_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            data["px_min"] = px_min;
+            data["px_max"] = px_max;
+        }
         data["py_mean"] = py_mean;
-        data["py_min"] = py_min;
-        data["py_max"] = py_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            data["py_min"] = py_min;
+            data["py_max"] = py_max;
+        }
         data["pt_mean"] = pt_mean;
-        data["pt_min"] = pt_min;
-        data["pt_max"] = pt_max;
+        if constexpr (is_set(selection, MomentSelection::MinMax)) {
+            data["pt_min"] = pt_min;
+            data["pt_max"] = pt_max;
+        }
         data["sig_px"] = sig_px;
         data["sig_py"] = sig_py;
         data["sig_pt"] = sig_pt;
@@ -600,6 +642,17 @@ namespace impactx::diagnostics
         data["charge_C"] = nan;  // TODO: with space charge
 
         return data;
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    reduced_beam_characteristics (ImpactXParticleContainer const & pc, MomentSelection selection)
+    {
+        if ((selection & MomentSelection::MinMax)   != MomentSelection::None) {
+            return reduced_beam_characteristics<MomentSelection::MinMax>(pc);
+        } else {
+            return reduced_beam_characteristics<MomentSelection::None>(pc);
+        }
+
     }
 
 } // namespace impactx::diagnostics

@@ -49,6 +49,9 @@ class Config:
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
     have_simd: typing.ClassVar[bool] = False
+    precision: typing.ClassVar[str] = "DOUBLE"
+    precision_particles: typing.ClassVar[str] = "DOUBLE"
+    simd_size: typing.ClassVar[int] = 1
 
 class CoordSystem:
     """

@@ -33,25 +33,19 @@ namespace impactx::diagnostics
         Eigenemittance = 16  /**< eigenemittance */
     );
 
-    template<class E>
-    constexpr auto to_underlying (E e) noexcept
-    {
-        return static_cast<std::underlying_type_t<E>>(e);
-    }
-
     constexpr MomentSelection operator| (MomentSelection lhs, MomentSelection rhs) noexcept
     {
-        return static_cast<MomentSelection>(to_underlying(lhs) | to_underlying(rhs));
+        return static_cast<MomentSelection>(amrex::getEnumUnderlyingValue(lhs) | amrex::getEnumUnderlyingValue(rhs));
     }
 
     constexpr MomentSelection operator& (MomentSelection lhs, MomentSelection rhs) noexcept
     {
-        return static_cast<MomentSelection>(to_underlying(lhs) & to_underlying(rhs));
+        return static_cast<MomentSelection>(amrex::getEnumUnderlyingValue(lhs) & amrex::getEnumUnderlyingValue(rhs));
     }
 
     constexpr MomentSelection operator~ (MomentSelection v) noexcept
     {
-        return static_cast<MomentSelection>(~to_underlying(v));
+        return static_cast<MomentSelection>(~amrex::getEnumUnderlyingValue(v));
     }
 
     constexpr bool is_set (MomentSelection selection, MomentSelection flag) noexcept

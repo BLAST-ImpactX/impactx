@@ -185,6 +185,11 @@ if(ImpactX_UNITY_BUILD)
     )
 endif()
 
+# Fast-Math
+if(ImpactX_FASTMATH)
+    target_link_libraries(lib PUBLIC AMReX::Flags_FASTMATH)
+endif()
+
 # executable application
 #   note: we currently avoid a dependency on a core library
 #         for simpler usage, but could make this an option

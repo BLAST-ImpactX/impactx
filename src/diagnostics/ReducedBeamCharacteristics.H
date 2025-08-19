@@ -35,17 +35,17 @@ namespace impactx::diagnostics
 
     constexpr MomentSelection operator| (MomentSelection lhs, MomentSelection rhs) noexcept
     {
-        return static_cast<MomentSelection>(amrex::getEnumUnderlyingValue(lhs) | amrex::getEnumUnderlyingValue(rhs));
+        return static_cast<MomentSelection>(static_cast<std::underlying_type_t<MomentSelection>>(lhs) | static_cast<std::underlying_type_t<MomentSelection>>(rhs));
     }
 
     constexpr MomentSelection operator& (MomentSelection lhs, MomentSelection rhs) noexcept
     {
-        return static_cast<MomentSelection>(amrex::getEnumUnderlyingValue(lhs) & amrex::getEnumUnderlyingValue(rhs));
+        return static_cast<MomentSelection>(static_cast<std::underlying_type_t<MomentSelection>>(lhs) & static_cast<std::underlying_type_t<MomentSelection>>(rhs));
     }
 
     constexpr MomentSelection operator~ (MomentSelection v) noexcept
     {
-        return static_cast<MomentSelection>(~amrex::getEnumUnderlyingValue(v));
+        return static_cast<MomentSelection>(~static_cast<std::underlying_type_t<MomentSelection>>(v));
     }
 
     constexpr bool is_set (MomentSelection selection, MomentSelection flag) noexcept

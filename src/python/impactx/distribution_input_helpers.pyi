@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import numpy
-import numpy as np
+import numpy as numpy
 
-__all__: list[str] = ["np", "twiss"]
+__all__: list[str] = ["numpy", "twiss"]
 
 def twiss(
     beta_x: numpy.float64,

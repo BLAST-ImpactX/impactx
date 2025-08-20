@@ -8,8 +8,10 @@ License: BSD-3-Clause-LBNL
 """
 
 from __future__ import annotations
-from impactx.impactx_pybind import elements
+
 import os as os
+
+from impactx.impactx_pybind import elements
 
 __all__: list[str] = [
     "elements",

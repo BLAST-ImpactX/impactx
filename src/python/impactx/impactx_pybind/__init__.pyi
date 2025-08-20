@@ -13,14 +13,15 @@ impactx_pybind
 """
 
 from __future__ import annotations
-from amrex import space3d as amr
-import amrex.space3d.amrex_3d_pybind
-from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
+
 import collections.abc
 import typing
-from . import distribution
-from . import elements
-from . import wakeconvolution
+
+import amrex.space3d.amrex_3d_pybind
+from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
+
+from . import distribution, elements, wakeconvolution
 
 __all__: list[str] = [
     "Config",
@@ -108,15 +109,15 @@ class ImpactX:
     def add_particles(
         self,
         bunch_charge: typing.SupportsFloat,
-        distr: impactx.impactx_pybind.distribution.Empty
-        | impactx.impactx_pybind.distribution.Gaussian
-        | impactx.impactx_pybind.distribution.Kurth4D
-        | impactx.impactx_pybind.distribution.Kurth6D
-        | impactx.impactx_pybind.distribution.KVdist
-        | impactx.impactx_pybind.distribution.Thermal
-        | impactx.impactx_pybind.distribution.Triangle
-        | impactx.impactx_pybind.distribution.Semigaussian
-        | impactx.impactx_pybind.distribution.Waterbag,
+        distr: distribution.Empty
+        | distribution.Gaussian
+        | distribution.Kurth4D
+        | distribution.Kurth6D
+        | distribution.KVdist
+        | distribution.Thermal
+        | distribution.Triangle
+        | distribution.Semigaussian
+        | distribution.Waterbag,
         npart: typing.SupportsInt,
     ) -> None:
         """
@@ -145,15 +146,15 @@ class ImpactX:
     def init_envelope(
         self,
         ref: RefPart,
-        distr: impactx.impactx_pybind.distribution.Empty
-        | impactx.impactx_pybind.distribution.Gaussian
-        | impactx.impactx_pybind.distribution.Kurth4D
-        | impactx.impactx_pybind.distribution.Kurth6D
-        | impactx.impactx_pybind.distribution.KVdist
-        | impactx.impactx_pybind.distribution.Thermal
-        | impactx.impactx_pybind.distribution.Triangle
-        | impactx.impactx_pybind.distribution.Semigaussian
-        | impactx.impactx_pybind.distribution.Waterbag,
+        distr: distribution.Empty
+        | distribution.Gaussian
+        | distribution.Kurth4D
+        | distribution.Kurth6D
+        | distribution.KVdist
+        | distribution.Thermal
+        | distribution.Triangle
+        | distribution.Semigaussian
+        | distribution.Waterbag,
         intensity: typing.SupportsFloat | None = None,
     ) -> None:
         """
@@ -798,55 +799,55 @@ def coordinate_transformation(
     """
 
 def create_envelope(
-    arg0: impactx.impactx_pybind.distribution.Empty
-    | impactx.impactx_pybind.distribution.Gaussian
-    | impactx.impactx_pybind.distribution.Kurth4D
-    | impactx.impactx_pybind.distribution.Kurth6D
-    | impactx.impactx_pybind.distribution.KVdist
-    | impactx.impactx_pybind.distribution.Thermal
-    | impactx.impactx_pybind.distribution.Triangle
-    | impactx.impactx_pybind.distribution.Semigaussian
-    | impactx.impactx_pybind.distribution.Waterbag,
+    arg0: distribution.Empty
+    | distribution.Gaussian
+    | distribution.Kurth4D
+    | distribution.Kurth6D
+    | distribution.KVdist
+    | distribution.Thermal
+    | distribution.Triangle
+    | distribution.Semigaussian
+    | distribution.Waterbag,
     arg1: typing.SupportsFloat | None,
 ) -> Envelope: ...
 def push(
     pc: ImpactXParticleContainer,
-    element: impactx.impactx_pybind.elements.Empty
-    | impactx.impactx_pybind.elements.Aperture
-    | impactx.impactx_pybind.elements.Buncher
-    | impactx.impactx_pybind.elements.CFbend
-    | impactx.impactx_pybind.elements.ChrAcc
-    | impactx.impactx_pybind.elements.ChrDrift
-    | impactx.impactx_pybind.elements.ChrPlasmaLens
-    | impactx.impactx_pybind.elements.ChrQuad
-    | impactx.impactx_pybind.elements.ConstF
-    | impactx.impactx_pybind.elements.BeamMonitor
-    | impactx.impactx_pybind.elements.DipEdge
-    | impactx.impactx_pybind.elements.Drift
-    | impactx.impactx_pybind.elements.ExactCFbend
-    | impactx.impactx_pybind.elements.ExactDrift
-    | impactx.impactx_pybind.elements.ExactMultipole
-    | impactx.impactx_pybind.elements.ExactQuad
-    | impactx.impactx_pybind.elements.ExactSbend
-    | impactx.impactx_pybind.elements.Kicker
-    | impactx.impactx_pybind.elements.LinearMap
-    | impactx.impactx_pybind.elements.Marker
-    | impactx.impactx_pybind.elements.Multipole
-    | impactx.impactx_pybind.elements.NonlinearLens
-    | impactx.impactx_pybind.elements.PlaneXYRot
-    | impactx.impactx_pybind.elements.Programmable
-    | impactx.impactx_pybind.elements.PRot
-    | impactx.impactx_pybind.elements.Quad
-    | impactx.impactx_pybind.elements.QuadEdge
-    | impactx.impactx_pybind.elements.RFCavity
-    | impactx.impactx_pybind.elements.Sbend
-    | impactx.impactx_pybind.elements.ShortRF
-    | impactx.impactx_pybind.elements.SoftSolenoid
-    | impactx.impactx_pybind.elements.SoftQuadrupole
-    | impactx.impactx_pybind.elements.Sol
-    | impactx.impactx_pybind.elements.Source
-    | impactx.impactx_pybind.elements.TaperedPL
-    | impactx.impactx_pybind.elements.ThinDipole,
+    element: elements.Empty
+    | elements.Aperture
+    | elements.Buncher
+    | elements.CFbend
+    | elements.ChrAcc
+    | elements.ChrDrift
+    | elements.ChrPlasmaLens
+    | elements.ChrQuad
+    | elements.ConstF
+    | elements.BeamMonitor
+    | elements.DipEdge
+    | elements.Drift
+    | elements.ExactCFbend
+    | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
+    | elements.ExactSbend
+    | elements.Kicker
+    | elements.LinearMap
+    | elements.Marker
+    | elements.Multipole
+    | elements.NonlinearLens
+    | elements.PlaneXYRot
+    | elements.Programmable
+    | elements.PRot
+    | elements.Quad
+    | elements.QuadEdge
+    | elements.RFCavity
+    | elements.Sbend
+    | elements.ShortRF
+    | elements.SoftSolenoid
+    | elements.SoftQuadrupole
+    | elements.Sol
+    | elements.Source
+    | elements.TaperedPL
+    | elements.ThinDipole,
     step: typing.SupportsInt = 0,
     period: typing.SupportsInt = 0,
 ) -> None:

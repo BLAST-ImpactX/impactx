@@ -70,7 +70,6 @@ repos:
   hooks:
     # Run the linter
     - id: ruff-check
-      types_or: [ python ]
       args: [--fix, --exit-non-zero-on-fix]
     # Run the formatter
     - id: ruff-format

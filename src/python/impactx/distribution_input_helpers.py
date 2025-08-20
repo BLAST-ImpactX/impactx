@@ -6,19 +6,19 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import numpy
 
 
 def twiss(
-    beta_x: np.float64,
-    beta_y: np.float64,
-    beta_t: np.float64,
-    emitt_x: np.float64,
-    emitt_y: np.float64,
-    emitt_t: np.float64,
-    alpha_x: np.float64 = 0.0,
-    alpha_y: np.float64 = 0.0,
-    alpha_t: np.float64 = 0.0,
+    beta_x: numpy.float64,
+    beta_y: numpy.float64,
+    beta_t: numpy.float64,
+    emitt_x: numpy.float64,
+    emitt_y: numpy.float64,
+    emitt_t: numpy.float64,
+    alpha_x: numpy.float64 = 0.0,
+    alpha_y: numpy.float64 = 0.0,
+    alpha_t: numpy.float64 = 0.0,
 ):
     """
     Helper function to convert Courant-Snyder / Twiss input into phase space ellipse input.
@@ -34,6 +34,8 @@ def twiss(
     :param alpha_t: Alpha function value in the t dimension, default is 0.0.
     :return: A dictionary containing calculated phase space input: 'lambdaX', 'lambdaY', 'lambdaT', 'lambdaPx', 'lambdaPy', 'lambdaPt', 'muxpx', 'muypy', 'mutpt'.
     """
+    import numpy as np
+
     if beta_x <= 0.0 or beta_y <= 0.0 or beta_t <= 0.0:
         raise ValueError(
             "Input Error: The beta function values need to be non-zero positive values in all dimensions."

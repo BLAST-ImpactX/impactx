@@ -3,12 +3,14 @@ Accelerator lattice elements in ImpactX
 """
 
 from __future__ import annotations
-import amrex.space3d.amrex_3d_pybind
+
 import collections.abc
-import impactx.impactx_pybind
 import typing
-from . import mixin
-from . import transformation
+
+import amrex.space3d.amrex_3d_pybind
+import impactx.impactx_pybind
+
+from . import mixin, transformation
 
 __all__: list[str] = [
     "Aperture",

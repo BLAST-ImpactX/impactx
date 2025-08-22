@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from analysis_APL_ChrPlasmaLens import get_moments, get_beams
+from analysis_APL_ChrPlasmaLens import get_beams, get_moments
 
 # initial/final beam
 (initial, beam_final, final) = get_beams()

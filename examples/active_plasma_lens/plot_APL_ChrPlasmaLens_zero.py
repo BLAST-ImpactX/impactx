@@ -6,9 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-from plot_APL_ChrPlasmaLens import read_time_series, plot_sigmas, plt, millimeter
-
 import argparse
+
+from plot_APL_ChrPlasmaLens import millimeter, plot_sigmas, plt, read_time_series
 
 # options to run this script, this one is used by the CTest harness
 parser = argparse.ArgumentParser(description="Plot the FODO benchmark.")

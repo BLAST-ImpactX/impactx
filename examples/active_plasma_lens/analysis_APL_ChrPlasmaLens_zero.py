@@ -97,7 +97,7 @@ assert np.allclose(
         2.548491664266332e-08,
         1e-06,
         20e-3,
-        3.923902e+02
+        3.923902e02,
     ],
     rtol=rtol,
     atol=atol,

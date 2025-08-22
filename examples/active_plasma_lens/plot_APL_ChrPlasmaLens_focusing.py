@@ -11,7 +11,9 @@ import argparse
 from plot_APL_ChrPlasmaLens import millimeter, plot_sigmas, plt, read_time_series
 
 # options to run this script, this one is used by the CTest harness
-parser = argparse.ArgumentParser(description="Plot the ChrPlasmaLens_focusing benchmark.")
+parser = argparse.ArgumentParser(
+    description="Plot the ChrPlasmaLens_focusing benchmark."
+)
 parser.add_argument(
     "--save-png", action="store_true", help="non-interactive run: save to PNGs"
 )

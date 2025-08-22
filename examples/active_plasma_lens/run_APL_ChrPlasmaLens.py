@@ -6,12 +6,13 @@
 #
 # -*- coding: utf-8 -*-
 import math
+
 import numpy as np
 
 from impactx import ImpactX, distribution, elements
 
 
-def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float, sigma_mid : float):
+def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float, sigma_mid: float):
     "Run the ChrPlasmaLens simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m]"
 
     sim = ImpactX()
@@ -37,7 +38,7 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float, sigma_mid : float):
 
     # Midpoint parameters
     alpha_mid = 0.0
-    #sigma_mid = 10e-6  # [m]
+    # sigma_mid = 10e-6  # [m]
     emitn = 10e-6  # [m]
     emitg = emitn / ref.beta_gamma
     beta_mid = sigma_mid**2 / emitg
@@ -68,13 +69,13 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float, sigma_mid : float):
     # from the beginning, ignoring energy spread
     # [Doesn't give same result as ChrPlasmaLens and ChrQuad for some reason, even when sigpt_0 = 0]
     # (beta_end, alpha_end, gamma_end) = analytic_final_estimate(APL_g, ref.rigidity_Tm, APL_length, beta_0, alpha_0)
-    
+
     # print(f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]")
     # sigma_end = np.sqrt(emitg * beta_end)
     # sigmap_end = np.sqrt(emitg * gamma_end)
     # print(f"sigma_end = {sigma_end} [m], sigmap_end = {sigmap_end} [-]")
     # print()
-    
+
     # Longitudinal parameters (sigpt_0 [-] from input arguments)
     sigt_0 = 1e-3  # [m]
     emit_t = math.sqrt(sigt_0**2 * sigpt_0**2 - 0**2)
@@ -118,36 +119,46 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float, sigma_mid : float):
     # clean shutdown
     sim.finalize()
 
+
 def analytic_final_estimate(APL_g, rigidity_Tm, APL_length, beta_0, alpha_0):
     ## Note: this seems to not work correctly for k != 0???
     k = APL_g * rigidity_Tm
     print(f"k = {k} [1/m^2]")
     if k > 0:
-        M = np.asarray([ \
-                         [            np.cos(APL_length*np.sqrt(k)), np.sin(APL_length*np.sqrt(k))/np.sqrt(k)],\
-                         [-np.sqrt(k)*np.sin(APL_length*np.sqrt(k)), np.cos(APL_length*np.sqrt(k))           ] \
-                       ])
+        M = np.asarray(
+            [
+                [
+                    np.cos(APL_length * np.sqrt(k)),
+                    np.sin(APL_length * np.sqrt(k)) / np.sqrt(k),
+                ],
+                [
+                    -np.sqrt(k) * np.sin(APL_length * np.sqrt(k)),
+                    np.cos(APL_length * np.sqrt(k)),
+                ],
+            ]
+        )
     elif k < 0:
-        M = np.asarray([ \
-                         [            np.cosh(APL_length*np.sqrt(-k)), np.sinh(APL_length*np.sqrt(-k))/np.sqrt(-k)],\
-                         [np.sqrt(-k)*np.sinh(APL_length*np.sqrt(-k)), np.cosh(APL_length*np.sqrt(-k))            ]\
-                       ])
+        M = np.asarray(
+            [
+                [
+                    np.cosh(APL_length * np.sqrt(-k)),
+                    np.sinh(APL_length * np.sqrt(-k)) / np.sqrt(-k),
+                ],
+                [
+                    np.sqrt(-k) * np.sinh(APL_length * np.sqrt(-k)),
+                    np.cosh(APL_length * np.sqrt(-k)),
+                ],
+            ]
+        )
     else:
-        M = np.asarray([ \
-                         [ 1, APL_length ],\
-                         [ 0,          1 ]
-                       ])
-    #Do the Twiss propagation
-    B0 = np.asarray([ \
-                      [beta_0  ,              -alpha_0],\
-                      [-alpha_0, (1+alpha_0**2)/beta_0]
-                    ])
+        M = np.asarray([[1, APL_length], [0, 1]])
+    # Do the Twiss propagation
+    B0 = np.asarray([[beta_0, -alpha_0], [-alpha_0, (1 + alpha_0**2) / beta_0]])
     B = M @ B0 @ M.T
-    #print(B)
-    
-    beta_end  =  B[0,0]
-    alpha_end = -B[0,1]
-    gamma_end =  B[1,1]
+    # print(B)
+
+    beta_end = B[0, 0]
+    alpha_end = -B[0, 1]
+    gamma_end = B[1, 1]
 
     return (beta_end, alpha_end, gamma_end)
-    

@@ -7,6 +7,7 @@
 # -*- coding: utf-8 -*-
 
 from run_APL_ChrPlasmaLens import run_APL_ChrPlasmaLens
-#Run the ChrPlasmaLens APL test in focusing mode
+
+# Run the ChrPlasmaLens APL test in focusing mode
 # (rigiditiy is also negative. Gradient given in [T/m])
 run_APL_ChrPlasmaLens(-1000, 1.0e-3, 100e-6)

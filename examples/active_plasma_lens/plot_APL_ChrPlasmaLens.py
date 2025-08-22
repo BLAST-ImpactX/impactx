@@ -11,6 +11,7 @@ import glob
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
+import re
 
 
 def read_file(file_pattern):
@@ -48,10 +49,9 @@ def plot_sigmas(rbc):
     s = rbc["s"]
     sig_x = rbc["sig_x"] * millimeter
     sig_y = rbc["sig_y"] * millimeter
-    sig_t = rbc["sig_t"] * millimeter
-    emittance_x = rbc["emittance_x"] * nm_rad
-    emittance_y = rbc["emittance_y"] * nm_rad
-    emittance_t = rbc["emittance_t"] * nm_rad
+
+    #emittance_x = rbc["emittance_x"] * nm_rad
+    #emittance_y = rbc["emittance_y"] * nm_rad
 
     # print beam transverse size over steps
     f = plt.figure()

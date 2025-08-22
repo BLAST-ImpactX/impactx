@@ -42,7 +42,7 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
     beta_mid = sigma_mid**2 / emitg
     gamma_mid = 1 / beta_mid  # [1/m]
     print(
-        f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m]"
+        f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m], alpha_mid = {alpha_mid}"
     )
     print(
         f"emitn = {emitn} [m], emitg = {emitg} [m], ref.beta_gamma = {ref.beta_gamma}"
@@ -51,6 +51,7 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
 
     # Back-propagate 1/2 lens length as in vacuum
     # (from symmetry point in the middle of the lens)
+    assert alpha_mid == 0.0
     beta_0 = beta_mid + (APL_length / 2) ** 2 / beta_mid
     alpha_0 = +APL_length / 2 / beta_mid
     gamma_0 = gamma_mid

@@ -7,5 +7,6 @@
 # -*- coding: utf-8 -*-
 
 from run_APL_ChrPlasmaLens import run_APL_ChrPlasmaLens
-#Run the ChrPlasmaLens APL test in no-field mode
+
+# Run the ChrPlasmaLens APL test in no-field mode
 run_APL_ChrPlasmaLens(0.0, 1e-3)

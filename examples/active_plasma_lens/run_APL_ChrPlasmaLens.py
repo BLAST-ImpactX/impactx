@@ -6,7 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
-def run_APL_ChrPlasmaLens(APL_g : float, sigpt_0 : float):
+
+def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
     "Run the ChrPlasmaLens simulation with the given APL gradient APL_g [T/m] and sigma_pt [-]"
     import math
 
@@ -40,8 +41,12 @@ def run_APL_ChrPlasmaLens(APL_g : float, sigpt_0 : float):
     emitg = emitn / ref.beta_gamma
     beta_mid = sigma_mid**2 / emitg
     gamma_mid = 1 / beta_mid  # [1/m]
-    print(f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m]")
-    print(f"emitn = {emitn} [m], emitg = {emitg} [m], ref.beta_gamma = {ref.beta_gamma}")
+    print(
+        f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m]"
+    )
+    print(
+        f"emitn = {emitn} [m], emitg = {emitg} [m], ref.beta_gamma = {ref.beta_gamma}"
+    )
     print()
 
     # Back-propagate 1/2 lens length as in vacuum
@@ -52,7 +57,9 @@ def run_APL_ChrPlasmaLens(APL_g : float, sigpt_0 : float):
     sigma_0 = math.sqrt(emitg * beta_0)
     sigmap_0 = math.sqrt(emitg * gamma_0)
     mu_0 = alpha_0 / math.sqrt(beta_0 * gamma_0)
-    print(f"sigma_0 = {sigma_0} [m], beta_0 = {beta_0} [m], alpha_0 = {alpha_0}, sigmap_0 = {sigmap_0}")
+    print(
+        f"sigma_0 = {sigma_0} [m], beta_0 = {beta_0} [m], alpha_0 = {alpha_0}, sigmap_0 = {sigmap_0}"
+    )
     print()
 
     # Longitudinal parameters (sigpt_0 [-] from input arguments)

@@ -6,9 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import openpmd_api as io
 from scipy.stats import moment
+
 
 def get_moments(beam):
     """Calculate standard deviations of beam position & momenta
@@ -32,6 +32,7 @@ def get_moments(beam):
 
     return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
+
 def getBeams():
     "Load the initial and final beam from last simulation"
     series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -40,5 +41,4 @@ def getBeams():
     beam_final = series.iterations[last_step].particles["beam"]
     final = beam_final.to_df()
 
-    return (initial,beam_final, final)
-
+    return (initial, beam_final, final)

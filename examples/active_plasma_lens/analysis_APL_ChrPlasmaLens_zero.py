@@ -9,7 +9,7 @@
 from analysis_APL_ChrPlasmaLens import *
 
 # initial/final beam
-(initial,beam_final,final) = getBeams()
+(initial, beam_final, final) = getBeams()
 
 # compare number of particles
 num_particles = 10000

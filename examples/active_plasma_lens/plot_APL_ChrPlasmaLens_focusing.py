@@ -11,7 +11,7 @@ import argparse
 from plot_APL_ChrPlasmaLens import millimeter, plot_sigmas, plt, read_time_series
 
 # options to run this script, this one is used by the CTest harness
-parser = argparse.ArgumentParser(description="Plot the ChrPlasmaLens_zero benchmark.")
+parser = argparse.ArgumentParser(description="Plot the ChrPlasmaLens_focusing benchmark.")
 parser.add_argument(
     "--save-png", action="store_true", help="non-interactive run: save to PNGs"
 )
@@ -26,11 +26,11 @@ rbc = read_time_series("diags/reduced_beam_characteristics.*")
 plot_sigmas(rbc)
 
 # Start/end
-plt.axhline(2.737665020201518e-05 * millimeter, ls="--", color="k")
+plt.axhline(7.149221e-05 * millimeter, ls="--", color="k")
 # mid
-plt.axhline(10e-6 * millimeter, ls="--", color="k")
+plt.axhline(100e-6 * millimeter, ls="--", color="k")
 plt.axvline(10e-3, ls="--", color="k")
 if args.save_png:
-    plt.savefig("APL_ChrPlasmaLens_zero-sigma.png")
+    plt.savefig("APL_ChrPlasmaLens_focusing-sigma.png")
 else:
     plt.show()

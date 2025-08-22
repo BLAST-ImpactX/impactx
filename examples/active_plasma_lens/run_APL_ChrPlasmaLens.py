@@ -88,8 +88,8 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
 
     ns = 40  # number of slices per ds in the element
     monitor = elements.BeamMonitor("monitor", backend="h5")
-    # APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
-    APL = elements.ChrDrift(name="APL", ds=APL_length, nslice=ns)
+    APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
+    # APL = elements.ChrDrift(name="APL", ds=APL_length, nslice=ns)
 
     lattice = [
         monitor,

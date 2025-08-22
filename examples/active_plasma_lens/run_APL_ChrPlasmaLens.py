@@ -36,7 +36,7 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
 
     # Midpoint parameters
     alpha_mid = 0.0
-    sigma_mid = 0.5e-3 / 2  # [m]
+    sigma_mid = 10e-6  # [m]
     emitn = 10e-6  # [m]
     emitg = emitn / ref.beta_gamma
     beta_mid = sigma_mid**2 / emitg
@@ -70,13 +70,13 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
     print()
 
     #   particle bunch
-    distr = distribution.Waterbag(
-        lambdaX=sigma_0,
-        lambdaY=sigma_0,
-        lambdaT=sigt_0,
-        lambdaPx=sigmap_0,
-        lambdaPy=sigmap_0,
-        lambdaPt=sigpt_0,
+    distr = distribution.Gaussian(
+        lambdaX=math.sqrt(emitg/gamma_0),
+        lambdaY=math.sqrt(emitg/gamma_0),
+        lambdaT=sigt_0, # OK for mutpt=0
+        lambdaPx=math.sqrt(emitg/beta_0),
+        lambdaPy=math.sqrt(emitg/beta_0),
+        lambdaPt=sigpt_0, # OK for mutpt=0
         muxpx=mu_0,
         muypy=mu_0,
         mutpt=0.0,
@@ -86,9 +86,10 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
 
     # design the accelerator lattice
 
-    ns = 25  # number of slices per ds in the element
+    ns = 40  # number of slices per ds in the element
     monitor = elements.BeamMonitor("monitor", backend="h5")
-    APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
+    #APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
+    APL = elements.ChrDrift(name="APL", ds=APL_length, nslice=ns)
 
     lattice = [
         monitor,

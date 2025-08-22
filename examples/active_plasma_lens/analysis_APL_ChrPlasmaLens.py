@@ -33,7 +33,7 @@ def get_moments(beam):
     return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
 
-def getBeams():
+def get_beams():
     "Load the initial and final beam from last simulation"
     series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
     last_step = list(series.iterations)[-1]

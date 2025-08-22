@@ -6,6 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
+from plot_APL_ChrPlasmaLens import read_time_series, plot_sigmas, plt, millimeter
+
 import argparse
 
 # options to run this script, this one is used by the CTest harness
@@ -14,8 +16,6 @@ parser.add_argument(
     "--save-png", action="store_true", help="non-interactive run: save to PNGs"
 )
 args = parser.parse_args()
-
-from plot_APL_ChrPlasmaLens import *
 
 # import matplotlib.pyplot as plt
 

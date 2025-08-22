@@ -16,19 +16,20 @@ parser.add_argument(
 args = parser.parse_args()
 
 from plot_APL_ChrPlasmaLens import *
-#import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 
 # read reduced diagnostics
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
-#Plot beam transverse sizes
+# Plot beam transverse sizes
 plot_sigmas(rbc)
 
-#Start/end
-plt.axhline(2.737665020201518e-05*millimeter, ls='--', color='k')
+# Start/end
+plt.axhline(2.737665020201518e-05 * millimeter, ls="--", color="k")
 # mid
-plt.axhline(10e-6*millimeter, ls='--', color='k')
-plt.axvline(10e-3, ls='--', color='k')
+plt.axhline(10e-6 * millimeter, ls="--", color="k")
+plt.axvline(10e-3, ls="--", color="k")
 if args.save_png:
     plt.savefig("APL_ChrPlasmaLens_zero-sigma.png")
 else:

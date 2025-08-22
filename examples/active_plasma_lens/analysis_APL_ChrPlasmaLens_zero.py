@@ -6,8 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
-from analysis_APL_ChrPlasmaLens import *
 import numpy as np
+from analysis_APL_ChrPlasmaLens import *
 
 # initial/final beam
 (initial, beam_final, final) = getBeams()
@@ -28,7 +28,7 @@ atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-#Compare to analytical values
+# Compare to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
@@ -59,7 +59,7 @@ atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-#Compare to analytical values
+# Compare to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
     [

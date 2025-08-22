@@ -71,12 +71,12 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
 
     #   particle bunch
     distr = distribution.Gaussian(
-        lambdaX=math.sqrt(emitg/gamma_0),
-        lambdaY=math.sqrt(emitg/gamma_0),
-        lambdaT=sigt_0, # OK for mutpt=0
-        lambdaPx=math.sqrt(emitg/beta_0),
-        lambdaPy=math.sqrt(emitg/beta_0),
-        lambdaPt=sigpt_0, # OK for mutpt=0
+        lambdaX=math.sqrt(emitg / gamma_0),
+        lambdaY=math.sqrt(emitg / gamma_0),
+        lambdaT=sigt_0,  # OK for mutpt=0
+        lambdaPx=math.sqrt(emitg / beta_0),
+        lambdaPy=math.sqrt(emitg / beta_0),
+        lambdaPt=sigpt_0,  # OK for mutpt=0
         muxpx=mu_0,
         muypy=mu_0,
         mutpt=0.0,
@@ -88,7 +88,7 @@ def run_APL_ChrPlasmaLens(APL_g: float, sigpt_0: float):
 
     ns = 40  # number of slices per ds in the element
     monitor = elements.BeamMonitor("monitor", backend="h5")
-    #APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
+    # APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
     APL = elements.ChrDrift(name="APL", ds=APL_length, nslice=ns)
 
     lattice = [

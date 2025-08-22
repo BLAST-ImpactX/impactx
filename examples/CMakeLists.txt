@@ -1574,7 +1574,10 @@ add_impactx_test(fodo-pals.py
 # Active Plasma Lens tests ####################################
 #
 # ChrPlasmaLens, k = 0 (acting like a drift)
-
+file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/run_APL_ChrPlasmaLens.py
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_zero.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/analysis_APL_ChrPlasmaLens.py
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_zero.py)
 add_impactx_test(APL_ChrPlasmaLens_zero.py
   examples/active_plasma_lens/run_APL_ChrPlasmaLens_zero.py
   OFF # No MPI needed

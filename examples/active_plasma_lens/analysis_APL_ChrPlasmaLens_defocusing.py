@@ -24,7 +24,7 @@ print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
 
-(betax,betay,alphax,alphay) = get_twiss(initial)
+(betax, betay, alphax, alphay) = get_twiss(initial)
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
@@ -58,7 +58,7 @@ print(
     f"  s_ref={s_ref:e} gamma_ref={gamma_ref:e}"
 )
 
-(betax,betay,alphax,alphay) = get_twiss(final)
+(betax, betay, alphax, alphay) = get_twiss(final)
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored

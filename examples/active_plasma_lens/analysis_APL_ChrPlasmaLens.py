@@ -32,24 +32,26 @@ def get_moments(beam):
 
     return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
+
 def get_twiss(beam):
     "Calculate the beam Twiss parameters from position and momenta values"
 
     epstrms = beam.cov(ddof=0)
-    
-    sigx2  = epstrms["position_x"]["position_x"]
-    sigpx2 =  epstrms["momentum_x"]["momentum_x"]
-    emittance_x = (sigx2 * sigpx2 - epstrms["position_x"]["momentum_x"] ** 2) ** 0.5
-    beta_x = sigx2/emittance_x
-    alpha_x = -epstrms["position_x"]["momentum_x"]/emittance_x
-    
-    sigy2  = epstrms["position_y"]["position_y"]
-    sigpy2 =  epstrms["momentum_y"]["momentum_y"]
-    emittance_y = (sigy2 * sigpy2 - epstrms["position_y"]["momentum_y"] ** 2) ** 0.5
-    beta_y = sigy2/emittance_y
-    alpha_y = -epstrms["position_y"]["momentum_y"]/emittance_y
 
-    return (beta_x,beta_y, alpha_x,alpha_y)
+    sigx2 = epstrms["position_x"]["position_x"]
+    sigpx2 = epstrms["momentum_x"]["momentum_x"]
+    emittance_x = (sigx2 * sigpx2 - epstrms["position_x"]["momentum_x"] ** 2) ** 0.5
+    beta_x = sigx2 / emittance_x
+    alpha_x = -epstrms["position_x"]["momentum_x"] / emittance_x
+
+    sigy2 = epstrms["position_y"]["position_y"]
+    sigpy2 = epstrms["momentum_y"]["momentum_y"]
+    emittance_y = (sigy2 * sigpy2 - epstrms["position_y"]["momentum_y"] ** 2) ** 0.5
+    beta_y = sigy2 / emittance_y
+    alpha_y = -epstrms["position_y"]["momentum_y"] / emittance_y
+
+    return (beta_x, beta_y, alpha_x, alpha_y)
+
 
 def get_beams():
     "Load the initial and final beam from last simulation"

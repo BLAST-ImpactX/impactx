@@ -12,7 +12,9 @@ import numpy as np
 from impactx import ImpactX, distribution, elements
 
 
-def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType  : str ='ChrPlasmaLens'):
+def run_APL_tracking(
+    APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"
+):
     """
     Run a plasma lens tracking simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m].
     Can use lensType='ChrPlasmaLens' | 'ConstK' | 'ChrDrift' (expect APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
@@ -71,9 +73,13 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType  :
     # Forward-propagate that through the focusing/defocusing lens
     # from the beginning, ignoring energy spread
     # [Doesn't give same result as ChrPlasmaLens and ChrQuad for some reason, even when sigpt_0 = 0]
-    (beta_end, alpha_end, gamma_end) = analytic_final_estimate(APL_g, ref.rigidity_Tm, APL_length, beta_0, alpha_0)
+    (beta_end, alpha_end, gamma_end) = analytic_final_estimate(
+        APL_g, ref.rigidity_Tm, APL_length, beta_0, alpha_0
+    )
 
-    print(f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]")
+    print(
+        f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]"
+    )
     sigma_end = np.sqrt(emitg * beta_end)
     sigmap_end = np.sqrt(emitg * gamma_end)
     print(f"sigma_end = {sigma_end} [m], sigmap_end = {sigmap_end} [-]")
@@ -102,26 +108,30 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType  :
 
     # create the accelerator lattice
 
-    #Plasma lens parameters for ConstF
-    APL_k  = APL_g/ref.rigidity_Tm
-    APL_k_sqrt = np.sign(APL_k)*np.sqrt(np.abs(APL_k))
+    # Plasma lens parameters for ConstF
+    APL_k = APL_g / ref.rigidity_Tm
+    APL_k_sqrt = np.sign(APL_k) * np.sqrt(np.abs(APL_k))
     print(f"APL_g = {APL_g} [T/m], APL_k = {APL_k} [1/m^2]")
 
     ns = 40  # number of slices per ds in the element
     monitor = elements.BeamMonitor("monitor", backend="h5")
     APL = None
-    if lensType == 'ChrPlasmaLens':
-        APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
-        
+    if lensType == "ChrPlasmaLens":
+        APL = elements.ChrPlasmaLens(
+            name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns
+        )
+
     elif lensType == "ConstK":
-        APL = elements.ConstK(name="APL", ds=APL_length, kx=APL_k_sqrt,ky=APL_k_sqrt,kt=0.0, nslice=ns)
-        
+        APL = elements.ConstK(
+            name="APL", ds=APL_length, kx=APL_k_sqrt, ky=APL_k_sqrt, kt=0.0, nslice=ns
+        )
+
     elif lensType == "ChrDrift":
         # For comparison with k=0
         assert float(APL_g) == 0.0
         APL = elements.ChrDrift(name="APL", ds=APL_length, nslice=ns)
-        
-    elif lensType == 'ChrQuad':
+
+    elif lensType == "ChrQuad":
         # For comparison with k != 0, single plane
         APL = elements.ChrQuad(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
 
@@ -138,6 +148,7 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType  :
 
     # clean shutdown
     sim.finalize()
+
 
 def analytic_final_estimate(APL_g, rigidity_Tm, APL_length, beta_0, alpha_0):
     "Analytical estimates of the beam Twiss parameters after the Plasma Lens"

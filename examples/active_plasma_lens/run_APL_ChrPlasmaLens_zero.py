@@ -9,7 +9,7 @@
 from run_APL_ChrPlasmaLens import run_APL_tracking
 
 # Run the ChrPlasmaLens APL test in no-field mode
-run_APL_tracking(0.0, 1e-3, 10e-6, lensType='ChrPlasmaLens')
+run_APL_tracking(0.0, 1e-3, 10e-6, lensType="ChrPlasmaLens")
 
 # Gives the same output -- for creating the analysis file
 # run_APL_tracking(0.0, 1e-3, 10e-6, lensType='ChrDrift')

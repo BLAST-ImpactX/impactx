@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from run_APL_ChrPlasmaLens import run_APL_tracking
+from run_APL import run_APL_tracking
 
 # Run the ChrPlasmaLens APL test in defocusing mode
 # (rigiditiy is negative. Gradient given in [T/m])

@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from run_APL_ChrPlasmaLens import run_APL_tracking
+from run_APL import run_APL_tracking
 
 # Run the ChrPlasmaLens APL test in no-field mode
 run_APL_tracking(0.0, 1e-3, 10e-6, lensType="ChrPlasmaLens")

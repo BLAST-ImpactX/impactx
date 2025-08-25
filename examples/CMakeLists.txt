@@ -1611,7 +1611,7 @@ file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/analysis_APL_ChrPlas
 file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/plot_APL_ChrPlasmaLens.py
   DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_defocusing.py)
 
-add_impactx_test(APL_ChrPlasmaLens_focusing.py
+add_impactx_test(APL_ChrPlasmaLens_defocusing.py
   examples/active_plasma_lens/run_APL_ChrPlasmaLens_defocusing.py
   OFF # No MPI needed
   examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_defocusing.py

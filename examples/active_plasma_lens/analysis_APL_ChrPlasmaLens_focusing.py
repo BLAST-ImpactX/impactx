@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from analysis_APL_ChrPlasmaLens import get_beams, get_moments
+from analysis_APL_ChrPlasmaLens import get_beams, get_moments, get_twiss
 
 # initial/final beam
 (initial, beam_final, final) = get_beams()
@@ -23,6 +23,9 @@ print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
+
+(betax,betay,alphax,alphay) = get_twiss(initial)
+print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
@@ -54,6 +57,9 @@ print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}\n"
     f"  s_ref={s_ref:e} gamma_ref={gamma_ref:e}"
 )
+
+(betax,betay,alphax,alphay) = get_twiss(final)
+print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution

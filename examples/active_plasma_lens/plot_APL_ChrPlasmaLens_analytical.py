@@ -6,13 +6,14 @@
 #
 # -*- coding: utf-8 -*-
 
-## Test script
+## Plots analytical Twiss parameters
+#  as a function of APL gradient [T/m]
 
 import matplotlib.pyplot as plt
 import numpy as np
 from run_APL_ChrPlasmaLens import analytic_final_estimate
 
-rigidity_Tm = -0.6688305274603505  # [T*m]
+rigidity_Tm = -0.6688305274603505  # [T*m], 200MeV electrons
 APL_length = 20e-3  # [m]
 
 # From "zero" test, sigma_mid = 10 um
@@ -25,7 +26,7 @@ alpha_0 = 0.025484916642663318
 # negative g (focusing, rigidity is also negative)
 beta = []
 alpha = []
-g_def = np.linspace(0, -50000)
+g_def = np.linspace(0, -20000)
 for APL_g in g_def:
     (beta_end, alpha_end, gamma_end) = analytic_final_estimate(
         APL_g, rigidity_Tm, APL_length, beta_0, alpha_0
@@ -48,7 +49,7 @@ plt.ylabel("alpha")
 # positive g (defocusing, rigidity is negative)
 beta = []
 alpha = []
-g_def = np.linspace(0, 5000)
+g_def = np.linspace(0, 2000)
 for APL_g in g_def:
     (beta_end, alpha_end, gamma_end) = analytic_final_estimate(
         APL_g, rigidity_Tm, APL_length, beta_0, alpha_0

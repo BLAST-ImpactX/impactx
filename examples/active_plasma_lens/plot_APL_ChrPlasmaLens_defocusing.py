@@ -28,8 +28,7 @@ rbc = read_time_series("diags/reduced_beam_characteristics.*")
 plot_sigmas(rbc)
 
 # Start/end
-plt.axhline(1.312115e-04 * millimeter, ls="--", color="k")
-# mid
+plt.axhline(0.0001314429025974998 * millimeter, ls="--", color="k")
 plt.axhline(100e-6 * millimeter, ls="--", color="k")
 plt.axvline(10e-3, ls="--", color="k")
 if args.save_png:

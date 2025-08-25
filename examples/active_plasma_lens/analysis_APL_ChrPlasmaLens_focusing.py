@@ -65,12 +65,12 @@ atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-# Compare to ChrQuad values
+# Compare to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
     [
-        7.149221e-05,
-        7.149221e-05,
+        7.161196476484095e-05,
+        7.161196476484095e-05,
         0.001,
         2.548491664266332e-08,
         2.548491664266332e-08,

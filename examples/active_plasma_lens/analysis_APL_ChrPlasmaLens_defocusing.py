@@ -68,12 +68,12 @@ rtol = (
 )  # from random sampling of a smooth distribution -- tolerance increased here
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-# Compare to ChrQuad values
+# Compare to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
     [
-        1.312115e-04,
-        1.312115e-04,
+        0.0001314429025974998,
+        0.0001314429025974998,
         0.001,
         2.514662e-08,
         2.514662e-08,

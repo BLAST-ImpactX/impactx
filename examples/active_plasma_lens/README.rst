@@ -22,7 +22,7 @@ This example can be run as
 * ``python3 run_APL_ChrPlasmaLens_defocusing.py`` (defocusing field, `ChrPlasmaLens`, tracking)
 
 These all use the library ``run_APL.py`` internally to create the simulations.
-  
+
 Analyze
 -------
 
@@ -32,7 +32,7 @@ We run the following scripts to analyze correctness of the output:
 * ``python3 analysis_APL_ChrPlasmaLens_defocusing.py`` (defocusing field, `ChrPlasmaLens`, tracking)
 
 These all use the library ``analysis_APL_ChrPlasmaLens.py`` internally.
-  
+
 Visualize
 ---------
 You can run the following scripts to visualize the beam evolution over time (e.g. :math:`s`):

@@ -134,6 +134,8 @@ def run_APL_tracking(
     elif lensType == "ChrQuad":
         # For comparison with k != 0, single plane
         APL = elements.ChrQuad(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
+    else:
+        raise ValueError(f"Unknown lensType {lensType}")
 
     lattice = [
         monitor,

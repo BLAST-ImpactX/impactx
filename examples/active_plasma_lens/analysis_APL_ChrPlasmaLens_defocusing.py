@@ -63,10 +63,6 @@ rtol = (
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 # Compare to ChrQuad values
-# assert np.allclose(sigx, 1.312115e-04)
-# assert np.allclose(sigy, 1.312115e-04)
-# assert np.allclose(emittance_x, 2.514662e-08)
-# assert np.allclose(emittance_y, 2.514662e-08)
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
     [

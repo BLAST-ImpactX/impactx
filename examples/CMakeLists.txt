@@ -1590,15 +1590,30 @@ add_impactx_test(APL_ChrPlasmaLens_zero.py
 
 # ChrPlasmaLens, mg = -1000T/m (focusing)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/run_APL_ChrPlasmaLens.py
-     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_zero.py)
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_focusing.py)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/analysis_APL_ChrPlasmaLens.py
-  DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_zero.py)
+  DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_focusing.py)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/plot_APL_ChrPlasmaLens.py
-  DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_zero.py)
+  DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_focusing.py)
 
 add_impactx_test(APL_ChrPlasmaLens_focusing.py
   examples/active_plasma_lens/run_APL_ChrPlasmaLens_focusing.py
   OFF # No MPI needed
   examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_focusing.py
   examples/active_plasma_lens/plot_APL_ChrPlasmaLens_focusing.py
+)
+
+# ChrPlasmaLens, mg = 1000T/m (defocusing)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/run_APL_ChrPlasmaLens.py
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_defocusing.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/analysis_APL_ChrPlasmaLens.py
+  DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_defocusing.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/active_plasma_lens/plot_APL_ChrPlasmaLens.py
+  DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/APL_ChrPlasmaLens_defocusing.py)
+
+add_impactx_test(APL_ChrPlasmaLens_focusing.py
+  examples/active_plasma_lens/run_APL_ChrPlasmaLens_defocusing.py
+  OFF # No MPI needed
+  examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_defocusing.py
+  examples/active_plasma_lens/plot_APL_ChrPlasmaLens_defocusing.py
 )

@@ -1,0 +1,41 @@
+BW
+
+Nelder-Mead 167
+  Optimal parameters for k: [-103.0293668   102.82694643]
+  L2 norm of alpha & beta at the optimum: 2.1624999901619736e-05
+  Min. runtime: 6999.347305389221ns
+/home/axel/src/impactx/./match_beam.py:94: RuntimeWarning: Method CG cannot handle bounds.
+  res = minimize(
+CG 150
+  Optimal parameters for k: [-103.02936496  102.82694212]
+  L2 norm of alpha & beta at the optimum: 2.1624999956742072e-05
+  Min. runtime: 7764.473333333333ns
+/home/axel/src/impactx/./match_beam.py:94: RuntimeWarning: Method CG cannot handle bounds.
+  res = minimize(
+CG 37
+  Optimal parameters for k: [-103.02936686  102.82694637]
+  L2 norm of alpha & beta at the optimum: 2.1624999902094705e-05
+  Min. runtime: 34293.21621621621ns
+
+
+
+
+
+FW
+
+Nelder-Mead 167
+  Optimal parameters for k: [-103.0293668   102.82694643]
+  L2 norm of alpha & beta at the optimum: 2.1624999901619736e-05
+  Min. runtime: 6997.185628742515ns
+/home/axel/src/impactx/./match_beam.py:94: RuntimeWarning: Method CG cannot handle bounds.
+  res = minimize(
+CG 150
+  Optimal parameters for k: [-103.02936496  102.82694212]
+  L2 norm of alpha & beta at the optimum: 2.1624999956742072e-05
+  Min. runtime: 7740.566666666667ns
+/home/axel/src/impactx/./match_beam.py:94: RuntimeWarning: Method CG cannot handle bounds.
+  res = minimize(
+CG 37
+  Optimal parameters for k: [-103.02936686  102.82694637]
+  L2 norm of alpha & beta at the optimum: 2.1624999902094705e-05
+  Min. runtime: 33754.16216216216ns

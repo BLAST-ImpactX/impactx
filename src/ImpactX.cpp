@@ -11,17 +11,22 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
+#include "elements/All.H"
+#include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "diagnostics/DiagnosticOutput.H"
+#include "diagnostics/ReducedBeamCharacteristics.H"
 #include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Math.H>
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
 #include <AMReX_Utility.H>
 
+#include <array>
 #include <iostream>
 #include <memory>
 
@@ -149,4 +154,236 @@ namespace impactx {
         }
     }
 
+    void
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal * error, amrex::ParticleReal const * q1_k, amrex::ParticleReal const * q2_k) {
+        // Example from:
+        // https://impactx.readthedocs.io/en/latest/usage/examples/fodo_space_charge/README.html
+
+        // reference
+        // RefPart & ref = sim->amr_data->track_envelope.m_ref.value();
+        // auto & env = sim->amr_data->track_envelope.m_env.value();
+        // copy
+        RefPart ref = sim->amr_data->track_envelope.m_ref.value();
+        Envelope env = sim->amr_data->track_envelope.m_env.value();
+
+        int nslice = 50;
+
+        auto dr1 = elements::Drift{7.44e-2, 0, 0, 0, 0, 0, nslice};
+        auto q1 = elements::Quad{6.10e-2, *q1_k, 0, 0, 0, 0, 0, nslice};
+        auto dr2 = elements::Drift{14.88e-2, 0, 0, 0, 0, 0, nslice};
+        auto q2 = elements::Quad{6.10e-2, *q2_k, 0, 0, 0, 0, 0, nslice};
+
+        /*
+        // quadrupole triplet
+        // https://impactx.readthedocs.io/en/latest/usage/examples/optimize_triplet/README.html
+        sim->m_lattice = {
+            elements::Drift{2.7},
+            elements::Quad{0.1, q1_k},
+            elements::Drift{1.4},
+            elements::Quad{0.2, q2_k},
+            elements::Drift{1.4},
+            elements::Quad{0.1, q1_k},
+            elements::Drift{2.7}
+        };
+
+
+        // int ns = 25;  // number of slices per ds in the element
+        // for (auto & e : sim.m_lattice) { e.m_nslice = ns; }
+        */
+
+        //sim->evolve();
+        //auto & pc = *sim->amr_data->m_particle_container;
+        //dr1(pc, 0, 0);
+
+        // envelope mode
+        //std::cout << "before ref\n";
+        //std::cout << "before cm\n";
+        auto cm = env.m_env;
+
+        auto & intensity = env.m_beam_intensity;
+        intensity = 0.5;  // Ampere
+
+        // initial values alpha and beta
+        // goal: periodic solution where the resulting alpha and beta are the same as the initial ones.
+        //       the resulting -q1_k should be equal to q2_k (but we intentionally do not enforce that
+        //       during the simulation loop here, and leave that to the optimizer to find out).
+        auto rbc_goal = diagnostics::reduced_beam_characteristics(cm, ref);
+        amrex::ParticleReal const alpha_x_goal = rbc_goal["alpha_x"];
+        amrex::ParticleReal const alpha_y_goal = rbc_goal["alpha_y"];
+        amrex::ParticleReal const beta_x_goal = rbc_goal["beta_x"];
+        amrex::ParticleReal const beta_y_goal = rbc_goal["beta_y"];
+        std::array<amrex::ParticleReal, 4> alpha_beta_goal = {alpha_x_goal, alpha_y_goal, beta_x_goal, beta_y_goal};
+
+        // sub-steps for space charge within the element
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, dr1.ds() / nslice);
+            dr1(ref);
+            dr1(cm, ref);
+        }
+
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, q1.ds() / nslice);
+            q1(ref);
+            q1(cm, ref);
+        }
+
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, dr2.ds() / nslice);
+            dr2(ref);
+            dr2(cm, ref);
+        }
+
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, q2.ds() / nslice);
+            q2(ref);
+            q2(cm, ref);
+        }
+
+        for (int slice_step = 0; slice_step < nslice; ++slice_step)
+        {
+            envelope::spacecharge::space_charge2D_push(ref, cm, intensity, dr1.ds() / nslice);
+            dr1(ref);
+            dr1(cm, ref);
+        }
+
+        /*
+        // particles
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
+                diagnostics::reduced_beam_characteristics(*active_sim->amr_data->m_particle_container);
+
+        return rbc.at("alpha_x");  // TOOD: alpha_x, alpha_y, beta_x, beta_y
+        */
+
+        // envelope
+        /*
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc =
+            diagnostics::reduced_beam_characteristics(cm, ref);
+        return rbc.at("alpha_x");
+        */
+
+        auto rbc_is = diagnostics::reduced_beam_characteristics(cm, ref);
+        amrex::ParticleReal const alpha_x = rbc_is["alpha_x"];
+        amrex::ParticleReal const alpha_y = rbc_is["alpha_y"];
+        amrex::ParticleReal const beta_x = rbc_is["beta_x"];
+        amrex::ParticleReal const beta_y = rbc_is["beta_y"];
+        std::array<amrex::ParticleReal, 4> alpha_beta_is = {alpha_x, alpha_y, beta_x, beta_y};
+
+        *error =
+            amrex::Math::powi<2>(alpha_beta_is[0] - alpha_beta_goal[0]) +
+            amrex::Math::powi<2>(alpha_beta_is[1] - alpha_beta_goal[1]) +
+            amrex::Math::powi<2>(alpha_beta_is[2] - alpha_beta_goal[2]) +
+            amrex::Math::powi<2>(alpha_beta_is[3] - alpha_beta_goal[3]);
+    }
+
+    std::map<std::string, amrex::ParticleReal>
+    my_run (amrex::ParticleReal q1_k, amrex::ParticleReal q2_k, std::string mode, std::string inputs_file, bool verbose) {
+        amrex::ParmParse pp_ix("impactx");
+        pp_ix.add("verbose", 0);
+        amrex::ParmParse pp_amr("amrex");
+        pp_amr.add("verbose", 0);
+
+        ImpactX sim;
+
+        amrex::ParmParse pp_algo("algo");
+        std::string track = "envelope";
+        pp_algo.add("track", track);
+        pp_algo.add("particle_shape", 2);  // unused
+
+        sim.init_grids();
+
+        if (inputs_file != "") {
+            if (!amrex::FileExists(inputs_file)) {
+                throw std::runtime_error("my_run: inputs_file does not exist: " + inputs_file);
+            }
+            amrex::ParmParse::addfile(inputs_file);
+        }
+
+        // TODO: replace with beam params from https://impactx.readthedocs.io/en/latest/usage/examples/fodo_space_charge/README.html
+        sim.initBeamDistributionFromInputs();
+
+        // design the accelerator lattice
+        // sim.initLatticeElementsFromInputs();
+
+        // initial quad strengths
+        // optimal solution is:
+        //q1_k = -103.12574100336;
+        //q2_k = -q1_k;
+
+        amrex::ParticleReal error = 0.0;
+        amrex::ParticleReal derror_dq1_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        amrex::ParticleReal derror_dq2_k = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+
+        //mode = "forward";
+        //mode = "backward";
+
+        if (mode == "gradient-free")
+        {
+            // non-differentiable run:
+            if (verbose) amrex::Print() << "Gradient-free run\n";
+            evaluate_lattice(&sim, &error, &q1_k, &q2_k);
+        }
+        else if (mode == "forward")
+        {
+            // forward differentiable run
+            if (verbose) amrex::Print() << "Forward differentiable run\n";
+
+            // in forward-mode, usually use one variable at a time, but enzyme_width allows batching
+            // two first order derivatives.
+            //   note: seeded direction, this is AD and NOT a finite difference
+            amrex::ParticleReal dq1_k = 1.0;  // derror += 1.0 * df/dq1_k
+            amrex::ParticleReal dq2_k = 1.0;  // derror += 1.0 * df/dq1_k
+            amrex::ParticleReal zero = 0.0;  // derror += 0.0 * df/dq*_k
+            __enzyme_fwddiff(
+                &evaluate_lattice,
+                enzyme_const, &sim,
+                enzyme_width, 2,  // 2x batched: first df/dq1_k then df/dq2_k
+                // variable, batch 1, batch 2:
+                enzyme_dup, &error, &derror_dq1_k, &derror_dq2_k,
+                enzyme_dup, &q1_k, &dq1_k, &zero,
+                enzyme_dup, &q2_k, &zero, &dq2_k
+            );
+        }
+        else if (mode == "backward")
+        {
+            // reverse differentiable run:
+            if (verbose) amrex::Print() << "Reverse differentiable run\n";
+            amrex::ParticleReal dq1_k = 0.0;  // accumulator, zero-init!
+            amrex::ParticleReal dq2_k = 0.0;  // accumulator, zero-init!
+            amrex::ParticleReal derror = 1.0;  // variable to back-prop: derror * df/dx
+            __enzyme_autodiff(
+                &evaluate_lattice,
+                enzyme_const, &sim,
+                enzyme_dup, &error, &derror,
+                enzyme_dup, &q1_k, &dq1_k,
+                enzyme_dup, &q2_k, &dq2_k
+            );
+            derror_dq1_k = dq1_k;
+            derror_dq2_k = dq2_k;
+        }
+        else {
+            throw std::runtime_error("Unknown mode: " + mode);
+        }
+
+        sim.finalize();
+
+        if (verbose) {
+            amrex::Print() << "q1_k = " << q1_k << "\n"
+                           << "q2_k = " << q2_k
+                           << std::endl;
+            amrex::Print() << "error = " << error << "\n"
+                           << "derror_dq1_k = " << derror_dq1_k << "\n"
+                           << "derror_dq2_k = " << derror_dq2_k << "\n"
+                           << std::endl;
+        }
+
+        std::map<std::string, amrex::ParticleReal> result;
+        result["error"] = error;
+        result["derror_dq1_k"] = derror_dq1_k;
+        result["derror_dq2_k"] = derror_dq2_k;
+        return result;
+    }
 } // namespace impactx

@@ -586,7 +586,7 @@ element_name) );
                 pp_element.get("openpmd_path", openpmd_path);
             }
 
-            m_lattice.emplace_back( Source(distribution, openpmd_path, element_name) );
+            m_lattice.emplace_back(Source(distribution, openpmd_path, element_name) );
         } else if (element_type == "line")
         {
             // Parse the lattice elements for the sub-lattice in the line

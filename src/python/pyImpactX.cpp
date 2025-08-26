@@ -53,6 +53,18 @@ PYBIND11_MODULE(impactx_pybind, m) {
     init_wakeconvolution(m);
     init_ImpactX(m);
 
+    m.def(
+        "my_run",
+        &my_run,
+        py::return_value_policy::copy,
+        py::arg("q1_k"),
+        py::arg("q2_k"),
+        py::arg("mode") = "backward",
+        py::arg("inputs_file") = "examples/fodo_space_charge/input_fodo_envelope_sc.in",
+        py::arg("verbose") = true,
+        "Run ImpactX lattice with mode: 'gradient-free', 'forward' or 'backward'"
+    );
+
     // expose our amrex module
     m.attr("amr") = amr;
 

@@ -18,7 +18,25 @@
 #include <AMReX_REAL.H>
 
 #include <list>
+#include <map>
 #include <memory>
+
+
+// Enzyme
+//   https://enzyme.mit.edu/getting_started/Examples/
+//   https://enzyme.mit.edu/getting_started/CallingConvention/#types
+//   https://enzyme.mit.edu/getting_started/CallingConvention/#result-only-duplicated-argument
+inline int enzyme_dup;
+inline int enzyme_dupnoneed;
+inline int enzyme_in;
+inline int enzyme_out;
+inline int enzyme_const;
+inline int enzyme_width;
+
+amrex::ParticleReal __enzyme_fwddiff (...);
+amrex::ParticleReal __enzyme_autodiff (...);
+//
+// End Enzyme
 
 
 namespace impactx
@@ -160,6 +178,16 @@ namespace impactx
          */
         bool m_grids_initialized = false;
     };
+
+    void
+    evaluate_lattice (ImpactX * sim, amrex::ParticleReal * error, amrex::ParticleReal const * q1_k, amrex::ParticleReal const * q2_k);
+
+    // optimal solution is:
+    //   q1_k = -103.12574100336;
+    //   q2_k = -q1_k;
+    // mode: "gradient-free", "forward", "backward"
+    std::map<std::string, amrex::ParticleReal>
+    my_run (amrex::ParticleReal q1_k = -85.0, amrex::ParticleReal q2_k=80.0, std::string mode="backward", std::string inputs_file="../../examples/fodo_space_charge/input_fodo_envelope_sc.in", bool verbose=true);
 
 } // namespace impactx
 

@@ -68,6 +68,7 @@ to the large energy spread, chromatic focusing effects are important.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 
+The two methods described in 1) and 2) are physically equivalent and the test verifies that the two methods produce physically equivalent output.
 
 Run
 ---

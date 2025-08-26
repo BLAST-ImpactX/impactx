@@ -364,10 +364,7 @@ def screen(name, code):
     """
     Define a screen element.
     """
-    if code == "impactx" and impactx_available:
-        return elements.BeamMonitor(name=name, backend="h5")
-    else:
-        raise ValueError(f"Unsupported code: {code}")
+    return elements.BeamMonitor(name=name, backend="h5")
 
 
 # Define a quadrupole element
@@ -441,22 +438,14 @@ def quadrupole(
         Bgradient = peakfield_to_Bgradient(bore_radius, B)
     elif k1 is None:
         Bgradient = current_to_Bgradient(current, design)
-    if code == "impactx" and impactx_available:
-        return elements.ChrQuad(name=name, ds=L, k=-Bgradient, unit=1, nslice=1)
-    else:
-        raise ValueError(f"Unsupported code: {code}")
-
+    return elements.ChrQuad(name=name, ds=L, k=-Bgradient, unit=1, nslice=1)
 
 # Define a drift element
 def drift(name, L, code):
     """
     Define a drift element.
     """
-    if code == "impactx" and impactx_available:
-        return elements.ExactDrift(name=name, ds=L, nslice=1)
-    else:
-        raise ValueError(f"Unsupported code: {code}")
-
+    return elements.ExactDrift(name=name, ds=L, nslice=1)
 
 # Define a kicker element
 def current_to_integrated_field(current, max_current, max_integrated_field):
@@ -484,13 +473,10 @@ def kicker(
     )
     angle_h = integrated_field_h / get_rigidity(reference_energy_eV)
     angle_v = integrated_field_v / get_rigidity(reference_energy_eV)
-    if code == "impactx" and impactx_available:
-        return elements.Kicker(
-            name=name, xkick=integrated_field_h, ykick=integrated_field_v, unit="T-m"
-        )
-    else:
-        raise ValueError(f"Unsupported code: {code}")
-
+    return elements.Kicker(
+        name=name, xkick=integrated_field_h, ykick=integrated_field_v, unit="T-m"
+    )
+   
 
 # Define a dipole element
 def chicane_r56_to_field(r56, L, reference_energy_eV):
@@ -550,8 +536,5 @@ def dipole(
     if bend == 1 or bend == 4:
         Bfield = -Bfield
         angle = -angle
-    if code == "impactx" and impactx_available:
-        angle_deg = angle * 180.0 / (3.1415926535898)
-        return elements.ExactSbend(name=name, ds=L, phi=angle_deg, B=Bfield, nslice=1)
-    else:
-        raise ValueError(f"Unsupported code: {code}")
+    angle_deg = angle * 180.0 / (3.1415926535898)
+    return elements.ExactSbend(name=name, ds=L, phi=angle_deg, B=Bfield, nslice=1)

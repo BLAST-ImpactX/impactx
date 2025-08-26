@@ -473,8 +473,6 @@ def kicker(
     integrated_field_v = current_to_integrated_field(
         current_v, max_current, max_integrated_field
     )
-    angle_h = integrated_field_h / get_rigidity(reference_energy_eV)
-    angle_v = integrated_field_v / get_rigidity(reference_energy_eV)
     return elements.Kicker(
         name=name, xkick=integrated_field_h, ykick=integrated_field_v, unit="T-m"
     )

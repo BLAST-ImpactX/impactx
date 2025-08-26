@@ -12,7 +12,6 @@
 
 import numpy as np
 from htu_lattice import get_lattice
-from scipy.constants import c, e, m_e
 
 from impactx import ImpactX, distribution, twiss
 

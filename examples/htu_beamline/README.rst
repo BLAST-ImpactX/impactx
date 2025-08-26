@@ -109,5 +109,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_htu_beamline_offenergy.py
       :language: python3
       :caption: You can copy this file from ``examples/htu_beamline/analysis_htu_beamline_offenergy.py``.
-   
-

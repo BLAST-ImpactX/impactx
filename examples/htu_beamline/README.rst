@@ -5,6 +5,12 @@ Dynamics in the HTU Beamline
 
 This example involves tracking a 25 pC electron bunch with 100 MeV total energy through the BELLA Hundred-Terawatt Undulator (HTU) beamline at LBNL `[1] <https://doi.org/10.1103/vh62-gz1p>`__, `[2] <https://doi.org/10.1117/12.3056776>`__.
 
+.. figure:: https://gist.githubusercontent.com/ax3l/cf3dcb517c8d5db293a257a332c87084/raw/5511edec168b6a33d806c11b9dadd01e99c72d52/htu.png
+   :alt: Survey plot of the BELLA Hundred-Terawatt Undulator (HTU) beamline at LBNL.
+
+   Survey plot of the BELLA Hundred-Terawatt Undulator (HTU) beamline at LBNL.
+   This plot can be generated with ``sim.lattice.plot_survey(ref=ref)`` (see :py:meth:`impactx.elements.KnownElementsList.plot_survey`).
+
 The bunch is generated in practice from a laser-plasma accelerator stage, resulting in a small intial rms beam size (3.9, 3.9, 1.0) microns, 2 mrad transverse divergence and 2.5% energy spread.  Due
 to the large energy spread, chromatic focusing effects are important.
 

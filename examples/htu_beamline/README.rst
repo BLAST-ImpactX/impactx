@@ -56,9 +56,9 @@ We run the following script to analyze correctness:
 Off-energy transport in the HTU Beamline
 ==========================================
 
-This is a modification of the example htu-beamline, as follows.  The beam total energy is increased from 100 MeV to 150 MeV, and the chicane R_56 is decreased from 200 microns to 0.
+This is a modification of the example htu-beamline, as follows.  The beam total energy is increased from 100 MeV to 150 MeV, and the chicane :math:`R_{56}` is decreased from 200 microns to 0.
 
-The purpose of this example is compare two distinct methods for transporting highly off-energy beams:
+The purpose of this example is to compare two distinct methods for transporting highly off-energy beams:
 
 1) keep the 100 MeV reference energy, but displace the mean energy of the initial beam distribution by setting the parameter meanPt
 2) modify the reference energy to 150 MeV, and rescale the input parameters of the initial beam distribution to yield a distribution with the same second moments as 1)

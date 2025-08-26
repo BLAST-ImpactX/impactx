@@ -1529,7 +1529,6 @@ add_impactx_test(htu-beamline.py
 
 # HTU Beamline Model with Off-Energy Transport ##############
 #
-# no space charge
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/htu-beamline-offenergy1.py)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py

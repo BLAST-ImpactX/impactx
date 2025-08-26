@@ -37,7 +37,8 @@ def get_moments(beam):
 # initial/final beam
 series1 = io.Series("diags/openPMD/TCPhosphor.h5", io.Access.read_only)
 last_step = list(series1.iterations)[-1]
-initial = series1.iterations[last_step].particles["beam"].to_df()
+beam_initial = series1.iterations[last_step].particles["beam"]
+initial = beam_initial.to_df()
 
 series2 = io.Series("diags/openPMD/UC_VisaEBeam8.h5", io.Access.read_only)
 last_step = list(series2.iterations)[-1]
@@ -49,11 +50,18 @@ num_particles = 10000
 assert num_particles == len(initial)
 assert num_particles == len(final)
 
+gamma_ref = beam_initial.get_attribute("gamma_ref")
+bg = np.sqrt(gamma_ref**2 - 1.0)
 print("Initial Beam (at TCPhosphor screen):")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(initial)
+
+emittance_xn = emittance_x*bg
+emittance_yn = emittance_y*bg
+emittance_tn = emittance_t*bg
+
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
-    f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
+    f"  emittance_xn={emittance_xn:e} emittance_yn={emittance_yn:e} emittance_tn={emittance_tn:e}"
 )
 
 atol = 0.0  # ignored
@@ -61,28 +69,33 @@ rtol = 20.0 * num_particles**-0.5  # from random sampling of a smooth distributi
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
+    [sigx, sigy, sigt, emittance_xn, emittance_yn, emittance_tn],
     [
         4.786098e-04,
         2.983777e-04,
         1.147205e-06,
-        1.937316e-08,
-        1.106004e-08,
-        2.856312e-08,
+        3.791183e-06,
+        2.164368e-06,
+        5.589590e-06,
     ],
     rtol=rtol,
     atol=atol,
 )
 
+gamma_ref = beam_final.get_attribute("gamma_ref")
+bg = np.sqrt(gamma_ref**2 - 1.0)
 
 print("")
 print("Final Beam (at VisaEbeam8 screen):")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(final)
-s_ref = beam_final.get_attribute("s_ref")
-gamma_ref = beam_final.get_attribute("gamma_ref")
+
+emittance_xn = emittance_x*bg
+emittance_yn = emittance_y*bg
+emittance_tn = emittance_t*bg
+
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
-    f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}\n"
+    f"  emittance_xn={emittance_xn:e} emittance_yn={emittance_yn:e} emittance_tn={emittance_tn:e}\n"
 )
 
 atol = 0.0  # ignored
@@ -90,14 +103,14 @@ rtol = 20.0 * num_particles**-0.5  # from random sampling of a smooth distributi
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
+    [sigx, sigy, sigt, emittance_xn, emittance_yn, emittance_tn],
     [
         7.554152e-03,
         2.151019e-03,
         9.054048e-04,
-        3.112212e-05,
-        3.187780e-06,
-        2.261387e-05,
+        6.090367e-03,
+        6.238249e-04,
+        4.425367e-03,
     ],
     rtol=rtol,
     atol=atol,

@@ -100,6 +100,8 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
          :language: python3
          :caption: You can copy this file from ``examples/htu_beamline/run_impactx_offenergy2.py``.
 
+The two scripts are physically equivalent, corresponding to methods 1) and 2) above, and should produce physically equivalent output.
+
 Analyze
 -------
 

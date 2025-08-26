@@ -60,7 +60,7 @@ This is a modification of the example htu-beamline, as follows.  The beam total 
 
 The purpose of this example is to compare two distinct methods for transporting highly off-energy beams:
 
-1) keep the 100 MeV reference energy, but displace the mean energy of the initial beam distribution by setting the parameter meanPt
+1) keep the 100 MeV reference energy, but displace the mean energy of the initial beam distribution by setting the parameter mean_pt
 2) modify the reference energy to 150 MeV, and rescale the input parameters of the initial beam distribution to yield a distribution with the same second moments as 1)
 
 The bunch is generated in practice from a laser-plasma accelerator stage, resulting in a small intial rms beam size (3.9, 3.9, 1.0) microns, 2 mrad transverse divergence and 2.5% energy spread.  Due

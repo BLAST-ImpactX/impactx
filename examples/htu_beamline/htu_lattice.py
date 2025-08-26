@@ -440,12 +440,14 @@ def quadrupole(
         Bgradient = current_to_Bgradient(current, design)
     return elements.ChrQuad(name=name, ds=L, k=-Bgradient, unit=1, nslice=1)
 
+
 # Define a drift element
 def drift(name, L, code):
     """
     Define a drift element.
     """
     return elements.ExactDrift(name=name, ds=L, nslice=1)
+
 
 # Define a kicker element
 def current_to_integrated_field(current, max_current, max_integrated_field):
@@ -476,7 +478,7 @@ def kicker(
     return elements.Kicker(
         name=name, xkick=integrated_field_h, ykick=integrated_field_v, unit="T-m"
     )
-   
+
 
 # Define a dipole element
 def chicane_r56_to_field(r56, L, reference_energy_eV):

@@ -435,10 +435,15 @@ def quadrupole(
     Need to provide k1, current, or bore_radius and B.
     """
     if k1 is None and current is None:
-        Bgradient = peakfield_to_Bgradient(bore_radius, B)
+        Bgradient = -1.0*peakfield_to_Bgradient(bore_radius, B)
+        unit=1
     elif k1 is None:
-        Bgradient = current_to_Bgradient(current, design)
-    return elements.ChrQuad(name=name, ds=L, k=-Bgradient, unit=1, nslice=1)
+        Bgradient = -1.0*current_to_Bgradient(current, design)
+        unit=1
+    else:
+        Bgradient = k1
+        unit=0
+    return elements.ChrQuad(name=name, ds=L, k=Bgradient, unit=unit, nslice=1)
 
 
 # Define a drift element

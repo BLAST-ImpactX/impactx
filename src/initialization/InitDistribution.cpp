@@ -224,6 +224,8 @@ namespace impactx
         std::optional<amrex::ParticleReal> intensity
     )
     {
+        using namespace amrex::literals;  // for _rt and _prt
+
         // zero out the 6x6 matrix
         CovarianceMatrix cv{};
 
@@ -245,6 +247,21 @@ namespace impactx
                 amrex::ParticleReal muxpx = distribution.m_muxpx;
                 amrex::ParticleReal muypy = distribution.m_muypy;
                 amrex::ParticleReal mutpt = distribution.m_mutpt;
+
+                // some things we cannot represent in envelope mode
+                if (distribution.m_meanx  != 0.0_prt ||
+                    distribution.m_meany  != 0.0_prt ||
+                    distribution.m_meant  != 0.0_prt ||
+                    distribution.m_meanpx != 0.0_prt ||
+                    distribution.m_meanpy != 0.0_prt ||
+                    distribution.m_meanpt != 0.0_prt ||
+                    distribution.m_dispx  != 0.0_prt ||
+                    distribution.m_disppx != 0.0_prt ||
+                    distribution.m_dispy  != 0.0_prt ||
+                    distribution.m_disppy != 0.0_prt
+                ) {
+                    throw std::runtime_error("Cannot create envelope for distribution with non-zero means or dispersion!");
+                }
 
                 // use distribution inputs to populate a 6x6 covariance matrix
                 amrex::ParticleReal denom_x = 1.0 - muxpx*muxpx;

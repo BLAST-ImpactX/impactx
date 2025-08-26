@@ -55,9 +55,9 @@ bg = np.sqrt(gamma_ref**2 - 1.0)
 print("Initial Beam (at TCPhosphor screen):")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(initial)
 
-emittance_xn = emittance_x*bg
-emittance_yn = emittance_y*bg
-emittance_tn = emittance_t*bg
+emittance_xn = emittance_x * bg
+emittance_yn = emittance_y * bg
+emittance_tn = emittance_t * bg
 
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
@@ -89,9 +89,9 @@ print("")
 print("Final Beam (at VisaEbeam8 screen):")
 sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(final)
 
-emittance_xn = emittance_x*bg
-emittance_yn = emittance_y*bg
-emittance_tn = emittance_t*bg
+emittance_xn = emittance_x * bg
+emittance_yn = emittance_y * bg
+emittance_tn = emittance_t * bg
 
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(

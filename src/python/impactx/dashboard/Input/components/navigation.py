@@ -47,8 +47,8 @@ class NavigationComponents:
         card = vuetify.VCard()
         with card:
             with vuetify.VTabs(v_model=(f"{name}", 0)):
-                for tab_name in tab_names:
-                    vuetify.VTab(tab_name)
+                for i, tab_name in enumerate(tab_names):
+                    vuetify.VTab(tab_name, id=f"{name}_tab_{i}")
             vuetify.VDivider()
         return card
 

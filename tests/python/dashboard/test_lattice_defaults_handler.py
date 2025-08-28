@@ -44,17 +44,13 @@ def test_lattice_defaults_handler(dashboard):
     4. Reset defaults and verify the handler resets to a single row.
     """
 
-    # Open lattice settings dialog
+    # Open lattice settings dialog and switch to Defaults tab
     dashboard.sb.click("#lattice_settings")
+    dashboard.sb.click("#lattice_configuration_dialog_tab_settings_tab_1")
 
-    # Locate the row for 'nslice' and set its value
-    defaults_state = dashboard.get_state("lattice_defaults")
-    nslice_index = next(
-        (i for i, row in enumerate(defaults_state, start=1) if row.get("name") == "nslice"),
-        None,
-    )
-    assert nslice_index is not None, "nslice parameter not found in defaults table"
-    dashboard.set_input(f"default_value_{nslice_index}", 25)
+    # Locate the row for 'nslice' and set its value (use search to ensure visible)
+    dashboard.set_input("lattice_defaults_search", "nslice")
+    dashboard.set_input("default_value_nslice", 25)
 
     # Add a lattice element that has nslice
     dashboard.add_lattice_element("Sbend")
@@ -62,13 +58,8 @@ def test_lattice_defaults_handler(dashboard):
 
     # Add another default (rc) and create another element to use it
     # Set rc default as well
-    defaults_state = dashboard.get_state("lattice_defaults")
-    rc_index = next(
-        (i for i, row in enumerate(defaults_state, start=1) if row.get("name") == "rc"),
-        None,
-    )
-    assert rc_index is not None, "rc parameter not found in defaults table"
-    dashboard.set_input(f"default_value_{rc_index}", 12.5)
+    dashboard.set_input("lattice_defaults_search", "rc")
+    dashboard.set_input("default_value_rc", 12.5)
 
     dashboard.add_lattice_element("Sbend")
     assert_lattice_param_sim_input(dashboard, 1, "rc", 12.5)

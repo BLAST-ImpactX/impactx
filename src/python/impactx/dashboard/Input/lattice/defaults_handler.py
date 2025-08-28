@@ -13,6 +13,8 @@ state.lattice_defaults = [
 ]
 state.is_only_default = len(state.lattice_defaults) == 1
 state.lattice_defaults_filter = ""
+state.lattice_defaults_page = 1
+# fixed page size of 5 rows per page
 
 
 class LatticeDefaultsHandler:
@@ -116,6 +118,13 @@ class LatticeDefaultsHandler:
         LatticeDefaultsHandler._update_delete_availability()
         LatticeDefaultsHandler._apply_overrides_to_parameter_map()
 
+    @staticmethod
+    @state.change("lattice_defaults_filter")
+    def on_filter_change(*_args, **_kwargs):
+        # Reset to first page when filter changes
+        state.lattice_defaults_page = 1
+        state.dirty("lattice_defaults_page")
+
     # -------------------------------------------------------------------------
     # Controllers
     # -------------------------------------------------------------------------
@@ -133,8 +142,21 @@ class LatticeDefaultsHandler:
 
     @staticmethod
     @ctrl.add("update_lattice_default")
-    def on_update_default(key_name: str, index: int, event) -> None:
-        item = state.lattice_defaults[index]
+    def on_update_default(key_name: str, key, event) -> None:
+        # Resolve row index either directly or via parameter name
+        idx = key
+        if isinstance(key, str):
+            idx = next(
+                (
+                    i
+                    for i, row in enumerate(state.lattice_defaults)
+                    if row.get("name") == key
+                ),
+                None,
+            )
+            if idx is None:
+                return
+        item = state.lattice_defaults[idx]
         if key_name == "value":
             item["value"] = event
         state.dirty("lattice_defaults")
@@ -174,9 +196,8 @@ class LatticeDefaultsHandler:
                 clearable=True,
             )
 
-        # Results summary and no-match indicator
+        # Results summary
         with vuetify.VCardText(classes="pt-0 pb-0"):
-            # Showing N of M parameters
             vuetify.VChip(
                 text=(
                     "'Showing ' + (lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length + ' of ' + lattice_defaults.length + ' parameters'",
@@ -186,24 +207,13 @@ class LatticeDefaultsHandler:
                 color="grey",
                 classes="ma-0",
             )
-            # No matches
-            vuetify.VAlert(
-                "No matching parameters",
-                type="info",
-                variant="tonal",
-                density="compact",
-                border=True,
-                classes="mt-2",
-                v_show=(
-                    "(lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length === 0",
-                ),
-            )
 
-        with vuetify.VCardText(style="max-height: 400px; overflow-y: auto;"):
+        # List area (no scrollbar, 5 items per page)
+        with vuetify.VCardText():
             with vuetify.VContainer(fluid=True):
                 with vuetify.VRow(
                     v_for=(
-                        "(item, index) in lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))",
+                        "(item, index) in (lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).slice((lattice_defaults_page - 1) * 5, (lattice_defaults_page) * 5)",
                     ),
                     classes="align-center justify-center py-0",
                 ):
@@ -211,7 +221,7 @@ class LatticeDefaultsHandler:
                         vuetify.VTextField(
                             placeholder="Parameter Name",
                             v_model=("item.name",),
-                            id=("'default_name_' + (index + 1)",),
+                            id=("'default_name_' + (item.name || '')",),
                             variant="outlined",
                             density="compact",
                             background_color="grey lighten-4",
@@ -226,14 +236,14 @@ class LatticeDefaultsHandler:
                         vuetify.VTextField(
                             placeholder="Default Value",
                             v_model=("item.value",),
-                            id=("'default_value_' + (index + 1)",),
+                            id=("'default_value_' + (item.name || '')",),
                             variant="outlined",
                             density="compact",
                             type="text",
                             background_color="grey lighten-4",
                             update_modelValue=(
                                 ctrl.update_lattice_default,
-                                "['value', index, $event]",
+                                "['value', item.name, $event]",
                             ),
                             hide_details=True,
                             clearable=True,
@@ -241,6 +251,30 @@ class LatticeDefaultsHandler:
                         )
                     with vuetify.VCol(cols=2, classes="d-flex"):
                         pass
+                # No matches indicator
+                vuetify.VAlert(
+                    "No matching parameters",
+                    type="info",
+                    variant="tonal",
+                    density="compact",
+                    border=True,
+                    classes="ma-2",
+                    v_show=(
+                        "(lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length === 0",
+                    ),
+                )
+
+        # Pagination controls
+        with vuetify.VCardText(classes="pt-0 pb-2"):
+            vuetify.VPagination(
+                v_model=("lattice_defaults_page", 1),
+                length=(
+                    "Math.max(1, Math.ceil((lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length / 5))",
+                ),
+                total_visible=7,
+                __properties=["length", "total_visible"],
+                density="comfortable",
+            )
             with vuetify.VRow(classes="mt-2"):
                 with vuetify.VCol():
                     vuetify.VBtn(

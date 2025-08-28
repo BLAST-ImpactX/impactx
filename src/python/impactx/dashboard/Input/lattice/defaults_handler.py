@@ -15,6 +15,8 @@ state.is_only_default = len(state.lattice_defaults) == 1
 state.lattice_defaults_filter = ""
 state.lattice_defaults_page = 1
 # fixed page size of 5 rows per page
+state.lattice_defaults_filtered = []
+state.lattice_defaults_no_results = False
 
 
 class LatticeDefaultsHandler:
@@ -109,6 +111,24 @@ class LatticeDefaultsHandler:
                 )
         return rows
 
+    @staticmethod
+    def _filter_defaults_by_query() -> list[dict]:
+        """
+        Returns defaults filtered by the current search query.
+        """
+        query = (state.lattice_defaults_filter or "").lower()
+        defaults = state.lattice_defaults or []
+        if not query:
+            return defaults
+        return [row for row in defaults if query in (row.get("name") or "").lower()]
+
+    @staticmethod
+    def _sync_filtered_defaults() -> None:
+        filtered = LatticeDefaultsHandler._filter_defaults_by_query()
+        state.lattice_defaults_filtered = filtered
+        state.lattice_defaults_no_results = bool(state.lattice_defaults_filter) and not filtered
+        state.dirty("lattice_defaults_filtered", "lattice_defaults_no_results")
+
     # -------------------------------------------------------------------------
     # State listeners
     # -------------------------------------------------------------------------
@@ -117,13 +137,15 @@ class LatticeDefaultsHandler:
     def on_defaults_change(lattice_defaults, **kwargs):
         LatticeDefaultsHandler._update_delete_availability()
         LatticeDefaultsHandler._apply_overrides_to_parameter_map()
+        LatticeDefaultsHandler._sync_filtered_defaults()
 
     @staticmethod
     @state.change("lattice_defaults_filter")
     def on_filter_change(*_args, **_kwargs):
-        # Reset to first page when filter changes
+        # Reset to first page when filter changes and update filtered list
         state.lattice_defaults_page = 1
         state.dirty("lattice_defaults_page")
+        LatticeDefaultsHandler._sync_filtered_defaults()
 
     # -------------------------------------------------------------------------
     # Controllers
@@ -184,23 +206,29 @@ class LatticeDefaultsHandler:
         ):
             state.lattice_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
             state.dirty("lattice_defaults")
+            LatticeDefaultsHandler._sync_filtered_defaults()
+        elif not state.lattice_defaults_filtered:
+            # Ensure filtered list is initialized
+            LatticeDefaultsHandler._sync_filtered_defaults()
         # Search bar
         with vuetify.VCardText(classes="pt-2 pb-0"):
             vuetify.VTextField(
-                placeholder="Search parameter name",
                 v_model=("lattice_defaults_filter", ""),
-                id="lattice_defaults_search",
+                placeholder="Search",
+                prepend_inner_icon="mdi-magnify",
                 variant="outlined",
                 density="compact",
-                prepend_icon="mdi-magnify",
+                hide_details=True,
                 clearable=True,
+                classes="text-body-2",
+                id="lattice_defaults_search",
             )
 
         # Results summary
         with vuetify.VCardText(classes="pt-0 pb-0"):
             vuetify.VChip(
                 text=(
-                    "'Showing ' + (lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length + ' of ' + lattice_defaults.length + ' parameters'",
+                    "'Showing ' + lattice_defaults_filtered.length + ' of ' + lattice_defaults.length + ' parameters'",
                 ),
                 size="small",
                 variant="tonal",
@@ -213,7 +241,7 @@ class LatticeDefaultsHandler:
             with vuetify.VContainer(fluid=True):
                 with vuetify.VRow(
                     v_for=(
-                        "(item, index) in (lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).slice((lattice_defaults_page - 1) * 5, (lattice_defaults_page) * 5)",
+                        "(item, index) in lattice_defaults_filtered.slice((lattice_defaults_page - 1) * 5, (lattice_defaults_page) * 5)",
                     ),
                     classes="align-center justify-center py-0",
                 ):
@@ -259,18 +287,14 @@ class LatticeDefaultsHandler:
                     density="compact",
                     border=True,
                     classes="ma-2",
-                    v_show=(
-                        "(lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length === 0",
-                    ),
+                    v_show=("lattice_defaults_no_results",),
                 )
 
         # Pagination controls
         with vuetify.VCardText(classes="pt-0 pb-2"):
             vuetify.VPagination(
                 v_model=("lattice_defaults_page", 1),
-                length=(
-                    "Math.max(1, Math.ceil((lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length / 5))",
-                ),
+                length=("Math.max(1, Math.ceil(lattice_defaults_filtered.length / 5))",),
                 total_visible=7,
                 __properties=["length", "total_visible"],
                 density="comfortable",

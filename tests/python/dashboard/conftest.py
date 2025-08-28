@@ -1,3 +1,5 @@
+import os
+import time
 import pytest
 from seleniumbase import SB
 
@@ -7,6 +9,17 @@ from .utils import (
     wait_for_interaction_ready,
     wait_for_server_ready,
 )
+
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    """Attach test phase reports to the node for later inspection.
+
+    Allows fixtures to check failures in teardown via request.node.rep_call.
+    """
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, "rep_" + rep.when, rep)
 
 
 @pytest.fixture(scope="session")
@@ -32,7 +45,7 @@ def dashboard():
 
 
 @pytest.fixture(autouse=True)
-def reset_dashboard_inputs(dashboard):
+def reset_dashboard_inputs(dashboard, request):
     """
     Resets the dashboard to its default state before each test.
 
@@ -40,3 +53,17 @@ def reset_dashboard_inputs(dashboard):
     """
     dashboard.sb.click("#Input_route")
     dashboard.sb.click("#reset_all_inputs_button")
+    # Teardown: on failure, save a screenshot for debugging
+    yield
+    rep = getattr(request.node, "rep_call", None)
+    if rep and rep.failed:
+        try:
+            os.makedirs("screenshots", exist_ok=True)
+            ts = time.strftime("%Y%m%d-%H%M%S")
+            name = f"{request.node.name}_{ts}.png"
+            path = os.path.abspath(os.path.join("screenshots", name))
+            # Use the underlying WebDriver to capture the screen
+            dashboard.sb.driver.save_screenshot(path)
+            print(f"Saved failed test screenshot: {path}")
+        except Exception:
+            pass

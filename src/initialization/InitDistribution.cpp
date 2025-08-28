@@ -260,7 +260,7 @@ namespace impactx
                     distribution.m_dispy  != 0.0_prt ||
                     distribution.m_disppy != 0.0_prt
                 ) {
-                    throw std::runtime_error("Cannot create envelope for distribution with non-zero means or dispersion!");
+                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means or dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/...");
                 }
 
                 // use distribution inputs to populate a 6x6 covariance matrix

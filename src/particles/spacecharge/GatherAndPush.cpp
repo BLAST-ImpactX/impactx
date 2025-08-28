@@ -80,7 +80,6 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
 
                 // gather to each particle and push momentum
-                /*
                 if (space_charge == SpaceChargeAlgo::True_2D) {
                     // flatten 3rd dimension
                     auto prob_lo_2D = gm.ProbLoArray();
@@ -99,7 +98,7 @@ namespace impactx::particles::spacecharge
 
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =
-                            ablastr::particles::doGatherVectorFieldNodal(
+                            ablastr::particles::doGatherVectorFieldNodal<2>(
                                 x, y, z,
                                 scf_arr_x, scf_arr_y, scf_arr_z,
                                 invdr,
@@ -109,13 +108,12 @@ namespace impactx::particles::spacecharge
                         // push momentum
                         px += field_interp[0] * push_consts;
                         py += field_interp[1] * push_consts;
-                        pz += field_interp[2] * push_consts;  // TODO: is this always += 0.0?
+                        pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
 
                         // push position is done in the lattice elements
                     });
                 }
                 if (space_charge == SpaceChargeAlgo::True_3D) {
-                */
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
                         amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
@@ -141,7 +139,7 @@ namespace impactx::particles::spacecharge
 
                         // push position is done in the lattice elements
                     });
-                //}
+                }
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }

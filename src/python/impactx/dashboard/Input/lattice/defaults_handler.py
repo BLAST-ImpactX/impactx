@@ -210,31 +210,32 @@ class LatticeDefaultsHandler:
         elif not state.lattice_defaults_filtered:
             # Ensure filtered list is initialized
             LatticeDefaultsHandler._sync_filtered_defaults()
-        # Search bar
-        with vuetify.VCardText(classes="pt-2 pb-0"):
-            vuetify.VTextField(
-                v_model=("lattice_defaults_filter", ""),
-                placeholder="Search",
-                prepend_inner_icon="mdi-magnify",
-                variant="outlined",
-                density="compact",
-                hide_details=True,
-                clearable=True,
-                classes="text-body-2",
-                id="lattice_defaults_search",
-            )
-
-        # Results summary
-        with vuetify.VCardText(classes="pt-0 pb-0"):
-            vuetify.VChip(
-                text=(
-                    "'Showing ' + lattice_defaults_filtered.length + ' of ' + lattice_defaults.length + ' parameters'",
-                ),
-                size="small",
-                variant="tonal",
-                color="grey",
-                classes="ma-0",
-            )
+        # Search + results summary (single line)
+        with vuetify.VCardText(classes="py-2"):
+            with vuetify.VRow(classes="align-center"):
+                with vuetify.VCol(cols=True):
+                    vuetify.VTextField(
+                        v_model=("lattice_defaults_filter", ""),
+                        placeholder="Search",
+                        prepend_inner_icon="mdi-magnify",
+                        variant="outlined",
+                        density="compact",
+                        hide_details=True,
+                        clearable=True,
+                        classes="text-body-2",
+                        id="lattice_defaults_search",
+                    )
+                with vuetify.VCol(cols="auto", classes="d-flex align-center ml-3"):
+                    vuetify.VIcon(
+                        "mdi-checkbox-blank-circle",
+                        size="x-small",
+                        color="primary",
+                        classes="mr-2",
+                    )
+                    html.Span(
+                        "{{ lattice_defaults_filtered.length }} / {{ lattice_defaults.length }}",
+                        classes="text-caption text-grey-darken-1",
+                    )
 
         # List area (no scrollbar, 5 items per page)
         with vuetify.VCardText():
@@ -281,7 +282,7 @@ class LatticeDefaultsHandler:
                         pass
                 # No matches indicator
                 vuetify.VAlert(
-                    "No matching parameters",
+                    "No matches found",
                     type="info",
                     variant="tonal",
                     density="compact",

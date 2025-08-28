@@ -12,6 +12,7 @@ state.lattice_defaults = [
     {"name": init_value, "value": init_value, "error_message": init_value}
 ]
 state.is_only_default = len(state.lattice_defaults) == 1
+state.lattice_defaults_filter = ""
 
 
 class LatticeDefaultsHandler:
@@ -142,6 +143,7 @@ class LatticeDefaultsHandler:
     @ctrl.add("reset_lattice_defaults")
     def on_reset_defaults() -> None:
         state.lattice_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
+        state.lattice_defaults_filter = ""
         state.dirty("lattice_defaults")
 
     # -------------------------------------------------------------------------
@@ -160,10 +162,49 @@ class LatticeDefaultsHandler:
         ):
             state.lattice_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
             state.dirty("lattice_defaults")
+        # Search bar
+        with vuetify.VCardText(classes="pt-2 pb-0"):
+            vuetify.VTextField(
+                placeholder="Search parameter name",
+                v_model=("lattice_defaults_filter", ""),
+                id="lattice_defaults_search",
+                variant="outlined",
+                density="compact",
+                prepend_icon="mdi-magnify",
+                clearable=True,
+            )
+
+        # Results summary and no-match indicator
+        with vuetify.VCardText(classes="pt-0 pb-0"):
+            # Showing N of M parameters
+            vuetify.VChip(
+                text=(
+                    "'Showing ' + (lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length + ' of ' + lattice_defaults.length + ' parameters'",
+                ),
+                size="small",
+                variant="tonal",
+                color="grey",
+                classes="ma-0",
+            )
+            # No matches
+            vuetify.VAlert(
+                "No matching parameters",
+                type="info",
+                variant="tonal",
+                density="compact",
+                border=True,
+                classes="mt-2",
+                v_show=(
+                    "(lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))).length === 0",
+                ),
+            )
+
         with vuetify.VCardText(style="max-height: 400px; overflow-y: auto;"):
             with vuetify.VContainer(fluid=True):
                 with vuetify.VRow(
-                    v_for="(item, index) in lattice_defaults",
+                    v_for=(
+                        "(item, index) in lattice_defaults.filter(d => !lattice_defaults_filter || (d.name || '').toLowerCase().includes((lattice_defaults_filter || '').toLowerCase()))",
+                    ),
                     classes="align-center justify-center py-0",
                 ):
                     with vuetify.VCol(cols=5, classes="pr-0"):

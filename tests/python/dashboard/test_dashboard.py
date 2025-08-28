@@ -45,6 +45,9 @@ def test_dashboard(dashboard):
     for name in ["Drift", "Quad", "Drift", "Quad", "Drift"]:
         dashboard.add_lattice_element(name)
 
+    # Ensure the lattice list is fully populated before setting parameters
+    dashboard.assert_state("total_elements", 5)
+
     LATTICE_PARAMS = {
         "ds1": 0.25,
         "nslice1": "ns",

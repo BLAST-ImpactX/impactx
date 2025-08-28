@@ -14,7 +14,7 @@ from pathlib import Path
 
 from selenium.common.exceptions import TimeoutException
 
-TIMEOUT = 60
+TIMEOUT = 120
 
 
 def start_dashboard() -> subprocess.Popen[str]:

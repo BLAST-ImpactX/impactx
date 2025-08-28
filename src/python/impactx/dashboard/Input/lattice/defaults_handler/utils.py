@@ -8,13 +8,13 @@ License: BSD-3-Clause-LBNL
 
 from impactx import elements
 
-from .... import ctrl, state
+from .... import state
 from ...defaults_helper import InputDefaultsHelper
 from ...utils import GeneralFunctions
 
-
 EXCLUDED_LATTICE_DEFAULTS: set[str] = {"name"}
 EXCLUDED_LATTICE_CLASSES: set[str] = {"BeamMonitor"}
+
 
 def apply_overrides_to_parameter_map() -> None:
     """
@@ -94,5 +94,7 @@ def _filter_defaults_by_query() -> list[dict]:
 def sync_filtered_defaults() -> None:
     filtered = _filter_defaults_by_query()
     state.lattice_defaults_filtered = filtered
-    state.lattice_defaults_no_results = bool(state.lattice_defaults_filter) and not filtered
+    state.lattice_defaults_no_results = (
+        bool(state.lattice_defaults_filter) and not filtered
+    )
     state.dirty("lattice_defaults_filtered", "lattice_defaults_no_results")

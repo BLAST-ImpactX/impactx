@@ -10,7 +10,6 @@ from .... import ctrl, html, state, vuetify
 from . import components
 from . import utils as _utils
 
-
 _INIT_VALUE = ""
 state.lattice_defaults = [
     {"name": _INIT_VALUE, "value": _INIT_VALUE, "error_message": _INIT_VALUE}
@@ -57,8 +56,11 @@ def _on_update_default(field_name: str, identifier, new_value) -> None:
         row_index = identifier
     else:
         row_index = next(
-            (i for i, row in enumerate(state.lattice_defaults)
-             if row.get("name") == identifier),
+            (
+                i
+                for i, row in enumerate(state.lattice_defaults)
+                if row.get("name") == identifier
+            ),
             None,
         )
         if row_index is None:

@@ -19,9 +19,9 @@ from .. import DashboardDefaults
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from ..validation import DashboardValidation, errors_tracker
+from .defaults_handler import LatticeDefaultsHandler
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
-from .defaults_handler import LatticeDefaultsHandler
 
 state.lattice_elements_using_variables = {}
 state.is_selected_element_invalid = True

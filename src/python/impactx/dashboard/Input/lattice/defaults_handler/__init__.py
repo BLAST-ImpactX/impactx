@@ -1,4 +1,3 @@
-
 from .ui import LatticeDefaultsHandler
 
 __all__ = [

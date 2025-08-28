@@ -13,7 +13,9 @@ def header_summary():
     """
     Renders a small legend for match count next to search.
     """
-    vuetify.VIcon("mdi-checkbox-blank-circle", size="x-small", color="primary", classes="mr-2")
+    vuetify.VIcon(
+        "mdi-checkbox-blank-circle", size="x-small", color="primary", classes="mr-2"
+    )
     html.Span(
         "Matches: {{ lattice_defaults_filtered.length }} / {{ lattice_defaults.length }}",
         classes="text-caption text-grey-darken-1",

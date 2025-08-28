@@ -216,7 +216,8 @@ class LatticeDefaultsHandler:
                 with vuetify.VCol(cols=True):
                     vuetify.VTextField(
                         v_model=("lattice_defaults_filter", ""),
-                        placeholder="Search",
+                        label="Search parameters",
+                        placeholder="e.g., nslice",
                         prepend_inner_icon="mdi-magnify",
                         variant="outlined",
                         density="compact",
@@ -224,6 +225,8 @@ class LatticeDefaultsHandler:
                         clearable=True,
                         classes="text-body-2",
                         id="lattice_defaults_search",
+                        aria_label="Search parameters",
+                        __properties=["aria-label"],
                     )
                 with vuetify.VCol(cols="auto", classes="d-flex align-center ml-3"):
                     vuetify.VIcon(
@@ -233,8 +236,10 @@ class LatticeDefaultsHandler:
                         classes="mr-2",
                     )
                     html.Span(
-                        "{{ lattice_defaults_filtered.length }} / {{ lattice_defaults.length }}",
+                        "Matches: {{ lattice_defaults_filtered.length }} / {{ lattice_defaults.length }}",
                         classes="text-caption text-grey-darken-1",
+                        aria_live="polite",
+                        __properties=["aria-live"],
                     )
 
         # List area (no scrollbar, 5 items per page)

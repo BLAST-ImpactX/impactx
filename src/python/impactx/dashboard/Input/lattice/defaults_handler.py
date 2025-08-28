@@ -14,9 +14,10 @@ state.lattice_defaults = [
 state.is_only_default = len(state.lattice_defaults) == 1
 state.lattice_defaults_filter = ""
 state.lattice_defaults_page = 1
-# fixed page size of 5 rows per page
 state.lattice_defaults_filtered = []
 state.lattice_defaults_no_results = False
+EXCLUDED_LATTICE_DEFAULTS: set[str] = {"name"}
+EXCLUDED_LATTICE_CLASSES: set[str] = {"BeamMonitor"}
 
 
 class LatticeDefaultsHandler:
@@ -36,9 +37,12 @@ class LatticeDefaultsHandler:
     def _known_parameter_names() -> set[str]:
         names = set()
         data = InputDefaultsHelper.class_parameters_with_defaults(elements)
-        for params in data.values():
+        for class_name, params in data.items():
+            if class_name in EXCLUDED_LATTICE_CLASSES:
+                continue
             for pname, _pdefault, _ptype in params:
-                names.add(pname)
+                if pname not in EXCLUDED_LATTICE_DEFAULTS:
+                    names.add(pname)
         return names
 
     @staticmethod
@@ -60,6 +64,8 @@ class LatticeDefaultsHandler:
             value = override.get("value")
             if not name:
                 continue
+            if name in EXCLUDED_LATTICE_DEFAULTS:
+                continue
 
             ptype = type_lookup.get(name)
             cast_value = value
@@ -67,6 +73,8 @@ class LatticeDefaultsHandler:
                 cast_value = GeneralFunctions.convert_to_numeric(value)
 
             for key, parameters in data.items():
+                if key in EXCLUDED_LATTICE_CLASSES:
+                    continue
                 for i, (pname, _pdefault, ptype) in enumerate(parameters):
                     if pname == name:
                         parameters[i] = (pname, cast_value, ptype)
@@ -97,8 +105,12 @@ class LatticeDefaultsHandler:
         rows: list[dict] = []
         seen: set[str] = set()
         data = InputDefaultsHelper.class_parameters_with_defaults(elements)
-        for params in data.values():
+        for class_name, params in data.items():
+            if class_name in EXCLUDED_LATTICE_CLASSES:
+                continue
             for pname, pdefault, _ptype in params:
+                if pname in EXCLUDED_LATTICE_DEFAULTS:
+                    continue
                 if pname in seen:
                     continue
                 seen.add(pname)

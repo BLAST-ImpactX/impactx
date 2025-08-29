@@ -24,7 +24,7 @@ namespace impactx
      * @param[in] step global step for diagnostics
      * @param[in] period for periodic lattices, this is the current period (turn or cycle)
      */
-    void Push (
+    void push (
         ImpactXParticleContainer & pc,
         elements::KnownElements & element_variant,
         int step,
@@ -36,7 +36,7 @@ namespace impactx
      * @param[inout] ref the reference particle
      * @param[inout] element_variant a single element to push the particles through
      */
-    void Push (
+    void push (
         RefPart & ref,
         elements::KnownElements & element_variant
     );

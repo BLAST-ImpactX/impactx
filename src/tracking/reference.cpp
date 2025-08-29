@@ -107,7 +107,7 @@ namespace impactx
                     }
 
                     // push the reference particle with external maps
-                    Push(ref, element_variant);
+                    push(ref, element_variant);
 
                     // just prints an empty newline at the end of the slice_step
                     if (verbose > 0)

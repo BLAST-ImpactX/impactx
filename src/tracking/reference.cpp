@@ -106,12 +106,8 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
-                    std::visit([&ref](auto&& element)
-                    {
-                        // push reference particle in global coordinates
-                        BL_PROFILE("impactx::Push::RefPart");
-                        element(ref);
-                    }, element_variant);
+                    // push the reference particle with external maps
+                    Push(ref, element_variant);
 
                     // just prints an empty newline at the end of the slice_step
                     if (verbose > 0)

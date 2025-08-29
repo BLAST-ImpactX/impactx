@@ -33,4 +33,18 @@ namespace impactx
         }, element_variant);
     }
 
+    void Push (
+        RefPart & ref,
+        elements::KnownElements & element_variant
+    )
+    {
+        // here we just access the element by its respective type
+        std::visit([&ref](auto&& element)
+        {
+            // push reference particle in global coordinates
+            BL_PROFILE("impactx::Push::RefPart");
+            element(ref);
+        }, element_variant);
+    }
+
 } // namespace impactx

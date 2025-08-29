@@ -12,13 +12,12 @@
 
 #include "elements/All.H"
 #include "particles/ImpactXParticleContainer.H"
-
-#include <list>
+#include "particles/ReferenceParticle.H"
 
 
 namespace impactx
 {
-    /** Push particles
+    /** Push a whole particle beam (incl. reference particle) through an element
      *
      * @param[inout] pc container of the particles to push
      * @param[inout] element_variant a single element to push the particles through
@@ -30,6 +29,16 @@ namespace impactx
         elements::KnownElements & element_variant,
         int step,
         int period
+    );
+
+    /** Push the reference particle through an element
+     *
+     * @param[inout] ref the reference particle
+     * @param[inout] element_variant a single element to push the particles through
+     */
+    void Push (
+        RefPart & ref,
+        elements::KnownElements & element_variant
     );
 
 } // namespace impactx

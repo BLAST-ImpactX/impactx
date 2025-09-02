@@ -186,6 +186,7 @@ namespace impactx
     ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
     {
         this->clearParticles();
+        this->reset_beam_moments_history();
         m_refpart.reset(keep_mass, keep_charge);
     }
 

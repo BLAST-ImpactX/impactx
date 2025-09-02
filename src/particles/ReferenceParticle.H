@@ -34,9 +34,9 @@ namespace impactx
         amrex::ParticleReal y = 0.0;  ///< vertical position y, in meters
         amrex::ParticleReal z = 0.0;  ///< longitudinal position z, in meters
         amrex::ParticleReal t = 0.0;  ///< clock time * c in meters
-        amrex::ParticleReal px = 0.0; ///< momentum in x, normalized to proper velocity: beta_x*gamma [1/(m*c)]
-        amrex::ParticleReal py = 0.0; ///< momentum in y, normalized to proper velocity: beta_y*gamma [1/(m*c)]
-        amrex::ParticleReal pz = 0.0; ///< momentum in z, normalized to proper velocity: beta_z*gamma [1/(m*c)]
+        amrex::ParticleReal px = 0.0; ///< momentum in x, normalized to proper velocity = beta_x*gamma [m*c]
+        amrex::ParticleReal py = 0.0; ///< momentum in y, normalized to proper velocity = beta_y*gamma [m*c]
+        amrex::ParticleReal pz = 0.0; ///< momentum in z, normalized to proper velocity = beta_z*gamma [m*c]
         amrex::ParticleReal pt = 0.0; ///< energy, normalized by rest energy
         amrex::ParticleReal mass = 0.0; ///< reference rest mass, in kg
         amrex::ParticleReal charge = 0.0; ///< reference charge, in C

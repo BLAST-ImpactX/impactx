@@ -647,15 +647,15 @@ class RefPart:
         """
     def set_charge_qe(self, charge_qe: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle charge (positive elementary charge)
+        Set reference particle charge (positive elementary charge) [q_e]
         """
     def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle kinetic energy (MeV)
+        Set reference particle kinetic energy [MeV]
         """
     def set_mass_MeV(self, mass_MeV: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle rest mass (MeV/c^2)
+        Set reference particle rest mass * c^2, expressed as an energy [MeV]
         """
     @property
     def beta(self) -> float:
@@ -670,7 +670,7 @@ class RefPart:
     @property
     def charge(self) -> float:
         """
-        reference charge, in C
+        reference charge [C]
         """
     @charge.setter
     def charge(self, arg0: typing.SupportsFloat) -> None: ...
@@ -687,7 +687,7 @@ class RefPart:
     @property
     def kin_energy_MeV(self) -> float:
         """
-        Get reference particle energy (MeV)
+        Get reference particle energy [MeV]
         """
     @property
     def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
@@ -701,14 +701,14 @@ class RefPart:
     @property
     def mass(self) -> float:
         """
-        reference rest mass, in kg
+        reference rest mass [kg]
         """
     @mass.setter
     def mass(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def mass_MeV(self) -> float:
         """
-        Get reference particle rest mass (MeV/c^2)
+        Get reference particle rest mass * c^2, expressed as an energy [MeV]
         """
     @property
     def pt(self) -> float:
@@ -720,38 +720,38 @@ class RefPart:
     @property
     def px(self) -> float:
         """
-        momentum in x, normalized to proper velocity
+        momentum in x divided by m*c = beta_x*gamma [unitless]
         """
     @px.setter
     def px(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def py(self) -> float:
         """
-        momentum in y, normalized to proper velocity
+        momentum in y divided by m*c = beta_y*gamma [unitless]
         """
     @py.setter
     def py(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def pz(self) -> float:
         """
-        momentum in z, normalized to proper velocity
+        momentum in z divided by m*c = beta_z*gamma [unitless]
         """
     @pz.setter
     def pz(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def qm_ratio_SI(self) -> float:
         """
-        Get reference particle charge to mass ratio (C/kg)
+        Get reference particle charge to mass ratio [C/kg]
         """
     @property
     def rigidity_Tm(self) -> float:
         """
-        Get reference particle magnetic rigidity Brho (T*m)
+        Get reference particle magnetic rigidity Brho [T*m]
         """
     @property
     def s(self) -> float:
         """
-        integrated orbit path length, in meters
+        integrated orbit path length [m]
         """
     @s.setter
     def s(self, arg0: typing.SupportsFloat) -> None: ...
@@ -765,28 +765,28 @@ class RefPart:
     @property
     def t(self) -> float:
         """
-        clock time * c in meters
+        clock time * c [m]
         """
     @t.setter
     def t(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def x(self) -> float:
         """
-        horizontal position x, in meters
+        horizontal position x [m]
         """
     @x.setter
     def x(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def y(self) -> float:
         """
-        vertical position y, in meters
+        vertical position y [m]
         """
     @y.setter
     def y(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def z(self) -> float:
         """
-        longitudinal position y, in meters
+        longitudinal position y [m]
         """
     @z.setter
     def z(self, arg0: typing.SupportsFloat) -> None: ...

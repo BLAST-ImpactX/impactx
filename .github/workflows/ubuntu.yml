@@ -27,7 +27,7 @@ jobs:
         docker-images: true
         swap-storage: false
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: install dependencies
       run: |
@@ -92,7 +92,7 @@ jobs:
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}
 
   build_gcc_python:
-    name: GCC w/o MPI w/ Python
+    name: GCC w/ SIMD w/o MPI w/ Python
     runs-on: ubuntu-22.04
     if: github.event.pull_request.draft == false
     env:
@@ -111,7 +111,7 @@ jobs:
         docker-images: true
         swap-storage: false
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: install dependencies
       run: |
@@ -140,6 +140,7 @@ jobs:
           -DImpactX_FFT=ON             \
           -DImpactX_MPI=OFF            \
           -DImpactX_PYTHON=ON          \
+          -DImpactX_SIMD=ON            \
           -DImpactX_TEST_CLEANUP=ON
         cmake --build build -j 4
 
@@ -168,3 +169,18 @@ jobs:
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}
+
+    - name: build ImpactX (SP) w/o running
+      run: |
+        cmake -S . -B build_sp         \
+          -DBUILD_SHARED_LIBS=ON       \
+          -DCMAKE_BUILD_TYPE=Release   \
+          -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
+          -DCMAKE_VERBOSE_MAKEFILE=ON  \
+          -DImpactX_FFT=ON             \
+          -DImpactX_MPI=OFF            \
+          -DImpactX_PRECISION=SINGLE   \
+          -DImpactX_PYTHON=ON          \
+          -DImpactX_SIMD=ON            \
+          -DImpactX_TEST_CLEANUP=ON
+        cmake --build build_sp -j 4

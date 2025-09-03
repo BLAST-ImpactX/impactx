@@ -219,12 +219,14 @@ class DashboardTester:
                 return
 
             print(
-                f"Waiting for state['{state_name}'] to become '{expected_input}' - ({i + 1}s elapsed)"
+                f"Waiting for state['{state_name}'] to become '{expected_input}' - (current value: '{value}') - ({i + 1}s elapsed)"
             )
             time.sleep(1)
 
         raise TimeoutError(
-            f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds (last value: '{value}')."
+            f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds "
+            f"(last value: '{value}').\n"
+            f"curr_view_details_log: {self.get_state('curr_view_details_log')}"
         )
 
     def get_state(self, state_name):

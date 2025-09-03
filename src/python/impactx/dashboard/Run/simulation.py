@@ -8,7 +8,6 @@ License: BSD-3-Clause-LBNL
 
 from .. import state
 from ..Input.distribution.utils import DistributionFunctions
-from ..Input.lattice.ui import parameter_input_checker_for_lattice
 
 TRACKING_MODE_COMMANDS = {
     "Particle Tracking": """\
@@ -52,23 +51,34 @@ def build_distribution_list():
         )
 
 
-def build_lattice_list():
+def build_lattice_list() -> str:
     """
-    Generates a string representation of lattice element
-    inputs for export purposes.
-    """
+    Constructs the Python export string defining the lattice configuration
+    from the dashboard. Assumes all lattice parameters have already been validated.
 
-    lattice_elements = ",\n    ".join(
-        f"elements.{element['name']}("
-        + ", ".join(
-            f"{key}={value}"
-            for key, value in parameter_input_checker_for_lattice(element).items()
-        )
-        + ")"
-        for element in state.selected_lattice_list
+    :return: A Python-formatted string for `lattice_configuration = [...]`
+    """
+    lattice_elements = []
+
+    for element in state.selected_lattice_list:
+        name = element["name"]
+        parameter_strings = []
+
+        for param in element["parameters"]:
+            param_name = param["parameter_name"]
+            param_value = param["sim_input"]
+            param_type = param["parameter_type"]
+
+            formatted_value = f'"{param_value}"' if param_type == "str" else param_value
+            parameter_strings.append(f"{param_name}={formatted_value}")
+
+        element_string = f"elements.{name}(" + ", ".join(parameter_strings) + ")"
+        lattice_elements.append(element_string)
+
+    result = (
+        "lattice_configuration = [\n    " + ",\n    ".join(lattice_elements) + "\n]"
     )
-
-    return f"lattice_configuration = [\n    {lattice_elements}\n]"
+    return result
 
 
 def build_space_charge_or_csr():

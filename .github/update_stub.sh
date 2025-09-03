@@ -15,3 +15,7 @@ set -eu -o pipefail
 this_dir=$(cd $(dirname $0) && pwd)
 
 pybind11-stubgen --exit-code -o ${this_dir}/../src/python/ impactx
+
+# fix weird missing import issues after update to pybind11 v3.0
+sed -i 's/impactx.impactx_pybind.elements/elements/g' src/python/impactx/impactx_pybind/__init__.pyi
+sed -i 's/impactx.impactx_pybind.distribution/distribution/g' src/python/impactx/impactx_pybind/__init__.pyi

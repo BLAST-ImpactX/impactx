@@ -38,6 +38,16 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     },
 }
 
+BEAM_MONITOR_DEFAULT_NAME = "DefaultName"
+
+CONVERSION_FACTORS = {
+    "eV": 1.0e-6,
+    "keV": 1.0e-3,
+    "MeV": 1.0,
+    "GeV": 1.0e3,
+    "TeV": 1.0e6,
+}
+
 
 class DashboardDefaults:
     """
@@ -56,13 +66,10 @@ class DashboardDefaults:
     # Inputs by section
     # -------------------------------------------------------------------------
 
-    SELECTION = {
+    SIMULATION_PARAMETERS = {
         "space_charge": "false",
         "csr": False,
         "isr": False,
-    }
-
-    SIMULATION_PARAMETERS = {
         "tracking_mode": "Particle Tracking",
         "charge_qe": -1,
         "mass_MeV": 0.51099895,
@@ -122,7 +129,7 @@ class DashboardDefaults:
             DISTRIBUTION_MODULE_NAME
         ),
         "lattice_list": InputDefaultsHelper.select_classes(LATTICE_MODULE_NAME),
-        "kin_energy_unit_list": ["meV", "eV", "keV", "MeV", "GeV", "TeV"],
+        "kin_energy_unit_list": ["eV", "keV", "MeV", "GeV", "TeV"],
         "distribution_type_list": ["Twiss", "Quadratic"],
         "poisson_solver_list": ["fft", "multigrid"],
         "particle_shape_list": [1, 2, 3],
@@ -135,7 +142,6 @@ class DashboardDefaults:
     # -------------------------------------------------------------------------
 
     DEFAULT_VALUES = {
-        **SELECTION,
         **SIMULATION_PARAMETERS,
         **DISTRIBUTION_PARAMETERS,
         **LATTICE_CONFIGURATION,
@@ -146,16 +152,25 @@ class DashboardDefaults:
     }
 
     TYPES = {
+        "distribution": "float",
+        "lattice": "float",
         "npart": "int",
         "kin_energy_on_ui": "float",
         "bunch_charge_C": "float",
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
+        "n_cell": "int",
+        "blocking_factor": "int",
         "beta": "float",
         "emitt": "float",
         "alpha": "float",
         "periods": "int",
+        "mlmg_relative_tolerance": "float",
+        "mlmg_absolute_tolerance": "float",
+        "mlmg_max_iters": "int",
+        "mlmg_verbosity": "int",
+        "prob_relative": "float",
     }
 
     VALIDATION_CONDITION = {
@@ -165,7 +180,11 @@ class DashboardDefaults:
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
         "csr_bins": ["positive"],
+        "blocking_factor": ["positive"],
         "periods": ["positive"],
+        "mlmg_relative_tolerance": ["positive"],
+        "mlmg_max_iters": ["positive"],
+        "prob_relative": ["positive"],
     }
 
     # If a parameter is not included in the dictionary, default step amount is 1.
@@ -234,6 +253,7 @@ class UIDefaults:
             "flex": "1",
             "overflow-y": "auto",
             "overflow-x": "auto",
+            "max-height": "50vh",
         },
     }
 

@@ -8,10 +8,6 @@ License: BSD-3-Clause-LBNL
 
 from ...Input.components import CardComponents
 
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
-
 
 class SpaceChargeFunctions:
     @staticmethod

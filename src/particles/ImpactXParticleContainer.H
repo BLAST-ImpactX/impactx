@@ -153,6 +153,8 @@ namespace impactx
 
         /** Empty the container and reset the reference particle
          *
+         * Also clears the history of the beam moments, see reset_beam_moments_history()
+         *
          * @param keep_mass do not reset the reference particle mass
          * @param keep_charge do not reset the reference particle charge
          */

@@ -1,0 +1,21 @@
+kind: BeamLine
+line:
+- drift1:
+    kind: Drift
+    length: 0.25
+- quad1:
+    MagneticMultipoleP:
+      Bn1: 1.0
+    kind: Quadrupole
+    length: 1.0
+- drift2:
+    kind: Drift
+    length: 0.5
+- quad2:
+    MagneticMultipoleP:
+      Bn1: -1.0
+    kind: Quadrupole
+    length: 1.0
+- drift3:
+    kind: Drift
+    length: 0.25

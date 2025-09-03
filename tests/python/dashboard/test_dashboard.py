@@ -8,6 +8,7 @@ def test_dashboard(dashboard):
     - Configuring the lattice
         - Through direct numeric input
         - Through the variable configuration
+    - Checking if the lattice statistics update correctly
     - Running the simulation
     - Checking if the simulation completes successfully
     """
@@ -47,16 +48,21 @@ def test_dashboard(dashboard):
     LATTICE_PARAMS = {
         "ds1": 0.25,
         "nslice1": "ns",
+        "name1": "drift1",
         "ds2": 1.0,
         "k2": 1.0,
         "nslice2": "ns",
+        "name2": "quad1",
         "ds3": 0.5,
         "nslice3": "ns",
+        "name3": "drift2",
         "ds4": 1.0,
         "k4": -1.0,
         "nslice4": "ns",
+        "name4": "quad2",
         "ds5": 0.25,
         "nslice5": "ns",
+        "name5": "drift3",
     }
     for param_id, value in LATTICE_PARAMS.items():
         dashboard.set_input(param_id, value)
@@ -66,6 +72,21 @@ def test_dashboard(dashboard):
     VARIABLES = {"variable_name_1": "ns", "variable_value_1": 25}
     for param_id, value in VARIABLES.items():
         dashboard.set_input(param_id, value)
+
+    # Check if the lattice statistics update correctly
+    EXPECTED_LATTICE_STATS = {
+        "total_elements": 5,
+        "total_length": "3.0m",
+        "max_length": "1.0m",
+        "avg_length": "0.6m",
+        "min_length": "0.25m",
+        "total_steps": 125,
+        "periods": 1,
+        "element_counts": {"drift": 3, "quad": 2},
+    }
+
+    for state_name, expected_value in EXPECTED_LATTICE_STATS.items():
+        dashboard.assert_state(state_name, expected_value)
 
     # Run simulation
     dashboard.sb.click("#Run_route")

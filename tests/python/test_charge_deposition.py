@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from conftest import basepath
 
-from impactx import ImpactX, amr
+from impactx import Config, ImpactX, amr
 
 
 def test_charge_deposition(save_png=True):
@@ -23,6 +23,7 @@ def test_charge_deposition(save_png=True):
     sim = ImpactX()
 
     sim.n_cell = [16, 24, 32]
+    sim.particle_shape = 2  # B-spline order
     sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
     sim.slice_step_diagnostics = False
 
@@ -49,7 +50,10 @@ def test_charge_deposition(save_png=True):
     dV = np.prod(dr)
 
     beam_charge = dV * rs  # in C
-    assert math.isclose(beam_charge, -1.0e-9, rel_tol=1.0e-8)
+    if Config.precision == "SINGLE":
+        assert math.isclose(beam_charge, -1.0e-9, rel_tol=1e-6)
+    else:
+        assert math.isclose(beam_charge, -1.0e-9, rel_tol=1e-8)
 
     half_z = sim.n_cell[2] // 2  # order: x,y,z
 

@@ -7,7 +7,7 @@ import impactx.impactx_pybind
 from impactx.impactx_pybind import RefPart, elements
 from impactx.MADXParser import MADXParser
 
-__all__ = [
+__all__: list[str] = [
     "MADXParser",
     "RefPart",
     "beam",

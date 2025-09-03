@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from ... import html, state, vuetify
 from ..defaults import DashboardDefaults, UIDefaults
-from ..generalFunctions import generalFunctions
+from ..utils import GeneralFunctions
 
 state.documentation_drawer_open = False
 state.documentation_url = ""
@@ -11,14 +11,14 @@ _missing_docs = set()
 
 
 def clean_name(section_name):
-    return section_name.lower().replace(" ", "_")
+    return GeneralFunctions.normalize_for_v_model(section_name)
 
 
 class CardBase(UIDefaults):
     HEADER_NAME = "Base Section"
 
     def __init__(self):
-        self.header = self.HEADER_NAME.lower().replace(" ", "_")
+        self.header = GeneralFunctions.normalize_for_v_model(self.HEADER_NAME)
         self.collapsable = (f"collapse_{self.header}_height",)
 
         self.card_props = {"elevation": 2, "style": self.collapsable}
@@ -27,15 +27,16 @@ class CardBase(UIDefaults):
         """
         Creates UI content for a section.
         """
-
-        if (
-            self.header not in DashboardDefaults.DOCUMENTATION
-            and self.header not in _missing_docs
-        ):
-            print(
-                f"WARNING: Card '{self.header}' has no doc link in DashboardDefaults.DOCUMENTATION"
-            )
-            _missing_docs.add(self.header)
+        # Allow subclasses to suppress missing documentation warning
+        if not getattr(self, "SUPPRESS_DOC_WARNING", False):
+            if (
+                self.header not in DashboardDefaults.DOCUMENTATION
+                and self.header not in _missing_docs
+            ):
+                print(
+                    f"WARNING: Card '{self.header}' has no doc link in DashboardDefaults.DOCUMENTATION"
+                )
+                _missing_docs.add(self.header)
 
         self.init_dialog(self.HEADER_NAME, self.card_content)
         self.card_content()
@@ -178,7 +179,7 @@ class CardComponents:
         CardComponents.card_button(
             "mdi-information",
             color="#00313C",
-            click=lambda: generalFunctions.open_documentation(section_name),
+            click=lambda: GeneralFunctions.open_documentation(section_name),
             description="Documentation",
         )
 
@@ -193,7 +194,7 @@ class CardComponents:
         CardComponents.card_button(
             "mdi-refresh",
             color="#00313C",
-            click=lambda: generalFunctions.reset_inputs(section_name),
+            click=lambda: GeneralFunctions.reset_inputs(section_name),
             description="Reset",
         )
 

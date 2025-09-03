@@ -2,8 +2,8 @@ from typing import Optional, Tuple
 
 from ... import ctrl, html, state, vuetify
 from ...Input.components import CardComponents
-from .. import DashboardValidation, generalFunctions
-from .utils import LatticeConfigurationHelper
+from ..utils import GeneralFunctions
+from ..validation import DashboardValidation, errors_tracker
 
 init_value = ""
 state.variables = [
@@ -99,7 +99,7 @@ class LatticeVariableHandler:
                 variable["name"] = event
                 variable["value"] = variable["value"] or None
         else:
-            variable["value"] = generalFunctions.convert_to_numeric(event)
+            variable["value"] = GeneralFunctions.convert_to_numeric(event)
         state.dirty("variables")
 
     @staticmethod
@@ -161,9 +161,9 @@ class LatticeVariableHandler:
             state.variables[idx]["error_message"] = message
             state.dirty("variables")
 
-        if not LatticeConfigurationHelper.is_valid_input_name(new_name):
+        if not DashboardValidation.is_valid_input_name(new_name):
             set_var_error_message(index, "Variable must be a valid python identifier.")
-            DashboardValidation.update_simulation_validation_status()
+            errors_tracker.update_simulation_validation_status()
             state.dirty("variables")
             return
 
@@ -173,12 +173,12 @@ class LatticeVariableHandler:
         if duplicate_indexes:
             for dup_index in duplicate_indexes:
                 set_var_error_message(dup_index, "error")
-            DashboardValidation.update_simulation_validation_status()
+            errors_tracker.update_simulation_validation_status()
             state.dirty("variables")
             return
 
         set_var_error_message(index, "")
-        DashboardValidation.update_simulation_validation_status()
+        errors_tracker.update_simulation_validation_status()
 
     @staticmethod
     def determine_if_existing_variable(var_name: str) -> Tuple[bool, Optional[int]]:

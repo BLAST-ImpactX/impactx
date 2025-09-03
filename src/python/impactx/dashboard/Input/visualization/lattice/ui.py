@@ -31,6 +31,9 @@ class LatticeVisualizer(CardBase):
     Displays the lattice visualizer section on the inputs page of the dashboard.
     """
 
+    HEADER_NAME = "Lattice Statistics"
+    SUPPRESS_DOC_WARNING = True
+
     def __init__(self):
         super().__init__()
 

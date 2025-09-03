@@ -10,7 +10,9 @@
 #include "ImpactXParticleContainer.H"
 
 #include "initialization/AmrCoreData.H"
+#include "initialization/Algorithms.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"
+#include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
@@ -92,8 +94,8 @@ namespace impactx
                 "ImpactXParticleContainer::SetParticleShape This was already called before and cannot be changed.");
         } else
         {
-            if (order < 1 || order > 3) {
-                amrex::Abort("algo.particle_shape order can be only 1, 2, or 3");
+            if (order < 0 || order > 3) {
+                amrex::Abort("algo.particle_shape order can be only 0, 1, 2, or 3");
             }
             m_particle_shape = order;
         }
@@ -104,8 +106,18 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         int v = 0;
         bool const has_shape = pp_algo.queryWithParser("particle_shape", v);
-        if (!has_shape)
-            throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells.");
+        if (!has_shape) {
+            bool csr = false;
+            pp_algo.query("csr", csr);
+            auto space_charge = get_space_charge_algo();
+            std::string track = "particles";
+            pp_algo.query("track", track);
+            if (csr ||
+                (space_charge != SpaceChargeAlgo::False && track == "particles"))
+            {
+                throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells for collective effects.");
+            }
+        }
         SetParticleShape(v);
     }
 
@@ -174,6 +186,7 @@ namespace impactx
     ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
     {
         this->clearParticles();
+        this->reset_beam_moments_history();
         m_refpart.reset(keep_mass, keep_charge);
     }
 
@@ -198,7 +211,7 @@ namespace impactx
         AMREX_ALWAYS_ASSERT(x.size() == pt.size());
 
         // number of particles to add
-        int const np = x.size();
+        amrex::Long const np = x.size();
 
         // we add particles to lev 0, grid 0
         int lid = 0, gid = 0;
@@ -223,10 +236,10 @@ namespace impactx
             DefineAndReturnParticleTile(lid, gid, ithr);
         }
 
-        int pid = ParticleType::NextID();
+        amrex::Long pid = ParticleType::NextID();
         ParticleType::NextID(pid + np);
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
-            static_cast<amrex::Long>(pid) + static_cast<amrex::Long>(np) < amrex::LongParticleIds::LastParticleID,
+            pid + np < amrex::LongParticleIds::LastParticleID,
             "ERROR: overflow on particle id numbers"
         );
 
@@ -244,26 +257,20 @@ namespace impactx
             // get get n_regular particles. If there are some
             // leftovers, however, the first n_leftover threads
             // will get one extra
-            int n_regular  = np / nthreads;
-            int n_leftover = np - n_regular*nthreads;
-
-            int num_to_add = 0; /* how many particles this tile will get*/
-            int my_offset = 0; /*  offset into global arrays x, y, etc. for this thread*/
-
-            if (tid < n_leftover) { // get n_regular+1 items
-                my_offset = tid * (n_regular + 1);
-                num_to_add = n_regular + 1;
-            } else {         // get n_regular items
-                my_offset = tid * n_regular + n_leftover;
-                num_to_add = n_regular;
-            }
+            ParticleChunk thread_chunk = split_equally(
+                np,
+                tid,
+                nthreads
+            );
+            amrex::Long const my_offset = thread_chunk.offset;
+            amrex::Long const num_to_add = thread_chunk.size;
 
             auto& particle_tile = ParticlesAt(lid, gid, tid);
             auto old_np = particle_tile.numParticles();
             auto new_np = old_np + num_to_add;
             particle_tile.resize(new_np);
 
-            const int cpuid = amrex::ParallelDescriptor::MyProc();
+            const amrex::Long cpuid = amrex::ParallelDescriptor::MyProc();
 
             auto & soa = particle_tile.GetStructOfArrays().GetRealData();
             amrex::ParticleReal * const AMREX_RESTRICT x_arr = soa[RealSoA::x].dataPtr();
@@ -285,7 +292,7 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
 
             amrex::ParallelFor(num_to_add,
-                [=] AMREX_GPU_DEVICE (int i) noexcept
+                [=] AMREX_GPU_DEVICE (amrex::Long i) noexcept
             {
                 idcpu_arr[old_np+i] = amrex::SetParticleIDandCPU(pid + my_offset + i, cpuid);
 

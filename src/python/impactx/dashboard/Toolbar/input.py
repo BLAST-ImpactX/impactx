@@ -8,7 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .. import ctrl, html, state, vuetify
 from ..Input.components.card import CardComponents
-from ..Input.generalFunctions import generalFunctions
+from ..Input.utils import GeneralFunctions
 from ..Run.simulation import dashboard_sim_inputs
 
 state.expand_all_sections = False
@@ -31,7 +31,7 @@ class InputToolbar:
         """
         Called when the reset button is clicked.
         """
-        generalFunctions.reset_inputs("all")
+        GeneralFunctions.reset_inputs("all")
 
     @staticmethod
     def export_button() -> vuetify.VBtn:

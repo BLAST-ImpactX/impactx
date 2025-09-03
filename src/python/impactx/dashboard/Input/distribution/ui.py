@@ -6,14 +6,14 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from typing import Union
-
 from impactx import distribution
 
 from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from .. import DashboardDefaults, DashboardValidation, generalFunctions
+from .. import DashboardDefaults
 from ..defaults_helper import InputDefaultsHelper
+from ..utils import GeneralFunctions
+from ..validation import DashboardValidation, errors_tracker
 from .utils import DistributionFunctions
 
 # -----------------------------------------------------------------------------
@@ -46,11 +46,11 @@ def populate_distribution_parameters():
 
     # Populate the UI
     for param_name, default_value, default_type in param_data:
-        error_message = DashboardValidation.validate_against(
-            default_value, default_type
+        error_message = DashboardValidation.validate(
+            param_name, default_value, category="distribution"
         )
         units = DistributionFunctions.get_distribution_units(param_name)
-        step = generalFunctions.get_default(param_name, "steps")
+        step = GeneralFunctions.get_default(param_name, "steps")
 
         params[param_name] = {
             "value": default_value,
@@ -61,7 +61,7 @@ def populate_distribution_parameters():
         }
 
     state.selected_distribution_parameters = params
-    DashboardValidation.update_simulation_validation_status()
+    errors_tracker.update_simulation_validation_status()
     return params
 
 
@@ -92,19 +92,17 @@ def on_distribution_type_change(**kwargs):
 
 
 @ctrl.add("update_distribution_parameter")
-def on_distribution_parameter_change(name: str, input: Union[float, int], type: str):
-    numeric_input = generalFunctions.convert_to_numeric(input)
-    lookup_name = "lambda" if "lambda" in name else name
-    conditions = generalFunctions.get_default(lookup_name, "validation_condition")
-    error_message = DashboardValidation.validate_against(
-        numeric_input, type, additional_conditions=conditions
+def on_distribution_parameter_change(name: str, input: str):
+    numeric_input = GeneralFunctions.convert_to_numeric(input)
+    error_message = DashboardValidation.validate(
+        name, numeric_input, category="distribution"
     )
 
     parameter = state.selected_distribution_parameters.get(name)
     if parameter:
         parameter["value"] = numeric_input
         parameter["error_message"] = error_message
-        DashboardValidation.update_simulation_validation_status()
+        errors_tracker.update_simulation_validation_status()
         state.dirty("selected_distribution_parameters")
 
 
@@ -159,7 +157,7 @@ class DistributionConfiguration(CardBase):
                                     suffix=("parameter.units",),
                                     update_modelValue=(
                                         ctrl.update_distribution_parameter,
-                                        "[parameter_name, $event, parameter.type]",
+                                        "[parameter_name, $event]",
                                     ),
                                     error_messages=("parameter.error_message",),
                                     type="number",

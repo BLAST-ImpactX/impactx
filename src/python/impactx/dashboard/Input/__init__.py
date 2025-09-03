@@ -1,9 +1,7 @@
 from .defaults import DashboardDefaults
-from .generalFunctions import generalFunctions
-from .validation import DashboardValidation
+from .utils import GeneralFunctions
 
 __all__ = [
     "DashboardDefaults",
-    "DashboardValidation",
-    "generalFunctions",
+    "GeneralFunctions",
 ]

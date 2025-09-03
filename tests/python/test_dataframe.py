@@ -70,6 +70,15 @@ def test_df_pandas(save_png=True):
     ]
     sim.lattice.extend(fodo)
 
+    # plot lattice survey
+    if amr.ParallelDescriptor.IOProcessor():
+        sim.lattice.plot_survey(ref=ref)
+        if save_png:
+            plt.gcf().savefig("lattice_survey.png")
+            plt.close(plt.gcf())
+        else:
+            plt.show()
+
     # simulate
     sim.track_particles()
 
@@ -80,7 +89,8 @@ def test_df_pandas(save_png=True):
         print(beam_moments)
         plt.plot(beam_moments.s, beam_moments.beta_x)
         if save_png:
-            plt.savefig("beam_moments.png")
+            plt.gcf().savefig("beam_moments.png")
+            plt.close(plt.gcf())
         else:
             plt.show()
 
@@ -113,7 +123,6 @@ def test_df_pandas(save_png=True):
 
     #   note: figure data available on MPI rank zero
     if fig is not None:
-        fig.savefig("phase_space.png")
         if save_png:
             fig.savefig("phase_space.png")
         else:

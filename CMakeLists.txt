@@ -349,11 +349,6 @@ if(ImpactX_PYTHON)
 endif()
 
 
-# Warnings ####################################################################
-#
-set_cxx_warnings()
-
-
 # Generate Configuration and .pc Files ########################################
 #
 get_source_version(ImpactX ${ImpactX_SOURCE_DIR})
@@ -521,6 +516,13 @@ if(BUILD_TESTING)
     endif()
     add_subdirectory(tests)
 endif()
+
+
+# Warnings ####################################################################
+#
+foreach(impactx_tgt IN LISTS _ALL_TARGETS)
+    impactx_set_compile_warnings(${impactx_tgt})
+endforeach()
 
 
 # Status Summary for Build Options ############################################

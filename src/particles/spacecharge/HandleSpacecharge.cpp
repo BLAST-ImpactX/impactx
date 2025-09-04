@@ -14,6 +14,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/spacecharge/ForceFromSelfFields.H"
 #include "particles/spacecharge/GatherAndPush.H"
+#include "particles/spacecharge/Gauss3dPush.H"
 #include "particles/spacecharge/PoissonSolve.H"
 #include "particles/transformation/CoordinateTransformation.H"
 
@@ -47,45 +48,57 @@ namespace impactx::particles::spacecharge
             CoordSystem::t
         );
 
-        // Note: The following operation assume that
-        // the particles are in x, y, z coordinates.
+        if (space_charge == SpaceChargeAlgo::Gauss3D) {
 
-        // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
-        ResizeMesh();
+            // update momentum assming a 3D Gaussian bunch
+            spacecharge::Gauss3dPush(*amr_data->track_particles.m_particle_container,
+            slice_ds);
 
-        // Redistribute particles in the new mesh in x, y, z
-        amr_data->track_particles.m_particle_container->Redistribute();
+        }
+        else
+        {
 
-        // charge deposition
-        amr_data->track_particles.m_particle_container->DepositCharge(
+          // Note: The following operation assume that
+          // the particles are in x, y, z coordinates.
+
+          // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
+          ResizeMesh();
+
+          // Redistribute particles in the new mesh in x, y, z
+          amr_data->track_particles.m_particle_container->Redistribute();
+
+          // charge deposition
+          amr_data->track_particles.m_particle_container->DepositCharge(
             amr_data->track_particles.m_rho,
             amr_data->refRatio()
-        );
+          );
 
-        // poisson solve in x,y,z
-        spacecharge::PoissonSolve(
+          // poisson solve in x,y,z
+          spacecharge::PoissonSolve(
             *amr_data->track_particles.m_particle_container,
             amr_data->track_particles.m_rho,
             amr_data->track_particles.m_phi,
             amr_data->refRatio()
-        );
+          );
 
-        // calculate force in x,y,z
-        spacecharge::ForceFromSelfFields(
+          // calculate force in x,y,z
+          spacecharge::ForceFromSelfFields(
             amr_data->track_particles.m_space_charge_field,
             amr_data->track_particles.m_phi,
             amr_data->Geom()
-        );
+          );
 
-        // gather and space-charge push in x,y,z , assuming the space-charge
-        // field is the same before/after transformation
-        // TODO: This is currently using linear order.
-        spacecharge::GatherAndPush(
+          // gather and space-charge push in x,y,z , assuming the space-charge
+          // field is the same before/after transformation
+          // TODO: This is currently using linear order.
+          spacecharge::GatherAndPush(
             *amr_data->track_particles.m_particle_container,
             amr_data->track_particles.m_space_charge_field,
             amr_data->Geom(),
-            slice_ds
-        );
+            slice_ds);
+
+        }
+
 
         // transform from x,y,z to x',y',t
         transformation::CoordinateTransformation(

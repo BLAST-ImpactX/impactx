@@ -84,19 +84,19 @@ tf = [0, 0, 0, 0, 1.0, r56]
 ptf = [0, 0, 0, 0, 0, 1.0]
 
 # compute differences
-error_xi = (xi - initial["position_x"]).abs().max()
-error_pxi = (pxi - initial["momentum_x"]).abs().max()
-error_yi = (yi - initial["position_y"]).abs().max()
-error_pyi = (pyi - initial["momentum_y"]).abs().max()
-error_ti = (ti - initial["position_t"]).abs().max()
-error_pti = (pti - initial["momentum_t"]).abs().max()
+error_xi = np.max(np.abs(xi - initial["position_x"].to_numpy()))
+error_pxi = np.max(np.abs(pxi - initial["momentum_x"].to_numpy()))
+error_yi = np.max(np.abs(yi - initial["position_y"].to_numpy()))
+error_pyi = np.max(np.abs(pyi - initial["momentum_y"].to_numpy()))
+error_ti = np.max(np.abs(ti - initial["position_t"].to_numpy()))
+error_pti = np.max(np.abs(pti - initial["momentum_t"].to_numpy()))
 
-error_xf = (xf - final["position_x"]).abs().max()
-error_pxf = (pxf - final["momentum_x"]).abs().max()
-error_yf = (yf - final["position_y"]).abs().max()
-error_pyf = (pyf - final["momentum_y"]).abs().max()
-error_tf = (tf - final["position_t"]).abs().max()
-error_ptf = (ptf - final["momentum_t"]).abs().max()
+error_xf = np.max(np.abs(xf - final["position_x"].to_numpy()))
+error_pxf = np.max(np.abs(pxf - final["momentum_x"].to_numpy()))
+error_yf = np.max(np.abs(yf - final["position_y"].to_numpy()))
+error_pyf = np.max(np.abs(pyf - final["momentum_y"].to_numpy()))
+error_tf = np.max(np.abs(tf - final["position_t"].to_numpy()))
+error_ptf = np.max(np.abs(ptf - final["momentum_t"].to_numpy()))
 
 xf_max = np.max(np.abs(xf))
 pxf_max = np.max(np.abs(pxf))

@@ -17,107 +17,9 @@
 
 namespace impactx::particles::spacecharge
 {
-    void Gauss3dPush (
-        ImpactXParticleContainer & pc,
-        amrex::ParticleReal const slice_ds
-    )
-    {
-        BL_PROFILE("impactx::spacecharge::GatherAndPush");
-
-        using namespace amrex::literals;
-
-        amrex::ParticleReal const charge = pc.GetRefParticle().charge;
-
-        std::unordered_map<std::string, amrex::ParticleReal> const rbc = diagnostics::reduced_beam_characteristics(pc);
-        // get RMS sigma of beam
-        // Standard deviation of the particle positions (speed of light times time delay for t) (unit: meter)
-        amrex::ParticleReal const sigx = rbc["sig_x"];
-        amrex::ParticleReal const sigy = rbc["sig_y"];
-        amrex::ParticleReal const sigz = rbc["sig_t"];
-        amrex::ParticleReal const bchchg = rbc["charge_C"];
-
-        // physical constants and reference quantities
-        amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
-        amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
-        amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
-        amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
-        amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
-        amrex::ParticleReal const rfpiepslon = 1.0_prt /(c0_SI*c0_SI*1.0e-7);
-
-        amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
-
-        // group together constants for the momentum push
-        amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
-
-        // loop over refinement levels
-        int const nLevel = pc.finestLevel();
-        for (int lev = 0; lev <= nLevel; ++lev)
-        {
-
-            // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
-#ifdef AMREX_USE_OMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-            for (ParIt pti(pc, lev); pti.isValid(); ++pti) {
-                const int np = pti.numParticles();
-
-
-                // physical constants and reference quantities
-//                amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
-//                amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
-//                amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
-//                amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
-//                amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
-
-
-                amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
-
-                // preparing access to particle data: SoA of Reals
-                auto& soa_real = pti.GetStructOfArrays().GetRealData();
-                amrex::ParticleReal* const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr(); // note: currently for a fixed t
-                amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
-
-                // group together constants for the momentum push
-                amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
-
-                // gather to each particle and push momentum
-                amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
-                    // access SoA Real data
-                    amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
-                    amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
-                    amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
-                    amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                    amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                    amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
-
-                    //field integrals from a 3D Gaussian bunch
-                    int const nint = 401;
-                    efldgauss(nint,x,y,z,sigx,sigy,sigz,gamma,eintx,einty,eintz)
-
-                    amrex::ParticleReal const asp = sigx/sigy;
-
-                    // push momentum
-                    px += x*eintx*2*asp/sigx/sigx/sigz/sqrt(2*pi)*bchchg*rfpiepson * push_consts;
-                    py += y*einty*2*asp/sigy/sigy/sigz/sqrt(2*pi)*bchchg*rfpiepson * push_consts;
-                    pz += z*eintz*2*asp/sigz/sigz/sigz/sqrt(2*pi)*bchchg*rfpiepson * push_consts;
-
-                    // push position is done in the lattice elements
-                });
-
-
-            } // end loop over all particle boxes
-        } // env mesh-refinement level loop
-    }
-
-
 // compute integrals Eqs 45-47 used in the space-charge fields from a 3D Gaussian distribution
 // Input particle locations (x,y,z) and RMS sizes (sigx,sigy,sigz) and return the integrals for SC fields.
-    void efldgauss(int &nint, amrex::ParticleReal const xin, amrex::ParticleReal const yin, amrex::ParticleReal const zin,
+    void efldgauss (int nint, amrex::ParticleReal const xin, amrex::ParticleReal const yin, amrex::ParticleReal const zin,
                amrex::ParticleReal const sigx, amrex::ParticleReal const sigy, amrex::ParticleReal const sigz, amrex::ParticleReal const gamma,
                amrex::ParticleReal &pintex, amrex::ParticleReal &pintey, amrex::ParticleReal &pintez)
     {
@@ -192,6 +94,94 @@ namespace impactx::particles::spacecharge
       for (int i = 1; i < nint; i += 2)
         sum0ez += 4.0 * fxvec[i] * h;
       pintez = sum0ez / 3.0;
+    }
+
+    void Gauss3dPush (
+        ImpactXParticleContainer & pc,
+        amrex::ParticleReal const slice_ds
+    )
+    {
+        BL_PROFILE("impactx::spacecharge::GatherAndPush");
+
+        using namespace amrex::literals;
+
+        amrex::ParticleReal const charge = pc.GetRefParticle().charge;
+
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc = diagnostics::reduced_beam_characteristics(pc);
+        // get RMS sigma of beam
+        // Standard deviation of the particle positions (speed of light times time delay for t) (unit: meter)
+        amrex::ParticleReal const sigx = rbc.at("sig_x");
+        amrex::ParticleReal const sigy = rbc.at("sig_y");
+        amrex::ParticleReal const sigz = rbc.at("sig_t");
+        amrex::ParticleReal const bchchg = rbc.at("charge_C");
+
+        // physical constants and reference quantities
+        amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
+        amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
+        amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
+        amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
+        amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
+        amrex::ParticleReal const rfpiepslon = 1.0_prt /(c0_SI*c0_SI*1.0e-7);
+
+        amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
+
+        // group together constants for the momentum push
+        amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
+
+        // loop over refinement levels
+        int const nLevel = pc.finestLevel();
+        for (int lev = 0; lev <= nLevel; ++lev)
+        {
+
+            // loop over all particle boxes
+            using ParIt = ImpactXParticleContainer::iterator;
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+            for (ParIt pti(pc, lev); pti.isValid(); ++pti) {
+                const int np = pti.numParticles();
+
+                // preparing access to particle data: SoA of Reals
+                auto& soa_real = pti.GetStructOfArrays().GetRealData();
+                amrex::ParticleReal* const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
+                amrex::ParticleReal* const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
+                amrex::ParticleReal* const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr(); // note: currently for a fixed t
+                amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
+                amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
+                amrex::ParticleReal* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
+
+                // group together constants for the momentum push
+                amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
+
+                // gather to each particle and push momentum
+                amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
+                    // access SoA Real data
+                    amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
+                    amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
+                    amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
+                    amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
+                    amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
+                    amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+
+                    //field integrals from a 3D Gaussian bunch
+                    int const nint = 401;
+                    amrex::ParticleReal eintx, einty, eintz;
+                    efldgauss(nint,x,y,z,sigx,sigy,sigz,gamma,eintx,einty,eintz);
+
+                    amrex::ParticleReal const asp = sigx/sigy;
+
+                    // push momentum
+                    using ablastr::constant::math::pi;
+                    px += x*eintx*2*asp/sigx/sigx/sigz/sqrt(2*pi)*bchchg*rfpiepslon * push_consts;
+                    py += y*einty*2*asp/sigy/sigy/sigz/sqrt(2*pi)*bchchg*rfpiepslon * push_consts;
+                    pz += z*eintz*2*asp/sigz/sigz/sigz/sqrt(2*pi)*bchchg*rfpiepslon * push_consts;
+
+                    // push position is done in the lattice elements
+                });
+
+
+            } // end loop over all particle boxes
+        } // env mesh-refinement level loop
     }
 
 }  // namespace impactx::particles::spacecharge

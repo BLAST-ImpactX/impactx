@@ -7,8 +7,8 @@
  * Authors: Ji Qiang
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_GATHER_AND_PUSH_H
-#define IMPACTX_GATHER_AND_PUSH_H
+#ifndef IMPACT_GAUSS3D_PUSH_H
+#define IMPACT_GAUSS3D_PUSH_H
 
 #include "particles/ImpactXParticleContainer.H"
 
@@ -37,4 +37,4 @@ namespace impactx::particles::spacecharge
 
 }  // namespace impactx::particles::spacecharge
 
-#endif // IMPACTX_GATHER_AND_PUSH_H
+#endif // IMPACT_GAUSS3D_PUSH_H

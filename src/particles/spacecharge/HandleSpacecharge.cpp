@@ -51,8 +51,7 @@ namespace impactx::particles::spacecharge
         if (space_charge == SpaceChargeAlgo::Gauss3D) {
 
             // update momentum assming a 3D Gaussian bunch
-            spacecharge::Gauss3dPush(*amr_data->track_particles.m_particle_container,
-            slice_ds);
+            Gauss3dPush(*amr_data->track_particles.m_particle_container, slice_ds);
 
         }
         else

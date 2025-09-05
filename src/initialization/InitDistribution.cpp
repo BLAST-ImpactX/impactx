@@ -531,14 +531,22 @@ namespace impactx
         amrex::ParmParse pp_algo("algo");
         std::string track = "particles";
         pp_algo.queryAdd("track", track);
+        //std::string space_charge = "space_charge";
+        //pp_algo.queryAdd("space_charge", space_charge);
+
+        auto space_charge = get_space_charge_algo();
 
         if (track == "particles") {
             // set charge and mass and energy of ref particle
             RefPart const ref = initialization::read_reference_particle(pp_dist);
             amr_data->track_particles.m_particle_container->SetRefParticle(ref);
 
-            amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C)
-            pp_dist.getWithParser("charge", bunch_charge);
+            amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C) or current (A)
+            if (space_charge == SpaceChargeAlgo::True_2D) {
+                pp_dist.queryWithParser("current", bunch_charge);
+            } else {
+                pp_dist.queryWithParser("charge", bunch_charge);
+            }
 
             std::string unit_type;  // System of units
             pp_dist.get("units", unit_type);
@@ -586,7 +594,7 @@ namespace impactx
 
             amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
 
-            auto space_charge = get_space_charge_algo();
+            //auto space_charge = get_space_charge_algo();
             if (space_charge == SpaceChargeAlgo::True_3D)
             {
                 pp_dist.get("charge", intensity);

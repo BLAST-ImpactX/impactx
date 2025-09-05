@@ -298,7 +298,7 @@ impactx_surrogate_reduced_diags = read_time_series(
 ref_gamma = impactx_surrogate_ref_particle["gamma"]
 beam_gamma = (
     ref_gamma
-    - impactx_surrogate_reduced_diags["pt_mean"]
+    - impactx_surrogate_reduced_diags["mean_pt"]
     * impactx_surrogate_ref_particle["beta_gamma"]
 )
 beam_u = np.sqrt(beam_gamma**2 - 1)
@@ -348,13 +348,13 @@ ax = axT[1][0]
 scale = 1e6
 ax.plot(
     impactx_surrogate_ref_particle["s"][ix_slice],
-    impactx_surrogate_reduced_diags["sig_x"][ix_slice] * scale,
+    impactx_surrogate_reduced_diags["sigma_x"][ix_slice] * scale,
     "bo",
     label="x",
 )
 ax.plot(
     impactx_surrogate_ref_particle["s"][ix_slice],
-    impactx_surrogate_reduced_diags["sig_y"][ix_slice] * scale,
+    impactx_surrogate_reduced_diags["sigma_y"][ix_slice] * scale,
     "r",
     marker=ymarker,
     linestyle="None",
@@ -369,13 +369,13 @@ ax = axT[1][1]
 scale = 1e3
 ax.semilogy(
     impactx_surrogate_ref_particle["s"][ix_slice],
-    impactx_surrogate_reduced_diags["sig_px"][ix_slice] * scale,
+    impactx_surrogate_reduced_diags["sigma_px"][ix_slice] * scale,
     "bo",
     label="x",
 )
 ax.semilogy(
     impactx_surrogate_ref_particle["s"][ix_slice],
-    impactx_surrogate_reduced_diags["sig_py"][ix_slice] * scale,
+    impactx_surrogate_reduced_diags["sigma_py"][ix_slice] * scale,
     "r",
     marker=ymarker,
     linestyle="None",

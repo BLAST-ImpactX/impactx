@@ -79,13 +79,13 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
     Iteration within the simulation
 * ``s``
     Reference particle coordinate ``s`` (unit: meter)
-* ``x_mean/min/max``, ``y_mean/min/max``, ``t_mean/min/max``
+* ``mean/min/max_x``, ``mean/min/max_y``, ``mean/min/max_t``
     Average / minimum / maximum particle displacement with respect to the reference particle in the dimensions of ``x``, ``y`` (transverse coordinates, unit: meter), and ``t`` (normalized time difference :math:`ct`, unit: meter)
-* ``sig_x``, ``sig_y``, ``sig_t``
+* ``sigma_x``, ``sigma_y``, ``sigma_t``
     Standard deviation of the particle positions (speed of light times time delay for ``t``) (unit: meter)
-* ``px_mean/min/max``, ``py_mean/min/max``, ``pt_mean/min/max``
+* ``mean/min/max_px``, ``mean/min/max_py``, ``mean/min/max_pt``
     Average / minimum / maximum particle momentum deviation from the reference particle momentum, divided by the magnitude of the reference particle momentum (unit: dimensionless, radians for transverse momenta)
-* ``sig_px``, ``sig_py``, ``sig_pt``
+* ``sigma_px``, ``sigma_py``, ``sigma_pt``
     Standard deviation of the particle momentum deviations (energy difference for ``pt``) normalized by the magnitude of the reference particle momentum (unit: dimensionless)
 * ``emittance_x``, ``emittance_y``, ``emittance_t``
     Unnormalized rms beam emittances (unit: meter)

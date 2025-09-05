@@ -112,12 +112,12 @@ namespace impactx::diagnostics
         );
 
         amrex::ParticleReal const w_sum   = values_per_rank_1st.at(0);
-        amrex::ParticleReal const x_mean  = values_per_rank_1st.at(1) /= w_sum;
-        amrex::ParticleReal const y_mean  = values_per_rank_1st.at(2) /= w_sum;
-        amrex::ParticleReal const t_mean  = values_per_rank_1st.at(3) /= w_sum;
-        amrex::ParticleReal const px_mean = values_per_rank_1st.at(4) /= w_sum;
-        amrex::ParticleReal const py_mean = values_per_rank_1st.at(5) /= w_sum;
-        amrex::ParticleReal const pt_mean = values_per_rank_1st.at(6) /= w_sum;
+        amrex::ParticleReal const mean_x  = values_per_rank_1st.at(1) /= w_sum;
+        amrex::ParticleReal const mean_y  = values_per_rank_1st.at(2) /= w_sum;
+        amrex::ParticleReal const mean_t  = values_per_rank_1st.at(3) /= w_sum;
+        amrex::ParticleReal const mean_px = values_per_rank_1st.at(4) /= w_sum;
+        amrex::ParticleReal const mean_py = values_per_rank_1st.at(5) /= w_sum;
+        amrex::ParticleReal const mean_pt = values_per_rank_1st.at(6) /= w_sum;
 
         std::vector<amrex::ParticleReal> values_per_rank_min(num_red_ops_1_min);
 
@@ -179,31 +179,31 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_y = p.rdata(RealSoA::y);
                 const amrex::ParticleReal p_t = p.rdata(RealSoA::t);
                 // prepare mean square for positions
-                const amrex::ParticleReal p_x_ms = (p_x-x_mean)*(p_x-x_mean)*p_w;
-                const amrex::ParticleReal p_y_ms = (p_y-y_mean)*(p_y-y_mean)*p_w;
-                const amrex::ParticleReal p_t_ms = (p_t-t_mean)*(p_t-t_mean)*p_w;
+                const amrex::ParticleReal p_x_ms = (p_x-mean_x)*(p_x-mean_x)*p_w;
+                const amrex::ParticleReal p_y_ms = (p_y-mean_y)*(p_y-mean_y)*p_w;
+                const amrex::ParticleReal p_t_ms = (p_t-mean_t)*(p_t-mean_t)*p_w;
                 // prepare mean square for momenta
-                const amrex::ParticleReal p_px_ms = (p_px-px_mean)*(p_px-px_mean)*p_w;
-                const amrex::ParticleReal p_py_ms = (p_py-py_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_pt_ms = (p_pt-pt_mean)*(p_pt-pt_mean)*p_w;
+                const amrex::ParticleReal p_px_ms = (p_px-mean_px)*(p_px-mean_px)*p_w;
+                const amrex::ParticleReal p_py_ms = (p_py-mean_py)*(p_py-mean_py)*p_w;
+                const amrex::ParticleReal p_pt_ms = (p_pt-mean_pt)*(p_pt-mean_pt)*p_w;
                 // prepare position-momentum correlations
-                const amrex::ParticleReal p_xpx = (p_x-x_mean)*(p_px-px_mean)*p_w;
-                const amrex::ParticleReal p_ypy = (p_y-y_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_tpt = (p_t-t_mean)*(p_pt-pt_mean)*p_w;
+                const amrex::ParticleReal p_xpx = (p_x-mean_x)*(p_px-mean_px)*p_w;
+                const amrex::ParticleReal p_ypy = (p_y-mean_y)*(p_py-mean_py)*p_w;
+                const amrex::ParticleReal p_tpt = (p_t-mean_t)*(p_pt-mean_pt)*p_w;
                 // prepare correlations for dispersion (4 required)
-                const amrex::ParticleReal p_xpt = (p_x-x_mean)*(p_pt-pt_mean)*p_w;
-                const amrex::ParticleReal p_pxpt = (p_px-px_mean)*(p_pt-pt_mean)*p_w;
-                const amrex::ParticleReal p_ypt = (p_y-y_mean)*(p_pt-pt_mean)*p_w;
-                const amrex::ParticleReal p_pypt = (p_py-py_mean)*(p_pt-pt_mean)*p_w;
+                const amrex::ParticleReal p_xpt = (p_x-mean_x)*(p_pt-mean_pt)*p_w;
+                const amrex::ParticleReal p_pxpt = (p_px-mean_px)*(p_pt-mean_pt)*p_w;
+                const amrex::ParticleReal p_ypt = (p_y-mean_y)*(p_pt-mean_pt)*p_w;
+                const amrex::ParticleReal p_pypt = (p_py-mean_py)*(p_pt-mean_pt)*p_w;
                 // prepare additional cross-plane correlations (8 required)
-                const amrex::ParticleReal p_xy = (p_x-x_mean)*(p_y-y_mean)*p_w;
-                const amrex::ParticleReal p_xpy = (p_x-x_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_xt = (p_x-x_mean)*(p_t-t_mean)*p_w;
-                const amrex::ParticleReal p_pxy = (p_px-px_mean)*(p_y-y_mean)*p_w;
-                const amrex::ParticleReal p_pxpy = (p_px-px_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_pxt = (p_px-px_mean)*(p_t-t_mean)*p_w;
-                const amrex::ParticleReal p_yt = (p_y-y_mean)*(p_t-t_mean)*p_w;
-                const amrex::ParticleReal p_pyt = (p_py-py_mean)*(p_t-t_mean)*p_w;
+                const amrex::ParticleReal p_xy = (p_x-mean_x)*(p_y-mean_y)*p_w;
+                const amrex::ParticleReal p_xpy = (p_x-mean_x)*(p_py-mean_py)*p_w;
+                const amrex::ParticleReal p_xt = (p_x-mean_x)*(p_t-mean_t)*p_w;
+                const amrex::ParticleReal p_pxy = (p_px-mean_px)*(p_y-mean_y)*p_w;
+                const amrex::ParticleReal p_pxpy = (p_px-mean_px)*(p_py-mean_py)*p_w;
+                const amrex::ParticleReal p_pxt = (p_px-mean_px)*(p_t-mean_t)*p_w;
+                const amrex::ParticleReal p_yt = (p_y-mean_y)*(p_t-mean_t)*p_w;
+                const amrex::ParticleReal p_pyt = (p_py-mean_py)*(p_t-mean_t)*p_w;
 
                 const amrex::ParticleReal p_charge = q_C*p_w;
 
@@ -239,19 +239,19 @@ namespace impactx::diagnostics
         );
 
         // minimum values
-        amrex::ParticleReal const x_min = values_per_rank_min.at(0);
-        amrex::ParticleReal const y_min = values_per_rank_min.at(1);
-        amrex::ParticleReal const t_min = values_per_rank_min.at(2);
-        amrex::ParticleReal const px_min = values_per_rank_min.at(3);
-        amrex::ParticleReal const py_min = values_per_rank_min.at(4);
-        amrex::ParticleReal const pt_min = values_per_rank_min.at(5);
+        amrex::ParticleReal const min_x = values_per_rank_min.at(0);
+        amrex::ParticleReal const min_y = values_per_rank_min.at(1);
+        amrex::ParticleReal const min_t = values_per_rank_min.at(2);
+        amrex::ParticleReal const min_px = values_per_rank_min.at(3);
+        amrex::ParticleReal const min_py = values_per_rank_min.at(4);
+        amrex::ParticleReal const min_pt = values_per_rank_min.at(5);
         // maximum values
-        amrex::ParticleReal const x_max = values_per_rank_max.at(0);
-        amrex::ParticleReal const y_max = values_per_rank_max.at(1);
-        amrex::ParticleReal const t_max = values_per_rank_max.at(2);
-        amrex::ParticleReal const px_max = values_per_rank_max.at(3);
-        amrex::ParticleReal const py_max = values_per_rank_max.at(4);
-        amrex::ParticleReal const pt_max = values_per_rank_max.at(5);
+        amrex::ParticleReal const max_x = values_per_rank_max.at(0);
+        amrex::ParticleReal const max_y = values_per_rank_max.at(1);
+        amrex::ParticleReal const max_t = values_per_rank_max.at(2);
+        amrex::ParticleReal const max_px = values_per_rank_max.at(3);
+        amrex::ParticleReal const max_py = values_per_rank_max.at(4);
+        amrex::ParticleReal const max_pt = values_per_rank_max.at(5);
         // mean square and correlation values
         amrex::ParticleReal const x_ms   = values_per_rank_2nd.at(0) /= w_sum;
         amrex::ParticleReal const y_ms   = values_per_rank_2nd.at(1) /= w_sum;
@@ -276,13 +276,13 @@ namespace impactx::diagnostics
         amrex::ParticleReal const pyt    = values_per_rank_2nd.at(20) /= w_sum;
         amrex::ParticleReal const charge = values_per_rank_2nd.at(21);
         // standard deviations of positions
-        amrex::ParticleReal const sig_x = std::sqrt(x_ms);
-        amrex::ParticleReal const sig_y = std::sqrt(y_ms);
-        amrex::ParticleReal const sig_t = std::sqrt(t_ms);
+        amrex::ParticleReal const sigma_x = std::sqrt(x_ms);
+        amrex::ParticleReal const sigma_y = std::sqrt(y_ms);
+        amrex::ParticleReal const sigma_t = std::sqrt(t_ms);
         // standard deviations of momenta
-        amrex::ParticleReal const sig_px = std::sqrt(px_ms);
-        amrex::ParticleReal const sig_py = std::sqrt(py_ms);
-        amrex::ParticleReal const sig_pt = std::sqrt(pt_ms);
+        amrex::ParticleReal const sigma_px = std::sqrt(px_ms);
+        amrex::ParticleReal const sigma_py = std::sqrt(py_ms);
+        amrex::ParticleReal const sigma_pt = std::sqrt(pt_ms);
         // RMS emittances
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
@@ -372,30 +372,56 @@ namespace impactx::diagnostics
         }
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
-        data["x_mean"] = x_mean;
-        data["x_min"] = x_min;
-        data["x_max"] = x_max;
-        data["y_mean"] = y_mean;
-        data["y_min"] = y_min;
-        data["y_max"] = y_max;
-        data["t_mean"] = t_mean;
-        data["t_min"] = t_min;
-        data["t_max"] = t_max;
-        data["sig_x"] = sig_x;
-        data["sig_y"] = sig_y;
-        data["sig_t"] = sig_t;
-        data["px_mean"] = px_mean;
-        data["px_min"] = px_min;
-        data["px_max"] = px_max;
-        data["py_mean"] = py_mean;
-        data["py_min"] = py_min;
-        data["py_max"] = py_max;
-        data["pt_mean"] = pt_mean;
-        data["pt_min"] = pt_min;
-        data["pt_max"] = pt_max;
-        data["sig_px"] = sig_px;
-        data["sig_py"] = sig_py;
-        data["sig_pt"] = sig_pt;
+        data["mean_x"] = mean_x;
+        data["min_x"] = min_x;
+        data["max_x"] = max_x;
+        data["mean_y"] = mean_y;
+        data["min_y"] = min_y;
+        data["max_y"] = max_y;
+        data["mean_t"] = mean_t;
+        data["min_t"] = min_t;
+        data["max_t"] = max_t;
+        data["sigma_x"] = sigma_x;
+        data["sigma_y"] = sigma_y;
+        data["sigma_t"] = sigma_t;
+        data["mean_px"] = mean_px;
+        data["min_px"] = min_px;
+        data["max_px"] = max_px;
+        data["mean_py"] = mean_py;
+        data["min_py"] = min_py;
+        data["max_py"] = max_py;
+        data["mean_pt"] = mean_pt;
+        data["min_pt"] = min_pt;
+        data["max_pt"] = max_pt;
+        data["sigma_px"] = sigma_px;
+        data["sigma_py"] = sigma_py;
+        data["sigma_pt"] = sigma_pt;
+        // start deprecated attributes
+        data["x_mean"] = mean_x;
+        data["x_min"] = min_x;
+        data["x_max"] = max_x;
+        data["y_mean"] = mean_y;
+        data["y_min"] = min_y;
+        data["y_max"] = max_y;
+        data["t_mean"] = mean_t;
+        data["t_min"] = min_t;
+        data["t_max"] = max_t;
+        data["sig_x"] = sigma_x;
+        data["sig_y"] = sigma_y;
+        data["sig_t"] = sigma_t;
+        data["px_mean"] = mean_px;
+        data["px_min"] = min_px;
+        data["px_max"] = max_px;
+        data["py_mean"] = mean_py;
+        data["py_min"] = min_py;
+        data["py_max"] = max_py;
+        data["pt_mean"] = mean_pt;
+        data["pt_min"] = min_pt;
+        data["pt_max"] = max_pt;
+        data["sig_px"] = sigma_px;
+        data["sig_py"] = sigma_py;
+        data["sig_pt"] = sigma_pt;
+        // end deprecated attributes
         data["emittance_x"] = emittance_x;
         data["emittance_y"] = emittance_y;
         data["emittance_t"] = emittance_t;
@@ -552,6 +578,31 @@ namespace impactx::diagnostics
         auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
+        data["mean_x"] = nan;
+        data["min_x"] = nan;
+        data["max_x"] = nan;
+        data["mean_y"] = nan;
+        data["min_y"] = nan;
+        data["max_y"] = nan;
+        data["mean_t"] = nan;
+        data["min_t"] = nan;
+        data["max_t"] = nan;
+        data["sigma_x"] = sig_x;
+        data["sigma_y"] = sig_y;
+        data["sigma_t"] = sig_t;
+        data["mean_px"] = nan;
+        data["min_px"] = nan;
+        data["max_px"] = nan;
+        data["mean_py"] = nan;
+        data["min_py"] = nan;
+        data["max_py"] = nan;
+        data["mean_pt"] = nan;
+        data["min_pt"] = nan;
+        data["max_pt"] = nan;
+        data["sigma_px"] = sig_px;
+        data["sigma_py"] = sig_py;
+        data["sigma_pt"] = sig_pt;
+        // start deprecated attributes
         data["x_mean"] = nan;
         data["x_min"] = nan;
         data["x_max"] = nan;
@@ -576,6 +627,7 @@ namespace impactx::diagnostics
         data["sig_px"] = sig_px;
         data["sig_py"] = sig_py;
         data["sig_pt"] = sig_pt;
+        // end deprecated attributes
         data["emittance_x"] = emittance_x;
         data["emittance_y"] = emittance_y;
         data["emittance_t"] = emittance_t;

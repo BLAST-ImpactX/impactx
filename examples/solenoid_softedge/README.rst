@@ -56,3 +56,46 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_solenoid_softedge.py
       :language: python3
       :caption: You can copy this file from ``examples/solenoid_softedge/analysis_solenoid_softedge.py``.
+
+
+.. _solenoid-softedge-solvable:
+
+Exactly-solvable (non-uniform) soft-edge solenoid
+==================================================
+
+This benchmark checks the calculation of the linear map for a soft-edge solenoid with a non-uniform longitudinal
+on-axis magnetic field profile, in the special case of a field profile for which the map is exactly-solvable.
+
+The test involves 250 MeV protons propagating through a 2 m region with a solenoidal magnetic field.
+
+In this test, all 36 elements of the 6x6 transport matrix must agree with predicted values to within numerical tolerance (currently 1e-7).
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_solenoid_softedge.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_solenoid_softedge.py
+          :language: python3
+          :caption: You can copy this file from ``examples/solenoid_softedge/run_solenoid_softedge_solvable.py``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_solenoid_softedge_solvable.py``
+
+   .. literalinclude:: analysis_solenoid_softedge_solvable.py
+      :language: python3
+      :caption: You can copy this file from ``examples/solenoid_softedge/analysis_solenoid_softedge_solvable.py``.

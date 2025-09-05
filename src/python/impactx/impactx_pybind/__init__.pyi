@@ -641,6 +641,10 @@ class RefPart:
         This struct stores the reference particle attributes
         stored in ImpactXParticleContainer.
         """
+    def copy(self) -> RefPart:
+        """
+        Copy the reference particle
+        """
     def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
         """
         Reset the reference particle
@@ -810,6 +814,7 @@ def create_envelope(
     | distribution.Waterbag,
     arg1: typing.SupportsFloat | None,
 ) -> Envelope: ...
+@typing.overload
 def push(
     pc: ImpactXParticleContainer,
     element: elements.Empty
@@ -852,7 +857,51 @@ def push(
     period: typing.SupportsInt = 0,
 ) -> None:
     """
-    Push particles through an element
+    Push a whole particle beam (incl. reference particle) through an element
+    """
+
+@typing.overload
+def push(
+    ref: RefPart,
+    element: elements.Empty
+    | elements.Aperture
+    | elements.Buncher
+    | elements.CFbend
+    | elements.ChrAcc
+    | elements.ChrDrift
+    | elements.ChrPlasmaLens
+    | elements.ChrQuad
+    | elements.ConstF
+    | elements.BeamMonitor
+    | elements.DipEdge
+    | elements.Drift
+    | elements.ExactCFbend
+    | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
+    | elements.ExactSbend
+    | elements.Kicker
+    | elements.LinearMap
+    | elements.Marker
+    | elements.Multipole
+    | elements.NonlinearLens
+    | elements.PlaneXYRot
+    | elements.Programmable
+    | elements.PRot
+    | elements.Quad
+    | elements.QuadEdge
+    | elements.RFCavity
+    | elements.Sbend
+    | elements.ShortRF
+    | elements.SoftSolenoid
+    | elements.SoftQuadrupole
+    | elements.Sol
+    | elements.Source
+    | elements.TaperedPL
+    | elements.ThinDipole,
+) -> None:
+    """
+    Push the reference particle through an element
     """
 
 __author__: str = (

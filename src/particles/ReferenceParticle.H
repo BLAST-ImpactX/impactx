@@ -44,6 +44,17 @@ namespace impactx
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
         amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
 
+        /** Copy the reference particle
+         *
+         * Use this if you want to do an operation that modifies the reference particle,
+         * but you want to avoid modifying the particle container that it is assigned to.
+         */
+        RefPart
+        copy () const
+        {
+            return RefPart{*this};
+        }
+
         /** Reset the reference particle
          *
          * @param keep_mass do not reset the reference particle mass

@@ -43,6 +43,9 @@ void init_refparticle(py::module& m)
         .def_property_readonly("rigidity_Tm", &RefPart::rigidity_Tm, "Get reference particle magnetic rigidity Brho [T*m]")
         .def_property_readonly("qm_ratio_SI", &RefPart::qm_ratio_SI, "Get reference particle charge to mass ratio [C/kg]")
 
+        .def("copy", &RefPart::copy,
+             py::return_value_policy::copy,
+             "Copy the reference particle")
         .def("reset", &RefPart::reset,
              py::arg("keep_mass")=false, py::arg("keep_charge")=false,
              "Reset the reference particle")

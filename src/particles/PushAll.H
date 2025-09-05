@@ -39,7 +39,7 @@ namespace impactx
     )
     {
         // performance profiling per element
-        std::string const profile_name = "impactx::Push::" + std::string(T_Element::type);
+        std::string const profile_name = "impactx::push::" + std::string(T_Element::type);
         BL_PROFILE(profile_name);
 
         // preparing to access reference particle data: RefPart
@@ -47,7 +47,7 @@ namespace impactx
 
         // push reference particle in global coordinates
         {
-            BL_PROFILE("impactx::Push::RefPart");
+            BL_PROFILE("impactx::push::RefPart");
             element(ref_part);
         }
 

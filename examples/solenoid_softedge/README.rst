@@ -68,6 +68,8 @@ on-axis magnetic field profile, in the special case of a field profile for which
 
 The test involves 250 MeV protons propagating through a 2 m region with a solenoidal magnetic field.
 
+The user can run this test for various values of the magnetic field strength by modifying the parameter "bscale" in both the input file and in the analysis script.  (The values in the two files must be consistent.)
+
 In this test, all 36 elements of the 6x6 transport matrix must agree with predicted values to within numerical tolerance (currently 1e-7).
 
 

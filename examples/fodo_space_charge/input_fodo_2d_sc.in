@@ -54,4 +54,3 @@ geometry.prob_relative = 1.01
 # Diagnostics
 ###############################################################################
 diag.slice_step_diagnostics = true
-

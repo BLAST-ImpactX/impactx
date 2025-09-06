@@ -21,12 +21,12 @@ num_particles = 6
 # assert num_particles == len(final)
 
 # initial data
-xi = [1, 0, 0, 0, 0, 0]
-pxi = [0, 1, 0, 0, 0, 0]
-yi = [0, 0, 1, 0, 0, 0]
-pyi = [0, 0, 0, 1, 0, 0]
-ti = [0, 0, 0, 0, 1, 0]
-pti = [0, 0, 0, 0, 0, 1]
+xi = np.array([1, 0, 0, 0, 0, 0])
+pxi = np.array([0, 1, 0, 0, 0, 0])
+yi = np.array([0, 0, 1, 0, 0, 0])
+pyi = np.array([0, 0, 0, 1, 0, 0])
+ti = np.array([0, 0, 0, 0, 1, 0])
+pti = np.array([0, 0, 0, 0, 0, 1])
 
 # problem parameters
 g = 0.1
@@ -75,13 +75,12 @@ r56 = 2.0 * lbda * g / bg**2
 r66 = 1.0
 
 # final data
-# initial data
-xf = [r11, r12, r13, r14, 0, 0]
-pxf = [r21, r22, r23, r24, 0, 0]
-yf = [r31, r32, r33, r34, 0, 0]
-pyf = [r41, r42, r43, r44, 0, 0]
-tf = [0, 0, 0, 0, 1.0, r56]
-ptf = [0, 0, 0, 0, 0, 1.0]
+xf = np.array([r11, r12, r13, r14, 0, 0])
+pxf = np.array([r21, r22, r23, r24, 0, 0])
+yf = np.array([r31, r32, r33, r34, 0, 0])
+pyf = np.array([r41, r42, r43, r44, 0, 0])
+tf = np.array([0, 0, 0, 0, 1.0, r56])
+ptf = np.array([0, 0, 0, 0, 0, 1.0])
 
 # compute differences
 error_xi = np.max(np.abs(xi - initial["position_x"].to_numpy()))

@@ -48,10 +48,10 @@ def twiss(
     :param mean_px: offset of the mean (centroid) momentum in x from that of the reference particle
     :param mean_py: offset of the mean (centroid) momentum in y from that of the reference particle
     :param mean_pt: offset of the mean (centroid) momentum in t from that of the reference particle
-    :param dispersion_x: dispersion and its derivative in horizontal and vertical directions
-    :param dispersion_y: dispersion and its derivative in horizontal and vertical directions
-    :param dispersion_px: dispersion and its derivative in horizontal and vertical directions
-    :param dispersion_py: dispersion and its derivative in horizontal and vertical directions
+    :param dispersion_x: horizontal dispersion [m]
+    :param dispersion_y: vertical dispersion [m]
+    :param dispersion_px: derivative of horizontal dispersion
+    :param dispersion_py: derivative of vertical dispersion
     :return: A dictionary containing calculated phase space input: 'lambdaX', 'lambdaY', 'lambdaT', 'lambdaPx', 'lambdaPy', 'lambdaPt', 'muxpx', 'muypy', 'mutpt'.
     """
     import numpy as np

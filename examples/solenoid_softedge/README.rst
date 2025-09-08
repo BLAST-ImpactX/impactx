@@ -72,7 +72,7 @@ The user can run this test for various values of the magnetic field strength by 
 
 In this test, all 36 elements of the 6x6 transport matrix must agree with predicted values to within numerical tolerance (currently 1e-7).
 
-.. tab-set::
+Details .. tab-set::
 
 \section{Introduction}
 Consider a Hamiltonian $H$ quadratic in the phase space variables $\zeta=(x,p_x,y,p_y,t,p_t)$.  Then $H$ can be written in the form:

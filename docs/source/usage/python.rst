@@ -379,7 +379,7 @@ Particles
       :param pt: momentum in t
       :param qm: charge over mass in 1/eV
       :param bunch_charge: total charge within a bunch in C
-      :param w: weight of each particle: how many real particles to represent
+      :param w: weight of each particle: the macroparticle charge in units of the elementary charge `e` (i.e., how many real particles to represent)
 
    .. py:method:: ref_particle()
 

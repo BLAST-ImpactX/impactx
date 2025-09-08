@@ -61,7 +61,7 @@ We run the following script to analyze correctness:
 .. _solenoid-softedge-solvable:
 
 Exactly-solvable (non-uniform) soft-edge solenoid
-==================================================
+=================================================
 
 This benchmark checks the calculation of the linear map for a soft-edge solenoid with a non-uniform longitudinal
 on-axis magnetic field profile, in the special case of a field profile for which the map is exactly-solvable.

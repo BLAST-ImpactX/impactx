@@ -17,8 +17,8 @@ final = beam_final.to_df()
 
 # compare number of particles
 num_particles = 6
-# assert num_particles == len(initial)
-# assert num_particles == len(final)
+assert num_particles == len(initial)
+assert num_particles == len(final)
 
 # initial data
 xi = np.array([1, 0, 0, 0, 0, 0])

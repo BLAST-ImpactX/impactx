@@ -111,6 +111,7 @@ def test_lattice_variable_handler(dashboard):
     dashboard.sb.click("#lattice_settings")
     for i in range(len(ALL_VARIABLES) - 1):
         dashboard.sb.click(f"#add_variable_button_{i + 1}")
+        dashboard.sb.assert_element(f"#variable_name_{i + 2}")
 
     # Enter variables on the dashboard
     for i, var in enumerate(ALL_VARIABLES, start=1):

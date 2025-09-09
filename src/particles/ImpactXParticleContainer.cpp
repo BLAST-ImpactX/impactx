@@ -199,16 +199,26 @@ namespace impactx
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
         amrex::ParticleReal qm,
-        amrex::ParticleReal bchchg
+        std::optional<amrex::ParticleReal> bunch_charge,
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w
     )
     {
         BL_PROFILE("ImpactX::AddNParticles");
+
+        using namespace amrex::literals;  // for _rt and _prt
+
+        bool const has_w = w.has_value();
+        if (!(bunch_charge.has_value() ^ has_w))
+        {
+            throw std::runtime_error("AddNParticles: Exactly one of bunch_charge or w must be provided!");
+        }
 
         AMREX_ALWAYS_ASSERT(x.size() == y.size());
         AMREX_ALWAYS_ASSERT(x.size() == t.size());
         AMREX_ALWAYS_ASSERT(x.size() == px.size());
         AMREX_ALWAYS_ASSERT(x.size() == py.size());
         AMREX_ALWAYS_ASSERT(x.size() == pt.size());
+        if (has_w) { AMREX_ALWAYS_ASSERT(x.size() == w->size()); }
 
         // number of particles to add
         amrex::Long const np = x.size();
@@ -219,7 +229,7 @@ namespace impactx
             const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
             auto it = std::find(pmap.begin(), pmap.end(), amrex::ParallelDescriptor::MyProc());
             if (it == std::end(pmap)) {
-                amrex::Abort("Attempting to add particles to box that does not exist.");
+                throw std::runtime_error("AddNParticles: Attempting to add particles to box that does not exist.");
             } else {
                 gid = *it;
             }
@@ -290,6 +300,8 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal const * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT w_ptr = has_w ? w->data() : nullptr;
+            amrex::ParticleReal const bunch_charge_value = has_w ? 0_prt : bunch_charge.value();
 
             amrex::ParallelFor(num_to_add,
                 [=] AMREX_GPU_DEVICE (amrex::Long i) noexcept
@@ -305,7 +317,7 @@ namespace impactx
                 pt_arr[old_np+i] = pt_ptr[my_offset+i];
 
                 qm_arr[old_np+i] = qm;
-                w_arr[old_np+i]  = bchchg/ablastr::constant::SI::q_e/np;
+                w_arr[old_np+i]  = has_w ? w_ptr[my_offset+i] : bunch_charge_value / ablastr::constant::SI::q_e/np;
             });
         }
 

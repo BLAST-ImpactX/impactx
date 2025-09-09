@@ -162,6 +162,9 @@ namespace impactx
 
         /** Add new particles to the container for fixed s.
          *
+         * Either the total charge (bunch_charge) or the weight of each
+         * particle (w) must be provided.
+         *
          * Note: This can only be used *after* the initialization (grids) have
          *       been created, meaning after the call to AmrCore::InitFromScratch
          *       or AmrCore::InitFromCheckpoint has been made in the ImpactX
@@ -174,7 +177,8 @@ namespace impactx
          * @param py momentum in y
          * @param pt momentum in t
          * @param qm charge over mass in 1/eV
-         * @param bchchg total charge within a bunch in C
+         * @param bunch_charge total charge within a bunch in C
+         * @param w weight of each particle: how many real particles to represent
          */
         void
         AddNParticles (
@@ -185,7 +189,8 @@ namespace impactx
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
             amrex::ParticleReal qm,
-            amrex::ParticleReal bchchg
+            std::optional<amrex::ParticleReal> bunch_charge = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt
         );
 
         /** Register storage for lost particles

@@ -122,6 +122,7 @@ class DashboardTester:
         """
         try:
             self.set_state("selected_lattice", element_name)
+            self.assert_state("is_selected_element_invalid", False)
             self.sb.click("#add_lattice_element")
         except Exception as error:
             raise Exception(

@@ -29,7 +29,9 @@ def apply_overrides_to_parameter_map() -> None:
         for pname, _pdefault, ptype in params:
             type_lookup[pname] = ptype
 
-    for override in state.lattice_defaults:
+    # Use the applied overrides (not the staged edits)
+    overrides = getattr(state, "lattice_defaults_applied", []) or []
+    for override in overrides:
         name = (override.get("name") or "").strip()
         value = override.get("value")
         if not name:

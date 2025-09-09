@@ -119,9 +119,9 @@ class GeneralFunctions:
                 try:
                     from .lattice.defaults_handler import LatticeDefaultsHandler
 
-                    state.lattice_defaults = (
-                        LatticeDefaultsHandler._build_initial_defaults_list()
-                    )
+                    new_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
+                    state.lattice_defaults_applied = new_defaults
+                    state.lattice_defaults = new_defaults
                     state.dirty("lattice_defaults")
                 except Exception:
                     pass
@@ -140,9 +140,9 @@ class GeneralFunctions:
             try:
                 from .lattice.defaults_handler import LatticeDefaultsHandler
 
-                state.lattice_defaults = (
-                    LatticeDefaultsHandler._build_initial_defaults_list()
-                )
+                new_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
+                state.lattice_defaults_applied = new_defaults
+                state.lattice_defaults = new_defaults
                 state.dirty("lattice_defaults")
             except Exception:
                 pass

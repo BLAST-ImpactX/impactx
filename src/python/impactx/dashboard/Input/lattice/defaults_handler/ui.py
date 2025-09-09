@@ -7,19 +7,29 @@ License: BSD-3-Clause-LBNL
 """
 
 from .... import ctrl, html, state, vuetify
+from copy import deepcopy
 from . import components
 from . import utils as _utils
 
-_INIT_VALUE = ""
-state.lattice_defaults = [
-    {"name": _INIT_VALUE, "value": _INIT_VALUE, "error_message": _INIT_VALUE}
-]
+# Initialize applied and staged defaults
+state.lattice_defaults_applied = _utils.build_initial_defaults_list()
+state.lattice_defaults = deepcopy(state.lattice_defaults_applied)
 state.is_only_default = len(state.lattice_defaults) == 1
 state.lattice_defaults_filter = ""
 state.lattice_defaults_page = 1
 state.lattice_defaults_filtered = []
 state.lattice_defaults_no_results = False
 state.lattice_defaults_has_changes = False
+
+
+def _sync_has_changes_flag() -> None:
+    """
+    Set has_changes when staged edits differ from applied values.
+    """
+    state.lattice_defaults_has_changes = (
+        state.lattice_defaults != state.lattice_defaults_applied
+    )
+    state.dirty("lattice_defaults_has_changes")
 
 
 # -----------------------------------------------------------------------------
@@ -29,8 +39,8 @@ state.lattice_defaults_has_changes = False
 
 @state.change("lattice_defaults")
 def _on_defaults_change(*_args, **_kwargs):
+    # Only update UI-related state; do not apply globally until "Apply" is clicked
     _utils.update_delete_availability()
-    _utils.apply_overrides_to_parameter_map()
     _utils.sync_filtered_defaults()
 
 
@@ -72,8 +82,7 @@ def _on_update_default(field_name: str, identifier, new_value) -> None:
         entry["value"] = new_value
 
     state.dirty("lattice_defaults")
-    state.lattice_defaults_has_changes = True
-    state.dirty("lattice_defaults_has_changes")
+    _sync_has_changes_flag()
 
 
 @ctrl.add("reset_lattice_defaults")
@@ -81,8 +90,7 @@ def _on_reset_defaults() -> None:
     state.lattice_defaults = _utils.build_initial_defaults_list()
     state.lattice_defaults_filter = ""
     state.dirty("lattice_defaults")
-    state.lattice_defaults_has_changes = True
-    state.dirty("lattice_defaults_has_changes")
+    _sync_has_changes_flag()
 
 
 @ctrl.add("apply_lattice_defaults")
@@ -91,9 +99,21 @@ def _on_apply_defaults() -> None:
     Mark current overrides as applied. Recompute parameter map to ensure
     downstream consumers see the latest values, then clear the dirty flag.
     """
+    # Persist staged edits as applied and recompute parameter map
+    state.lattice_defaults_applied = deepcopy(state.lattice_defaults)
     _utils.apply_overrides_to_parameter_map()
     state.lattice_defaults_has_changes = False
     state.dirty("lattice_defaults_has_changes")
+
+
+@state.change("lattice_configuration_dialog_settings")
+def _on_dialog_visibility_change(lattice_configuration_dialog_settings, **_):
+    # On close/cancel, revert staged edits to last applied and clear dirty flag
+    if not lattice_configuration_dialog_settings:
+        state.lattice_defaults = deepcopy(state.lattice_defaults_applied)
+        _utils.sync_filtered_defaults()
+        state.lattice_defaults_has_changes = False
+        state.dirty("lattice_defaults", "lattice_defaults_has_changes")
 
 
 class LatticeDefaultsHandler:
@@ -123,9 +143,9 @@ class LatticeDefaultsHandler:
             _utils.sync_filtered_defaults()
         elif not state.lattice_defaults_filtered:
             _utils.sync_filtered_defaults()
-        with vuetify.VCardText(classes="py-2"):
+        with vuetify.VCardText(classes="py-1 pb-0"):
             components.search_bar()
-        with vuetify.VCardText():
+        with vuetify.VCardText(classes="pt-1"):
             with vuetify.VContainer(fluid=True):
                 with vuetify.VRow(
                     v_for=(

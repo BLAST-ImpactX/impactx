@@ -49,7 +49,7 @@ def search_bar():
     """
     # Row 1: Search field (full width)
     with vuetify.VRow(classes="align-start"):
-        with vuetify.VCol(cols=12, classes="pb-1"):
+        with vuetify.VCol(cols=12, classes="pb-0"):
             text_field(
                 v_model=("lattice_defaults_filter", ""),
                 label="Search parameters",
@@ -64,7 +64,7 @@ def search_bar():
             )
 
     # Row 2: Match summary (subtle, full width)
-    with vuetify.VRow(classes="mt-n1 mb-2"):
+    with vuetify.VRow(classes="mt-n2 mb-1"):
         with vuetify.VCol(cols=12, classes="d-flex align-center"):
             header_summary()
 

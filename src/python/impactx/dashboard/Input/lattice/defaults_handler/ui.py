@@ -19,6 +19,7 @@ state.lattice_defaults_filter = ""
 state.lattice_defaults_page = 1
 state.lattice_defaults_filtered = []
 state.lattice_defaults_no_results = False
+state.lattice_defaults_has_changes = False
 
 
 # -----------------------------------------------------------------------------
@@ -27,7 +28,7 @@ state.lattice_defaults_no_results = False
 
 
 @state.change("lattice_defaults")
-def _on_defaults_change():
+def _on_defaults_change(*_args, **_kwargs):
     _utils.update_delete_availability()
     _utils.apply_overrides_to_parameter_map()
     _utils.sync_filtered_defaults()
@@ -71,6 +72,8 @@ def _on_update_default(field_name: str, identifier, new_value) -> None:
         entry["value"] = new_value
 
     state.dirty("lattice_defaults")
+    state.lattice_defaults_has_changes = True
+    state.dirty("lattice_defaults_has_changes")
 
 
 @ctrl.add("reset_lattice_defaults")
@@ -78,6 +81,19 @@ def _on_reset_defaults() -> None:
     state.lattice_defaults = _utils.build_initial_defaults_list()
     state.lattice_defaults_filter = ""
     state.dirty("lattice_defaults")
+    state.lattice_defaults_has_changes = True
+    state.dirty("lattice_defaults_has_changes")
+
+
+@ctrl.add("apply_lattice_defaults")
+def _on_apply_defaults() -> None:
+    """
+    Mark current overrides as applied. Recompute parameter map to ensure
+    downstream consumers see the latest values, then clear the dirty flag.
+    """
+    _utils.apply_overrides_to_parameter_map()
+    state.lattice_defaults_has_changes = False
+    state.dirty("lattice_defaults_has_changes")
 
 
 class LatticeDefaultsHandler:
@@ -151,7 +167,33 @@ class LatticeDefaultsHandler:
                     v_show=("lattice_defaults_no_results",),
                 )
         with vuetify.VCardText(classes="pt-0 pb-2"):
-            components.pagination()
-            with vuetify.VRow(classes="mt-2"):
-                with vuetify.VCol():
-                    components.reset_button()
+            # Pagination centered above the footer actions
+            with vuetify.VRow(classes="justify-center"):
+                with vuetify.VCol(cols="auto"):
+                    components.pagination()
+
+            vuetify.VDivider(classes="my-2")
+
+            # Footer actions: Reset (left) and Close/Apply (right)
+            with vuetify.VRow(classes="align-center"):
+                with vuetify.VCol(cols=6):
+                    vuetify.VBtn(
+                        "Reset",
+                        color="primary",
+                        variant="tonal",
+                        click=ctrl.reset_lattice_defaults,
+                    )
+                with vuetify.VCol(cols=6, classes="d-flex justify-end"):
+                    vuetify.VBtn(
+                        "Close",
+                        variant="text",
+                        color="#00313C",
+                        click="lattice_configuration_dialog_settings = false",
+                        classes="mr-2",
+                    )
+                    vuetify.VBtn(
+                        "Apply",
+                        color="primary",
+                        disabled=("!lattice_defaults_has_changes",),
+                        click=ctrl.apply_lattice_defaults,
+                    )

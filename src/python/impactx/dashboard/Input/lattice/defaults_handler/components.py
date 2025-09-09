@@ -11,13 +11,17 @@ from .... import ctrl, html, vuetify
 
 def header_summary():
     """
-    Renders a small legend for match count next to search.
+    Renders a small legend for match count below the search bar.
     """
     vuetify.VIcon(
-        "mdi-checkbox-blank-circle", size="x-small", color="primary", classes="mr-2"
+        "mdi-checkbox-blank-circle",
+        size="x-small",
+        color="primary",
+        classes="mr-2",
     )
     html.Span(
         "Matches: {{ lattice_defaults_filtered.length }} / {{ lattice_defaults.length }}",
+        id="lattice_defaults_search_summary",
         classes="text-caption text-grey-darken-1",
         aria_live="polite",
         __properties=["aria-live"],
@@ -41,10 +45,11 @@ def text_field(**kwargs):
 
 def search_bar():
     """
-    Search row with text field and match summary.
+    Search input with match summary on a separate row for visual clarity.
     """
-    with vuetify.VRow(classes="align-center"):
-        with vuetify.VCol(cols=True):
+    # Row 1: Search field (full width)
+    with vuetify.VRow(classes="align-start"):
+        with vuetify.VCol(cols=12, classes="pb-1"):
             text_field(
                 v_model=("lattice_defaults_filter", ""),
                 label="Search parameters",
@@ -54,9 +59,13 @@ def search_bar():
                 classes="text-body-2",
                 id="lattice_defaults_search",
                 aria_label="Search parameters",
-                __properties=["aria-label"],
+                aria_describedby="lattice_defaults_search_summary",
+                __properties=["aria-label", "aria-describedby"],
             )
-        with vuetify.VCol(cols="auto", classes="d-flex align-center ml-3"):
+
+    # Row 2: Match summary (subtle, full width)
+    with vuetify.VRow(classes="mt-n1 mb-2"):
+        with vuetify.VCol(cols=12, classes="d-flex align-center"):
             header_summary()
 
 

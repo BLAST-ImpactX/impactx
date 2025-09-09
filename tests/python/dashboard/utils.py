@@ -12,8 +12,8 @@ import sys
 import time
 from pathlib import Path
 
-from selenium.common.exceptions import TimeoutException
 import pytest
+from selenium.common.exceptions import TimeoutException
 
 TIMEOUT = 120
 APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
@@ -217,7 +217,6 @@ class DashboardTester:
 
             if isinstance(expected_input, (int, float)):
                 try:
-
                     v_num = None if value is None else float(value)
                     if v_num is not None and v_num == pytest.approx(
                         float(expected_input), **APPROX_TOL
@@ -252,7 +251,9 @@ class DashboardTester:
         return self.sb.execute_script(js_script, state_name)
 
 
-def save_failure_screenshot(dashboard, request, directory: str | None = None) -> str | None:
+def save_failure_screenshot(
+    dashboard, request, directory: str | None = None
+) -> str | None:
     """
     Save a screenshot PNG for the current test and return the absolute path.
 

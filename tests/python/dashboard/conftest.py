@@ -38,7 +38,7 @@ def reset_dashboard_inputs(dashboard, request):
     Resets the dashboard to its default state before each test.
     This ensures all tests start from a clean, consistent baseline.
     """
- 
+
     dashboard.sb.click("#Input_route")
     dashboard.sb.click("#reset_all_inputs_button")
     # Teardown: on failure, save a screenshot for debugging

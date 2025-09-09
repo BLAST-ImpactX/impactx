@@ -9,7 +9,9 @@ License: BSD-3-Clause-LBNL
 import time
 
 import pytest
+
 from .utils import APPROX_TOL, TIMEOUT
+
 
 def lattice_value(state, index: int, param_name: str) -> float:
     """

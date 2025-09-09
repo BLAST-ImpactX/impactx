@@ -5,8 +5,11 @@ Copyright 2025 ImpactX contributors
 Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
+
 import pytest
+
 from .utils import APPROX_TOL
+
 
 def test_python_import(dashboard):
     """
@@ -70,6 +73,6 @@ def test_python_import(dashboard):
     # Check input values
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
         actual_value = float(dashboard.sb.get_value(element_id))
-        assert actual_value == pytest.approx(
-            expected_value, **APPROX_TOL
-        ), f"{element_id}: expected {expected_value}, got {actual_value}"
+        assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
+            f"{element_id}: expected {expected_value}, got {actual_value}"
+        )

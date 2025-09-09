@@ -115,6 +115,16 @@ class GeneralFunctions:
                 state.selected_lattice_list = []
                 state.variables = [{"name": "", "value": "", "error_message": ""}]
                 state.dirty("variables")
+                # Reset lattice defaults to built-in values
+                try:
+                    from .lattice.defaults_handler import LatticeDefaultsHandler
+
+                    new_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
+                    state.lattice_defaults_applied = new_defaults
+                    state.lattice_defaults = new_defaults
+                    state.dirty("lattice_defaults")
+                except Exception:
+                    pass
             elif input_section == "space_charge":
                 state.dirty("max_level")
 
@@ -126,6 +136,16 @@ class GeneralFunctions:
             state.dirty("max_level")
             state.variables = [{"name": "", "value": "", "error_message": ""}]
             state.dirty("variables")
+            # Reset lattice defaults to built-in values
+            try:
+                from .lattice.defaults_handler import LatticeDefaultsHandler
+
+                new_defaults = LatticeDefaultsHandler._build_initial_defaults_list()
+                state.lattice_defaults_applied = new_defaults
+                state.lattice_defaults = new_defaults
+                state.dirty("lattice_defaults")
+            except Exception:
+                pass
 
     @staticmethod
     def set_state_to_numeric(state_name: str) -> None:

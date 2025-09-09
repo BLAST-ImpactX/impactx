@@ -32,6 +32,9 @@ set_property(TEST ${dashboard_test_name} PROPERTY LABELS "dashboard")
 set_property(TEST ${pytest_name} APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
 set_property(TEST ${pytest_name}.dashboard APPEND PROPERTY ENVIRONMENT "OMP_NUM_THREADS=2")
 
+# Save dashboard test screenshots to a known path for CI artifact collection
+set_property(TEST ${pytest_name}.dashboard APPEND PROPERTY ENVIRONMENT "IMPACTX_SCREENSHOT_DIR=${pytest_rundir}.dashboard/screenshots")
+
 
 #   set PYTHONPATH and PATH (for .dll files)
 impactx_test_set_pythonpath(${pytest_name})

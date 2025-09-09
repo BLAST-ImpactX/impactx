@@ -19,6 +19,7 @@ from .. import DashboardDefaults
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from ..validation import DashboardValidation, errors_tracker
+from .defaults_handler import LatticeDefaultsHandler
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
@@ -31,7 +32,6 @@ state.listOfLatticeElementParametersAndDefault = (
 )
 
 state.selected_lattice_list = []
-state.nslice = ""
 
 
 def add_lattice_element() -> dict:
@@ -194,16 +194,7 @@ def on_move_latticeElementIndex_down_click(index):
         state.dirty("selected_lattice_list")
 
 
-@ctrl.add("nsliceDefaultChange")
-def update_default_value(parameter_name, new_value):
-    data = InputDefaultsHelper.class_parameters_with_defaults(elements)
-
-    for key, parameters in data.items():
-        for i, param in enumerate(parameters):
-            if param[0] == parameter_name:
-                parameters[i] = (param[0], new_value, param[2])
-
-    state.listOfLatticeElementParametersAndDefault = data
+# Default overrides are managed by LatticeDefaultsHandler
 
 
 # -----------------------------------------------------------------------------
@@ -296,19 +287,9 @@ class LatticeConfiguration(CardBase):
         Allows users to pre-determine default values for
         any parameter name. Example: user can set 'nslice' to 25
         and every element added thereafter will have the nslice value
-        of 25 as default.
+        of 25 as default. UI mirrors the Variables handler.
         """
-        with vuetify.VCardText():
-            with vuetify.VRow():
-                with vuetify.VCol(cols=3):
-                    InputComponents.text_field(
-                        label="nslice",
-                        v_model_name="nslice",
-                        change=(
-                            ctrl.nsliceDefaultChange,
-                            "['nslice', $event]",
-                        ),
-                    )
+        LatticeDefaultsHandler.defaults_handler()
 
     # -----------------------------------------------------------------------------
     # Dialogs

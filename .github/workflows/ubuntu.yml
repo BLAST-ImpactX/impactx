@@ -69,6 +69,16 @@ jobs:
       run: |
         ctest --test-dir build --output-on-failure --label-exclude slow
 
+    - name: Upload dashboard screenshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dashboard-screenshots-ubuntu
+        path: |
+          build/**/pytest.ImpactX.dashboard/screenshots/**/*.png
+          build/**/screenshots/**/*.png
+        if-no-files-found: ignore
+
     - name: run installed app
       run: |
         cmake --build build --target install

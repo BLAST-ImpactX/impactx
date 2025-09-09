@@ -18,6 +18,7 @@ import pytest
 import time as _time
 
 TIMEOUT = 120
+APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
 
 
 def start_dashboard() -> subprocess.Popen[str]:
@@ -221,7 +222,7 @@ class DashboardTester:
 
                     v_num = None if value is None else float(value)
                     if v_num is not None and v_num == pytest.approx(
-                        float(expected_input), rel=1e-12, abs=1e-12
+                        float(expected_input), **APPROX_TOL
                     ):
                         return
                 except (TypeError, ValueError):

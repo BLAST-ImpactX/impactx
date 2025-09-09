@@ -6,6 +6,7 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+
 def test_dashboard(dashboard):
     """
     End-to-end test of the ImpactX dashboard by directly setting inputs via UI,

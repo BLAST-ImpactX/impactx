@@ -1,3 +1,11 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
 def test_dashboard(dashboard):
     """
     End-to-end test of the ImpactX dashboard by directly setting inputs via UI,

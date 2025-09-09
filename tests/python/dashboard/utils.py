@@ -13,9 +13,7 @@ import time
 from pathlib import Path
 
 from selenium.common.exceptions import TimeoutException
-import os
 import pytest
-import time as _time
 
 TIMEOUT = 120
 APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
@@ -256,7 +254,7 @@ class DashboardTester:
 
 def save_failure_screenshot(dashboard, request, directory: str | None = None) -> str | None:
     """
-    Save a screenshot PNG for the current test and print the absolute path.
+    Save a screenshot PNG for the current test and return the absolute path.
 
     - Respects env var `IMPACTX_SCREENSHOT_DIR` to override the output folder.
     - Falls back to `directory` arg or `screenshots/` in the current CWD.
@@ -265,12 +263,9 @@ def save_failure_screenshot(dashboard, request, directory: str | None = None) ->
     base_dir = os.environ.get("IMPACTX_SCREENSHOT_DIR", directory or "screenshots")
     try:
         os.makedirs(base_dir, exist_ok=True)
-        ts = _time.strftime("%Y%m%d-%H%M%S")
-        # Keep name filesystem-friendly
-        name = f"{request.node.name}_{ts}.png".replace(os.sep, "_")
+        name = f"{request.node.name}.png".replace(os.sep, "_")
         path = os.path.abspath(os.path.join(base_dir, name))
         dashboard.sb.driver.save_screenshot(path)
-        print(f"Saved test screenshot: {path}")
         return path
     except Exception:
         return None

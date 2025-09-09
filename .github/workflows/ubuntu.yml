@@ -75,7 +75,8 @@ jobs:
       with:
         name: dashboard-screenshots-ubuntu
         path: |
-          build/bin/pytest.ImpactX.dashboard/screenshots/**/*.png
+          build/**/pytest.ImpactX.dashboard/screenshots/**/*.png
+          build/**/screenshots/**/*.png
         if-no-files-found: ignore
 
     - name: run installed app

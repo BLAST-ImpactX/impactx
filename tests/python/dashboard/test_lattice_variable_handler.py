@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import time
 
 import pytest
-from .utils import TIMEOUT
+from .utils import APPROX_TOL, TIMEOUT
 
 def lattice_value(state, index: int, param_name: str) -> float:
     """
@@ -59,7 +59,7 @@ def assert_lattice_param_sim_input(
             if isinstance(expected_value, (int, float)) and isinstance(
                 current_value, (int, float)
             ):
-                if current_value == pytest.approx(expected_value, rel=1e-12, abs=1e-12):
+                if current_value == pytest.approx(expected_value, **APPROX_TOL):
                     return
             elif current_value == expected_value:
                 return

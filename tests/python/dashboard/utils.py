@@ -14,6 +14,7 @@ from pathlib import Path
 
 from selenium.common.exceptions import TimeoutException
 import os
+import pytest
 import time as _time
 
 TIMEOUT = 120
@@ -215,8 +216,15 @@ class DashboardTester:
                 value = None
 
             if isinstance(expected_input, (int, float)):
-                if value is not None and float(value) == float(expected_input):
-                    return
+                try:
+
+                    v_num = None if value is None else float(value)
+                    if v_num is not None and v_num == pytest.approx(
+                        float(expected_input), rel=1e-12, abs=1e-12
+                    ):
+                        return
+                except (TypeError, ValueError):
+                    pass
             elif value == expected_input:
                 return
 

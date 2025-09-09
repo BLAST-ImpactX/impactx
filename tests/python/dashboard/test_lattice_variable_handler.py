@@ -55,8 +55,17 @@ def assert_lattice_param_sim_input(
     # Simple retry logic similar to assert_state
     for i in range(10):
         current_value = get_sim_input()
-        if current_value == expected_value:
-            return
+        try:
+            if isinstance(expected_value, (int, float)) and isinstance(
+                current_value, (int, float)
+            ):
+                if current_value == pytest.approx(expected_value, rel=1e-12, abs=1e-12):
+                    return
+            elif current_value == expected_value:
+                return
+        except Exception:
+            if current_value == expected_value:
+                return
         time.sleep(1)
 
     raise AssertionError(

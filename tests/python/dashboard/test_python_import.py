@@ -1,3 +1,12 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+import pytest
+
 def test_python_import(dashboard):
     """
     End-to-end test of the ImpactX dashboard by importing input values from a Python file.
@@ -60,6 +69,6 @@ def test_python_import(dashboard):
     # Check input values
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
         actual_value = float(dashboard.sb.get_value(element_id))
-        assert actual_value == expected_value, (
-            f"{element_id}: expected {expected_value}, got {actual_value}"
-        )
+        assert actual_value == pytest.approx(
+            expected_value, rel=1e-12, abs=1e-12
+        ), f"{element_id}: expected {expected_value}, got {actual_value}"

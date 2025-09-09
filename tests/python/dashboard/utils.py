@@ -139,16 +139,41 @@ class DashboardTester:
         :param new_input: New value to set for the input element.
         """
         try:
-            self.sb.execute_script(
-                f'document.getElementById("{element_id}").value = "{new_input}";'
-            )
-            self.sb.execute_script(
-                f'document.getElementById("{element_id}").dispatchEvent(new Event("input"));'
-            )
+            self._commit_input_js(element_id, new_input)
         except Exception as error:
             raise Exception(
                 f"Unable to set input for lattice element '{element_id}': {str(error)}"
             )
+
+    def _commit_input_js(self, element_id: str, new_input) -> None:
+        """
+        Update a Vuetify text input field in the browser using JavaScript.
+
+        What happens step by step:
+        1. Find the input element by its ID.
+        2. Focus the element (like clicking inside it so it’s active).
+        3. Set the element’s value to the new text.
+        4. Trigger an "input" event so the web app reacts as if you typed the text.
+        5. Trigger a "change" event so the app thinks you finished editing.
+        6. Blur the element (like clicking away so it’s no longer active).
+
+        Purpose:
+        This makes the page behave exactly as if a real user typed into the field
+        and then clicked out, ensuring the app updates correctly.
+    """
+        js = (
+            "var el = document.getElementById(arguments[0]);"
+            "if (!el) { throw new Error('element not found'); }"
+            "el.focus();"
+            "el.value = arguments[1];"
+            "el.dispatchEvent(new InputEvent('input', {bubbles:true,cancelable:true}));"
+            "el.dispatchEvent(new Event('change', {bubbles:true}));"
+            "el.blur();"
+            "return true;"
+        )
+        successful_input = self.sb.execute_script(js, element_id, str(new_input))
+        if not successful_input:
+            raise RuntimeError("failed to commit value via JS")
 
     def set_state(self, state_name: str, state_value):
         """

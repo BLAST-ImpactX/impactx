@@ -6,8 +6,9 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from .... import ctrl, html, state, vuetify
 from copy import deepcopy
+
+from .... import ctrl, html, state, vuetify
 from . import components
 from . import utils as _utils
 

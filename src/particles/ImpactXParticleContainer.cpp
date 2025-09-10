@@ -152,17 +152,18 @@ namespace impactx
         // When running without space charge and OpenMP parallelization,
         // we need to make sure we have enough tiles on level 0, grid 0
         // to thread over the available tiles. We try to set the tile_size
-        // appropriately here. The tiles start as (very large number, 8, 8)
-        // in (x, y, z). So we try to reduce the tile size in the y and z
-        // directions alternately until there are enough tiles for the number of threads.
+        // appropriately here. We start by setting the tile_size to the size of box 0.
+        // Then we try to reduce the tile size in the (z, y, x) directions alternately
+        // until there are enough tiles for the number of threads.
 
         const auto& ba = ParticleBoxArray(lid);
+        tile_size = ba[gid].size();
         auto n_logical = numTilesInBox(ba[gid], true, tile_size);
 
         int ntry = 0;
-        constexpr int max_tries = 6;
+        constexpr int max_tries = 10;
         while ((n_logical < nthreads) && (ntry++ < max_tries)) {
-            int idim = (ntry % 2) + 1;  // alternate between 1 and 2
+            int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
             tile_size[idim] /= 2;
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(tile_size[idim] > 0,
                                              "Failed to set proper tile size for the number of OpenMP threads. "

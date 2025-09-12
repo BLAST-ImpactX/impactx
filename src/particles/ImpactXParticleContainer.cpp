@@ -179,7 +179,7 @@ namespace impactx
         );
 
 #if defined(AMREX_USE_OMP)
-        omp_set_max_threads(n_logical);
+        omp_set_num_threads(n_logical);
 #endif
         }
 

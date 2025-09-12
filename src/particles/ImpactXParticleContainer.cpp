@@ -170,16 +170,16 @@ namespace impactx
         }
 
         if (n_logical < nthreads) {
-	    ablastr::warn_manager::WMRecordWarning(
+        ablastr::warn_manager::WMRecordWarning(
                 "Could not find good tile size for the number of OpenMP threads. "
                 "Lowering the number of OpenMP threads used compared to the environment variable OMP_NUM_THREADS. "
-		"This may result in poorer than expected performance. "
-		"You may want to try increasing the blocking factor and max grid size.",
-		ablastr::warn_manager::WarnPriority::medium
-	    );
+        "This may result in poorer than expected performance. "
+        "You may want to try increasing the blocking factor and max grid size.",
+        ablastr::warn_manager::WarnPriority::medium
+        );
 
 #if defined(AMREX_USE_OMP)
-	    omp_set_max_threads(n_logical);
+        omp_set_max_threads(n_logical);
 #endif
         }
 

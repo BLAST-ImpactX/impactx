@@ -164,19 +164,23 @@ namespace impactx
         constexpr int max_tries = 10;
         while ((n_logical < nthreads) && (ntry++ < max_tries)) {
             int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
+            if (tile_size[idim] == 1) { continue; }
             tile_size[idim] /= 2;
-            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(tile_size[idim] > 0,
-                                             "Failed to set proper tile size for the number of OpenMP threads. "
-                                             "Consider lowering the number of OpenMP threads via the environment variable OMP_NUM_THREADS."
-                                             );
             n_logical = numTilesInBox(ba[gid], true, tile_size);
         }
 
         if (n_logical < nthreads) {
-            amrex::Abort("ImpactParticleContainer::prepare() "
-                "could not find good tile size for the number of OpenMP threads. "
-                "Consider lowering the number of OpenMP threads via the environment variable OMP_NUM_THREADS."
-            );
+	    ablastr::warn_manager::WMRecordWarning(
+                "Could not find good tile size for the number of OpenMP threads. "
+                "Lowering the number of OpenMP threads used compared to the environment variable OMP_NUM_THREADS. "
+		"This may result in poorer than expected performance. "
+		"You may want to try increasing the blocking factor and max grid size.",
+		ablastr::warn_manager::WarnPriority::medium
+	    );
+
+#if defined(AMREX_USE_OMP)
+	    omp_set_max_threads(n_logical);
+#endif
         }
 
         reserveData();

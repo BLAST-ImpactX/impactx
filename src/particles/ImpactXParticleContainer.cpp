@@ -156,27 +156,40 @@ namespace impactx
         // Then we try to reduce the tile size in the (z, y, x) directions alternately
         // until there are enough tiles for the number of threads.
 
-        const auto& ba = ParticleBoxArray(lid);
-        tile_size = ba[gid].size();
-        auto n_logical = numTilesInBox(ba[gid], true, tile_size);
+        // if the user has set particles.tile_size, do not override this choice
+        // unlike particles.do_tiling, we do not add this to the table in init,
+        // so if it's there the user set it
+    bool user_set = false;
+    {
+        amrex::ParmParse pp_particles("particles");
+            amrex::Vector<int> tilesize(AMREX_SPACEDIM);
+        user_set = pp_particles.queryarr("tile_size", tilesize, 0, AMREX_SPACEDIM);
+    }
 
+    const auto& ba = ParticleBoxArray(lid);
+    auto n_logical = numTilesInBox(ba[gid], true, tile_size);
+
+    if (!user_set) {
+        tile_size = ba[gid].size();
         int ntry = 0;
         constexpr int max_tries = 10;
         while ((n_logical < nthreads) && (ntry++ < max_tries)) {
-            int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
-            if (tile_size[idim] == 1) { continue; }
-            tile_size[idim] /= 2;
-            n_logical = numTilesInBox(ba[gid], true, tile_size);
+        int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
+        if (tile_size[idim] == 1) { continue; }
+        tile_size[idim] /= 2;
+        n_logical = numTilesInBox(ba[gid], true, tile_size);
         }
+    }
 
         if (n_logical < nthreads) {
         ablastr::warn_manager::WMRecordWarning(
-        "ImpactxParticleContainer::prepare",
-        "Could not find good tile size for the number of OpenMP threads. "
-        "Lowering the number of OpenMP threads used compared to the environment variable OMP_NUM_THREADS. "
-        "This may result in poorer than expected performance. "
-        "You may want to try increasing the blocking factor and max grid size.",
-        ablastr::warn_manager::WarnPriority::medium
+            "ImpactxParticleContainer::prepare",
+            "Could not find a good tile size for the requested number of OpenMP threads. "
+            "The number of threads is " + std::to_string(nthreads) + ", while the number "
+            "of available tiles is " + std::to_string(n_logical) + ". Using a lower number "
+            "of threads instead. This may result in poorer than expected performance. "
+            "You may want to try increasing the blocking factor and max grid size.",
+            ablastr::warn_manager::WarnPriority::medium
         );
 
 #if defined(AMREX_USE_OMP)

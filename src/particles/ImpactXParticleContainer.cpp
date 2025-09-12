@@ -159,18 +159,18 @@ namespace impactx
         // if the user has set particles.tile_size, do not override this choice
         // unlike particles.do_tiling, we do not add this to the table in init,
         // so if it's there the user set it
-    bool user_set = false;
-    {
-        amrex::ParmParse pp_particles("particles");
+        bool user_set = false;
+        {
+            amrex::ParmParse pp_particles("particles");
             amrex::Vector<int> tilesize(AMREX_SPACEDIM);
-        user_set = pp_particles.queryarr("tile_size", tilesize, 0, AMREX_SPACEDIM);
-    }
+            user_set = pp_particles.queryarr("tile_size", tilesize, 0, AMREX_SPACEDIM);
+        }
 
-    const auto& ba = ParticleBoxArray(lid);
-    auto n_logical = numTilesInBox(ba[gid], true, tile_size);
-
+        int n_logical = 0;
+        const auto& ba = ParticleBoxArray(lid);
     if (!user_set) {
         tile_size = ba[gid].size();
+            n_logical = numTilesInBox(ba[gid], true, tile_size);
         int ntry = 0;
         constexpr int max_tries = 10;
         while ((n_logical < nthreads) && (ntry++ < max_tries)) {
@@ -179,7 +179,9 @@ namespace impactx
         tile_size[idim] /= 2;
         n_logical = numTilesInBox(ba[gid], true, tile_size);
         }
-    }
+    } else {
+            n_logical = numTilesInBox(ba[gid], true, tile_size);
+        }
 
         if (n_logical < nthreads) {
         ablastr::warn_manager::WMRecordWarning(

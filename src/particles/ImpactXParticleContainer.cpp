@@ -171,8 +171,9 @@ namespace impactx
 
         if (n_logical < nthreads) {
         ablastr::warn_manager::WMRecordWarning(
-                "Could not find good tile size for the number of OpenMP threads. "
-                "Lowering the number of OpenMP threads used compared to the environment variable OMP_NUM_THREADS. "
+        "ImpactxParticleContainer::prepare",
+        "Could not find good tile size for the number of OpenMP threads. "
+        "Lowering the number of OpenMP threads used compared to the environment variable OMP_NUM_THREADS. "
         "This may result in poorer than expected performance. "
         "You may want to try increasing the blocking factor and max grid size.",
         ablastr::warn_manager::WarnPriority::medium

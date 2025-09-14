@@ -168,34 +168,41 @@ namespace impactx
 
         int n_logical = 0;
         const auto& ba = ParticleBoxArray(lid);
-    if (!user_set) {
-        tile_size = ba[gid].size();
+        if (!user_set)
+        {
+            tile_size = ba[gid].size();
             n_logical = numTilesInBox(ba[gid], true, tile_size);
-        int ntry = 0;
-        constexpr int max_tries = 10;
-        while ((n_logical < nthreads) && (ntry++ < max_tries)) {
-        int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
-        if (tile_size[idim] == 1) { continue; }
-        tile_size[idim] /= 2;
-        n_logical = numTilesInBox(ba[gid], true, tile_size);
-        }
-    } else {
+            int ntry = 0;
+            constexpr int max_tries = 10;
+            while ((n_logical < nthreads) && (ntry++ < max_tries))
+            {
+                int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
+                if (tile_size[idim] == 1) { continue; }
+                tile_size[idim] /= 2;
+                n_logical = numTilesInBox(ba[gid], true, tile_size);
+            }
+        } else
+        {
             n_logical = numTilesInBox(ba[gid], true, tile_size);
         }
 
-        if (n_logical < nthreads) {
-        ablastr::warn_manager::WMRecordWarning(
-            "ImpactxParticleContainer::prepare",
-            "Could not find a good tile size for the requested number of OpenMP threads. "
-            "The number of threads is " + std::to_string(nthreads) + ", while the number "
-            "of available tiles is " + std::to_string(n_logical) + ". Using a lower number "
-            "of threads instead. This may result in poorer than expected performance. "
-            "You may want to try increasing the blocking factor and max grid size.",
-            ablastr::warn_manager::WarnPriority::medium
-        );
+        if (n_logical < nthreads)
+        {
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactXParticleContainer::prepare",
+                "Could not find a good tile size for the requested number of "
+                "OpenMP threads. The number of threads is " +
+                std::to_string(nthreads) + ", while the number of available "
+                "tiles is " + std::to_string(n_logical) + ". Lowering the number "
+                "of threads to match the available tiles now. This may result "
+                "in poorer performance than expected. "
+                "You may want to try increasing the blocking factor and max "
+                "grid size.",
+                ablastr::warn_manager::WarnPriority::medium
+            );
 
 #if defined(AMREX_USE_OMP)
-        omp_set_num_threads(n_logical);
+            omp_set_num_threads(n_logical);
 #endif
         }
 

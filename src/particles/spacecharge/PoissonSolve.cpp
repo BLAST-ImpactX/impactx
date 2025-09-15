@@ -84,13 +84,16 @@ namespace impactx::particles::spacecharge
 
         auto geom_3d = pc.GetParGDB()->Geom();
 
-        amrex::Vector<std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
         for (int lev = 0; lev <= finest_level; ++lev) {
             if (space_charge == SpaceChargeAlgo::True_2D) {
                 // flattened rho
                 auto const& ma = rho[lev].const_arrays();
                 amrex::Box domain_lev = lev == 0 ? geom_3d[lev].Domain() : phi[lev].boxArray().minimalBox();
-                rho_2d.emplace_back(amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
+                rho_2d.erase(lev);
+                rho_2d.emplace(
+                    lev,
+                    amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
                     (2, domain_lev, rho[lev], [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
                     {
                         return ma[b](i,j,k);
@@ -98,7 +101,7 @@ namespace impactx::particles::spacecharge
                 );
 
                 // 2D phi
-                auto & r2d = rho_2d.back().second;
+                auto & r2d = rho_2d[lev].second;
                 auto nGrow = phi[lev].nGrowVect();
                 nGrow[2] = 0;
                 phi.erase(lev);
@@ -107,7 +110,7 @@ namespace impactx::particles::spacecharge
                     amrex::MultiFab{r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow}
                 );
 
-                sorted_rho.emplace_back(&rho_2d.back().second);
+                sorted_rho.emplace_back(&rho_2d[lev].second);
                 sorted_phi.emplace_back(&phi[lev]);
             }
             else if (space_charge == SpaceChargeAlgo::True_3D) {

@@ -160,7 +160,7 @@ class DashboardTester:
         Purpose:
         This makes the page behave exactly as if a real user typed into the field
         and then clicked out, ensuring the app updates correctly.
-    """
+        """
         js = (
             "var el = document.getElementById(arguments[0]);"
             "if (!el) { throw new Error('element not found'); }"

@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
+#include <sstream>
 
 
 namespace
@@ -188,16 +189,29 @@ namespace impactx
 
         if (n_logical < nthreads)
         {
+            std::string warning_message;
+            if (!user_set) {
+                warning_message.append(
+                    "Could not find a good tile size for the requested " +
+                    std::to_string(nthreads) + " OpenMP threads. "
+                );
+            }
+            std::stringstream sstr_tile_size;
+            sstr_tile_size << tile_size;
+            warning_message.append(
+                "The number of available tiles is " +
+                std::to_string(n_logical) + " with each a size of " + sstr_tile_size.str() +
+                ". Lowering the number of threads to match the available tiles now. This may result "
+                "in poorer performance than expected. "
+            );
+            warning_message.append("You may want to try ");
+            if (user_set) {
+                warning_message.append("decreasing the particles.tile_size or ");
+            }
+            warning_message.append("increasing the blocking factor and max grid size.");
             ablastr::warn_manager::WMRecordWarning(
                 "ImpactXParticleContainer::prepare",
-                "Could not find a good tile size for the requested number of "
-                "OpenMP threads. The number of threads is " +
-                std::to_string(nthreads) + ", while the number of available "
-                "tiles is " + std::to_string(n_logical) + ". Lowering the number "
-                "of threads to match the available tiles now. This may result "
-                "in poorer performance than expected. "
-                "You may want to try increasing the blocking factor and max "
-                "grid size.",
+                warning_message,
                 ablastr::warn_manager::WarnPriority::medium
             );
 

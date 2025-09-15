@@ -128,6 +128,8 @@ namespace impactx::initialization
         // for MR levels (TODO):
         //cba.coarsen(refRatio(lev - 1));
 
+        auto space_charge = get_space_charge_algo();
+
         // staggering and number of charge components in the field
         auto const rho_nodal_flag = amrex::IntVect::TheNodeVector();
         int const num_components_rho = 1;
@@ -145,9 +147,11 @@ namespace impactx::initialization
                 amrex::MultiFab{amrex::convert(cba, rho_nodal_flag), dm, num_components_rho, num_guards_rho, tag("rho")});
 
         // scalar potential
-        auto const phi_nodal_flag = rho_nodal_flag;
+        amrex::IntVect phi_nodal_flag = rho_nodal_flag;
         int const num_components_phi = 1;
-        int const num_guards_phi = num_guards_rho + 1; // todo: I think this just depends on max(MLMG, force calc)
+        amrex::IntVect num_guards_phi{num_guards_rho + 1}; // todo: I think this just depends on max(MLMG, force calc)
+        if (space_charge == SpaceChargeAlgo::True_2D) { num_guards_phi[2] = 0; phi_nodal_flag[2] = 0; }
+        num_guards_phi[2] = 0;
         track_particles.m_phi.emplace(
                 lev,
                 amrex::MultiFab{amrex::convert(cba, phi_nodal_flag), dm, num_components_phi, num_guards_phi, tag("phi")});

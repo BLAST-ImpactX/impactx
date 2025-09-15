@@ -102,7 +102,7 @@ namespace impactx::particles::spacecharge
                                 x, y, z,
                                 scf_arr_x, scf_arr_y, scf_arr_z,
                                 invdr,
-                                prob_lo
+                                prob_lo_2D
                             );
 
                         // push momentum

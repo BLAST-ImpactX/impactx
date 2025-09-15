@@ -85,7 +85,6 @@ namespace impactx::particles::spacecharge
         auto geom_3d = pc.GetParGDB()->Geom();
 
         amrex::Vector<std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
-        amrex::Vector<amrex::MultiFab> phi_2d;
         for (int lev = 0; lev <= finest_level; ++lev) {
             if (space_charge == SpaceChargeAlgo::True_2D) {
                 // flattened rho
@@ -102,10 +101,14 @@ namespace impactx::particles::spacecharge
                 auto & r2d = rho_2d.back().second;
                 auto nGrow = phi[lev].nGrowVect();
                 nGrow[2] = 0;
-                phi_2d.emplace_back(r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow);
+                phi.erase(lev);
+                phi.emplace(
+                    lev,
+                    amrex::MultiFab{r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow}
+                );
 
                 sorted_rho.emplace_back(&rho_2d.back().second);
-                sorted_phi.emplace_back(&phi_2d.back());
+                sorted_phi.emplace_back(&phi[lev]);
             }
             else if (space_charge == SpaceChargeAlgo::True_3D) {
                 sorted_rho.emplace_back(&rho[lev]);
@@ -151,24 +154,6 @@ namespace impactx::particles::spacecharge
         for (int lev=0; lev<=finest_level; lev++)
         {
             amrex::MultiFab & phi_at_level = phi.at(lev);
-
-            if (space_charge == SpaceChargeAlgo::True_2D) {
-                rho_2d[lev].first.ParallelCopy(phi_2d[lev]);
-
-                for (amrex::MFIter mfi(phi_at_level); mfi.isValid(); ++mfi) {
-                    auto const & src = rho_2d[lev].first[mfi].const_array();
-                    auto const & dst = phi_at_level[mfi].array();
-
-                    // spread out the same x-y values over all z (s)
-                    // TODO: later on we can keep phi flat 2D, but need to update the gather for that to not use
-                    //       a stencil in z
-                    auto bx = mfi.validbox();
-                    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept {
-                        dst(i,j,k) = src(i,j,0);
-                    });
-                }
-            }
-
             phi_at_level.FillBoundary(pc.GetParGDB()->Geom()[lev].periodicity());
         }
     }

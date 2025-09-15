@@ -1,7 +1,7 @@
 .. _examples-solenoid-softedge:
 
 Soft-edge solenoid
-===================
+==================
 
 Proton beam propagating through a 6 m region containing a soft-edge
 solenoid.
@@ -72,102 +72,153 @@ The user can run this test for various values of the magnetic field strength by 
 
 In this test, all 36 elements of the 6x6 transport matrix must agree with predicted values to within numerical tolerance (currently 1e-7).
 
-Details .. tab-set::
+.. dropdown:: Details
+   :color: light
+   :icon: info
+   :animate: fade-in-slide-down
 
-\section{Introduction}
-Consider a Hamiltonian $H$ quadratic in the phase space variables $\zeta=(x,p_x,y,p_y,t,p_t)$.  Then $H$ can be written in the form:
-\begin{equation}
-H(\zeta,z)=\frac{1}{2}\zeta^TS(z)\zeta,
-\end{equation}
-where $S$ is a $6\times 6$ symmetric matrix.  The linear symplectic map $M$ describing transport from $z_0\mapsto z$ is the unique solution of:
-\begin{align}
-\frac{dM(z)}{dz}=JS(z)M(z),\quad\quad M(z_0)=I,
-\end{align}
-where $J$ is the $6\times 6$ matrix of the symplectic form.
+    **Introduction**
 
-From R. Ryne's USPAS notes \cite{Ryne}, the Hamiltonian for linear transport in a solenoid is given by:
-\begin{equation}
-H=H_2^{foc}+H_2^{rot},
-\end{equation}
-where
-\begin{align}
-H_2^{foc}&=\frac{p_t^2}{2\beta_0^2\gamma_0^2}+\frac{1}{2}(p_x^2+p_y^2)+\frac{\alpha^2}{2}(x^2+y^2), \\
-H_2^{rot}&=-\alpha(xp_y-yp_x),
-\end{align}
-and $\alpha$ is related to the on-axis (solenoidal) magnetic field $B_z$ by:
-\begin{equation}
-\alpha(z)=\frac{1}{2}\frac{B_z(z)}{B\rho}.
-\end{equation}
-We consider an on-axis solenoid field profile of the following special form:
-\begin{equation}
-B_z(z)=\frac{B_0}{1+(z/g)^2},
-\end{equation}
-where $B_0$ is just the peak magnetic field on-axis, and $g$ is a length parameter describing the rate of decay of the field away from its peak at $z=0$.
+    Consider a Hamiltonian :math:`H` quadratic in the phase space variables :math:`\zeta=(x,p_x,y,p_y,t,p_t)`.
+    Then :math:`H` can be written in the form:
 
-Since $H_2^{foc}$ and $H_2^{rot}$ Poisson-commute, the linear map $M$ can be written in the factorized form:
-\begin{equation}
-M=M^0R,
-\end{equation}
-where $M^0$ is the linear map associated with $H_2^{foc}$, and $R$ is the linear map associated with $H_2^{rot}$ \cite{Ryne}.
+    .. math::
 
-To express the linear map between points $z_0$ and $z$, we define the following dimensionless parameters:
-\begin{equation}
-\Delta\phi=\tan^{-1}\left(\frac{z}{g}\right)-\tan^{-1}\left(\frac{z_0}{g}\right),\quad\quad b=\frac{1}{2}\frac{B_0g}{B\rho},\quad\quad \beta=\sqrt{1+b^2}.
-\end{equation}
-Then we obtain for the focusing matrix:
-\begin{align}
-M^0_{11}&=M^0_{33}=\sqrt{\frac{g^2+z^2}{g^2+z_0^2}}\left\{\cos(\beta\Delta\phi)-\frac{z_0\sin(\beta\Delta\phi)}{g\beta}\right\}, \\
-M^0_{12}&=M^0_{34}=\sqrt{(g^2+z^2)(g^2+z_0^2)}\frac{\sin(\beta\Delta\phi)}{g\beta}, \\
-M^0_{21}&=M^0_{43}=\frac{\beta(z-z_0)\cos(\beta\Delta\phi)-g(\beta^2+zz_0/g^2)\sin(\beta\Delta\phi)}{\beta\sqrt{(g^2+z^2)(g^2+z_0^2)}}, \\
-M^0_{22}&=M^0_{44}=\sqrt{\frac{g^2+z_0^2}{g^2+z^2}}\left\{\cos(\beta\Delta\phi)+\frac{z\sin(\beta\Delta\phi)}{g\beta}\right\}, \\
-M^0_{56}&=\frac{z-z_0}{\beta_0^2\gamma_0^2},\quad\quad M^0_{55}=M^0_{66}=1.
-\end{align}
-Likewise, for the rotation matrix we obtain:
-\begin{align}
-R_{11}&=R_{22}=\cos(b\Delta\phi),\quad\quad R_{13}=R_{24}=\sin(b\Delta\phi), \\
-R_{31}&=R_{42}=-\sin(b\Delta\phi),\quad\quad R_{33}=R_{44}=\cos(b\Delta\phi), \\
-R_{55}&=R_{66}=1.
-\end{align}
-The reader can verify that the map equations and the symplectic condition are satisfied:
-\begin{align}
-&\frac{dM^0(z)}{dz}=JS^{foc}(z)M^0(z),\quad\quad M^0(z_0)=I, \quad\quad (M^0)^TJM^0=J\\
-&\frac{dR(z)}{dz}=JS^{rot}(z)R(z),\quad\quad R(z_0)=I, \quad\quad R^TJR=J.
-\end{align}
-Here the $6\times 6$ symmetric matrices $S^{foc}$ and $S^{rot}$ are defined such that:
-\begin{equation}
-H^{foc}(\zeta,z)=\frac{1}{2}\zeta^TS^{foc}(z)\zeta,\quad\quad H^{rot}(\zeta,z)=\frac{1}{2}\zeta^TS^{rot}(z)\zeta.
-\end{equation}
+        H(\zeta,z)=\frac{1}{2}\zeta^TS(z)\zeta,
 
-\subsection{End-to-end map}
-A case of special interest occurs when the map is taken over a region symmetric about the solenoid midpoint at $z=0$.  In this case, we define $z_0=-\lambda g$ and $z=\lambda g$.  Then we obtain:
-\begin{equation}
-\Delta\phi=2\tan^{-1}\lambda,\quad\quad \lambda=\frac{L}{2g},
-\end{equation}
-where $L$ is the length of the field region over which the map is computed.  The map takes the form:
-\begin{align}
-M^0_{11}&=M^0_{33}=\cos(\beta\Delta\phi)+\frac{\lambda\sin(\beta\Delta\phi)}{\beta}, \\
-M^0_{12}&=M^0_{34}=g(1+\lambda^2)\frac{\sin(\beta\Delta\phi)}{\beta}, \\
-M^0_{21}&=M^0_{43}=\frac{2\beta\lambda\cos(\beta\Delta\phi)+(\lambda^2-\beta^2)\sin(\beta\Delta\phi)}{\beta g(1+\lambda^2)}, \\
-M^0_{22}&=M^0_{44}=\cos(\beta\Delta\phi)+\frac{\lambda\sin(\beta\Delta\phi)}{\beta}, \\
-M^0_{56}&=\frac{2\lambda g}{\beta_0^2\gamma_0^2},\quad\quad M^0_{55}=M^0_{66}=1.
-\end{align}
-The expression for the rotation matrix $R$ is unchanged.  Note from the form of $R$ that the Larmor rotation angle $\Omega$ is given by:
-\begin{equation}
-\Omega=b\Delta\phi=2b\tan^{-1}\lambda.
-\end{equation}
-This has a well defined limit as $\lambda\rightarrow\infty$, which is:
-\begin{equation}
-\lim_{\lambda\rightarrow\infty}\Omega= b\pi =\frac{\pi}{2}\frac{B_0g}{B\rho}.
-\end{equation}
-This is consistent with the Larmor angle we expect, namely:
-\begin{equation}
-\Omega_{\infty}=\int_{-\infty}^{\infty}\alpha(z)dz=\frac{\pi}{2}\frac{B_0g}{B\rho}.
-\end{equation}
+    where :math:`S` is a :math:`6\times 6` symmetric matrix.
+    The linear symplectic map :math:`M` describing transport from :math:`z_0\mapsto z` is the unique solution of:
 
-\begin{thebibliography}{9}
-\bibitem{Ryne}
-R.D. Ryne, ``Computational Methods in Accelerator Physics," USPAS Lecture Notes (2009).
-\end{thebibliography}
+    .. math::
+
+        \frac{dM(z)}{dz}=JS(z)M(z),\quad\quad M(z_0)=I,
+
+    where :math:`J` is the :math:`6\times 6` matrix of the symplectic form.
+
+    From :ref:`R. Ryne's USPAS notes <solenoid-softedge-solvable-ryne>`, the Hamiltonian for linear transport in a solenoid is given by:
+
+    .. math::
+
+        H=H_2^{foc}+H_2^{rot},
+
+    where
+
+    .. math::
+
+        H_2^{foc}&=\frac{p_t^2}{2\beta_0^2\gamma_0^2}+\frac{1}{2}(p_x^2+p_y^2)+\frac{\alpha^2}{2}(x^2+y^2), \\
+        H_2^{rot}&=-\alpha(xp_y-yp_x),
+
+    and :math:`\alpha` is
+    related to the on-axis (solenoidal) magnetic field :math:`B_z` by:
+
+    .. math::
+
+        \alpha(z)=\frac{1}{2}\frac{B_z(z)}{B\rho}.
+
+    We consider an on-axis solenoid field profile of the following special form:
+
+    .. math::
+
+        B_z(z)=\frac{B_0}{1+(z/g)^2},
+
+    where :math:`B_0`
+    is just the peak magnetic field on-axis, and :math:`g` is a length parameter describing the rate of decay of the field away from its peak at :math:`z=0`.
+
+    Since :math:`H_2^{foc}` and
+    :math:`H_2^{rot}` Poisson-commute, the linear map :math:`M` can be written in the factorized form:
+
+    .. math::
+
+        M=M^0R,
+
+    where :math:`M^0`
+    is the linear map associated with
+    :math:`H_2^{foc}`
+    , and :math:`R` is the linear map associated with :math:`H_2^{rot}` :ref:`(see ref) <solenoid-softedge-solvable-ryne>`.
+
+    To express the linear map between points :math:`z_0` and :math:`z`, we define the following dimensionless parameters:
+
+    .. math::
+
+        \Delta\phi=\tan^{-1}\left(\frac{z}{g}\right)-\tan^{-1}\left(\frac{z_0}{g}\right),\quad\quad b=\frac{1}{2}\frac{B_0g}{B\rho},\quad\quad \beta=\sqrt{1+b^2}.
+
+    Then we obtain for the focusing matrix:
+
+    .. math::
+
+        M^0_{11}&=M^0_{33}=\sqrt{\frac{g^2+z^2}{g^2+z_0^2}}\left\{\cos(\beta\Delta\phi)-\frac{z_0\sin(\beta\Delta\phi)}{g\beta}\right\}, \\
+        M^0_{12}&=M^0_{34}=\sqrt{(g^2+z^2)(g^2+z_0^2)}\frac{\sin(\beta\Delta\phi)}{g\beta}, \\
+        M^0_{21}&=M^0_{43}=\frac{\beta(z-z_0)\cos(\beta\Delta\phi)-g(\beta^2+zz_0/g^2)\sin(\beta\Delta\phi)}{\beta\sqrt{(g^2+z^2)(g^2+z_0^2)}}, \\
+        M^0_{22}&=M^0_{44}=\sqrt{\frac{g^2+z_0^2}{g^2+z^2}}\left\{\cos(\beta\Delta\phi)+\frac{z\sin(\beta\Delta\phi)}{g\beta}\right\}, \\
+        M^0_{56}&=\frac{z-z_0}{\beta_0^2\gamma_0^2},\quad\quad M^0_{55}=M^0_{66}=1.
+
+    Likewise, for the rotation matrix we obtain:
+
+    .. math::
+
+        R_{11}&=R_{22}=\cos(b\Delta\phi),\quad\quad R_{13}=R_{24}=\sin(b\Delta\phi), \\
+        R_{31}&=R_{42}=-\sin(b\Delta\phi),\quad\quad R_{33}=R_{44}=\cos(b\Delta\phi), \\
+        R_{55}&=R_{66}=1.
+
+    The reader can verify that the map equations and the symplectic condition are satisfied:
+
+    .. math::
+
+        &\frac{dM^0(z)}{dz}=JS^{foc}(z)M^0(z),\quad\quad M^0(z_0)=I, \quad\quad (M^0)^TJM^0=J\\
+        &\frac{dR(z)}{dz}=JS^{rot}(z)R(z),\quad\quad R(z_0)=I, \quad\quad R^TJR=J.
+
+    Here the :math:`6\times 6`
+    symmetric matrices :math:`S^{foc}`
+    and :math:`S^{rot}` are defined such that:
+
+    .. math::
+
+        H^{foc}(\zeta,z)=\frac{1}{2}\zeta^TS^{foc}(z)\zeta,\quad\quad H^{rot}(\zeta,z)=\frac{1}{2}\zeta^TS^{rot}(z)\zeta.
+
+
+    **End-to-end map**
+
+    A case of special interest occurs when the map is taken over a region symmetric about the solenoid midpoint at :math:`z=0`.
+    In this case, we define :math:`z_0=-\lambda g`
+    and :math:`z=\lambda g`.  Then we obtain:
+
+    .. math::
+
+        \Delta\phi=2\tan^{-1}\lambda,\quad\quad \lambda=\frac{L}{2g},
+
+    where :math:`L` is the length of the field region over which the map is computed.  The map takes the form:
+
+    .. math::
+
+        M^0_{11}&=M^0_{33}=\cos(\beta\Delta\phi)+\frac{\lambda\sin(\beta\Delta\phi)}{\beta}, \\
+        M^0_{12}&=M^0_{34}=g(1+\lambda^2)\frac{\sin(\beta\Delta\phi)}{\beta}, \\
+        M^0_{21}&=M^0_{43}=\frac{2\beta\lambda\cos(\beta\Delta\phi)+(\lambda^2-\beta^2)\sin(\beta\Delta\phi)}{\beta g(1+\lambda^2)}, \\
+        M^0_{22}&=M^0_{44}=\cos(\beta\Delta\phi)+\frac{\lambda\sin(\beta\Delta\phi)}{\beta}, \\
+        M^0_{56}&=\frac{2\lambda g}{\beta_0^2\gamma_0^2},\quad\quad M^0_{55}=M^0_{66}=1.
+
+    The expression for the rotation matrix :math:`R` is unchanged.  Note from the form of :math:`R` that the Larmor rotation angle :math:`\Omega` is given by:
+
+    .. math::
+
+        \Omega=b\Delta\phi=2b\tan^{-1}\lambda.
+
+    This has a well defined limit as :math:`\lambda\rightarrow\infty`, which is:
+
+    .. math::
+
+        \lim_{\lambda\rightarrow\infty}\Omega= b\pi =\frac{\pi}{2}\frac{B_0g}{B\rho}.
+
+    This is consistent with the Larmor angle we expect, namely:
+
+    .. math::
+
+        \Omega_{\infty}=\int_{-\infty}^{\infty}\alpha(z)dz=\frac{\pi}{2}\frac{B_0g}{B\rho}.
+
+    .. _solenoid-softedge-solvable-ryne:
+
+    **References**
+
+    * R.D. Ryne, "Computational Methods in Accelerator Physics," USPAS Lecture Notes (2009)
 
 
 Run

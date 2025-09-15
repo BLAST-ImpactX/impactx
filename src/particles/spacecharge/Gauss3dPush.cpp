@@ -17,7 +17,8 @@
 
 namespace impactx::particles::spacecharge
 {
-// compute integrals Eqs 45-47 used in the space-charge fields from a 3D Gaussian distribution
+// compute integrals Eqs 45-47 used in the space-charge fields from a 3D Gaussian distribution.
+// "A two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674, 2025.
 // Input particle locations (x,y,z) and RMS sizes (sigx,sigy,sigz) and return the integrals for SC fields.
     void efldgauss (int nint, amrex::ParticleReal const xin, amrex::ParticleReal const yin, amrex::ParticleReal const zin,
                amrex::ParticleReal const sigx, amrex::ParticleReal const sigy, amrex::ParticleReal const sigz, amrex::ParticleReal const gamma,

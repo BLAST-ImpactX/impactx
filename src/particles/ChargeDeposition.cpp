@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactXParticleContainer.H"
+#include "ChargeDeposition.H"
 
 #include <ablastr/coarsen/average.H>
 #include <ablastr/utils/Communication.H>
@@ -24,6 +25,33 @@
 
 namespace impactx
 {
+    std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>>
+    flatten_charge_to_2D (
+        std::unordered_map<int, amrex::MultiFab> const & rho,
+        amrex::Box domain_3d
+    )
+    {
+        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;
+
+        int const finest_level = rho.size() - 1;
+        for (int lev = 0; lev <= finest_level; ++lev) {
+            // flattened rho
+            auto const& ma = rho.at(lev).const_arrays();
+            amrex::Box domain_lev = lev == 0 ? domain_3d : rho.at(lev).boxArray().minimalBox();
+            rho_2d.erase(lev);
+            rho_2d.emplace(
+                lev,
+                amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
+                (2, domain_lev, rho.at(lev), [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
+                {
+                    return ma[b](i,j,k);
+                })
+            );
+        }
+
+        return rho_2d;
+    }
+
     void
     ImpactXParticleContainer::DepositCharge (
         std::unordered_map<int, amrex::MultiFab> & rho,

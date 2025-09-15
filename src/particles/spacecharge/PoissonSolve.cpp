@@ -10,6 +10,7 @@
 #include "PoissonSolve.H"
 
 #include "initialization/Algorithms.H"
+#include "particles/ChargeDeposition.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/fields/PoissonSolver.H>
@@ -78,28 +79,21 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
         pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
+        // flatten rho to 2D
+        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        if (space_charge == SpaceChargeAlgo::True_2D) {
+            auto geom_3d = pc.GetParGDB()->Geom();
+            amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
+            rho_2d = flatten_charge_to_2D(rho, domain_3d);
+        }
+
         // create a vector to our fields, sorted by level
         amrex::Vector<amrex::MultiFab*> sorted_rho;
         amrex::Vector<amrex::MultiFab*> sorted_phi;
 
-        auto geom_3d = pc.GetParGDB()->Geom();
-
-        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        // create phi_2d and sort rho/phi pointers
         for (int lev = 0; lev <= finest_level; ++lev) {
             if (space_charge == SpaceChargeAlgo::True_2D) {
-                // flattened rho
-                auto const& ma = rho[lev].const_arrays();
-                amrex::Box domain_lev = lev == 0 ? geom_3d[lev].Domain() : phi[lev].boxArray().minimalBox();
-                rho_2d.erase(lev);
-                rho_2d.emplace(
-                    lev,
-                    amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
-                    (2, domain_lev, rho[lev], [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
-                    {
-                        return ma[b](i,j,k);
-                    })
-                );
-
                 // 2D phi
                 auto & r2d = rho_2d[lev].second;
                 auto nGrow = phi[lev].nGrowVect();

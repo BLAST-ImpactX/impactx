@@ -121,7 +121,7 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
         amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
         amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
-        amrex::ParticleReal const rfpiepslon = 1.0_prt /(c0_SI*c0_SI*1.0e-7);
+        amrex::ParticleReal const rfpiepslon = c0_SI*c0_SI*1.0e-7;
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
 
@@ -149,9 +149,6 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
                 amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
                 amrex::ParticleReal* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
-
-                // group together constants for the momentum push
-                amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
 
                 // gather to each particle and push momentum
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {

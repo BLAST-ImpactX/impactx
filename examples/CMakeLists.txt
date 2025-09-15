@@ -1589,3 +1589,13 @@ add_impactx_test(fodo-pals.py
     examples/pals/analysis_fodo_pals.py
     OFF  # no plot script yet
 )
+
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
+#
+# copy PALS lattice file
+add_impactx_test(solenoid-softedge-solvable.py
+    examples/solenoid_softedge/run_solenoid_softedge_solvable.py
+    ON   # ImpactX MPI-parallel
+    examples/solenoid_softedge/analysis_solenoid_softedge_solvable.py
+    OFF  # no plot script yet
+)

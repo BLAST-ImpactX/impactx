@@ -63,6 +63,7 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
                 amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
                 amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
+                amrex::ParticleReal const beta_gamma = pc.GetRefParticle().beta_gamma();
                 amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
 
                 amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
@@ -106,9 +107,10 @@ namespace impactx::particles::spacecharge
                             );
 
                         // push momentum
-                        px += field_interp[0] * push_consts;
-                        py += field_interp[1] * push_consts;
-                        pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
+                        px += field_interp[0] * push_consts * beta_gamma * dr[2] / (c0_SI);
+                        py += field_interp[1] * push_consts * beta_gamma * dr[2] / (c0_SI);  //this should be field_interp[1]
+                        pz += 0.0_rt;
+                        //pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
 
                         // push position is done in the lattice elements
                     });

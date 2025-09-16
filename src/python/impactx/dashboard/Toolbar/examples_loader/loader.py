@@ -23,7 +23,7 @@ DASHBOARD_EXAMPLES = {
     "kurth/run_kurth_10nC_periodic.py",
     "expanding_beam/run_expanding_fft.py",
     "expanding_beam/run_expanding_envelope.py",
-    "iota_lattice/run_iotalattice.py",
+    # "iota_lattice/run_iotalattice.py",
     "cyclotron/run_cyclotron.py",
     "dogleg/run_dogleg.py",
 }

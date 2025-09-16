@@ -10,7 +10,8 @@ from .. import ctrl, html, state, vuetify
 from ..Input.components.card import CardComponents
 from ..Input.utils import GeneralFunctions
 from ..Run.simulation import dashboard_sim_inputs
-
+from .examples_loader.loader import DashboardExamplesLoader
+from ..Input.components import InputComponents
 state.expand_all_sections = False
 
 
@@ -32,6 +33,22 @@ class InputToolbar:
         Called when the reset button is clicked.
         """
         GeneralFunctions.reset_inputs("all")
+
+    @staticmethod
+    def select_impactx_example():
+        DashboardExamplesLoader.load_impactx_examples()
+        InputComponents.autocomplete(
+            label="Select an example",
+            v_model=("impactx_example", None),
+            items=("impactx_example_list",),
+            placeholder="fodo/run_fodo.py",
+            persistent_placeholder=True,
+            variant="outlined",
+            hide_details=True,
+            clearable=True,
+            style="max-width: 250px",
+            classes="mr-2",
+        )
 
     @staticmethod
     def export_button() -> vuetify.VBtn:

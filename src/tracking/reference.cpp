@@ -71,7 +71,7 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         bool csr = false;
         pp_algo.query("csr", csr);
-        if (!csr)
+        if (csr)
         {
             throw std::runtime_error("CSR effects cannot be modeled for single particle tracking.");
         }

@@ -1367,16 +1367,19 @@ add_impactx_test(FODO.envelope.sc
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py
     OFF  # no plot script yet
 )
-add_impactx_test(FODO.Gauss3d.sc
-    examples/fodo_space_charge/input_fodo_Gauss3D_sc.in
-    ON   # ImpactX MPI-parallel
-    examples/fodo_space_charge/analysis_fodo_Gauss3D_sc.py
-    OFF  # no plot script yet
-)
 add_impactx_test(FODO.envelope.sc.py
     examples/fodo_space_charge/run_fodo_envelope_sc.py
     OFF   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_envelope_sc.py
+    OFF  # no plot script yet
+)
+
+# FODO cell with Gaussian 3D space charge using particle tracking #############
+#
+add_impactx_test(FODO.Gauss3d.sc
+    examples/fodo_space_charge/input_fodo_Gauss3D_sc.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_Gauss3D_sc.py
     OFF  # no plot script yet
 )
 

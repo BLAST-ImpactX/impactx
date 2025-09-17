@@ -51,10 +51,12 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_fodo_envelope_sc.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo_space_charge/analysis_fodo_envelope_sc.py``.
-.. _examples-fodo-envelope-sc:
+
+
+.. _examples-fodo-envelope-sc-gaussian:
 
 FODO Cell with 3D Gaussian Space Charge Using Particle Tracking
-======================================================
+===============================================================
 
 This example illustrates a 1 nC electron beam with a kinetic energy of 100 MeV in a FODO cell,
 with 3D Gaussian space charge included.  The parameters are those described in:
@@ -80,7 +82,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Executable: Input File
 
-       .. literalinclude:: input_fodo_envelope_sc.in
+       .. literalinclude:: input_fodo_Gauss3D_sc.in
           :language: ini
           :caption: You can copy this file from ``examples/fodo_space_charge/input_fodo_Gauss3D_sc.in``.
 

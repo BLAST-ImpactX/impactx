@@ -57,7 +57,7 @@ We run the following script to analyze correctness:
 .. _examples-rfcavity-ref-part:
 
 Acceleration by RF Cavities (Reference Particle Tracking)
-==========================================================
+=========================================================
 
 This test is identical to the test examples-rfcavity above, except that the code is run in reference orbit tracking mode.
 

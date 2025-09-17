@@ -45,10 +45,8 @@ gamma = rbc["gamma"]
 si = s.iloc[0]
 gammai = gamma.iloc[0]
 
-length = len(s) - 1
-
-sf = s.iloc[length]
-gammaf = gamma.iloc[length]
+sf = s.iloc[-1]
+gammaf = gamma.iloc[-1]
 
 print("")
 print("Initial Beam:")

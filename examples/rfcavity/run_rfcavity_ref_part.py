@@ -29,20 +29,6 @@ npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 ref = sim.particle_container().ref_particle()
 ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
 
-#   particle bunch
-distr = distribution.Waterbag(
-    lambdaX=0.352498964601e-3,
-    lambdaY=0.207443478142e-3,
-    lambdaT=0.70399950746e-4,
-    lambdaPx=5.161852770e-6,
-    lambdaPy=9.163582894e-6,
-    lambdaPt=0.260528852031e-3,
-    muxpx=0.5712386101751441,
-    muypy=-0.514495755427526,
-    mutpt=-5.05773e-10,
-)
-sim.add_particles(bunch_charge_C, distr, npart)
-
 # design the accelerator lattice
 
 #   Drift elements

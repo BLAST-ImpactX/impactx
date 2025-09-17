@@ -661,6 +661,20 @@ add_impactx_test(rfcavity.MPI.py
     OFF  # no plot script yet
 )
 
+# Acceleration by RF Cavities (Reference Particle) ####################################
+# 
+add_impactx_test(rfcavity-ref-part
+    examples/rfcavity/input_rfcavity_ref_part.in
+    OFF   # ImpactX MPI-parallel
+    examples/rfcavity/analysis_rfcavity_ref_part.py
+    OFF  # no plot script yet
+)
+add_impactx_test(rfcavity-ref-part.py
+    examples/rfcavity/run_rfcavity_ref_part.py
+    OFF   # ImpactX MPI-parallel
+    examples/rfcavity/analysis_rfcavity_ref_part.py
+    OFF  # no plot script yet
+)
 
 # Ideal, Hard-Edge Solenoid ###################################################
 #

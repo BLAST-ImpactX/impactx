@@ -18,10 +18,10 @@
 #include "particles/spacecharge/PoissonSolve.H"
 #include "particles/transformation/CoordinateTransformation.H"
 
-#include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>
 
 #include <memory>
+#include <stdexcept>
 
 
 namespace impactx::particles::spacecharge
@@ -48,56 +48,59 @@ namespace impactx::particles::spacecharge
             CoordSystem::t
         );
 
-        if (space_charge == SpaceChargeAlgo::Gauss3D) {
-
-            // update momentum assming a 3D Gaussian bunch
-            Gauss3dPush(*amr_data->track_particles.m_particle_container, slice_ds);
-
-        }
-        else
+        if (space_charge == SpaceChargeAlgo::Gauss3D)
         {
-
-          // Note: The following operation assume that
-          // the particles are in x, y, z coordinates.
-
-          // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
-          ResizeMesh();
-
-          // Redistribute particles in the new mesh in x, y, z
-          amr_data->track_particles.m_particle_container->Redistribute();
-
-          // charge deposition
-          amr_data->track_particles.m_particle_container->DepositCharge(
-            amr_data->track_particles.m_rho,
-            amr_data->refRatio()
-          );
-
-          // poisson solve in x,y,z
-          spacecharge::PoissonSolve(
-            *amr_data->track_particles.m_particle_container,
-            amr_data->track_particles.m_rho,
-            amr_data->track_particles.m_phi,
-            amr_data->refRatio()
-          );
-
-          // calculate force in x,y,z
-          spacecharge::ForceFromSelfFields(
-            amr_data->track_particles.m_space_charge_field,
-            amr_data->track_particles.m_phi,
-            amr_data->Geom()
-          );
-
-          // gather and space-charge push in x,y,z , assuming the space-charge
-          // field is the same before/after transformation
-          // TODO: This is currently using linear order.
-          spacecharge::GatherAndPush(
-            *amr_data->track_particles.m_particle_container,
-            amr_data->track_particles.m_space_charge_field,
-            amr_data->Geom(),
-            slice_ds);
-
+            Gauss3dPush(*amr_data->track_particles.m_particle_container, slice_ds);
         }
+        else if (space_charge == SpaceChargeAlgo::True_3D)
+        {
+            // Note: The following operations assume that
+            // the particles are in x, y, z coordinates.
 
+            // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
+            ResizeMesh();
+
+            // Redistribute particles in the new mesh in x, y, z
+            amr_data->track_particles.m_particle_container->Redistribute();
+
+            // charge deposition
+            amr_data->track_particles.m_particle_container->DepositCharge(
+                amr_data->track_particles.m_rho,
+                amr_data->refRatio()
+            );
+
+            // poisson solve in x,y,z
+            spacecharge::PoissonSolve(
+                *amr_data->track_particles.m_particle_container,
+                amr_data->track_particles.m_rho,
+                amr_data->track_particles.m_phi,
+                amr_data->refRatio()
+            );
+
+            // calculate force in x,y,z
+            spacecharge::ForceFromSelfFields(
+                amr_data->track_particles.m_space_charge_field,
+                amr_data->track_particles.m_phi,
+                amr_data->Geom()
+            );
+
+            // gather and space-charge push in x,y,z , assuming the space-charge
+            // field is the same before/after transformation
+            // TODO: This is currently using linear order.
+            spacecharge::GatherAndPush(
+                *amr_data->track_particles.m_particle_container,
+                amr_data->track_particles.m_space_charge_field,
+                amr_data->Geom(),
+                slice_ds
+            );
+        }
+        else if (space_charge == SpaceChargeAlgo::True_2D)
+        {
+            throw std::runtime_error(
+                "2D space charge is not implemented yet for particle tracking. "
+                "Please follow https://github.com/BLAST-ImpactX/impactx/pull/909 for updates."
+            );
+        }
 
         // transform from x,y,z to x',y',t
         transformation::CoordinateTransformation(
@@ -105,7 +108,7 @@ namespace impactx::particles::spacecharge
             CoordSystem::s
         );
 
-        // for later: original Impact implementation as an option
+        // for later: original Impact implementation as an option for 3D space charge to:
         // Redistribute particles in x',y',t
         //   TODO: only needed if we want to gather and push space charge
         //         in x',y',t

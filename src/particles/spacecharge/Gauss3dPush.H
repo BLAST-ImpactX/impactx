@@ -12,17 +12,17 @@
 
 #include "particles/ImpactXParticleContainer.H"
 
-#include <unordered_map>
-#include <string>
+#include <AMReX_REAL.H>
 
 
 namespace impactx::particles::spacecharge
 {
-    /**------------------------
+    /** Apply a Space-Charge Kick according to a 3D Gaussian Distribution
      *
      * This calculates the space charge fields from a 3D Gaussian distribution
-     * with respect to particle position from the following paper.
-     * "Two-and-a-half dimensional symplectic space-charge slover"
+     * with respect to particle position from the following paper:
+     * J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge
+     * solver", LBNL Report Number: LBNL-2001674 (2025).
      * The momentum of all particles is then pushed using a common
      * time step given by the reference particle speed and ds slice. The
      * position push is done in the lattice elements and not here.

@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 

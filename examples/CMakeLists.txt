@@ -662,7 +662,7 @@ add_impactx_test(rfcavity.MPI.py
 )
 
 # Acceleration by RF Cavities (Reference Particle) ####################################
-# 
+#
 add_impactx_test(rfcavity-ref-part
     examples/rfcavity/input_rfcavity_ref_part.in
     OFF   # ImpactX MPI-parallel

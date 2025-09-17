@@ -89,4 +89,3 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_rfcavity_ref_part.in
           :language: ini
           :caption: You can copy this file from ``examples/rfcavity/input_rfcavity_ref_part.in``.
-

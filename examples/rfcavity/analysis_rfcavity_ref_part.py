@@ -11,6 +11,7 @@ import re
 import numpy as np
 import pandas as pd
 
+
 def read_file(file_pattern):
     for filename in glob.glob(file_pattern):
         df = pd.read_csv(filename, delimiter=r"\s+")
@@ -34,6 +35,7 @@ def read_time_series(file_pattern):
         ignore_index=True,
     )  # .set_index('id')
 
+
 # read reference particle data
 rbc = read_time_series("diags/ref_particle.*")
 
@@ -50,13 +52,11 @@ gammaf = gamma.iloc[length]
 
 print("")
 print("Initial Beam:")
-print(
-    f"  s_ref={si:e} gamma_ref={gammai:e}"
-)
+print(f"  s_ref={si:e} gamma_ref={gammai:e}")
 
 atol = 1.0e-4  # ignored
 print(f"  atol={atol}")
-    
+
 assert np.allclose(
     [si, gammai],
     [
@@ -66,16 +66,14 @@ assert np.allclose(
     atol=atol,
 )
 
-    
+
 print("")
 print("Final Beam:")
-print(
-    f"  s_ref={sf:e} gamma_ref={gammaf:e}"
-)
-    
+print(f"  s_ref={sf:e} gamma_ref={gammaf:e}")
+
 atol = 1.0e-4  # ignored
 print(f"  atol={atol}")
-    
+
 assert np.allclose(
     [sf, gammaf],
     [
@@ -84,4 +82,3 @@ assert np.allclose(
     ],
     atol=atol,
 )
-

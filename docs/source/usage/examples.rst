@@ -41,6 +41,7 @@ Single Particle Dynamics
    examples/reversibility/README.rst
    examples/charge_sign/README.rst
    examples/symplectic_integration/README.rst
+   examples/active_plasma_lens
 
 
 Collective Effects

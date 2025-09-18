@@ -1382,6 +1382,12 @@ add_impactx_test(FODO.Gauss3d.sc
     examples/fodo_space_charge/analysis_fodo_Gauss3D_sc.py
     OFF  # no plot script yet
 )
+add_impactx_test(FODO.Gauss3d.sc.py
+    examples/fodo_space_charge/run_fodo_Gauss3D_sc.py
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_Gauss3D_sc.py
+    OFF  # no plot script yet
+)
 
 # A single bend with incoherent synchrotron radiation ######################
 #

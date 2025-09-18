@@ -42,6 +42,26 @@ If your project leads to a scientific publication, please consider citing the pa
 Further ImpactX References
 **************************
 
+- Huebl A et al.
+  **Towards Differentiable Beam Dynamics Modeling in BLAST/ImpactX**.
+  in Proc. NAPAC2025, TUP101, Sacramento, CA, 2025.
+  `preprint: <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP101.pdf>`__
+
+- Mitchell C and Hwang K.
+  **Explicit Symplectic Representations of Nonlinear Dipole Fringe Field Maps**.
+  in Proc. NAPAC2025, TUP040, Sacramento, CA, 2025.
+  `preprint: <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP040.pdf>`__
+
+- Huebl A, Mitchell C, et al.
+  **A Community Effort Toward a Particle Accelerator Lattice Standard (PALS)**.
+  in Proc. NAPAC2025, TUP004, Sacramento, CA, 2025.
+  `preprint: <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP004.pdf>`__
+
+- Qiang J, Mitchell C, Lehe R, Formenti A.
+  **Implementation of the Integrated Green's Function Method for 3D Poisson's Equation in a Large Aspect Ratio Computational Domain**.
+  Journal of Software Engineering and Applications, 17, 740-749, 2024.
+  `DOI:10.4236/jsea.2024.179039 <https://doi.org/10.4236/jsea.2024.179039>`__
+
 - Mitchell C, Formenti A, Huebl A, Vay J-L, Qiang J, Garten M, Lehe R.
   **ImpactX Space Charge Modeling of High Intensity Linacs with Mesh Refinement**.
   32nd Linear Accelerator Conference (LINAC'24), TUPB090, p. 505, 2024.

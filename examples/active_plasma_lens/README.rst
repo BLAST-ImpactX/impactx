@@ -3,7 +3,7 @@
 Active Plasma Lens
 ==================
 
-These examples demonstrates the of the effect of an Active Plasma Lens (APL) on the beam.
+These examples demonstrate the effect of an Active Plasma Lens (APL) on the beam.
 The lattice contains this element and nothing else.
 The length of the element is 20 mm, and it can be run in no-field, focusing, and defocusing mode.
 
@@ -11,7 +11,7 @@ We use a 200 MeV electron beam with an initial normalized rms emittance of 10 um
 The beam is set to have :math:`\alpha = 0` in the middle of the lens in the case of no field.
 The beam size in the middle of the lens is set to 10 µm for the no-field examples (in order to have a strongly parabolic :math:`\beta`-function within the lens), and 100 µm for the focusing and defocusing examples.
 A :math:`\sigma_{pt} = 10^{-3}` is also assumed.
-Before the simulations, this beam is back-propagate to the lens entry asuming no field.
+Before the simulation, this beam is back-propagated to the lens entry assuming zero field.
 
 Run
 ---

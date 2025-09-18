@@ -46,7 +46,8 @@ sim.init_grids()
 
 energy_gamma = np.sqrt(1 + pz_mean**2)
 energy_MeV = 0.510998950 * energy_gamma  # reference energy
-bunch_charge_C = 10.0e-15  # used with space charge
+bunch_charge_C = 10.0e-12  # used with space charge
+q_e_C = 1.60217663e-19
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
@@ -61,6 +62,9 @@ dx, dy, dz, dpx, dpy, dpz = pycoord.to_ref_part_t_from_global_t(
 )
 dx, dy, dt, dpx, dpy, dpt = pycoord.to_s_from_t(ref, dx, dy, dz, dpx, dpy, dpz)
 
+# here we use equal particle weighting, but you can assign any weight to each particle
+w = np.ones_like(dx) * (bunch_charge_C / q_e_C / N_part)
+
 if not Config.have_gpu:  # initialize using cpu-based PODVectors
     dx_podv = amr.PODVector_real_std()
     dy_podv = amr.PODVector_real_std()
@@ -68,6 +72,7 @@ if not Config.have_gpu:  # initialize using cpu-based PODVectors
     dpx_podv = amr.PODVector_real_std()
     dpy_podv = amr.PODVector_real_std()
     dpt_podv = amr.PODVector_real_std()
+    w_podv = amr.PODVector_real_std()
 else:  # initialize on device using arena/gpu-based PODVectors
     dx_podv = amr.PODVector_real_arena()
     dy_podv = amr.PODVector_real_arena()
@@ -75,6 +80,7 @@ else:  # initialize on device using arena/gpu-based PODVectors
     dpx_podv = amr.PODVector_real_arena()
     dpy_podv = amr.PODVector_real_arena()
     dpt_podv = amr.PODVector_real_arena()
+    w_podv = amr.PODVector_real_arena()
 
 for p_dx in dx:
     dx_podv.push_back(p_dx)
@@ -88,11 +94,30 @@ for p_dpy in dpy:
     dpy_podv.push_back(p_dpy)
 for p_dpt in dpt:
     dpt_podv.push_back(p_dpt)
+for p_w in w:
+    w_podv.push_back(p_w)
+
+# This call has two options:
+# A) reassign equal weighting according to bunch_charge_C
+# B) use the particle weighting from the input array w
+pc.add_n_particles(
+    dx_podv,
+    dy_podv,
+    dt_podv,
+    dpx_podv,
+    dpy_podv,
+    dpt_podv,
+    qm_eev,
+    bunch_charge=bunch_charge_C,
+)
+# ok, let's clear all particles and do option B
+pc.clear_particles()
 
 pc.add_n_particles(
-    dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C
+    dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, w=w_podv
 )
 
+# build the accelerator lattice
 monitor = elements.BeamMonitor("monitor", backend="h5")
 sim.lattice.extend(
     [

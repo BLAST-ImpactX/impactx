@@ -1635,4 +1635,14 @@ add_impactx_test(APL_ChrPlasmaLens_defocusing.py
   OFF # No MPI needed
   examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_defocusing.py
   examples/active_plasma_lens/plot_APL_ChrPlasmaLens_defocusing.py
+  )
+
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
+#
+# copy PALS lattice file
+add_impactx_test(solenoid-softedge-solvable.py
+    examples/solenoid_softedge/run_solenoid_softedge_solvable.py
+    ON   # ImpactX MPI-parallel
+    examples/solenoid_softedge/analysis_solenoid_softedge_solvable.py
+    OFF  # no plot script yet
 )

@@ -83,8 +83,10 @@ void init_impactxparticlecontainer(py::module& m)
              &ImpactXParticleContainer::AddNParticles,
              py::arg("x"), py::arg("y"), py::arg("t"),
              py::arg("px"), py::arg("py"), py::arg("pt"),
-             py::arg("qm"), py::arg("bchchg"),
+             py::arg("qm"), py::arg("bunch_charge")=py::none(), py::arg("w")=py::none(),
              "Add new particles to the container for fixed s.\n\n"
+             "Either the total charge (bunch_charge) or the weight of each\n"
+             "particle (w) must be provided.\n\n"
              "Note: This can only be used *after* the initialization (grids) have\n"
              "      been created, meaning after the call to ImpactX.init_grids\n"
              "      has been made in the ImpactX class.\n\n"
@@ -95,7 +97,8 @@ void init_impactxparticlecontainer(py::module& m)
              ":param py: momentum in y\n"
              ":param pt: momentum in t\n"
              ":param qm: charge over mass in 1/eV\n"
-             ":param bchchg: total charge within a bunch in C"
+             ":param bunch_charge: total charge within a bunch in C"
+             ":param w: weight of each particle: how many real particles to represent"
         )
         .def("ref_particle",
             py::overload_cast<>(&ImpactXParticleContainer::GetRefParticle),

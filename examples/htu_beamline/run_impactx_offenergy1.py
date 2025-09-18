@@ -66,8 +66,8 @@ distr = distribution.Gaussian(
         alpha_x=0.0,
         alpha_y=0.0,
         alpha_t=0.0,
+        mean_pt=-mu_p,
     ),
-    meanPt=-mu_p,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 

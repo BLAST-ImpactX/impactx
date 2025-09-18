@@ -51,67 +51,50 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const zp = zin / sigz;
         amrex::ParticleReal const asp = sigx / sigy;
         amrex::ParticleReal const basp = sigx / (sigz * gamma);
+        amrex::ParticleReal const xp2 = xp * xp;
+        amrex::ParticleReal const yp2 = yp * yp;
+        amrex::ParticleReal const zp2 = zp * zp;
 
-        // TODO: GPU support, fuse loops (and avoid large, temporary arrays)
-        std::vector<amrex::ParticleReal> xvec(nint), t2vec(nint), t2sqrt(nint), bt2vec(nint), bt2sqrt(nint);
-        std::vector<amrex::ParticleReal> f2xvec(nint), f2yvec(nint), f2zvec(nint), f1vec(nint), fxvec(nint);
-
-        for (int i = 0; i < nint; ++i)
-            xvec[i] = xmin + i * h;
-
-        for (int i = 0; i < nint; ++i)
-            t2vec[i] = asp * asp + (1_prt - asp * asp) * xvec[i] * xvec[i];
-
-        for (int i = 0; i < nint; ++i)
-            t2sqrt[i] = std::sqrt(t2vec[i]);
-
-        for (int i = 0; i < nint; ++i)
-            bt2vec[i] = basp * basp + (1_prt - basp * basp) * xvec[i] * xvec[i];
-
-        for (int i = 0; i < nint; ++i)
-            bt2sqrt[i] = std::sqrt(bt2vec[i]);
-
-        for (int i = 0; i < nint; ++i)
-            f2xvec[i] = t2sqrt[i] * bt2sqrt[i];
-
-        for (int i = 0; i < nint; ++i)
-            f2yvec[i] = t2vec[i] * t2sqrt[i] * bt2sqrt[i];
-
-        for (int i = 0; i < nint; ++i)
-            f2zvec[i] = bt2vec[i] * t2sqrt[i] * bt2sqrt[i];
-
-        amrex::ParticleReal xp2 = xp * xp, yp2 = yp * yp, zp2 = zp * zp;
-        for (int i = 0; i < nint; ++i)
-            f1vec[i] = xvec[i] * xvec[i] * std::exp(-xvec[i] * xvec[i] * (xp2 + yp2 / t2vec[i] + zp2 / bt2vec[i]) / 2_prt);
-
-        // Simpson's rule integration
+        // integration results
         amrex::ParticleReal sum0ex = 0, sum0ey = 0, sum0ez = 0;
 
-        // Ex
-        for (int i = 0; i < nint; ++i)
-            fxvec[i] = f1vec[i] / f2xvec[i];
-        for (int i = 0; i < nint; i += 2)
-            sum0ex += 2_prt * fxvec[i] * h;
-        for (int i = 1; i < nint; i += 2)
-            sum0ex += 4_prt * fxvec[i] * h;
+        for (int i = 0; i < nint; ++i) {
+            amrex::ParticleReal const x = xmin + i * h;
+            amrex::ParticleReal const t2 = asp * asp + (1_prt - asp * asp) * x * x;
+            amrex::ParticleReal const t2sqrt = std::sqrt(t2);
+            amrex::ParticleReal const bt2 = basp * basp + (1_prt - basp * basp) * x * x;
+            amrex::ParticleReal const bt2sqrt = std::sqrt(bt2);
+            amrex::ParticleReal const f2x = t2sqrt * bt2sqrt;
+            amrex::ParticleReal const f2y = t2 * t2sqrt * bt2sqrt;
+            amrex::ParticleReal const f2z = bt2 * t2sqrt * bt2sqrt;
+            amrex::ParticleReal const f1 = x * x * std::exp(-x * x * (xp2 + yp2 / t2 + zp2 / bt2) / 2_prt);
+
+            // Simpson's rule integration
+
+            // Ex
+            amrex::ParticleReal const fx = f1 / f2x;
+            if (i%2 == 0)
+                sum0ex += 2_prt * fx * h;
+            else
+                sum0ex += 4_prt * fx * h;
+
+            // Ey
+            amrex::ParticleReal const fy = f1 / f2y;
+            if (i%2 == 0)
+                sum0ey += 2_prt * fy * h;
+            else
+                sum0ey += 4_prt * fy * h;
+
+            // Ez
+            amrex::ParticleReal const fz = f1 / f2z;
+            if (i%2 == 0)
+                sum0ez += 2_prt * fz * h;
+            else
+                sum0ez += 4_prt * fz * h;
+        }
+
         pintex = sum0ex / 3_prt;
-
-        // Ey
-        for (int i = 0; i < nint; ++i)
-            fxvec[i] = f1vec[i] / f2yvec[i];
-        for (int i = 0; i < nint; i += 2)
-            sum0ey += 2_prt * fxvec[i] * h;
-        for (int i = 1; i < nint; i += 2)
-            sum0ey += 4_prt * fxvec[i] * h;
         pintey = sum0ey / 3_prt;
-
-        // Ez
-        for (int i = 0; i < nint; ++i)
-            fxvec[i] = f1vec[i] / f2zvec[i];
-        for (int i = 0; i < nint; i += 2)
-            sum0ez += 2_prt * fxvec[i] * h;
-        for (int i = 1; i < nint; i += 2)
-            sum0ez += 4_prt * fxvec[i] * h;
         pintez = sum0ez / 3_prt;
     }
 
@@ -187,9 +170,9 @@ namespace impactx::particles::spacecharge
 
                     // push momentum
                     using ablastr::constant::math::pi;
-                    px += x*eintx*2_prt*asp/sigx/sigx/sigz/sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
-                    py += y*einty*2_prt*asp/sigy/sigy/sigz/sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
-                    pz += z*eintz*2_prt*asp/sigz/sigz/sigz/sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
+                    px += x*eintx*2_prt*asp/sigx/sigx/sigz/std::sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
+                    py += y*einty*2_prt*asp/sigy/sigy/sigz/std::sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
+                    pz += z*eintz*2_prt*asp/sigz/sigz/sigz/std::sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
 
                     // push position is done in the lattice elements
                 });

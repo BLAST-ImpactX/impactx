@@ -123,7 +123,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_exact_quad.py
+       .. literalinclude:: run_sextupole.py
           :language: python3
           :caption: You can copy this file from ``examples/symplectic_integration/run_sextupole.py``.
 

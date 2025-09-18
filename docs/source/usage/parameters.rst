@@ -447,7 +447,7 @@ This requires these additional parameters:
 
 
 ``multipole_exact``
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 ``multipole_exact`` for a thick multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
 The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -634,7 +634,7 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 ``quadedge``
-^^^^^^^^^^^
+^^^^^^^^^^^^
 
 ``quadedge`` for quadrupole edge focusing.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing the effect
 of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq (28) of:

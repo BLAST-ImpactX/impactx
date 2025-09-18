@@ -68,5 +68,17 @@ def test_element_push():
     # alternative formulation
     push(pc, elements.Drift(ds=0.25))
 
+    # push only the reference particle
+    assert ref.s == 3.0
+    dr1 = elements.Drift(ds=0.25)
+    push(ref, dr1)
+    assert ref.s == 3.25
+
+    # push a copy of the reference particle
+    ref_copy = ref.copy()
+    push(ref_copy, dr1)
+    assert ref.s == 3.25  # must be unchanged!
+    assert ref_copy.s == 3.5  # copy + dr1
+
     # finalize simulation
     sim.finalize()

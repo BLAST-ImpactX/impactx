@@ -169,7 +169,7 @@ namespace impactx
                     {
                         // push reference particle in global coordinates
                         {
-                            BL_PROFILE("impactx::Push::RefPart");
+                            BL_PROFILE("impactx::push::RefPart");
                             element(ref);
                         }
 

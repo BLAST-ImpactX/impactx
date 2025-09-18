@@ -1,3 +1,12 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
+
 def test_dashboard(dashboard):
     """
     End-to-end test of the ImpactX dashboard by directly setting inputs via UI,
@@ -44,6 +53,9 @@ def test_dashboard(dashboard):
     # Lattice
     for name in ["Drift", "Quad", "Drift", "Quad", "Drift"]:
         dashboard.add_lattice_element(name)
+
+    # Ensure the lattice list is fully populated before setting parameters
+    dashboard.assert_state("total_elements", 5)
 
     LATTICE_PARAMS = {
         "ds1": 0.25,

@@ -34,15 +34,26 @@ namespace impactx
         amrex::ParticleReal y = 0.0;  ///< vertical position y, in meters
         amrex::ParticleReal z = 0.0;  ///< longitudinal position z, in meters
         amrex::ParticleReal t = 0.0;  ///< clock time * c in meters
-        amrex::ParticleReal px = 0.0; ///< momentum in x, normalized by mass*c
-        amrex::ParticleReal py = 0.0; ///< momentum in y, normalized by mass*c
-        amrex::ParticleReal pz = 0.0; ///< momentum in z, normalized by mass*c
+        amrex::ParticleReal px = 0.0; ///< momentum in x divided by m*c = beta_x*gamma [unitless]
+        amrex::ParticleReal py = 0.0; ///< momentum in y divided by m*c = beta_y*gamma [unitless]
+        amrex::ParticleReal pz = 0.0; ///< momentum in z divided by m*c = beta_z*gamma [unitless]
         amrex::ParticleReal pt = 0.0; ///< energy, normalized by rest energy
         amrex::ParticleReal mass = 0.0; ///< reference rest mass, in kg
         amrex::ParticleReal charge = 0.0; ///< reference charge, in C
 
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
         amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
+
+        /** Copy the reference particle
+         *
+         * Use this if you want to do an operation that modifies the reference particle,
+         * but you want to avoid modifying the particle container that it is assigned to.
+         */
+        RefPart
+        copy () const
+        {
+            return RefPart{*this};
+        }
 
         /** Reset the reference particle
          *
@@ -106,9 +117,9 @@ namespace impactx
             return ref_betagamma;
         }
 
-        /** Get reference particle rest mass
+        /** Get reference particle rest mass expressed in MeV
          *
-         * @returns rest mass in MeV/c^2
+         * @returns reference particle rest mass * c^2, expressed as an energy (MeV)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         amrex::ParticleReal
@@ -122,7 +133,7 @@ namespace impactx
 
         /** Set reference particle rest mass
          *
-         * @param massE particle rest mass (MeV/c^2)
+         * @param massE reference particle rest mass * c^2, expressed as an energy (MeV)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         RefPart &

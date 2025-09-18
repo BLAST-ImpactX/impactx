@@ -47,12 +47,12 @@ Further ImpactX References
   in Proc. NAPAC2025, TUP101, Sacramento, CA, 2025.
   `preprint: <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP101.pdf>`__
 
-- Mitchell C and Hwang K.
+- Planned feature: Mitchell C and Hwang K.
   **Explicit Symplectic Representations of Nonlinear Dipole Fringe Field Maps**.
   in Proc. NAPAC2025, TUP040, Sacramento, CA, 2025.
   `preprint: <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP040.pdf>`__
 
-- Huebl A, Mitchell C, et al.
+- Mitchell C, et al.
   **A Community Effort Toward a Particle Accelerator Lattice Standard (PALS)**.
   in Proc. NAPAC2025, TUP004, Sacramento, CA, 2025.
   `preprint: <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP004.pdf>`__

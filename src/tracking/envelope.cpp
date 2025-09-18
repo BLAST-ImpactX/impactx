@@ -106,6 +106,12 @@ namespace impactx
                 ablastr::warn_manager::WarnPriority::high
             );
         }
+        if (space_charge == SpaceChargeAlgo::Gauss3D) {
+            throw std::runtime_error(
+                "Gauss3D space charge force calculation is only supported with particle tracking. "
+                "For envelope tracking, use: 3D"
+            );
+        }
 
         bool csr = false;
         pp_algo.query("csr", csr);

@@ -11,7 +11,6 @@
 
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>       // for Real
-#include <AMReX_SPACE.H>      // for AMREX_D_DECL
 #include "diagnostics/ReducedBeamCharacteristics.H"
 
 
@@ -58,7 +57,8 @@ namespace impactx::particles::spacecharge
         // integration results
         amrex::ParticleReal sum0ex = 0, sum0ey = 0, sum0ez = 0;
 
-        for (int i = 0; i < nint; ++i) {
+        for (int i = 0; i < nint; ++i)
+        {
             amrex::ParticleReal const x = xmin + i * h;
             amrex::ParticleReal const t2 = asp * asp + (1_prt - asp * asp) * x * x;
             amrex::ParticleReal const t2sqrt = std::sqrt(t2);
@@ -127,8 +127,12 @@ namespace impactx::particles::spacecharge
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
 
-        // group together constants for the momentum push
-        amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
+        // group together constants for the momentum
+        using ablastr::constant::math::pi;
+        amrex::ParticleReal const asp = sigx/sigy;
+        amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI
+            * 2_prt * asp * (sigx * sigx * sigz * std::sqrt(2_prt * pi))
+            * bchchg * rfpiepslon;
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -162,17 +166,14 @@ namespace impactx::particles::spacecharge
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
                     // field integrals from a 3D Gaussian bunch
-                    int const nint = 401;
+                    int const nint = 401;  // TODO: should "nint" be user-configurable? Otherwise make it constexpr in efldgauss
                     amrex::ParticleReal eintx, einty, eintz;
                     efldgauss(nint,x,y,z,sigx,sigy,sigz,gamma,eintx,einty,eintz);
 
-                    amrex::ParticleReal const asp = sigx/sigy;
-
                     // push momentum
-                    using ablastr::constant::math::pi;
-                    px += x*eintx*2_prt*asp/sigx/sigx/sigz/std::sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
-                    py += y*einty*2_prt*asp/sigy/sigy/sigz/std::sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
-                    pz += z*eintz*2_prt*asp/sigz/sigz/sigz/std::sqrt(2_prt*pi)*bchchg*rfpiepslon * push_consts;
+                    px += x * eintx * push_consts;
+                    py += y * einty * push_consts;
+                    pz += z * eintz * push_consts;
 
                     // push position is done in the lattice elements
                 });

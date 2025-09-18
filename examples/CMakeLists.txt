@@ -1388,6 +1388,21 @@ add_impactx_test(FODO.envelope.sc.py
     OFF  # no plot script yet
 )
 
+# FODO cell with Gaussian 3D space charge using particle tracking #############
+#
+add_impactx_test(FODO.Gauss3d.sc
+    examples/fodo_space_charge/input_fodo_Gauss3D_sc.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_Gauss3D_sc.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO.Gauss3d.sc.py
+    examples/fodo_space_charge/run_fodo_Gauss3D_sc.py
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_Gauss3D_sc.py
+    OFF  # no plot script yet
+)
+
 # A single bend with incoherent synchrotron radiation ######################
 #
 # no space charge

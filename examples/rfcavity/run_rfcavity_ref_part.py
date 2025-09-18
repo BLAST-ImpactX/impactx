@@ -22,8 +22,6 @@ sim.init_grids()
 # unnormalized rms emittance of 1 mm-mrad in all
 # three phase planes
 kin_energy_MeV = 230.0  # reference energy
-bunch_charge_C = 1.0e-10  # used with space charge
-npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   reference particle
 ref = sim.particle_container().ref_particle()

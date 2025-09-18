@@ -1,10 +1,7 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-#beam.npart = 10000  # outside tests, use 1e5 or more
-#beam.units = static
 beam.kin_energy = 230
-#beam.charge = 1.0e-10
 beam.particle = electron
 
 

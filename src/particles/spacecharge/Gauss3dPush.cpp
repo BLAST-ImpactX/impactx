@@ -24,6 +24,7 @@ namespace impactx::particles::spacecharge
      *
      * @todo This function can be vectorized with AMREX_SIMD for better CPU performance.
      */
+    AMREX_GPU_DEVICE
     void efldgauss (
         int nint,
         amrex::ParticleReal const xin,

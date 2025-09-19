@@ -71,9 +71,9 @@ nm_rad = 1.0e9
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 s = rbc["s"]
-sig_x = rbc["sig_x"] * millimeter
-sig_y = rbc["sig_y"] * millimeter
-sig_t = rbc["sig_t"] * millimeter
+sigma_x = rbc["sigma_x"] * millimeter
+sigma_y = rbc["sigma_y"] * millimeter
+sigma_t = rbc["sigma_t"] * millimeter
 emittance_x = rbc["emittance_x"] * nm_rad
 emittance_y = rbc["emittance_y"] * nm_rad
 emittance_t = rbc["emittance_t"] * nm_rad
@@ -90,8 +90,8 @@ steps = list(series.iterations)
 # print beam transverse size over steps
 f = plt.figure(figsize=(9, 4.8))
 ax1 = f.gca()
-im_sigx = ax1.plot(s, sig_x, label=r"$\sigma_x$")
-im_sigy = ax1.plot(s, sig_y, label=r"$\sigma_y$")
+im_sigx = ax1.plot(s, sigma_x, label=r"$\sigma_x$")
+im_sigy = ax1.plot(s, sigma_y, label=r"$\sigma_y$")
 ax2 = ax1.twinx()
 ax2.set_prop_cycle(None)  # reset color cycle
 im_emittance_x = ax2.plot(s, emittance_x, ":", label=r"$\epsilon_x$")

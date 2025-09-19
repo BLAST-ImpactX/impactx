@@ -7,11 +7,12 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, html, state, vuetify
+from ..Input.components import InputComponents
 from ..Input.components.card import CardComponents
 from ..Input.utils import GeneralFunctions
 from ..Run.simulation import dashboard_sim_inputs
 from .examples_loader.loader import DashboardExamplesLoader
-from ..Input.components import InputComponents
+
 state.expand_all_sections = False
 
 

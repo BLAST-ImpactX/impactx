@@ -11,7 +11,6 @@ from ... import state
 from ...Input.utils import GeneralFunctions
 from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 
-
 state.impactx_example_list = []
 
 

@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-22.04
     if: github.event.pull_request.draft == false
     env:
-      CXXFLAGS: "-Werror"
+      CXXFLAGS: "-Werror -Wno-pedantic"
+      CUDAFLAGS: "-Wno-pedantic -Xcompiler '-Wno-pedantic' --display-error-number"
       CMAKE_GENERATOR: Ninja
     steps:
     - name: Free More Disk Space

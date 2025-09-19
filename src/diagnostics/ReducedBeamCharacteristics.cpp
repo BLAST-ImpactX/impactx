@@ -29,6 +29,28 @@
 
 namespace impactx::diagnostics
 {
+namespace detail
+{
+    /** prepare reduction operations for calculation of mean and min/max values in 6D phase space */
+    template<std::size_t num_red_ops_1_sum, std::size_t num_red_ops_1_min, std::size_t num_red_ops_1_max>
+    constexpr auto
+    get_reduce_ops1 ()
+    {
+        if constexpr (num_red_ops_1_min + num_red_ops_1_max > 0) {
+            return amrex::TypeMultiplier<amrex::ReduceOps,
+                amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt
+                amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
+                amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
+            >{};
+        } else {
+            return amrex::TypeMultiplier<amrex::ReduceOps,
+                amrex::ReduceOpSum[num_red_ops_1_sum]  // preparing mean values for w, x, y, t, px, py, pt
+            >{};
+        }
+    }
+} // namespace detail
+
+    template<MomentSelection selection>
     std::unordered_map<std::string, amrex::ParticleReal>
     reduced_beam_characteristics (ImpactXParticleContainer const & pc)
     {
@@ -50,15 +72,11 @@ namespace impactx::diagnostics
          */
         // numbers of same type reduction operations in first concurrent batch
         static constexpr std::size_t num_red_ops_1_sum = 7;  // summation
-        static constexpr std::size_t num_red_ops_1_min = 6;  // minimum
-        static constexpr std::size_t num_red_ops_1_max = 6;  // maximum
+        static constexpr std::size_t num_red_ops_1_min = (selection & MomentSelection::MinMax) != MomentSelection::None ? 6 : 0;  // minimum
+        static constexpr std::size_t num_red_ops_1_max = (selection & MomentSelection::MinMax) != MomentSelection::None ? 6 : 0;  // maximum
 
         // prepare reduction operations for calculation of mean and min/max values in 6D phase space
-        amrex::TypeMultiplier<amrex::ReduceOps,
-            amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt
-            amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
-            amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
-        > reduce_ops_1;
+        auto reduce_ops_1 = detail::get_reduce_ops1<num_red_ops_1_sum, num_red_ops_1_min, num_red_ops_1_max>();
         using ReducedDataT1 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_1_sum + num_red_ops_1_min + num_red_ops_1_max]>;
 
         auto r1 = amrex::ParticleReduce<ReducedDataT1>(
@@ -85,11 +103,17 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_py_mean = p_py * p_w;
                 const amrex::ParticleReal p_pt_mean = p_pt * p_w;
 
-                return {p_w,
-                        p_x_mean, p_y_mean, p_t_mean,
-                        p_px_mean, p_py_mean, p_pt_mean,
-                        p_x, p_y, p_t, p_px, p_py, p_pt,
-                        p_x, p_y, p_t, p_px, p_py, p_pt};
+                if constexpr ((selection & MomentSelection::MinMax) != MomentSelection::None) {
+                    return {p_w,
+                            p_x_mean, p_y_mean, p_t_mean,
+                            p_px_mean, p_py_mean, p_pt_mean,
+                            p_x, p_y, p_t, p_px, p_py, p_pt,
+                            p_x, p_y, p_t, p_px, p_py, p_pt};
+                } else {
+                    return {p_w,
+                            p_x_mean, p_y_mean, p_t_mean,
+                            p_px_mean, p_py_mean, p_pt_mean};
+                }
             },
             reduce_ops_1
         );
@@ -159,7 +183,13 @@ namespace impactx::diagnostics
          * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
          */
         // number of reduction operations in second concurrent batch
-        static constexpr std::size_t num_red_ops_2 = 22;
+        static constexpr std::size_t num_red_ops_2 =
+            ((selection & MomentSelection::Moment) != MomentSelection::None ? 6 : 0) +      // x_ms, y_ms, t_ms, px_ms, py_ms, pt_ms
+            ((selection & MomentSelection::Covariance) != MomentSelection::None ? 3 : 0) +  // xpx, ypy, tpt
+            ((selection & MomentSelection::Dispersion) != MomentSelection::None ? 4 : 0) +  // xpt, pxpt, ypt, pypt
+            ((selection & MomentSelection::Covariance) != MomentSelection::None ? 8 : 0) +  // xy, xpy, xt, pxy, pxpy, pxt, yt, pyt
+            ((selection & MomentSelection::Moment) != MomentSelection::None ? 1 : 0);       // charge
+
         // prepare reduction operations for calculation of mean square and correlation values
         amrex::TypeMultiplier<amrex::ReduceOps, amrex::ReduceOpSum[num_red_ops_2]> reduce_ops_2;
         using ReducedDataT2 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_2]>;
@@ -178,154 +208,268 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_x = p.rdata(RealSoA::x);
                 const amrex::ParticleReal p_y = p.rdata(RealSoA::y);
                 const amrex::ParticleReal p_t = p.rdata(RealSoA::t);
+
+                // Initialize return values
+                amrex::ParticleReal x_ms_val = 0.0, y_ms_val = 0.0, t_ms_val = 0.0;
+                amrex::ParticleReal px_ms_val = 0.0, py_ms_val = 0.0, pt_ms_val = 0.0;
+                amrex::ParticleReal xpx_val = 0.0, ypy_val = 0.0, tpt_val = 0.0;
+                amrex::ParticleReal xpt_val = 0.0, pxpt_val = 0.0, ypt_val = 0.0, pypt_val = 0.0;
+                amrex::ParticleReal xy_val = 0.0, xpy_val = 0.0, xt_val = 0.0, pxy_val = 0.0;
+                amrex::ParticleReal pxpy_val = 0.0, pxt_val = 0.0, yt_val = 0.0, pyt_val = 0.0;
+                amrex::ParticleReal charge_val = 0.0;
+
+                // Moment calculations (mean square values)
+                if constexpr ((selection & MomentSelection::Moment) != MomentSelection::None) {
                 // prepare mean square for positions
-                const amrex::ParticleReal p_x_ms = (p_x-x_mean)*(p_x-x_mean)*p_w;
-                const amrex::ParticleReal p_y_ms = (p_y-y_mean)*(p_y-y_mean)*p_w;
-                const amrex::ParticleReal p_t_ms = (p_t-t_mean)*(p_t-t_mean)*p_w;
+                    x_ms_val = (p_x-x_mean)*(p_x-x_mean)*p_w;
+                    y_ms_val = (p_y-y_mean)*(p_y-y_mean)*p_w;
+                    t_ms_val = (p_t-t_mean)*(p_t-t_mean)*p_w;
                 // prepare mean square for momenta
-                const amrex::ParticleReal p_px_ms = (p_px-px_mean)*(p_px-px_mean)*p_w;
-                const amrex::ParticleReal p_py_ms = (p_py-py_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_pt_ms = (p_pt-pt_mean)*(p_pt-pt_mean)*p_w;
-                // prepare position-momentum correlations
-                const amrex::ParticleReal p_xpx = (p_x-x_mean)*(p_px-px_mean)*p_w;
-                const amrex::ParticleReal p_ypy = (p_y-y_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_tpt = (p_t-t_mean)*(p_pt-pt_mean)*p_w;
-                // prepare correlations for dispersion (4 required)
-                const amrex::ParticleReal p_xpt = (p_x-x_mean)*(p_pt-pt_mean)*p_w;
-                const amrex::ParticleReal p_pxpt = (p_px-px_mean)*(p_pt-pt_mean)*p_w;
-                const amrex::ParticleReal p_ypt = (p_y-y_mean)*(p_pt-pt_mean)*p_w;
-                const amrex::ParticleReal p_pypt = (p_py-py_mean)*(p_pt-pt_mean)*p_w;
-                // prepare additional cross-plane correlations (8 required)
-                const amrex::ParticleReal p_xy = (p_x-x_mean)*(p_y-y_mean)*p_w;
-                const amrex::ParticleReal p_xpy = (p_x-x_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_xt = (p_x-x_mean)*(p_t-t_mean)*p_w;
-                const amrex::ParticleReal p_pxy = (p_px-px_mean)*(p_y-y_mean)*p_w;
-                const amrex::ParticleReal p_pxpy = (p_px-px_mean)*(p_py-py_mean)*p_w;
-                const amrex::ParticleReal p_pxt = (p_px-px_mean)*(p_t-t_mean)*p_w;
-                const amrex::ParticleReal p_yt = (p_y-y_mean)*(p_t-t_mean)*p_w;
-                const amrex::ParticleReal p_pyt = (p_py-py_mean)*(p_t-t_mean)*p_w;
+                    px_ms_val = (p_px-px_mean)*(p_px-px_mean)*p_w;
+                    py_ms_val = (p_py-py_mean)*(p_py-py_mean)*p_w;
+                    pt_ms_val = (p_pt-pt_mean)*(p_pt-pt_mean)*p_w;
+                }
 
-                const amrex::ParticleReal p_charge = q_C*p_w;
+                // Covariance calculations (position-momentum correlations)
+                if constexpr ((selection & MomentSelection::Covariance) != MomentSelection::None) {
+                    xpx_val = (p_x-x_mean)*(p_px-px_mean)*p_w;
+                    ypy_val = (p_y-y_mean)*(p_py-py_mean)*p_w;
+                    tpt_val = (p_t-t_mean)*(p_pt-pt_mean)*p_w;
+                }
 
-                return {p_x_ms, p_y_ms, p_t_ms,
-                        p_px_ms, p_py_ms, p_pt_ms,
-                        p_xpx, p_ypy, p_tpt,
-                        p_xpt, p_pxpt, p_ypt, p_pypt,
-                        p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
-                        p_charge};
+                // Dispersion calculations
+                if constexpr ((selection & MomentSelection::Dispersion) != MomentSelection::None) {
+                    xpt_val = (p_x-x_mean)*(p_pt-pt_mean)*p_w;
+                    pxpt_val = (p_px-px_mean)*(p_pt-pt_mean)*p_w;
+                    ypt_val = (p_y-y_mean)*(p_pt-pt_mean)*p_w;
+                    pypt_val = (p_py-py_mean)*(p_pt-pt_mean)*p_w;
+                }
+
+                // Additional cross-plane correlations
+                if constexpr ((selection & MomentSelection::Covariance) != MomentSelection::None) {
+                    xy_val = (p_x-x_mean)*(p_y-y_mean)*p_w;
+                    xpy_val = (p_x-x_mean)*(p_py-py_mean)*p_w;
+                    xt_val = (p_x-x_mean)*(p_t-t_mean)*p_w;
+                    pxy_val = (p_px-px_mean)*(p_y-y_mean)*p_w;
+                    pxpy_val = (p_px-px_mean)*(p_py-py_mean)*p_w;
+                    pxt_val = (p_px-px_mean)*(p_t-t_mean)*p_w;
+                    yt_val = (p_y-y_mean)*(p_t-t_mean)*p_w;
+                    pyt_val = (p_py-py_mean)*(p_t-t_mean)*p_w;
+                }
+
+                // Charge calculation
+                if constexpr ((selection & MomentSelection::Moment) != MomentSelection::None) {
+                    charge_val = q_C*p_w;
+                }
+
+                // Build return tuple using conditional assignment - much more readable!
+                // Define all possible values in a structured way
+                constexpr bool has_moment = (selection & MomentSelection::Moment) != MomentSelection::None;
+                constexpr bool has_covariance = (selection & MomentSelection::Covariance) != MomentSelection::None;
+                constexpr bool has_dispersion = (selection & MomentSelection::Dispersion) != MomentSelection::None;
+
+                // Helper function to build the appropriate tuple based on selection
+                if constexpr (has_moment && has_covariance && has_dispersion) {
+                    // All flags: 22 values
+                    return {x_ms_val, y_ms_val, t_ms_val, px_ms_val, py_ms_val, pt_ms_val,
+                            xpx_val, ypy_val, tpt_val,
+                            xpt_val, pxpt_val, ypt_val, pypt_val,
+                            xy_val, xpy_val, xt_val, pxy_val, pxpy_val, pxt_val, yt_val, pyt_val,
+                            charge_val};
+                } else if constexpr (has_moment && has_covariance) {
+                    // Moment + Covariance: 17 values
+                    return {x_ms_val, y_ms_val, t_ms_val, px_ms_val, py_ms_val, pt_ms_val,
+                            xpx_val, ypy_val, tpt_val,
+                            xy_val, xpy_val, xt_val, pxy_val, pxpy_val, pxt_val, yt_val, pyt_val,
+                            charge_val};
+                } else if constexpr (has_moment && has_dispersion) {
+                    // Moment + Dispersion: 10 values
+                    return {x_ms_val, y_ms_val, t_ms_val, px_ms_val, py_ms_val, pt_ms_val,
+                            xpt_val, pxpt_val, ypt_val, pypt_val,
+                            charge_val};
+                } else if constexpr (has_moment) {
+                    // Moment only: 7 values
+                    return {x_ms_val, y_ms_val, t_ms_val, px_ms_val, py_ms_val, pt_ms_val,
+                            charge_val};
+                } else if constexpr (has_covariance && has_dispersion) {
+                    // Covariance + Dispersion: 15 values
+                    return {xpx_val, ypy_val, tpt_val,
+                            xpt_val, pxpt_val, ypt_val, pypt_val,
+                            xy_val, xpy_val, xt_val, pxy_val, pxpy_val, pxt_val, yt_val, pyt_val};
+                } else if constexpr (has_covariance) {
+                    // Covariance only: 11 values
+                    return {xpx_val, ypy_val, tpt_val,
+                            xy_val, xpy_val, xt_val, pxy_val, pxpy_val, pxt_val, yt_val, pyt_val};
+                } else if constexpr (has_dispersion) {
+                    // Dispersion only: 4 values
+                    return {xpt_val, pxpt_val, ypt_val, pypt_val};
+                } else {
+                    // No flags: 0 values (should not happen)
+                    return {};
+                }
             },
                 reduce_ops_2
         );
 
-        std::vector<amrex::ParticleReal> values_per_rank_2nd(num_red_ops_2);
+        // Extract values conditionally based on selection - much more readable!
+        // Define flag checks once at the top (similar to num_red_ops_2 calculation)
+        constexpr bool has_moment = (selection & MomentSelection::Moment) != MomentSelection::None;
+        constexpr bool has_covariance = (selection & MomentSelection::Covariance) != MomentSelection::None;
+        constexpr bool has_dispersion = (selection & MomentSelection::Dispersion) != MomentSelection::None;
 
-        /* contains in this order:
-         * x_ms, y_ms, t_ms
-         * px_ms, py_ms, pt_ms,
-         * xpx, ypy, tpt,
-         * p_xpt, p_pxpt, p_ypt, p_pypt,
-         * p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
-         * charge
-         */
-        amrex::constexpr_for<0, num_red_ops_2> ([&](auto i) {
-            values_per_rank_2nd[i] = amrex::get<i>(r2);
-        });
+        // Helper function to get the correct index based on what's enabled
+        constexpr auto get_index = [](auto base, auto offset) -> std::size_t {
+            return base + offset;
+        };
 
-        // reduced sum over mpi ranks (allreduce)
-        amrex::ParallelAllReduce::Sum(
-            values_per_rank_2nd.data(),
-            values_per_rank_2nd.size(),
-            amrex::ParallelDescriptor::Communicator()
-        );
+        // Calculate base indices for each section based on what's enabled
+        constexpr std::size_t moment_base = 0;
+        constexpr std::size_t covar_base = has_moment ? 6 : 0;
+        constexpr std::size_t disp_base = has_moment ? (has_covariance ? 9 : 6) : (has_covariance ? 3 : 0);
+        constexpr std::size_t cross_base = has_moment ? (has_covariance ? (has_dispersion ? 13 : 9) : 9) :
+                                                       (has_covariance ? (has_dispersion ? 7 : 3) : 3);
+        constexpr std::size_t charge_idx = has_moment ? (has_covariance ? (has_dispersion ? 21 : 17) :
+                                                        (has_dispersion ? 10 : 6)) : 0;
 
-        // minimum values
-        amrex::ParticleReal const x_min = values_per_rank_min.at(0);
-        amrex::ParticleReal const y_min = values_per_rank_min.at(1);
-        amrex::ParticleReal const t_min = values_per_rank_min.at(2);
-        amrex::ParticleReal const px_min = values_per_rank_min.at(3);
-        amrex::ParticleReal const py_min = values_per_rank_min.at(4);
-        amrex::ParticleReal const pt_min = values_per_rank_min.at(5);
-        // maximum values
-        amrex::ParticleReal const x_max = values_per_rank_max.at(0);
-        amrex::ParticleReal const y_max = values_per_rank_max.at(1);
-        amrex::ParticleReal const t_max = values_per_rank_max.at(2);
-        amrex::ParticleReal const px_max = values_per_rank_max.at(3);
-        amrex::ParticleReal const py_max = values_per_rank_max.at(4);
-        amrex::ParticleReal const pt_max = values_per_rank_max.at(5);
-        // mean square and correlation values
-        amrex::ParticleReal const x_ms   = values_per_rank_2nd.at(0) /= w_sum;
-        amrex::ParticleReal const y_ms   = values_per_rank_2nd.at(1) /= w_sum;
-        amrex::ParticleReal const t_ms   = values_per_rank_2nd.at(2) /= w_sum;
-        amrex::ParticleReal const px_ms  = values_per_rank_2nd.at(3) /= w_sum;
-        amrex::ParticleReal const py_ms  = values_per_rank_2nd.at(4) /= w_sum;
-        amrex::ParticleReal const pt_ms  = values_per_rank_2nd.at(5) /= w_sum;
-        amrex::ParticleReal const xpx    = values_per_rank_2nd.at(6) /= w_sum;
-        amrex::ParticleReal const ypy    = values_per_rank_2nd.at(7) /= w_sum;
-        amrex::ParticleReal const tpt    = values_per_rank_2nd.at(8) /= w_sum;
-        amrex::ParticleReal const xpt    = values_per_rank_2nd.at(9) /= w_sum;
-        amrex::ParticleReal const pxpt   = values_per_rank_2nd.at(10) /= w_sum;
-        amrex::ParticleReal const ypt    = values_per_rank_2nd.at(11) /= w_sum;
-        amrex::ParticleReal const pypt   = values_per_rank_2nd.at(12) /= w_sum;
-        amrex::ParticleReal const xy     = values_per_rank_2nd.at(13) /= w_sum;
-        amrex::ParticleReal const xpy    = values_per_rank_2nd.at(14) /= w_sum;
-        amrex::ParticleReal const xt     = values_per_rank_2nd.at(15) /= w_sum;
-        amrex::ParticleReal const pxy    = values_per_rank_2nd.at(16) /= w_sum;
-        amrex::ParticleReal const pxpy   = values_per_rank_2nd.at(17) /= w_sum;
-        amrex::ParticleReal const pxt    = values_per_rank_2nd.at(18) /= w_sum;
-        amrex::ParticleReal const yt     = values_per_rank_2nd.at(19) /= w_sum;
-        amrex::ParticleReal const pyt    = values_per_rank_2nd.at(20) /= w_sum;
-        amrex::ParticleReal const charge = values_per_rank_2nd.at(21);
+        // Moment calculations (mean square values)
+        amrex::ParticleReal x_ms = 0.0, y_ms = 0.0, t_ms = 0.0;
+        amrex::ParticleReal px_ms = 0.0, py_ms = 0.0, pt_ms = 0.0;
+        if constexpr (has_moment) {
+            x_ms = amrex::get<get_index(moment_base, 0)>(r2) /= w_sum;
+            y_ms = amrex::get<get_index(moment_base, 1)>(r2) /= w_sum;
+            t_ms = amrex::get<get_index(moment_base, 2)>(r2) /= w_sum;
+            px_ms = amrex::get<get_index(moment_base, 3)>(r2) /= w_sum;
+            py_ms = amrex::get<get_index(moment_base, 4)>(r2) /= w_sum;
+            pt_ms = amrex::get<get_index(moment_base, 5)>(r2) /= w_sum;
+        }
+
+        // Covariance calculations (position-momentum correlations)
+        amrex::ParticleReal xpx = 0.0, ypy = 0.0, tpt = 0.0;
+        if constexpr (has_covariance) {
+            xpx = amrex::get<get_index(covar_base, 0)>(r2) /= w_sum;
+            ypy = amrex::get<get_index(covar_base, 1)>(r2) /= w_sum;
+            tpt = amrex::get<get_index(covar_base, 2)>(r2) /= w_sum;
+        }
+
+        // Dispersion calculations
+        amrex::ParticleReal xpt = 0.0, pxpt = 0.0, ypt = 0.0, pypt = 0.0;
+        if constexpr (has_dispersion) {
+            xpt = amrex::get<get_index(disp_base, 0)>(r2) /= w_sum;
+            pxpt = amrex::get<get_index(disp_base, 1)>(r2) /= w_sum;
+            ypt = amrex::get<get_index(disp_base, 2)>(r2) /= w_sum;
+            pypt = amrex::get<get_index(disp_base, 3)>(r2) /= w_sum;
+        }
+
+        // Additional cross-plane correlations
+        amrex::ParticleReal xy = 0.0, xpy = 0.0, xt = 0.0, pxy = 0.0, pxpy = 0.0, pxt = 0.0, yt = 0.0, pyt = 0.0;
+        if constexpr (has_covariance) {
+            xy = amrex::get<get_index(cross_base, 0)>(r2) /= w_sum;
+            xpy = amrex::get<get_index(cross_base, 1)>(r2) /= w_sum;
+            xt = amrex::get<get_index(cross_base, 2)>(r2) /= w_sum;
+            pxy = amrex::get<get_index(cross_base, 3)>(r2) /= w_sum;
+            pxpy = amrex::get<get_index(cross_base, 4)>(r2) /= w_sum;
+            pxt = amrex::get<get_index(cross_base, 5)>(r2) /= w_sum;
+            yt = amrex::get<get_index(cross_base, 6)>(r2) /= w_sum;
+            pyt = amrex::get<get_index(cross_base, 7)>(r2) /= w_sum;
+        }
+
+        // Charge calculation
+        amrex::ParticleReal charge = 0.0;
+        if constexpr (has_moment) {
+            charge = amrex::get<charge_idx>(r2);
+        }
+
+        [[maybe_unused]] amrex::ParticleReal x_min, y_min, t_min,
+                                             px_min, py_min, pt_min,
+                                             x_max, y_max, t_max,
+                                             px_max, py_max, pt_max;
+        if constexpr ((selection & MomentSelection::MinMax) != MomentSelection::None) {
+            // minimum values
+            x_min = values_per_rank_min.at(0);
+            y_min = values_per_rank_min.at(1);
+            t_min = values_per_rank_min.at(2);
+            px_min = values_per_rank_min.at(3);
+            py_min = values_per_rank_min.at(4);
+            pt_min = values_per_rank_min.at(5);
+            // maximum values
+            x_max = values_per_rank_max.at(0);
+            y_max = values_per_rank_max.at(1);
+            t_max = values_per_rank_max.at(2);
+            px_max = values_per_rank_max.at(3);
+            py_max = values_per_rank_max.at(4);
+            pt_max = values_per_rank_max.at(5);
+        }
         // standard deviations of positions
-        amrex::ParticleReal const sig_x = std::sqrt(x_ms);
-        amrex::ParticleReal const sig_y = std::sqrt(y_ms);
-        amrex::ParticleReal const sig_t = std::sqrt(t_ms);
+        amrex::ParticleReal sig_x = 0.0, sig_y = 0.0, sig_t = 0.0;
+        if constexpr ((selection & MomentSelection::Moment) != MomentSelection::None) {
+            sig_x = std::sqrt(x_ms);
+            sig_y = std::sqrt(y_ms);
+            sig_t = std::sqrt(t_ms);
+        }
         // standard deviations of momenta
-        amrex::ParticleReal const sig_px = std::sqrt(px_ms);
-        amrex::ParticleReal const sig_py = std::sqrt(py_ms);
-        amrex::ParticleReal const sig_pt = std::sqrt(pt_ms);
+        amrex::ParticleReal sig_px = 0.0, sig_py = 0.0, sig_pt = 0.0;
+        if constexpr ((selection & MomentSelection::Moment) != MomentSelection::None) {
+            sig_px = std::sqrt(px_ms);
+            sig_py = std::sqrt(py_ms);
+            sig_pt = std::sqrt(pt_ms);
+        }
         // RMS emittances
+        amrex::ParticleReal emittance_x = 0.0, emittance_y = 0.0, emittance_t = 0.0;
+        if constexpr ((selection & MomentSelection::Covariance) != MomentSelection::None) {
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
         amrex::ParticleReal const e2_t = t_ms*pt_ms-tpt*tpt;
-        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
-        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
-        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
+            emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
+            emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
+            emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
+        }
         // Dispersion and dispersive beam moments
-        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal dispersion_x = 0.0, dispersion_px = 0.0, dispersion_y = 0.0, dispersion_py = 0.0;
+        amrex::ParticleReal emittance_xd = 0.0, emittance_yd = 0.0;
+        if constexpr ((selection & MomentSelection::Dispersion) != MomentSelection::None) {
+            dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
+            dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
+            dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
+            dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        }
+        if constexpr (((selection & MomentSelection::Dispersion) != MomentSelection::None) && ((selection & MomentSelection::Covariance) != MomentSelection::None)) {
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
-        amrex::ParticleReal const emittance_xd = std::sqrt(x_msd*px_msd-xpx_d*xpx_d);
+            emittance_xd = std::sqrt(x_msd*px_msd-xpx_d*xpx_d);
         amrex::ParticleReal const y_msd = y_ms - pt_ms*dispersion_y*dispersion_y;
         amrex::ParticleReal const py_msd = py_ms - pt_ms*dispersion_py*dispersion_py;
         amrex::ParticleReal const ypy_d = ypy - pt_ms*dispersion_y*dispersion_py;
-        amrex::ParticleReal const emittance_yd = std::sqrt(y_msd*py_msd-ypy_d*ypy_d);
-        // Courant-Snyder (Twiss) beta-function
-        amrex::ParticleReal const beta_x = x_msd / emittance_xd;
-        amrex::ParticleReal const beta_y = y_msd / emittance_yd;
-        amrex::ParticleReal const beta_t = t_ms / emittance_t;
-        // Courant-Snyder (Twiss) alpha
-        amrex::ParticleReal const alpha_x = - xpx_d / emittance_xd;
-        amrex::ParticleReal const alpha_y = - ypy_d / emittance_yd;
-        amrex::ParticleReal const alpha_t = - tpt / emittance_t;
+            emittance_yd = std::sqrt(y_msd*py_msd-ypy_d*ypy_d);
+        }
+        // Courant-Snyder (Twiss) beta-function and alpha
+        amrex::ParticleReal beta_x = 0.0, beta_y = 0.0, beta_t = 0.0;
+        amrex::ParticleReal alpha_x = 0.0, alpha_y = 0.0, alpha_t = 0.0;
+        if constexpr ((selection & MomentSelection::Covariance) != MomentSelection::None) {
+            if constexpr ((selection & MomentSelection::Dispersion) != MomentSelection::None) {
+                beta_x = (emittance_xd > 0.0) ? (x_ms - pt_ms*dispersion_x*dispersion_x) / emittance_xd : 0.0;
+                beta_y = (emittance_yd > 0.0) ? (y_ms - pt_ms*dispersion_y*dispersion_y) / emittance_yd : 0.0;
+                alpha_x = (emittance_xd > 0.0) ? - (xpx - pt_ms*dispersion_x*dispersion_px) / emittance_xd : 0.0;
+                alpha_y = (emittance_yd > 0.0) ? - (ypy - pt_ms*dispersion_y*dispersion_py) / emittance_yd : 0.0;
+            }
+            beta_t = (emittance_t > 0.0) ? t_ms / emittance_t : 0.0;
+            alpha_t = (emittance_t > 0.0) ? - tpt / emittance_t : 0.0;
+        }
 
         // Calculate normalized emittances
-        amrex::ParticleReal emittance_xn = emittance_x * bg;
-        amrex::ParticleReal emittance_yn = emittance_y * bg;
-        amrex::ParticleReal emittance_tn = emittance_t * bg;
+        amrex::ParticleReal emittance_xn = 0.0, emittance_yn = 0.0, emittance_tn = 0.0;
+        if constexpr ((selection & MomentSelection::Covariance) != MomentSelection::None) {
+            emittance_xn = emittance_x * bg;
+            emittance_yn = emittance_y * bg;
+            emittance_tn = emittance_t * bg;
+        }
 
-        // Determine whether to calculate eigenemittances, and initialize
-        amrex::ParmParse pp_diag("diag");
-        bool compute_eigenemittances = false;
-        pp_diag.queryAdd("eigenemittances", compute_eigenemittances);
+        // Calculate eigenemittances conditionally based on selection
         amrex::ParticleReal emittance_1 = emittance_xn;
         amrex::ParticleReal emittance_2 = emittance_yn;
         amrex::ParticleReal emittance_3 = emittance_tn;
 
-        if (compute_eigenemittances) {
+        if constexpr ((selection & MomentSelection::Eigenemittance) != MomentSelection::None) {
            // Store the covariance matrix in dynamical variables:
            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> Sigma;
            Sigma(1,1) = x_ms;
@@ -372,30 +516,44 @@ namespace impactx::diagnostics
         }
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
+
+        // Always add mean values (they're needed for basic calculations)
         data["x_mean"] = x_mean;
-        data["x_min"] = x_min;
-        data["x_max"] = x_max;
         data["y_mean"] = y_mean;
-        data["y_min"] = y_min;
-        data["y_max"] = y_max;
         data["t_mean"] = t_mean;
-        data["t_min"] = t_min;
-        data["t_max"] = t_max;
-        data["sig_x"] = sig_x;
-        data["sig_y"] = sig_y;
-        data["sig_t"] = sig_t;
         data["px_mean"] = px_mean;
-        data["px_min"] = px_min;
-        data["px_max"] = px_max;
         data["py_mean"] = py_mean;
-        data["py_min"] = py_min;
-        data["py_max"] = py_max;
         data["pt_mean"] = pt_mean;
-        data["pt_min"] = pt_min;
-        data["pt_max"] = pt_max;
+
+        // Add min/max values conditionally
+        if constexpr ((selection & MomentSelection::MinMax) != MomentSelection::None) {
+            data["x_min"] = x_min;
+            data["x_max"] = x_max;
+            data["y_min"] = y_min;
+            data["y_max"] = y_max;
+            data["t_min"] = t_min;
+            data["t_max"] = t_max;
+            data["px_min"] = px_min;
+            data["px_max"] = px_max;
+            data["py_min"] = py_min;
+            data["py_max"] = py_max;
+            data["pt_min"] = pt_min;
+            data["pt_max"] = pt_max;
+        }
+
+        // Add moment-based values conditionally
+        if constexpr ((selection & MomentSelection::Moment) != MomentSelection::None) {
+            data["sig_x"] = sig_x;
+            data["sig_y"] = sig_y;
+            data["sig_t"] = sig_t;
         data["sig_px"] = sig_px;
         data["sig_py"] = sig_py;
         data["sig_pt"] = sig_pt;
+            data["charge_C"] = charge;
+        }
+
+        // Add covariance-based values conditionally
+        if constexpr ((selection & MomentSelection::Covariance) != MomentSelection::None) {
         data["emittance_x"] = emittance_x;
         data["emittance_y"] = emittance_y;
         data["emittance_t"] = emittance_t;
@@ -405,19 +563,25 @@ namespace impactx::diagnostics
         data["beta_x"] = beta_x;
         data["beta_y"] = beta_y;
         data["beta_t"] = beta_t;
+            data["emittance_xn"] = emittance_xn;
+            data["emittance_yn"] = emittance_yn;
+            data["emittance_tn"] = emittance_tn;
+        }
+
+        // Add dispersion-based values conditionally
+        if constexpr ((selection & MomentSelection::Dispersion) != MomentSelection::None) {
         data["dispersion_x"] = dispersion_x;
         data["dispersion_px"] = dispersion_px;
         data["dispersion_y"] = dispersion_y;
         data["dispersion_py"] = dispersion_py;
-        data["emittance_xn"] = emittance_xn;
-        data["emittance_yn"] = emittance_yn;
-        data["emittance_tn"] = emittance_tn;
-        if (compute_eigenemittances) {
+        }
+
+        // Add eigenemittance values conditionally
+        if constexpr ((selection & MomentSelection::Eigenemittance) != MomentSelection::None) {
            data["emittance_1"] = emittance_1;
            data["emittance_2"] = emittance_2;
            data["emittance_3"] = emittance_3;
         }
-        data["charge_C"] = charge;
 
         return data;
     }
@@ -600,6 +764,71 @@ namespace impactx::diagnostics
         data["charge_C"] = nan;  // TODO: with space charge
 
         return data;
+    }
+
+    namespace detail {
+        // Elegant dispatcher using a constexpr array of valid combinations
+        // This only instantiates templates for valid flag combinations
+        template<auto Selection>
+        auto dispatch_to_template(ImpactXParticleContainer const & pc) {
+            return reduced_beam_characteristics<static_cast<MomentSelection>(Selection)>(pc);
+        }
+
+        // All valid combinations (always including Moment flag)
+        constexpr std::array<std::underlying_type_t<MomentSelection>, 16> valid_combinations = {{
+            0x01, // Moment
+            0x03, // Moment|MinMax
+            0x05, // Moment|Dispersion
+            0x07, // Moment|MinMax|Dispersion
+            0x09, // Moment|Covariance
+            0x0B, // Moment|MinMax|Covariance
+            0x0D, // Moment|Dispersion|Covariance
+            0x0F, // Moment|MinMax|Dispersion|Covariance
+            0x11, // Moment|Eigenemittance
+            0x13, // Moment|MinMax|Eigenemittance
+            0x15, // Moment|Dispersion|Eigenemittance
+            0x17, // Moment|MinMax|Dispersion|Eigenemittance
+            0x19, // Moment|Covariance|Eigenemittance
+            0x1B, // Moment|MinMax|Covariance|Eigenemittance
+            0x1D, // Moment|Dispersion|Covariance|Eigenemittance
+            0x1F  // All flags
+        }};
+
+        // Recursive template dispatcher that only tries valid combinations
+        template<std::size_t Index = 0>
+        auto try_valid_dispatch(ImpactXParticleContainer const & pc, std::underlying_type_t<MomentSelection> selection) {
+            if constexpr (Index < valid_combinations.size()) {
+                constexpr auto test_value = valid_combinations[Index];
+                if (selection == test_value) {
+                    return dispatch_to_template<test_value>(pc);
+                } else {
+                    return try_valid_dispatch<Index + 1>(pc, selection);
+                }
+            } else {
+                // Fallback - should never reach here with valid input
+                return dispatch_to_template<0x1F>(pc);
+            }
+        }
+
+        // Helper to normalize selection: always include Moment, mask out invalid bits
+        constexpr auto normalize_selection(MomentSelection selection) {
+            constexpr auto all_valid_flags = static_cast<std::underlying_type_t<MomentSelection>>(
+                MomentSelection::Moment | MomentSelection::MinMax | MomentSelection::Dispersion |
+                MomentSelection::Covariance | MomentSelection::Eigenemittance
+            );
+            auto normalized = static_cast<std::underlying_type_t<MomentSelection>>(selection) & all_valid_flags;
+            // Always include Moment flag
+            normalized |= static_cast<std::underlying_type_t<MomentSelection>>(MomentSelection::Moment);
+            return normalized;
+        }
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    reduced_beam_characteristics (ImpactXParticleContainer const & pc, MomentSelection selection)
+    {
+        // Normalize selection and dispatch using valid combinations only
+        auto normalized = detail::normalize_selection(selection);
+        return detail::try_valid_dispatch(pc, normalized);
     }
 
 } // namespace impactx::diagnostics

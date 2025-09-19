@@ -47,8 +47,8 @@ nm_rad = 1.0e9
 
 def plot_sigmas(rbc):
     s = rbc["s"]
-    sig_x = rbc["sig_x"] * millimeter
-    sig_y = rbc["sig_y"] * millimeter
+    sigma_x = rbc["sigma_x"] * millimeter
+    sigma_y = rbc["sigma_y"] * millimeter
 
     # emittance_x = rbc["emittance_x"] * nm_rad
     # emittance_y = rbc["emittance_y"] * nm_rad
@@ -56,8 +56,8 @@ def plot_sigmas(rbc):
     # print beam transverse size over steps
     f = plt.figure()
     ax1 = f.gca()
-    im_sigx = ax1.plot(s, sig_x, label=r"$\sigma_x$")
-    im_sigy = ax1.plot(s, sig_y, label=r"$\sigma_y$")
+    im_sigx = ax1.plot(s, sigma_x, label=r"$\sigma_x$")
+    im_sigy = ax1.plot(s, sigma_y, label=r"$\sigma_y$")
     # ax2 = ax1.twinx()
     # ax2.set_prop_cycle(None)  # reset color cycle
     # im_emittance_x = ax2.plot(s, emittance_x, ":", label=r"$\epsilon_x$")

@@ -1,12 +1,13 @@
 from __future__ import annotations
-from impactx.MADXParser import MADXParser
-import impactx.impactx_pybind
-from impactx.impactx_pybind import RefPart
-from impactx.impactx_pybind import elements
+
 import typing
 import warnings as warnings
 
-__all__ = [
+import impactx.impactx_pybind
+from impactx.impactx_pybind import RefPart, elements
+from impactx.MADXParser import MADXParser
+
+__all__: list[str] = [
     "MADXParser",
     "RefPart",
     "beam",

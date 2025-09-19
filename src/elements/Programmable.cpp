@@ -28,7 +28,7 @@ namespace impactx::elements
             push_all(pc, *this, step, period, m_threadsafe);
         }
         else {
-            BL_PROFILE("impactx::Push::Programmable");
+            BL_PROFILE("impactx::push::Programmable");
             m_push(&pc, step, period);
         }
     }

@@ -24,7 +24,7 @@ namespace impactx::elements::transformation
     )
     {
         // algorithm below is so far only implemented for thin elements to insert
-        amrex::ParticleReal new_element_ds = 0.0;  // in meters
+        double new_element_ds = 0.0;  // in meters
         std::visit([&new_element_ds](auto &&new_element)
         {
             new_element_ds = new_element.ds();
@@ -36,8 +36,8 @@ namespace impactx::elements::transformation
 
         std::list<elements::KnownElements> new_list;
 
-        amrex::ParticleReal s = 0.0;  // in meters   // TODO: if we can avoid a global s, we can avoid wasting significant digits for long lattices
-        amrex::ParticleReal s_next_insert = ds;  // in meters
+        double s = 0.0;  // in meters   // TODO: if we can avoid a global s, we can avoid wasting significant digits for long lattices
+        double s_next_insert = ds;  // in meters
 
         while (!list.empty())
         {
@@ -46,7 +46,7 @@ namespace impactx::elements::transformation
             list.pop_front();
 
             // check where the current element ends
-            amrex::ParticleReal cur_s_out;  // in meters
+            double cur_s_out;  // in meters
             std::visit([&s, &cur_s_out](auto &&cur_element)
             {
                 cur_s_out = s + cur_element.ds();
@@ -55,7 +55,7 @@ namespace impactx::elements::transformation
             // case 1: current element is thick and ends after next insert
             if (s_next_insert < cur_s_out)
             {
-                amrex::ParticleReal const s_rel_insert = s_next_insert - s;
+                double const s_rel_insert = s_next_insert - s;
 
                 // split element and shorten each part
                 elements::KnownElements cur_element_leftover = cur_element_variant;

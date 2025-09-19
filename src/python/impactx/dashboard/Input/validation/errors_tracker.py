@@ -7,9 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import state
-from ..utils import GeneralFunctions
 from ..defaults import INPUT_LABELS, DashboardDefaults
-
+from ..utils import GeneralFunctions
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
@@ -28,7 +27,7 @@ def determine_section_name(state_name: str) -> str:
         return "Lattice Configuration"
     else:
         return "Simulation Parameters"
-    
+
 
 class ErrorsTracker:
     """
@@ -58,7 +57,9 @@ class ErrorsTracker:
         :param category: The dashboard section name.
         :param input_name: The UI label (e.g., "CSR Bins", "Max Level").
         """
-        self.errors[category] = [msg for msg in self.errors[category] if not msg.startswith(f"{input_name}:")]
+        self.errors[category] = [
+            msg for msg in self.errors[category] if not msg.startswith(f"{input_name}:")
+        ]
 
     def _get_validation_method(self, section_name: str):
         """
@@ -73,14 +74,14 @@ class ErrorsTracker:
 
         return getattr(self, method_name, None), method_name
 
-    def _check_state_errors(self,  input_name: str) -> None:
+    def _check_state_errors(self, input_name: str) -> None:
         """
         Appends any error for a UI input to its category.
 
         :param category: The dashboard section name.
         :param input_name: The UI label (e.g., "CSR Bins", "Max Level").
         """
-        print(f"check state errors is called")
+        print("check state errors is called")
         category = determine_section_name(input_name)
         print(f" the category of {input_name} is {category}")
         self._clear_error(category, input_name)
@@ -121,8 +122,12 @@ class ErrorsTracker:
 
         # Check MLMG settings if using multigrid poisson solver
         if getattr(state, "poisson_solver", None) == "multigrid":
-            mlmg_fields = ["mlmg_relative_tolerance", "mlmg_absolute_tolerance", 
-                          "mlmg_max_iters", "mlmg_verbosity"]
+            mlmg_fields = [
+                "mlmg_relative_tolerance",
+                "mlmg_absolute_tolerance",
+                "mlmg_max_iters",
+                "mlmg_verbosity",
+            ]
             for field in mlmg_fields:
                 error = self._get_error_message(field)
                 if error:
@@ -153,7 +158,6 @@ class ErrorsTracker:
                 errors.append(f"{field_name}: {error_message}")
         return errors
 
-        
     def _check_distribution_parameters_errors(self) -> list[str]:
         errors = []
         for name, param in state.selected_distribution_parameters.items():
@@ -204,14 +208,12 @@ class ErrorsTracker:
 
         for category, errors in self.errors.items():
             if errors:
-                categorized_errors.append({
-                    "category": category,
-                    "errors": errors
-                })
+                categorized_errors.append({"category": category, "errors": errors})
                 total_errors += len(errors)
 
         state.number_of_input_errors = total_errors
         state.disable_simulation = bool(categorized_errors)
         state.input_errors_list = categorized_errors
+
 
 errors_tracker = ErrorsTracker()

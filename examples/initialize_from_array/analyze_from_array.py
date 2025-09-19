@@ -36,6 +36,7 @@ dt = beam_at_step["position_t"]
 dpx_s = beam_at_step["momentum_x"]
 dpy_s = beam_at_step["momentum_y"]
 dpt = beam_at_step["momentum_t"]
+w = beam_at_step["weighting"]
 
 dx_t, dy_t, dz, dpx_t, dpy_t, dpz = coord.to_t_from_s(
     ref_part, dx_s, dy_s, dt, dpx_s, dpy_s, dpt
@@ -50,16 +51,18 @@ sigz = z1.std()
 sigpx = px1.std()
 sigpy = py1.std()
 sigpz = pz1.std()
+N = np.sum(w)
 print(f"sig x={sigx:.2e}, sig y={sigy:.2e}, sig z={sigz:.2e}")
 print(f"sig px={sigpx:.2e}, sig py={sigpy:.2e}, sig pz={sigpz:.2e}")
+print(f"N={N:.2e}")
 
 atol = 0.0  # ignored
 rtol = 2.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
-    [sigx, sigy, sigz, sigpx, sigpy, sigpz],
-    [1.46e-3, 1.46e-3, 1.0e-3, 10, 10, 200],
+    [sigx, sigy, sigz, sigpx, sigpy, sigpz, N],
+    [1.46e-3, 1.46e-3, 1.0e-3, 10, 10, 200, 62415090.90043337],
     rtol=rtol,
     atol=atol,
 )

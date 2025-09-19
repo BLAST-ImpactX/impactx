@@ -18,10 +18,10 @@ jobs:
       OMP_NUM_THREAD: 4
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: github.event_name != 'push' || github.repository != 'BLAST-ImpactX/impactx' || github.ref != 'refs/heads/development'
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:
         token: ${{ secrets.IMPACTX_PUSH_TOKEN }}
@@ -30,7 +30,7 @@ jobs:
       if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       run: git pull
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       name: Install Python
       with:
         python-version: '3.9'

@@ -27,7 +27,7 @@ def get_lattice(
 
     Parameters:
         code (str):
-            "impactx", ....
+            "impactx", ...
         vs_current_x (list of 8 elements):
             The current in the VISA horizontal steering magnets, in amps.
         vs_current_y (list of 8 elements):
@@ -42,8 +42,6 @@ def get_lattice(
             The name of the element to start from. If None, start from the beginning.
         to_element (str):
             The name of the element to end at. If None, end at the last element.
-        experiment_configuration_file (str): The path to the experiment configuration file. If None, use the default configuration.
-        experiment_analysis_settings (dict): The settings of the default analysis of images ; used to crop the screen images
 
     Returns:
         list: The lattice for the HTU accelerator.
@@ -128,16 +126,11 @@ def get_lattice(
         "S4", 0.0, 0.0, max_integrated_field=1970e-6, max_current=5.0, code=code
     )
 
-    # Use polynomial fit to find the dipole angle as a function of chicane r56
-    angle_rad = 0.001438389904456 * chicane_r56**0.5
-    # angle_rad = 0.00743627 + 6.32812981e-05*chicane_r56 -4.83395592e-08*chicane_r56**2 + 1.91504783e-11*chicane_r56**3
-    # TODO: This angle explicitly assumes that the reference energy of the beam is 100 MeV! We should make
-    # sure that this is the case. In particular, for beams with fluctuations in energy, we should keep the
-    # energy of the reference particles constant.
-    BEND1 = dipole("BEND1", 0.175, -angle_rad, code)
-    BEND2 = dipole("BEND2", 0.175, angle_rad, code)
-    BEND3 = dipole("BEND3", 0.175, angle_rad, code)
-    BEND4 = dipole("BEND4", 0.175, -angle_rad, code)
+    # Calculation of the bending field and bend angle are now found in the dipole definitions below.
+    BEND1 = dipole("BEND1", 0.175, r56=chicane_r56, bend=1, code=code)
+    BEND2 = dipole("BEND2", 0.175, r56=chicane_r56, bend=2, code=code)
+    BEND3 = dipole("BEND3", 0.175, r56=chicane_r56, bend=3, code=code)
+    BEND4 = dipole("BEND4", 0.175, r56=chicane_r56, bend=4, code=code)
 
     L12 = drift("L12", 0.125, code)
     L23 = drift("L23", 0.15, code)
@@ -162,7 +155,7 @@ def get_lattice(
 
     DriftToPhos1 = drift("DriftToPhos1", 0.084325, code)
     DriftToSpec = drift("DriftToSpec", 0.28, code)
-    MagSpec = dipole("MagSpec", 0.4826, 0.0, code)
+    MagSpec = dipole("MagSpec", 0.4826, angle=0.0, code=code)
 
     DriftToAline1 = drift("DriftToAline1", 0.4009, code)
     DriftToAline2 = drift("DriftToAline2", 0.3825, code)
@@ -371,47 +364,34 @@ def screen(name, code):
     """
     Define a screen element.
     """
-    if code == "impactx" and impactx_available:
-        return elements.BeamMonitor(name=name, backend="h5")
-    else:
-        raise ValueError(f"Unsupported code: {code}")
+    return elements.BeamMonitor(name=name, backend="h5")
 
 
 # Define a quadrupole element
-def peakfield_to_k(bore_radius, B, reference_energy_eV):
+def peakfield_to_Bgradient(bore_radius, B):
     """
-    Convert the peak field in T (and corresponding bore radius) to the K parameter of a quadrupole.
+    Convert the peak field in T (and corresponding bore radius) to the field gradient in T/m of a quadrupole.
 
     Parameters:
         bore_radius (float):
             The bore radius in m.
         B (float):
             The peak field in T.
-        reference_energy_eV (float):
-            The reference energy in eV.
     """
-    gamma = reference_energy_eV * e / (m_e * c**2)
-    beta = (1 - 1 / gamma**2) ** 0.5
-    rigidity = m_e * gamma * beta * c / e
-    k = B / bore_radius / rigidity
-    return k
+    Bgradient = B / bore_radius
+    return Bgradient
 
 
-def current_to_k(current, design, reference_energy_eV):
+def current_to_Bgradient(current, design):
     """
-    Convert a current in A to the K parameter of a quadrupole.
+    Convert a current in A to the field gradient in T/m of a quadrupole.
 
     Parameters:
         current (float):
             The current in A.
         design (str):
             Indicates which EMQ design is being used
-        reference_energy_eV (float):
-            The reference energy in eV.
     """
-    gamma = reference_energy_eV * e / (m_e * c**2)
-    beta = (1 - 1 / gamma**2) ** 0.5
-    rigidity = m_e * gamma * beta * c / e
     if design == "EMQD-113-394":
         # From "LBM6_03 Calibration" in EMQD-113-394 Testing Report-FINAL.pdf
         Bgradient = 2.9217 * current + 0.0965  # T/m
@@ -420,8 +400,22 @@ def current_to_k(current, design, reference_energy_eV):
         Bgradient = 2.9318 * current + 0.0077  # T/m
     else:
         raise ValueError(f"Unsupported design: {design}")
-    k = Bgradient / rigidity
-    return k
+    return Bgradient
+
+
+def get_rigidity(reference_energy_eV):
+    """
+    Return the magnetic rigidity associated with reference_energy_eV in
+    units of T-m, to be used for field strength normalization.
+
+    Parameters:
+        Bfield (float):
+            The reference energy in eV.
+    """
+    gamma = reference_energy_eV * e / (m_e * c**2)
+    beta = (1 - 1 / gamma**2) ** 0.5
+    rigidity = m_e * gamma * beta * c / e
+    return rigidity
 
 
 def quadrupole(
@@ -441,13 +435,15 @@ def quadrupole(
     Need to provide k1, current, or bore_radius and B.
     """
     if k1 is None and current is None:
-        k1 = peakfield_to_k(bore_radius, B, reference_energy_eV)
+        Bgradient = -1.0 * peakfield_to_Bgradient(bore_radius, B)
+        unit = 1
     elif k1 is None:
-        k1 = current_to_k(current, design, reference_energy_eV)
-    if code == "impactx" and impactx_available:
-        return elements.ChrQuad(name=name, ds=L, k=k1, nslice=20)
+        Bgradient = -1.0 * current_to_Bgradient(current, design)
+        unit = 1
     else:
-        raise ValueError(f"Unsupported code: {code}")
+        Bgradient = k1
+        unit = 0
+    return elements.ChrQuad(name=name, ds=L, k=Bgradient, unit=unit, nslice=1)
 
 
 # Define a drift element
@@ -455,18 +451,13 @@ def drift(name, L, code):
     """
     Define a drift element.
     """
-    if code == "impactx" and impactx_available:
-        return elements.ExactDrift(name=name, ds=L, nslice=10)
-    else:
-        raise ValueError(f"Unsupported code: {code}")
+    return elements.ExactDrift(name=name, ds=L, nslice=1)
 
 
 # Define a kicker element
-def current_to_angle(current, max_current, max_integrated_field, reference_energy_eV):
+def current_to_integrated_field(current, max_current, max_integrated_field):
     integrated_field = current * max_integrated_field / max_current
-    gamma = reference_energy_eV * e / (m_e * c**2)
-    angle = e * integrated_field / (gamma * m_e * c)
-    return angle
+    return integrated_field
 
 
 def kicker(
@@ -481,27 +472,74 @@ def kicker(
     """
     Define a kicker element.
     """
-    angle_h = current_to_angle(
-        current_h, max_current, max_integrated_field, reference_energy_eV
+    integrated_field_h = current_to_integrated_field(
+        current_h, max_current, max_integrated_field
     )
-    angle_v = current_to_angle(
-        current_v, max_current, max_integrated_field, reference_energy_eV
+    integrated_field_v = current_to_integrated_field(
+        current_v, max_current, max_integrated_field
     )
-    if code == "impactx" and impactx_available:
-        return elements.Kicker(
-            name=name, xkick=angle_h, ykick=angle_v, unit="dimensionless"
-        )
-    else:
-        raise ValueError(f"Unsupported code: {code}")
+    return elements.Kicker(
+        name=name, xkick=integrated_field_h, ykick=integrated_field_v, unit="T-m"
+    )
 
 
 # Define a dipole element
-def dipole(name, L, angle, code):
+def chicane_r56_to_field(r56, L, reference_energy_eV):
+    """
+    Return the magnetic field in T associated with the chicane setting of r56
+    defined at the reference energy reference_energy_eV.
+
+    Parameters:
+        r56 (float):
+            The chicane r56 at nominal energy in microns.
+        L (float):
+            The bend length in m.
+        reference_energy_eV (float):
+            The reference energy in eV.
+    """
+
+    # Polynomial fit to find the dipole angle as a function of chicane r56 (no longer used)
+    # angle_rad = 0.00743627 + 6.32812981e-05*chicane_r56 -4.83395592e-08*chicane_r56**2 + 1.91504783e-11*chicane_r56**3
+    # Updated r56 formula valid near r56=0
+    angle_rad = 0.001438389904456 * r56**0.5
+    # TODO: This angle explicitly assumes that the reference energy of the beam is 100 MeV! We should make
+    # sure that this is the case. In particular, for beams with fluctuations in energy, we should keep the
+    # energy of the reference particles constant.
+
+    B = -1.0 * get_rigidity(reference_energy_eV) * angle_rad / L
+    return B
+
+
+def Bfield_to_angle(Bfield, L, reference_energy_eV):
+    """
+    Return the bend angle in radians associated with a magnetic field Bfield
+    in units of T, for a bend of length L and specified energy.
+
+    Parameters:
+        Bfield (float):
+            The value of the magnetic field in T.
+        L (float):
+            The bend length in m.
+        reference_energy_eV (float):
+            The reference energy in eV.
+    """
+    angle = -1.0 * Bfield * L / get_rigidity(reference_energy_eV)
+    return angle
+
+
+def dipole(
+    name, L, angle=None, r56=None, bend=None, code=None, reference_energy_eV=100e6
+):
     """
     Define a dipole element.
     """
-    if code == "impactx" and impactx_available:
-        angle_deg = angle * 180.0 / (3.1415926535898)
-        return elements.ExactSbend(name=name, ds=L, phi=angle_deg, nslice=10)
+    if angle is None:
+        Bfield = chicane_r56_to_field(r56, L, reference_energy_eV=100e6)
+        angle = Bfield_to_angle(Bfield, L, reference_energy_eV)
     else:
-        raise ValueError(f"Unsupported code: {code}")
+        Bfield = 0.0
+    if bend == 1 or bend == 4:
+        Bfield = -Bfield
+        angle = -angle
+    angle_deg = angle * 180.0 / (3.1415926535898)
+    return elements.ExactSbend(name=name, ds=L, phi=angle_deg, B=Bfield, nslice=1)

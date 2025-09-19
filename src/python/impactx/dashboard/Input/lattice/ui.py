@@ -75,32 +75,6 @@ def add_lattice_element() -> dict:
 
 
 # -----------------------------------------------------------------------------
-# Write to file functions
-# -----------------------------------------------------------------------------
-
-
-def parameter_input_checker_for_lattice(latticeElement):
-    """
-    Helper function to check if user input is valid.
-    :return: A dictionary with parameter names as keys and their validated values.
-    """
-
-    parameter_input = {}
-    for parameter in latticeElement["parameters"]:
-        if parameter["parameter_error_message"] == []:
-            if parameter["parameter_type"] == "str":
-                parameter_input[parameter["parameter_name"]] = (
-                    f"'{parameter['sim_input']}'"
-                )
-            else:
-                parameter_input[parameter["parameter_name"]] = parameter["sim_input"]
-        else:
-            parameter_input[parameter["parameter_name"]] = 0
-
-    return parameter_input
-
-
-# -----------------------------------------------------------------------------
 # Callbacks
 # -----------------------------------------------------------------------------
 

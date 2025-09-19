@@ -153,12 +153,17 @@ namespace impactx
 
         /** Empty the container and reset the reference particle
          *
+         * Also clears the history of the beam moments, see reset_beam_moments_history()
+         *
          * @param keep_mass do not reset the reference particle mass
          * @param keep_charge do not reset the reference particle charge
          */
         void clear (bool keep_mass=false, bool keep_charge=false);
 
         /** Add new particles to the container for fixed s.
+         *
+         * Either the total charge (bunch_charge) or the weight of each
+         * particle (w) must be provided.
          *
          * Note: This can only be used *after* the initialization (grids) have
          *       been created, meaning after the call to AmrCore::InitFromScratch
@@ -172,7 +177,8 @@ namespace impactx
          * @param py momentum in y
          * @param pt momentum in t
          * @param qm charge over mass in 1/eV
-         * @param bchchg total charge within a bunch in C
+         * @param bunch_charge total charge within a bunch in C
+         * @param w weight of each particle: how many real particles to represent
          */
         void
         AddNParticles (
@@ -183,7 +189,8 @@ namespace impactx
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
             amrex::ParticleReal qm,
-            amrex::ParticleReal bchchg
+            std::optional<amrex::ParticleReal> bunch_charge = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt
         );
 
         /** Register storage for lost particles

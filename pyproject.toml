@@ -16,7 +16,3 @@ ignore = ["E402", "E501", "F405"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["amrex", "impactx"]
-
-[tool.isort]
-known_first_party = ["amrex", "impactx"]
-profile = "black"

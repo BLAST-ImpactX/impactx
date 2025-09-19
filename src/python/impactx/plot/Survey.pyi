@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 
 from __future__ import annotations
 
-__all__ = ["plot_survey"]
+__all__: list[str] = ["plot_survey"]
 
 def plot_survey(
     self, ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc"

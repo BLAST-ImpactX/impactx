@@ -14,6 +14,7 @@
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
+#include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
 #include <ablastr/warn_manager/WarnManager.H>
@@ -223,6 +224,8 @@ namespace impactx
         std::optional<amrex::ParticleReal> intensity
     )
     {
+        using namespace amrex::literals;  // for _rt and _prt
+
         // zero out the 6x6 matrix
         CovarianceMatrix cv{};
 
@@ -244,6 +247,21 @@ namespace impactx
                 amrex::ParticleReal muxpx = distribution.m_muxpx;
                 amrex::ParticleReal muypy = distribution.m_muypy;
                 amrex::ParticleReal mutpt = distribution.m_mutpt;
+
+                // some things we cannot represent in envelope mode
+                if (distribution.m_meanx  != 0.0_prt ||
+                    distribution.m_meany  != 0.0_prt ||
+                    distribution.m_meant  != 0.0_prt ||
+                    distribution.m_meanpx != 0.0_prt ||
+                    distribution.m_meanpy != 0.0_prt ||
+                    distribution.m_meanpt != 0.0_prt ||
+                    distribution.m_dispx  != 0.0_prt ||
+                    distribution.m_disppx != 0.0_prt ||
+                    distribution.m_dispy  != 0.0_prt ||
+                    distribution.m_disppy != 0.0_prt
+                ) {
+                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means or dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
+                }
 
                 // use distribution inputs to populate a 6x6 covariance matrix
                 amrex::ParticleReal denom_x = 1.0 - muxpx*muxpx;
@@ -277,7 +295,7 @@ namespace impactx
     ImpactX::add_particles (
         amrex::ParticleReal bunch_charge,
         distribution::KnownDistributions distr,
-        int npart
+        amrex::Long npart
     )
     {
         BL_PROFILE("ImpactX::add_particles");
@@ -307,11 +325,12 @@ namespace impactx
         // position, per MPI rank. We then measure the distribution's spatial
         // extent, create a grid, resize it to fit the beam, and then
         // redistribute particles so that they reside on the correct MPI rank.
-        int const myproc = amrex::ParallelDescriptor::MyProc();
-        int const nprocs = amrex::ParallelDescriptor::NProcs();
-        int const navg = npart / nprocs;  // note: integer division
-        int const nleft = npart - navg * nprocs;
-        int const npart_this_proc = (myproc < nleft) ? navg+1 : navg;  // add 1 to each proc until distributed
+        ParticleChunk proc_chunk = split_equally(
+            npart,
+            amrex::ParallelDescriptor::MyProc(),
+            amrex::ParallelDescriptor::NProcs()
+        );
+        amrex::Long const npart_this_proc = proc_chunk.size;
         auto const rel_part_this_proc =
             amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
@@ -342,24 +361,16 @@ namespace impactx
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
             {
-                int my_offset = 0;  // offset into global arrays x, y, etc. for this thread
-
+                amrex::Long npart_this_thread = npart_this_proc;
+                amrex::Long my_offset = 0;  // offset into global arrays x, y, etc. for this thread
 #ifdef AMREX_USE_OMP
-                int const nthreads = omp_get_max_threads();
-                int const tid = omp_get_thread_num();
-
-                int const navg_thread = npart_this_proc / nthreads;  // note: integer division
-                int const nleft_thread = npart_this_proc - navg_thread * nthreads;
-                int const npart_this_thread = (tid < nleft_thread) ? navg_thread+1 : navg_thread;  // add 1 to each thread until distributed
-
-                if (tid < nleft_thread) { // get navg_thread+1 items
-                    my_offset = tid * (navg_thread + 1);
-                } else {                  // get navg_thread items
-                    my_offset = tid * navg_thread + nleft_thread;
-                }
-
-#else
-                int const npart_this_thread = npart_this_proc;
+                ParticleChunk thread_chunk = split_equally(
+                    npart_this_proc,
+                    omp_get_thread_num(),
+                    omp_get_max_threads()
+                );
+                my_offset = thread_chunk.offset;
+                npart_this_thread = thread_chunk.size;
 #endif
 
                 initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
@@ -536,7 +547,7 @@ namespace impactx
             std::string distribution;
             pp_dist.get("distribution", distribution);
 
-            int npart = 0;  // Number of simulation particles
+            amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
             {
                 pp_dist.getWithParser("npart", npart);

@@ -360,9 +360,12 @@ Particles
       :param keep_mass: do not reset the reference particle mass
       :param keep_charge: do not reset the reference particle charge
 
-   .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bchchg)
+   .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None)
 
       Add new particles to the container for fixed s.
+
+      Either the total charge (bunch_charge) or the weight of each
+      particle (w) must be provided.
 
       Note: This can only be used *after* the initialization (grids) have
             been created, meaning after the call to :py:meth:`ImpactX.init_grids`
@@ -375,7 +378,8 @@ Particles
       :param py: momentum in y
       :param pt: momentum in t
       :param qm: charge over mass in 1/eV
-      :param bchchg: total charge within a bunch in C
+      :param bunch_charge: total charge within a bunch in C
+      :param w: weight of each particle: the macroparticle charge in units of the elementary charge `e` (i.e., how many real particles to represent)
 
    .. py:method:: ref_particle()
 
@@ -618,10 +622,17 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:method:: load_file(madx_file, nslice=1)
 
-      Load and append an accelerator lattice description from a MAD-X file.
+      Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
 
-      :param madx_file: file name to MAD-X file with beamline elements
-      :param nslice: number of slices used for the application of space charge
+      :param filename: filename to file with beamline elements
+      :param nslice: number of slices used for the application of collective effects
+
+   .. py:method:: from_pals(pals_line, nslice=1)
+
+      Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python Line.
+
+      :param pals_line: PALS Python Line with beamline elements
+      :param nslice: number of slices used for the application of collective effects
 
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 

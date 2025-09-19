@@ -12,6 +12,7 @@
 #include <AMReX.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_ParallelDescriptor.H>
+#include <AMReX_SIMD.H>
 
 #if defined(AMREX_DEBUG) || defined(DEBUG)
 #   include <cstdio>
@@ -667,7 +668,7 @@ void init_ImpactX (py::module& m)
 #else
                 return false;
 #endif
-            })
+        })
         .def_property_readonly_static(
             "have_simd",
             [](py::object const &){
@@ -676,7 +677,12 @@ void init_ImpactX (py::module& m)
 #else
                 return false;
 #endif
-            })
+        })
+        .def_property_readonly_static(
+            "simd_size",
+            [](py::object const &){
+                return amrex::simd::native_simd_size_particlereal;
+        })
         .def_property_readonly_static(
             "gpu_backend",
             [](py::object const &){
@@ -689,6 +695,24 @@ void init_ImpactX (py::module& m)
 #else
                 return py::none();
 #endif
-            })
+        })
+        .def_property_readonly_static(
+            "precision",
+            [](py::object){
+#ifdef AMREX_SINGLE_PRECISION
+                return "SINGLE";
+#else
+                return "DOUBLE";
+#endif
+        })
+        .def_property_readonly_static(
+            "precision_particles",
+            [](py::object const &){
+#ifdef AMREX_SINGLE_PRECISION_PARTICLES
+                return "SINGLE";
+#else
+                return "DOUBLE";
+#endif
+        })
         ;
 }

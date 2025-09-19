@@ -4,6 +4,7 @@ target_sources(lib
     CollectLost.cpp
     ImpactXParticleContainer.cpp
     Push.cpp
+    SplitEqually.cpp
 )
 
 add_subdirectory(spacecharge)

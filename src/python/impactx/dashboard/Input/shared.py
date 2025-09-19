@@ -14,11 +14,13 @@ from .validation import InputsValidator, errors_tracker
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())
 space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
+space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
 
 lattice_state_defaults = ["periods"]
 STATE_INPUTS = (
     csr_defaults
     + simulation_parameters_defaults
+    + space_charge_defaults
     + space_charge_defaults
     + lattice_state_defaults
 )
@@ -40,14 +42,19 @@ def determine_section_name(state_name: str) -> str:
         return "Lattice Configuration"
     else:
         return "Simulation Parameters"
-    
+
+
 class SharedUtilities:
     @staticmethod
+    @state.change(*STATE_INPUTS)
     @state.change(*STATE_INPUTS)
     def on_input_state_change(**_):
         """
         Called when any non-nested state variables are modified.
         """
+        non_dropdown_inputs = set(STATE_INPUTS) - DROPDOWN_INPUTS
+        state_changes = state.modified_keys & non_dropdown_inputs
+
         non_dropdown_inputs = set(STATE_INPUTS) - DROPDOWN_INPUTS
         state_changes = state.modified_keys & non_dropdown_inputs
 
@@ -65,13 +72,14 @@ class SharedUtilities:
                     match state_name:
                         case "kin_energy_on_ui":
                             state.dirty("kin_energy_unit")
-                        case _ if "blocking_factor" in state_name or "n_cell" in state_name:
+                        case _ if (
+                            "blocking_factor" in state_name or "n_cell" in state_name
+                        ):
                             direction = state_name[-1]
                             InputsValidator.update_n_cell_validation(direction)
 
                 section_name = determine_section_name(state_name)
                 errors_tracker.update(section_name, state_name=state_name)
-
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

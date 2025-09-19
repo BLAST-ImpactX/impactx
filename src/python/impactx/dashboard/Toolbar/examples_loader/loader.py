@@ -25,7 +25,6 @@ DASHBOARD_EXAMPLES = {
     # "iota_lattice/run_iotalattice.py",
     # "cyclotron/run_cyclotron.py",
     # "dogleg/run_dogleg.py",
-
 }
 
 

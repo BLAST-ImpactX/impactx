@@ -280,6 +280,20 @@ void init_ImpactX (py::module& m)
             },
             "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
         )
+        .def_property("space_charge_gauss_nint",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_nint");
+            },
+            [](ImpactX & /* ix */, int const gauss_nint) {
+                if (gauss_nint < 1) {
+                    throw std::runtime_error("space_charge_gauss_nint must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("algo.space_charge", gauss_nint);
+            },
+            "Number of steps for computing the integrals (default: ``11``)."
+        )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<std::string>("algo", "poisson_solver");

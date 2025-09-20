@@ -43,8 +43,8 @@ lattice_configuration = [
 sim.lattice.append(elements.Drift(ds=0.25, nslice=ns, name="drift1"))
 sim.lattice.append(quad1)
 sim.lattice.extend(lattice_configuration)
-# lattice_configuration.reverse()
-# sim.lattice.extend(lattice_configuration)
+lattice_configuration.reverse()
+sim.lattice.extend(lattice_configuration)
 
 sim.periods = 2
 

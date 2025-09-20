@@ -39,9 +39,7 @@ class DashboardLatticeParser:
                 case "append":
                     expanded_elements.append(operation_arg)
                 case "reverse":
-                    # Find the variable definition and reverse its flattened list
-                    reversed_expanded_elements = reversed(self._flatten(operation_arg))
-                    expanded_elements.extend(reversed_expanded_elements)
+                    self._apply_reverse(operation_arg)
                 case _:
                     print(f"Warning: Unsupported operation type: {operation_type}")
 
@@ -177,7 +175,7 @@ class DashboardLatticeParser:
         self._variable_assignments_cache[self._content_hash] = variable_assignments
         return variable_assignments
 
-    def _flatten(self, variable_name: str, debug: bool = True) -> List[str]:
+    def _flatten(self, variable_name: str, debug: bool = False) -> List[str]:
         """
         Recursively expands a varible name to replace it with its set of elements.
         Utilizes caching to avoid redundant parsing.
@@ -273,6 +271,38 @@ class DashboardLatticeParser:
                 used_variables.add(str(value).strip())
 
         return list(used_variables)
+
+    def _apply_reverse(self, var_name: str) -> None:
+        """
+        Reverse the order of elements inside a list variable (in place).
+
+        Example:
+            1.) line = [a, b, c]
+            2.) line.reverse()
+            3.) result is -> [c, b, a]
+
+        :param var_name: Name of the variable to reverse.
+        """
+
+        variable_assignments = self._get_variable_assignments()
+        if var_name not in variable_assignments:
+            return
+
+        # Take the string inside the brackets, e.g. "a, b, c".
+        list_content = variable_assignments[var_name]
+
+        # Split that string into individual items.
+        # We split on commas, but the regex makes sure we do not split commas
+        # that are inside parentheses (e.g., elements.Quad(k=0.5, ds=1.0)).
+        raw_items = re.split(r",\s*(?![^()]*\))", list_content)
+
+        items = [item.strip() for item in raw_items if item.strip()]
+        items.reverse()
+        variable_assignments[var_name] = ", ".join(items)
+
+        # Clear the flatten cache so future lookups rebuild the list using the new reversed order.
+        self._flatten_cache.clear()
+
 
     #-----------------------------------------------------------------------------
     # Debug methods

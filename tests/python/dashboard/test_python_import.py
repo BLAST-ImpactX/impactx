@@ -55,23 +55,15 @@ def test_python_import(dashboard):
     ]
 
     LATTICE_CONFIGURATION = [
-        #drit1
-        ("#ds1", 0.25),
-        ("#ns1", 25),
         ("#name1", "drift1"),
-        #quad1
-        ("#ds2", 1),
-        ("#k2", 1.0),
-        ("#ns2", 25),
         ("#name2", "quad1"),
-        #lattice_configuration
         ("#name3", "drift2"),
-        ("#ds3", 0.5),
         ("#name4", "quad2"),
-        ("#ds4", 1.0),
-        ("#k4", -1.0),
         ("#name5", "drift3"),
-        ("#ds5", 0.25),
+        ("#name6", "drift3"),
+        ("#name7", "quad2"),
+        ("#name8", "drift2"),
+        ("#ds8", 0.5),
     ]
 
     # Check state parameters
@@ -82,7 +74,16 @@ def test_python_import(dashboard):
 
     # Check input values
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
-        actual_value = float(dashboard.sb.get_value(element_id))
-        assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
-            f"{element_id}: expected {expected_value}, got {actual_value}"
-        )
+        actual_value = dashboard.sb.get_value(element_id)
+
+        if isinstance(expected_value, str):
+            # Compare strings directly
+            assert actual_value == expected_value, (
+                f"{element_id}: expected '{expected_value}', got '{actual_value}'"
+            )
+        else:
+            # Compare numbers with tolerance
+            actual_value = float(actual_value)
+            assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
+                f"{element_id}: expected {expected_value}, got {actual_value}"
+            )

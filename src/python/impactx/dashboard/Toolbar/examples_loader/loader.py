@@ -16,15 +16,15 @@ state.impactx_example_list = []
 
 DASHBOARD_EXAMPLES = {
     "fodo/run_fodo.py",
-    # "chicane/run_chicane_csr.py",
-    # "fodo_space_charge/run_fodo_envelope_sc.py",
-    # "apochromatic/run_apochromatic.py",
-    # "kurth/run_kurth_10nC_periodic.py",
-    # "expanding_beam/run_expanding_fft.py",
-    # "expanding_beam/run_expanding_envelope.py",
-    # "iota_lattice/run_iotalattice.py",
-    # "cyclotron/run_cyclotron.py",
-    # "dogleg/run_dogleg.py",
+    "chicane/run_chicane_csr.py",
+    "fodo_space_charge/run_fodo_envelope_sc.py",
+    "apochromatic/run_apochromatic.py",
+    # "kurth/run_kurth_10nC_periodic.py", - running into recursion issues
+    "expanding_beam/run_expanding_fft.py",
+    "expanding_beam/run_expanding_envelope.py",
+    "iota_lattice/run_iotalattice.py",
+    "cyclotron/run_cyclotron.py",
+    "dogleg/run_dogleg.py",
 }
 
 

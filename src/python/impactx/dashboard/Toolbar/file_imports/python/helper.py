@@ -53,6 +53,10 @@ class DashboardParserHelper:
                 pattern_match = re.search(pattern.format(parameter_name), content)
                 if pattern_match:
                     value = ast.literal_eval(pattern_match.group(1))
+
+                    if parameter_name == "space_charge" and isinstance(value, bool):
+                        value = str(value).lower()
+
                     reference_dictionary[parameter_name] = value
                     break
 
@@ -61,8 +65,14 @@ class DashboardParserHelper:
             r"\bkin_energy_MeV\s*=\s*([^#\n]+)", content
         )
         if kin_energy_pattern_match:
-            kin_energy_value = kin_energy_pattern_match.group(1)
-            reference_dictionary["kin_energy_on_ui"] = kin_energy_value
+            kin_energy_value = kin_energy_pattern_match.group(1).strip()
+
+            try:
+                parsed_value = ast.literal_eval(kin_energy_value)
+            except (ValueError, SyntaxError):
+                parsed_value = reference_dictionary.get("kin_energy_MeV")
+
+            reference_dictionary["kin_energy_on_ui"] = parsed_value
 
         return reference_dictionary
 

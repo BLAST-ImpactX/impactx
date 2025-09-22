@@ -3,6 +3,7 @@ from seleniumbase import SB
 
 from .utils import (
     DashboardTester,
+    save_failure_screenshot,
     start_dashboard,
     wait_for_interaction_ready,
     wait_for_server_ready,
@@ -32,11 +33,16 @@ def dashboard():
 
 
 @pytest.fixture(autouse=True)
-def reset_dashboard_inputs(dashboard):
+def reset_dashboard_inputs(dashboard, request):
     """
     Resets the dashboard to its default state before each test.
-
     This ensures all tests start from a clean, consistent baseline.
     """
+
     dashboard.sb.click("#Input_route")
     dashboard.sb.click("#reset_all_inputs_button")
+    # Teardown: on failure, save a screenshot for debugging
+    yield
+
+    # Always save a screenshot after each test for now (CI artifact)
+    save_failure_screenshot(dashboard, request)

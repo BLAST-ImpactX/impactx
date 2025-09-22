@@ -107,6 +107,7 @@ class DashboardExamples:
 
         self._run_example("chicane", "chicane/run_chicane.py", LATTICE_CONFIGURATION)
 
+
 def test_examples(dashboard) -> None:
     """
     Exercise a subset of example imports against the running dashboard.

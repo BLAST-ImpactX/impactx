@@ -113,6 +113,15 @@ class DashboardTester:
     def clear(self):
         self.sb.click("#reset_all_inputs_button")
 
+    def click(self, selector: str, element_is_id: bool = False, **kwargs) -> None:
+        """Click an element, optionally treating ``selector`` as a DOM id."""
+
+        css_selector = selector
+        if element_is_id and not selector.startswith("#"):
+            css_selector = f"#{selector}"
+
+        self.sb.click(css_selector, **kwargs)
+
     def add_lattice_element(self, element_name: str) -> None:
         """
         Add a lattice element to the dashboard.

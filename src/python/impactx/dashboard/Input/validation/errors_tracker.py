@@ -43,8 +43,18 @@ class ErrorsTracker:
 
         :param input_name: The name of the input field that is modified.
         """
+        candidate_names = [input_name]
+
         normalized = GeneralFunctions.normalize_for_v_model(input_name)
-        return getattr(state, f"{normalized}_error_message", "")
+        if normalized not in candidate_names:
+            candidate_names.append(normalized)
+
+        for candidate in candidate_names:
+            state_attr = f"{candidate}_error_message"
+            if hasattr(state, state_attr):
+                return getattr(state, state_attr)
+
+        return ""
 
     def clear_category(self, category: str) -> None:
         self.errors[category] = []
@@ -81,14 +91,10 @@ class ErrorsTracker:
         :param category: The dashboard section name.
         :param input_name: The UI label (e.g., "CSR Bins", "Max Level").
         """
-        print("check state errors is called")
         category = determine_section_name(input_name)
-        print(f" the category of {input_name} is {category}")
         self._clear_error(category, input_name)
         error = self._get_error_message(input_name)
-        print(f" the error of {input_name} is {error}")
         if error:
-            print(f"appending error to {category}")
             self.errors[category].append(f"{input_name}: {error}")
 
     def _check_input_params_errors(self) -> list[str]:

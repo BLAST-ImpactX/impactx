@@ -37,8 +37,12 @@ def on_tracking_mode_change(**kwargs) -> None:
 
 @state.change("csr")
 def on_csr_change(csr, **kwargs) -> None:
-    if not csr:
+    csr_disabled = (isinstance(csr, str) and csr.lower() == "false") or csr is False
+
+    if csr_disabled:
         errors_tracker.clear_category("CSR")
+    else:
+        errors_tracker.update("CSR")
 
 
 from ..defaults import INPUT_LABELS

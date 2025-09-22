@@ -82,11 +82,6 @@ def test_validation(dashboard):
     for param_id, value in LATTICE_PARAMS.items():
         dashboard.set_input(param_id, value)
 
-    # Variable
-    dashboard.sb.click("#lattice_settings")
-    VARIABLES = {"variable_name_1": NON_ERROR_INPUT, "variable_value_1": ERROR_INPUT}
-    for param_id, value in VARIABLES.items():
-        dashboard.set_input(param_id, value)
 
     # Check to make sure that the input_errors is only tracking what is shown on the UI
     assert dashboard.get_state("number_of_input_errors") == 33
@@ -94,6 +89,9 @@ def test_validation(dashboard):
     assert dashboard.get_state("number_of_input_errors") == 29
     dashboard.set_input("csr", False)
     dashboard.set_input("space_charge", "false")
-    assert dashboard.get_state("number_of_input_errors") == 18
-    dashboard.set_input("reset_lattice_button", True)
+    assert dashboard.get_state("number_of_input_errors") == 17
+    dashboard.click("reset_lattice_configuration_button", True)
     assert dashboard.get_state("number_of_input_errors") == 15
+    dashboard.click("reset_simulation_parameters_button", True)
+    assert dashboard.get_state("number_of_input_errors") == 10
+

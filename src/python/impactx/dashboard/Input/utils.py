@@ -6,7 +6,7 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from typing import Union
+from typing import Iterable, Union
 
 from .. import state
 from ..Toolbar.file_imports.python.parser import DashboardParser
@@ -107,7 +107,10 @@ class GeneralFunctions:
                 possible_section_names.append(name)
 
         if input_section.upper() in possible_section_names:
-            state.update(getattr(DashboardDefaults, input_section.upper()))
+            default_values = getattr(DashboardDefaults, input_section.upper())
+            state.update(default_values)
+            GeneralFunctions._clear_error_messages(default_values.keys())
+            GeneralFunctions._clear_section_errors(input_section)
 
             if input_section == "distribution_parameters":
                 state.dirty("distribution_type")
@@ -121,6 +124,10 @@ class GeneralFunctions:
         elif input_section == "all":
             DashboardParser.reset_importing_states()
             state.update(DashboardDefaults.DEFAULT_VALUES)
+            GeneralFunctions._clear_error_messages(
+                DashboardDefaults.DEFAULT_VALUES.keys()
+            )
+            GeneralFunctions._clear_section_errors(input_section)
             state.dirty("distribution_type")
             state.selected_lattice_list = []
             state.dirty("max_level")
@@ -139,3 +146,52 @@ class GeneralFunctions:
         current_input = getattr(state, state_name)
         numeric_input = GeneralFunctions.convert_to_numeric(current_input)
         setattr(state, state_name, numeric_input)
+
+    @staticmethod
+    def _clear_error_messages(parameter_names: Iterable[str]) -> None:
+        """Clear validation error states for the provided parameter names."""
+
+        for name in parameter_names:
+            error_state_name = f"{name}_error_message"
+            if not hasattr(state, error_state_name):
+                continue
+
+            current_value = getattr(state, error_state_name)
+
+            if isinstance(current_value, list):
+                new_value = []
+            elif isinstance(current_value, str):
+                new_value = ""
+            else:
+                try:
+                    new_value = type(current_value)()
+                except TypeError:
+                    new_value = None
+
+            setattr(state, error_state_name, new_value)
+
+    @staticmethod
+    def _clear_section_errors(section_name: str) -> None:
+        """
+        Notify the error tracker to clear errors for a given section.
+        """
+
+        from .validation import errors_tracker
+
+        if section_name == "all":
+            for section in DashboardDefaults.INPUT_SECTIONS:
+                errors_tracker.clear_category(section)
+            return
+
+        section_lookup = {
+            "simulation_parameters": "Simulation Parameters",
+            "distribution_parameters": "Distribution Parameters",
+            "lattice_configuration": "Lattice Configuration",
+            "space_charge": "Space Charge",
+            "csr": "CSR",
+            "isr": "ISR",
+        }
+
+        resolved_section = section_lookup.get(section_name)
+        if resolved_section:
+            errors_tracker.clear_category(resolved_section)

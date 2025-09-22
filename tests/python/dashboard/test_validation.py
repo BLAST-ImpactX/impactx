@@ -83,13 +83,13 @@ def test_validation(dashboard):
         dashboard.set_input(param_id, value)
 
     # Check to make sure that the input_errors is only tracking what is shown on the UI
-    assert dashboard.get_state("number_of_input_errors") == 33
+    dashboard.assert_state("number_of_input_errors", 33)
     dashboard.set_input("poisson_solver", "fft")
-    assert dashboard.get_state("number_of_input_errors") == 29
+    dashboard.assert_state("number_of_input_errors", 29)
     dashboard.set_input("csr", False)
     dashboard.set_input("space_charge", "false")
-    assert dashboard.get_state("number_of_input_errors") == 17
-    dashboard.click("reset_lattice_configuration_button", True)
-    assert dashboard.get_state("number_of_input_errors") == 15
-    dashboard.click("reset_simulation_parameters_button", True)
-    assert dashboard.get_state("number_of_input_errors") == 10
+    dashboard.assert_state("number_of_input_errors", 17)
+    dashboard.sb.click("#reset_lattice_configuration_button")
+    dashboard.assert_state("number_of_input_errors", 15)
+    dashboard.sb.click("#reset_simulation_parameters_button")
+    dashboard.assert_state("number_of_input_errors", 10)

@@ -1,6 +1,7 @@
 ERROR_INPUT = "error"
 NON_ERROR_INPUT = "no_error"
 
+
 def test_validation(dashboard):
     """
     Test the errors_tracker and validation of the dashboard.
@@ -55,10 +56,9 @@ def test_validation(dashboard):
         "mutpt": ERROR_INPUT,
     }
 
-    INPUTS = SIMULATION  | DISTRIBUTION_PARAMETERS | SPACE_CHARGE | CSR
+    INPUTS = SIMULATION | DISTRIBUTION_PARAMETERS | SPACE_CHARGE | CSR
     for param_id, value in INPUTS.items():
         dashboard.set_input(param_id, value)
-
 
     dashboard.sb.click("#multigrid_settings_button")
     MULTIGRID_ADVANCED_SETTINGS = {
@@ -82,7 +82,6 @@ def test_validation(dashboard):
     for param_id, value in LATTICE_PARAMS.items():
         dashboard.set_input(param_id, value)
 
-
     # Check to make sure that the input_errors is only tracking what is shown on the UI
     assert dashboard.get_state("number_of_input_errors") == 33
     dashboard.set_input("poisson_solver", "fft")
@@ -94,4 +93,3 @@ def test_validation(dashboard):
     assert dashboard.get_state("number_of_input_errors") == 15
     dashboard.click("reset_simulation_parameters_button", True)
     assert dashboard.get_state("number_of_input_errors") == 10
-

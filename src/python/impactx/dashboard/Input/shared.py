@@ -7,46 +7,17 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from . import DashboardDefaults
+from .defaults import DashboardDefaults, STATE_INPUTS, determine_section_name
 from .utils import GeneralFunctions
 from .validation import InputsValidator, errors_tracker
-
-simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
-csr_defaults = list(DashboardDefaults.CSR.keys())
-space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
-space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
-
-lattice_state_defaults = ["periods"]
-STATE_INPUTS = (
-    csr_defaults
-    + simulation_parameters_defaults
-    + space_charge_defaults
-    + space_charge_defaults
-    + lattice_state_defaults
-)
 
 # Set of dropdown input state variables, automatically populated when InputComponents.select() is called
 # Used to exclude dropdown inputs from validation since they're constrained to valid options
 DROPDOWN_INPUTS = set()
 
 
-def determine_section_name(state_name: str) -> str:
-    """
-    Determines the section name based on the state variable name.
-    """
-    if state_name in csr_defaults:
-        return "CSR"
-    elif state_name in space_charge_defaults:
-        return "Space Charge"
-    elif state_name == "periods":
-        return "Lattice Configuration"
-    else:
-        return "Simulation Parameters"
-
-
 class SharedUtilities:
     @staticmethod
-    @state.change(*STATE_INPUTS)
     @state.change(*STATE_INPUTS)
     def on_input_state_change(**_):
         """

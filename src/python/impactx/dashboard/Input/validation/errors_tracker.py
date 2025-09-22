@@ -7,27 +7,8 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import state
-from ..defaults import INPUT_LABELS, DashboardDefaults
+from ..defaults import INPUT_LABELS, DashboardDefaults, determine_section_name, csr_defaults
 from ..utils import GeneralFunctions
-
-simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
-csr_defaults = list(DashboardDefaults.CSR.keys())
-space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
-
-
-def determine_section_name(state_name: str) -> str:
-    """
-    Determines the section name based on the state variable name.
-    """
-    if state_name in csr_defaults:
-        return "CSR"
-    elif state_name in space_charge_defaults:
-        return "Space Charge"
-    elif state_name == "periods":
-        return "Lattice Configuration"
-    else:
-        return "Simulation Parameters"
-
 
 class ErrorsTracker:
     """

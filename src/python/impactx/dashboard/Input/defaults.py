@@ -58,6 +58,19 @@ INPUT_LABELS = {
 }
 
 
+def determine_section_name(state_name: str) -> str:
+    """
+    Determines the section name based on the state variable name.
+    """
+    if state_name in csr_defaults:
+        return "CSR"
+    elif state_name in space_charge_defaults:
+        return "Space Charge"
+    elif state_name == "periods":
+        return "Lattice Configuration"
+    else:
+        return "Simulation Parameters"
+
 class DashboardDefaults:
     """
     Defaults for simulation parameters in the ImpactX dashboard.
@@ -274,3 +287,15 @@ class UIDefaults:
         "display": "flex",
         "flex-direction": "column",
     }
+
+simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
+csr_defaults = list(DashboardDefaults.CSR.keys())
+space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
+
+lattice_state_defaults = ["periods"]
+STATE_INPUTS = (
+    csr_defaults
+    + simulation_parameters_defaults
+    + space_charge_defaults
+    + lattice_state_defaults
+)

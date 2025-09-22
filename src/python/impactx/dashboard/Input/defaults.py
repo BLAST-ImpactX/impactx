@@ -71,6 +71,7 @@ def determine_section_name(state_name: str) -> str:
     else:
         return "Simulation Parameters"
 
+
 class DashboardDefaults:
     """
     Defaults for simulation parameters in the ImpactX dashboard.
@@ -287,6 +288,7 @@ class UIDefaults:
         "display": "flex",
         "flex-direction": "column",
     }
+
 
 simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
 csr_defaults = list(DashboardDefaults.CSR.keys())

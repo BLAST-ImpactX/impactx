@@ -7,8 +7,14 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import state
-from ..defaults import INPUT_LABELS, DashboardDefaults, determine_section_name, csr_defaults
+from ..defaults import (
+    INPUT_LABELS,
+    DashboardDefaults,
+    csr_defaults,
+    determine_section_name,
+)
 from ..utils import GeneralFunctions
+
 
 class ErrorsTracker:
     """

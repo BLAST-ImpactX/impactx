@@ -7,7 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from .defaults import DashboardDefaults, STATE_INPUTS, determine_section_name
+from .defaults import STATE_INPUTS, DashboardDefaults, determine_section_name
 from .utils import GeneralFunctions
 from .validation import InputsValidator, errors_tracker
 

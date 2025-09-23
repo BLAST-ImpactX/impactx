@@ -66,7 +66,7 @@ def test_charge_deposition_2D(save_png=True):
 
     sim.track_particles()
 
-    # sim.deposit_charge()
+    sim.deposit_charge()
     # rho = sim.rho(lev=0)
     # rs = rho.sum_unique(comp=0, local=False)
 

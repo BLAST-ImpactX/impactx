@@ -125,6 +125,9 @@ namespace impactx::elements
 
             // constants for nonlinear map (model = 1):
 
+            // access reference particle values to find beta
+            m_beta = refpart.beta();
+
             // expressions from eq (14) of Mitchell and Hwang, NAPAC2025
             amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
             amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
@@ -175,13 +178,67 @@ namespace impactx::elements
         {
 
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // apply edge focusing
-            px = px + m_R21 * x;
-            py = py + m_R43 * y;
+            if (m_model==0) {           
+               // apply linear model
+               px = px + m_R21 * x;
+               py = py + m_R43 * y;
+            } else {
+               // apply nonlinear model
+               T_Real xout = x;
+               T_Real pxout = px;
+               T_Real yout = y;
+               T_Real pyout = py;
+               T_Real tout = t;
+               T_Real ptout = pt;
+
+               // compute particle momentum deviation delta + 1
+               T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+
+               T_Real const c2 = m_c2_times_1plusdelta * delta1;
+               T_Real const c3 = m_c3_times_1plusdelta * delta1;
+               //T_Real const c4 = m_c4_times_1plusdelta * delta1; //not currently used
+               //T_Real const c6 = m_c6_times_1plusdelta * delta1; //not currently used
+               T_Real const c7 = m_c7_times_1plusdelta * delta1;
+               T_Real const c8 = m_c8_times_1plusdelta * delta1;
+               T_Real const c9 = m_c9_times_1plusdelta * delta1;
+               T_Real const c10 = m_c10_times_1plusdelta * delta1;
+               T_Real const c11 = m_c11_times_1plusdelta * delta1;
+               T_Real const c12 = m_c12_times_1plusdelta * delta1;
+
+               // update transverse coordinates
+               xout = x - c3 - c10*powi<2>(x) + (c10 + c11)*powi<2>(y);
+               yout = y + 2_prt * c10 * x * y;
+
+               // update transverse momenta
+               T_Real const D = 1_prt - 4_prt*c10*c11*powi<2>(y) - 4_prt*powi<2>(c10)*(powi<2>(x)+powi<2>(y));
+               T_Real const dRdx = -m_c13 + c2 + c3*m_c5 + 2_prt*(m_c14 - m_c5)*x + 3_prt*(m_c15/6_prt + c10*m_c5 + c8)*powi<2>(x)
+                                   + (-m_c15/2_prt + c10*m_c5 - c11*m_c5 - c9)*powi<2>(y);
+               T_Real const dRdy = 2_prt*(-m_c14 + m_c5 - c7)*y + 2_prt*(-m_c15/2_prt + c10*m_c5 - c11*m_c5 - c9)*x*y - 4_prt*c12*powi<3>(y);
+               T_Real const dXdx = 1_prt - 2_prt*c10*x;
+               T_Real const dXdy = 2_prt*(c10 + c11)*y;
+               T_Real const dYdx = 2_prt*c10*y;
+               T_Real const dYdy = 1_prt + 2_prt*c10*x;
+
+               pxout = (dYdy * (px - dRdx) - dYdx * (py - dRdy)) / D;
+               pyout = (-dXdy * (px - dRdx) + dXdx * (py - dRdy)) / D;
+
+               // update temporal coordinate
+               T_Real const dDelta_dpt = (pt - 1_prt/m_beta) / delta1;
+               tout = t - dDelta_dpt/delta1 * ((c2 + c3*m_c5)*x + (c10*m_c5 + c8)*powi<3>(x) - c7*powi<2>(y) - c12*powi<4>(y)
+                      + (c10*m_c5 - c11*m_c5 - c9)*x*powi<2>(y) + pxout*(-c3 + (c11 + c10)*powi<2>(y) - c10*powi<2>(x)) + 2_prt*pyout*c10*x*y);
+
+               x = xout;
+               px = pxout;
+               y = yout;
+               py = pyout;
+               t = tout;
+               pt = ptout;
+            }
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
@@ -243,7 +300,7 @@ namespace impactx::elements
       private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_R21, m_R43;
+        amrex::ParticleReal m_R21, m_R43, m_beta;
         amrex::ParticleReal m_c1, m_c5, m_c13, m_c14, m_c15;
         amrex::ParticleReal m_c2_times_1plusdelta, m_c3_times_1plusdelta, m_c4_times_1plusdelta, m_c6_times_1plusdelta;
         amrex::ParticleReal m_c7_times_1plusdelta, m_c8_times_1plusdelta, m_c9_times_1plusdelta, m_c10_times_1plusdelta;

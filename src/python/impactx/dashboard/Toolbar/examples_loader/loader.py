@@ -64,7 +64,7 @@ class DashboardExamplesLoader:
         Retrieve the selected ImpactX example file and populate the UI with its values.
         """
 
-        impactx_directory = DashboardExamplesLoader.get_impactx_path()
+        impactx_directory = GeneralFunctions.get_impactx_root_dir()
         impactx_example_file_path = impactx_directory / "examples" / file_name
 
         file_content_as_str = impactx_example_file_path.read_text()
@@ -81,8 +81,9 @@ class DashboardExamplesLoader:
 
         state.impactx_example_list.clear()
 
-        impactx_directory = DashboardExamplesLoader.get_impactx_path()
+        impactx_directory = GeneralFunctions.get_impactx_root_dir()
         impactx_examples_directory = impactx_directory / "examples"
+        print(" the examples directory is ", impactx_examples_directory)
 
         for path in impactx_examples_directory.glob("**/run*"):
             relative_path = path.relative_to(impactx_examples_directory)

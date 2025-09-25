@@ -10,9 +10,7 @@ import os
 import subprocess
 import sys
 import time
-# from pathlib import Path
-# from impactx.src.python.impactx.dashboard.Input.utils import GeneralFunctions
-from impactx.dashboard.Input.utils import get_impactx_root_dir
+from pathlib import Path
 
 import pytest
 from selenium.common.exceptions import TimeoutException
@@ -20,6 +18,20 @@ from selenium.common.exceptions import TimeoutException
 TIMEOUT = 120
 APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
 
+def get_impactx_root_dir() -> Path | None:
+    """
+    Locates the ImpactX source directory.
+
+    Looks for the outermost parent directory named 'impactx' that contains a '.git' folder.
+    """
+
+    current_directory = Path(__file__).resolve()
+    root_dir = None
+
+    for parent_dir in current_directory.parents:
+        if parent_dir.name == "impactx" and (parent_dir / ".git").is_dir():
+            root_dir = parent_dir  # keep going until we reach the highest match
+    return root_dir
 
 def start_dashboard() -> subprocess.Popen[str]:
     """

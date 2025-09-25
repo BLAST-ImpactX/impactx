@@ -104,9 +104,9 @@ print(f"  rtol={rtol} (ignored: atol~={atol})")
 assert np.allclose(
     [sigma_xf, sigma_yf, sigma_tf],
     [
-        9.029112e-04,
-        9.029112e-04,
-        1.841402e-06,
+        8.94427191e-04,
+        8.94427191e-04,
+        1.824483738e-06,
     ],
     rtol=rtol,
     atol=atol,

@@ -836,7 +836,7 @@ void init_elements(py::module& m)
                      std::make_pair("K4", dip_edge.m_K4),
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
-                     std::make_pair("model", dip_edge.m_model) 
+                     std::make_pair("model", dip_edge.m_model)
                  );
              }
         )

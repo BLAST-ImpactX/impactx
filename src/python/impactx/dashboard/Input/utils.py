@@ -6,13 +6,13 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+from pathlib import Path
 from typing import Union
 
 from .. import state
 from ..Toolbar.file_imports.python.parser import DashboardParser
 from .defaults import DashboardDefaults
 
-from pathlib import Path
 
 class GeneralFunctions:
     @staticmethod

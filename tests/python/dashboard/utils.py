@@ -18,6 +18,7 @@ from selenium.common.exceptions import TimeoutException
 TIMEOUT = 120
 APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
 
+
 def get_impactx_root_dir() -> Path | None:
     """
     Locates the ImpactX source directory.
@@ -32,6 +33,7 @@ def get_impactx_root_dir() -> Path | None:
         if parent_dir.name == "impactx" and (parent_dir / ".git").is_dir():
             root_dir = parent_dir  # keep going until we reach the highest match
     return root_dir
+
 
 def start_dashboard() -> subprocess.Popen[str]:
     """

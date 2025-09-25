@@ -703,18 +703,32 @@ This module provides elements and methods for the accelerator lattice.
 
    Edge focusing associated with bend entry or exit
 
-   This model assumes a first-order effect of nonzero gap.
-   Here we use the linear fringe field map, given to first order in g/rc (gap / radius of curvature).
+   The model here is based on:
 
-   References:
-
-   * K. L. Brown, SLAC Report No. 75 (1982).
    * K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
+
+   as represented in the explicit, symplectic form provided in:
+
+   * C. Mitchell and K. Hwang, in Proc. NAPAC2025, TUP040, Sacramento, CA (2025).
+
+   When model = 0, the linearized map is used.  This model is identical to:
+
+   * K. L. Brown, SLAC Report No. 75 (1982)
+
+   when expanded to first order in g/rc (gap / radius of curvature).
 
    :param psi: Pole face angle in rad
    :param rc: Radius of curvature in m
    :param g: Gap parameter in m
+   :param R: Length scale used in fringe field integrals in m
+   :param K0: Fringe field integral (unitless)
+   :param K1: Fringe field integral (unitless)
    :param K2: Fringe field integral (unitless)
+   :param K3: Fringe field integral (unitless)
+   :param K4: Fringe field integral (unitless)
+   :param K5: Fringe field integral (unitless)
+   :param K6: Fringe field integral (unitless)
+   :param model: Specification of model (linear if model=0)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

@@ -322,12 +322,30 @@ This element requires these additional parameters:
 ``dipedge``
 ^^^^^^^^^^^
 
-``dipedge`` for dipole edge focusing. This requires these additional parameters:
+``dipedge`` for dipole edge focusing. The model here is based on:
+
+K. Hwang and S. Y. Lee, "Dipole fringe field map for compact synchrotrons," Phys. Rev. Accel. Beams 18, 122401 (2015)
+
+as represented in the explicit, symplectic form provided in:
+
+C. Mitchell and K. Hwang, "Explicit symplectic representations of nonlinear dipole fringe field maps," in Proc. NAPAC2025, TUP040, Sacramento, CA, 2025
+
+If ``model = 0``, then the linearized map is used.  The default values of the field integrals K0 - K6 are those given in eq (52) of the first reference above.
+
+This requires these additional parameters:
 
 * ``<element_name>.psi`` (``float``, in radians) the pole face rotation angle
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
-* ``<element_name>.g`` (``float``, in meters) the gap size
-* ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.g`` (``float``, in meters) the full magnetic gap size
+* ``<element_name>.R`` (``float``, in meters) scale length for the field integrals (default: ``1 m``)
+* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field (FINT)
+* ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.model`` (``integer``) specification of model (default: ``0``, linear model)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

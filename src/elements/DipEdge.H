@@ -52,10 +52,18 @@ namespace impactx::elements
          *   K. L. Brown, SLAC Report No. 75 (1982).
          *   K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
          *
-         * @param psi Pole face angle in rad.
+         * @param psi Pole face entry/exit angle in rad.
          * @param rc Radius of curvature in m.
          * @param g Gap parameter in m.
+         * @param R Length scale parameter in m.
+         * @param K0 Fringe field integeral (unitless).
+         * @param K1 Fringe field integeral (unitless).
          * @param K2 Fringe field integral (unitless).
+         * @param K3 Fringe field integral (unitless).
+         * @param K4 Fringe field integral (unitless).
+         * @param K5 Fringe field integral (unitless).
+         * @param K6 Fringe field integral (unitless).
+         * @param model Model (0 linear, 1 nonlinear).
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -65,7 +73,15 @@ namespace impactx::elements
             amrex::ParticleReal psi,
             amrex::ParticleReal rc,
             amrex::ParticleReal g,
+            amrex::ParticleReal R,
+            amrex::ParticleReal K0,
+            amrex::ParticleReal K1,
             amrex::ParticleReal K2,
+            amrex::ParticleReal K3,
+            amrex::ParticleReal K4,
+            amrex::ParticleReal K5,
+            amrex::ParticleReal K6,
+            int model,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -73,7 +89,7 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_psi(psi), m_rc(rc), m_g(g), m_K2(K2)
+          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model)
         {
         }
 
@@ -189,7 +205,16 @@ namespace impactx::elements
         amrex::ParticleReal m_psi; //! pole face angle in rad
         amrex::ParticleReal m_rc; //! bend radius in m
         amrex::ParticleReal m_g; //! gap parameter in m
+        amrex::ParticleReal m_R; //! scale length in m
+        amrex::ParticleReal m_K0; //! fringe field integral
+        amrex::ParticleReal m_K1; //! fringe field integral
         amrex::ParticleReal m_K2; //! fringe field integral
+        amrex::ParticleReal m_K3; //! fringe field integral
+        amrex::ParticleReal m_K4; //! fringe field integral
+        amrex::ParticleReal m_K5; //! fringe field integral
+        amrex::ParticleReal m_K6; //! fringe field integral
+        int m_model; //! model specification
+
 
       private:
         // constants that are independent of the individually tracked particle,

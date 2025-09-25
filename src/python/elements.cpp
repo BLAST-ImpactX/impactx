@@ -807,7 +807,16 @@ void init_elements(py::module& m)
                      std::make_pair("psi", dip_edge.m_psi),
                      std::make_pair("rc", dip_edge.m_rc),
                      std::make_pair("g", dip_edge.m_g),
-                     std::make_pair("K2", dip_edge.m_K2)
+                     std::make_pair("K2", dip_edge.m_K2),
+                     std::make_pair("R", dip_edge.m_R),
+                     std::make_pair("K0", dip_edge.m_K0),
+                     std::make_pair("K1", dip_edge.m_K1),
+                     std::make_pair("K2", dip_edge.m_K2),
+                     std::make_pair("K3", dip_edge.m_K3),
+                     std::make_pair("K4", dip_edge.m_K4),
+                     std::make_pair("K5", dip_edge.m_K5),
+                     std::make_pair("K6", dip_edge.m_K6),
+                     std::make_pair("model", dip_edge.m_model)
                  );
              }
         )
@@ -818,7 +827,16 @@ void init_elements(py::module& m)
                      std::make_pair("psi", dip_edge.m_psi),
                      std::make_pair("rc", dip_edge.m_rc),
                      std::make_pair("g", dip_edge.m_g),
-                     std::make_pair("K2", dip_edge.m_K2)
+                     std::make_pair("K2", dip_edge.m_K2),
+                     std::make_pair("R", dip_edge.m_R),
+                     std::make_pair("K0", dip_edge.m_K0),
+                     std::make_pair("K1", dip_edge.m_K1),
+                     std::make_pair("K2", dip_edge.m_K2),
+                     std::make_pair("K3", dip_edge.m_K3),
+                     std::make_pair("K4", dip_edge.m_K4),
+                     std::make_pair("K5", dip_edge.m_K5),
+                     std::make_pair("K6", dip_edge.m_K6),
+                     std::make_pair("model", dip_edge.m_model) 
                  );
              }
         )
@@ -830,12 +848,28 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("psi"),
              py::arg("rc"),
              py::arg("g"),
-             py::arg("K2"),
+             py::arg("R") = 1,
+             py::arg("K0") = 0,
+             py::arg("K1") = 0,
+             py::arg("K2") = 0.5,
+             py::arg("K3") = 0,
+             py::arg("K4") = 0,
+             py::arg("K5") = 0,
+             py::arg("K6") = 0,
+             py::arg("model") = 0,
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
@@ -857,11 +891,52 @@ void init_elements(py::module& m)
             [](DipEdge & dip_edge, amrex::ParticleReal g) { dip_edge.m_g = g; },
             "Gap parameter in m"
         )
+        .def_property("R",
+            [](DipEdge & dip_edge) { return dip_edge.m_R; },
+            [](DipEdge & dip_edge, amrex::ParticleReal R) { dip_edge.m_R = R; },
+            "Length scale for field integrals in m"
+        )
+        .def_property("K0",
+            [](DipEdge & dip_edge) { return dip_edge.m_K0; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K0) { dip_edge.m_K0 = K0; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K1",
+            [](DipEdge & dip_edge) { return dip_edge.m_K1; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K1) { dip_edge.m_K1 = K1; },
+            "Fringe field integral (unitless)"
+        )
         .def_property("K2",
             [](DipEdge & dip_edge) { return dip_edge.m_K2; },
             [](DipEdge & dip_edge, amrex::ParticleReal K2) { dip_edge.m_K2 = K2; },
             "Fringe field integral (unitless)"
         )
+        .def_property("K3",
+            [](DipEdge & dip_edge) { return dip_edge.m_K3; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K3) { dip_edge.m_K3 = K3; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K4",
+            [](DipEdge & dip_edge) { return dip_edge.m_K4; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K4) { dip_edge.m_K4 = K4; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K5",
+            [](DipEdge & dip_edge) { return dip_edge.m_K5; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K5) { dip_edge.m_K5 = K5; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K6",
+            [](DipEdge & dip_edge) { return dip_edge.m_K6; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K6) { dip_edge.m_K6 = K6; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("model",
+            [](DipEdge & dip_edge) { return dip_edge.m_model; },
+            [](DipEdge & dip_edge, int model) { dip_edge.m_model = model; },
+            "Specification of model (0 - linear, 1 - nonlinear)"
+        )
+
     ;
     register_push(py_DipEdge);
 

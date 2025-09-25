@@ -185,12 +185,28 @@ namespace detail
             auto a = detail::query_alignment(pp_element);
 
             amrex::ParticleReal psi, rc, g, K2;
+            amrex::ParticleReal R = 1;
+            amrex::ParticleReal K0 = 0;
+            amrex::ParticleReal K1 = 0;
+            amrex::ParticleReal K3 = 0;
+            amrex::ParticleReal K4 = 0;
+            amrex::ParticleReal K5 = 0;
+            amrex::ParticleReal K6 = 0;
+            int model = 0;  //default to linear model
             pp_element.getWithParser("psi", psi);
             pp_element.getWithParser("rc", rc);
             pp_element.getWithParser("g", g);
             pp_element.getWithParser("K2", K2);
+            pp_element.queryAddWithParser("R", R);
+            pp_element.queryAddWithParser("K0", K0);
+            pp_element.queryAddWithParser("K1", K1);
+            pp_element.queryAddWithParser("K3", K3);
+            pp_element.queryAddWithParser("K4", K4);
+            pp_element.queryAddWithParser("K5", K5);
+            pp_element.queryAddWithParser("K6", K6);
+            pp_element.queryAddWithParser("model", model);
 
-            m_lattice.emplace_back( DipEdge(psi, rc, g, K2, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")
         {
             auto a = detail::query_alignment(pp_element);

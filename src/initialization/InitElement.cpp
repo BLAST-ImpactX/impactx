@@ -184,11 +184,15 @@ namespace detail
         {
             auto a = detail::query_alignment(pp_element);
 
-            amrex::ParticleReal psi, rc, g, K2;
+            amrex::ParticleReal psi, rc, g;
             amrex::ParticleReal R = 1;
-            amrex::ParticleReal K0 = 0;
+
+            // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
+            amrex::ParticleReal pi = ablastr::constant::math::pi;
+            amrex::ParticleReal K0 = pi*pi / 6.0;
             amrex::ParticleReal K1 = 0;
-            amrex::ParticleReal K3 = 0;
+            amrex::ParticleReal K2 = 1;
+            amrex::ParticleReal K3 = 1.0/6.0;
             amrex::ParticleReal K4 = 0;
             amrex::ParticleReal K5 = 0;
             amrex::ParticleReal K6 = 0;

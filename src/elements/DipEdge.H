@@ -183,7 +183,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            if (m_model==0) {           
+            if (m_model==0) {
                // apply linear model
                px = px + m_R21 * x;
                py = py + m_R43 * y;

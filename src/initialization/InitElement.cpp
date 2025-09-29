@@ -186,6 +186,7 @@ namespace detail
 
             amrex::ParticleReal psi, rc, g;
             amrex::ParticleReal R = 1;
+            std::string flag_str = "entry";
 
             // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
             amrex::ParticleReal pi = ablastr::constant::math::pi;
@@ -209,8 +210,14 @@ namespace detail
             pp_element.queryAddWithParser("K5", K5);
             pp_element.queryAddWithParser("K6", K6);
             pp_element.queryAddWithParser("model", model);
+            pp_element.queryAdd("flag", flag_str);
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(flag_str == "entry" || flag_str == "exit",
+                                             element_name + ".flag must be \"entry\" or \"exit\"");
+            DipEdge::Location const flag = flag_str == "entry" ?   
+                DipEdge::Location::entry :
+                DipEdge::Location::exit;
 
-            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, flag, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")
         {
             auto a = detail::query_alignment(pp_element);

@@ -346,6 +346,7 @@ This requires these additional parameters:
 * ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field
 * ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field
 * ``<element_name>.model`` (``integer``) specification of model (default: ``0``, linear model)
+* ``<element_name>.flag`` (``string``) specification of edge location: ``entry`` (default) or ``exit``
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

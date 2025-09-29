@@ -729,6 +729,7 @@ This module provides elements and methods for the accelerator lattice.
    :param K5: Fringe field integral (unitless)
    :param K6: Fringe field integral (unitless)
    :param model: Specification of model (linear if model=0)
+   :param flag: location of edge (``"entry"`` or ``"exit"``)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

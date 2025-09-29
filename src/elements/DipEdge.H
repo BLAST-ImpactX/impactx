@@ -43,6 +43,12 @@ namespace impactx::elements
         static constexpr auto type = "DipEdge";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        enum Location
+        {
+            entry = 1, //! for leading (entry) fringe field
+            exit = -1  //! for trailing (exit) fringe field
+        }; 
+        
         /** Edge focusing associated with bend entry or exit
          *
          * This model assumes a first-order effect of nonzero gap.
@@ -64,6 +70,7 @@ namespace impactx::elements
          * @param K5 Fringe field integral (unitless).
          * @param K6 Fringe field integral (unitless).
          * @param model Model (0 linear, 1 nonlinear).
+         * @param flag  Flag specifying entry or exit location
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -82,6 +89,7 @@ namespace impactx::elements
             amrex::ParticleReal K5,
             amrex::ParticleReal K6,
             int model,
+            Location flag, 
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -89,7 +97,7 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model)
+          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_flag(flag)
         {
         }
 
@@ -134,15 +142,15 @@ namespace impactx::elements
 
             m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
             m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
-            m_c3_times_1plusdelta = powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
-            m_c4_times_1plusdelta = (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
+            m_c3_times_1plusdelta = m_flag * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+            m_c4_times_1plusdelta = m_flag * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
             m_c5 = tan_psi / (2_prt * m_rc);
             m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_rc * powi<3>(cos_psi)) * m_g/m_rc * m_K1;
             m_c7_times_1plusdelta = 0.5_prt * powi<3>(sin_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
             m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_rc));
             m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
-            m_c10_times_1plusdelta = powi<2>(tan_psi) / (2_prt * m_rc);
-            m_c11_times_1plusdelta = 1_prt / (2_prt * m_rc);
+            m_c10_times_1plusdelta = m_flag * powi<2>(tan_psi) / (2_prt * m_rc);
+            m_c11_times_1plusdelta = m_flag * 1_prt / (2_prt * m_rc);
             m_c12_times_1plusdelta = 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g);
             m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
             m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_rc*m_R) * m_K5;
@@ -295,7 +303,7 @@ namespace impactx::elements
         amrex::ParticleReal m_K5; //! fringe field integral
         amrex::ParticleReal m_K6; //! fringe field integral
         int m_model; //! model specification
-
+        Location m_flag; //! +1 for entry, or -1 for exit
 
       private:
         // constants that are independent of the individually tracked particle,

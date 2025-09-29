@@ -836,28 +836,39 @@ void init_elements(py::module& m)
                      std::make_pair("K4", dip_edge.m_K4),
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
-                     std::make_pair("model", dip_edge.m_model)
+                     std::make_pair("model", dip_edge.m_model),
+                     std::make_pair("flag", dip_edge.m_flag)
                  );
              }
         )
-        .def(py::init<
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                int,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                std::optional<std::string>
-             >(),
+        .def(py::init([](
+                amrex::ParticleReal psi,
+                amrex::ParticleReal rc,
+                amrex::ParticleReal g,
+                amrex::ParticleReal R,
+                amrex::ParticleReal K0,
+                amrex::ParticleReal K1,
+                amrex::ParticleReal K2,
+                amrex::ParticleReal K3,
+                amrex::ParticleReal K4,
+                amrex::ParticleReal K5,
+                amrex::ParticleReal K6,
+                int model,
+                std::string const & flag,
+                amrex::ParticleReal dx,
+                amrex::ParticleReal dy,
+                amrex::ParticleReal rotation_degree,
+                std::optional<std::string> name
+              )
+              {
+                 if (flag != "entry" && flag != "exit")
+                     throw std::runtime_error(R"(flag must be "entry" or "exit")");
+     
+                 DipEdge::Location const fl = flag == "entry" ?
+                                            DipEdge::Location::entry :
+                                            DipEdge::Location::exit;
+                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, fl, dx, dy, rotation_degree, name);
+              }),
              py::arg("psi"),
              py::arg("rc"),
              py::arg("g"),
@@ -870,6 +881,7 @@ void init_elements(py::module& m)
              py::arg("K5") = 0,
              py::arg("K6") = 0,
              py::arg("model") = 0,
+             py::arg("flag") = "entry",
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,

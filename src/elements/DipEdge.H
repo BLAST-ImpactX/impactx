@@ -47,8 +47,8 @@ namespace impactx::elements
         {
             entry = 1, //! for leading (entry) fringe field
             exit = -1  //! for trailing (exit) fringe field
-        }; 
-        
+        };
+
         /** Edge focusing associated with bend entry or exit
          *
          * This model assumes a first-order effect of nonzero gap.
@@ -89,7 +89,7 @@ namespace impactx::elements
             amrex::ParticleReal K5,
             amrex::ParticleReal K6,
             int model,
-            Location flag, 
+            Location flag,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,

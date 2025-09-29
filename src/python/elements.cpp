@@ -863,7 +863,7 @@ void init_elements(py::module& m)
               {
                  if (flag != "entry" && flag != "exit")
                      throw std::runtime_error(R"(flag must be "entry" or "exit")");
-     
+
                  DipEdge::Location const fl = flag == "entry" ?
                                             DipEdge::Location::entry :
                                             DipEdge::Location::exit;

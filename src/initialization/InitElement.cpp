@@ -213,7 +213,7 @@ namespace detail
             pp_element.queryAdd("flag", flag_str);
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(flag_str == "entry" || flag_str == "exit",
                                              element_name + ".flag must be \"entry\" or \"exit\"");
-            DipEdge::Location const flag = flag_str == "entry" ?   
+            DipEdge::Location const flag = flag_str == "entry" ?
                 DipEdge::Location::entry :
                 DipEdge::Location::exit;
 

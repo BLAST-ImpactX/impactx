@@ -140,17 +140,20 @@ namespace impactx::elements
             amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
             amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
 
+            // the scale constant specifying entry or exit
+            amrex::ParticleReal const flg = static_cast<amrex::ParticleReal>(m_flag);
+
             m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
             m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
-            m_c3_times_1plusdelta = m_flag * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
-            m_c4_times_1plusdelta = m_flag * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
+            m_c3_times_1plusdelta = flg * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+            m_c4_times_1plusdelta = flg * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
             m_c5 = tan_psi / (2_prt * m_rc);
             m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_rc * powi<3>(cos_psi)) * m_g/m_rc * m_K1;
             m_c7_times_1plusdelta = 0.5_prt * powi<3>(sin_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
             m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_rc));
             m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
-            m_c10_times_1plusdelta = m_flag * powi<2>(tan_psi) / (2_prt * m_rc);
-            m_c11_times_1plusdelta = m_flag * 1_prt / (2_prt * m_rc);
+            m_c10_times_1plusdelta = flg * powi<2>(tan_psi) / (2_prt * m_rc);
+            m_c11_times_1plusdelta = flg * 1_prt / (2_prt * m_rc);
             m_c12_times_1plusdelta = 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g);
             m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
             m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_rc*m_R) * m_K5;

@@ -52,3 +52,40 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_rfcavity.py
       :language: python3
       :caption: You can copy this file from ``examples/rfcavity/analysis_rfcavity.py``.
+
+
+.. _examples-rfcavity-ref-part:
+
+Acceleration by RF Cavities (Reference Particle Tracking)
+=========================================================
+
+This test is identical to the test examples-rfcavity above, except that the code is run in reference orbit tracking mode.
+
+It is used to validate the numerical integration of the reference energy gain in a chain of 4 RF cavities, and to demonstrate this tracking mode.
+
+In this test, the initial and final reference values of :math:`s` and :math:`\gamma` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_rfcavity_ref_part.py`` or
+* ImpactX **executable** using an input file: ``impactx input_rfcavity_ref_part.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_rfcavity_ref_part.py
+          :language: python3
+          :caption: You can copy this file from ``examples/rfcavity/run_rfcavity_ref_part.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_rfcavity_ref_part.in
+          :language: ini
+          :caption: You can copy this file from ``examples/rfcavity/input_rfcavity_ref_part.in``.

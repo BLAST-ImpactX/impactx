@@ -64,7 +64,7 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
                 amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
                 amrex::ParticleReal const beta_gamma = pc.GetRefParticle().beta_gamma();
-                amrex::ParticleReal const beta = beta_gamma / gamma;
+                //amrex::ParticleReal const beta = beta_gamma / gamma;
                 amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
 
                 amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;

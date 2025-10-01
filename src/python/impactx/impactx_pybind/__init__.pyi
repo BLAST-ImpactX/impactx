@@ -524,10 +524,14 @@ class ImpactXParticleContainer(
         py: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         pt: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         qm: typing.SupportsFloat,
-        bchchg: typing.SupportsFloat,
+        bunch_charge: typing.SupportsFloat | None = None,
+        w: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
     ) -> None:
         """
         Add new particles to the container for fixed s.
+
+        Either the total charge (bunch_charge) or the weight of each
+        particle (w) must be provided.
 
         Note: This can only be used *after* the initialization (grids) have
               been created, meaning after the call to ImpactX.init_grids
@@ -540,7 +544,7 @@ class ImpactXParticleContainer(
         :param py: momentum in y
         :param pt: momentum in t
         :param qm: charge over mass in 1/eV
-        :param bchchg: total charge within a bunch in C
+        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent
         """
     def beam_moments(self) -> dict[str, float]:
         """
@@ -641,21 +645,25 @@ class RefPart:
         This struct stores the reference particle attributes
         stored in ImpactXParticleContainer.
         """
+    def copy(self) -> RefPart:
+        """
+        Copy the reference particle
+        """
     def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
         """
         Reset the reference particle
         """
     def set_charge_qe(self, charge_qe: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle charge (positive elementary charge)
+        Set reference particle charge (positive elementary charge) [q_e]
         """
     def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle kinetic energy (MeV)
+        Set reference particle kinetic energy [MeV]
         """
     def set_mass_MeV(self, mass_MeV: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle rest mass (MeV/c^2)
+        Set reference particle rest mass * c^2, expressed as an energy [MeV]
         """
     @property
     def beta(self) -> float:
@@ -670,7 +678,7 @@ class RefPart:
     @property
     def charge(self) -> float:
         """
-        reference charge, in C
+        reference charge [C]
         """
     @charge.setter
     def charge(self, arg0: typing.SupportsFloat) -> None: ...
@@ -687,7 +695,7 @@ class RefPart:
     @property
     def kin_energy_MeV(self) -> float:
         """
-        Get reference particle energy (MeV)
+        Get reference particle energy [MeV]
         """
     @property
     def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
@@ -701,14 +709,14 @@ class RefPart:
     @property
     def mass(self) -> float:
         """
-        reference rest mass, in kg
+        reference rest mass [kg]
         """
     @mass.setter
     def mass(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def mass_MeV(self) -> float:
         """
-        Get reference particle rest mass (MeV/c^2)
+        Get reference particle rest mass * c^2, expressed as an energy [MeV]
         """
     @property
     def pt(self) -> float:
@@ -720,38 +728,38 @@ class RefPart:
     @property
     def px(self) -> float:
         """
-        momentum in x, normalized to proper velocity
+        momentum in x divided by m*c = beta_x*gamma [unitless]
         """
     @px.setter
     def px(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def py(self) -> float:
         """
-        momentum in y, normalized to proper velocity
+        momentum in y divided by m*c = beta_y*gamma [unitless]
         """
     @py.setter
     def py(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def pz(self) -> float:
         """
-        momentum in z, normalized to proper velocity
+        momentum in z divided by m*c = beta_z*gamma [unitless]
         """
     @pz.setter
     def pz(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def qm_ratio_SI(self) -> float:
         """
-        Get reference particle charge to mass ratio (C/kg)
+        Get reference particle charge to mass ratio [C/kg]
         """
     @property
     def rigidity_Tm(self) -> float:
         """
-        Get reference particle magnetic rigidity Brho (T*m)
+        Get reference particle magnetic rigidity Brho [T*m]
         """
     @property
     def s(self) -> float:
         """
-        integrated orbit path length, in meters
+        integrated orbit path length [m]
         """
     @s.setter
     def s(self, arg0: typing.SupportsFloat) -> None: ...
@@ -765,28 +773,28 @@ class RefPart:
     @property
     def t(self) -> float:
         """
-        clock time * c in meters
+        clock time * c [m]
         """
     @t.setter
     def t(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def x(self) -> float:
         """
-        horizontal position x, in meters
+        horizontal position x [m]
         """
     @x.setter
     def x(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def y(self) -> float:
         """
-        vertical position y, in meters
+        vertical position y [m]
         """
     @y.setter
     def y(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def z(self) -> float:
         """
-        longitudinal position y, in meters
+        longitudinal position y [m]
         """
     @z.setter
     def z(self, arg0: typing.SupportsFloat) -> None: ...
@@ -810,6 +818,7 @@ def create_envelope(
     | distribution.Waterbag,
     arg1: typing.SupportsFloat | None,
 ) -> Envelope: ...
+@typing.overload
 def push(
     pc: ImpactXParticleContainer,
     element: elements.Empty
@@ -852,13 +861,57 @@ def push(
     period: typing.SupportsInt = 0,
 ) -> None:
     """
-    Push particles through an element
+    Push a whole particle beam (incl. reference particle) through an element
+    """
+
+@typing.overload
+def push(
+    ref: RefPart,
+    element: elements.Empty
+    | elements.Aperture
+    | elements.Buncher
+    | elements.CFbend
+    | elements.ChrAcc
+    | elements.ChrDrift
+    | elements.ChrPlasmaLens
+    | elements.ChrQuad
+    | elements.ConstF
+    | elements.BeamMonitor
+    | elements.DipEdge
+    | elements.Drift
+    | elements.ExactCFbend
+    | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
+    | elements.ExactSbend
+    | elements.Kicker
+    | elements.LinearMap
+    | elements.Marker
+    | elements.Multipole
+    | elements.NonlinearLens
+    | elements.PlaneXYRot
+    | elements.Programmable
+    | elements.PRot
+    | elements.Quad
+    | elements.QuadEdge
+    | elements.RFCavity
+    | elements.Sbend
+    | elements.ShortRF
+    | elements.SoftSolenoid
+    | elements.SoftQuadrupole
+    | elements.Sol
+    | elements.Source
+    | elements.TaperedPL
+    | elements.ThinDipole,
+) -> None:
+    """
+    Push the reference particle through an element
     """
 
 __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.08"
+__version__: str = "25.09"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

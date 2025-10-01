@@ -62,6 +62,10 @@ namespace impactx
         {
             return SpaceChargeAlgo::True_3D;
         }
+        else if (space_charge == "Gauss3D")
+        {
+            return SpaceChargeAlgo::Gauss3D;
+        }
         else if (space_charge == "2D")
         {
             return SpaceChargeAlgo::True_2D;

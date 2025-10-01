@@ -12,9 +12,11 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
 from selenium.common.exceptions import TimeoutException
 
-TIMEOUT = 60
+TIMEOUT = 120
+APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
 
 
 def start_dashboard() -> subprocess.Popen[str]:
@@ -119,6 +121,7 @@ class DashboardTester:
         """
         try:
             self.set_state("selected_lattice", element_name)
+            self.assert_state("is_selected_element_invalid", False)
             self.sb.click("#add_lattice_element")
         except Exception as error:
             raise Exception(
@@ -136,16 +139,41 @@ class DashboardTester:
         :param new_input: New value to set for the input element.
         """
         try:
-            self.sb.execute_script(
-                f'document.getElementById("{element_id}").value = "{new_input}";'
-            )
-            self.sb.execute_script(
-                f'document.getElementById("{element_id}").dispatchEvent(new Event("input"));'
-            )
+            self._commit_input_js(element_id, new_input)
         except Exception as error:
             raise Exception(
                 f"Unable to set input for lattice element '{element_id}': {str(error)}"
             )
+
+    def _commit_input_js(self, element_id: str, new_input) -> None:
+        """
+        Update a Vuetify text input field in the browser using JavaScript.
+
+        What happens step by step:
+        1. Find the input element by its ID.
+        2. Focus the element (like clicking inside it so it’s active).
+        3. Set the element’s value to the new text.
+        4. Trigger an "input" event so the web app reacts as if you typed the text.
+        5. Trigger a "change" event so the app thinks you finished editing.
+        6. Blur the element (like clicking away so it’s no longer active).
+
+        Purpose:
+        This makes the page behave exactly as if a real user typed into the field
+        and then clicked out, ensuring the app updates correctly.
+        """
+        js = (
+            "var el = document.getElementById(arguments[0]);"
+            "if (!el) { throw new Error('element not found'); }"
+            "el.focus();"
+            "el.value = arguments[1];"
+            "el.dispatchEvent(new InputEvent('input', {bubbles:true,cancelable:true}));"
+            "el.dispatchEvent(new Event('change', {bubbles:true}));"
+            "el.blur();"
+            "return true;"
+        )
+        successful_input = self.sb.execute_script(js, element_id, str(new_input))
+        if not successful_input:
+            raise RuntimeError("failed to commit value via JS")
 
     def set_state(self, state_name: str, state_value):
         """
@@ -213,8 +241,14 @@ class DashboardTester:
                 value = None
 
             if isinstance(expected_input, (int, float)):
-                if value is not None and float(value) == float(expected_input):
-                    return
+                try:
+                    v_num = None if value is None else float(value)
+                    if v_num is not None and v_num == pytest.approx(
+                        float(expected_input), **APPROX_TOL
+                    ):
+                        return
+                except (TypeError, ValueError):
+                    pass
             elif value == expected_input:
                 return
 
@@ -240,3 +274,24 @@ class DashboardTester:
             return null;
         """
         return self.sb.execute_script(js_script, state_name)
+
+
+def save_failure_screenshot(
+    dashboard, request, directory: str | None = None
+) -> str | None:
+    """
+    Save a screenshot PNG for the current test and return the absolute path.
+
+    - Respects env var `IMPACTX_SCREENSHOT_DIR` to override the output folder.
+    - Falls back to `directory` arg or `screenshots/` in the current CWD.
+    Returns the absolute file path on success, else None.
+    """
+    base_dir = os.environ.get("IMPACTX_SCREENSHOT_DIR", directory or "screenshots")
+    try:
+        os.makedirs(base_dir, exist_ok=True)
+        name = f"{request.node.name}.png".replace(os.sep, "_")
+        path = os.path.abspath(os.path.join(base_dir, name))
+        dashboard.sb.driver.save_screenshot(path)
+        return path
+    except Exception:
+        return None

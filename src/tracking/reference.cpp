@@ -71,7 +71,7 @@ namespace impactx
         amrex::ParmParse const pp_algo("algo");
         bool csr = false;
         pp_algo.query("csr", csr);
-        if (!csr)
+        if (csr)
         {
             throw std::runtime_error("CSR effects cannot be modeled for single particle tracking.");
         }
@@ -106,12 +106,8 @@ namespace impactx
                                        << " slice_step=" << slice_step << "\n";
                     }
 
-                    std::visit([&ref](auto&& element)
-                    {
-                        // push reference particle in global coordinates
-                        BL_PROFILE("impactx::Push::RefPart");
-                        element(ref);
-                    }, element_variant);
+                    // push the reference particle with external maps
+                    push(ref, element_variant);
 
                     // just prints an empty newline at the end of the slice_step
                     if (verbose > 0)

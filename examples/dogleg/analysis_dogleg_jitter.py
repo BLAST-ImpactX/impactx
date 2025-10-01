@@ -59,12 +59,12 @@ def get_mean(openpmd_beam):
     -------
     x_mean, px_mean, y_mean, py_mean, t_mean, pt_mean
     """
-    x_mean = openpmd_beam.get_attribute("x_mean")
-    px_mean = openpmd_beam.get_attribute("px_mean")
-    y_mean = openpmd_beam.get_attribute("y_mean")
-    py_mean = openpmd_beam.get_attribute("py_mean")
-    t_mean = openpmd_beam.get_attribute("t_mean")
-    pt_mean = openpmd_beam.get_attribute("pt_mean")
+    x_mean = openpmd_beam.get_attribute("mean_x")
+    px_mean = openpmd_beam.get_attribute("mean_px")
+    y_mean = openpmd_beam.get_attribute("mean_y")
+    py_mean = openpmd_beam.get_attribute("mean_py")
+    t_mean = openpmd_beam.get_attribute("mean_t")
+    pt_mean = openpmd_beam.get_attribute("mean_pt")
 
     return (x_mean, px_mean, y_mean, py_mean, t_mean, pt_mean)
 

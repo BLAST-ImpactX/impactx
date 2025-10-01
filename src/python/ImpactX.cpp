@@ -271,8 +271,8 @@ void init_ImpactX (py::module& m)
                 else
                 {
                     std::string const space_charge = std::get<std::string>(space_charge_v);
-                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D") {
-                        throw std::runtime_error("Space charge model must be 2D or 3D but is: " + space_charge);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D") {
+                        throw std::runtime_error("Space charge model must be 2D, 3D or Gauss3D but is: " + space_charge);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("space_charge", space_charge);
@@ -699,7 +699,7 @@ void init_ImpactX (py::module& m)
         .def_property_readonly_static(
             "precision",
             [](py::object){
-#ifdef AMREX_SINGLE_PRECISION
+#ifdef AMREX_USE_FLOAT
                 return "SINGLE";
 #else
                 return "DOUBLE";

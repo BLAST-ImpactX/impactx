@@ -2348,9 +2348,13 @@ void init_elements(py::module& m)
      register_push(py_LinearMap);
 
     // freestanding push function
-    m.def("push", &Push,
+    m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),
         py::arg("pc"), py::arg("element"), py::arg("step")=0, py::arg("period")=0,
-        "Push particles through an element"
+        "Push a whole particle beam (incl. reference particle) through an element"
+    );
+    m.def("push", py::overload_cast<RefPart &, elements::KnownElements &>(&push),
+        py::arg("ref"), py::arg("element"),
+        "Push the reference particle through an element"
     );
 
 

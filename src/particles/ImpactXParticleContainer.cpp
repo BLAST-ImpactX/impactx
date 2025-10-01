@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
+#include <sstream>
 
 
 namespace
@@ -152,30 +153,71 @@ namespace impactx
         // When running without space charge and OpenMP parallelization,
         // we need to make sure we have enough tiles on level 0, grid 0
         // to thread over the available tiles. We try to set the tile_size
-        // appropriately here. The tiles start as (very large number, 8, 8)
-        // in (x, y, z). So we try to reduce the tile size in the y and z
-        // directions alternately until there are enough tiles for the number of threads.
+        // appropriately here. We start by setting the tile_size to the size of box 0.
+        // Then we try to reduce the tile size in the (z, y, x) directions alternately
+        // until there are enough tiles for the number of threads.
 
+        // if the user has set particles.tile_size, do not override this choice
+        // unlike particles.do_tiling, we do not add this to the table in init,
+        // so if it's there the user set it
+        bool user_set = false;
+        {
+            amrex::ParmParse pp_particles("particles");
+            amrex::Vector<int> tilesize(AMREX_SPACEDIM);
+            user_set = pp_particles.queryarr("tile_size", tilesize, 0, AMREX_SPACEDIM);
+        }
+
+        int n_logical = 0;
         const auto& ba = ParticleBoxArray(lid);
-        auto n_logical = numTilesInBox(ba[gid], true, tile_size);
-
-        int ntry = 0;
-        constexpr int max_tries = 6;
-        while ((n_logical < nthreads) && (ntry++ < max_tries)) {
-            int idim = (ntry % 2) + 1;  // alternate between 1 and 2
-            tile_size[idim] /= 2;
-            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(tile_size[idim] > 0,
-                                             "Failed to set proper tile size for the number of OpenMP threads. "
-                                             "Consider lowering the number of OpenMP threads via the environment variable OMP_NUM_THREADS."
-                                             );
+        if (!user_set)
+        {
+            tile_size = ba[gid].size();
+            n_logical = numTilesInBox(ba[gid], true, tile_size);
+            int ntry = 0;
+            constexpr int max_tries = 10;
+            while ((n_logical < nthreads) && (ntry++ < max_tries))
+            {
+                int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
+                if (tile_size[idim] == 1) { continue; }
+                tile_size[idim] /= 2;
+                n_logical = numTilesInBox(ba[gid], true, tile_size);
+            }
+        } else
+        {
             n_logical = numTilesInBox(ba[gid], true, tile_size);
         }
 
-        if (n_logical < nthreads) {
-            amrex::Abort("ImpactParticleContainer::prepare() "
-                "could not find good tile size for the number of OpenMP threads. "
-                "Consider lowering the number of OpenMP threads via the environment variable OMP_NUM_THREADS."
+        if (n_logical < nthreads)
+        {
+            std::string warning_message;
+            if (!user_set) {
+                warning_message.append(
+                    "Could not find a good tile size for the requested " +
+                    std::to_string(nthreads) + " OpenMP threads. "
+                );
+            }
+            std::stringstream sstr_tile_size;
+            sstr_tile_size << tile_size;
+            warning_message.append(
+                "The number of available tiles is " +
+                std::to_string(n_logical) + " with each a size of " + sstr_tile_size.str() +
+                ". Lowering the number of threads to match the available tiles now. This may result "
+                "in poorer performance than expected. "
             );
+            warning_message.append("You may want to try ");
+            if (user_set) {
+                warning_message.append("decreasing the particles.tile_size or ");
+            }
+            warning_message.append("increasing the blocking factor and max grid size.");
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactXParticleContainer::prepare",
+                warning_message,
+                ablastr::warn_manager::WarnPriority::medium
+            );
+
+#if defined(AMREX_USE_OMP)
+            omp_set_num_threads(n_logical);
+#endif
         }
 
         reserveData();
@@ -199,16 +241,26 @@ namespace impactx
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
         amrex::ParticleReal qm,
-        amrex::ParticleReal bchchg
+        std::optional<amrex::ParticleReal> bunch_charge,
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w
     )
     {
         BL_PROFILE("ImpactX::AddNParticles");
+
+        using namespace amrex::literals;  // for _rt and _prt
+
+        bool const has_w = w.has_value();
+        if (!(bunch_charge.has_value() ^ has_w))
+        {
+            throw std::runtime_error("AddNParticles: Exactly one of bunch_charge or w must be provided!");
+        }
 
         AMREX_ALWAYS_ASSERT(x.size() == y.size());
         AMREX_ALWAYS_ASSERT(x.size() == t.size());
         AMREX_ALWAYS_ASSERT(x.size() == px.size());
         AMREX_ALWAYS_ASSERT(x.size() == py.size());
         AMREX_ALWAYS_ASSERT(x.size() == pt.size());
+        if (has_w) { AMREX_ALWAYS_ASSERT(x.size() == w->size()); }
 
         // number of particles to add
         amrex::Long const np = x.size();
@@ -219,7 +271,7 @@ namespace impactx
             const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
             auto it = std::find(pmap.begin(), pmap.end(), amrex::ParallelDescriptor::MyProc());
             if (it == std::end(pmap)) {
-                amrex::Abort("Attempting to add particles to box that does not exist.");
+                throw std::runtime_error("AddNParticles: Attempting to add particles to box that does not exist.");
             } else {
                 gid = *it;
             }
@@ -290,6 +342,8 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal const * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT w_ptr = has_w ? w->data() : nullptr;
+            amrex::ParticleReal const bunch_charge_value = has_w ? 0_prt : bunch_charge.value();
 
             amrex::ParallelFor(num_to_add,
                 [=] AMREX_GPU_DEVICE (amrex::Long i) noexcept
@@ -305,7 +359,7 @@ namespace impactx
                 pt_arr[old_np+i] = pt_ptr[my_offset+i];
 
                 qm_arr[old_np+i] = qm;
-                w_arr[old_np+i]  = bchchg/ablastr::constant::SI::q_e/np;
+                w_arr[old_np+i]  = has_w ? w_ptr[my_offset+i] : bunch_charge_value / ablastr::constant::SI::q_e/np;
             });
         }
 

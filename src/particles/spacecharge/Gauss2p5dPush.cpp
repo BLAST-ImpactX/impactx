@@ -24,9 +24,12 @@ namespace impactx::particles::spacecharge
     // compute integrals Eqs 25, 31,32 used in the space-charge fields from a 2D transverse Gaussian distribution (including 2A in Eq. 25).
     // Input particle locations (x,y) and RMS sizes (sigx,sigy) and return the integrals for SC fields.
     //
+    AMREX_GPU_DEVICE
     void potInt(amrex::ParticleReal delta, int nint, amrex::ParticleReal xin, amrex::ParticleReal yin, amrex::ParticleReal sigx, amrex::ParticleReal sigy,
                 amrex::ParticleReal& pintex, amrex::ParticleReal& pintey, amrex::ParticleReal& pintez)
     {
+        using namespace amrex::literals;
+
         // enforce odd grid points
         if (nint % 2 == 0) nint += 1;
 
@@ -37,27 +40,29 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal xp = xin / sigx;
         amrex::ParticleReal yp = yin / sigy;
         amrex::ParticleReal asp = sigx / sigy;
+        amrex::ParticleReal xp2 = xp*xp;
+        amrex::ParticleReal yp2 = yp*yp;
 
         amrex::ParticleReal sum0, sum0ex, sum0ey;
         sum0 = sum0ex = sum0ey = 0.0;
 
         // Trapezoidal rule approximation integral from 0 to delta
         amrex::ParticleReal x = xmin;
-        amrex::ParticleReal t2 = asp*asp + (1 - asp*asp)*x*x;
+        amrex::ParticleReal t2 = asp*asp + (1_prt - asp*asp)*x*x;
         amrex::ParticleReal sqrt2 = std::sqrt(t2);
-        amrex::ParticleReal exparg = -(xp*xp + yp*yp / t2) / 2.0;
+        amrex::ParticleReal exparg = -(xp*xp + yp*yp / t2) / 2_prt;
         amrex::ParticleReal f1 = x*exparg;
 
-        sum0 = x*f1/sqrt2/2.0;
+        sum0 = x*f1/sqrt2/2_prt;
         f1 = x*std::exp(x*x*exparg);
-        sum0ex = x*f1 / sqrt2 / 2.0;
-        sum0ey = x*f1 / (t2*sqrt2) / 2.0;
+        sum0ex = x*f1 / sqrt2 / 2_prt;
+        sum0ey = x*f1 / (t2*sqrt2) / 2_prt;
 
         // Simpson's rule for two end points
         // Ez
         f1 = std::exp(x*x*exparg);
         amrex::ParticleReal f2 = x*sqrt2;
-        amrex::ParticleReal fx = (f1 - 1.0) / f2;
+        amrex::ParticleReal fx = (f1 - 1_prt) / f2;
         sum0 = sum0 - fx*h;
 
         amrex::ParticleReal f1x = x*f1;
@@ -71,12 +76,12 @@ namespace impactx::particles::spacecharge
 
         // Ez at xmax
         x = xmax;
-        t2 = asp*asp + (1 - asp*asp)*x*x;
+        t2 = asp*asp + (1_prt - asp*asp)*x*x;
         sqrt2 = std::sqrt(t2);
-        exparg = -(xp*xp + yp*yp / t2) / 2.0;
+        exparg = -(xp*xp + yp*yp / t2) / 2_prt;
         f1 = std::exp(x*x*exparg);
         f2 = x*sqrt2;
-        fx = (f1 - 1.0) / f2;
+        fx = (f1 - 1_prt) / f2;
         sum0 = sum0 - fx*h;
         f1x = x*f1;
         f2 = sqrt2;
@@ -86,56 +91,47 @@ namespace impactx::particles::spacecharge
         fx = f1x / f2;
         sum0ey = sum0ey - fx*h;
 
-        // Arrays
-        std::vector<amrex::ParticleReal> xvec(nint), t2vec(nint), t2sqrt(nint);
-        std::vector<amrex::ParticleReal> f2vec(nint), f2yvec(nint), f1vec(nint), f1xvec(nint), fxvec(nint);
-
-        for (int i = 0; i < nint; ++i)
-            xvec[i] = xmin + i*h;
+        amrex::ParticleReal fy = 0.0;
+        amrex::ParticleReal fz = 0.0;
+        amrex::ParticleReal t2sqrt = 0.0;
+        amrex::ParticleReal f2y = 0.0;
         amrex::ParticleReal asp2 = asp*asp;
-        amrex::ParticleReal asp2m = 1.0 - asp*asp;
+        amrex::ParticleReal asp2m = 1_prt - asp*asp;
         for (int i = 0; i < nint; ++i)
-            t2vec[i] = asp2 + asp2m * xvec[i]*xvec[i];
-        for (int i = 0; i < nint; ++i)
-            t2sqrt[i] = std::sqrt(t2vec[i]);
-        for (int i = 0; i < nint; ++i)
-            f2yvec[i] = t2vec[i]*t2sqrt[i];
-        for (int i = 0; i < nint; ++i)
-            f2vec[i] = xvec[i]*t2sqrt[i];
+        {
+            x = xmin + i*h;
+            t2 = asp2 + asp2m * x*x;
+            t2sqrt = std::sqrt(t2);
+            f2y = t2*t2sqrt;
+            f2 = x*t2sqrt;
+            f1 = std::exp(-x*x*(xp2 + yp2 / t2) / 2_prt);
+            f1x = x*f1;
 
-        amrex::ParticleReal xp2 = xp*xp;
-        amrex::ParticleReal yp2 = yp*yp;
-        for (int i = 0; i < nint; ++i)
-            f1vec[i] = std::exp(-xvec[i]*xvec[i]*(xp2 + yp2 / t2vec[i]) / 2.0);
-        for (int i = 0; i < nint; ++i)
-            f1xvec[i] = xvec[i]*f1vec[i];
+            // Ez
+            fz = (f1 - 1_prt) / f2;
+            if (i%2 == 0)
+              sum0 += 2_prt * fz * h;
+            else
+              sum0 += 4_prt * fz * h;
 
-        // Ez
-        for (int i = 0; i < nint; ++i)
-            fxvec[i] = (f1vec[i] - 1.0) / f2vec[i];
-        for (int i = 0; i < nint; i += 2)
-            sum0 += 2 * fxvec[i] * h;
-        for (int i = 1; i < nint; i += 2)
-            sum0 += 4 * fxvec[i] * h;
-        pintez = 2 * asp * sum0 / 3.0;
+            // Ex
+            fx = f1x / t2sqrt;
+            if (i%2 == 0)
+              sum0ex += 2_prt * fx * h;
+            else
+              sum0ex += 4_prt * fx * h;
 
-        // Ex
-        for (int i = 0; i < nint; ++i)
-        fxvec[i] = f1xvec[i] / t2sqrt[i];
-        for (int i = 0; i < nint; i += 2)
-        sum0ex += 2 * fxvec[i] * h;
-        for (int i = 1; i < nint; i += 2)
-            sum0ex += 4 * fxvec[i] * h;
-        pintex = 2 * asp * xp * sum0ex / 3.0 / sigx;
+            // Ey
+            fy = f1x / f2y;
+            if (i%2 == 0)
+              sum0ey += 2_prt * fy * h;
+            else
+              sum0ey += 4_prt * fy * h;
+        }
 
-        // Ey
-        for (int i = 0; i < nint; ++i)
-            fxvec[i] = f1xvec[i] / f2yvec[i];
-        for (int i = 0; i < nint; i += 2)
-            sum0ey += 2 * fxvec[i] * h;
-        for (int i = 1; i < nint; i += 2)
-            sum0ey += 4 * fxvec[i] * h;
-        pintey = 2 * asp * yp * sum0ey / 3.0 / sigy;
+        pintez = 2 * asp * sum0 / 3_prt;
+        pintex = 2 * asp * xp * sum0ex / 3_prt / sigx;
+        pintey = 2 * asp * yp * sum0ey / 3_prt / sigy;
     }
 
     //advanced particle momentae using 2.5D SC fields with a transverse Gaussian distribution.

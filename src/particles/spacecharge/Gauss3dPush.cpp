@@ -4,7 +4,7 @@
  *
  * This file is part of ImpactX.
  *
- * Authors: Ji Qiang
+ * Authors: Ji Qiang, Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
 #include "Gauss3dPush.H"

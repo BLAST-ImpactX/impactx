@@ -151,7 +151,6 @@ namespace impactx::initialization
         int const num_components_phi = 1;
         amrex::IntVect num_guards_phi{num_guards_rho + 1}; // todo: I think this just depends on max(MLMG, force calc)
         if (space_charge == SpaceChargeAlgo::True_2D) { num_guards_phi[2] = 0; phi_nodal_flag[2] = 0; }
-        num_guards_phi[2] = 0;
         track_particles.m_phi.emplace(
                 lev,
                 amrex::MultiFab{amrex::convert(cba, phi_nodal_flag), dm, num_components_phi, num_guards_phi, tag("phi")});

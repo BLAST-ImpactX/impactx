@@ -40,19 +40,19 @@ def read_time_series(file_pattern):
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 s = rbc["s"]
-px_mean = rbc["px_mean"]
-py_mean = rbc["py_mean"]
-pt_mean = rbc["pt_mean"]
-sig_px = rbc["sig_px"]
-sig_py = rbc["sig_py"]
-sig_pt = rbc["sig_pt"]
+px_mean = rbc["mean_px"]
+py_mean = rbc["mean_py"]
+pt_mean = rbc["mean_pt"]
+sigma_px = rbc["sigma_px"]
+sigma_py = rbc["sigma_py"]
+sigma_pt = rbc["sigma_pt"]
 
 px_meani = px_mean.iloc[0]
 py_meani = py_mean.iloc[0]
 pt_meani = pt_mean.iloc[0]
-sig_pxi = sig_px.iloc[0]
-sig_pyi = sig_py.iloc[0]
-sig_pti = sig_pt.iloc[0]
+sig_pxi = sigma_px.iloc[0]
+sig_pyi = sigma_py.iloc[0]
+sig_pti = sigma_pt.iloc[0]
 
 length = len(s) - 1
 
@@ -61,9 +61,9 @@ sf = s.iloc[length]
 px_meanf = px_mean.iloc[length]
 py_meanf = py_mean.iloc[length]
 pt_meanf = pt_mean.iloc[length]
-sig_pxf = sig_px.iloc[length]
-sig_pyf = sig_py.iloc[length]
-sig_ptf = sig_pt.iloc[length]
+sig_pxf = sigma_px.iloc[length]
+sig_pyf = sigma_py.iloc[length]
+sig_ptf = sigma_pt.iloc[length]
 
 print("Initial Beam:")
 print(f"  px_mean={px_meani:e} py_mean={py_meani:e} pt_mean={pt_meani:e}")

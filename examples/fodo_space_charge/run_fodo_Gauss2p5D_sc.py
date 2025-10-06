@@ -13,6 +13,9 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "Gauss2p5D"
+sim.space_charge_gauss2p5_nint = 101
+sim.space_charge_gauss2p5_bins = 129
+sim.space_charge_gauss2p5_delta = 0.01
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh

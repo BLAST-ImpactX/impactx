@@ -8,7 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "Gauss3dPush.H"
-
+#include <AMReX_ParmParse.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>       // for Real
 #include "diagnostics/ReducedBeamCharacteristics.H"
@@ -139,6 +139,10 @@ namespace impactx::particles::spacecharge
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
 
+        int nint = 101;
+        amrex::ParmParse pp_algo("algo.space_charge");
+        pp_algo.queryAddWithParser("gauss_nint", nint);
+
         // group together constants for the momentum
         using ablastr::constant::math::pi;
         amrex::ParticleReal const asp = sigx/sigy;
@@ -180,7 +184,6 @@ namespace impactx::particles::spacecharge
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
                     // field integrals from a 3D Gaussian bunch
-                    int const nint = 101;  // TODO: should "nint" be user-configurable? Otherwise make it constexpr in efldgauss
                     amrex::ParticleReal eintx, einty, eintz;
                     efldgauss(nint,x,y,z,sigx,sigy,sigz,gamma,eintx,einty,eintz);
 

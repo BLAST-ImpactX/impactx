@@ -12,7 +12,7 @@
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
-
+#include <AMReX_ParmParse.H>
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
 #include "diagnostics/ReducedBeamCharacteristics.H"
 #include "particles/wakefields/ChargeBinning.H"
@@ -159,9 +159,14 @@ namespace impactx::particles::spacecharge
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
 
+        int nint = 101;
+        amrex::Real delta = 0.01;
+        amrex::ParmParse pp_algo("algo.space_charge");
+        pp_algo.queryAddWithParser("gauss2p5_nint", nint);
+        pp_algo.queryAddWithParser("gauss2p5_delta", delta);
 
         int tp5d_bins = 129;
-//        pp_algo.queryAddWithParser("tp5d_bins", tp5d_bins);
+        pp_algo.queryAddWithParser("gauss2p5_bins", tp5d_bins);
 
         // Measure beam size, extract the min, max of particle positions
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
@@ -224,8 +229,8 @@ namespace impactx::particles::spacecharge
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
                     //field integrals from a 3D Gaussian bunch
-                    int const nint = 401;
-                    amrex::Real const delta=0.01;
+//                    int const nint = 401;
+//                   amrex::Real const delta=0.01;
 
                     amrex::ParticleReal eintx, einty, eintz;
                     potInt(delta,nint,x,y,sigx,sigy,eintx,einty,eintz);

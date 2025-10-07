@@ -57,6 +57,7 @@ namespace impactx::particles::spacecharge
 
         // integration results
         amrex::ParticleReal sum0ex = 0, sum0ey = 0, sum0ez = 0;
+        amrex::ParticleReal fx = 0, fy = 0, fz = 0;
 
         for (int i = 0; i < nint; ++i)
         {
@@ -73,26 +74,31 @@ namespace impactx::particles::spacecharge
             // Simpson's rule integration
 
             // Ex
-            amrex::ParticleReal const fx = f1 / f2x;
+            fx = f1 / f2x;
             if (i%2 == 0)
                 sum0ex += 2_prt * fx * h;
             else
                 sum0ex += 4_prt * fx * h;
 
             // Ey
-            amrex::ParticleReal const fy = f1 / f2y;
+            fy = f1 / f2y;
             if (i%2 == 0)
                 sum0ey += 2_prt * fy * h;
             else
                 sum0ey += 4_prt * fy * h;
 
             // Ez
-            amrex::ParticleReal const fz = f1 / f2z;
+            fz = f1 / f2z;
             if (i%2 == 0)
                 sum0ez += 2_prt * fz * h;
             else
                 sum0ez += 4_prt * fz * h;
         }
+
+        // end-point correction
+        sum0ex -= fx * h;
+        sum0ey -= fy * h;
+        sum0ez -= fz * h;
 
         pintex = sum0ex / 3_prt;
         pintey = sum0ey / 3_prt;
@@ -104,7 +110,7 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const slice_ds
     )
     {
-        BL_PROFILE("impactx::spacecharge::GatherAndPush");
+        BL_PROFILE("impactx::spacecharge::Gauss3dPush");
 
         using namespace amrex::literals;
 
@@ -131,9 +137,11 @@ namespace impactx::particles::spacecharge
         // group together constants for the momentum
         using ablastr::constant::math::pi;
         amrex::ParticleReal const asp = sigx/sigy;
+        amrex::ParticleReal const facx = 1_prt / (sigx * sigx * sigz * std::sqrt(2_prt * pi));
+        amrex::ParticleReal const facy = 1_prt / (sigy * sigy * sigz * std::sqrt(2_prt * pi));
+        amrex::ParticleReal const facz = 1_prt / (sigz * sigz * sigz * std::sqrt(2_prt * pi));
         amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI
-            * 2_prt * asp * (sigx * sigx * sigz * std::sqrt(2_prt * pi))
-            * bchchg * rfpiepslon;
+            * 2_prt * asp * bchchg * rfpiepslon;
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -167,14 +175,14 @@ namespace impactx::particles::spacecharge
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
                     // field integrals from a 3D Gaussian bunch
-                    int const nint = 401;  // TODO: should "nint" be user-configurable? Otherwise make it constexpr in efldgauss
+                    int const nint = 101;  // TODO: should "nint" be user-configurable? Otherwise make it constexpr in efldgauss
                     amrex::ParticleReal eintx, einty, eintz;
                     efldgauss(nint,x,y,z,sigx,sigy,sigz,gamma,eintx,einty,eintz);
 
                     // push momentum
-                    px += x * eintx * push_consts;
-                    py += y * einty * push_consts;
-                    pz += z * eintz * push_consts;
+                    px += x * eintx * push_consts * facx;
+                    py += y * einty * push_consts * facy;
+                    pz += z * eintz * push_consts * facz;
 
                     // push position is done in the lattice elements
                 });

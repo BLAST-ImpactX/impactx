@@ -38,7 +38,7 @@ def read_time_series(file_pattern):
 
 # read reduced diagnostics
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
-ref = read_time_series("diags/ref_particle.0.0")
+ref = read_time_series("diags/ref_particle.*")
 
 s = rbc["s"]
 px_mean = rbc["mean_px"]

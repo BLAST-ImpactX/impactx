@@ -134,7 +134,7 @@ namespace impactx::particles::wakefields
         RefPart ref = pc.GetRefParticle();
 
         if (isr_ref_part == 1) {
-                    
+
            // Update reference particle momentum
            ref.px = ref.px * (1_prt + dp_ref);
            ref.py = ref.py * (1_prt + dp_ref);

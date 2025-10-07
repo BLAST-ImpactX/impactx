@@ -59,9 +59,6 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal sum0ex = 0, sum0ey = 0, sum0ez = 0;
         amrex::ParticleReal fx = 0, fy = 0, fz = 0;
 
-        amrex::ParticleReal fx = 0.0;
-        amrex::ParticleReal fy = 0.0;
-        amrex::ParticleReal fz = 0.0;
         for (int i = 0; i < nint; ++i)
         {
             amrex::ParticleReal const x = xmin + i * h;
@@ -182,7 +179,6 @@ namespace impactx::particles::spacecharge
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
                     // field integrals from a 3D Gaussian bunch
-                    int const nint = 101;  // TODO: should "nint" be user-configurable? Otherwise make it constexpr in efldgauss
                     amrex::ParticleReal eintx, einty, eintz;
                     efldgauss(nint,x,y,z,sigx,sigy,sigz,gamma,eintx,einty,eintz);
 

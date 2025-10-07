@@ -49,8 +49,11 @@ namespace impactx::particles::wakefields
             int isr_order = 1;
             pp_algo.queryAddWithParser("isr_order", isr_order);
 
+            int isr_ref_part = 0;
+            pp_algo.queryAddWithParser("isr_ref_part", isr_ref_part);
+
             // Call function to kick particles with wake
-            impactx::particles::wakefields::ISRPush(particle_container, slice_ds, R, isr_order);
+            impactx::particles::wakefields::ISRPush(particle_container, slice_ds, R, isr_order, isr_ref_part);
         }
     }
 

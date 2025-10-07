@@ -26,12 +26,14 @@ namespace impactx::particles::wakefields
      * @param[in] slice_ds slice spacing [m]
      * @param[in] rc bending radius [m]
      * @param[in] isr_order order of quantum ISR effects
+     * @param[in] ref_part_flag flag specifying whether ISR is applied to the reference particle
      */
     void ISRPush (
         ImpactXParticleContainer & pc,
         amrex::ParticleReal slice_ds,
         amrex::ParticleReal rc,
-        [[maybe_unused]] int isr_order
+        [[maybe_unused]] int isr_order,
+        [[maybe_unused]] int ref_part_flag
     );
 
 } // namespace impactx::particles::wakefields

@@ -62,7 +62,7 @@ A Single Bend with ISR, Reference Energy Loss
 ==============================================
 
 This is identical to the preceding test, except for the flag ``isr_ref_part = 1``.  In this test, the reference particle experiences radiative energy loss.  For the beam particles,
-whose coordinates and momenta are measured relative to the reference particle, the primary effect of ISR is to induce an increase in energy spread.  Little effect is visible on 
+whose coordinates and momenta are measured relative to the reference particle, the primary effect of ISR is to induce an increase in energy spread.  Little effect is visible on
 the beam centroid.
 
 
@@ -89,7 +89,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_bend_isr_ref.in
           :language: ini
           :caption: You can copy this file from ``examples/incoherent_synchrotron/input_bend_isr_ref.in``.
-   
+
 Analyze
 -------
 
@@ -100,5 +100,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_bend_isr_ref.py
       :language: python3
       :caption: You can copy this file from ``examples/incoherent_synchrotron/analysis_bend_isr_ref.py``.
-
-

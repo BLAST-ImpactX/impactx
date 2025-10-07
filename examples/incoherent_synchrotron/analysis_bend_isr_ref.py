@@ -114,7 +114,7 @@ dsigpt2 = (
 dsigpt = np.sqrt(dsigpt2)
 
 # Relative (total) energy change in the reference particle:
-dpt_ref = -(ref_gammaf - ref_gammai)/ref_gammai
+dpt_ref = -(ref_gammaf - ref_gammai) / ref_gammai
 
 print("")
 print("Final Beam:")

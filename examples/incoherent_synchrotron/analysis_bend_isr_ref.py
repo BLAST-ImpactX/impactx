@@ -67,7 +67,7 @@ pt_meanf = pt_mean.iloc[length]
 sig_pxf = sigma_px.iloc[length]
 sig_pyf = sigma_py.iloc[length]
 sig_ptf = sigma_pt.iloc[length]
-ref_gammaf = ref_gamma.iloc[length]
+ref_gammaf = ref_gamma.iloc[-1]
 
 print("Initial Beam:")
 print(f"  px_mean={px_meani:e} py_mean={py_meani:e} pt_mean={pt_meani:e}")

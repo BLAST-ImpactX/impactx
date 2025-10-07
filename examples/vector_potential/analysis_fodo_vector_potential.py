@@ -40,9 +40,9 @@ def read_time_series(file_pattern):
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 s = rbc["s"]
-sig_x = rbc["sig_x"]
-sig_y = rbc["sig_y"]
-sig_t = rbc["sig_t"]
+sig_x = rbc["sigma_x"]
+sig_y = rbc["sigma_y"]
+sig_t = rbc["sigma_t"]
 emittance_x = rbc["emittance_x"]
 emittance_y = rbc["emittance_y"]
 emittance_t = rbc["emittance_t"]

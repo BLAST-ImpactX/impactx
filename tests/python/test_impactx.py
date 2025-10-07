@@ -36,9 +36,9 @@ def validate_fodo(beam):
     print("charge=", rbc["charge_C"])
     assert np.allclose(
         [
-            rbc["sig_x"],
-            rbc["sig_y"],
-            rbc["sig_t"],
+            rbc["sigma_x"],
+            rbc["sigma_y"],
+            rbc["sigma_t"],
             rbc["emittance_x"],
             rbc["emittance_y"],
             rbc["emittance_t"],

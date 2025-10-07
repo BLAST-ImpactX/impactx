@@ -15,7 +15,7 @@ jobs:
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: TRUE
     steps:
     - uses: actions/checkout@v5
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       name: Install Python
       with:
         python-version: '3.x'
@@ -78,6 +78,16 @@ jobs:
     - name: run tests
       run: |
         ctest --test-dir build --output-on-failure -E pytest.AMReX
+
+    - name: Upload dashboard screenshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dashboard-screenshots-macos
+        path: |
+          build/**/pytest.ImpactX.dashboard/screenshots/**/*.png
+          build/**/screenshots/**/*.png
+        if-no-files-found: ignore
 
     - name: run installed python module
       run: |

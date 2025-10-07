@@ -13,14 +13,15 @@ impactx_pybind
 """
 
 from __future__ import annotations
-from amrex import space3d as amr
-import amrex.space3d.amrex_3d_pybind
-from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
+
 import collections.abc
 import typing
-from . import distribution
-from . import elements
-from . import wakeconvolution
+
+import amrex.space3d.amrex_3d_pybind
+from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
+
+from . import distribution, elements, wakeconvolution
 
 __all__: list[str] = [
     "Config",
@@ -49,6 +50,9 @@ class Config:
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
     have_simd: typing.ClassVar[bool] = False
+    precision: typing.ClassVar[str] = "DOUBLE"
+    precision_particles: typing.ClassVar[str] = "DOUBLE"
+    simd_size: typing.ClassVar[int] = 1
 
 class CoordSystem:
     """
@@ -105,15 +109,15 @@ class ImpactX:
     def add_particles(
         self,
         bunch_charge: typing.SupportsFloat,
-        distr: impactx.impactx_pybind.distribution.Empty
-        | impactx.impactx_pybind.distribution.Gaussian
-        | impactx.impactx_pybind.distribution.Kurth4D
-        | impactx.impactx_pybind.distribution.Kurth6D
-        | impactx.impactx_pybind.distribution.KVdist
-        | impactx.impactx_pybind.distribution.Thermal
-        | impactx.impactx_pybind.distribution.Triangle
-        | impactx.impactx_pybind.distribution.Semigaussian
-        | impactx.impactx_pybind.distribution.Waterbag,
+        distr: distribution.Empty
+        | distribution.Gaussian
+        | distribution.Kurth4D
+        | distribution.Kurth6D
+        | distribution.KVdist
+        | distribution.Thermal
+        | distribution.Triangle
+        | distribution.Semigaussian
+        | distribution.Waterbag,
         npart: typing.SupportsInt,
     ) -> None:
         """
@@ -142,15 +146,15 @@ class ImpactX:
     def init_envelope(
         self,
         ref: RefPart,
-        distr: impactx.impactx_pybind.distribution.Empty
-        | impactx.impactx_pybind.distribution.Gaussian
-        | impactx.impactx_pybind.distribution.Kurth4D
-        | impactx.impactx_pybind.distribution.Kurth6D
-        | impactx.impactx_pybind.distribution.KVdist
-        | impactx.impactx_pybind.distribution.Thermal
-        | impactx.impactx_pybind.distribution.Triangle
-        | impactx.impactx_pybind.distribution.Semigaussian
-        | impactx.impactx_pybind.distribution.Waterbag,
+        distr: distribution.Empty
+        | distribution.Gaussian
+        | distribution.Kurth4D
+        | distribution.Kurth6D
+        | distribution.KVdist
+        | distribution.Thermal
+        | distribution.Triangle
+        | distribution.Semigaussian
+        | distribution.Waterbag,
         intensity: typing.SupportsFloat | None = None,
     ) -> None:
         """
@@ -520,10 +524,14 @@ class ImpactXParticleContainer(
         py: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         pt: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         qm: typing.SupportsFloat,
-        bchchg: typing.SupportsFloat,
+        bunch_charge: typing.SupportsFloat | None = None,
+        w: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
     ) -> None:
         """
         Add new particles to the container for fixed s.
+
+        Either the total charge (bunch_charge) or the weight of each
+        particle (w) must be provided.
 
         Note: This can only be used *after* the initialization (grids) have
               been created, meaning after the call to ImpactX.init_grids
@@ -536,7 +544,7 @@ class ImpactXParticleContainer(
         :param py: momentum in y
         :param pt: momentum in t
         :param qm: charge over mass in 1/eV
-        :param bchchg: total charge within a bunch in C
+        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent
         """
     def beam_moments(self) -> dict[str, float]:
         """
@@ -637,21 +645,25 @@ class RefPart:
         This struct stores the reference particle attributes
         stored in ImpactXParticleContainer.
         """
+    def copy(self) -> RefPart:
+        """
+        Copy the reference particle
+        """
     def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
         """
         Reset the reference particle
         """
     def set_charge_qe(self, charge_qe: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle charge (positive elementary charge)
+        Set reference particle charge (positive elementary charge) [q_e]
         """
     def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle kinetic energy (MeV)
+        Set reference particle kinetic energy [MeV]
         """
     def set_mass_MeV(self, mass_MeV: typing.SupportsFloat) -> RefPart:
         """
-        Set reference particle rest mass (MeV/c^2)
+        Set reference particle rest mass * c^2, expressed as an energy [MeV]
         """
     @property
     def beta(self) -> float:
@@ -666,7 +678,7 @@ class RefPart:
     @property
     def charge(self) -> float:
         """
-        reference charge, in C
+        reference charge [C]
         """
     @charge.setter
     def charge(self, arg0: typing.SupportsFloat) -> None: ...
@@ -683,7 +695,7 @@ class RefPart:
     @property
     def kin_energy_MeV(self) -> float:
         """
-        Get reference particle energy (MeV)
+        Get reference particle energy [MeV]
         """
     @property
     def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
@@ -697,14 +709,14 @@ class RefPart:
     @property
     def mass(self) -> float:
         """
-        reference rest mass, in kg
+        reference rest mass [kg]
         """
     @mass.setter
     def mass(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def mass_MeV(self) -> float:
         """
-        Get reference particle rest mass (MeV/c^2)
+        Get reference particle rest mass * c^2, expressed as an energy [MeV]
         """
     @property
     def pt(self) -> float:
@@ -716,38 +728,38 @@ class RefPart:
     @property
     def px(self) -> float:
         """
-        momentum in x, normalized to proper velocity
+        momentum in x divided by m*c = beta_x*gamma [unitless]
         """
     @px.setter
     def px(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def py(self) -> float:
         """
-        momentum in y, normalized to proper velocity
+        momentum in y divided by m*c = beta_y*gamma [unitless]
         """
     @py.setter
     def py(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def pz(self) -> float:
         """
-        momentum in z, normalized to proper velocity
+        momentum in z divided by m*c = beta_z*gamma [unitless]
         """
     @pz.setter
     def pz(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def qm_ratio_SI(self) -> float:
         """
-        Get reference particle charge to mass ratio (C/kg)
+        Get reference particle charge to mass ratio [C/kg]
         """
     @property
     def rigidity_Tm(self) -> float:
         """
-        Get reference particle magnetic rigidity Brho (T*m)
+        Get reference particle magnetic rigidity Brho [T*m]
         """
     @property
     def s(self) -> float:
         """
-        integrated orbit path length, in meters
+        integrated orbit path length [m]
         """
     @s.setter
     def s(self, arg0: typing.SupportsFloat) -> None: ...
@@ -761,28 +773,28 @@ class RefPart:
     @property
     def t(self) -> float:
         """
-        clock time * c in meters
+        clock time * c [m]
         """
     @t.setter
     def t(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def x(self) -> float:
         """
-        horizontal position x, in meters
+        horizontal position x [m]
         """
     @x.setter
     def x(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def y(self) -> float:
         """
-        vertical position y, in meters
+        vertical position y [m]
         """
     @y.setter
     def y(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def z(self) -> float:
         """
-        longitudinal position y, in meters
+        longitudinal position y [m]
         """
     @z.setter
     def z(self, arg0: typing.SupportsFloat) -> None: ...
@@ -795,66 +807,111 @@ def coordinate_transformation(
     """
 
 def create_envelope(
-    arg0: impactx.impactx_pybind.distribution.Empty
-    | impactx.impactx_pybind.distribution.Gaussian
-    | impactx.impactx_pybind.distribution.Kurth4D
-    | impactx.impactx_pybind.distribution.Kurth6D
-    | impactx.impactx_pybind.distribution.KVdist
-    | impactx.impactx_pybind.distribution.Thermal
-    | impactx.impactx_pybind.distribution.Triangle
-    | impactx.impactx_pybind.distribution.Semigaussian
-    | impactx.impactx_pybind.distribution.Waterbag,
+    arg0: distribution.Empty
+    | distribution.Gaussian
+    | distribution.Kurth4D
+    | distribution.Kurth6D
+    | distribution.KVdist
+    | distribution.Thermal
+    | distribution.Triangle
+    | distribution.Semigaussian
+    | distribution.Waterbag,
     arg1: typing.SupportsFloat | None,
 ) -> Envelope: ...
+@typing.overload
 def push(
     pc: ImpactXParticleContainer,
-    element: impactx.impactx_pybind.elements.Empty
-    | impactx.impactx_pybind.elements.Aperture
-    | impactx.impactx_pybind.elements.Buncher
-    | impactx.impactx_pybind.elements.CFbend
-    | impactx.impactx_pybind.elements.ChrAcc
-    | impactx.impactx_pybind.elements.ChrDrift
-    | impactx.impactx_pybind.elements.ChrPlasmaLens
-    | impactx.impactx_pybind.elements.ChrQuad
-    | impactx.impactx_pybind.elements.ConstF
-    | impactx.impactx_pybind.elements.BeamMonitor
-    | impactx.impactx_pybind.elements.DipEdge
-    | impactx.impactx_pybind.elements.Drift
-    | impactx.impactx_pybind.elements.ExactCFbend
-    | impactx.impactx_pybind.elements.ExactDrift
-    | impactx.impactx_pybind.elements.ExactMultipole
-    | impactx.impactx_pybind.elements.ExactQuad
-    | impactx.impactx_pybind.elements.ExactSbend
-    | impactx.impactx_pybind.elements.Kicker
-    | impactx.impactx_pybind.elements.LinearMap
-    | impactx.impactx_pybind.elements.Marker
-    | impactx.impactx_pybind.elements.Multipole
-    | impactx.impactx_pybind.elements.NonlinearLens
-    | impactx.impactx_pybind.elements.PlaneXYRot
-    | impactx.impactx_pybind.elements.Programmable
-    | impactx.impactx_pybind.elements.PRot
-    | impactx.impactx_pybind.elements.Quad
-    | impactx.impactx_pybind.elements.QuadEdge
-    | impactx.impactx_pybind.elements.RFCavity
-    | impactx.impactx_pybind.elements.Sbend
-    | impactx.impactx_pybind.elements.ShortRF
-    | impactx.impactx_pybind.elements.SoftSolenoid
-    | impactx.impactx_pybind.elements.SoftQuadrupole
-    | impactx.impactx_pybind.elements.Sol
-    | impactx.impactx_pybind.elements.Source
-    | impactx.impactx_pybind.elements.TaperedPL
-    | impactx.impactx_pybind.elements.ThinDipole,
+    element: elements.Empty
+    | elements.Aperture
+    | elements.Buncher
+    | elements.CFbend
+    | elements.ChrAcc
+    | elements.ChrDrift
+    | elements.ChrPlasmaLens
+    | elements.ChrQuad
+    | elements.ConstF
+    | elements.BeamMonitor
+    | elements.DipEdge
+    | elements.Drift
+    | elements.ExactCFbend
+    | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
+    | elements.ExactSbend
+    | elements.Kicker
+    | elements.LinearMap
+    | elements.Marker
+    | elements.Multipole
+    | elements.NonlinearLens
+    | elements.PlaneXYRot
+    | elements.Programmable
+    | elements.PRot
+    | elements.Quad
+    | elements.QuadEdge
+    | elements.RFCavity
+    | elements.Sbend
+    | elements.ShortRF
+    | elements.SoftSolenoid
+    | elements.SoftQuadrupole
+    | elements.Sol
+    | elements.Source
+    | elements.TaperedPL
+    | elements.ThinDipole,
     step: typing.SupportsInt = 0,
     period: typing.SupportsInt = 0,
 ) -> None:
     """
-    Push particles through an element
+    Push a whole particle beam (incl. reference particle) through an element
+    """
+
+@typing.overload
+def push(
+    ref: RefPart,
+    element: elements.Empty
+    | elements.Aperture
+    | elements.Buncher
+    | elements.CFbend
+    | elements.ChrAcc
+    | elements.ChrDrift
+    | elements.ChrPlasmaLens
+    | elements.ChrQuad
+    | elements.ConstF
+    | elements.BeamMonitor
+    | elements.DipEdge
+    | elements.Drift
+    | elements.ExactCFbend
+    | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
+    | elements.ExactSbend
+    | elements.Kicker
+    | elements.LinearMap
+    | elements.Marker
+    | elements.Multipole
+    | elements.NonlinearLens
+    | elements.PlaneXYRot
+    | elements.Programmable
+    | elements.PRot
+    | elements.Quad
+    | elements.QuadEdge
+    | elements.RFCavity
+    | elements.Sbend
+    | elements.ShortRF
+    | elements.SoftSolenoid
+    | elements.SoftQuadrupole
+    | elements.Sol
+    | elements.Source
+    | elements.TaperedPL
+    | elements.ThinDipole,
+) -> None:
+    """
+    Push the reference particle through an element
     """
 
 __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.07"
+__version__: str = "25.09"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 25.07)
+project(ImpactX VERSION 25.09)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -185,6 +185,11 @@ if(ImpactX_UNITY_BUILD)
     )
 endif()
 
+# Fast-Math
+if(ImpactX_FASTMATH)
+    target_link_libraries(lib PUBLIC AMReX::Flags_FASTMATH)
+endif()
+
 # executable application
 #   note: we currently avoid a dependency on a core library
 #         for simpler usage, but could make this an option
@@ -264,7 +269,13 @@ add_subdirectory(src)
 
 # C++ properties: at least a C++17 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    if(ImpactX_SIMD)
+        # vir::cvt
+        # https://github.com/mattkretz/vir-simd/issues/45
+        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
+    else()
+        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    endif()
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF
@@ -336,11 +347,6 @@ if(ImpactX_PYTHON)
     target_compile_definitions(pyImpactX PRIVATE
         PYIMPACTX_VERSION_INFO=${pyImpactX_VERSION_INFO})
 endif()
-
-
-# Warnings ####################################################################
-#
-set_cxx_warnings()
 
 
 # Generate Configuration and .pc Files ########################################
@@ -510,6 +516,13 @@ if(BUILD_TESTING)
     endif()
     add_subdirectory(tests)
 endif()
+
+
+# Warnings ####################################################################
+#
+foreach(impactx_tgt IN LISTS _ALL_TARGETS)
+    impactx_set_compile_warnings(${impactx_tgt})
+endforeach()
 
 
 # Status Summary for Build Options ############################################

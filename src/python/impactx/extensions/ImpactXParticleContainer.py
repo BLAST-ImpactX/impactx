@@ -47,9 +47,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 num_bins,
             )
         )
-        x_edges = np.linspace(rbc["x_min"] * m2mm, rbc["x_max"] * m2mm, num_bins + 1)
+        x_edges = np.linspace(rbc["min_x"] * m2mm, rbc["max_x"] * m2mm, num_bins + 1)
         px_edges = np.linspace(
-            rbc["px_min"] * rad2mrad, rbc["px_max"] * rad2mrad, num_bins + 1
+            rbc["min_px"] * rad2mrad, rbc["max_px"] * rad2mrad, num_bins + 1
         )
 
         ypy = np.zeros(
@@ -58,9 +58,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 num_bins,
             )
         )
-        y_edges = np.linspace(rbc["y_min"] * m2mm, rbc["y_max"] * m2mm, num_bins + 1)
+        y_edges = np.linspace(rbc["min_y"] * m2mm, rbc["max_y"] * m2mm, num_bins + 1)
         py_edges = np.linspace(
-            rbc["py_min"] * rad2mrad, rbc["py_max"] * rad2mrad, num_bins + 1
+            rbc["min_py"] * rad2mrad, rbc["max_py"] * rad2mrad, num_bins + 1
         )
 
         tpt = np.zeros(
@@ -69,9 +69,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 num_bins,
             )
         )
-        t_edges = np.linspace(rbc["t_min"] * m2mm, rbc["t_max"] * m2mm, num_bins + 1)
+        t_edges = np.linspace(rbc["min_t"] * m2mm, rbc["max_t"] * m2mm, num_bins + 1)
         pt_edges = np.linspace(
-            rbc["pt_min"] * rad2mrad, rbc["pt_max"] * rad2mrad, num_bins + 1
+            rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad, num_bins + 1
         )
     else:
         # update for plot unit system
@@ -89,8 +89,8 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             df["momentum_x"],
             bins=num_bins,
             range=[
-                [rbc["x_min"] * m2mm, rbc["x_max"] * m2mm],
-                [rbc["px_min"] * rad2mrad, rbc["px_max"] * rad2mrad],
+                [rbc["min_x"] * m2mm, rbc["max_x"] * m2mm],
+                [rbc["min_px"] * rad2mrad, rbc["max_px"] * rad2mrad],
             ],
         )
 
@@ -99,8 +99,8 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             df["momentum_y"],
             bins=num_bins,
             range=[
-                [rbc["y_min"] * m2mm, rbc["y_max"] * m2mm],
-                [rbc["py_min"] * rad2mrad, rbc["py_max"] * rad2mrad],
+                [rbc["min_y"] * m2mm, rbc["max_y"] * m2mm],
+                [rbc["min_py"] * rad2mrad, rbc["max_py"] * rad2mrad],
             ],
         )
 
@@ -109,8 +109,8 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             df["momentum_t"],
             bins=num_bins,
             range=[
-                [rbc["t_min"] * m2mm, rbc["t_max"] * m2mm],
-                [rbc["pt_min"] * rad2mrad, rbc["pt_max"] * rad2mrad],
+                [rbc["min_t"] * m2mm, rbc["max_t"] * m2mm],
+                [rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad],
             ],
         )
 

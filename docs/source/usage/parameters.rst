@@ -480,7 +480,7 @@ This requires these additional parameters:
 
 
 ``multipole_exact``
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 ``multipole_exact`` for a thick multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
 The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -667,7 +667,7 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 ``quadedge``
-^^^^^^^^^^^
+^^^^^^^^^^^^
 
 ``quadedge`` for quadrupole edge focusing.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing the effect
 of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq (28) of:
@@ -911,6 +911,12 @@ See there ``nslice`` option on lattice elements for slicing.
   * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
     When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
+
+  * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+
+    This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
+    Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
+    (This reference describes both 3D and 2.5D models.)
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 

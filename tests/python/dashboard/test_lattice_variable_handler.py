@@ -10,6 +10,8 @@ import time
 
 import pytest
 
+from .utils import APPROX_TOL, TIMEOUT
+
 
 def lattice_value(state, index: int, param_name: str) -> float:
     """
@@ -53,10 +55,19 @@ def assert_lattice_param_sim_input(
         return None
 
     # Simple retry logic similar to assert_state
-    for i in range(10):
+    for i in range(TIMEOUT):
         current_value = get_sim_input()
-        if current_value == expected_value:
-            return
+        try:
+            if isinstance(expected_value, (int, float)) and isinstance(
+                current_value, (int, float)
+            ):
+                if current_value == pytest.approx(expected_value, **APPROX_TOL):
+                    return
+            elif current_value == expected_value:
+                return
+        except Exception:
+            if current_value == expected_value:
+                return
         time.sleep(1)
 
     raise AssertionError(

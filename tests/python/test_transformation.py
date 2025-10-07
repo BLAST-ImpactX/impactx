@@ -87,9 +87,9 @@ def test_transformation():
         "beta_y",
         "emittance_y",
         "emittance_x",
-        "sig_y",
-        "sig_x",
-        "t_mean",
+        "sigma_y",
+        "sigma_x",
+        "mean_t",
     ]
     for key in large_st_diff_keys:
         rel_error = (rbc_s0[key] - rbc_t[key]) / rbc_s0[key]

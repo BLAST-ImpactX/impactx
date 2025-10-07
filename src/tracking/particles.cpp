@@ -133,7 +133,7 @@ namespace impactx
                     particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
 
                     // push all particles with external maps
-                    Push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
+                    push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
 
                     // move "lost" particles to another particle container
                     collect_lost_particles(*amr_data->track_particles.m_particle_container);

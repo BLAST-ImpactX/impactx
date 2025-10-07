@@ -62,6 +62,7 @@ class GeneralToolbar:
         if toolbar_name == "input":
             (GeneralToolbar.dashboard_info(),)
             vuetify.VSpacer()
+            InputToolbar.select_impactx_example()
             InputToolbar.import_button()
             InputToolbar.export_button()
             InputToolbar.reset_inputs_button()

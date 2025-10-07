@@ -13,7 +13,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
     - uses: actions/checkout@v5
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       name: Install Python
       with:
         python-version: '3.12'
@@ -131,7 +131,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
     - uses: actions/checkout@v5
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       name: Install Python
       with:
         python-version: '3.11'

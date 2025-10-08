@@ -162,11 +162,11 @@ namespace impactx::particles::spacecharge
         int nint = 101;
         amrex::Real delta = 0.01;
         amrex::ParmParse pp_algo("algo.space_charge");
-        pp_algo.queryAddWithParser("gauss2p5_nint", nint);
-        pp_algo.queryAddWithParser("gauss2p5_delta", delta);
+        pp_algo.queryAddWithParser("gauss_nint", nint);
+        pp_algo.queryAddWithParser("gauss_taylor_delta", delta);
 
         int tp5d_bins = 129;
-        pp_algo.queryAddWithParser("gauss2p5_bins", tp5d_bins);
+        pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
 
         // Measure beam size, extract the min, max of particle positions
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =

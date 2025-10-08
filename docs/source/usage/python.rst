@@ -86,6 +86,14 @@ Collective Effects & Overall Simulation Parameters
 
       Number of steps for computing the integrals (default: ``101``).
 
+   .. py:property:: space_charge_gauss_taylor_delta
+
+      ... (default: ``0.01``)
+
+   .. py:property:: space_charge_gauss_charge_z_bins
+
+      ... (default: ``129``)
+
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.

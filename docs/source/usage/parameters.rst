@@ -889,7 +889,15 @@ See there ``nslice`` option on lattice elements for slicing.
 
     * ``algo.space_charge.gauss_nint`` (``int``, default: ``101``)
 
-    Number of steps for computing the integrals (Eqs. 45-47 in the above paper).
+      Number of steps for computing the integrals (Eqs. 45-47 in the above paper).
+
+    * ``algo.space_charge.gauss_taylor_delta`` (``float``, default: ``0.01``)
+
+      ...
+
+    * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
+
+      ...
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 

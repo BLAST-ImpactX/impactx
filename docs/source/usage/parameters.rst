@@ -882,7 +882,7 @@ See there ``nslice`` option on lattice elements for slicing.
   * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
     This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-    Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
+    Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
     (This reference describes both 3D and 2.5D models.)
 
     This model supports the following sub-option:
@@ -893,11 +893,11 @@ See there ``nslice`` option on lattice elements for slicing.
 
     * ``algo.space_charge.gauss_taylor_delta`` (``float``, default: ``0.01``)
 
-      ...
+      Initial integral region to avoid divergence of integrand at 0.
 
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 
-      ...
+      Number of bins for longitudinal line density deposition.
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 

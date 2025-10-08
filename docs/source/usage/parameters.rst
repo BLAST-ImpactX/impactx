@@ -885,6 +885,12 @@ See there ``nslice`` option on lattice elements for slicing.
     Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
     (This reference describes both 3D and 2.5D models.)
 
+    This model supports the following sub-option:
+
+    * ``algo.space_charge.gauss_nint`` (``int``, default: ``101``)
+
+    Number of steps for computing the integrals (Eqs. 45-47 in the above paper).
+
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 
   The number of grid points along each direction (on the **coarsest level**)

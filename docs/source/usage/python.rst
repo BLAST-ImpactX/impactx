@@ -81,6 +81,11 @@ Collective Effects & Overall Simulation Parameters
         This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
         Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
+
+   .. py:property:: space_charge_gauss_nint
+
+      Number of steps for computing the integrals (default: ``101``).
+
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.

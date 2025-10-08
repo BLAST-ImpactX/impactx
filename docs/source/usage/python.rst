@@ -79,7 +79,7 @@ Collective Effects & Overall Simulation Parameters
       * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
         This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-        Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
+        Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
 
    .. py:property:: space_charge_gauss_nint
@@ -88,11 +88,11 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_gauss_taylor_delta
 
-      ... (default: ``0.01``)
+      Initial integral region to avoid integrand divergence at 0 (default: ``0.01``).
 
    .. py:property:: space_charge_gauss_charge_z_bins
 
-      ... (default: ``129``)
+      Number of bins for longitudinal charge density deposition (default: ``129``).
 
    .. py:property:: poisson_solver
 

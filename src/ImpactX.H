@@ -10,15 +10,18 @@
 #ifndef IMPACT_X_H
 #define IMPACT_X_H
 
-#include "particles/distribution/All.H"
 #include "elements/All.H"
-
 #include "initialization/AmrCoreData.H"
+#include "particles/distribution/All.H"
+#include "tracking/TrackingState.H"
 
 #include <AMReX_REAL.H>
 
+#include <functional>
 #include <list>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 
 namespace impactx
@@ -150,6 +153,25 @@ namespace impactx
         {
             return m_grids_initialized;
         }
+
+        /** Call user-defined functions while the simulation is running.
+         *
+         * Check if an optional, user-defined function is registered by
+         * name and if yes, call it.
+         *
+         * @see m_hook for function signature:
+         *   void user_defined_hook (ImpactX *);
+         */
+        void call_hook (std::string const & name);
+
+        std::unordered_map<
+            std::string,
+            std::function<void(ImpactX *)>
+        > m_hook;  //! hooks that users can call
+
+        /** A few states during tracking loops, useful to know in hooks (Python callback functions).
+         */
+        TrackingState m_tracking_state;
 
       private:
         /** Keeps track if init_grids was called.

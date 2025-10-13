@@ -17,6 +17,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 
 
 namespace impactx
@@ -60,6 +61,26 @@ void ImpactX::init_warning_logger ()
 bool ImpactX::early_param_check ()
 {
     BL_PROFILE("ImpactX::early_param_check");
+
+    // any unknown hooks?
+    // see python.rst docs
+    std::unordered_set<std::string> allowed_hook_names = {
+        "before_period",
+        "after_period",
+        "before_element",
+        "after_element",
+        "before_slice"
+    };
+    for (auto const & pair : m_hook) {
+        std::string const & key = pair.first;
+        if (allowed_hook_names.find(key) == allowed_hook_names.end()) {
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactX Python Hook",
+                "The hook name '" + key + "' is not defined.",
+                ablastr::warn_manager::WarnPriority::high
+            );
+        }
+    }
 
     // verbosity
     amrex::ParmParse pp_impactx("impactx");

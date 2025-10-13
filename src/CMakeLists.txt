@@ -6,6 +6,7 @@
 target_sources(lib
   PRIVATE
     ImpactX.cpp
+    Hooks.cpp
 )
 
 add_subdirectory(diagnostics)

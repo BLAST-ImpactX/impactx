@@ -68,6 +68,10 @@ namespace detail
 void init_ImpactX (py::module& m)
 {
     py::class_<ImpactX> impactx(m, "ImpactX", py::dynamic_attr());
+
+    using ImpactXHooks = std::unordered_map<std::string, std::function<void(ImpactX *)> >;
+    py::bind_map<ImpactXHooks>(m, "UnorderedMap");
+
     impactx
         .def(py::init<>())
 
@@ -492,6 +496,10 @@ void init_ImpactX (py::module& m)
             "If it's not empty, it specifies the file name for the output. "
             "Note that /dev/null is a special name that mean a null file."
         )
+        .def_readwrite("hook",
+            &ImpactX::m_hook,
+            "User-defined function hooks that are called, e.g, during tracking."
+        )
 
         .def("deposit_charge",
             [](ImpactX & ix) {
@@ -567,6 +575,22 @@ void init_ImpactX (py::module& m)
         )
         .def("track_reference", &ImpactX::track_reference,
              "Run the reference orbit tracking simulation loop."
+        )
+
+
+        .def_property_readonly("tracking_period",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_period; },
+            "For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period)"
+        )
+        .def_property_readonly("tracking_step",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_step; },
+            "For tracking hooks/callbacks, a global step of the simulation.\n\n"
+            "A state of internal simulation steps, increments also for space charge slice steps in elements.\n"
+            "We start in 'step 0' (initial state)."
+        )
+        .def_property_readonly("tracking_element",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_element; },
+            "For tracking hooks/callbacks, the current lattice element."
         )
 
         .def("resize_mesh", &ImpactX::ResizeMesh,

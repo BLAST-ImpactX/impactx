@@ -33,7 +33,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal slice_ds,
         amrex::ParticleReal rc,
         [[maybe_unused]] int isr_order,
-        [[maybe_unused]] int ref_part_flag
+        [[maybe_unused]] bool ref_part_flag
     );
 
 } // namespace impactx::particles::wakefields

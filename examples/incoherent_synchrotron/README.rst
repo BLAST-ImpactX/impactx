@@ -59,9 +59,9 @@ We run the following script to analyze correctness:
 .. _examples-bend-isr-ref:
 
 A Single Bend with ISR, Reference Energy Loss
-==============================================
+=============================================
 
-This is identical to the preceding test, except for the flag ``isr_ref_part = 1``.  In this test, the reference particle experiences radiative energy loss.  For the beam particles,
+This is identical to the preceding test, except for the flag ``isr_ref_part`` option being enabled.  In this test, the reference particle experiences radiative energy loss.  For the beam particles,
 whose coordinates and momenta are measured relative to the reference particle, the primary effect of ISR is to induce an increase in energy spread.  Little effect is visible on
 the beam centroid.
 

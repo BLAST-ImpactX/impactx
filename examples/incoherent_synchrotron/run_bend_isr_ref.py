@@ -14,7 +14,7 @@ sim = ImpactX()
 sim.space_charge = False
 sim.isr = True
 sim.isr_order = 1
-sim.isr_ref_part = 1
+sim.isr_ref_part = True
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh

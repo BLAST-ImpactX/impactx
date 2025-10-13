@@ -113,6 +113,7 @@ Lattice Design & Optimization
 
    examples/fodo_tune/README.rst
    examples/optimize_triplet/README.rst
+   examples/turn_update/README.rst
 
 
 Virtual Test Stands

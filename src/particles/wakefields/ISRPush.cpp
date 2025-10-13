@@ -108,7 +108,7 @@ namespace impactx::particles::wakefields
                     }
 
                     // Value of the ISR kick in total momentum (relative to total momentum):
-                    amrex::ParticleReal dp = (-tau*g + std::sqrt(tau*h)*xi);
+                    amrex::ParticleReal dp = -tau*g + std::sqrt(tau*h)*xi;
 
                     if (isr_ref_part) {
                         dp -= dp_ref;
@@ -130,7 +130,7 @@ namespace impactx::particles::wakefields
 
         amrex::Gpu::streamSynchronize();
 
-        // Update the reference particle (if isr_ref_part = 1):
+        // Update the reference particle (if isr_ref_part is set):
         RefPart ref = pc.GetRefParticle();
 
         if (isr_ref_part) {
@@ -140,7 +140,7 @@ namespace impactx::particles::wakefields
            ref.py = ref.py * (1_prt + dp_ref);
            ref.pz = ref.pz * (1_prt + dp_ref);
 
-           amrex::ParticleReal p2_ref = powi<2>(ref.px) + powi<2>(ref.py) + powi<2>(ref.pz);
+           amrex::ParticleReal const p2_ref = powi<2>(ref.px) + powi<2>(ref.py) + powi<2>(ref.pz);
            ref.pt = -std::sqrt(p2_ref + 1_prt);
 
            pc.SetRefParticle(ref);

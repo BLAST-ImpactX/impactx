@@ -1,7 +1,8 @@
+
 .. _examples-expanding:
 
-Expanding Beam in Free Space
-============================
+Expanding Beam in Free Space with 3D Space Charge
+==================================================
 
 A coasting bunch expanding freely in free space under its own space charge.
 
@@ -39,13 +40,13 @@ We also provide the same example with the multi-grid (MLMG) Poisson solver.
       .. literalinclude:: run_expanding_fft.py
          :language: python3
          :caption: You can copy this file from ``examples/expanding/run_expanding_fft.py``.
-
+      
    .. tab-item:: Python: Script (MLMG)
-
+   
       .. literalinclude:: run_expanding_mlmg.py
          :language: python3
          :caption: You can copy this file from ``examples/expanding/run_expanding_mlmg.py``.
-
+       
    .. tab-item:: Executable: Input File (FFT)
 
        .. literalinclude:: input_expanding_fft.in
@@ -57,6 +58,61 @@ We also provide the same example with the multi-grid (MLMG) Poisson solver.
        .. literalinclude:: input_expanding_mlmg.in
           :language: ini
           :caption: You can copy this file from ``examples/expanding/input_expanding_mlmg.in``.
+      
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+   
+.. dropdown:: Script ``analysis_expanding.py``
+      
+   .. literalinclude:: analysis_expanding.py
+      :language: python3
+      :caption: You can copy this file from ``examples/expanding/analysis_expanding.py``.
+
+
+
+.. _examples-expanding-fft-2d:
+
+Expanding Beam in Free Space with 2D Space Charge
+==================================================
+
+A long, coasting unbunched beam expanding freely in free space under its own 2D space charge.
+
+We use a cold (zero emittance) 250 MeV electron bunch whose
+initial distribution is a uniformly-populated cylinder of radius R0 = 1 mm.
+
+In the laboratory frame, the beam expands to twice its original transverse size.  This is tested using the second moments of the distribution.
+
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_expanding_fft_2D.py`` or
+* ImpactX **executable** using an input file: ``impactx input_expanding_fft_2D.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+We also provide the same example with the multi-grid (MLMG) Poisson solver.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script (FFT)
+
+      .. literalinclude:: run_expanding_fft_2D.py
+         :language: python3
+         :caption: You can copy this file from ``examples/expanding/run_expanding_fft_2D.py``.
+
+   .. tab-item:: Executable: Input File (FFT)
+
+       .. literalinclude:: input_expanding_fft_2D.in
+          :language: ini
+          :caption: You can copy this file from ``examples/expanding/input_expanding_fft_2D.in``.
 
 
 Analyze
@@ -64,8 +120,11 @@ Analyze
 
 We run the following script to analyze correctness:
 
-.. dropdown:: Script ``analysis_expanding.py``
+.. dropdown:: Script ``analysis_expanding_fft_2D.py``
 
-   .. literalinclude:: analysis_expanding.py
+   .. literalinclude:: analysis_expanding_fft_2D.py
       :language: python3
-      :caption: You can copy this file from ``examples/expanding/analysis_expanding.py``.
+      :caption: You can copy this file from ``examples/expanding/analysis_expanding_fft_2D.py``.
+
+   
+

@@ -161,8 +161,6 @@ namespace impactx
                     {
                         // push Covariance Matrix in 3D space charge fields
                         envelope::spacecharge::space_charge3D_push(ref, cm, intensity, slice_ds);
-                    } else {
-                        amrex::Print() << "Warning: Space charge is off by default." << "\n";
                     }
 
                     std::visit([&ref, &cm](auto&& element)

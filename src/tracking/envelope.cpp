@@ -149,8 +149,8 @@ namespace impactx
                     step++;
                     if (verbose > 0)
                     {
-                        amrex::Print() << " ++++ Starting step=" << step
-                                       << " slice_step=" << slice_step << "\n";
+                        amrex::Print() << "\n++++ Starting step=" << step
+                                       << " slice_step=" << slice_step;
                     }
 
                     if (space_charge == SpaceChargeAlgo::True_2D)

@@ -16,7 +16,7 @@ tracking of the beam envelope (6x6 covariance matrix) through linearized transpo
 ================== =============== =============== ====================
 Mode               Use Case        Generality      Space Charge Effects
 ================== =============== =============== ====================
-Particle Tracking  Full Dynamics   Most general    Supported (3D only)
+Particle Tracking  Full Dynamics   Most general    Supported (2D or 3D)
 Envelope Tracking  Rapid Scans     Linearized      Supported (2D or 3D)
 Reference Tracking Early Design    Reference orbit No
 ================== =============== =============== ====================

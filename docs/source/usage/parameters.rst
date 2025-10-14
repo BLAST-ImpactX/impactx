@@ -873,8 +873,6 @@ See there ``nslice`` option on lattice elements for slicing.
 
   * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
-    Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
-
   * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
     When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
@@ -940,8 +938,8 @@ See there ``nslice`` option on lattice elements for slicing.
 * ``algo.poisson_solver`` (``string``, optional, default: ``"fft"``)
 
   The numerical solver to solve the Poisson equation when calculating space charge effects.
-  Currently, this is a 3D solver.
-  An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
+  Currently, the multigrid solver supports only 3D space charge.  The fft solver supports either 2D or 3D space charge.
+  An additional `2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
   Options:
 

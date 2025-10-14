@@ -1677,34 +1677,33 @@ add_impactx_test(solenoid-softedge-solvable.py
 )
 
 # Expanding unbunched beam in free space with 2D space charge ######################
-#   
+#
 # with space charge
 add_impactx_test(expanding-fft-2d
     examples/expanding_beam/input_expanding_fft_2D.in
-    ON   # ImpactX MPI-parallel   
+    ON   # ImpactX MPI-parallel
     examples/expanding_beam/analysis_expanding_fft_2D.py
-    OFF  # no plot script yet  
+    OFF  # no plot script yet
 )
 add_impactx_test(expanding-fft-2d.py
     examples/expanding_beam/run_expanding_fft_2D.py
     OFF   # ImpactX MPI-parallel
     examples/expanding_beam/analysis_expanding_fft_2D.py
-    OFF  # no plot script yet   
+    OFF  # no plot script yet
 )
-    
+
 # FODO cell with 2D space charge using particle tracking ######################
-#   
+#
 # with space charge
 add_impactx_test(fodo-2d-sc
     examples/fodo_space_charge/input_fodo_2d_sc.in
-    ON   # ImpactX MPI-parallel   
+    ON   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_2d_sc.py
-    OFF  # no plot script yet  
+    OFF  # no plot script yet
 )
 add_impactx_test(fodo-2d-sc.py
     examples/fodo_space_charge/run_fodo_2d_sc.py
     OFF   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_2d_sc.py
-    OFF  # no plot script yet   
+    OFF  # no plot script yet
 )
-

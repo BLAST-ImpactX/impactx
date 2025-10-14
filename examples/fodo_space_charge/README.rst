@@ -119,10 +119,10 @@ in Proc. EPAC 2004, Lucerne, Switzerland:  KV Beam in a FODO Channel
 
 The purpose of this example is to illustrate the use of envelope tracking mode with 2D space charge.
 
-The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO 
+The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO
 cell, to within the specified tolerance.
 
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and 
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and
 :math:`\epsilon_t` must agree with nominal values.
 
 
@@ -155,10 +155,9 @@ Analyze
 -------
 
 We run the following script to analyze correctness:
-   
+
 .. dropdown:: Script ``analysis_fodo_2d_sc.py``
 
    .. literalinclude:: analysis_fodo_2d_sc.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo_space_charge/analysis_fodo_2d_sc.py``.
-

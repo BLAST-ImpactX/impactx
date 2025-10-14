@@ -40,13 +40,13 @@ We also provide the same example with the multi-grid (MLMG) Poisson solver.
       .. literalinclude:: run_expanding_fft.py
          :language: python3
          :caption: You can copy this file from ``examples/expanding/run_expanding_fft.py``.
-      
+
    .. tab-item:: Python: Script (MLMG)
-   
+
       .. literalinclude:: run_expanding_mlmg.py
          :language: python3
          :caption: You can copy this file from ``examples/expanding/run_expanding_mlmg.py``.
-       
+
    .. tab-item:: Executable: Input File (FFT)
 
        .. literalinclude:: input_expanding_fft.in
@@ -58,15 +58,15 @@ We also provide the same example with the multi-grid (MLMG) Poisson solver.
        .. literalinclude:: input_expanding_mlmg.in
           :language: ini
           :caption: You can copy this file from ``examples/expanding/input_expanding_mlmg.in``.
-      
+
 
 Analyze
 -------
 
 We run the following script to analyze correctness:
-   
+
 .. dropdown:: Script ``analysis_expanding.py``
-      
+
    .. literalinclude:: analysis_expanding.py
       :language: python3
       :caption: You can copy this file from ``examples/expanding/analysis_expanding.py``.
@@ -125,6 +125,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_expanding_fft_2D.py
       :language: python3
       :caption: You can copy this file from ``examples/expanding/analysis_expanding_fft_2D.py``.
-
-   
-

@@ -21,7 +21,7 @@ sim.particle_shape = 2  # B-spline order
 sim.space_charge = "2D"
 sim.poisson_solver = "fft"
 sim.dynamic_size = True
-sim.prob_relative = [1.01]   
+sim.prob_relative = [1.01]
 
 # beam diagnostics
 # sim.diagnostics = False  # benchmarking

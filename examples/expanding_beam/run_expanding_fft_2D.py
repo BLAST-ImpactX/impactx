@@ -21,7 +21,7 @@ sim.particle_shape = 2  # B-spline order
 sim.space_charge = "2D"
 sim.poisson_solver = "fft"
 sim.dynamic_size = True
-sim.prob_relative = [1.1]   
+sim.prob_relative = [1.1]
 
 # beam diagnostics
 # sim.diagnostics = False  # benchmarking
@@ -33,7 +33,7 @@ sim.init_grids()
 # load a 2 GeV electron beam with an initial
 # unnormalized rms emittance of 2 nm
 kin_energy_MeV = 250  # reference energy
-beam_current_A = 0.15  #beam current
+beam_current_A = 0.15  # beam current
 npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   reference particle
@@ -55,9 +55,11 @@ sim.add_particles(beam_current_A, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-doubling_distance=10.612823669911099
+doubling_distance = 10.612823669911099
 
-sim.lattice.extend([monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor])
+sim.lattice.extend(
+    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor]
+)
 
 # run simulation
 sim.track_particles()

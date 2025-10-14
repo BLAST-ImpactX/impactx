@@ -64,7 +64,7 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
                 amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
                 amrex::ParticleReal const beta_gamma = pc.GetRefParticle().beta_gamma();
-                //amrex::ParticleReal const beta = beta_gamma / gamma;
+                amrex::ParticleReal const beta = beta_gamma / gamma;
                 amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
 
                 amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
@@ -108,8 +108,8 @@ namespace impactx::particles::spacecharge
                             );
 
                         // push momentum
-                        px += field_interp[0] * push_consts * dr[2] / (30_prt * std::sqrt(beta_gamma) * c0_SI);
-                        py += field_interp[1] * push_consts * dr[2] / (30_prt * std::sqrt(beta_gamma) * c0_SI);  //this should be field_interp[1]
+                        px += field_interp[0] * push_consts * dr[2] / (beta * c0_SI);
+                        py += field_interp[1] * push_consts * dr[2] / (beta * c0_SI);
                         pz += 0.0_rt;
                         //pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
 

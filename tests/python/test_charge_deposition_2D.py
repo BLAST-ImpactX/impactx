@@ -28,7 +28,7 @@ def test_charge_deposition_2D(save_png=True):
     sim.slice_step_diagnostics = False
 
     sim.init_grids()
-    assert sim.n_cell == [16, 16, 1]
+    assert sim.n_cell == [32, 32, 1]
 
     sim.init_beam_distribution_from_inputs()
     sim.init_lattice_elements_from_inputs()

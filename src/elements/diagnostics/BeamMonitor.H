@@ -176,8 +176,12 @@ namespace detail
         finalize ();
 
     private:
+        /** Open the openPMD series (on first access) */
+        void open ();
+
         std::string m_series_name; //! openPMD filename
         std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
+        std::string m_encoding; //! openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
         std::any m_series; //! openPMD::Series that holds potentially multiple outputs
         int m_step = 0; //! global step for output
 

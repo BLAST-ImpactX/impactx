@@ -645,16 +645,17 @@ This module provides elements and methods for the accelerator lattice.
       :param pals_line: PALS Python Line with beamline elements
       :param nslice: number of slices used for the application of collective effects
 
-   .. py:method:: select(kind=None, name=None)
+   .. py:method:: select(kind=None, name=None, s=None)
 
-      Filter elements by type and/or name.
-      If both are provided, OR-based logic is applied.
+      Filter elements by type, name, and/or integrated position.
+      If multiple criteria are provided, OR-based logic is applied.
 
       Returns references to original elements, allowing modification and chaining.
       Chained ``.select(...).select(...)`` selections are AND-filtered.
 
       :param kind: Element type(s) to filter by. Can be a string (e.g., ``"Drift"``), regex pattern (e.g., ``r".*Quad"``), element type (e.g., ``elements.Drift``), or list/tuple of these.
       :param name: Element name(s) to filter by. Can be a string, regex pattern, or ``list``/``tuple`` of these.
+      :param s: Position range to filter by. Tuple/list with (lower, upper) bounds where None represents open-ended. Elements are selected if ANY part overlaps with the range. Examples: ``(1.0, 5.0)`` for range 1.0 <= s <= 5.0, ``(1.0, None)`` for s >= 1.0, ``(None, 5.0)`` for s <= 5.0.
 
       **Examples:**
 
@@ -672,6 +673,12 @@ This module provides elements and methods for the accelerator lattice.
 
          # Chain filters (AND logic)
          drift_named_d1 = lattice.select(kind="Drift").select(name="drift1")
+
+         # Position filtering (overlap logic)
+         early_elements = lattice.select(s=(None, 2.0))  # Elements overlapping s <= 2.0
+
+         # Chaining: s always calculated from original lattice
+         drift_then_early = lattice.select(kind="Drift").select(s=(1.0, 3.0))  # Drift AND overlapping s=[1.0,3.0]
 
          # Modify original elements through references
          drift_elements[0].ds = 2.0  # modifies original lattice

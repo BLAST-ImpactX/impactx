@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import os as os
 import re as re
+from types import NoneType
+from typing import List, Tuple, Union
 
 from impactx.impactx_pybind import elements
 
@@ -41,7 +43,7 @@ class FilteredElementsList:
     def __len__(self): ...
     def __repr__(self): ...
     def __str__(self): ...
-    def count_by_kind(self, kind_pattern: typing.Union[str, type]) -> int:
+    def count_by_kind(self, kind_pattern: Union[str, type]) -> int:
         """
         Count elements of a specific kind in the filtered list.
 
@@ -63,7 +65,7 @@ class FilteredElementsList:
                     list[type]: List of unique element types (sorted by name).
 
         """
-    def has_kind(self, kind_pattern: typing.Union[str, type]) -> bool:
+    def has_kind(self, kind_pattern: Union[str, type]) -> bool:
         """
         Check if filtered list contains elements of a specific kind.
 
@@ -80,16 +82,14 @@ class FilteredElementsList:
     def select(
         self,
         *,
-        kind: typing.Union[
+        kind: Union[
             str,
             type,
-            typing.List[typing.Union[str, type]],
-            typing.Tuple[typing.Union[str, type], ...],
+            List[Union[str, type]],
+            Tuple[Union[str, type], ...],
             NoneType,
         ] = None,
-        name: typing.Union[
-            str, typing.List[str], typing.Tuple[str, ...], NoneType
-        ] = None,
+        name: Union[str, List[str], Tuple[str, ...], NoneType] = None,
     ):
         """
         Apply filtering to this filtered list.
@@ -202,7 +202,7 @@ def _validate_select_parameters(kind, name):
 
     """
 
-def count_by_kind(self, kind_pattern: typing.Union[str, type]) -> int:
+def count_by_kind(self, kind_pattern: Union[str, type]) -> int:
     """
     Count elements of a specific kind.
 
@@ -234,7 +234,7 @@ def get_kinds(self) -> list[type]:
 
     """
 
-def has_kind(self, kind_pattern: typing.Union[str, type]) -> bool:
+def has_kind(self, kind_pattern: Union[str, type]) -> bool:
     """
     Check if list contains elements of a specific kind.
 
@@ -262,14 +262,14 @@ def register_KnownElementsList_extension(kel):
 def select(
     self,
     *,
-    kind: typing.Union[
+    kind: Union[
         str,
         type,
-        typing.List[typing.Union[str, type]],
-        typing.Tuple[typing.Union[str, type], ...],
+        List[Union[str, type]],
+        Tuple[Union[str, type], ...],
         NoneType,
     ] = None,
-    name: typing.Union[str, typing.List[str], typing.Tuple[str, ...], NoneType] = None,
+    name: Union[str, List[str], Tuple[str, ...], NoneType] = None,
 ) -> FilteredElementsList:
     """
     Filter elements by type and name with OR-based logic.

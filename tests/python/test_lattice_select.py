@@ -782,11 +782,8 @@ def test_regex_chaining():
 
 def test_select_no_arguments():
     """Test select() method with no arguments returns all elements."""
-    import impactx
-    from impactx import elements
-
     # Create a test lattice
-    lattice = impactx.elements.KnownElementsList()
+    lattice = elements.KnownElementsList()
     lattice.extend(
         [
             elements.Drift(name="drift1", ds=1.0),

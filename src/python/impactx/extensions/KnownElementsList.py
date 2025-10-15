@@ -174,14 +174,21 @@ class FilteredElementsList:
             )  # Filter quads by regex pattern
         """
         # Apply filtering directly to the indices we already have
-        matching_indices = []
+        if kind is not None or name is not None:
+            # Validate parameters
+            _validate_select_parameters(kind, name)
 
-        for i in self._indices:
-            element = self._original_list[i]
-            if _check_element_match(element, kind, name):
-                matching_indices.append(i)
+            matching_indices = []
 
-        return FilteredElementsList(self._original_list, matching_indices)
+            for i in self._indices:
+                element = self._original_list[i]
+                if _check_element_match(element, kind, name):
+                    matching_indices.append(i)
+
+            return FilteredElementsList(self._original_list, matching_indices)
+
+        # If no filtering criteria provided, return all current elements
+        return FilteredElementsList(self._original_list, self._indices)
 
     def get_kinds(self) -> list[type]:
         """Get all unique element kinds in the filtered list.
@@ -464,6 +471,10 @@ def select(
                 matching_indices.append(i)
 
         return FilteredElementsList(self, matching_indices)
+
+    # If no filtering criteria provided, return all elements
+    all_indices = list(range(len(self)))
+    return FilteredElementsList(self, all_indices)
 
 
 def get_kinds(self) -> list[type]:

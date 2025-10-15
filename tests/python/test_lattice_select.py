@@ -778,3 +778,39 @@ def test_regex_chaining():
     # Test manipulation of regex_then_kind results
     regex_then_kind[2].k = 3.0  # Modify qf1
     assert lattice[5].k == 3.0  # qf1 should be modified
+
+
+def test_select_no_arguments():
+    """Test select() method with no arguments returns all elements."""
+    import impactx
+    from impactx import elements
+
+    # Create a test lattice
+    lattice = impactx.elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="drift1", ds=1.0),
+            elements.Quad(name="quad1", ds=0.5, k=1.0),
+            elements.Drift(name="drift2", ds=2.0),
+            elements.Quad(name="quad2", ds=0.3, k=-1.0),
+        ]
+    )
+
+    # Test select() with no arguments returns all elements
+    all_elements = lattice.select()
+    assert len(all_elements) == 4
+    assert [el.name for el in all_elements] == ["drift1", "quad1", "drift2", "quad2"]
+
+    # Test modifications affect original elements
+    all_elements[0].ds = 1.5
+    assert lattice[0].ds == 1.5
+    lattice[0].ds = 1.0  # Reset
+
+    # Test chaining: select(something).select() and select().select(something)
+    drift_then_all = lattice.select(kind="Drift").select()
+    assert len(drift_then_all) == 2  # Still only drifts
+    assert [el.name for el in drift_then_all] == ["drift1", "drift2"]
+
+    all_then_drift = lattice.select().select(kind="Drift")
+    assert len(all_then_drift) == 2
+    assert [el.name for el in all_then_drift] == ["drift1", "drift2"]

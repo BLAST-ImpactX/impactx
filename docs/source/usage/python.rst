@@ -639,6 +639,60 @@ This module provides elements and methods for the accelerator lattice.
       :param pals_line: PALS Python Line with beamline elements
       :param nslice: number of slices used for the application of collective effects
 
+   .. py:method:: select(kind=None, name=None)
+
+      Filter elements by type and/or name.
+      If both are provided, OR-based logic is applied.
+
+      Returns references to original elements, allowing modification and chaining.
+      Chained ``.select(...).select(...)`` selections are AND-filtered.
+
+      :param kind: Element type(s) to filter by. Can be a string (e.g., ``"Drift"``), regex pattern (e.g., ``r".*Quad"``), element type (e.g., ``elements.Drift``), or list/tuple of these.
+      :param name: Element name(s) to filter by. Can be a string, regex pattern, or ``list``/``tuple`` of these.
+
+      **Examples:**
+
+      .. code-block:: python
+
+         # Filter by element type
+         drift_elements = lattice.select(kind="Drift")
+         quad_elements = lattice.select(kind=elements.Quad)
+
+         # Filter by regex pattern
+         all_quads = lattice.select(kind=r".*Quad")  # matches Quad, ChrQuad, ExactQuad
+
+         # Filter by name
+         specific_elements = lattice.select(name="quad1")
+
+         # Chain filters (AND logic)
+         drift_named_d1 = lattice.select(kind="Drift").select(name="drift1")
+
+         # Modify original elements through references
+         drift_elements[0].ds = 2.0  # modifies original lattice
+
+   .. py:method:: get_kinds()
+
+      Get all unique element types in the lattice.
+
+      :return: List of unique element types (sorted by name)
+      :rtype: list[type]
+
+   .. py:method:: count_by_kind(kind_pattern)
+
+      Count elements of a specific kind.
+
+      :param kind_pattern: Element kind to count. Can be string (e.g., "Drift"), regex pattern (e.g., r".*Quad"), or element type (e.g., elements.Drift)
+      :return: Number of elements of the specified kind
+      :rtype: int
+
+   .. py:method:: has_kind(kind_pattern)
+
+      Check if list contains elements of a specific kind.
+
+      :param kind_pattern: Element kind to check for. Can be string (e.g., "Drift"), regex pattern (e.g., r".*Quad"), or element type (e.g., elements.Drift)
+      :return: True if at least one element of the specified kind exists
+      :rtype: bool
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.

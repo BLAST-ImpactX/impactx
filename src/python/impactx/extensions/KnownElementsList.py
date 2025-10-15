@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 
 import os
 import re
+from typing import List, Tuple, Union
 
 from impactx import elements
 
@@ -122,8 +123,10 @@ class FilteredElementsList:
     def select(
         self,
         *,
-        kind: str | type | list[str | type] | tuple[str | type, ...] | None = None,
-        name: str | list[str] | tuple[str, ...] | None = None,
+        kind: Union[
+            str, type, List[Union[str, type]], Tuple[Union[str, type], ...], None
+        ] = None,
+        name: Union[str, List[str], Tuple[str, ...], None] = None,
     ):
         """Apply filtering to this filtered list.
 
@@ -188,7 +191,7 @@ class FilteredElementsList:
         """
         return get_kinds(self)
 
-    def count_by_kind(self, kind_pattern: str | type) -> int:
+    def count_by_kind(self, kind_pattern: Union[str, type]) -> int:
         """Count elements of a specific kind in the filtered list.
 
         Args:
@@ -202,7 +205,7 @@ class FilteredElementsList:
         """
         return count_by_kind(self, kind_pattern)
 
-    def has_kind(self, kind_pattern: str | type) -> bool:
+    def has_kind(self, kind_pattern: Union[str, type]) -> bool:
         """Check if filtered list contains elements of a specific kind.
 
         Args:
@@ -354,8 +357,10 @@ def _check_element_match(element, kind, name):
 def select(
     self,
     *,
-    kind: str | type | list[str | type] | tuple[str | type, ...] | None = None,
-    name: str | list[str] | tuple[str, ...] | None = None,
+    kind: Union[
+        str, type, List[Union[str, type]], Tuple[Union[str, type], ...], None
+    ] = None,
+    name: Union[str, List[str], Tuple[str, ...], None] = None,
 ) -> FilteredElementsList:
     """Filter elements by type and name with OR-based logic.
 
@@ -473,7 +478,7 @@ def get_kinds(self) -> list[type]:
     return sorted(list(kinds), key=lambda t: t.__name__)
 
 
-def count_by_kind(self, kind_pattern: str | type) -> int:
+def count_by_kind(self, kind_pattern: Union[str, type]) -> int:
     """Count elements of a specific kind.
 
     Args:
@@ -492,7 +497,7 @@ def count_by_kind(self, kind_pattern: str | type) -> int:
     return count
 
 
-def has_kind(self, kind_pattern: str | type) -> bool:
+def has_kind(self, kind_pattern: Union[str, type]) -> bool:
     """Check if list contains elements of a specific kind.
 
     Args:

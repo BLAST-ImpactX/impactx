@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import collections.abc
 import typing
+from types import NoneType
 
 import amrex.space3d.amrex_3d_pybind
 import impactx.extensions.KnownElementsList

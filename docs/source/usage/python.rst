@@ -174,11 +174,11 @@ Collective Effects & Overall Simulation Parameters
 
       The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
 
-   .. py:property:: isr_ref_part
+   .. py:property:: isr_on_ref_part
 
-      Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_ref_part = False``, the reference particle does not lose energy due to radiation, and the
+      Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_on_ref_part = False``, the reference particle does not lose energy due to radiation, and the
       mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
-      When ``sim.isr_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.
+      When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.
 
    .. py:property:: diagnostics
 

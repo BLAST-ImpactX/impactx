@@ -25,7 +25,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal slice_ds,
         amrex::ParticleReal rc,
         [[maybe_unused]] int isr_order,
-        [[maybe_unused]] bool isr_ref_part
+        [[maybe_unused]] bool isr_on_ref_part
     )
     {
         BL_PROFILE("impactx::particles::wakefields::ISRPush")
@@ -110,7 +110,7 @@ namespace impactx::particles::wakefields
                     // Value of the ISR kick in total momentum (relative to total momentum):
                     amrex::ParticleReal dp = -tau*g + std::sqrt(tau*h)*xi;
 
-                    if (isr_ref_part) {
+                    if (isr_on_ref_part) {
                         dp -= dp_ref;
                     }
 
@@ -133,7 +133,7 @@ namespace impactx::particles::wakefields
         // Update the reference particle (if isr_ref_part is set):
         RefPart ref = pc.GetRefParticle();
 
-        if (isr_ref_part) {
+        if (isr_on_ref_part) {
 
            // Update reference particle momentum
            ref.px = ref.px * (1_prt + dp_ref);

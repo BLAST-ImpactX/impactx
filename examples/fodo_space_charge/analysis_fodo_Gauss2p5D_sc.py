@@ -66,7 +66,7 @@ assert np.allclose(
 
 print("")
 print("Final Beam:")
-sig_xf, sig_yf, sig_tf, emittance_xf, emittance_yf, emittance_tf = get_moments(initial)
+sig_xf, sig_yf, sig_tf, emittance_xf, emittance_yf, emittance_tf = get_moments(final)
 print(f"  sigx={sig_xf:e} sigy={sig_yf:e} sigt={sig_tf:e}")
 print(
     f"  emittance_x={emittance_xf:e} emittance_y={emittance_yf:e} emittance_t={emittance_tf:e}"

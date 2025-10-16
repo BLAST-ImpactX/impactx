@@ -11,8 +11,6 @@ from __future__ import annotations
 
 import os as os
 import re as re
-import typing
-from types import NoneType
 
 from impactx.impactx_pybind import elements
 

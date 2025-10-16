@@ -19,3 +19,13 @@ pybind11-stubgen --exit-code -o ${this_dir}/../src/python/ impactx
 # fix weird missing import issues after update to pybind11 v3.0
 sed -i 's/impactx.impactx_pybind.elements/elements/g' src/python/impactx/impactx_pybind/__init__.pyi
 sed -i 's/impactx.impactx_pybind.distribution/distribution/g' src/python/impactx/impactx_pybind/__init__.pyi
+for pyi_file in $(find src/python -name "*.pyi"); do
+    # Add typing import if typing. is used but not imported
+    if grep -q "typing\." "${pyi_file}" && ! grep -q "^import typing" "${pyi_file}"; then
+        sed -i '/^from __future__ import/a import typing' "${pyi_file}"
+    fi
+    # Add NoneType import if NoneType is used but not imported
+    if grep -q "NoneType" "${pyi_file}" && ! grep -q "^from types import.*NoneType" "${pyi_file}"; then
+        sed -i '/^from __future__ import/a from types import NoneType' "${pyi_file}"
+    fi
+done

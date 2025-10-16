@@ -1703,7 +1703,7 @@ add_impactx_test(fodo-2d-sc
 )
 add_impactx_test(fodo-2d-sc.py
     examples/fodo_space_charge/run_fodo_2d_sc.py
-    OFF   # ImpactX MPI-parallel
+    ON    # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_2d_sc.py
     OFF  # no plot script yet
 )

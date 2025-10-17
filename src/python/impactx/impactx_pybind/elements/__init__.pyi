@@ -1456,7 +1456,7 @@ class KnownElementsList:
         """
         Clear the list to become empty.
         """
-    def count_by_kind(self, kind_pattern: typing.Union[str, type]) -> int:
+    def count_by_kind(self, kind_pattern) -> int:
         """
         Count elements of a specific kind.
 
@@ -1495,7 +1495,7 @@ class KnownElementsList:
                 list[type]: List of unique element types (sorted by name).
 
         """
-    def has_kind(self, kind_pattern: typing.Union[str, type]) -> bool:
+    def has_kind(self, kind_pattern) -> bool:
         """
         Check if list contains elements of a specific kind.
 
@@ -1547,18 +1547,7 @@ class KnownElementsList:
         Return and remove the last element of the list.
         """
     def select(
-        self,
-        *,
-        kind: typing.Union[
-            str,
-            type,
-            typing.List[typing.Union[str, type]],
-            typing.Tuple[typing.Union[str, type], ...],
-            NoneType,
-        ] = None,
-        name: typing.Union[
-            str, typing.List[str], typing.Tuple[str, ...], NoneType
-        ] = None,
+        self, *, kind=None, name=None
     ) -> impactx.extensions.KnownElementsList.FilteredElementsList:
         """
         Filter elements by type and name with OR-based logic.

@@ -46,7 +46,7 @@ assert num_particles == len(initial)
 assert num_particles == len(final)
 
 print("Initial Beam:")
-sig_xi, sig_yi, sig_ti, emittance_xi, emittance_yi, emittance_ti = get_moments(final)
+sig_xi, sig_yi, sig_ti, emittance_xi, emittance_yi, emittance_ti = get_moments(initial)
 print(f"  sigx={sig_xi:e} sigy={sig_yi:e} sigt={sig_ti:e}")
 print(
     f"  emittance_x={emittance_xi:e} emittance_y={emittance_yi:e} emittance_t={emittance_ti:e}"
@@ -66,7 +66,7 @@ assert np.allclose(
 
 print("")
 print("Final Beam:")
-sig_xf, sig_yf, sig_tf, emittance_xf, emittance_yf, emittance_tf = get_moments(initial)
+sig_xf, sig_yf, sig_tf, emittance_xf, emittance_yf, emittance_tf = get_moments(final)
 print(f"  sigx={sig_xf:e} sigy={sig_yf:e} sigt={sig_tf:e}")
 print(
     f"  emittance_x={emittance_xf:e} emittance_y={emittance_yf:e} emittance_t={emittance_tf:e}"

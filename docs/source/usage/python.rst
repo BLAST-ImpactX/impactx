@@ -178,7 +178,7 @@ Collective Effects & Overall Simulation Parameters
 
       Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_on_ref_part = False``, the reference particle does not lose energy due to radiation, and the
       mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
-      When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.
+      When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
 
    .. py:property:: diagnostics
 

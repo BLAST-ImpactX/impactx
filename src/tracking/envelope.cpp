@@ -149,8 +149,8 @@ namespace impactx
                     step++;
                     if (verbose > 0)
                     {
-                        amrex::Print() << " ++++ Starting step=" << step
-                                       << " slice_step=" << slice_step << "\n";
+                        amrex::Print() << "\n++++ Starting step=" << step
+                                       << " slice_step=" << slice_step;
                     }
 
                     if (space_charge == SpaceChargeAlgo::True_2D)
@@ -161,8 +161,6 @@ namespace impactx
                     {
                         // push Covariance Matrix in 3D space charge fields
                         envelope::spacecharge::space_charge3D_push(ref, cm, intensity, slice_ds);
-                    } else {
-                        amrex::Print() << "Warning: Space charge is off by default." << "\n";
                     }
 
                     std::visit([&ref, &cm](auto&& element)

@@ -115,8 +115,8 @@ namespace impactx
                     BL_PROFILE("ImpactX::evolve::slice_step");
                     step++;
                     if (verbose > 0) {
-                        amrex::Print() << " ++++ Starting step=" << step
-                                       << " slice_step=" << slice_step << "\n";
+                        amrex::Print() << "\n++++ Starting step=" << step
+                                       << " slice_step=" << slice_step;
                     }
 
                     // Wakefield calculation: call wakefield function to apply wake effects

@@ -19,7 +19,7 @@ In this example, a custom beam is specified at fixed t, transformed to fixed s, 
 then loaded in ImpactX.
 The custom beam is a ring in x-y,
 with radius r=2 mm,
-radial width :math:`\sigma_r = 5\ \mu`m;
+radial width :math:`\sigma_r = 5\ \mathrm{\mu m}`;
 Gaussian in :math:`p_x` and :math:`p_y` with momentum width :math:`\sigma_p=10`;
 and chirped in z-pz with bunch length :math:`\sigma_z=1` mm,
 mean energy about 10 GeV, 1% uncorrelated energy spread, and z-pz covariance of -0.18.

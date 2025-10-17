@@ -227,6 +227,8 @@ class BeamMonitor(mixin.Thin):
     @cn.setter
     def cn(self, arg1: typing.SupportsFloat) -> None: ...
     @property
+    def has_name(self) -> bool: ...
+    @property
     def name(self) -> str:
         """
         name of the series
@@ -824,7 +826,7 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | None,
     ]: ...
 
-class Empty(mixin.Thin):
+class Empty(mixin.Named, mixin.Thin):
     def __init__(self) -> None:
         """
         This element does nothing.

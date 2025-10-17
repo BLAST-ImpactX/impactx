@@ -154,7 +154,7 @@ namespace impactx::elements
             m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
             m_c10_times_1plusdelta = flg * powi<2>(tan_psi) / (2_prt * m_rc);
             m_c11_times_1plusdelta = flg * 1_prt / (2_prt * m_rc);
-            m_c12_times_1plusdelta = 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g);
+            m_c12_times_1plusdelta = (m_g > 0_prt) ? 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g) : 0_prt;
             m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
             m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_rc*m_R) * m_K5;
             m_c15 = (m_K6 / (m_rc*m_R)) / (powi<3>(cos_psi));
@@ -242,6 +242,9 @@ namespace impactx::elements
                T_Real const dDelta_dpt = (pt - 1_prt/m_beta) / delta1;
                tout = t - dDelta_dpt/delta1 * ((c2 + c3*m_c5)*x + (c10*m_c5 + c8)*powi<3>(x) - c7*powi<2>(y) - c12*powi<4>(y)
                       + (c10*m_c5 - c11*m_c5 - c9)*x*powi<2>(y) + pxout*(-c3 + (c11 + c10)*powi<2>(y) - c10*powi<2>(x)) + 2_prt*pyout*c10*x*y);
+
+
+               amrex::Print() << "xout, pxout, yout, pyout, tout" << xout << " " << pxout << " " << yout << " " << pyout << " " << tout << "\n";
 
                x = xout;
                px = pxout;

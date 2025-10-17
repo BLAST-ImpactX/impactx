@@ -66,7 +66,9 @@ bool ImpactX::early_param_check ()
     int verbose = 1;
     pp_impactx.queryAddWithParser("verbose", verbose);
 
-    if (verbose > 0) {
+    // Print a warning for unused inputs early on, so users are informed and
+    // might decide to abort their long-running runs, if needed.
+    if (verbose > 0 && amrex::ParmParse::hasUnusedInputs()) {
         amrex::Print() << "\n";
     }
     amrex::ParmParse::QueryUnusedInputs();

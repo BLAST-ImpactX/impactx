@@ -249,7 +249,9 @@ void init_elements(py::module& m)
 
     py::class_<elements::mixin::Named>(mx, "Named")
         .def_property("name",
-            [](elements::mixin::Named & nm) { return nm.name(); },
+            [](elements::mixin::Named & nm) -> std::optional<std::string> {
+                return nm.has_name() ? std::optional<std::string>{nm.name()} : std::nullopt;
+            },
             [](elements::mixin::Named & nm, std::string new_name) { nm.set_name(new_name); },
             "segment length in m"
         )
@@ -352,6 +354,7 @@ void init_elements(py::module& m)
             &diagnostics::BeamMonitor::name,
             "name of the series"
         )
+        .def_property_readonly("has_name", &diagnostics::BeamMonitor::has_name)
         .def_property("nonlinear_lens_invariants",
             [](diagnostics::BeamMonitor & bm) { return detail::get_or_throw<bool>(bm.name(), "nonlinear_lens_invariants"); },
             [](diagnostics::BeamMonitor & bm, bool nonlinear_lens_invariants) {
@@ -1479,7 +1482,7 @@ void init_elements(py::module& m)
     ;
     register_push(py_Multipole);
 
-    py::class_<Empty, elements::mixin::Thin> py_Empty(me, "Empty");
+    py::class_<Empty, elements::mixin::Named, elements::mixin::Thin> py_Empty(me, "Empty");
     py_Empty
         .def("__repr__",
              [](Empty const & /* empty */) {
@@ -2452,10 +2455,10 @@ void init_elements(py::module& m)
         .def(py::init<>())
         .def(py::init<KnownElements>())
         .def(py::init([](py::list const & l){
-            auto v = new KnownElementsList;
+            KnownElementsList v;
             for (auto const & handle : l)
-                v->push_back(handle.cast<KnownElements>());
-            return v;
+                v.push_back(handle.cast<KnownElements>());
+            return v;  // return by value
         }))
 
         .def("append", [](KnownElementsList &v, KnownElements el) { v.emplace_back(std::move(el)); },
@@ -2480,15 +2483,24 @@ void init_elements(py::module& m)
              "Add a list of elements to the list."
         )
 
+        .def("size", &KnownElementsList::size)
         .def("clear", &KnownElementsList::clear,
              "Clear the list to become empty.")
+        .def("is_empty", &KnownElementsList::empty)
         .def("pop_back", &KnownElementsList::pop_back,
              "Return and remove the last element of the list.")
         .def("__len__", [](const KnownElementsList &v) { return v.size(); },
              "The length of the list.")
         .def("__iter__", [](KnownElementsList &v) {
             return py::make_iterator(v.begin(), v.end());
-        }, py::keep_alive<0, 1>()) /* Keep list alive while iterator is used */
+        }, py::keep_alive<0, 1>())  // Keep list alive while iterator is used
+        .def("__getitem__", [](KnownElementsList &v, size_t index) -> elements::KnownElements& {
+            if (index >= v.size()) {
+                throw std::out_of_range("Index out of range");
+            }
+            auto it = std::next(v.begin(), index);
+            return *it;  // return by reference
+        }, py::return_value_policy::reference_internal)
     ;
 
 

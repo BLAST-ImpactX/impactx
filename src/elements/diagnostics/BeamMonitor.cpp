@@ -124,7 +124,10 @@ namespace detail {
     }
 
     BeamMonitor::BeamMonitor (std::string series_name, std::string backend, std::string encoding, int period_sample_intervals) :
-        m_series_name(std::move(series_name)), m_OpenPMDFileType(std::move(backend)), m_period_sample_intervals(period_sample_intervals)
+        m_series_name(std::move(series_name)), m_OpenPMDFileType(std::move(backend)), m_encoding(std::move(encoding)), m_period_sample_intervals(period_sample_intervals) {
+    }
+
+    void BeamMonitor::open ()
     {
 #ifdef ImpactX_USE_OPENPMD
         // pick first available backend if default is chosen
@@ -141,11 +144,11 @@ namespace detail {
 
         // encoding of iterations in the series
         openPMD::IterationEncoding series_encoding = openPMD::IterationEncoding::groupBased;
-        if ("v" == encoding)
+        if ("v" == m_encoding)
             series_encoding = openPMD::IterationEncoding::variableBased;
-        else if ("g" == encoding)
+        else if ("g" == m_encoding)
             series_encoding = openPMD::IterationEncoding::groupBased;
-        else if ("f" == encoding)
+        else if ("f" == m_encoding)
             series_encoding = openPMD::IterationEncoding::fileBased;
 
         // BP5 does not support groupBased (metadata explosion)
@@ -309,6 +312,8 @@ namespace detail {
         // filter out this turn?
         if (period % m_period_sample_intervals != 0)
             return;
+
+        this->open();
 
 #ifdef ImpactX_USE_OPENPMD
         std::string profile_name = "impactx::push::" + std::string(BeamMonitor::type);

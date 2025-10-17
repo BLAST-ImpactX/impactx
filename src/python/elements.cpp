@@ -249,7 +249,9 @@ void init_elements(py::module& m)
 
     py::class_<elements::mixin::Named>(mx, "Named")
         .def_property("name",
-            [](elements::mixin::Named & nm) { return nm.name(); },
+            [](elements::mixin::Named & nm) -> std::optional<std::string> {
+                return nm.has_name() ? std::optional<std::string>{nm.name()} : std::nullopt;
+            },
             [](elements::mixin::Named & nm, std::string new_name) { nm.set_name(new_name); },
             "segment length in m"
         )
@@ -352,6 +354,7 @@ void init_elements(py::module& m)
             &diagnostics::BeamMonitor::name,
             "name of the series"
         )
+        .def_property_readonly("has_name", &diagnostics::BeamMonitor::has_name)
         .def_property("nonlinear_lens_invariants",
             [](diagnostics::BeamMonitor & bm) { return detail::get_or_throw<bool>(bm.name(), "nonlinear_lens_invariants"); },
             [](diagnostics::BeamMonitor & bm, bool nonlinear_lens_invariants) {
@@ -1392,7 +1395,7 @@ void init_elements(py::module& m)
     ;
     register_push(py_Multipole);
 
-    py::class_<Empty, elements::mixin::Thin> py_Empty(me, "Empty");
+    py::class_<Empty, elements::mixin::Named, elements::mixin::Thin> py_Empty(me, "Empty");
     py_Empty
         .def("__repr__",
              [](Empty const & /* empty */) {

@@ -102,8 +102,8 @@ namespace impactx
                     BL_PROFILE("ImpactX::track_reference::slice_step");
                     step++;
                     if (verbose > 0) {
-                        amrex::Print() << " ++++ Starting step=" << step
-                                       << " slice_step=" << slice_step << "\n";
+                        amrex::Print() << "\n++++ Starting step=" << step
+                                       << " slice_step=" << slice_step;
                     }
 
                     // push the reference particle with external maps

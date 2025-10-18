@@ -13,8 +13,8 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.max_level = 0
 sim.n_cell = [32, 32, 1]
-sim.blocking_factor_x = [16]
-sim.blocking_factor_y = [16]
+sim.blocking_factor_x = [32]
+sim.blocking_factor_y = [32]
 sim.blocking_factor_z = [1]
 
 sim.particle_shape = 2  # B-spline order
@@ -38,7 +38,7 @@ npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
+ref.set_charge_qe(1.0).set_mass_MeV(938.2720894).set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.KVdist(

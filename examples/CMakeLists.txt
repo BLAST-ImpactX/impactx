@@ -1419,6 +1419,21 @@ add_impactx_test(bend-isr.py
     OFF  # no plot script yet
 )
 
+# A single bend with incoherent synchrotron radiation & reference energy loss #################
+# no space charge
+add_impactx_test(bend-isr-ref
+    examples/incoherent_synchrotron/input_bend_isr_ref.in
+    ON   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr_ref.py
+    OFF  # no plot script yet
+)
+add_impactx_test(bend-isr-ref.py
+    examples/incoherent_synchrotron/run_bend_isr_ref.py
+    OFF   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr_ref.py
+    OFF  # no plot script yet
+)
+
 # Bending Dipole with Zero Field Strength ######################
 #
 # no space charge

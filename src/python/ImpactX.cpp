@@ -242,6 +242,16 @@ void init_ImpactX (py::module& m)
             },
             "Number of terms in the Taylor series retained for quantum effects (default: 1)."
         )
+        .def_property("isr_on_ref_part",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "isr_on_ref_part");
+            },
+            [](ImpactX & /* ix */, bool isr_on_ref_part) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("isr_on_ref_part", isr_on_ref_part);
+            },
+            "Flag to determine whether ISR radiation loss is applied to the reference particle (default: False)."
+        )
         .def_property("eigenemittances",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("diag", "eigenemittances");

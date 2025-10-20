@@ -24,7 +24,8 @@ namespace impactx::particles::wakefields
         ImpactXParticleContainer & pc,
         amrex::ParticleReal slice_ds,
         amrex::ParticleReal rc,
-        [[maybe_unused]] int isr_order
+        [[maybe_unused]] int isr_order,
+        [[maybe_unused]] bool isr_on_ref_part
     )
     {
         BL_PROFILE("impactx::particles::wakefields::ISRPush")
@@ -44,6 +45,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const B_normal = bg_ref/std::abs(rc);
         amrex::ParticleReal const c1 = 2.0_prt/3.0_prt * r_e * slice_ds * powi<2>(B_normal);
         amrex::ParticleReal const c2 = B_normal * lambda_e;
+        amrex::ParticleReal const dp_ref = -c1 * bg_ref;
 
         // Coefficients of the Taylor expansion of polynomials g and h
         amrex::ParticleReal const g0 = 1_prt;
@@ -106,7 +108,11 @@ namespace impactx::particles::wakefields
                     }
 
                     // Value of the ISR kick in total momentum (relative to total momentum):
-                    amrex::ParticleReal const dp = (-tau*g + std::sqrt(tau*h)*xi);
+                    amrex::ParticleReal dp = -tau*g + std::sqrt(tau*h)*xi;
+
+                    if (isr_on_ref_part) {
+                        dp -= dp_ref;
+                    }
 
                     // Final value of updated particle gamma:
                     amrex::ParticleReal const bg_f = bg*(1_prt + dp);
@@ -123,6 +129,23 @@ namespace impactx::particles::wakefields
         } // End mesh-refinement level loop
 
         amrex::Gpu::streamSynchronize();
+
+        // Update the reference particle (if isr_ref_part is set):
+        RefPart ref = pc.GetRefParticle();
+
+        if (isr_on_ref_part) {
+
+           // Update reference particle momentum
+           ref.px = ref.px * (1_prt + dp_ref);
+           ref.py = ref.py * (1_prt + dp_ref);
+           ref.pz = ref.pz * (1_prt + dp_ref);
+
+           amrex::ParticleReal const p2_ref = powi<2>(ref.px) + powi<2>(ref.py) + powi<2>(ref.pz);
+           ref.pt = -std::sqrt(p2_ref + 1_prt);
+
+           pc.SetRefParticle(ref);
+
+        }
 
    }
 } // namespace impactx::particles::wakefields

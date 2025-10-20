@@ -318,6 +318,13 @@ class ImpactX:
     @isr.setter
     def isr(self, arg1: bool) -> None: ...
     @property
+    def isr_on_ref_part(self) -> bool:
+        """
+        Flag to determine whether ISR radiation loss is applied to the reference particle (default: False).
+        """
+    @isr_on_ref_part.setter
+    def isr_on_ref_part(self, arg1: bool) -> None: ...
+    @property
     def isr_order(self) -> bool:
         """
         Number of terms in the Taylor series retained for quantum effects (default: 1).

@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import os
 import re
 
-from impactx import elements
+from impactx import elements, kahan_babushka_sum
 
 
 def load_file(self, filename, nslice=1):
@@ -429,10 +429,9 @@ def _check_element_match(element, kind, name, s, element_index, lattice):
 
     # Check for 's' parameter (only if neither kind nor name matched - OR logic)
     if s is not None and not match:
-        # Calculate cumulative position up to this element
-        cumulative_s = 0.0
-        for i in range(element_index):
-            cumulative_s += lattice[i].ds
+        # Calculate cumulative position up to this element using accurate summation
+        ds_values = [lattice[i].ds for i in range(element_index)]
+        cumulative_s = kahan_babushka_sum(ds_values)
 
         if _matches_s_position(element, s, cumulative_s):
             match = True

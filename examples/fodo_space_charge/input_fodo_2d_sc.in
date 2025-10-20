@@ -47,11 +47,12 @@ algo.particle_shape = 2
 algo.space_charge = 2D
 algo.poisson_solver = "fft"
 
-amr.n_cell = 64 64 1
+amr.n_cell = 32 32 1
 amr.blocking_factor_x = 16
 amr.blocking_factor_y = 16
 amr.blocking_factor_z = 1
-geometry.prob_relative = 1.01
+
+geometry.prob_relative = 1.1
 
 ###############################################################################
 # Diagnostics

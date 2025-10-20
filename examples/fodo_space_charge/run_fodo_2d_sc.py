@@ -12,16 +12,16 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.max_level = 0
-sim.n_cell = [64, 64, 1]
-sim.blocking_factor_x = [16]
-sim.blocking_factor_y = [16]
+sim.n_cell = [32, 32, 1]
+sim.blocking_factor_x = [32]
+sim.blocking_factor_y = [32]
 sim.blocking_factor_z = [1]
 
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "2D"
 sim.poisson_solver = "fft"
 sim.dynamic_size = True
-sim.prob_relative = [1.01]
+sim.prob_relative = [1.1]
 
 # beam diagnostics
 # sim.diagnostics = False  # benchmarking
@@ -35,7 +35,7 @@ kin_energy_MeV = 6.7  # reference energy
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
+ref.set_charge_qe(1.0).set_mass_MeV(938.2720894).set_kin_energy_MeV(kin_energy_MeV)
 
 #  beam current in A
 beam_current_A = 0.5

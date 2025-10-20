@@ -35,6 +35,8 @@ namespace impactx
 
         int const finest_level = rho.size() - 1;
         for (int lev = 0; lev <= finest_level; ++lev) {
+            auto omask = rho.at(lev).OwnerMask();
+            auto const& oma = omask->const_arrays();
             // flattened rho
             auto const& ma = rho.at(lev).const_arrays();
             amrex::Box domain_lev = lev == 0 ? domain_3d : rho.at(lev).boxArray().minimalBox();
@@ -44,7 +46,7 @@ namespace impactx
                 amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
                 (2, domain_lev, rho.at(lev), [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
                 {
-                    return ma[b](i,j,k);
+                    return oma[b](i,j,k) ? ma[b](i,j,k) : amrex::Real(0);
                 })
             );
         }

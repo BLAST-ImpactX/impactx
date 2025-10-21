@@ -248,13 +248,13 @@ namespace detail {
         auto d_ui = io::Dataset(dtype_ui, {np});
 
         // openPMD 1.* needs "seconds" here, but we fake it as "s"
-        iteration.setTime(ref_part.s);
+        iteration.setTime(ref_part.s.value());
 
         // reference particle information
         beam.setAttribute( "beta_ref", ref_part.beta() );
         beam.setAttribute( "gamma_ref", ref_part.gamma() );
         beam.setAttribute( "beta_gamma_ref", ref_part.beta_gamma() );
-        beam.setAttribute( "s_ref", ref_part.s );
+        beam.setAttribute( "s_ref", ref_part.s.value() );
         beam.setAttribute( "x_ref", ref_part.x );
         beam.setAttribute( "y_ref", ref_part.y );
         beam.setAttribute( "z_ref", ref_part.z );

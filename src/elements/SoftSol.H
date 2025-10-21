@@ -340,8 +340,8 @@ namespace SoftSolenoidData
             refpart.py = py*bgf/bgi;
             refpart.pz = pz*bgf/bgi;
 
-            // advance integrated path length
-            refpart.s = s + slice_ds;
+            // advance integrated path length using compensated summation
+            refpart.s += slice_ds;
         }
 
         /** This pushes the covariance matrix. */

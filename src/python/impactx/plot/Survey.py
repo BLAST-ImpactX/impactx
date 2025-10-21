@@ -36,9 +36,9 @@ def plot_survey(
     from math import copysign
 
     import matplotlib.pyplot as plt
-    import numpy as np
     from matplotlib.patches import Rectangle
 
+    from ..compensated import compensated_cumsum
     from .ElementColors import get_element_color
 
     charge_qe = 1.0 if ref is None else ref.charge_qe
@@ -47,10 +47,9 @@ def plot_survey(
 
     element_lengths = [element.ds for element in self]
 
-    # NumPy 2.1+ (i.e. Python 3.10+):
-    # element_s = np.cumulative_sum(element_lengths, include_initial=True)
-    # backport:
-    element_s = np.insert(np.cumsum(element_lengths), 0, 0)
+    # Use accurate cumulative sum to avoid floating-point precision errors
+    # when dealing with many small ds values in long lattices
+    element_s = compensated_cumsum(element_lengths)
 
     ax.hlines(0, 0, element_s[-1], color="black", linestyle="--")
 

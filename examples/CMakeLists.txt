@@ -290,6 +290,14 @@ add_impactx_test(FODO.programmable.py
     examples/fodo_programmable/plot_fodo.py
 )
 
+# Python: Change Elements Per Turn ############################################
+#
+add_impactx_test(turn_update.py
+    examples/turn_update/run_turn_update.py
+    OFF  # ImpactX MPI-parallel
+    examples/turn_update/analysis_turn_update.py
+    OFF  # no plot script yet
+)
 
 # Python MADX: FODO Cell ######################################################
 #

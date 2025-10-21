@@ -309,6 +309,44 @@ Collective Effects & Overall Simulation Parameters
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
 
+   .. py:property:: hook
+
+      User-defined function hooks that are called, e.g, during tracking.
+      Supported hook locations names are:
+
+      * ``"before_period"``: before each period (e.g., turn or channel period)
+      * ``"after_period"``: after each period (e.g., turn or channel period)
+      * ``"before_element"``: before each element is entered
+      * ``"after_element"``: after each element is exited
+      * ``"before_slice"``: before each element slice
+
+      Example: Function hook that can be called before each turn (sim):
+
+      .. code-block:: python3
+
+         def hook_before_period(sim):
+             beam = sim.particle_container()
+             turn = sim.tracking_period
+             # Example: you could now manipulate elements in sim.lattice
+             #          for the next turn.
+
+         sim.hook["before_period"] = hook_before_period
+
+   .. py:property:: tracking_step
+
+      For tracking hooks/callbacks, a global step of the simulation.
+
+      A state of internal simulation steps, increments also for space charge slice steps in elements.
+      We start in "step 0" (initial state).
+
+   .. py:property:: tracking_period
+
+      For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period).
+
+   .. py:property:: tracking_element
+
+      For tracking hooks/callbacks, the current lattice element.
+
    .. py:method:: resize_mesh()
 
       Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.

@@ -221,9 +221,9 @@ namespace impactx
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         CompensatedReal operator+(CompensatedReal const& rhs) const {
-            CompensatedReal result = *this;
+            CompensatedReal result(*this);
             result += rhs;
-            return result;
+            return CompensatedReal(result);
         }
 
         /** Subtraction operator with CompensatedReal
@@ -233,9 +233,9 @@ namespace impactx
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         CompensatedReal operator-(CompensatedReal const& rhs) const {
-            CompensatedReal result = *this;
+            CompensatedReal result(*this);
             result -= rhs;
-            return result;
+            return CompensatedReal(result);
         }
 
         /** Equality comparison

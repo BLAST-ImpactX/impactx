@@ -20,6 +20,7 @@ using namespace impactx;
 
 
 // forward declarations of exposed classes
+void init_compensatedreal(py::module&);
 void init_distribution(py::module&);
 void init_elements(py::module&);
 void init_ImpactX(py::module&);
@@ -45,6 +46,7 @@ PYBIND11_MODULE(impactx_pybind, m) {
     )pbdoc";
 
     // note: order from parent to child classes
+    init_compensatedreal(m);
     init_distribution(m);
     init_refparticle(m);
     init_impactxparticlecontainer(m);

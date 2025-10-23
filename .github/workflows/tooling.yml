@@ -39,7 +39,7 @@ jobs:
         OMPI_CXX: clang++
         MPICH_CC: clang
         MPICH_CXX: clang++
-        CXXFLAGS: "-Werror -Wno-error=pass-failed -fsanitize=address,undefined -shared-libsan -Wno-self-assign-overloaded"
+        CXXFLAGS: "-Werror -Wno-error=pass-failed -Wno-error=self-assign-overloaded -fsanitize=address,undefined -shared-libsan"
         LDFLAGS: "-fsanitize=address,undefined -shared-libsan -fno-omit-frame-pointer"
         # Note: Clang<=16 triggers on pybind11 code a false-positive of -Wself-assign-overloaded
         #   https://github.com/llvm/llvm-project/issues/42469

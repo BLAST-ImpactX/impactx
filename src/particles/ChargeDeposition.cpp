@@ -204,9 +204,9 @@ namespace impactx
             //ApplyFilterandSumBoundaryRho(lev, lev, rho[lev-1], 0, 1);
 
             // start async charge communication for this level
-            rho_at_level.SumBoundary_nowait();
+            rho_at_level.SumBoundary_nowait(gm.periodicity());
             //int const comp = 0;
-            //rho_at_level.SumBoundary_nowait(comp, comp, rho_at_level.nGrowVect());
+            //rho_at_level.SumBoundary_nowait(comp, comp, rho_at_level.nGrowVect(), gm.periodicity());
 
         } // lev
 

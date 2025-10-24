@@ -15,13 +15,17 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
+#include <ImpactX.H>
 #include <elements/All.H>
 
+#include <functional>
 #include <list>
+#include <string>
 
 namespace py = pybind11;
 using namespace impactx;
 
 PYBIND11_MAKE_OPAQUE(std::list<elements::KnownElements>)
+PYBIND11_MAKE_OPAQUE(std::unordered_map<std::string, std::function<void(ImpactX *)> >)
 
 #endif // IMPACTX_PYIMPACTX_H

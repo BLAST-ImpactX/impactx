@@ -172,6 +172,12 @@ Collective Effects & Overall Simulation Parameters
 
       The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
 
+   .. py:property:: isr_on_ref_part
+
+      Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_on_ref_part = False``, the reference particle does not lose energy due to radiation, and the
+      mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
+      When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
+
    .. py:property:: diagnostics
 
       Enable (``True``) or disable (``False``) diagnostics generally (default: ``True``).
@@ -300,6 +306,44 @@ Collective Effects & Overall Simulation Parameters
       Run the reference orbit tracking simulation loop.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+
+   .. py:property:: hook
+
+      User-defined function hooks that are called, e.g, during tracking.
+      Supported hook locations names are:
+
+      * ``"before_period"``: before each period (e.g., turn or channel period)
+      * ``"after_period"``: after each period (e.g., turn or channel period)
+      * ``"before_element"``: before each element is entered
+      * ``"after_element"``: after each element is exited
+      * ``"before_slice"``: before each element slice
+
+      Example: Function hook that can be called before each turn (sim):
+
+      .. code-block:: python3
+
+         def hook_before_period(sim):
+             beam = sim.particle_container()
+             turn = sim.tracking_period
+             # Example: you could now manipulate elements in sim.lattice
+             #          for the next turn.
+
+         sim.hook["before_period"] = hook_before_period
+
+   .. py:property:: tracking_step
+
+      For tracking hooks/callbacks, a global step of the simulation.
+
+      A state of internal simulation steps, increments also for space charge slice steps in elements.
+      We start in "step 0" (initial state).
+
+   .. py:property:: tracking_period
+
+      For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period).
+
+   .. py:property:: tracking_element
+
+      For tracking hooks/callbacks, the current lattice element.
 
    .. py:method:: resize_mesh()
 

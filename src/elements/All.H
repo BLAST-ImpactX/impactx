@@ -32,6 +32,7 @@
 #include "Multipole.H"
 #include "NonlinearLens.H"
 #include "PlaneXYRot.H"
+#include "PolygonAperture.H"
 #include "Programmable.H"
 #include "PRot.H"
 #include "Quad.H"

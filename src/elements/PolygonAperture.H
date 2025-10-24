@@ -104,11 +104,11 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree = 0,
             std::optional<std::string> name = std::nullopt
         )
-	// 
+    //
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
           m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y), m_shift_odd_x(shift_odd_x),
-	  vertices_x(vertices_xx), vertices_y(vertices_yy), min_radius2(min_radius2x)
+      vertices_x(vertices_xx), vertices_y(vertices_yy), min_radius2(min_radius2x)
         {
             using namespace amrex::literals; // for _rt and _prt
 

@@ -6,8 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 import math
+
+import pandas as pd
 
 import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
@@ -40,7 +41,7 @@ dy = df_initial["y"].to_numpy()
 dpy = df_initial["py"].to_numpy()
 dt = df_initial["t"].to_numpy()
 dpt = df_initial["pt"].to_numpy()
-#dg = df_initial["gap"].to_numpy()
+# dg = df_initial["gap"].to_numpy()
 if not Config.have_gpu:  # initialize using cpu-based PODVectors
     dx_podv = amr.PODVector_real_std()
     dy_podv = amr.PODVector_real_std()
@@ -69,9 +70,9 @@ for p_dpy in dpy:
 for p_dpt in dpt:
     dpt_podv.push_back(p_dpt)
 
-#print(dt)
+# print(dt)
 print(dpt)
-#print(dg)
+# print(dg)
 
 pc.add_n_particles(
     dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C
@@ -83,12 +84,16 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element
 edge_angle = math.pi / 8.0
-dipedge0 = elements.DipEdge(name="dipedge0",psi=edge_angle,rc=10.0,g=0.1,model=0,flag="entry")
-dipedge1 = elements.DipEdge(name="dipedge1",psi=edge_angle,rc=10.0,g=0.1,model=1,flag="entry") 
+dipedge0 = elements.DipEdge(
+    name="dipedge0", psi=edge_angle, rc=10.0, g=0.1, model=0, flag="entry"
+)
+dipedge1 = elements.DipEdge(
+    name="dipedge1", psi=edge_angle, rc=10.0, g=0.1, model=1, flag="entry"
+)
 
 line = [
     monitor,
-#    dipedge0,
+    #    dipedge0,
     dipedge1,
     monitor,
 ]

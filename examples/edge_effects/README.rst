@@ -5,13 +5,13 @@ Error scaling test for nonlinear dipole fringe field map
 
 This benchmark tests the use of the nonlinear DipEdge model for integrating through a dipole fringe field.
 
-Six distinct initial conditions are tested for a nominal proton beam with 800 MeV kinetic energy.  The values of the field integrals K0-K6 are set to the default 
+Six distinct initial conditions are tested for a nominal proton beam with 800 MeV kinetic energy.  The values of the field integrals K0-K6 are set to the default
 values, as used in:
 
 K. Hwang and S. Y. Lee, "Dipole fringe field map for compact synchrotrons," Phys. Rev. Accel. Beams 18, 122401 (2015)
 
-The initial conditions are chosen with increasing distance from the origin in phase space.  The value of the Lie generator is a dynamical 
-invariant of the ideal fringe field map.  In reality, there is an error in the final variables that scales with (x,px,y,py,t,pt,g) as degree 3.  As a result, the 
+The initial conditions are chosen with increasing distance from the origin in phase space.  The value of the Lie generator is a dynamical
+invariant of the ideal fringe field map.  In reality, there is an error in the final variables that scales with (x,px,y,py,t,pt,g) as degree 3.  As a result, the
 Lie generator is not an exact invariant of the numerically-computed fringe field map.
 
 In this test, the change in the Lie generator for each initial condition should coincide with its (small) nominal value.

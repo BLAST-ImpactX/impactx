@@ -149,7 +149,7 @@ namespace impactx::elements
             m_c4_times_1plusdelta = flg * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
             m_c5 = tan_psi / (2_prt * m_rc);
             m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_rc * powi<3>(cos_psi)) * m_g/m_rc * m_K1;
-            m_c7_times_1plusdelta = 0.5_prt * powi<3>(sin_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
+            m_c7_times_1plusdelta = 0.5_prt * powi<3>(sec_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
             m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_rc));
             m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
             m_c10_times_1plusdelta = flg * powi<2>(tan_psi) / (2_prt * m_rc);
@@ -207,19 +207,19 @@ namespace impactx::elements
                T_Real tout = t;
                T_Real ptout = pt;
 
-               // compute particle momentum deviation delta + 1
-               T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+               // compute particle momentum deviation delta + 1 (reciprocal)
+               T_Real const inv_delta1 = 1_prt / sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
 
-               T_Real const c2 = m_c2_times_1plusdelta * delta1;
-               T_Real const c3 = m_c3_times_1plusdelta * delta1;
-               //T_Real const c4 = m_c4_times_1plusdelta * delta1; //not currently used
-               //T_Real const c6 = m_c6_times_1plusdelta * delta1; //not currently used
-               T_Real const c7 = m_c7_times_1plusdelta * delta1;
-               T_Real const c8 = m_c8_times_1plusdelta * delta1;
-               T_Real const c9 = m_c9_times_1plusdelta * delta1;
-               T_Real const c10 = m_c10_times_1plusdelta * delta1;
-               T_Real const c11 = m_c11_times_1plusdelta * delta1;
-               T_Real const c12 = m_c12_times_1plusdelta * delta1;
+               T_Real const c2 = m_c2_times_1plusdelta * inv_delta1;
+               T_Real const c3 = m_c3_times_1plusdelta * inv_delta1;
+               //T_Real const c4 = m_c4_times_1plusdelta * inv_delta1; //not currently used
+               //T_Real const c6 = m_c6_times_1plusdelta * inv_delta1; //not currently used
+               T_Real const c7 = m_c7_times_1plusdelta * inv_delta1;
+               T_Real const c8 = m_c8_times_1plusdelta * inv_delta1;
+               T_Real const c9 = m_c9_times_1plusdelta * inv_delta1;
+               T_Real const c10 = m_c10_times_1plusdelta * inv_delta1;
+               T_Real const c11 = m_c11_times_1plusdelta * inv_delta1;
+               T_Real const c12 = m_c12_times_1plusdelta * inv_delta1;
 
                // update transverse coordinates
                xout = x - c3 - c10*powi<2>(x) + (c10 + c11)*powi<2>(y);

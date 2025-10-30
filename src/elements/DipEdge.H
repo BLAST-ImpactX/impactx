@@ -239,8 +239,8 @@ namespace impactx::elements
                pyout = (-dXdy * (px - dRdx) + dXdx * (py - dRdy)) / D;
 
                // update temporal coordinate
-               T_Real const dDelta_dpt = (pt - 1_prt/m_beta) / delta1;
-               tout = t - dDelta_dpt/delta1 * ((c2 + c3*m_c5)*x + (c10*m_c5 + c8)*powi<3>(x) - c7*powi<2>(y) - c12*powi<4>(y)
+               T_Real const dDelta_dpt = (pt - 1_prt/m_beta) * inv_delta1;
+               tout = t - dDelta_dpt * inv_delta1 * ((c2 + c3*m_c5)*x + (c10*m_c5 + c8)*powi<3>(x) - c7*powi<2>(y) - c12*powi<4>(y)
                       + (c10*m_c5 - c11*m_c5 - c9)*x*powi<2>(y) + pxout*(-c3 + (c11 + c10)*powi<2>(y) - c10*powi<2>(x)) + 2_prt*pyout*c10*x*y);
 
                x = xout;

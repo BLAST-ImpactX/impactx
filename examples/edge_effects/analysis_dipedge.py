@@ -18,7 +18,7 @@ beam_final = series.iterations[last_step].particles["beam"]
 final = beam_final.to_df()
 
 # Basic input parameters
-g = 0.1
+g = 1.0e-3
 phi = math.pi / 8.0
 rc = 10.0
 R = 1.0

@@ -765,6 +765,11 @@ This module provides elements and methods for the accelerator lattice.
 
    * C. Mitchell and K. Hwang, in Proc. NAPAC2025, TUP040, Sacramento, CA (2025).
 
+   Here, g denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values K0 - K6 denote  
+   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs (28-34) of the first reference above.  In 
+   particular, K2 is the well-known fringe field parameter denoted FINT in MAD-X.  The default values of the field integrals K0 - K6 are 
+   those given in eq (52), corresponding to a tanh (i.e. logistic) field profile.
+   
    When model = 0, the linearized map is used.  This model is identical to:
 
    * K. L. Brown, SLAC Report No. 75 (1982)

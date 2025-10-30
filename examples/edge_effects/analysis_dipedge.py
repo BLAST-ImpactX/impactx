@@ -124,7 +124,7 @@ print("dpt", dpt)
 print("Change in the Lie generator, for each initial condition:")
 print(Delta_Omega)
 
-atol = 1.0e13
+atol = 1.5e-10
 print(f"  atol={atol}")
 
 assert np.allclose(

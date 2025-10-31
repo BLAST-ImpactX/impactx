@@ -11,6 +11,8 @@
 
 #include "elements/All.H"
 
+#include <optional>
+
 
 namespace impactx
 {
@@ -31,12 +33,9 @@ namespace impactx
         int m_period = 0;
 
         /** For tracking hooks/callbacks, the current lattice element */
-        elements::KnownElements* m_element = &empty_element;
+        std::optional<elements::KnownElements*> m_element;
 
-        void set_no_element () { m_element = &empty_element; }
-
-    private:
-        static inline elements::KnownElements empty_element = elements::Empty{};
+        void set_no_element () { m_element = std::nullopt; }
     };
 
 } // namespace impactx

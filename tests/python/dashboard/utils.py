@@ -61,13 +61,13 @@ def wait_for_interaction_ready(sb, timeout=TIMEOUT):
     https://github.com/Kitware/trame-client/blob/master/trame_client/utils/testing.py#L132
 
     """
-    for i in range(timeout):
-        print(f"Waiting for dashboard to load - ({i + 1}s elapsed)")
-        if sb.is_element_present(".trame__loader"):
-            sb.sleep(1)
-        else:
-            print("Ready to interact with.")
-            return
+    print("Waiting for dashboard to load...")
+
+    # Wait for the dashboard to finish loading.
+    # This ensures all UI elements are rendered before we manipulate or check their values
+    sb.wait_for_element_present("#Input_route", timeout=10)
+
+    print("Ready to interact with.")
 
 
 def wait_for_server_ready(process, timeout=TIMEOUT):

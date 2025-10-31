@@ -24,10 +24,6 @@ def test_python_import(dashboard):
     """
     dashboard.load_example("testdata/example.py", manual=True)
 
-    # Wait for the dashboard to finish loading the example file
-    # This ensures all UI elements are rendered before we check their values
-    dashboard.sb.wait_for_element_present("#Input_route", timeout=10)
-
     BEAM_PARAMETERS = [
         ("tracking_mode", "Particle Tracking"),
         ("space_charge", "false"),

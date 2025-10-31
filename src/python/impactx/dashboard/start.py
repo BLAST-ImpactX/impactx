@@ -6,6 +6,8 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+import asyncio
+
 from . import server, state
 from .app import application
 from .Input.defaults import DashboardDefaults
@@ -42,6 +44,18 @@ class DashboardApp:
 
     def start(self):
         setup_dashboard()
+
+        # Ensure an event loop exists for Python 3.10+ (required on macOS)
+        # This prevents RuntimeError when server.start() tries to get_event_loop()
+        # In Python 3.10+, get_event_loop() raises RuntimeError if no loop exists
+        # We create and set one if needed
+        try:
+            asyncio.get_event_loop()
+        except RuntimeError:
+            # No event loop exists in this thread, create and set one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
         server.start()
         return 0
 

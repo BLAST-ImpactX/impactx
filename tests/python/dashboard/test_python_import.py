@@ -24,6 +24,10 @@ def test_python_import(dashboard):
     """
     dashboard.load_example("testdata/example.py", manual=True)
 
+    # Wait for the dashboard to finish loading the example file
+    # This ensures all UI elements are rendered before we check their values
+    dashboard.sb.wait_for_element_present("#Input_route", timeout=10)
+
     BEAM_PARAMETERS = [
         ("tracking_mode", "Particle Tracking"),
         ("space_charge", "false"),
@@ -72,6 +76,10 @@ def test_python_import(dashboard):
 
     # Check input values
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
+        # Wait for element to be visible before getting its value
+        # This is important for CI environments where rendering may be slower
+        dashboard.sb.wait_for_element_visible(element_id, timeout=10)
+
         actual_value = float(dashboard.sb.get_value(element_id))
         assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
             f"{element_id}: expected {expected_value}, got {actual_value}"

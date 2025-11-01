@@ -286,3 +286,38 @@ def test_impactx_change_resolution():
 
     # finalize simulation
     sim.finalize()
+
+
+def test_impactx_fodo_hook():
+    """
+    Test hooks (callback functions) into evolve loops
+    """
+    sim = ImpactX()
+
+    sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
+
+    sim.init_grids()
+    sim.init_beam_distribution_from_inputs()
+    sim.init_lattice_elements_from_inputs()
+
+    def hook_before_element(sim):
+        element = sim.tracking_element
+        print(
+            f"  Current element name: {element.name} with ds={element.ds:.2f}",
+            flush=True,
+        )
+
+        if element.name != "monitor":
+            print(f"  Drift ds is: {element.ds:.2f}m", flush=True)
+
+    sim.hook["before_element"] = hook_before_element
+
+    assert sim.tracking_element is None
+    sim.track_particles()
+    assert sim.tracking_element is None
+
+    # validate the results
+    validate_fodo(sim.particle_container())
+
+    # finalize simulation
+    sim.finalize()

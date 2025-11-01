@@ -76,7 +76,6 @@ def test_python_import(dashboard):
         # This is important for CI environments where rendering may be slower
         dashboard.sb.wait_for_element_present(element_id, timeout=10)
 
-
         actual_value = float(dashboard.sb.get_value(element_id))
         assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
             f"{element_id}: expected {expected_value}, got {actual_value}"

@@ -74,7 +74,8 @@ def test_python_import(dashboard):
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
         # Wait for element to be visible before getting its value
         # This is important for CI environments where rendering may be slower
-        dashboard.sb.wait_for_element_visible(element_id, timeout=10)
+        dashboard.sb.wait_for_element_present(element_id, timeout=10)
+
 
         actual_value = float(dashboard.sb.get_value(element_id))
         assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (

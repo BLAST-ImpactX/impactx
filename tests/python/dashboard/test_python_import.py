@@ -24,6 +24,10 @@ def test_python_import(dashboard):
     """
     dashboard.load_example("testdata/example.py", manual=True)
 
+    # Wait for the file to finish loading and processing
+    # The importing_file state is True while loading, False when done
+    dashboard.assert_state("importing_file", False)
+
     BEAM_PARAMETERS = [
         ("tracking_mode", "Particle Tracking"),
         ("space_charge", "false"),
@@ -75,6 +79,10 @@ def test_python_import(dashboard):
         # Wait for element to be present in the DOM (doesn't require visibility)
         # This is important for CI environments where rendering may be slower
         dashboard.sb.wait_for_element_present(element_id, timeout=10)
+
+        # Wait for the element's value to be populated
+        # DOM elements may take time to reflect updated state values after file loading
+        dashboard.wait_for_element_value(element_id, timeout=10)
 
         # Get the value attribute - this works even if the element isn't visible
         actual_value = float(dashboard.sb.get_attribute(element_id, "value"))

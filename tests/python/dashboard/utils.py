@@ -275,6 +275,39 @@ class DashboardTester:
         """
         return self.sb.execute_script(js_script, state_name)
 
+    def wait_for_element_value(self, element_id: str, timeout=TIMEOUT):
+        """
+        Wait for an element's value attribute to be populated (non-empty).
+
+        This is useful after loading files, as DOM elements may take time to
+        reflect the updated state values.
+
+        :param element_id: ID of the input element to check (with or without # prefix).
+        :param timeout: Maximum time to wait in seconds.
+        """
+        for i in range(timeout):
+            try:
+                value = self.sb.get_attribute(element_id, "value")
+                if value and value.strip():  # Non-empty value
+                    return value
+            except Exception:
+                pass
+
+            time.sleep(1)
+
+        # If we get here, try one more time to get the value (even if empty)
+        # to provide a better error message
+        try:
+            final_value = self.sb.get_attribute(element_id, "value")
+            raise TimeoutError(
+                f"Element '{element_id}' value never populated after {timeout} seconds "
+                f"(last value: '{final_value}')"
+            )
+        except Exception as e:
+            raise TimeoutError(
+                f"Element '{element_id}' value never populated after {timeout} seconds"
+            ) from e
+
 
 def save_failure_screenshot(
     dashboard, request, directory: str | None = None

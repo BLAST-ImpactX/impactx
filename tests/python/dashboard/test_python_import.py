@@ -72,11 +72,12 @@ def test_python_import(dashboard):
 
     # Check input values
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
-        # Wait for element to be visible before getting its value
+        # Wait for element to be present in the DOM (doesn't require visibility)
         # This is important for CI environments where rendering may be slower
         dashboard.sb.wait_for_element_present(element_id, timeout=10)
 
-        actual_value = float(dashboard.sb.get_value(element_id))
+        # Get the value attribute - this works even if the element isn't visible
+        actual_value = float(dashboard.sb.get_attribute(element_id, "value"))
         assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
             f"{element_id}: expected {expected_value}, got {actual_value}"
         )

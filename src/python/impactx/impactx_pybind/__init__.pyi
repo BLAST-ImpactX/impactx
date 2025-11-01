@@ -518,6 +518,7 @@ class ImpactX:
         | elements.Source
         | elements.TaperedPL
         | elements.ThinDipole
+        | None
     ):
         """
         For tracking hooks/callbacks, the current lattice element.

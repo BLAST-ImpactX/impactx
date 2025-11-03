@@ -7,21 +7,9 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import ctrl, state
-from . import DashboardDefaults
+from .defaults import STATE_INPUTS, DashboardDefaults, determine_section_name
 from .utils import GeneralFunctions
-from .validation import DashboardValidation, errors_tracker
-
-simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
-csr_defaults = list(DashboardDefaults.CSR.keys())
-space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
-
-lattice_state_defaults = ["periods"]
-STATE_INPUTS = (
-    csr_defaults
-    + simulation_parameters_defaults
-    + space_charge_defaults
-    + lattice_state_defaults
-)
+from .validation import InputsValidator, errors_tracker
 
 # Set of dropdown input state variables, automatically populated when InputComponents.select() is called
 # Used to exclude dropdown inputs from validation since they're constrained to valid options
@@ -38,11 +26,14 @@ class SharedUtilities:
         non_dropdown_inputs = set(STATE_INPUTS) - DROPDOWN_INPUTS
         state_changes = state.modified_keys & non_dropdown_inputs
 
+        non_dropdown_inputs = set(STATE_INPUTS) - DROPDOWN_INPUTS
+        state_changes = state.modified_keys & non_dropdown_inputs
+
         for state_name in state_changes:
             input = getattr(state, state_name)
             if type(input) is str:
-                validation_result = DashboardValidation.validate(state_name, input)
-                DashboardValidation.update_error_message_on_ui(
+                validation_result = InputsValidator.validate(state_name, input)
+                InputsValidator.update_error_message_on_ui(
                     state_name, validation_result
                 )
 
@@ -52,11 +43,14 @@ class SharedUtilities:
                     match state_name:
                         case "kin_energy_on_ui":
                             state.dirty("kin_energy_unit")
-                        case _ if "blocking_factor" or "n_cell" in state_name:
+                        case _ if (
+                            "blocking_factor" in state_name or "n_cell" in state_name
+                        ):
                             direction = state_name[-1]
-                            DashboardValidation.update_n_cell_validation(direction)
+                            InputsValidator.update_n_cell_validation(direction)
 
-                errors_tracker.update_simulation_validation_status()
+                section_name = determine_section_name(state_name)
+                errors_tracker.update(section_name, state_name=state_name)
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

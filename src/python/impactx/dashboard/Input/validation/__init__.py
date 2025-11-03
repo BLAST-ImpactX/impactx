@@ -1,7 +1,7 @@
 from .errors_tracker import errors_tracker
-from .inputs import DashboardValidation
+from .inputs import InputsValidator
 
 __all__ = [
-    "DashboardValidation",
     "errors_tracker",
+    "InputsValidator",
 ]

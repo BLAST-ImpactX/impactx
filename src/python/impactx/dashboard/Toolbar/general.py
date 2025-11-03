@@ -69,6 +69,7 @@ class GeneralToolbar:
             vuetify.VDivider(vertical=True, classes="mr-2")
             GeneralToolbar.simulation_history_button()
             vuetify.VDivider(vertical=True, classes="mr-2")
+            InputToolbar.error_notification()
             InputToolbar.collapse_all_sections_button()
             GeneralToolbar.about_button()
             GeneralToolbar.force_quit_button()

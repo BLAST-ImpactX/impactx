@@ -48,19 +48,46 @@ CONVERSION_FACTORS = {
     "TeV": 1.0e6,
 }
 
+INPUT_LABELS = {
+    # state_name : "label"
+    "npart": "Number of Particles",
+    "kin_energy_on_ui": "Kinetic Energy",
+    "bunch_charge_C": "Bunch Charge",
+    "charge_qe": "Ref. Particle Charge",
+    "mass_MeV": "Ref. Particle Mass",
+}
+
+
+def determine_section_name(state_name: str) -> str:
+    """
+    Determines the section name based on the state variable name.
+    """
+    if state_name in csr_defaults:
+        return "CSR"
+    elif state_name in space_charge_defaults:
+        return "Space Charge"
+    elif state_name == "periods":
+        return "Lattice Configuration"
+    else:
+        return "Simulation Parameters"
+
 
 class DashboardDefaults:
     """
     Defaults for simulation parameters in the ImpactX dashboard.
     """
 
+    INPUT_SECTIONS = [
+        "Simulation Parameters",
+        "Distribution Parameters",
+        "Lattice Configuration",
+        "Space Charge",
+        "CSR",
+        "ISR",
+    ]
+
     COLLAPSABLE_SECTIONS = [
-        "collapse_simulation_parameters",
-        "collapse_csr",
-        "collapse_isr",
-        "collapse_distribution_parameters",
-        "collapse_space_charge",
-        "collapse_lattice_configuration",
+        f"collapse_{section.replace(' ', '_')}" for section in INPUT_SECTIONS
     ]
     # -------------------------------------------------------------------------
     # Inputs by section
@@ -261,3 +288,16 @@ class UIDefaults:
         "display": "flex",
         "flex-direction": "column",
     }
+
+
+simulation_parameters_defaults = list(DashboardDefaults.SIMULATION_PARAMETERS.keys())
+csr_defaults = list(DashboardDefaults.CSR.keys())
+space_charge_defaults = list(DashboardDefaults.SPACE_CHARGE.keys())
+
+lattice_state_defaults = ["periods"]
+STATE_INPUTS = (
+    csr_defaults
+    + simulation_parameters_defaults
+    + space_charge_defaults
+    + lattice_state_defaults
+)

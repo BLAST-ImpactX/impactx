@@ -194,6 +194,7 @@ class CardComponents:
         CardComponents.card_button(
             "mdi-refresh",
             color="#00313C",
+            id=f"reset_{section_name}_button",
             click=lambda: GeneralFunctions.reset_inputs(section_name),
             description="Reset",
         )

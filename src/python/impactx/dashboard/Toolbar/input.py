@@ -66,7 +66,7 @@ class InputToolbar:
             click="utils.download('impactx_simulation.py', trigger('export'), 'text/plain')",
             variant="outlined",
             size="small",
-            disabled=("disableRunSimulationButton", True),
+            disabled=("disable_simulation", True),
             classes="mx-2",
             prepend_icon="mdi-download",
             color="#00313C",
@@ -155,3 +155,39 @@ class InputToolbar:
             classes="mr-2",
             color="#00313C",
         )
+
+    @staticmethod
+    def error_notification():
+        """
+        Displays a notification when there are input validation errors.
+        Shows error count and provides tooltip with categorized details.
+        """
+        with html.Div(
+            v_if="disable_simulation",
+            style="display: flex; align-items: center; margin-right: 8px; padding: 4px 8px; background-color: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800;",
+        ):
+            html.Span(
+                "{{ number_of_input_errors }} input error{{ number_of_input_errors > 1 ? 's' : '' }}",
+                style="font-size: 12px; color: #e65100; margin-right: 4px;",
+            )
+            with vuetify.VTooltip(location="bottom"):
+                with html.Template(v_slot_activator="{ props }"):
+                    vuetify.VIcon(
+                        "mdi-information",
+                        size="small",
+                        color="#ff9800",
+                        v_bind="props",
+                    )
+                with html.Div():
+                    with html.Div(
+                        v_for="(category_group, category_index) in input_errors_list",
+                    ):
+                        html.Div(
+                            "{{ category_group.category }}", style="color: #e65100;"
+                        )
+                        with html.Ul(style="padding-left: 16px;"):
+                            with html.Li(
+                                v_for="(error, error_index) in category_group.errors",
+                                style="font-size: 12px;",
+                            ):
+                                html.Span("{{ error }}")

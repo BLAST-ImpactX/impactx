@@ -77,6 +77,7 @@ namespace impactx::elements
         Multipole,
         NonlinearLens,
         PlaneXYRot,
+        PolygonAperture,
         Programmable,
         PRot,
         Quad,

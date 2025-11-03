@@ -654,7 +654,7 @@ element_name) );
             PolygonAperture::Action action = action_str == "transmit" ?
                                         PolygonAperture::Action::transmit :
                                         PolygonAperture::Action::absorb;
-                                        
+
             m_lattice.emplace_back(PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y,
                 shift_odd_x, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
 

@@ -24,10 +24,10 @@ To clarify the model input parameters, the figures below illustrate the basic di
    :width: 75%
    :alt: general dipole geometry
 
-   Geometry of a basic sector bend (upper) and a general bend with non-normal entry and exit angles (lower).  These figures are excerpts from the MaryLie Manual, Figs. 6.2.1 and 6.4.1, 
+   Geometry of a basic sector bend (upper) and a general bend with non-normal entry and exit angles (lower).  These figures are excerpts from the MaryLie Manual, Figs. 6.2.1 and 6.4.1,
    respectively.
 
-Bending is assumed to occur in the x-z plane.  A positive bend angle :math:`theta` and positive radius of curvature :math:`\rho` corresponds to bending in the -x direction (clockwise about the 
+Bending is assumed to occur in the x-z plane.  A positive bend angle :math:`theta` and positive radius of curvature :math:`\rho` corresponds to bending in the -x direction (clockwise about the
 vertical y-axis).
 
 The effects of non-normal pole face entry and exit, along with other dipole fringe field effects, are applied using the DipEdge element.

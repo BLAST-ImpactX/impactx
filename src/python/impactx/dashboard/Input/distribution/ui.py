@@ -10,12 +10,13 @@ from impactx import distribution
 
 from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
+from ...Toolbar.file_imports.ui_populator import _apply_distribution_inputs
 from .. import DashboardDefaults
 from ..defaults_helper import InputDefaultsHelper
 from ..utils import GeneralFunctions
 from ..validation import DashboardValidation, errors_tracker
 from .utils import DistributionFunctions
-from ...Toolbar.file_imports.ui_populator import _apply_distribution_inputs
+
 # -----------------------------------------------------------------------------
 # Helpful
 # -----------------------------------------------------------------------------

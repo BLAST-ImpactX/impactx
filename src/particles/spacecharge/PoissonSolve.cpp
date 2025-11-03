@@ -67,6 +67,9 @@ namespace impactx::particles::spacecharge
         if (poisson_solver != "multigrid" && poisson_solver != "fft") {
             throw std::runtime_error("algo.poisson_solver must be multigrid or fft but is: " + poisson_solver);
         }
+        if (space_charge == SpaceChargeAlgo::True_2D && poisson_solver != "fft") {
+            throw std::runtime_error("algo.poisson_solver must be fft for SpaceChargeAlgo::True_2D");
+        }
 
         // MLMG options
         amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
@@ -91,21 +94,24 @@ namespace impactx::particles::spacecharge
         amrex::Vector<amrex::MultiFab*> sorted_rho;
         amrex::Vector<amrex::MultiFab*> sorted_phi;
 
+        amrex::Vector<amrex::MultiFab> phi_2d(finest_level+1);
+
         // create phi_2d and sort rho/phi pointers
         for (int lev = 0; lev <= finest_level; ++lev) {
             if (space_charge == SpaceChargeAlgo::True_2D) {
-                // 2D phi
-                auto & r2d = rho_2d[lev].second;
-                auto nGrow = phi[lev].nGrowVect();
-                nGrow[2] = 0;
-                phi.erase(lev);
-                phi.emplace(
-                    lev,
-                    amrex::MultiFab{r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow}
-                );
+                int nz = pc.GetParGDB()->Geom(lev).Domain().length(2);
+                if (nz == 1) {
+                    sorted_phi.emplace_back(&phi[lev]);
+                } else {
+                    // 2D phi
+                    auto & r2d = rho_2d[lev].second;
+                    auto nGrow = phi[lev].nGrowVect();
+                    nGrow[2] = 0;
+                    phi_2d[lev].define(r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow);
+                    sorted_phi.emplace_back(&phi_2d[lev]);
+                }
 
                 sorted_rho.emplace_back(&rho_2d[lev].second);
-                sorted_phi.emplace_back(&phi[lev]);
             }
             else if (space_charge == SpaceChargeAlgo::True_3D) {
                 sorted_rho.emplace_back(&rho[lev]);
@@ -145,6 +151,15 @@ namespace impactx::particles::spacecharge
         for (int lev=0; lev<=finest_level; lev++) {
             using namespace ablastr::constant::SI;
             rho[lev].mult(-1._rt * ep0);
+        }
+
+        // We may need to copy phi from phi_2d
+        if (space_charge == SpaceChargeAlgo::True_2D) {
+            for (int lev=0; lev<=finest_level; lev++) {
+                if (&(phi[lev]) != sorted_phi[lev]) {
+                    phi[lev].ParallelCopy(*sorted_phi[lev]);
+                }
+            }
         }
 
         // fill boundary

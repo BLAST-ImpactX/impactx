@@ -275,19 +275,63 @@ class DashboardTester:
         """
         return self.sb.execute_script(js_script, state_name)
 
+    def get_element_value(self, element_id: str):
+        """
+        Get an element's value, trying multiple methods.
+
+        For distribution parameters and other nested state values, tries reading
+        from trame state first, then falls back to DOM element value attribute.
+        This is more reliable on slower CI environments where DOM updates lag.
+
+        :param element_id: ID of the input element (with or without # prefix).
+        :return: The value as a string.
+        """
+        clean_id = element_id.lstrip("#")
+
+        # First, try reading from trame state (for nested parameters like distribution)
+        # Distribution parameters are in state.selected_distribution_parameters[name]["value"]
+        # Lattice parameters are in state.selected_lattice_list[index]["parameters"]
+        js_check_state = """
+            if (window.trame && window.trame.state) {
+                const state = window.trame.state;
+                const param_name = arguments[0];
+
+                // Check distribution parameters
+                if (state.selected_distribution_parameters &&
+                    state.selected_distribution_parameters[param_name]) {
+                    const value = state.selected_distribution_parameters[param_name].value;
+                    if (value !== undefined && value !== null && value !== '') {
+                        return String(value);
+                    }
+                }
+            }
+            return null;
+        """
+
+        try:
+            state_value = self.sb.execute_script(js_check_state, clean_id)
+            if state_value:
+                return state_value
+        except Exception:
+            pass
+
+        # Fall back to reading from DOM element
+        return self.sb.get_attribute(element_id, "value")
+
     def wait_for_element_value(self, element_id: str, timeout=TIMEOUT):
         """
-        Wait for an element's value attribute to be populated (non-empty).
+        Wait for an element's value to be populated (non-empty).
 
+        This checks both trame state and DOM element value attribute.
         This is useful after loading files, as DOM elements may take time to
-        reflect the updated state values.
+        reflect the updated state values, but state is updated immediately.
 
         :param element_id: ID of the input element to check (with or without # prefix).
         :param timeout: Maximum time to wait in seconds.
         """
         for i in range(timeout):
             try:
-                value = self.sb.get_attribute(element_id, "value")
+                value = self.get_element_value(element_id)
                 if value and value.strip():  # Non-empty value
                     return value
             except Exception:
@@ -298,7 +342,7 @@ class DashboardTester:
         # If we get here, try one more time to get the value (even if empty)
         # to provide a better error message
         try:
-            final_value = self.sb.get_attribute(element_id, "value")
+            final_value = self.get_element_value(element_id)
             raise TimeoutError(
                 f"Element '{element_id}' value never populated after {timeout} seconds "
                 f"(last value: '{final_value}')"

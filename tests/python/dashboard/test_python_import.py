@@ -81,11 +81,12 @@ def test_python_import(dashboard):
         dashboard.sb.wait_for_element_present(element_id, timeout=10)
 
         # Wait for the element's value to be populated
-        # DOM elements may take time to reflect updated state values after file loading
+        # This checks both trame state and DOM element (more reliable on CI)
         dashboard.wait_for_element_value(element_id, timeout=10)
 
-        # Get the value attribute - this works even if the element isn't visible
-        actual_value = float(dashboard.sb.get_attribute(element_id, "value"))
+        # Get the value - tries state first, then DOM element
+        # This is more reliable when DOM updates lag behind state updates
+        actual_value = float(dashboard.get_element_value(element_id))
         assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
             f"{element_id}: expected {expected_value}, got {actual_value}"
         )

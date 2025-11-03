@@ -147,23 +147,21 @@ namespace impactx::initialization
                 amrex::MultiFab{amrex::convert(cba, rho_nodal_flag), dm, num_components_rho, num_guards_rho, tag("rho")});
 
         // scalar potential
-        amrex::IntVect phi_nodal_flag = rho_nodal_flag;
         int const num_components_phi = 1;
         amrex::IntVect num_guards_phi{num_guards_rho + 1}; // todo: I think this just depends on max(MLMG, force calc)
         amrex::BoxArray phi_ba = cba;
         if (space_charge == SpaceChargeAlgo::True_2D) {
             num_guards_phi[2] = 0;
-            phi_nodal_flag[2] = 0;
-            amrex::BoxList bl(amrex::IndexType{phi_nodal_flag});
+            amrex::BoxList bl(amrex::IndexType{rho_nodal_flag});
             bl.reserve(cba.size());
             for (int i = 0, N = cba.size(); i < N; ++i) {
                 amrex::Box b = cba[i];
-                b.convert(phi_nodal_flag).setRange(2,0); // Flatten box in z-direction
+                b.convert(rho_nodal_flag).setRange(2,0); // Flatten box in z-direction
                 bl.push_back(b);
             }
             phi_ba = amrex::BoxArray(std::move(bl));
         } else {
-            phi_ba.convert(phi_nodal_flag);
+            phi_ba.convert(rho_nodal_flag);
         }
         track_particles.m_phi.emplace(
                 lev,

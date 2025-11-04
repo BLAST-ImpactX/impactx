@@ -3,7 +3,7 @@
 Error scaling test for nonlinear dipole fringe field map
 ========================================================
 
-This benchmark tests the use of the nonlinear DipEdge model for integrating through a dipole fringe field.
+This benchmark tests the use of the nonlinear ``DipEdge`` model for integrating through a dipole fringe field.
 
 Six distinct initial conditions are tested for a nominal proton beam with 800 MeV kinetic energy.  The values of the field integrals K0-K6 are set to the default
 values, as used in:

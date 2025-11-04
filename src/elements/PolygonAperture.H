@@ -114,7 +114,7 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
-                throw std::runtime_error("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
+                throw std::runtime_error("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
             }
 
             // next created MulPolygonAperture has another id for its data
@@ -239,7 +239,7 @@ namespace impactx::elements
                     v2 = Complex(u - vertices_x[i+1], v-vertices_y[i+1]);
                     thetasum += arg(v2 * v1conj);
                 }
-                inside_aperture = abs(thetasum/(2*ablastr::constant::math::pi)) < 1.0e-12_prt;
+                inside_aperture = abs(thetasum/(2*ablastr::constant::math::pi)) > 1.0e-12_prt;
             }
 
             // For transmit (default): invalidate if outside aperture

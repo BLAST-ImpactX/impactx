@@ -264,7 +264,8 @@ sys.path.insert(0, os.path.join(dst_path, ".."))
 shutil.make_archive(dst_path, "zip", dst_path)
 
 # Download pyAMReX stub files
-url = "https://pyamrex.readthedocs.io/en/latest/_static/pyapi/amrex.zip"
-amr_path = os.path.join(api_path, "amrex.zip")
-urllib.request.urlretrieve(url, amr_path)
-shutil.unpack_archive(amr_path, os.path.join(api_path, "amrex"))
+download_with_headers(
+    url="https://pyamrex.readthedocs.io/en/latest/_static/pyapi/amrex.zip",
+    filename="amrex.zip",
+)
+shutil.unpack_archive("amrex.zip", os.path.join(api_path, "amrex"))

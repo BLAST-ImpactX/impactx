@@ -6,9 +6,13 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .... import html, state, vuetify
-from ....Input.components import CardBase
-from . import StatComponents, StatUtils
+from trame.widgets import plotly
+
+from .... import ctrl, html, state, vuetify
+from ....Input.components.card import CardBase
+from ....Input.components.navigation import NavigationComponents
+from . import Dialogs, StatComponents, StatUtils
+from .visualization.plot import lattice_visualizer
 
 
 def _update_statistics() -> None:
@@ -21,9 +25,17 @@ def _update_statistics() -> None:
     StatUtils.update_length_statistics()
 
 
+def _update_lattice_visualization() -> None:
+    """
+    Updates the plotly figure with an updated lattice visualization.
+    """
+    ctrl.lattice_figure_update(lattice_visualizer())
+
+
 @state.change("selected_lattice_list")
 def on_lattice_list_change(**kwargs):
     _update_statistics()
+    _update_lattice_visualization()
 
 
 class LatticeVisualizer(CardBase):
@@ -41,6 +53,10 @@ class LatticeVisualizer(CardBase):
         """
         The content of the lattice visualizer.
         """
+        with vuetify.VDialog(
+            v_model=("lattice_visualizer_dialog_settings", False), max_width="33.33vw"
+        ):
+            self.dialog_settings()
 
         with vuetify.VCard():
             with vuetify.VCard(
@@ -53,4 +69,24 @@ class LatticeVisualizer(CardBase):
                 with vuetify.VCardTitle(classes="d-flex align-center"):
                     html.Div("Lattice Statistics")
                     vuetify.VSpacer()
+                    Dialogs.settings()
                 StatComponents.statistics()
+
+            with vuetify.VCard(color="#002949"):
+                with vuetify.VCardText():
+                    ctrl.lattice_figure_update = plotly.Figure(
+                        display_mode_bar="true", style="width: 100%; height: 50vh"
+                    ).update
+
+    @staticmethod
+    def dialog_settings():
+        dialog_name = "lattice_visualizer_dialog_tab_settings"
+
+        with NavigationComponents.create_dialog_tabs(
+            dialog_name, 2, ["Element Colors", "General Settings"]
+        ):
+            with vuetify.VTabsWindow(v_model=(dialog_name, 0)):
+                with vuetify.VTabsWindowItem():
+                    Dialogs.element_colors_tab()
+                with vuetify.VTabsWindowItem():
+                    Dialogs.general_settings_tab()

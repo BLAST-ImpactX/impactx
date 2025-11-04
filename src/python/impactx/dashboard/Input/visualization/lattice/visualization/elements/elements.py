@@ -1,0 +1,357 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
+import numpy as np
+import plotly.graph_objects as go
+
+from .calculations import rotate_corners, transform
+
+# Global color dictionary for quadrupole visual properties
+QUAD_COLORS = {
+    "focusing_quadrupole": {
+        "legend_name": "Focusing Quadrupole",
+        "line_color": "darkblue",
+        "fill_color": "lightblue",
+        "line_width": 2,
+    },
+    "defocusing_quadrupole": {
+        "legend_name": "Defocusing Quadrupole",
+        "line_color": "darkred",
+        "fill_color": "lightcoral",
+        "line_width": 2,
+    },
+    "quadrupole": {
+        "legend_name": "Quadrupole",
+        "line_color": "darkgreen",
+        "fill_color": "lightgreen",
+        "line_width": 2,
+    },
+}
+
+
+class LatticeVisualizerElements:
+    def __init__(self):
+        self.seen_elements = set()
+        self.show_labels = True  # Track whether to show labels
+
+    def reset_legend(self):
+        self.seen_elements.clear()
+
+    def set_show_labels(self, show_labels):
+        """Set whether to show element labels on the plot."""
+        self.show_labels = show_labels
+
+    def _add_to_legend(self, element_type):
+        """
+        Adds an element type to the legend if it hasn't been added already.
+        Returns True if this is the first time seeing this element type.
+        """
+
+        if element_type not in self.seen_elements:
+            self.seen_elements.add(element_type)
+            return True
+        return False
+
+    def _add_annotation(self, fig, x, y, label, **kwargs):
+        """
+        This is the part that adds the label to the plotly figure.
+        """
+        kwargs.setdefault("text", label)
+        kwargs.setdefault("showarrow", False)
+        fig.add_annotation(x=x, y=y, **kwargs)
+
+    def _add_trace(
+        self,
+        fig,
+        show_legend=False,
+        element_name=None,
+        legend_name=None,
+        legend_group=None,
+        **kwargs,
+    ):
+        """
+        This is the function that actually draws on the plotly figure.
+        """
+        kwargs.setdefault("showlegend", show_legend)
+        kwargs.setdefault("hoverinfo", "text")
+
+        # Use element_name as default for legend_name and legend_group if not provided
+        if element_name:
+            legend_name = legend_name or element_name
+            legend_group = legend_group or element_name
+
+        if show_legend and legend_name:
+            kwargs.setdefault("name", legend_name)
+            kwargs.setdefault("legendgroup", legend_group or legend_name)
+        elif legend_group:
+            kwargs.setdefault("legendgroup", legend_group)
+            kwargs.setdefault("showlegend", False)
+
+        # Properly handle hover information
+        if "text" in kwargs:
+            kwargs["hovertemplate"] = kwargs["text"] + "<extra></extra>"
+        else:
+            kwargs.setdefault("hoverinfo", "skip")
+
+        trace = go.Scatter(**kwargs)
+        fig.add_trace(trace)
+
+    def _generate_hover_text(
+        self, index, label, ds, dx, dy, rotation, **special_params
+    ):
+        """
+        Generate standardized hover text for lattice elements.
+
+        :param index: Element index in the lattice sequence
+        :param label: Element label/name
+        :param ds: Element length
+        :param dx: X displacement
+        :param dy: Y displacement
+        :param rotation: Rotation angle
+        :param special_params: Additional parameters specific to element type (k, rc, phi, etc.)
+        :return: Formatted hover text string
+        """
+        text = f"<b>Element #{index}</b><br><b>{label}</b><br>ds: {ds} m<br>"
+
+        # Add special parameters if provided
+        for param_name, param_value in special_params.items():
+            if param_name == "k":
+                text += f"k: {param_value} m⁻²<br>"
+            elif param_name == "rc":
+                text += f"rc: {param_value} m<br>"
+            elif param_name == "phi":
+                text += f"phi: {param_value}°<br>"
+
+        text += f"dx: {dx} m<br>dy: {dy} m<br>rotation: {rotation}°"
+
+        return text
+
+    def drift(self, fig, x, y, ds, dx, dy, rotation, label, index, element_name):
+        show_legend = self._add_to_legend(element_name)
+        rotation_rad = np.radians(rotation)
+        thickness = 0.05  # line thickness (half-height for visual padding)
+        x += dx
+        y += dy
+
+        rotated_corners = rotate_corners(x, y, rotation, ds, thickness)
+        xs, ys = rotated_corners[:, 0], rotated_corners[:, 1]
+
+        self._add_trace(
+            fig,
+            x=xs,
+            y=ys,
+            mode="lines",
+            fill="toself",
+            line=dict(color="gray", width=1),
+            fillcolor="lightgray",
+            text=self._generate_hover_text(index, label, ds, dx, dy, rotation),
+            show_legend=show_legend,
+            element_name=element_name,
+        )
+
+        if self.show_labels:
+            self._add_annotation(
+                fig,
+                x=np.mean(xs),
+                y=np.mean(ys) + 0.3,
+                label=label,
+                font=dict(size=10),
+            )
+
+        x1 = x + ds * np.cos(rotation_rad)
+        y1 = y + ds * np.sin(rotation_rad)
+        return x1, y1, rotation
+
+    def quad(self, fig, x, y, k, ds, dx, dy, rotation, label, index, element_name):
+        x1, y1 = transform(x, y, rotation, ds)
+        x += dx
+        y += dy
+
+        # Determine quad type and get visual properties based on k value
+        if k > 0:
+            quad_type = "focusing_quadrupole"
+        elif k < 0:
+            quad_type = "defocusing_quadrupole"
+        else:
+            quad_type = "quadrupole"
+
+        quad_colors = QUAD_COLORS[quad_type]
+        quad_legend_name = quad_colors["legend_name"]
+
+        show_legend = self._add_to_legend(quad_legend_name)
+        rotated_corners = rotate_corners(x, y, rotation, ds, 0.2)
+        xs, ys = rotated_corners[:, 0], rotated_corners[:, 1]
+
+        self._add_trace(
+            fig,
+            x=xs,
+            y=ys,
+            mode="lines",
+            fill="toself",
+            line=dict(color=quad_colors["line_color"], width=quad_colors["line_width"]),
+            fillcolor=quad_colors["fill_color"],
+            text=self._generate_hover_text(index, label, ds, dx, dy, rotation, k=k),
+            show_legend=show_legend,
+            legend_name=quad_legend_name,
+            legend_group=quad_legend_name,
+        )
+
+        if self.show_labels:
+            self._add_annotation(fig, x=(x + x1) / 2, y=y + 0.4, label=label)
+        return x1, y1, rotation
+
+    def sBend(self, fig, x, y, ds, dx, dy, rotation, rc, label, index, element_name):
+        show_legend = self._add_to_legend(element_name)
+        """
+        Draw a sector‐bend (SBEND) of length ds that has radius rc.
+        - rc is the radius of curvature (in meters).
+        - ds is the arc length (in meters).
+        - rotation is the incoming reference angle (in degrees).
+        - label is the magnet's name for hover/annotation.
+        """
+
+        # Apply any lateral offsets first:
+        x += dx
+        y += dy
+
+        phi_rad = ds / rc  # Bend angle in radians
+        rotation_rad = np.radians(rotation)
+
+        # The circular‐arc center (in lab coords) is found by:
+        #   cx = x - ρ sin(incoming_angle)
+        #   cy = y + ρ cos(incoming_angle)
+        # because the bend is in the local x–z plane.
+        r = rc
+        cx = x - r * np.sin(rotation_rad)
+        cy = y + r * np.cos(rotation_rad)
+
+        n_points = 50
+        arc_thetas = np.linspace(0, phi_rad, n_points)
+        arc_x = cx + r * np.sin(rotation_rad + arc_thetas)
+        arc_y = cy - r * np.cos(rotation_rad + arc_thetas)
+
+        self._add_trace(
+            fig,
+            x=arc_x,
+            y=arc_y,
+            mode="lines",
+            line=dict(color="blue", width=3),
+            text=self._generate_hover_text(
+                index, label, ds, dx, dy, rotation, rc=rc, phi=np.degrees(phi_rad)
+            ),
+            show_legend=show_legend,
+            element_name=element_name,
+        )
+
+        if self.show_labels:
+            self._add_annotation(
+                fig,
+                x=np.mean(arc_x),
+                y=np.mean(arc_y) + 0.3,
+                label=label,
+                font=dict(size=10),
+            )
+
+        # Compute exit point and exit angle (in degrees)
+        x_end = arc_x[-1]
+        y_end = arc_y[-1]
+        final_angle = rotation + np.degrees(phi_rad)
+        return x_end, y_end, final_angle
+
+    def exactSBend(
+        self,
+        fig,
+        x,
+        y,
+        ds: float,
+        dx: float,
+        dy: float,
+        rotation_deg: float,
+        phi_deg: float,
+        label: str,
+        index: int,
+        element_name: str,
+    ):
+        show_legend = self._add_to_legend(element_name)
+        """
+        Draws an ExactSBend lattice element on the lattice visualization.
+        """
+
+        phi_rad = np.radians(phi_deg)  # phi is given in degrees in the input
+        rotation_rad = np.radians(rotation_deg)  # may or may not be given
+
+        #  Ensure the bend starts at the proper x and y coordinates
+        x += dx
+        y += dy
+
+        # Compute curvature radius and arc path
+        r = ds / phi_rad  # radius of curvature
+
+        # find coords of center of the circle
+        circle_center_x = x - r * np.sin(rotation_rad)
+        circle_center_y = y + r * np.cos(rotation_rad)
+
+        # Generate arc points
+        n_points = 100  # determines smoothness of the arc
+        arc_thetas = np.linspace(0, phi_rad, n_points)
+        arc_x = circle_center_x + r * np.sin(rotation_rad + arc_thetas)
+        arc_y = circle_center_y - r * np.cos(rotation_rad + arc_thetas)
+
+        self._add_trace(
+            fig,
+            x=arc_x,
+            y=arc_y,
+            mode="lines",
+            line=dict(color="blue", width=3),
+            text=self._generate_hover_text(
+                index, label, ds, dx, dy, rotation_deg, phi=phi_deg
+            ),
+            show_legend=show_legend,
+            element_name=element_name,
+        )
+
+        if self.show_labels:
+            self._add_annotation(
+                fig,
+                x=np.mean(arc_x),
+                y=np.mean(arc_y) + 0.3,
+                label=label,
+                font=dict(size=10),
+            )
+
+        # Compute new beamline exit point and angle
+        final_angle = rotation_deg + phi_deg
+        x_end = arc_x[-1]
+        y_end = arc_y[-1]
+        return x_end, y_end, final_angle
+
+    def beam_monitor(self, fig, x, y, rotation, length, label, index, element_name):
+        show_legend = self._add_to_legend(element_name)
+        x1, y1 = transform(x, y, rotation, length)
+        fig.add_shape(
+            type="rect",
+            x0=x,
+            x1=x1,
+            y0=y - 0.15,
+            y1=y + 0.15,
+            line=dict(color="darkgray"),
+            fillcolor="lightgray",
+        )
+        self._add_trace(
+            fig,
+            x=[(x + x1) / 2],
+            y=[y],
+            mode="markers",
+            marker=dict(size=15, color="rgba(0,0,0,0)"),
+            text=self._generate_hover_text(index, label, length, 0, 0, rotation),
+            show_legend=show_legend,
+            element_name=element_name,
+        )
+        if self.show_labels:
+            self._add_annotation(fig, x=(x + x1) / 2, y=y + 0.3, label=label)
+        return x1, y1, rotation

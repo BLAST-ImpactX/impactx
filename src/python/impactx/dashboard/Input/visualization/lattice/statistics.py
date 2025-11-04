@@ -26,6 +26,7 @@ class LatticeVisualizerStatisticUtils:
         """
         Helper function to extract parameter values from the lattice list.
 
+
         :param parameter_name: Name of the parameter to extract (case-insensitive)
         :param value_type: Type to convert values to (float, int, etc.)
         :return: List of extracted values
@@ -39,6 +40,8 @@ class LatticeVisualizerStatisticUtils:
                         values.append(value_type(param.get("sim_input", 0)))
                     except (ValueError, TypeError):
                         pass
+
+        return values
 
         return values
 
@@ -67,11 +70,11 @@ class LatticeVisualizerStatisticUtils:
             state.length_stats_content = []
 
     @staticmethod
-    def update_element_counts() -> dict[str, int]:
+    def update_element_counts() -> list[tuple[str, int]]:
         """
         Computes the element counts in the lattice list.
 
-        :return: Dictionary of element names and their counts, sorted by count descending.
+        :return: List of (element name, count) tuples, sorted by count descending.
         """
         counts = {}
         for element in state.selected_lattice_list:

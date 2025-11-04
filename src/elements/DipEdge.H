@@ -38,6 +38,7 @@ namespace impactx::elements
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
+      // verify again after https://github.com/BLAST-ImpactX/impactx/pull/1158
       // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "DipEdge";

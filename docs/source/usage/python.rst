@@ -76,7 +76,7 @@ Collective Effects & Overall Simulation Parameters
 
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
-      * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+      * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
         This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
         Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).

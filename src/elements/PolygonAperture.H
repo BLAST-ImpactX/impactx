@@ -80,8 +80,8 @@ namespace impactx::elements
          *  Particles outside the boundary are considered lost.
          *
          * @param action specify action of domain (transmit/absorb)
-         * @param vertices_x array of coordinates of the horizontal vertex positions (m)
-         * @param vertices_y array of coordinates of the vertical vertex positions (m)
+         * @param vertices_xx array of coordinates of the horizontal vertex positions (m)
+         * @param vertices_yy array of coordinates of the vertical vertex positions (m)
          * @param min_radius2 a minimum radius**2 below which all particles are transmitted
          * @param repeat_x horizontal period for repeated masking, optional (m)
          * @param repeat_y vertical period for repeated masking, optional (m)

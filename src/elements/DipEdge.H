@@ -190,6 +190,7 @@ namespace impactx::elements
         {
 
             using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
             using amrex::Math::powi;
 
             // shift due to alignment errors of the element

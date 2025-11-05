@@ -80,8 +80,8 @@ namespace impactx::elements
          *  Particles outside the boundary are considered lost.
          *
          * @param action specify action of domain (transmit/absorb)
-         * @param vertices_xx array of coordinates of the horizontal vertex positions (m)
-         * @param vertices_yy array of coordinates of the vertical vertex positions (m)
+         * @param vertices_x array of coordinates of the horizontal vertex positions (m)
+         * @param vertices_y array of coordinates of the vertical vertex positions (m)
          * @param min_radius2 a minimum radius**2 below which all particles are transmitted
          * @param repeat_x horizontal period for repeated masking, optional (m)
          * @param repeat_y vertical period for repeated masking, optional (m)
@@ -92,9 +92,9 @@ namespace impactx::elements
          * @param name a user defined and not necessarily unique name of the element
          */
         PolygonAperture (
-            std::vector< amrex::ParticleReal> vertices_xx,
-            std::vector< amrex::ParticleReal> vertices_yy,
-            amrex::ParticleReal min_radius2x,
+            std::vector< amrex::ParticleReal> vertices_x,
+            std::vector< amrex::ParticleReal> vertices_y,
+            amrex::ParticleReal min_radius2,
             amrex::ParticleReal repeat_x,
             amrex::ParticleReal repeat_y,
             bool shift_odd_x,
@@ -109,9 +109,9 @@ namespace impactx::elements
           Alignment(dx, dy, rotation_degree),
           m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y), m_shift_odd_x(shift_odd_x),
           m_id(PolygonApertureData::next_id),
-          vertices_x(vertices_xx), vertices_y(vertices_yy), min_radius2(min_radius2x)
-        {
-            using namespace amrex::literals; // for _rt and _prt
+          m_min_radius2(min_radius2)        {
+
+        using namespace amrex::literals; // for _rt and _prt
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
                 throw std::runtime_error("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
@@ -227,14 +227,23 @@ namespace impactx::elements
             // calculate whether point is inside polygon or not
             T_Real r2 = powi<2>(u) + powi<2>(v);
             // are we inside the minimum radius?
-            if (r2 < min_radius2) {
+            if (r2 < m_min_radius2) {
                 inside_aperture = VBool(true); // yes!
             } else{
+
+#if AMREX_DEVICE_COMPILE
+                amrex::ParticleReal* vertices_x = m_vertices_x_d_data;
+                amrex::ParticleReal* vertices_y = m_vertices_y_d_data;
+#else
+                amrex::ParticleReal* vertices_x = m_vertices_x_h_data;
+                amrex::ParticleReal* vertices_y = m_vertices_y_h_data;
+#endif
+
                 // no, we have to do the polygon calculation
                 T_Real thetasum = 0.0;
                 Complex v1conj, v2;
-                // vertices_x and vertices_y must be the same size
-                for (size_t i = 0; i <vertices_x.size()-1; ++i) {
+
+                for (size_t i = 0; i < m_nvert-1; ++i) {
                     v1conj = Complex(u - vertices_x[i], -(v-vertices_y[i]));
                     v2 = Complex(u - vertices_x[i+1], v-vertices_y[i+1]);
                     thetasum += arg(v2 * v1conj);
@@ -280,15 +289,13 @@ namespace impactx::elements
 
         int m_id; //! unique PolygonAperture id used for data lookup map
 
-        std::vector< amrex::ParticleReal> vertices_x;
-        std::vector< amrex::ParticleReal> vertices_y;
-        amrex::ParticleReal min_radius2; // minimum radius in which all pass squared
+        amrex::ParticleReal m_min_radius2; // minimum radius in which all pass squared
 
         std::vector<double>::size_type m_nvert = 0; //! number of vertices
-        amrex::ParticleReal* m_vertices_x_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal* m_vertices_y_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal* m_vertices_x_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal* m_vertices_y_d_data = nullptr; //! non-owning pointer to device sine coefficients
+        amrex::ParticleReal* m_vertices_x_h_data = nullptr; //! non-owning pointer to host x vertices
+        amrex::ParticleReal* m_vertices_y_h_data = nullptr; //! non-owning pointer to host vertices
+        amrex::ParticleReal* m_vertices_x_d_data = nullptr; //! non-owning pointer to device x vertices
+        amrex::ParticleReal* m_vertices_y_d_data = nullptr; //! non-owning pointer to device y vertices
 
     };
 

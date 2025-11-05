@@ -21,6 +21,7 @@
 #include <functional>
 #include <list>
 #include <string>
+#include <unordered_map>
 
 namespace py = pybind11;
 using namespace impactx;

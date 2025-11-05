@@ -627,7 +627,6 @@ class ImpactXParticleContainer(
         """
 
         Return the history of the beam as calculated by the reduced beam characteristics on every step.
-
         """
     def beam_moments_history_list(self) -> list[dict[str, float]]:
         """
@@ -667,7 +666,6 @@ class ImpactXParticleContainer(
         -------
         A matplotlib figure with containing the plot.
         For MPI-parallel ranks, the figure is only created on the root_rank.
-
         """
     def record_beam_moments(self) -> None:
         """
@@ -711,7 +709,6 @@ class RefPart:
         :param RefPart ref: ImpactX reference particle (passed by reference)
         :param madx_file: file name to MAD-X file with beamline elements
         :return: list of ImpactX.KnownElements
-
         """
     def __init__(self) -> None:
         """

@@ -770,27 +770,27 @@ This module provides elements and methods for the accelerator lattice.
    particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are
    those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
 
-   When model = linear, the linearized map is used.  This model is identical to:
+   When ``model = "linear"``, the linearized map is used.  This model is identical to:
 
    * K. L. Brown, SLAC Report No. 75 (1982)
 
    when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
-   :param psi: Pole face angle in rad
-   :param rc: Radius of curvature in m
-   :param g: Gap parameter in m
-   :param R: Length scale used in fringe field integrals in m
-   :param K0: Fringe field integral (unitless)
-   :param K1: Fringe field integral (unitless)
-   :param K2: Fringe field integral (unitless)
-   :param K3: Fringe field integral (unitless)
-   :param K4: Fringe field integral (unitless)
-   :param K5: Fringe field integral (unitless)
-   :param K6: Fringe field integral (unitless)
-   :param model: Specification of model (``"linear"`` or ``"nonlinear"``)
-   :param location: location of edge (``"entry"`` or ``"exit"``)
-   :param dx: horizontal translation error in m
-   :param dy: vertical translation error in m
+   :param psi: Pole face angle [radians]
+   :param rc: Radius of curvature [m]
+   :param g: Gap parameter [m]
+   :param R: Length scale used in fringe field integrals [m]
+   :param K0: Fringe field integral [unitless]
+   :param K1: Fringe field integral [unitless]
+   :param K2: Fringe field integral [unitless]
+   :param K3: Fringe field integral [unitless]
+   :param K4: Fringe field integral [unitless]
+   :param K5: Fringe field integral [unitless]
+   :param K6: Fringe field integral [unitless]
+   :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
+   :param location: the fringe field edge location: ``entry`` (default) or ``exit``
+   :param dx: horizontal translation error [m]
+   :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 

@@ -18,6 +18,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
@@ -44,17 +45,14 @@ namespace impactx::elements
         static constexpr auto type = "DipEdge";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        enum Location
-        {
+        AMREX_ENUM(Model,
+            linear = 0,   //! for the linear fringe field model
+            nonlinear = 1 //! for the 6th order fringe field model
+        );
+        AMREX_ENUM(Location,
             entry = 1, //! for leading (entry) fringe field
             exit = -1  //! for trailing (exit) fringe field
-        };
-
-        enum Model
-        {
-            linear = 0, //! to use a linearized fringe field map
-            nonlinear = 1  //! to use a nonlinear fringe field map
-        };
+        );
 
         /** Edge focusing associated with bend entry or exit
          *
@@ -77,7 +75,7 @@ namespace impactx::elements
          * @param K5 Fringe field integral (unitless).
          * @param K6 Fringe field integral (unitless).
          * @param model Fringe field model (linear or nonlinear).
-         * @param location  Fringe field location (entry or exit)
+         * @param location Fringe field location (entry or exit)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -202,7 +200,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            if (m_model==0) {
+            if (m_model == Model::linear) {
                // apply linear model
                px = px + m_R21 * x;
                py = py + m_R43 * y;
@@ -313,8 +311,8 @@ namespace impactx::elements
         amrex::ParticleReal m_K4; //! fringe field integral
         amrex::ParticleReal m_K5; //! fringe field integral
         amrex::ParticleReal m_K6; //! fringe field integral
-        int m_model; //! model specification
-        Location m_location; //! +1 for entry, or -1 for exit
+        Model m_model; //! fringe field model: linear or nonlinear
+        Location m_location; //! +1 for entry, or -1 for exit fringe field
 
       private:
         // constants that are independent of the individually tracked particle,

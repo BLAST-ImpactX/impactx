@@ -186,8 +186,8 @@ namespace detail
 
             amrex::ParticleReal psi, rc, g;
             amrex::ParticleReal R = 1;
-            std::string location_str = "entry";
-            std::string model_str = "linear";
+            std::string location_str = "entry";  // default
+            std::string model_str = "linear";    // default
 
             // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
             amrex::ParticleReal pi = ablastr::constant::math::pi;
@@ -209,18 +209,20 @@ namespace detail
             pp_element.queryAddWithParser("K4", K4);
             pp_element.queryAddWithParser("K5", K5);
             pp_element.queryAddWithParser("K6", K6);
+
             pp_element.queryAdd("model", model_str);
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(model_str == "linear" || model_str == "nonlinear",
+                                             element_name + ".model must be \"linear\" or \"nonlinear\"");
+            DipEdge::Model const model = model_str == "linear" ?
+                DipEdge::Model::linear :
+                DipEdge::Model::nonlinear;
+
             pp_element.queryAdd("location", location_str);
             AMREX_ALWAYS_ASSERT_WITH_MESSAGE(location_str == "entry" || location_str == "exit",
                                              element_name + ".location must be \"entry\" or \"exit\"");
             DipEdge::Location const location = location_str == "entry" ?
                 DipEdge::Location::entry :
                 DipEdge::Location::exit;
-            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(model_str == "linear" || model_str == "nonlinear",
-                                             element_name + ".model must be \"linear\" or \"nonlinear\"");
-            DipEdge::Model const model = model_str == "linear" ?
-                DipEdge::Model::linear :
-                DipEdge::Model::nonlinear;
 
             m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")

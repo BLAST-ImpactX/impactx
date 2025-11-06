@@ -332,7 +332,7 @@ C. Mitchell and K. Hwang, "Explicit symplectic representations of nonlinear dipo
 
 Here, ``g`` denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values ``K0`` - ``K6`` denote dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of the first reference above.  In particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
 
-If ``model = linear``, then the linearized map is used.  This model is identical to:
+If ``model = "linear"``, then the linearized map is used.  This model is identical to:
 
 * K. L. Brown, SLAC Report No. 75 (1982)
 
@@ -351,8 +351,8 @@ This requires these additional parameters:
 * ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field
 * ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field
 * ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.model`` (``string``) specification of model: ``linear`` (default) or ``nonlinear``
-* ``<element_name>.location`` (``string``) specification of edge location: ``entry`` (default) or ``exit``
+* ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
+* ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

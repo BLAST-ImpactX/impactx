@@ -6,13 +6,9 @@
 #
 
 import argparse
-import glob
-import re
 
 import matplotlib.pyplot as plt
 import openpmd_api as io
-import pandas as pd
-
 
 # options to run this script
 parser = argparse.ArgumentParser(description="Plot action of the polygon aperture.")
@@ -29,7 +25,7 @@ initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 
 
-f, axs = plt.subplots(1, 2, figsize=(8,4), constrained_layout=True)
+f, axs = plt.subplots(1, 2, figsize=(8, 4), constrained_layout=True)
 
 axs[0].scatter(initial["position_x"] * 1.0e3, initial["position_y"] * 1.0e3)
 axs[0].set_title("initial")

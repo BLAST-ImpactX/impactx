@@ -770,7 +770,7 @@ This module provides elements and methods for the accelerator lattice.
    particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are
    those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
 
-   When model = 0, the linearized map is used.  This model is identical to:
+   When model = linear, the linearized map is used.  This model is identical to:
 
    * K. L. Brown, SLAC Report No. 75 (1982)
 
@@ -787,8 +787,8 @@ This module provides elements and methods for the accelerator lattice.
    :param K4: Fringe field integral (unitless)
    :param K5: Fringe field integral (unitless)
    :param K6: Fringe field integral (unitless)
-   :param model: Specification of model (linear if model=0)
-   :param flag: location of edge (``"entry"`` or ``"exit"``)
+   :param model: Specification of model (``"linear"`` or ``"nonlinear"``)
+   :param location: location of edge (``"entry"`` or ``"exit"``)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

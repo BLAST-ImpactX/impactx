@@ -870,7 +870,7 @@ void init_elements(py::module& m)
 
                  if (model != "linear" && model != "nonlinear")
                      throw std::runtime_error(R"(model must be "linear" or "nonlinear")");
-                
+
                  DipEdge::Model const model_fl = model == "linear" ?
                                             DipEdge::Model::linear :
                                             DipEdge::Model::nonlinear;

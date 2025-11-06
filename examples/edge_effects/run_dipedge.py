@@ -88,7 +88,12 @@ dipedge0 = elements.DipEdge(
     name="dipedge0", psi=edge_angle, rc=10.0, g=1.0e-3, model="linear", location="entry"
 )
 dipedge1 = elements.DipEdge(
-    name="dipedge1", psi=edge_angle, rc=10.0, g=1.0e-3, model="nonlinear", location="entry"
+    name="dipedge1",
+    psi=edge_angle,
+    rc=10.0,
+    g=1.0e-3,
+    model="nonlinear",
+    location="entry",
 )
 
 line = [

@@ -817,8 +817,7 @@ void init_elements(py::module& m)
                      std::make_pair("K3", dip_edge.m_K3),
                      std::make_pair("K4", dip_edge.m_K4),
                      std::make_pair("K5", dip_edge.m_K5),
-                     std::make_pair("K6", dip_edge.m_K6),
-                     std::make_pair("model", dip_edge.m_model)
+                     std::make_pair("K6", dip_edge.m_K6)
                  );
              }
         )
@@ -838,7 +837,7 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", dip_edge.m_model),
-                     std::make_pair("flag", dip_edge.m_flag)
+                     std::make_pair("location", dip_edge.m_location)
                  );
              }
         )
@@ -854,21 +853,29 @@ void init_elements(py::module& m)
                 amrex::ParticleReal K4,
                 amrex::ParticleReal K5,
                 amrex::ParticleReal K6,
-                int model,
-                std::string const & flag,
+                std::string const & model,
+                std::string const & location,
                 amrex::ParticleReal dx,
                 amrex::ParticleReal dy,
                 amrex::ParticleReal rotation_degree,
                 std::optional<std::string> name
               )
               {
-                 if (flag != "entry" && flag != "exit")
-                     throw std::runtime_error(R"(flag must be "entry" or "exit")");
+                 if (location != "entry" && location != "exit")
+                     throw std::runtime_error(R"(location must be "entry" or "exit")");
 
-                 DipEdge::Location const fl = flag == "entry" ?
+                 DipEdge::Location const loc_fl = location == "entry" ?
                                             DipEdge::Location::entry :
                                             DipEdge::Location::exit;
-                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, fl, dx, dy, rotation_degree, name);
+
+                 if (model != "linear" && model != "nonlinear")
+                     throw std::runtime_error(R"(model must be "linear" or "nonlinear")");
+                
+                 DipEdge::Model const model_fl = model == "linear" ?
+                                            DipEdge::Model::linear :
+                                            DipEdge::Model::nonlinear;
+
+                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model_fl, loc_fl, dx, dy, rotation_degree, name);
               }),
              py::arg("psi"),
              py::arg("rc"),
@@ -881,8 +888,8 @@ void init_elements(py::module& m)
              py::arg("K4") = 0,
              py::arg("K5") = 0,
              py::arg("K6") = 0,
-             py::arg("model") = 0,
-             py::arg("flag") = "entry",
+             py::arg("model") = "linear",
+             py::arg("location") = "entry",
              py::arg("dx") = 0,
              py::arg("dy") = 0,
              py::arg("rotation") = 0,
@@ -943,11 +950,6 @@ void init_elements(py::module& m)
             [](DipEdge & dip_edge) { return dip_edge.m_K6; },
             [](DipEdge & dip_edge, amrex::ParticleReal K6) { dip_edge.m_K6 = K6; },
             "Fringe field integral (unitless)"
-        )
-        .def_property("model",
-            [](DipEdge & dip_edge) { return dip_edge.m_model; },
-            [](DipEdge & dip_edge, int model) { dip_edge.m_model = model; },
-            "Specification of model (0 - linear, 1 - nonlinear)"
         )
 
     ;

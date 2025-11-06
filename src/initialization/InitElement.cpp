@@ -186,7 +186,8 @@ namespace detail
 
             amrex::ParticleReal psi, rc, g;
             amrex::ParticleReal R = 1;
-            std::string flag_str = "entry";
+            std::string location_str = "entry";
+            std::string model_str = "linear";
 
             // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
             amrex::ParticleReal pi = ablastr::constant::math::pi;
@@ -197,7 +198,6 @@ namespace detail
             amrex::ParticleReal K4 = 0;
             amrex::ParticleReal K5 = 0;
             amrex::ParticleReal K6 = 0;
-            int model = 0;  //default to linear model
             pp_element.getWithParser("psi", psi);
             pp_element.getWithParser("rc", rc);
             pp_element.getWithParser("g", g);
@@ -209,15 +209,20 @@ namespace detail
             pp_element.queryAddWithParser("K4", K4);
             pp_element.queryAddWithParser("K5", K5);
             pp_element.queryAddWithParser("K6", K6);
-            pp_element.queryAddWithParser("model", model);
-            pp_element.queryAdd("flag", flag_str);
-            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(flag_str == "entry" || flag_str == "exit",
-                                             element_name + ".flag must be \"entry\" or \"exit\"");
-            DipEdge::Location const flag = flag_str == "entry" ?
+            pp_element.queryAdd("model", model_str);
+            pp_element.queryAdd("location", location_str);
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(location_str == "entry" || location_str == "exit",
+                                             element_name + ".location must be \"entry\" or \"exit\"");
+            DipEdge::Location const location = location_str == "entry" ?
                 DipEdge::Location::entry :
                 DipEdge::Location::exit;
+            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(model_str == "linear" || model_str == "nonlinear",
+                                             element_name + ".model must be \"linear\" or \"nonlinear\"");
+            DipEdge::Model const model = model_str == "linear" ?
+                DipEdge::Model::linear :
+                DipEdge::Model::nonlinear;
 
-            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, flag, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")
         {
             auto a = detail::query_alignment(pp_element);

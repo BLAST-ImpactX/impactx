@@ -50,6 +50,12 @@ namespace impactx::elements
             exit = -1  //! for trailing (exit) fringe field
         };
 
+        enum Model
+        {
+            linear = 0, //! to use a linearized fringe field map
+            nonlinear = 1  //! to use a nonlinear fringe field map
+        };
+
         /** Edge focusing associated with bend entry or exit
          *
          * This model assumes a first-order effect of nonzero gap.
@@ -70,8 +76,8 @@ namespace impactx::elements
          * @param K4 Fringe field integral (unitless).
          * @param K5 Fringe field integral (unitless).
          * @param K6 Fringe field integral (unitless).
-         * @param model Model (0 linear, 1 nonlinear).
-         * @param flag  Flag specifying entry or exit location
+         * @param model Fringe field model (linear or nonlinear).
+         * @param location  Fringe field location (entry or exit)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -89,8 +95,8 @@ namespace impactx::elements
             amrex::ParticleReal K4,
             amrex::ParticleReal K5,
             amrex::ParticleReal K6,
-            int model,
-            Location flag,
+            Model model,
+            Location location,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -98,7 +104,7 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_flag(flag)
+          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location)
         {
         }
 
@@ -142,7 +148,7 @@ namespace impactx::elements
             amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
 
             // the scale constant specifying entry or exit
-            amrex::ParticleReal const flg = static_cast<amrex::ParticleReal>(m_flag);
+            amrex::ParticleReal const flg = static_cast<amrex::ParticleReal>(m_location);
 
             m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
             m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
@@ -308,7 +314,7 @@ namespace impactx::elements
         amrex::ParticleReal m_K5; //! fringe field integral
         amrex::ParticleReal m_K6; //! fringe field integral
         int m_model; //! model specification
-        Location m_flag; //! +1 for entry, or -1 for exit
+        Location m_location; //! +1 for entry, or -1 for exit
 
       private:
         // constants that are independent of the individually tracked particle,

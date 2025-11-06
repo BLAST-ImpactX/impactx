@@ -85,10 +85,10 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 edge_angle = math.pi / 8.0
 dipedge0 = elements.DipEdge(
-    name="dipedge0", psi=edge_angle, rc=10.0, g=1.0e-3, model=0, flag="entry"
+    name="dipedge0", psi=edge_angle, rc=10.0, g=1.0e-3, model="linear", location="entry"
 )
 dipedge1 = elements.DipEdge(
-    name="dipedge1", psi=edge_angle, rc=10.0, g=1.0e-3, model=1, flag="entry"
+    name="dipedge1", psi=edge_angle, rc=10.0, g=1.0e-3, model="nonlinear", location="entry"
 )
 
 line = [

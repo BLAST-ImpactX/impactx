@@ -12,7 +12,6 @@ import re
 import matplotlib.pyplot as plt
 import openpmd_api as io
 import pandas as pd
-from matplotlib.ticker import MaxNLocator
 
 
 # options to run this script
@@ -32,22 +31,20 @@ final = series.iterations[last_step].particles["beam"].to_df()
 
 f, axs = plt.subplots(1, 2, figsize=(8,4), constrained_layout=True)
 
-axs[0].scatter(initial['position_x']*1.0e3,
-               initial['position_y']*1.0e3)
+axs[0].scatter(initial["position_x"] * 1.0e3, initial["position_y"] * 1.0e3)
 axs[0].set_title("initial")
 axs[0].set_xlabel(r"$x$ [mm]")
 axs[0].set_ylabel(r"$y$ [mm]")
 axs[0].set_xlim([-5.5, 5.5])
 axs[0].set_ylim([-5.5, 5.5])
 
-axs[1].scatter(final['position_x']*1.0e3,
-                final['position_y']*1.0e3)
+axs[1].scatter(final["position_x"] * 1.0e3, final["position_y"] * 1.0e3)
 axs[1].set_title("final")
 axs[1].set_xlabel(r"$x$ [mm]")
 axs[1].set_ylabel(r"$y$ [mm]")
 axs[1].set_xlim([-5.5, 5.5])
 axs[1].set_ylim([-5.3, 5.3])
-                
+
 
 plt.tight_layout()
 if args.save_png:

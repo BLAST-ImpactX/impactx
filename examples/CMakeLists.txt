@@ -1698,3 +1698,14 @@ add_impactx_test(solenoid-softedge-solvable.py
     examples/solenoid_softedge/analysis_solenoid_softedge_solvable.py
     OFF  # no plot script yet
 )
+
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/edge_effects/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dipedge-nonlinear.py)
+add_impactx_test(dipedge-nonlinear.py
+    examples/edge_effects/run_dipedge.py
+    ON   # ImpactX MPI-parallel
+    examples/edge_effects/analysis_dipedge.py
+    OFF  # no plot script yet
+)

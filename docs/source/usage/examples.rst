@@ -42,7 +42,7 @@ Single Particle Dynamics
    examples/charge_sign/README.rst
    examples/symplectic_integration/README.rst
    examples/active_plasma_lens/README.rst
-
+   examples/edge_effects/README.rst
 
 Collective Effects
 ------------------

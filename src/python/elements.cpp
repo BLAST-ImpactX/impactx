@@ -816,9 +816,9 @@ void init_elements(py::module& m)
                      std::make_pair("K3", dip_edge.m_K3),
                      std::make_pair("K4", dip_edge.m_K4),
                      std::make_pair("K5", dip_edge.m_K5),
-                     std::make_pair("K6", dip_edge.m_K6)
-                     //std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     //std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("K6", dip_edge.m_K6),
+                     std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
                  );
              }
         )
@@ -836,9 +836,9 @@ void init_elements(py::module& m)
                      std::make_pair("K3", dip_edge.m_K3),
                      std::make_pair("K4", dip_edge.m_K4),
                      std::make_pair("K5", dip_edge.m_K5),
-                     std::make_pair("K6", dip_edge.m_K6)
-                     //std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     //std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("K6", dip_edge.m_K6),
+                     std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
                  );
              }
         )
@@ -862,19 +862,8 @@ void init_elements(py::module& m)
                 std::optional<std::string> name
               )
               {
-                if (model != "linear" && model != "nonlinear")
-                    throw std::runtime_error(R"(model must be "linear" or "nonlinear")");
-
-                DipEdge::Model const fm = model == "linear" ?
-                    DipEdge::Model::linear :
-                    DipEdge::Model::nonlinear;
-
-                if (location != "entry" && location != "exit")
-                    throw std::runtime_error(R"(location must be "entry" or "exit")");
-
-                DipEdge::Location const fl = location == "entry" ?
-                    DipEdge::Location::entry :
-                    DipEdge::Location::exit;
+                dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
+                dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
               }),
              py::arg("psi"),
@@ -952,24 +941,16 @@ void init_elements(py::module& m)
             "Fringe field integral (unitless)"
         )
         .def_property("model",
-            [](DipEdge & dip_edge) { return dip_edge.m_model; },
+            [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_model); },
             [](DipEdge & dip_edge, std::string const & model) {
-                dip_edge.m_model = model == "linear" ?
-                    DipEdge::Model::linear :
-                    DipEdge::Model::nonlinear;
-                if (model != "linear" && model != "nonlinear")
-                    throw std::runtime_error(R"(model must be "linear" or "nonlinear")");
+                dip_edge.m_model = amrex::getEnum<dipedge::Model>(model);
             },
             "Fringe field model (linear or nonlinear)"
         )
         .def_property("location",
-            [](DipEdge & dip_edge) { return dip_edge.m_location; },
+            [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_location); },
             [](DipEdge & dip_edge, std::string const & location) {
-                dip_edge.m_location = location == "entry" ?
-                    DipEdge::Location::entry :
-                    DipEdge::Location::exit;
-                if (location != "entry" && location != "exit")
-                    throw std::runtime_error(R"(location must be "entry" or "exit")");
+                dip_edge.m_location = amrex::getEnum<dipedge::Location>(location);
             },
             "Fringe field location (entry or exit)"
         )

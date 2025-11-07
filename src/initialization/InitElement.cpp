@@ -211,18 +211,9 @@ namespace detail
             pp_element.queryAddWithParser("K6", K6);
 
             pp_element.queryAdd("model", model_str);
-            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(model_str == "linear" || model_str == "nonlinear",
-                                             element_name + ".model must be \"linear\" or \"nonlinear\"");
-            DipEdge::Model const model = model_str == "linear" ?
-                DipEdge::Model::linear :
-                DipEdge::Model::nonlinear;
-
+            dipedge::Model const model = amrex::getEnum<dipedge::Model>(model_str);
             pp_element.queryAdd("location", location_str);
-            AMREX_ALWAYS_ASSERT_WITH_MESSAGE(location_str == "entry" || location_str == "exit",
-                                             element_name + ".location must be \"entry\" or \"exit\"");
-            DipEdge::Location const location = location_str == "entry" ?
-                DipEdge::Location::entry :
-                DipEdge::Location::exit;
+            dipedge::Location const location = amrex::getEnum<dipedge::Location>(location_str);
 
             m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")

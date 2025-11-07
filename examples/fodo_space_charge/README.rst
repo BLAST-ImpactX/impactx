@@ -135,6 +135,16 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
    .. tab-item:: Python: Script
 
        .. literalinclude:: run_fodo_Gauss2p5D_sc.py
+          :language: python3
+          :caption: You can copy this file from ``examples/fodo_space_charge/analysis_fodo_Gauss2p5D_sc.py``.
 
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_fodo_Gauss2p5D_sc.py``
+
+   .. literalinclude:: analysis_fodo_Gauss2p5D_sc.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo_space_charge/analysis_fodo_Gauss2p5D_sc.py``.

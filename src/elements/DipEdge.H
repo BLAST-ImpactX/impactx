@@ -33,12 +33,12 @@ namespace impactx::elements
     namespace dipedge
     {
         AMREX_ENUM(Model,
-            linear = 0,   //! for the linear fringe field model
-            nonlinear = 1 //! for the 6th order fringe field model
+            linear,   //! for the linear fringe field model
+            nonlinear //! for the 6th order fringe field model
         );
         AMREX_ENUM(Location,
-            entry = 1, //! for leading (entry) fringe field
-            exit = -1  //! for trailing (exit) fringe field
+            entry, //! for leading (entry) fringe field
+            exit  //! for trailing (exit) fringe field
         );
     }
 
@@ -149,19 +149,19 @@ namespace impactx::elements
             amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
 
             // the scale constant specifying entry or exit
-            amrex::ParticleReal const flg = static_cast<amrex::ParticleReal>(m_location);
+            amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
 
             m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
             m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
-            m_c3_times_1plusdelta = flg * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
-            m_c4_times_1plusdelta = flg * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
+            m_c3_times_1plusdelta = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+            m_c4_times_1plusdelta = loc * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
             m_c5 = tan_psi / (2_prt * m_rc);
             m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_rc * powi<3>(cos_psi)) * m_g/m_rc * m_K1;
             m_c7_times_1plusdelta = 0.5_prt * powi<3>(sec_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
             m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_rc));
             m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
-            m_c10_times_1plusdelta = flg * powi<2>(tan_psi) / (2_prt * m_rc);
-            m_c11_times_1plusdelta = flg * 1_prt / (2_prt * m_rc);
+            m_c10_times_1plusdelta = loc * powi<2>(tan_psi) / (2_prt * m_rc);
+            m_c11_times_1plusdelta = loc * 1_prt / (2_prt * m_rc);
             m_c12_times_1plusdelta = (m_g > 0_prt) ? 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g) : 0_prt;
             m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
             m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_rc*m_R) * m_K5;
@@ -315,7 +315,7 @@ namespace impactx::elements
         amrex::ParticleReal m_K5; //! fringe field integral
         amrex::ParticleReal m_K6; //! fringe field integral
         dipedge::Model m_model; //! fringe field model: linear or nonlinear
-        dipedge::Location m_location; //! +1 for entry, or -1 for exit fringe field
+        dipedge::Location m_location; //! fringe field location: entry, or exit
 
       private:
         // constants that are independent of the individually tracked particle,

@@ -2,7 +2,7 @@
 .. _examples-expanding:
 
 Expanding Beam in Free Space with 3D Space Charge
-==================================================
+=================================================
 
 A coasting bunch expanding freely in free space under its own space charge.
 
@@ -76,7 +76,7 @@ We run the following script to analyze correctness:
 .. _examples-expanding-fft-2d:
 
 Expanding Beam in Free Space with 2D Space Charge
-==================================================
+=================================================
 
 A long, coasting unbunched beam expanding freely in free space under its own 2D space charge.
 

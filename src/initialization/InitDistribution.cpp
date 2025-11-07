@@ -531,9 +531,6 @@ namespace impactx
         amrex::ParmParse pp_algo("algo");
         std::string track = "particles";
         pp_algo.queryAdd("track", track);
-        //std::string space_charge = "space_charge";
-        //pp_algo.queryAdd("space_charge", space_charge);
-
         auto space_charge = get_space_charge_algo();
 
         if (track == "particles") {
@@ -594,7 +591,6 @@ namespace impactx
 
             amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
 
-            //auto space_charge = get_space_charge_algo();
             if (space_charge == SpaceChargeAlgo::True_3D)
             {
                 pp_dist.get("charge", intensity);

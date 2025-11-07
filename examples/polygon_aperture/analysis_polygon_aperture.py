@@ -21,19 +21,19 @@ num_particles = len(initial.momentum_x)
 assert num_particles == len(initial)
 assert num_particles != len(final)
 
-print("Initial Beam: ", len(initial), ' particles')
-print("Final Beam: ", len(final), ' particles')
+print("Initial Beam: ", len(initial), " particles")
+print("Final Beam: ", len(final), " particles")
 
 # Make sure no particles are outside of the aperture in the final particle set
-abs_x_final = abs(final['position_x']).to_numpy()
-abs_y_final = abs(final['position_y']).to_numpy()
+abs_x_final = abs(final["position_x"]).to_numpy()
+abs_y_final = abs(final["position_y"]).to_numpy()
 
 N = abs_x_final.shape[0]
 insides = np.zeros(N, dtype=np.bool)
 for i in range(N):
-    insides[i] = \
-        ((abs_y_final[i] < 0.5e-3) and (abs_x_final[i] < 1.5e-3)) or \
-        ((abs_x_final[i] < 0.5e-3) and (abs_y_final[i] < 1.5e-3))
+    insides[i] = ((abs_y_final[i] < 0.5e-3) and (abs_x_final[i] < 1.5e-3)) or (
+        (abs_x_final[i] < 0.5e-3) and (abs_y_final[i] < 1.5e-3)
+    )
 
 
 outsides = ~insides
@@ -42,4 +42,3 @@ noutside = outsides.sum()
 
 assert ninside == len(final)
 assert noutside == 0
-

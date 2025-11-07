@@ -138,4 +138,3 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
       :language: python3
       :caption: You can copy this file from ``examples/fodo_space_charge/analysis_fodo_Gauss2p5D_sc.py``.
-

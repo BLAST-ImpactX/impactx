@@ -25,7 +25,6 @@ class MADXParser:
 
     Simple MADX parser.
     It expects a single line per element.
-
     """
     def __init__(self): ...
     def __str__(self): ...
@@ -36,13 +35,11 @@ class MADXParser:
         elements.
 
         return a list of element dictionaries
-
         """
     def _flatten(self, line):
         """
 
         Find sublines.
-
 
         """
     def _noWhitespace(self, string):
@@ -53,7 +50,6 @@ class MADXParser:
         14. Oct. 2017,
         https://stackoverflow.com/questions/3739909/how-to-strip-all-whitespace-from-string
 
-
         """
     def getBeamline(self): ...
     def getEtot(self): ...
@@ -63,7 +59,6 @@ class MADXParser:
         """
 
         fn (str)    filename
-
 
         """
 

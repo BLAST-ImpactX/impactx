@@ -49,5 +49,4 @@ def twiss(
     :param dispersion_px: derivative of horizontal dispersion
     :param dispersion_py: derivative of vertical dispersion
     :return: A dictionary containing calculated phase space input: 'lambdaX', 'lambdaY', 'lambdaT', 'lambdaPx', 'lambdaPy', 'lambdaPt', 'muxpx', 'muypy', 'mutpt'.
-
     """

@@ -27,7 +27,6 @@ class sc:
     At the time of writing, this file was the only
     one requiring scipy in the ImpactX source outside
     of examples.
-
     """
 
     c: typing.ClassVar[float] = 299792458.0
@@ -52,7 +51,6 @@ def beam(particle, charge=None, mass=None, energy=None):
     :param float energy: total particle energy (GeV)
         - MAD-X default: 1 GeV
     :return dict: dictionary containing particle and beam attributes in ImpactX units
-
     """
 
 def lattice(parsed_beamline, nslice=1):
@@ -62,7 +60,6 @@ def lattice(parsed_beamline, nslice=1):
     :param parsed_beamline: list of dictionaries
     :param nslice: number of ds slices per element
     :return: list of translated dictionaries
-
     """
 
 def read_beam(ref: impactx.impactx_pybind.RefPart, madx_file):
@@ -72,7 +69,6 @@ def read_beam(ref: impactx.impactx_pybind.RefPart, madx_file):
     :param RefPart ref: ImpactX reference particle (passed by reference)
     :param madx_file: file name to MAD-X file with beamline elements
     :return: list of ImpactX.KnownElements
-
     """
 
 def read_lattice(madx_file, nslice=1):
@@ -82,5 +78,4 @@ def read_lattice(madx_file, nslice=1):
     :param madx_file: file name to MAD-X file with beamline elements
     :param nslice: number of ds slices per element
     :return: list of ImpactX.KnownElements
-
     """

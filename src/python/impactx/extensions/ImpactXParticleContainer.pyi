@@ -19,7 +19,6 @@ def ix_beam_moments_history(self):
     """
 
     Return the history of the beam as calculated by the reduced beam characteristics on every step.
-
     """
 
 def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
@@ -40,7 +39,6 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     -------
     A matplotlib figure with containing the plot.
     For MPI-parallel ranks, the figure is only created on the root_rank.
-
     """
 
 def register_ImpactXParticleContainer_extension(ixpc):

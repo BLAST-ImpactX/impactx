@@ -76,8 +76,8 @@ Collective Effects & Overall Simulation Parameters
 
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
-      * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
-      * ``"Gauss2p5D"`: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
+      * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+      * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
         These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
         Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
@@ -187,6 +187,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: isr_order
 
       The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
+
+   .. py:property:: isr_on_ref_part
+
+      Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_on_ref_part = False``, the reference particle does not lose energy due to radiation, and the
+      mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
+      When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
 
    .. py:property:: diagnostics
 
@@ -316,6 +322,44 @@ Collective Effects & Overall Simulation Parameters
       Run the reference orbit tracking simulation loop.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+
+   .. py:property:: hook
+
+      User-defined function hooks that are called, e.g, during tracking.
+      Supported hook locations names are:
+
+      * ``"before_period"``: before each period (e.g., turn or channel period)
+      * ``"after_period"``: after each period (e.g., turn or channel period)
+      * ``"before_element"``: before each element is entered
+      * ``"after_element"``: after each element is exited
+      * ``"before_slice"``: before each element slice
+
+      Example: Function hook that can be called before each turn (sim):
+
+      .. code-block:: python3
+
+         def hook_before_period(sim):
+             beam = sim.particle_container()
+             turn = sim.tracking_period
+             # Example: you could now manipulate elements in sim.lattice
+             #          for the next turn.
+
+         sim.hook["before_period"] = hook_before_period
+
+   .. py:property:: tracking_step
+
+      For tracking hooks/callbacks, a global step of the simulation.
+
+      A state of internal simulation steps, increments also for space charge slice steps in elements.
+      We start in "step 0" (initial state).
+
+   .. py:property:: tracking_period
+
+      For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period).
+
+   .. py:property:: tracking_element
+
+      For tracking hooks/callbacks, the current lattice element.
 
    .. py:method:: resize_mesh()
 
@@ -653,6 +697,60 @@ This module provides elements and methods for the accelerator lattice.
       :param pals_line: PALS Python Line with beamline elements
       :param nslice: number of slices used for the application of collective effects
 
+   .. py:method:: select(kind=None, name=None)
+
+      Filter elements by type and/or name.
+      If both are provided, OR-based logic is applied.
+
+      Returns references to original elements, allowing modification and chaining.
+      Chained ``.select(...).select(...)`` selections are AND-filtered.
+
+      :param kind: Element type(s) to filter by. Can be a string (e.g., ``"Drift"``), regex pattern (e.g., ``r".*Quad"``), element type (e.g., ``elements.Drift``), or list/tuple of these.
+      :param name: Element name(s) to filter by. Can be a string, regex pattern, or ``list``/``tuple`` of these.
+
+      **Examples:**
+
+      .. code-block:: python
+
+         # Filter by element type
+         drift_elements = lattice.select(kind="Drift")
+         quad_elements = lattice.select(kind=elements.Quad)
+
+         # Filter by regex pattern
+         all_quads = lattice.select(kind=r".*Quad")  # matches Quad, ChrQuad, ExactQuad
+
+         # Filter by name
+         specific_elements = lattice.select(name="quad1")
+
+         # Chain filters (AND logic)
+         drift_named_d1 = lattice.select(kind="Drift").select(name="drift1")
+
+         # Modify original elements through references
+         drift_elements[0].ds = 2.0  # modifies original lattice
+
+   .. py:method:: get_kinds()
+
+      Get all unique element types in the lattice.
+
+      :return: List of unique element types (sorted by name)
+      :rtype: list[type]
+
+   .. py:method:: count_by_kind(kind_pattern)
+
+      Count elements of a specific kind.
+
+      :param kind_pattern: Element kind to count. Can be string (e.g., "Drift"), regex pattern (e.g., r".*Quad"), or element type (e.g., elements.Drift)
+      :return: Number of elements of the specified kind
+      :rtype: int
+
+   .. py:method:: has_kind(kind_pattern)
+
+      Check if list contains elements of a specific kind.
+
+      :param kind_pattern: Element kind to check for. Can be string (e.g., "Drift"), regex pattern (e.g., r".*Quad"), or element type (e.g., elements.Drift)
+      :return: True if at least one element of the specified kind exists
+      :rtype: bool
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.
@@ -717,20 +815,40 @@ This module provides elements and methods for the accelerator lattice.
 
    Edge focusing associated with bend entry or exit
 
-   This model assumes a first-order effect of nonzero gap.
-   Here we use the linear fringe field map, given to first order in g/rc (gap / radius of curvature).
+   The model here is based on:
 
-   References:
-
-   * K. L. Brown, SLAC Report No. 75 (1982).
    * K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
 
-   :param psi: Pole face angle in rad
-   :param rc: Radius of curvature in m
-   :param g: Gap parameter in m
-   :param K2: Fringe field integral (unitless)
-   :param dx: horizontal translation error in m
-   :param dy: vertical translation error in m
+   as represented in the explicit, symplectic form provided in:
+
+   * C. Mitchell and K. Hwang, in Proc. NAPAC2025, TUP040, Sacramento, CA (2025).
+
+   Here, ``g`` denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values ``K0`` - ``K6`` denote
+   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of the first reference above.  In
+   particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are
+   those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
+
+   When ``model = "linear"``, the linearized map is used.  This model is identical to:
+
+   * K. L. Brown, SLAC Report No. 75 (1982)
+
+   when expanded to first order in ``g/rc`` (gap / radius of curvature).
+
+   :param psi: Pole face angle [radians]
+   :param rc: Radius of curvature [m]
+   :param g: Gap parameter [m]
+   :param R: Length scale used in fringe field integrals [m]
+   :param K0: Fringe field integral [unitless]
+   :param K1: Fringe field integral [unitless]
+   :param K2: Fringe field integral [unitless]
+   :param K3: Fringe field integral [unitless]
+   :param K4: Fringe field integral [unitless]
+   :param K5: Fringe field integral [unitless]
+   :param K6: Fringe field integral [unitless]
+   :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
+   :param location: the fringe field edge location: ``entry`` (default) or ``exit``
+   :param dx: horizontal translation error [m]
+   :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 

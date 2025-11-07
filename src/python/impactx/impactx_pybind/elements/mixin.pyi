@@ -35,7 +35,7 @@ class Named:
     @property
     def has_name(self) -> bool: ...
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         """
         segment length in m
         """

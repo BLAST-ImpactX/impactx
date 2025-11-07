@@ -54,3 +54,49 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_bend_isr.py
       :language: python3
       :caption: You can copy this file from ``examples/incoherent_synchrotron/analysis_bend_isr.py``.
+
+
+.. _examples-bend-isr-ref:
+
+A Single Bend with ISR, Reference Energy Loss
+=============================================
+
+This is identical to the preceding test, except for the flag ``isr_on_ref_part`` option being enabled.  In this test, the reference particle experiences radiative energy loss.  For the beam particles,
+whose coordinates and momenta are measured relative to the reference particle, the primary effect of ISR is to induce an increase in energy spread.  Little effect is visible on
+the beam centroid.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_bend_isr_ref.py`` or
+* ImpactX **executable** using an input file: ``impactx input_bend_isr_ref.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_bend_isr_ref.py
+          :language: python3
+          :caption: You can copy this file from ``examples/incoherent_synchrotron/run_bend_isr_ref.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_bend_isr_ref.in
+          :language: ini
+          :caption: You can copy this file from ``examples/incoherent_synchrotron/input_bend_isr_ref.in``.
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_bend_isr_ref.py``
+
+   .. literalinclude:: analysis_bend_isr_ref.py
+      :language: python3
+      :caption: You can copy this file from ``examples/incoherent_synchrotron/analysis_bend_isr_ref.py``.

@@ -41,8 +41,13 @@ namespace impactx
         pp_impactx.queryAddWithParser("verbose", verbose);
 
         // a global step for diagnostics including space charge slice steps in elements
-        //   before we start the evolve loop, we are in "step 0" (initial state)
-        int step = 0;
+        //   before we start the tracking loop, we are in "step 0" (initial state)
+        int & step = m_tracking_state.m_step;
+        step = 0;
+
+        // period in the lattice (e.g., turns)
+        int & period = m_tracking_state.m_period;
+        period = 0;
 
         // check typos in inputs after step 1
         bool early_params_checked = false;
@@ -100,11 +105,19 @@ namespace impactx
         int num_periods = 1;
         amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
 
-        for (int period=0; period < num_periods; ++period) {
+        for (period=0; period < num_periods; ++period) {
+            // optional, user-defined function call
+            m_tracking_state.m_element = &m_lattice.front();
+            call_hook("before_period");
+
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
                 amr_data->track_particles.m_particle_container->SetRefParticleEdge();
+
+                // optional, user-defined function call
+                m_tracking_state.m_element = &element_variant;
+                call_hook("before_element");
 
                 // number of slices used for the application of space charge
                 int nslice = 1;
@@ -119,9 +132,12 @@ namespace impactx
                     BL_PROFILE("ImpactX::evolve::slice_step");
                     step++;
                     if (verbose > 0) {
-                        amrex::Print() << " ++++ Starting step=" << step
-                                       << " slice_step=" << slice_step << "\n";
+                        amrex::Print() << "\n++++ Starting step=" << step
+                                       << " slice_step=" << slice_step;
                     }
+
+                    // optional, user-defined function call
+                    call_hook("before_slice");
 
                     // Wakefield calculation: call wakefield function to apply wake effects
                     particles::wakefields::HandleWakefield(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
@@ -171,8 +187,17 @@ namespace impactx
 
                 } // end in-element space-charge slice-step loop
 
+                // optional, user-defined function call
+                call_hook("after_element");
+
             } // end beamline element loop
+
+            // optional, user-defined function call
+            call_hook("after_period");
         } // end periods though the lattice loop
+
+        // avoid dangling references if users manipulate the lattice
+        m_tracking_state.set_no_element();
 
         if (diag_enable)
         {

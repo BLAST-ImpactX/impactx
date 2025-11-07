@@ -42,7 +42,7 @@ Single Particle Dynamics
    examples/charge_sign/README.rst
    examples/symplectic_integration/README.rst
    examples/active_plasma_lens/README.rst
-
+   examples/edge_effects/README.rst
 
 Collective Effects
 ------------------
@@ -113,6 +113,7 @@ Lattice Design & Optimization
 
    examples/fodo_tune/README.rst
    examples/optimize_triplet/README.rst
+   examples/turn_update/README.rst
 
 
 Virtual Test Stands

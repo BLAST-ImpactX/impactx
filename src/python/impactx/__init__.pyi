@@ -31,7 +31,11 @@ from impactx.impactx_pybind import (
     ImpactXParConstIter,
     ImpactXParIter,
     ImpactXParticleContainer,
+    ItemsView,
+    KeysView,
     RefPart,
+    UnorderedMap,
+    ValuesView,
     coordinate_transformation,
     create_envelope,
     distribution,
@@ -58,9 +62,13 @@ __all__: list[str] = [
     "ImpactXParConstIter",
     "ImpactXParIter",
     "ImpactXParticleContainer",
+    "ItemsView",
+    "KeysView",
     "MADXParser",
     "Map6x6",
     "RefPart",
+    "UnorderedMap",
+    "ValuesView",
     "amr",
     "coordinate_transformation",
     "create_envelope",
@@ -85,6 +93,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.09"
+__version__: str = "25.10"
 s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
 t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>

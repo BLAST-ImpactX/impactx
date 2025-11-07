@@ -290,6 +290,14 @@ add_impactx_test(FODO.programmable.py
     examples/fodo_programmable/plot_fodo.py
 )
 
+# Python: Change Elements Per Turn ############################################
+#
+add_impactx_test(turn_update.py
+    examples/turn_update/run_turn_update.py
+    OFF  # ImpactX MPI-parallel
+    examples/turn_update/analysis_turn_update.py
+    OFF  # no plot script yet
+)
 
 # Python MADX: FODO Cell ######################################################
 #
@@ -1434,6 +1442,21 @@ add_impactx_test(bend-isr.py
     OFF  # no plot script yet
 )
 
+# A single bend with incoherent synchrotron radiation & reference energy loss #################
+# no space charge
+add_impactx_test(bend-isr-ref
+    examples/incoherent_synchrotron/input_bend_isr_ref.in
+    ON   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr_ref.py
+    OFF  # no plot script yet
+)
+add_impactx_test(bend-isr-ref.py
+    examples/incoherent_synchrotron/run_bend_isr_ref.py
+    OFF   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr_ref.py
+    OFF  # no plot script yet
+)
+
 # Bending Dipole with Zero Field Strength ######################
 #
 # no space charge
@@ -1688,5 +1711,16 @@ add_impactx_test(solenoid-softedge-solvable.py
     examples/solenoid_softedge/run_solenoid_softedge_solvable.py
     ON   # ImpactX MPI-parallel
     examples/solenoid_softedge/analysis_solenoid_softedge_solvable.py
+    OFF  # no plot script yet
+)
+
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/edge_effects/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dipedge-nonlinear.py)
+add_impactx_test(dipedge-nonlinear.py
+    examples/edge_effects/run_dipedge.py
+    ON   # ImpactX MPI-parallel
+    examples/edge_effects/analysis_dipedge.py
     OFF  # no plot script yet
 )

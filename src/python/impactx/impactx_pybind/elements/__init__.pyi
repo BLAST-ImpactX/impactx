@@ -8,6 +8,7 @@ import collections.abc
 import typing
 
 import amrex.space3d.amrex_3d_pybind
+import impactx.extensions.KnownElementsList
 import impactx.impactx_pybind
 
 from . import mixin, transformation
@@ -225,6 +226,8 @@ class BeamMonitor(mixin.Thin):
         """
     @cn.setter
     def cn(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def has_name(self) -> bool: ...
     @property
     def name(self) -> str:
         """
@@ -701,7 +704,16 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         psi: typing.SupportsFloat,
         rc: typing.SupportsFloat,
         g: typing.SupportsFloat,
-        K2: typing.SupportsFloat,
+        R: typing.SupportsFloat = 1,
+        K0: typing.SupportsFloat = 1.6449340668482264,
+        K1: typing.SupportsFloat = 0,
+        K2: typing.SupportsFloat = 1.0,
+        K3: typing.SupportsFloat = 0.16666666666666666,
+        K4: typing.SupportsFloat = 0,
+        K5: typing.SupportsFloat = 0,
+        K6: typing.SupportsFloat = 0,
+        model: str = "linear",
+        location: str = "entry",
         dx: typing.SupportsFloat = 0,
         dy: typing.SupportsFloat = 0,
         rotation: typing.SupportsFloat = 0,
@@ -745,6 +757,20 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | None,
     ]: ...
     @property
+    def K0(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K0.setter
+    def K0(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K1(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K1.setter
+    def K1(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
     def K2(self) -> float:
         """
         Fringe field integral (unitless)
@@ -752,12 +778,61 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     @K2.setter
     def K2(self, arg1: typing.SupportsFloat) -> None: ...
     @property
+    def K3(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K3.setter
+    def K3(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K4(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K4.setter
+    def K4(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K5(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K5.setter
+    def K5(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K6(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K6.setter
+    def K6(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def R(self) -> float:
+        """
+        Length scale for field integrals in m
+        """
+    @R.setter
+    def R(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
     def g(self) -> float:
         """
         Gap parameter in m
         """
     @g.setter
     def g(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def location(self) -> str:
+        """
+        Fringe field location (entry or exit)
+        """
+    @location.setter
+    def location(self, arg1: str) -> None: ...
+    @property
+    def model(self) -> str:
+        """
+        Fringe field model (linear or nonlinear)
+        """
+    @model.setter
+    def model(self, arg1: str) -> None: ...
     @property
     def psi(self) -> float:
         """
@@ -823,7 +898,7 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | None,
     ]: ...
 
-class Empty(mixin.Thin):
+class Empty(mixin.Named, mixin.Thin):
     def __init__(self) -> None:
         """
         This element does nothing.
@@ -1281,6 +1356,46 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def ykick(self, arg1: typing.SupportsFloat) -> None: ...
 
 class KnownElementsList:
+    def __getitem__(
+        self, arg0: typing.SupportsInt
+    ) -> (
+        impactx.impactx_pybind.elements.Empty
+        | impactx.impactx_pybind.elements.Aperture
+        | impactx.impactx_pybind.elements.Buncher
+        | impactx.impactx_pybind.elements.CFbend
+        | impactx.impactx_pybind.elements.ChrAcc
+        | impactx.impactx_pybind.elements.ChrDrift
+        | impactx.impactx_pybind.elements.ChrPlasmaLens
+        | impactx.impactx_pybind.elements.ChrQuad
+        | impactx.impactx_pybind.elements.ConstF
+        | impactx.impactx_pybind.elements.BeamMonitor
+        | impactx.impactx_pybind.elements.DipEdge
+        | impactx.impactx_pybind.elements.Drift
+        | impactx.impactx_pybind.elements.ExactCFbend
+        | impactx.impactx_pybind.elements.ExactDrift
+        | impactx.impactx_pybind.elements.ExactMultipole
+        | impactx.impactx_pybind.elements.ExactQuad
+        | impactx.impactx_pybind.elements.ExactSbend
+        | impactx.impactx_pybind.elements.Kicker
+        | impactx.impactx_pybind.elements.LinearMap
+        | impactx.impactx_pybind.elements.Marker
+        | impactx.impactx_pybind.elements.Multipole
+        | impactx.impactx_pybind.elements.NonlinearLens
+        | impactx.impactx_pybind.elements.PlaneXYRot
+        | impactx.impactx_pybind.elements.Programmable
+        | impactx.impactx_pybind.elements.PRot
+        | impactx.impactx_pybind.elements.Quad
+        | impactx.impactx_pybind.elements.QuadEdge
+        | impactx.impactx_pybind.elements.RFCavity
+        | impactx.impactx_pybind.elements.Sbend
+        | impactx.impactx_pybind.elements.ShortRF
+        | impactx.impactx_pybind.elements.SoftSolenoid
+        | impactx.impactx_pybind.elements.SoftQuadrupole
+        | impactx.impactx_pybind.elements.Sol
+        | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.TaperedPL
+        | impactx.impactx_pybind.elements.ThinDipole
+    ): ...
     @typing.overload
     def __init__(self) -> None: ...
     @typing.overload
@@ -1415,6 +1530,19 @@ class KnownElementsList:
         """
         Clear the list to become empty.
         """
+    def count_by_kind(self, kind_pattern) -> int:
+        """
+        Count elements of a specific kind.
+
+        Args:
+            kind_pattern: The element kind to count. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
+
+        Returns:
+            int: Number of elements of the specified kind.
+        """
     @typing.overload
     def extend(self, arg0: KnownElementsList) -> KnownElementsList:
         """
@@ -1429,9 +1557,29 @@ class KnownElementsList:
         """
         Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
 
-            https://github.com/campa-consortium/pals-python
-
+        https://github.com/campa-consortium/pals-python
         """
+    def get_kinds(self) -> list[type]:
+        """
+        Get all unique element kinds in the list.
+
+        Returns:
+            list[type]: List of unique element types (sorted by name).
+        """
+    def has_kind(self, kind_pattern) -> bool:
+        """
+        Check if list contains elements of a specific kind.
+
+        Args:
+            kind_pattern: The element kind to check for. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
+
+        Returns:
+            bool: True if at least one element of the specified kind exists.
+        """
+    def is_empty(self) -> bool: ...
     def load_file(self, filename, nslice=1):
         """
         Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
@@ -1442,32 +1590,125 @@ class KnownElementsList:
         """
         Plot over s of all elements in the KnownElementsList.
 
-            A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
+        A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
 
-            Parameters
-            ----------
-            self : ImpactXParticleContainer_*
-                The KnownElementsList class in ImpactX
-            ref : RefPart
-                A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
-            ax : matplotlib axes
-                A plotting area in matplotlib (called axes there).
-            legend: bool
-                Plot a legend if true.
-            legend_ncols: int
-                Number of columns for lattice element types in the legend.
-            palette: string
-                Color palette.
+        Parameters
+        ----------
+        self : ImpactXParticleContainer_*
+            The KnownElementsList class in ImpactX
+        ref : RefPart
+            A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+        ax : matplotlib axes
+            A plotting area in matplotlib (called axes there).
+        legend: bool
+            Plot a legend if true.
+        legend_ncols: int
+            Number of columns for lattice element types in the legend.
+        palette: string
+            Color palette.
 
-            Returns
-            -------
-            Either populates the matplotlib axes in ax or creates a new axes containing the plot.
-
+        Returns
+        -------
+        Either populates the matplotlib axes in ax or creates a new axes containing the plot.
         """
     def pop_back(self) -> None:
         """
         Return and remove the last element of the list.
         """
+    def select(
+        self, *, kind=None, name=None
+    ) -> impactx.extensions.KnownElementsList.FilteredElementsList:
+        """
+        Filter elements by type and name with OR-based logic.
+
+        This method supports filtering elements by their type and/or name using keyword arguments.
+        Returns references to original elements, allowing modification and chaining.
+
+        **Filtering Logic:**
+
+        - **Within a single filter**: OR logic (e.g., ``kind=["Drift", "Quad"]`` matches Drift OR Quad)
+        - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1"`` matches Quad OR named "quad1")
+        - **Chaining filters**: AND logic (e.g., ``lattice.select(kind="Drift").select(name="drift1")`` matches Drift AND named "drift1")
+
+        :param kind: Element type(s) to filter by. Can be a single string/type or a list/tuple
+                     of strings/types for OR-based filtering. String values support exact matches
+                     and regex patterns. Examples: "Drift", r".*Quad", elements.Drift, ["Drift", r".*Quad"], [elements.Drift, elements.Quad]
+        :type kind: str or type or list[str | type] or tuple[str | type, ...] or None, optional
+
+        :param name: Element name(s) to filter by. Can be a single string, regex pattern string, or
+                     a list/tuple of strings and/or regex pattern strings for OR-based filtering.
+                     Examples: "quad1", r"quad\\d+", ["quad1", "quad2"], [r"quad\\d+", "bend1"]
+        :type name: str or list[str] or tuple[str, ...] or None, optional
+
+        :return: FilteredElementsList containing references to original elements
+        :rtype: FilteredElementsList
+
+        :raises TypeError: If kind/name parameters have wrong types
+
+        **Examples:**
+
+        Single value filtering:
+
+        .. code-block:: python
+
+            lattice.select(kind="Drift")  # Get all drift elements (string)
+            lattice.select(kind=elements.Drift)  # Get all drift elements (type)
+            lattice.select(
+                kind=r".*Quad"
+            )  # Get all elements matching regex pattern (Quad, ExactQuad, ChrQuad)
+            lattice.select(name="quad1")  # Get elements named "quad1"
+            lattice.select(
+                kind="Quad", name="quad1"
+            )  # Get quad elements OR elements named "quad1"
+
+        OR-based filtering with lists (within single filter):
+
+        .. code-block:: python
+
+            lattice.select(kind=["Drift", "Quad"])  # Get drift OR quad elements (strings)
+            lattice.select(kind=[elements.Drift, elements.Quad])  # Get drift OR quad elements (types)
+            lattice.select(kind=["Drift", elements.Quad])  # Mix strings and types
+            lattice.select(kind=[r".*Quad", r".*Bend.*"])  # Mix regex patterns
+            lattice.select(name=["quad1", "quad2"])  # Get elements named "quad1" OR "quad2"
+
+         Regex pattern filtering:
+
+         .. code-block:: python
+
+             lattice.select(name=r"quad\\d+")  # Get elements matching pattern
+             lattice.select(name=[r"quad\\d+", "bend1"])  # Mix regex and strings
+
+        Chaining filters (AND logic between chained calls):
+
+        .. code-block:: python
+
+            lattice.select(kind="Drift").select(
+                name="drift1"
+            )  # Drift elements AND named "drift1"
+            lattice.select(kind="Quad")[0]  # First quad element
+            lattice.select(name="quad1").select(
+                kind="Quad"
+            )  # Elements named "quad1" AND of type "Quad"
+
+        Reference preservation and modification:
+
+        .. code-block:: python
+
+            drift_elements = lattice.select(kind="Drift")
+            drift_elements[0].ds = 5.0  # Modifies the original element in lattice
+            assert lattice[0].ds == 5.0  # Original element is modified
+
+        Modification of elements (reference preservation):
+
+        .. code-block:: python
+
+            drift = lattice.select(kind="Drift")[0]  # Get first drift element
+            drift.ds = 2.0  # Modify original element
+            quad_elements = lattice.select(kind="Quad")  # Get all quad elements
+            quad_elements[0].k = 1.5  # Modify first quad's strength
+            # All modifications affect the original lattice elements
+        """
+    def size(self) -> int: ...
 
 class LinearMap(mixin.Named, mixin.Alignment):
     def __init__(

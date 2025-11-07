@@ -126,7 +126,7 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
-            // constants for linear map (model = 0):
+            // constants for linear map:
 
             // edge focusing matrix elements (zero gap)
             m_R21 = std::tan(m_psi) / m_rc;
@@ -139,7 +139,7 @@ namespace impactx::elements
 
             m_R43 = vf - m_R21;
 
-            // constants for nonlinear map (model = 1):
+            // constants for nonlinear map:
 
             // access reference particle values to find beta
             m_beta = refpart.beta();

@@ -186,8 +186,8 @@ namespace detail
 
             amrex::ParticleReal psi, rc, g;
             amrex::ParticleReal R = 1;
-            std::string location_str = "entry";  // default
             std::string model_str = "linear";    // default
+            std::string location_str = "entry";  // default
 
             // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
             amrex::ParticleReal pi = ablastr::constant::math::pi;

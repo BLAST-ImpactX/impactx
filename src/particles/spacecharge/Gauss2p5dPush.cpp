@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -9,24 +9,37 @@
  */
 #include "Gauss2p5dPush.H"
 
-#include <AMReX_REAL.H>       // for Real
+#include "diagnostics/ReducedBeamCharacteristics.H"
+#include "particles/wakefields/ChargeBinning.H"
+
+#include <AMReX_REAL.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
 #include <AMReX_ParmParse.H>
-#include <AMReX_SPACE.H>      // for AMREX_D_DECL
-#include "diagnostics/ReducedBeamCharacteristics.H"
-#include "particles/wakefields/ChargeBinning.H"
+
+#include <cmath>
 
 
 namespace impactx::particles::spacecharge
 {
 
-    // compute integrals Eqs 25, 31,32 used in the space-charge fields from a 2D transverse Gaussian distribution (including 2A in Eq. 25).
-    // Input particle locations (x,y) and RMS sizes (sigx,sigy) and return the integrals for SC fields.
-    //
+    /** Calculate the Integrals for Space Charge Fields
+     *
+     * Compute integrals Eqs 25, 31,32 used in the space-charge fields from a 2D transverse Gaussian distribution (including 2A in Eq. 25).
+     * Input particle locations (x,y) and RMS sizes (sigx,sigy) and return the integrals for SC fields.
+     */
     AMREX_GPU_DEVICE
-    void potInt(amrex::ParticleReal delta, int nint, amrex::ParticleReal xin, amrex::ParticleReal yin, amrex::ParticleReal sigx, amrex::ParticleReal sigy,
-                amrex::ParticleReal& pintex, amrex::ParticleReal& pintey, amrex::ParticleReal& pintez)
+    void potInt (
+        amrex::ParticleReal delta,
+        int nint,
+        amrex::ParticleReal xin,
+        amrex::ParticleReal yin,
+        amrex::ParticleReal sigx,
+        amrex::ParticleReal sigy,
+        amrex::ParticleReal& pintex,
+        amrex::ParticleReal& pintey,
+        amrex::ParticleReal& pintez
+    )
     {
         using namespace amrex::literals;
 
@@ -43,9 +56,6 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal xp2 = xp*xp;
         amrex::ParticleReal yp2 = yp*yp;
 
-        amrex::ParticleReal sum0, sum0ex, sum0ey;
-        sum0 = sum0ex = sum0ey = 0.0;
-
         // Trapezoidal rule approximation integral from 0 to delta
         amrex::ParticleReal x = xmin;
         amrex::ParticleReal t2 = asp*asp + (1_prt - asp*asp)*x*x;
@@ -53,10 +63,10 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal exparg = -(xp*xp + yp*yp / t2) / 2_prt;
         amrex::ParticleReal f1 = x*exparg;
 
-        sum0 = x*f1/sqrt2/2_prt;
+        amrex::ParticleReal sum0 = x * f1 / sqrt2 / 2_prt;
         f1 = x*std::exp(x*x*exparg);
-        sum0ex = x*f1 / sqrt2 / 2_prt;
-        sum0ey = x*f1 / (t2*sqrt2) / 2_prt;
+        amrex::ParticleReal sum0ex = x * f1 / sqrt2 / 2_prt;
+        amrex::ParticleReal sum0ey = x*f1 / (t2*sqrt2) / 2_prt;
 
         // Simpson's rule for two end points
         // Ez
@@ -129,13 +139,15 @@ namespace impactx::particles::spacecharge
               sum0ey += 4_prt * fy * h;
         }
 
-        pintez = 2 * asp * sum0 / 3_prt;
-        pintex = 2 * asp * xp * sum0ex / 3_prt / sigx;
-        pintey = 2 * asp * yp * sum0ey / 3_prt / sigy;
+        pintez = 2_prt * asp * sum0 / 3_prt;
+        pintex = 2_prt * asp * xp * sum0ex / 3_prt / sigx;
+        pintey = 2_prt * asp * yp * sum0ey / 3_prt / sigy;
     }
 
-    //advanced particle momentae using 2.5D SC fields with a transverse Gaussian distribution.
-    void Gauss2p5dPush (ImpactXParticleContainer & pc, amrex::ParticleReal const slice_ds)
+    void Gauss2p5dPush (
+        ImpactXParticleContainer & pc,
+        amrex::ParticleReal const slice_ds
+    )
     {
         BL_PROFILE("impactx::spacecharge::Gauss2p5dPush");
 
@@ -155,7 +167,7 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
         amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
         amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
-        amrex::ParticleReal const rfpiepslon = c0_SI*c0_SI*1.0e-7;
+        amrex::ParticleReal const rfpiepslon = c0_SI * c0_SI * 1.0e-7;
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
 
@@ -170,10 +182,10 @@ namespace impactx::particles::spacecharge
 
         // Measure beam size, extract the min, max of particle positions
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
-                pc.MinAndMaxPositions();
+            pc.MinAndMaxPositions();
 
         // Set parameters for charge deposition
-        bool const is_unity_particle_weight = false; // Only true if w = 1
+        bool const is_unity_particle_weight = false;
         bool const GetNumberDensity = true;
 
         int const num_bins = tp5d_bins;  // Set resolution
@@ -185,8 +197,8 @@ namespace impactx::particles::spacecharge
         // Call charge deposition function
         impactx::particles::wakefields::DepositCharge1D(pc, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
 
-        // Sum up all partial charge histograms to one MPI process to calculate the global wakefield.
-        // Once calculated, we will distribute convolved_wakefield back to every MPI process.
+        // Sum up all partial charge histograms to each MPI process to calculate
+        // the global charge slope.
         amrex::ParallelAllReduce::Sum(
             charge_distribution.data(),
             charge_distribution.size(),
@@ -201,20 +213,25 @@ namespace impactx::particles::spacecharge
         amrex::Real const * const beam_profile = charge_distribution.data();
 
         // group together constants for the momentum push
-        amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
-        amrex::ParticleReal const chargesign = charge/std::abs(charge);
+        amrex::ParticleReal const push_consts = rfpiepslon * dt * charge * inv_gamma2 / pz_ref_SI;
+        amrex::ParticleReal const chargesign = charge / std::abs(charge);
+        amrex::ParticleReal const log2n = -std::log(2.0_prt);
+        amrex::ParticleReal const pz_push_const =
+            log2n
+            + 0.577216_prt
+            - 2.0_prt * std::log((sigx + sigy) / 2.0_prt);
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();
         for (int lev = 0; lev <= nLevel; ++lev)
         {
-
             // loop over all particle boxes
             using ParIt = ImpactXParticleContainer::iterator;
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
-            for (ParIt pti(pc, lev); pti.isValid(); ++pti) {
+            for (ParIt pti(pc, lev); pti.isValid(); ++pti)
+            {
                 const int np = pti.numParticles();
 
                 // preparing access to particle data: SoA of Reals
@@ -236,10 +253,7 @@ namespace impactx::particles::spacecharge
                     amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
-                    //field integrals from a 3D Gaussian bunch
-//                    int const nint = 401;
-//                   amrex::Real const delta=0.01;
-
+                    // field integrals from a 2D Gaussian bunch
                     amrex::ParticleReal eintx, einty, eintz;
                     potInt(delta,nint,x,y,sigx,sigy,eintx,einty,eintz);
 
@@ -251,19 +265,16 @@ namespace impactx::particles::spacecharge
                         std::cerr << "Warning: Index out of range for 2.5D Gaussian SC: " << idx << std::endl;
                     }
 #endif
-                    amrex::ParticleReal const Fxy = beam_profile[idx]*chargesign;
-                    amrex::ParticleReal const Fz = beam_profile_slope[idx]*charge;
+                    amrex::ParticleReal const Fxy = beam_profile[idx] * chargesign;
+                    amrex::ParticleReal const Fz = beam_profile_slope[idx] * charge;
 
                     // push momentum
-                    using ablastr::constant::math::pi;
-                    px += eintx*Fxy*rfpiepslon * push_consts;
-                    py += einty*Fxy*rfpiepslon * push_consts;
-                    pz -= (eintz-std::log(2.0)+0.577216-2.0*std::log((sigx+sigy)/2.0))*Fz*rfpiepslon * push_consts;
+                    px += eintx * Fxy * push_consts;
+                    py += einty * Fxy * push_consts;
+                    pz -= (eintz + pz_push_const) * Fz * push_consts;
 
                     // push position is done in the lattice elements
                 });
-
-
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }

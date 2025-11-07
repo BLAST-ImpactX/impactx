@@ -704,7 +704,16 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         psi: typing.SupportsFloat,
         rc: typing.SupportsFloat,
         g: typing.SupportsFloat,
-        K2: typing.SupportsFloat,
+        R: typing.SupportsFloat = 1,
+        K0: typing.SupportsFloat = 1.6449340668482264,
+        K1: typing.SupportsFloat = 0,
+        K2: typing.SupportsFloat = 1.0,
+        K3: typing.SupportsFloat = 0.16666666666666666,
+        K4: typing.SupportsFloat = 0,
+        K5: typing.SupportsFloat = 0,
+        K6: typing.SupportsFloat = 0,
+        model: str = "linear",
+        location: str = "entry",
         dx: typing.SupportsFloat = 0,
         dy: typing.SupportsFloat = 0,
         rotation: typing.SupportsFloat = 0,
@@ -748,6 +757,20 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | None,
     ]: ...
     @property
+    def K0(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K0.setter
+    def K0(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K1(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K1.setter
+    def K1(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
     def K2(self) -> float:
         """
         Fringe field integral (unitless)
@@ -755,12 +778,61 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     @K2.setter
     def K2(self, arg1: typing.SupportsFloat) -> None: ...
     @property
+    def K3(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K3.setter
+    def K3(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K4(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K4.setter
+    def K4(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K5(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K5.setter
+    def K5(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def K6(self) -> float:
+        """
+        Fringe field integral (unitless)
+        """
+    @K6.setter
+    def K6(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def R(self) -> float:
+        """
+        Length scale for field integrals in m
+        """
+    @R.setter
+    def R(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
     def g(self) -> float:
         """
         Gap parameter in m
         """
     @g.setter
     def g(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def location(self) -> str:
+        """
+        Fringe field location (entry or exit)
+        """
+    @location.setter
+    def location(self, arg1: str) -> None: ...
+    @property
+    def model(self) -> str:
+        """
+        Fringe field model (linear or nonlinear)
+        """
+    @model.setter
+    def model(self, arg1: str) -> None: ...
     @property
     def psi(self) -> float:
         """

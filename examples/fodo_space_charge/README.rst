@@ -111,7 +111,7 @@ FODO Cell with 2.5D Gaussian Space Charge Using Particle Tracking
 ===============================================================
 
 This example illustrates a 1 nC electron beam with a kinetic energy of 100 MeV in a FODO cell,
-with 2.5D Gaussian space charge included. 
+with 2.5D Gaussian space charge included.
 
 The purpose of this example is to illustrate the use of particle tracking mode with 2.5D space charge from a Gaussian density distribution.
 

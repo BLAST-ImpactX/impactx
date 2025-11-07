@@ -185,6 +185,14 @@ namespace impactx::particles::spacecharge
         // Call charge deposition function
         impactx::particles::wakefields::DepositCharge1D(pc, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
 
+        // Sum up all partial charge histograms to one MPI process to calculate the global wakefield.
+        // Once calculated, we will distribute convolved_wakefield back to every MPI process.
+        amrex::ParallelAllReduce::Sum(
+            charge_distribution.data(),
+            charge_distribution.size(),
+            amrex::ParallelDescriptor::Communicator()
+        );
+
         // Call charge density derivative function
         amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);
         impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, slopes, bin_size,GetNumberDensity);

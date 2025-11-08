@@ -40,6 +40,7 @@ from impactx.impactx_pybind import (
     create_envelope,
     distribution,
     elements,
+    flatten_charge_to_2D,
     push,
     wakeconvolution,
 )
@@ -76,6 +77,7 @@ __all__: list[str] = [
     "distribution_input_helpers",
     "elements",
     "extensions",
+    "flatten_charge_to_2D",
     "impactx_pybind",
     "madx_to_impactx",
     "os",

@@ -108,6 +108,7 @@ We run the following script to analyze correctness:
 .. _examples-fodo-2p5dGaussian-sc:
 
 FODO Cell with 2.5D Gaussian Space Charge Using Particle Tracking
+===============================================================
 
 This example illustrates a 1 nC electron beam with a kinetic energy of 100 MeV in a FODO cell,
 with 2.5D Gaussian space charge included.
@@ -143,6 +144,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
 .. _examples-fodo-2d-sc:
 FODO Cell with 2D Space Charge using FFT IGF Poisson Solver
+===============================================================
 
 This example illustrates a 0.5 A proton beam with a kinetic energy of 6.7 MeV in a FODO cell,
 with 2D space charge included.  The parameters are those described in:

@@ -39,6 +39,7 @@ __all__: list[str] = [
     "create_envelope",
     "distribution",
     "elements",
+    "flatten_charge_to_2D",
     "push",
     "s",
     "t",
@@ -909,6 +910,14 @@ def create_envelope(
     | distribution.Waterbag,
     arg1: typing.SupportsFloat | None,
 ) -> Envelope: ...
+def flatten_charge_to_2D(
+    arg0: ImpactX,
+) -> dict[
+    int,
+    tuple[
+        amrex.space3d.amrex_3d_pybind.MultiFab, amrex.space3d.amrex_3d_pybind.MultiFab
+    ],
+]: ...
 @typing.overload
 def push(
     pc: ImpactXParticleContainer,

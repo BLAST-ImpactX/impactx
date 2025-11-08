@@ -70,8 +70,6 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
-        Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
-
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
@@ -100,8 +98,8 @@ Collective Effects & Overall Simulation Parameters
       The numerical solver to solve the Poisson equation when calculating space charge effects.
       Either ``"fft"`` (default) or ``"multigrid"``.
 
-      Currently, this is a 3D solver.
-      An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
+      Currently, the multigrid solver supports only 3D space charge.  The fft solver supports either 2D or 3D space charge.
+      An additional `2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).

@@ -9,11 +9,15 @@
  */
 #include "PoissonSolve.H"
 
+#include "initialization/Algorithms.H"
+#include "particles/ChargeDeposition.H"
+
 #include <ablastr/constant.H>
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
 #include <AMReX_Math.H>
+#include <AMReX_MultiFabUtil.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>       // for ParticleReal
 
@@ -33,6 +37,8 @@ namespace impactx::particles::spacecharge
 
         using namespace amrex::literals;
         using amrex::Math::powi;
+
+        auto space_charge = get_space_charge_algo();
 
         // set space charge field to zero
         //   loop over refinement levels
@@ -61,6 +67,9 @@ namespace impactx::particles::spacecharge
         if (poisson_solver != "multigrid" && poisson_solver != "fft") {
             throw std::runtime_error("algo.poisson_solver must be multigrid or fft but is: " + poisson_solver);
         }
+        if (space_charge == SpaceChargeAlgo::True_2D && poisson_solver != "fft") {
+            throw std::runtime_error("algo.poisson_solver must be fft for SpaceChargeAlgo::True_2D");
+        }
 
         // MLMG options
         amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
@@ -73,16 +82,44 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
         pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
+        // flatten rho to 2D
+        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        if (space_charge == SpaceChargeAlgo::True_2D) {
+            auto geom_3d = pc.GetParGDB()->Geom();
+            amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
+            rho_2d = flatten_charge_to_2D(rho, domain_3d);
+        }
+
         // create a vector to our fields, sorted by level
         amrex::Vector<amrex::MultiFab*> sorted_rho;
         amrex::Vector<amrex::MultiFab*> sorted_phi;
 
+        amrex::Vector<amrex::MultiFab> phi_2d(finest_level+1);
+
+        // create phi_2d and sort rho/phi pointers
         for (int lev = 0; lev <= finest_level; ++lev) {
-            sorted_rho.emplace_back(&rho[lev]);
-            sorted_phi.emplace_back(&phi[lev]);
+            if (space_charge == SpaceChargeAlgo::True_2D) {
+                int nz = pc.GetParGDB()->Geom(lev).Domain().length(2);
+                if (nz == 1) {
+                    sorted_phi.emplace_back(&phi[lev]);
+                } else {
+                    // 2D phi
+                    auto & r2d = rho_2d[lev].second;
+                    auto nGrow = phi[lev].nGrowVect();
+                    nGrow[2] = 0;
+                    phi_2d[lev].define(r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow);
+                    sorted_phi.emplace_back(&phi_2d[lev]);
+                }
+
+                sorted_rho.emplace_back(&rho_2d[lev].second);
+            }
+            else if (space_charge == SpaceChargeAlgo::True_3D) {
+                sorted_rho.emplace_back(&rho[lev]);
+                sorted_phi.emplace_back(&phi[lev]);
+            }
         }
 
-        const bool is_igf_2d = false;
+        const bool is_igf_2d = space_charge == SpaceChargeAlgo::True_2D;
         const bool do_single_precision_comms = false;
         const bool eb_enabled = false;
         ablastr::fields::computePhi(
@@ -114,6 +151,15 @@ namespace impactx::particles::spacecharge
         for (int lev=0; lev<=finest_level; lev++) {
             using namespace ablastr::constant::SI;
             rho[lev].mult(-1._rt * ep0);
+        }
+
+        // We may need to copy phi from phi_2d
+        if (space_charge == SpaceChargeAlgo::True_2D) {
+            for (int lev=0; lev<=finest_level; lev++) {
+                if (&(phi[lev]) != sorted_phi[lev]) {
+                    phi[lev].ParallelCopy(*sorted_phi[lev]);
+                }
+            }
         }
 
         // fill boundary

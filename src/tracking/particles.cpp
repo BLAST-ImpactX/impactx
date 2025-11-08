@@ -85,10 +85,6 @@ namespace impactx
         if (verbose > 0) {
             amrex::Print() << " Space Charge effects: " << to_string(space_charge) << "\n";
         }
-        if (space_charge == SpaceChargeAlgo::True_2D)
-        {
-            throw std::runtime_error("2D space charge effects are not yet implemented for particle tracking.");
-        }
 
         amrex::ParmParse const pp_algo("algo");
         bool csr = false;

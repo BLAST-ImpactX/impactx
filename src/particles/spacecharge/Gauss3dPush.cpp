@@ -8,8 +8,9 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "Gauss3dPush.H"
-#include <AMReX_ParmParse.H>
+
 #include <AMReX_BLProfiler.H>
+#include <AMReX_ParmParse.H>
 #include <AMReX_REAL.H>       // for Real
 #include "diagnostics/ReducedBeamCharacteristics.H"
 

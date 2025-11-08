@@ -286,7 +286,7 @@ void init_ImpactX (py::module& m)
                 {
                     std::string const space_charge = std::get<std::string>(space_charge_v);
                     if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D" && space_charge != "Gauss2p5D" ) {
-                        throw std::runtime_error("Space charge model must be 2D, 3D or Gauss3D but is: " + space_charge);
+                        throw std::runtime_error("Space charge model must be 2D, 3D, Gauss3D or Gauss2p5D but is: " + space_charge);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("space_charge", space_charge);

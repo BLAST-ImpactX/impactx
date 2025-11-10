@@ -98,9 +98,9 @@ Collective Effects & Overall Simulation Parameters
         longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
 
         These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
-   
+
    .. py:property:: space_charge_z_bins
-      
+
       Number of bins for longitudinal charge density deposition (default: ``129``).
 
    .. py:property:: poisson_solver

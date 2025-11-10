@@ -924,17 +924,17 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Number of bins for longitudinal line density deposition.
 
-  * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the 
+  * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
 longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
 
     This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-  
+
     This model supports the following sub-option:
-  
+
     * ``algo.space_charge.charge_z_bins`` (``int``, default: ``129``)
-  
+
       Number of bins for longitudinal line density deposition.
-  
+
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 
   The number of grid points along each direction (on the **coarsest level**)

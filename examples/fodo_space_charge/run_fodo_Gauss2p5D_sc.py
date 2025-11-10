@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Copyright 2022-2023 ImpactX contributors
-# Authors: Axel Huebl, Chad Mitchell
+# Authors: Axel Huebl, Chad Mitchell, Ji Qiang
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-
@@ -12,8 +12,10 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.particle_shape = 2  # B-spline order
-sim.space_charge = "Gauss3D"
+sim.space_charge = "Gauss2p5D"
 sim.space_charge_gauss_nint = 101
+sim.space_charge_gauss_charge_z_bins = 129
+sim.space_charge_gauss_taylor_delta = 0.01
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh

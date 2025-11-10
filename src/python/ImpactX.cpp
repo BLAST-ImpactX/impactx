@@ -285,14 +285,58 @@ void init_ImpactX (py::module& m)
                 else
                 {
                     std::string const space_charge = std::get<std::string>(space_charge_v);
-                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D") {
-                        throw std::runtime_error("Space charge model must be 2D, 3D or Gauss3D but is: " + space_charge);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D" && space_charge != "Gauss2p5D" ) {
+                        throw std::runtime_error("Space charge model must be 2D, 3D, Gauss3D or Gauss2p5D but is: " + space_charge);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("space_charge", space_charge);
                 }
             },
             "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
+        )
+        .def_property("space_charge_gauss_nint",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_nint");
+            },
+            [](ImpactX & /* ix */, int const gauss_nint) {
+                if (gauss_nint < 1) {
+                    throw std::runtime_error("space_charge_gauss_nint must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_nint", gauss_nint);
+            },
+            "Number of steps for computing the integrals (default: ``101``)."
+        )
+        .def_property("space_charge_gauss_charge_z_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_charge_z_bins");
+            },
+            [](ImpactX & /* ix */, int const gauss_charge_z_bins) {
+                if (gauss_charge_z_bins < 1) {
+                    throw std::runtime_error("space_charge_gauss_charge_z_bins must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_charge_z_bins", gauss_charge_z_bins);
+            },
+            "Number of steps for computing the integrals (default: ``129``)."
+        )
+        .def_property("space_charge_gauss_taylor_delta",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_taylor_delta");
+            },
+            [](ImpactX & /* ix */, amrex::Real const gauss_taylor_delta) {
+                if (gauss_taylor_delta < 0) {
+                    throw std::runtime_error("space_charge_gauss_taylor_delta must be strictly positive");
+                }
+                if (gauss_taylor_delta > 0.05) {
+                    throw std::runtime_error("space_charge_gauss_taylor_delta must be less than 0.05");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_taylor_delta", gauss_taylor_delta);
+            },
+            "Initial region for computing the integrals (default: ``0.01``)."
         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {

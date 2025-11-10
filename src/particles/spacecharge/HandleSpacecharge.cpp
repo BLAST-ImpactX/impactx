@@ -15,6 +15,7 @@
 #include "particles/spacecharge/ForceFromSelfFields.H"
 #include "particles/spacecharge/GatherAndPush.H"
 #include "particles/spacecharge/Gauss3dPush.H"
+#include "particles/spacecharge/Gauss2p5dPush.H"
 #include "particles/spacecharge/PoissonSolve.H"
 #include "particles/transformation/CoordinateTransformation.H"
 
@@ -54,6 +55,10 @@ namespace impactx::particles::spacecharge
         if (space_charge == SpaceChargeAlgo::Gauss3D)
         {
             Gauss3dPush(*amr_data->track_particles.m_particle_container, slice_ds);
+        }
+        else if (space_charge == SpaceChargeAlgo::Gauss2p5D)
+        {
+            Gauss2p5dPush(*amr_data->track_particles.m_particle_container, slice_ds);
         }
         else if (space_charge == SpaceChargeAlgo::True_3D || space_charge == SpaceChargeAlgo::True_2D)
         {

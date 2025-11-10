@@ -75,10 +75,24 @@ Collective Effects & Overall Simulation Parameters
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
       * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+      * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
-        This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-        Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
+        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+        Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
+
+   .. py:property:: space_charge_gauss_nint
+
+      Number of steps for computing the integrals (default: ``101``).
+
+   .. py:property:: space_charge_gauss_taylor_delta
+
+      Initial integral region to avoid integrand divergence at 0 (default: ``0.01``).
+
+   .. py:property:: space_charge_gauss_charge_z_bins
+
+      Number of bins for longitudinal charge density deposition (default: ``129``).
+
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.

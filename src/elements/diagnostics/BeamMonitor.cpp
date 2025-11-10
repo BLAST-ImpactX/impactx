@@ -333,7 +333,8 @@ namespace detail {
         std::vector<std::string> int_soa_names = pc.GetIntSoANames();
 
         // pinned memory copy
-        PinnedContainer pinned_pc = pc.make_alike<amrex::PinnedArenaAllocator>();
+        PinnedContainer pinned_pc = pc.make_alike<amrex::PolymorphicArenaAllocator>();
+        pinned_pc.SetArena(amrex::The_Pinned_Arena());
         pinned_pc.copyParticles(pc, true);  // no filtering
 
         // TODO: filtering

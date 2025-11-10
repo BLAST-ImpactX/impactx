@@ -92,6 +92,7 @@ def sim(request):
             assert self.sim.particle_container().total_number_of_particles() == npart
 
             self.sim.backup_beam = self.sim.particle_container().make_alike()
+            self.sim.backup_beam.arena = self.sim.particle_container().arena
             assert self.sim.backup_beam.total_number_of_particles() == 0
 
             self.sim.backup_beam.add_particles(
@@ -117,6 +118,7 @@ def pc_setup(sim):
     # instead of drawing from the distribution again, create a 2nd
     # particle container and copy the same initial particles again.
     pc = sim.particle_container()
+    # pc.arena = ... ??
     pc.clear_particles()
     pc.add_particles(sim.backup_beam, local=True)
 

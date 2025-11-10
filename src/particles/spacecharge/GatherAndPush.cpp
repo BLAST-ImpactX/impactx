@@ -82,7 +82,7 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
 
                 // gather to each particle and push momentum
-                if (space_charge == SpaceChargeAlgo::True_2D) {
+                if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
                     // flatten 3rd dimension
                     auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;

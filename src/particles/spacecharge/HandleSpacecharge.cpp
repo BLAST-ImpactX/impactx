@@ -43,7 +43,7 @@ namespace impactx::particles::spacecharge
         // turn off if less than 2 particles
         if (amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false) < 2) { return; }
 
-        if (space_charge != SpaceChargeAlgo::True_2D)
+        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
         {
             // transform from x',y',t to x,y,z
             transformation::CoordinateTransformation(
@@ -60,7 +60,7 @@ namespace impactx::particles::spacecharge
         {
             Gauss2p5dPush(*amr_data->track_particles.m_particle_container, slice_ds);
         }
-        else if (space_charge == SpaceChargeAlgo::True_3D || space_charge == SpaceChargeAlgo::True_2D)
+        else if (space_charge == SpaceChargeAlgo::True_3D || space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D)
         {
             // Note: The following operations assume that
             // the particles are in x, y, z coordinates.
@@ -107,7 +107,7 @@ namespace impactx::particles::spacecharge
             );
         }
 
-        if (space_charge != SpaceChargeAlgo::True_2D)
+        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
         {
             // transform from x,y,z to x',y',t
             transformation::CoordinateTransformation(

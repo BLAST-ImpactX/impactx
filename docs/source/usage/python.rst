@@ -980,7 +980,7 @@ This module provides elements and methods for the accelerator lattice.
       number of integration steps per slice used for symplectic integration
 
 
-.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -996,8 +996,8 @@ This module provides elements and methods for the accelerator lattice.
    and H_2 is the term containing the vector potential, which is a superposition of multipole contributions.
 
    :param ds: Segment length in m.
-   :param K_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
-   :param K_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
    :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

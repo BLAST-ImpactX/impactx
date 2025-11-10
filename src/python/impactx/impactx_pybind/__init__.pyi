@@ -466,6 +466,27 @@ class ImpactX:
     @space_charge.setter
     def space_charge(self, arg1: bool | str) -> None: ...
     @property
+    def space_charge_gauss_charge_z_bins(self) -> int:
+        """
+        Number of steps for computing the integrals (default: ``129``).
+        """
+    @space_charge_gauss_charge_z_bins.setter
+    def space_charge_gauss_charge_z_bins(self, arg1: typing.SupportsInt) -> None: ...
+    @property
+    def space_charge_gauss_nint(self) -> int:
+        """
+        Number of steps for computing the integrals (default: ``101``).
+        """
+    @space_charge_gauss_nint.setter
+    def space_charge_gauss_nint(self, arg1: typing.SupportsInt) -> None: ...
+    @property
+    def space_charge_gauss_taylor_delta(self) -> int:
+        """
+        Initial region for computing the integrals (default: ``0.01``).
+        """
+    @space_charge_gauss_taylor_delta.setter
+    def space_charge_gauss_taylor_delta(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
     def tiny_profiler(self) -> bool:
         """
         This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.

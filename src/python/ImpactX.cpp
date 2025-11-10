@@ -285,14 +285,14 @@ void init_ImpactX (py::module& m)
                 else
                 {
                     std::string const space_charge = std::get<std::string>(space_charge_v);
-                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D" && space_charge != "Gauss2p5D" ) {
-                        throw std::runtime_error("Space charge model must be 2D, 3D, Gauss3D or Gauss2p5D but is: " + space_charge);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D" && space_charge != "Gauss2p5D"  && space_charge != "2p5D") {
+                        throw std::runtime_error("Space charge model must be 2D, 3D, Gauss3D, Gauss2p5D, or 2p5D but is: " + space_charge);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("space_charge", space_charge);
                 }
             },
-            "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
+            "The model to be used when calculating space charge effects. Either off, 2D, 3D, Gauss3D, Gauss2p5D, or 2p5D."
         )
         .def_property("space_charge_gauss_nint",
             [](ImpactX & /* ix */) {
@@ -320,7 +320,7 @@ void init_ImpactX (py::module& m)
                 amrex::ParmParse pp_algo("algo.space_charge");
                 pp_algo.add("gauss_charge_z_bins", gauss_charge_z_bins);
             },
-            "Number of steps for computing the integrals (default: ``129``)."
+            "Number of longitudinal bins for computing the linear charge density (default: ``129``)."
         )
         .def_property("space_charge_gauss_taylor_delta",
             [](ImpactX & /* ix */) {

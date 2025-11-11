@@ -6,9 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
+from scipy.constants import c, eV, m_p
+
 from impactx import ImpactX, distribution, elements
-from scipy.constants import m_p, c, eV
 
 sim = ImpactX()
 
@@ -28,7 +28,9 @@ npart = 50000  # number of macro particles
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(1.0e-6 * m_p * c**2/eV).set_kin_energy_MeV(kin_energy_MeV)
+ref.set_charge_qe(1.0).set_mass_MeV(1.0e-6 * m_p * c**2 / eV).set_kin_energy_MeV(
+    kin_energy_MeV
+)
 
 #   particle bunch
 distr = distribution.Waterbag(
@@ -47,16 +49,24 @@ sim.add_particles(bunch_charge_C, distr, npart)
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
-vertices_x = [float(u) for u in "0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3 1.5e-3 1.5e-3 0.5e-3".split()]
-vertices_y = [float(u) for u in "0.5e-3 1.5e-3 1.5e-3 0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3".split()]
+vertices_x = [
+    float(u)
+    for u in "0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3 1.5e-3 1.5e-3 0.5e-3".split()
+]
+vertices_y = [
+    float(u)
+    for u in "0.5e-3 1.5e-3 1.5e-3 0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3".split()
+]
 mr2 = 2 * 0.5e-3**2
 
-aperture = elements.PolygonAperture(vertices_x, vertices_y, action="absorb", rotation=30.0)
+aperture = elements.PolygonAperture(
+    vertices_x, vertices_y, action="absorb", rotation=30.0
+)
 
 print(aperture.to_dict())
 assert aperture.min_radius2 == 0.0
 aperture.min_radius2 = mr2
-assert abs(aperture.min_radius2/mr2 - 1.0) < 1.0e-15
+assert abs(aperture.min_radius2 / mr2 - 1.0) < 1.0e-15
 
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element

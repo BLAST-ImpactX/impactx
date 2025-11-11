@@ -1058,7 +1058,7 @@ add_impactx_test(polygon_aperture
     examples/polygon_aperture/plot_polygon_aperture.py
 )
 add_impactx_test(polygon_aperture.py
-    examples/polygon_aperture/run_polygon_aperture.in
+    examples/polygon_aperture/run_polygon_aperture.py
     ON  # ImpactX MPI-parallel
     examples/polygon_aperture/analysis_polygon_aperture.py
     examples/polygon_aperture/plot_polygon_aperture.py

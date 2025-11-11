@@ -1518,7 +1518,6 @@ void init_elements(py::module& m)
     ;
     register_push(py_PlaneXYRot);
 
-///////////////////////////////////////////// EGS is here
     py::class_<PolygonAperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PolygonAperture(me, "PolygonAperture");
     py_PolygonAperture
         .def("__repr__",
@@ -1620,7 +1619,6 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_PolygonAperture);
-///////////////////////////////////////////////  EGS was here
 
     py::class_<Programmable, elements::mixin::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",

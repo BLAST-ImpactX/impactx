@@ -1565,7 +1565,7 @@ void init_elements(py::module& m)
                     pa_action = PolygonAperture::Action::absorb;
                  } else
                      throw std::runtime_error(R"(action must be "transmit" or "absorb")");
-                
+
                  return new PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y, shift_odd_x, pa_action, dx, dy, rotation_degree, name);
              }),
              py::arg("vertices_x"),

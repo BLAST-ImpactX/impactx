@@ -1049,6 +1049,20 @@ add_impactx_test(absorber.py
     OFF  # no plot script yet
 )
 
+# Polygon Aperture #######################################################################
+#
+add_impactx_test(polygon_aperture
+    examples/polygon_aperture/input_polygon_aperture.in
+    ON  # ImpactX MPI-parallel
+    examples/polygon_aperture/analysis_polygon_aperture.py
+    examples/polygon_aperture/plot_polygon_aperture.py
+)
+add_impactx_test(polygon_aperture
+    examples/polygon_aperture/run_polygon_aperture.in
+    ON  # ImpactX MPI-parallel
+    examples/polygon_aperture/analysis_polygon_aperture.py
+    examples/polygon_aperture/plot_polygon_aperture.py
+)
 
 # Apochromat drift-quad example ##########################################################
 #

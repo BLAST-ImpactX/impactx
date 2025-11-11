@@ -87,7 +87,9 @@ namespace impactx::particles::spacecharge
                     auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;
 
-                    // TODO: add in z-dependent scaling by current?
+                    if (space_charge == SpaceChargeAlgo::True_2p5D) {
+                        // TODO: calculate z-dependent scaling by current
+                    }
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
@@ -112,6 +114,12 @@ namespace impactx::particles::spacecharge
                         py += field_interp[1] * push_consts * dr[2] / (beta * c0_SI);
                         pz += 0.0_rt;
                         //pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
+                        if (space_charge == SpaceChargeAlgo::True_2p5D) {
+                           // TODO: apply z-dependent scaling by current and longitudinal kick
+                           px += 0.0_rt;
+                           py += 0.0_rt;
+                           pz += 0.0_rt;
+                        }
 
                         // push position is done in the lattice elements
                     });

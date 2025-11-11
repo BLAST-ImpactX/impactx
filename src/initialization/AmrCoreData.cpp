@@ -150,7 +150,7 @@ namespace impactx::initialization
         int const num_components_phi = 1;
         amrex::IntVect num_guards_phi{num_guards_rho + 1}; // todo: I think this just depends on max(MLMG, force calc)
         amrex::BoxArray phi_ba = cba;
-        if (space_charge == SpaceChargeAlgo::True_2D) {
+        if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             num_guards_phi[2] = 0;
             amrex::BoxList bl(amrex::IndexType{rho_nodal_flag});
             bl.reserve(cba.size());
@@ -169,7 +169,7 @@ namespace impactx::initialization
 
         // space charge force
         amrex::IntVect num_guards_force(num_guards_rho);
-        if (space_charge == SpaceChargeAlgo::True_2D) { num_guards_force[2] = 0; }
+        if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) { num_guards_force[2] = 0; }
         std::unordered_map<std::string, amrex::MultiFab> f_comp;
         for (std::string const comp : {"x", "y", "z"})
         {

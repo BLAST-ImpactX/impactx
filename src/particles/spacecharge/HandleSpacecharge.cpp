@@ -79,8 +79,6 @@ namespace impactx::particles::spacecharge
                 amr_data->refRatio()
             );
 
-            // TODO for 2.5D: deposit charge/current in 1D array
-
             // poisson solve in x,y,z
             spacecharge::PoissonSolve(
                 *amr_data->track_particles.m_particle_container,

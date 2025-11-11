@@ -70,6 +70,9 @@ namespace impactx::particles::spacecharge
         if (space_charge == SpaceChargeAlgo::True_2D && poisson_solver != "fft") {
             throw std::runtime_error("algo.poisson_solver must be fft for SpaceChargeAlgo::True_2D");
         }
+        if (space_charge == SpaceChargeAlgo::True_2p5D && poisson_solver != "fft") {
+            throw std::runtime_error("algo.poisson_solver must be fft for SpaceChargeAlgo::True_2p5D");
+        }
 
         // MLMG options
         amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
@@ -84,7 +87,7 @@ namespace impactx::particles::spacecharge
 
         // flatten rho to 2D
         std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
-        if (space_charge == SpaceChargeAlgo::True_2D) {
+        if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             auto geom_3d = pc.GetParGDB()->Geom();
             amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
             rho_2d = flatten_charge_to_2D(rho, domain_3d);
@@ -98,7 +101,7 @@ namespace impactx::particles::spacecharge
 
         // create phi_2d and sort rho/phi pointers
         for (int lev = 0; lev <= finest_level; ++lev) {
-            if (space_charge == SpaceChargeAlgo::True_2D) {
+            if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
                 int nz = pc.GetParGDB()->Geom(lev).Domain().length(2);
                 if (nz == 1) {
                     sorted_phi.emplace_back(&phi[lev]);
@@ -119,7 +122,7 @@ namespace impactx::particles::spacecharge
             }
         }
 
-        const bool is_igf_2d = space_charge == SpaceChargeAlgo::True_2D;
+        const bool is_igf_2d = (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D);
         const bool do_single_precision_comms = false;
         const bool eb_enabled = false;
         ablastr::fields::computePhi(
@@ -154,7 +157,7 @@ namespace impactx::particles::spacecharge
         }
 
         // We may need to copy phi from phi_2d
-        if (space_charge == SpaceChargeAlgo::True_2D) {
+        if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             for (int lev=0; lev<=finest_level; lev++) {
                 if (&(phi[lev]) != sorted_phi[lev]) {
                     phi[lev].ParallelCopy(*sorted_phi[lev]);

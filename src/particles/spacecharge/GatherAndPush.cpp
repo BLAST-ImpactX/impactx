@@ -10,13 +10,15 @@
 #include "GatherAndPush.H"
 
 #include "initialization/Algorithms.H"
+#include "particles/wakefields/ChargeBinning.H"
 
 #include <ablastr/particles/NodalFieldGather.H>
 
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
-
+#include <AMReX_GpuContainers.H>
+#include <AMReX_ParmParse.H>
 
 namespace impactx::particles::spacecharge
 {
@@ -87,9 +89,44 @@ namespace impactx::particles::spacecharge
                     auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;
 
-                    if (space_charge == SpaceChargeAlgo::True_2p5D) {
-                        // TODO: calculate z-dependent scaling by current
-                    }
+             /*       if (space_charge == SpaceChargeAlgo::True_2p5D) {
+                        // Calculate z-dependent scaling by current
+                        int tp5d_bins = 129;
+                        amrex::ParmParse pp_algo("algo.space_charge");
+                        pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
+
+                        // Set parameters for charge deposition
+                        bool const is_unity_particle_weight = false;
+                        bool const GetNumberDensity = true;
+
+                        // Measure beam size, extract the min, max of particle positions
+                        [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
+                        pc.MinAndMaxPositions();
+
+                        int const num_bins = tp5d_bins;  // Set resolution
+                        amrex::Real const bin_min = t_min;
+                        amrex::Real const bin_max = t_max;
+                        amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);  // number of evaluation points
+                        // Allocate memory for the charge profile
+                        amrex::Gpu::DeviceVector<amrex::Real> charge_distribution(num_bins + 1, 0.0);
+                        // Call charge deposition function
+                        impactx::particles::wakefields::DepositCharge1D(pc, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
+
+                        // Sum up all partial charge histograms to each MPI process to calculate
+                        // the global charge slope.
+                        amrex::ParallelAllReduce::Sum(
+                            charge_distribution.data(),
+                            charge_distribution.size(),
+                            amrex::ParallelDescriptor::Communicator()
+                        );
+
+                        // Call charge density derivative function
+                        amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);
+                        impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, slopes, bin_size,GetNumberDensity);
+
+                        amrex::Real const * const beam_profile_slope = slopes.data();
+                        amrex::Real const * const beam_profile = charge_distribution.data();
+                    } */
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
@@ -110,15 +147,16 @@ namespace impactx::particles::spacecharge
                             );
 
                         // push momentum
-                        px += field_interp[0] * push_consts * dr[2] / (beta * c0_SI);
-                        py += field_interp[1] * push_consts * dr[2] / (beta * c0_SI);
-                        pz += 0.0_rt;
-                        //pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
-                        if (space_charge == SpaceChargeAlgo::True_2p5D) {
-                           // TODO: apply z-dependent scaling by current and longitudinal kick
-                           px += 0.0_rt;
-                           py += 0.0_rt;
+                        if (space_charge == SpaceChargeAlgo::True_2D) {
+                           px += field_interp[0] * push_consts * dr[2] / (beta * c0_SI);
+                           py += field_interp[1] * push_consts * dr[2] / (beta * c0_SI);
                            pz += 0.0_rt;
+                        } else if (space_charge == SpaceChargeAlgo::True_2p5D) {
+                           // TODO: apply z-dependent scaling by current and longitudinal kick
+                           px += field_interp[0] * push_consts * dr[2];
+                           py += field_interp[1] * push_consts * dr[2];
+                           pz += 0.0_rt;
+                        } else {
                         }
 
                         // push position is done in the lattice elements

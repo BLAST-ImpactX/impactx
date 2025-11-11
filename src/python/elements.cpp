@@ -1602,18 +1602,18 @@ void init_elements(py::module& m)
             "All particles with radius squared smaller than min_radius2 pass the aperture"
         )
         .def_property("repeat_x",
-            [](Aperture & ap) { return ap.m_repeat_x; },
-            [](Aperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
+            [](PolygonAperture & ap) { return ap.m_repeat_x; },
+            [](PolygonAperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
             "horizontal period for repeated aperture masking"
         )
         .def_property("repeat_y",
-            [](Aperture & ap) { return ap.m_repeat_y; },
-            [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
+            [](PolygonAperture & ap) { return ap.m_repeat_y; },
+            [](PolygonAperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
             "vertical period for repeated aperture masking"
         )
         .def_property("shift_odd_x",
-            [](Aperture & ap) { return ap.m_shift_odd_x; },
-            [](Aperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
+            [](PolygonAperture & ap) { return ap.m_shift_odd_x; },
+            [](PolygonAperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
             "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. "
             "Use alignment offsets dx,dy to move whole mask as needed."
         )

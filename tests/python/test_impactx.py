@@ -168,7 +168,7 @@ def test_impactx_nofile():
 
     # simulate full lattice but keep beam global position
     sim.track_particles()
-    # assert ref.s == pytest.approx(7.0)
+    assert ref.s == pytest.approx(7.0)
 
     # finalize simulation
     sim.finalize()

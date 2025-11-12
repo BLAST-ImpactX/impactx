@@ -19,6 +19,7 @@ if os.name == "nt":
 # import core bindings to C++
 from . import impactx_pybind
 from .impactx_pybind import *  # noqa
+from .Kahan import kahan_babushka_cumsum, kahan_babushka_sum  # noqa
 from .madx_to_impactx import read_beam  # noqa
 
 __version__ = impactx_pybind.__version__

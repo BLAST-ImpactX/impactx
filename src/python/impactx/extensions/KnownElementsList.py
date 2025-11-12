@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import os
 import re
 
-from impactx import elements
+from impactx import elements, kahan_babushka_sum
 
 
 def load_file(self, filename, nslice=1):
@@ -124,6 +124,7 @@ class FilteredElementsList:
         *,
         kind=None,
         name=None,
+        s=None,
     ):
         """Apply filtering to this filtered list.
 
@@ -146,10 +147,14 @@ class FilteredElementsList:
                      Examples: "quad1", r"quad\d+", ["quad1", "quad2"], [r"quad\d+", "bend1"]
         :type name: str or list[str] or tuple[str, ...] or None, optional
 
+        :param s: Position range to filter by. Tuple/list with (lower, upper) bounds where None represents open-ended.
+                  Elements are selected if ANY part overlaps with the range. Examples: (1.0, 5.0) for range 1.0 <= s <= 5.0, (1.0, None) for s >= 1.0, (None, 5.0) for s <= 5.0
+        :type s: tuple[float | None, float | None] or list[float | None] or None, optional
+
         :return: FilteredElementsList containing references to original elements
         :rtype: FilteredElementsList
 
-        :raises TypeError: If kind/name parameters have wrong types
+        :raises TypeError: If kind/name/s parameters have wrong types
 
         **Examples:**
 
@@ -169,18 +174,26 @@ class FilteredElementsList:
             strong_quads = quad_elements.select(
                 name=r"quad\d+"
             )  # Filter quads by regex pattern
+
+            # Position-based filtering (always calculated from original lattice)
+            early_elements = lattice.select(s=(None, 2.0))  # Elements with s <= 2.0
+            drift_then_early = lattice.select(kind="Drift").select(
+                s=(1.0, None)
+            )  # Drift elements with s >= 1.0
         """
         # Apply filtering directly to the indices we already have
-        if kind is not None or name is not None:
+        if kind is not None or name is not None or s is not None:
             # Validate parameters
-            _validate_select_parameters(kind, name)
+            _validate_select_parameters(kind, name, s)
 
             matching_indices = []
 
-            for i in self._indices:
-                element = self._original_list[i]
-                if _check_element_match(element, kind, name):
-                    matching_indices.append(i)
+            for original_idx in self._indices:
+                element = self._original_list[original_idx]
+                if _check_element_match(
+                    element, kind, name, s, original_idx, self._original_list
+                ):
+                    matching_indices.append(original_idx)
 
             return FilteredElementsList(self._original_list, matching_indices)
 
@@ -249,12 +262,13 @@ def _matches_string(text: str, string_pattern: str) -> bool:
         return text == string_pattern
 
 
-def _validate_select_parameters(kind, name):
+def _validate_select_parameters(kind, name, s):
     """Validate parameters for select methods.
 
     Args:
         kind: Element type(s) to filter by
         name: Element name(s) to filter by
+        s: Position range to filter by
 
     Raises:
         TypeError: If parameters have wrong types
@@ -277,6 +291,20 @@ def _validate_select_parameters(kind, name):
         elif not isinstance(name, str):
             raise TypeError(
                 "'name' parameter must be a string or list/tuple of strings"
+            )
+
+    if s is not None:
+        if isinstance(s, (list, tuple)):
+            if len(s) != 2:
+                raise TypeError(
+                    "'s' parameter must have exactly 2 elements (lower, upper)"
+                )
+            for bound in s:
+                if bound is not None and not isinstance(bound, (int, float)):
+                    raise TypeError("'s' parameter bounds must be numbers or None")
+        else:
+            raise TypeError(
+                "'s' parameter must be a tuple/list with 2 elements (lower, upper)"
             )
 
 
@@ -316,13 +344,57 @@ def _matches_name_pattern(element, name_pattern):
     )
 
 
-def _check_element_match(element, kind, name):
-    """Check if an element matches the given kind and name criteria.
+def _matches_s_position(element, s_range, element_s):
+    """Check if an element's integrated position matches the s range criteria.
+
+    An element matches if ANY part of it overlaps with the specified range.
+    The element spans from element_s to element_s + element.ds.
+
+    Args:
+        element: The element to check
+        s_range: Tuple/list of (lower, upper) bounds. None represents open-ended.
+        element_s: The cumulative position of the element (calculated externally)
+
+    Returns:
+        bool: True if element's position overlaps with the range
+    """
+    if s_range is None:
+        return True
+
+    # Convert to tuple if it's a list
+    if isinstance(s_range, list):
+        s_range = tuple(s_range)
+
+    if not isinstance(s_range, tuple) or len(s_range) != 2:
+        raise TypeError(
+            "'s' parameter must be a tuple/list with 2 elements (lower, upper)"
+        )
+
+    lower, upper = s_range
+
+    # Element spans from element_s to element_s + element.ds
+    element_start = element_s
+    element_end = element_s + element.ds
+
+    # Check if any part of the element overlaps with the range
+    if lower is not None and element_end < lower:
+        return False
+    if upper is not None and element_start > upper:
+        return False
+
+    return True
+
+
+def _check_element_match(element, kind, name, s, element_index, lattice):
+    """Check if an element matches the given kind, name, and s criteria.
 
     Args:
         element: The element to check
         kind: Kind criteria (str, type, list, tuple, or None)
         name: Name criteria (str, list, tuple, or None)
+        s: Position criteria (tuple/list with 2 elements, or None)
+        element_index: Index of the element in the lattice
+        lattice: The full lattice to calculate cumulative positions
 
     Returns:
         bool: True if element matches any criteria (OR logic)
@@ -355,6 +427,15 @@ def _check_element_match(element, kind, name):
                     match = True
                     break
 
+    # Check for 's' parameter (only if neither kind nor name matched - OR logic)
+    if s is not None and not match:
+        # Calculate cumulative position up to this element using accurate summation
+        ds_values = [lattice[i].ds for i in range(element_index)]
+        cumulative_s = kahan_babushka_sum(ds_values)
+
+        if _matches_s_position(element, s, cumulative_s):
+            match = True
+
     return match
 
 
@@ -363,16 +444,17 @@ def select(
     *,
     kind=None,
     name=None,
+    s=None,
 ) -> FilteredElementsList:
-    """Filter elements by type and name with OR-based logic.
+    """Filter elements by type, name, and position with OR-based logic.
 
-    This method supports filtering elements by their type and/or name using keyword arguments.
+    This method supports filtering elements by their type, name, and/or integrated position using keyword arguments.
     Returns references to original elements, allowing modification and chaining.
 
     **Filtering Logic:**
 
     - **Within a single filter**: OR logic (e.g., ``kind=["Drift", "Quad"]`` matches Drift OR Quad)
-    - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1"`` matches Quad OR named "quad1")
+    - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1", s=(1.0, 5.0)`` matches Quad OR named "quad1" OR in position range)
     - **Chaining filters**: AND logic (e.g., ``lattice.select(kind="Drift").select(name="drift1")`` matches Drift AND named "drift1")
 
     :param kind: Element type(s) to filter by. Can be a single string/type or a list/tuple
@@ -385,10 +467,14 @@ def select(
                  Examples: "quad1", r"quad\d+", ["quad1", "quad2"], [r"quad\d+", "bend1"]
     :type name: str or list[str] or tuple[str, ...] or None, optional
 
+    :param s: Position range to filter by. Tuple/list with (lower, upper) bounds where None represents open-ended.
+              Elements are selected if ANY part overlaps with the range. Examples: (1.0, 5.0) for range 1.0 <= s <= 5.0, (1.0, None) for s >= 1.0, (None, 5.0) for s <= 5.0
+    :type s: tuple[float | None, float | None] or list[float | None] or None, optional
+
     :return: FilteredElementsList containing references to original elements
     :rtype: FilteredElementsList
 
-    :raises TypeError: If kind/name parameters have wrong types
+    :raises TypeError: If kind/name/s parameters have wrong types
 
     **Examples:**
 
@@ -423,6 +509,15 @@ def select(
          lattice.select(name=r"quad\d+")  # Get elements matching pattern
          lattice.select(name=[r"quad\d+", "bend1"])  # Mix regex and strings
 
+     Position-based filtering:
+
+     .. code-block:: python
+
+         lattice.select(s=(1.0, 5.0))  # Elements that overlap with range 1.0 <= s <= 5.0
+         lattice.select(s=(1.0, None))  # Elements that overlap with s >= 1.0
+         lattice.select(s=(None, 5.0))  # Elements that overlap with s <= 5.0
+         lattice.select(kind="Drift", s=(0.0, 2.0))  # Drift elements OR overlapping range 0.0 <= s <= 2.0
+
     Chaining filters (AND logic between chained calls):
 
     .. code-block:: python
@@ -455,14 +550,14 @@ def select(
     """
 
     # Handle keyword arguments for filtering
-    if kind is not None or name is not None:
+    if kind is not None or name is not None or s is not None:
         # Validate parameters
-        _validate_select_parameters(kind, name)
+        _validate_select_parameters(kind, name, s)
 
         matching_indices = []
 
         for i, element in enumerate(self):
-            if _check_element_match(element, kind, name):
+            if _check_element_match(element, kind, name, s, i, self):
                 matching_indices.append(i)
 
         return FilteredElementsList(self, matching_indices)

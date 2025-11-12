@@ -811,3 +811,94 @@ def test_select_no_arguments():
     all_then_drift = lattice.select().select(kind="Drift")
     assert len(all_then_drift) == 2
     assert [el.name for el in all_then_drift] == ["drift1", "drift2"]
+
+
+def test_position_filtering():
+    """Test position-based filtering with s parameter."""
+    import impactx
+    from impactx import elements
+
+    # Create a lattice with known positions
+    lattice = impactx.elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="drift1", ds=1.0),
+            elements.Quad(name="quad1", ds=0.5, k=1.0),
+            elements.Drift(name="drift2", ds=2.0),
+            elements.Quad(name="quad2", ds=0.3, k=-1.0),
+            elements.Drift(name="drift3", ds=1.5),
+        ]
+    )
+
+    # Test range filtering
+    early_elements = lattice.select(s=(None, 2.0))
+    assert len(early_elements) == 3  # drift1, quad1, drift2
+    assert early_elements[0].name == "drift1"
+    assert early_elements[1].name == "quad1"
+    assert early_elements[2].name == "drift2"
+
+    # Test range filtering with both bounds (overlap logic)
+    middle_elements = lattice.select(s=(1.0, 3.0))
+    assert len(middle_elements) == 3  # drift1, quad1, drift2 (all overlap with range)
+    assert middle_elements[0].name == "drift1"  # s=[0.0, 1.0] overlaps with [1.0, 3.0]
+    assert middle_elements[1].name == "quad1"  # s=[1.0, 1.5] overlaps with [1.0, 3.0]
+    assert middle_elements[2].name == "drift2"  # s=[1.5, 3.5] overlaps with [1.0, 3.0]
+
+    # Test upper bound only
+    late_elements = lattice.select(s=(3.0, None))
+    assert len(late_elements) == 3  # drift2, quad2, drift3
+    assert late_elements[0].name == "drift2"
+    assert late_elements[1].name == "quad2"
+    assert late_elements[2].name == "drift3"
+
+    # Test combined filtering (OR logic)
+    drift_or_early = lattice.select(kind="Drift", s=(None, 2.0))
+    assert len(drift_or_early) == 4  # All drifts + early elements
+    drift_names = [el.name for el in drift_or_early if el.name.startswith("drift")]
+    assert len(drift_names) == 3  # All 3 drifts
+    assert "drift1" in drift_names
+    assert "drift2" in drift_names
+    assert "drift3" in drift_names
+
+    # Test chaining (AND logic)
+    drift_then_early = lattice.select(kind="Drift").select(s=(None, 1.9))
+    assert len(drift_then_early) == 2  # Only drift1 and drift2
+    assert drift_then_early[0].name == "drift1"
+    assert drift_then_early[1].name == "drift2"
+
+    # Test reference preservation through chaining
+    original_ds = lattice[1].ds
+    chained_elements = lattice.select(kind="Quad").select(s=(1.0, 1.9))
+    chained_elements[0].ds = 0.8  # Modify through chained filter
+    assert lattice[1].ds == 0.8  # Original element modified
+    lattice[1].ds = original_ds  # Reset
+
+    # Test with list syntax
+    range_list = lattice.select(s=[1.0, 2.9])
+    assert len(range_list) == 3
+    assert range_list[0].name == "drift1"
+
+    # Test explicit overlap behavior
+    # Element at s=[0.0, 1.0] should be included in range [0.5, 1.5] because it overlaps
+    # Element at s=[1.0, 1.5] should be included in range [0.5, 1.5] because it overlaps
+    # Element at s=[1.5, 3.5] should NOT be included because it doesn't overlap with [0.5, 1.5]
+    overlap_test = lattice.select(s=(0.5, 1.4))
+    assert len(overlap_test) == 2  # drift1 and quad1 both overlap
+    assert overlap_test[0].name == "drift1"  # s=[0.0, 1.0] overlaps with [0.5, 1.5]
+    assert overlap_test[1].name == "quad1"  # s=[1.0, 1.5] overlaps with [0.5, 1.5]
+
+    # Test non-overlap case
+    # Range [0.2, 0.8] should only include drift1 (s=[0.0, 1.0])
+    narrow_test = lattice.select(s=(0.2, 0.8))
+    assert len(narrow_test) == 1
+    assert narrow_test[0].name == "drift1"  # Only drift1 overlaps with [0.2, 0.8]
+
+    # Test error handling
+    with pytest.raises(TypeError, match="must have exactly 2 elements"):
+        lattice.select(s=(1.0,))  # Wrong number of elements
+
+    with pytest.raises(TypeError, match="must be a tuple/list with 2 elements"):
+        lattice.select(s="invalid")  # Wrong type
+
+    with pytest.raises(TypeError, match="bounds must be numbers or None"):
+        lattice.select(s=(1.0, "invalid"))  # Wrong bound type

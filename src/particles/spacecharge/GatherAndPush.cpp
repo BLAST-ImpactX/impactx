@@ -89,7 +89,7 @@ namespace impactx::particles::spacecharge
                     auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;
 
-             /*       if (space_charge == SpaceChargeAlgo::True_2p5D) {
+                    if (space_charge == SpaceChargeAlgo::True_2p5D) {
                         // Calculate z-dependent scaling by current
                         int tp5d_bins = 129;
                         amrex::ParmParse pp_algo("algo.space_charge");
@@ -126,7 +126,7 @@ namespace impactx::particles::spacecharge
 
                         amrex::Real const * const beam_profile_slope = slopes.data();
                         amrex::Real const * const beam_profile = charge_distribution.data();
-                    } */
+                    }
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data

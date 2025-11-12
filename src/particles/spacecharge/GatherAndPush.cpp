@@ -153,8 +153,8 @@ namespace impactx::particles::spacecharge
                            pz += 0.0_rt;
                         } else if (space_charge == SpaceChargeAlgo::True_2p5D) {
                            // TODO: apply z-dependent scaling by current and longitudinal kick
-                           px += field_interp[0] * push_consts * dr[2];
-                           py += field_interp[1] * push_consts * dr[2];
+                           px += field_interp[0] * push_consts;
+                           py += field_interp[1] * push_consts;
                            pz += 0.0_rt;
                         } else {
                         }

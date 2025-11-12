@@ -124,8 +124,8 @@ namespace impactx::particles::spacecharge
                         amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);
                         impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, slopes, bin_size,GetNumberDensity);
 
-                        amrex::Real const * const beam_profile_slope = slopes.data();
-                        amrex::Real const * const beam_profile = charge_distribution.data();
+                        [[maybe_unused]] amrex::Real const * const beam_profile_slope = slopes.data();
+                        [[maybe_unused]] amrex::Real const * const beam_profile = charge_distribution.data();
                     }
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {

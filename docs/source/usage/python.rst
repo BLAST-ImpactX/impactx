@@ -1405,7 +1405,7 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:property:: min_radius2
 
-      radius-squared of a fully incribed circle. Particles with radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped.
+      radius-squared of a fully inscribed circle. Particles with radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped.
 
       aperture type (transmit, absorb)
 

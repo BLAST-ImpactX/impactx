@@ -54,7 +54,7 @@ Other examples are
          ``examples/polygon_aperture/input_polygon_aperture_absorb_rotate.in``
    * Aperture with offset that absorbs
       :Python:
-         ``examples/polygon_aperture/run_polygon_aperture_absorb_offset.py
+         ``examples/polygon_aperture/run_polygon_aperture_absorb_offset.py``
       :Input file:
          ``examples/polygon_aperture/input_polygon_aperture_absorb_offset.in``
    * Aperture with offset and rotation that absorbs
@@ -80,7 +80,7 @@ The number of surviving particles is printed and checked.
 Visualize
 ---------
 
-You can run the following script to visualize the beam evolution over time:
+You can run the following script to visualize aperture effect:
 
 .. dropdown:: Script ``plot_polygon_aperture.py``
 

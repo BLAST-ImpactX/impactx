@@ -38,7 +38,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
        .. literalinclude:: input_fodo.in
           :language: ini
-          :caption: You can copy this file from ``examples/polygon_aperture/input_fodo.in``.
+          :caption: You can copy this file from ``examples/polygon_aperture/input_polygon_aperture.in``.
 
 Other examples are
 ..

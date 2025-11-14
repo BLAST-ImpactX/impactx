@@ -528,7 +528,7 @@ This requires these additional parameters:
 
 
 ``polygon_aperture``
-^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 ``polygon_aperture`` for a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
 and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.

@@ -1,7 +1,7 @@
 .. _examples-fodo:
 
 Polygon Aperture
-=========
+================
 
 A 2D transverse aperture of a closed polygon defined by the :math:`x` and
 :math:`y` coordinates of the vertices.

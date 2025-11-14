@@ -60,8 +60,8 @@ namespace impactx::elements
       public mixin::LinearTransport<PolygonAperture>,
       public mixin::Thin,
       public mixin::Alignment,
-      public mixin::NoFinalize,
-      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+      public mixin::NoFinalize
+      // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "PolygonAperture";
         using PType = ImpactXParticleContainer::ParticleType;

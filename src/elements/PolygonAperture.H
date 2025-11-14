@@ -240,6 +240,23 @@ namespace impactx::elements
 #endif
 
                 // no, we have to do the polygon calculation
+
+                /*
+                 * The algorithms works as follows:
+                 *
+                 * You have a polygon (in 2D) described by points V_1, ..., V_n arranged
+                 * counter-clockwise. You have a particle with coordinates w = (x,y).
+                 * Get the difference vector from the particle to each of
+                 * the vertices in turn expressed as a complex number z_k, k=1,n. Now the angle
+                 * between the particle and vertex i and vertex j is
+                 *
+                 * theta_{ij} = arg(\bar{z_i} z_j)
+                 * This is easily demonstrated by expressing the complex numbers in exponential
+                 * polar notation and also the angle is positive in the counter-clockwise direction.
+                 *
+                 * Take the sum of all the angles. The angle sum for particle inside the polygon will
+                 * be 2 pi. The sum of angles of particle outside of the polygon will be 0.
+                */
                 T_Real thetasum = 0.0;
                 Complex v1conj, v2;
 

@@ -46,7 +46,7 @@ namespace impactx::particles::spacecharge
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
             pc.MinAndMaxPositions();
 
-        amrex::Real bin_min = t_min; 
+        amrex::Real bin_min = t_min;
         amrex::Real bin_max = t_max;
         amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);
 

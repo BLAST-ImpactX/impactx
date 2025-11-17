@@ -11,6 +11,7 @@
 
 #include "initialization/Algorithms.H"
 #include "particles/wakefields/ChargeBinning.H"
+#include "particles/spacecharge/Deposit1D.H"
 
 #include <ablastr/particles/NodalFieldGather.H>
 
@@ -36,6 +37,23 @@ namespace impactx::particles::spacecharge
         auto space_charge = get_space_charge_algo();
 
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
+
+        // Deposit 1D charge density in cases where it is required.
+        amrex::Real * beam_profile = nullptr;
+        amrex::Real * beam_profile_slope = nullptr;
+        int num_bins = 129;
+
+        [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
+            pc.MinAndMaxPositions();
+
+        amrex::Real bin_min = t_min; 
+        amrex::Real bin_max = t_max;
+        amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);
+
+        if (space_charge == SpaceChargeAlgo::True_2p5D) {
+
+            Deposit1D ( pc, beam_profile, beam_profile_slope, bin_min, bin_max, num_bins);
+        }
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -119,43 +137,6 @@ namespace impactx::particles::spacecharge
                     // flatten 3rd dimension
                     auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;
-
-                    // Calculate z-dependent scaling by current
-                    int tp5d_bins = 129;
-                    amrex::ParmParse pp_algo("algo.space_charge");
-                    pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
-
-                    // Set parameters for charge deposition
-                    bool const is_unity_particle_weight = false;
-                    bool const GetNumberDensity = true;
-
-                    // Measure beam size, extract the min, max of particle positions
-                    [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
-                    pc.MinAndMaxPositions();
-
-                    int const num_bins = tp5d_bins;  // Set resolution
-                    amrex::Real const bin_min = t_min;
-                    amrex::Real const bin_max = t_max;
-                    amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);  // number of evaluation points
-                    // Allocate memory for the charge profile
-                    amrex::Gpu::DeviceVector<amrex::Real> charge_distribution(num_bins + 1, 0.0);
-                    // Call charge deposition function
-                    impactx::particles::wakefields::DepositCharge1D(pc, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
-
-                    // Sum up all partial charge histograms to each MPI process to calculate
-                    // the global charge slope.
-                    amrex::ParallelAllReduce::Sum(
-                        charge_distribution.data(),
-                        charge_distribution.size(),
-                        amrex::ParallelDescriptor::Communicator()
-                    );
-
-                    // Call charge density derivative function
-                    amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);
-                    impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, slopes, bin_size,GetNumberDensity);
-
-                    amrex::Real const * const beam_profile_slope = slopes.data();
-                    amrex::Real const * const beam_profile = charge_distribution.data();
 
                     // group together constants for the momentum push
                     amrex::ParticleReal const chargesign = charge / std::abs(charge);

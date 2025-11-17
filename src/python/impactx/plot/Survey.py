@@ -88,7 +88,9 @@ def plot_survey(
                 height = copysign(0.8, element.rc(ref))
             else:  # guess
                 if el_type == "Sbend":
-                    el_dict["phi"] = el_dict["ds"] / (2 * np.pi * el_dict["rc"]) * 360  # calculate bending angle (in degrees) and add to dict    
+                    el_dict["phi"] = (
+                        el_dict["ds"] / (2 * np.pi * el_dict["rc"]) * 360
+                    )  # calculate bending angle (in degrees) and add to dict
                 height = copysign(0.8, el_dict["phi"])
         # TODO: sign dependent, read m_p_scale
         # if el_type == "Kicker":

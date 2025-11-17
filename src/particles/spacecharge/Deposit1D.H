@@ -26,7 +26,7 @@ namespace impactx::particles::spacecharge
      * @param[in] pc container of the particles that deposited rho
      * @param[out] beam_profile deposited charge density
      * @param[out] beam_profile_slope derivative of deposited charge density
-     * @param[in] bin_max location of lower endpoint for binning
+     * @param[in] bin_min location of lower endpoint for binning
      * @param[in] bin_max location of upper endpoint for binning
      * @param[in] num_bins number of longitudinal bins
      */

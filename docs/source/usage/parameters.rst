@@ -532,7 +532,7 @@ This requires these additional parameters:
 
 ``polygon_aperture`` for a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
 and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
-This requires these parameters:
+The first and last vertices must be identical. These parameters define the element:
 
 * ``<element_name>.vertices_x`` (``float``, in meters) array of horizontal locations of aperture vertices
 * ``<element_name>.vertices_y`` (``float``, in meters) array of vertical locations of aperture vertices

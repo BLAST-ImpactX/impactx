@@ -1390,6 +1390,7 @@ This module provides elements and methods for the accelerator lattice.
 
    This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
    and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+   The first and last vertices must be identical.
 
    :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
    :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m

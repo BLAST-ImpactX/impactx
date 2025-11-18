@@ -18,6 +18,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -36,6 +37,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element for DP and a gain for SP, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
@@ -288,6 +290,84 @@ namespace impactx::elements
 
             return R;
         }
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // the value of the gyromagnetic anomaly (TO BE PASSED FROM USER INPUT)
+            // currently, the default value for electrons is used
+            amrex::ParticleReal G = 0.00115965218046;
+            amrex::ParticleReal const gyro_const = 1_prt + G * refpart.gamma();
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // compute phase advance per unit length in s (in rad/m)
+            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+
+            // compute trigonometric quantities
+            sin_omega_ds = std::sin(omega*m_slice_ds);
+            cos_omega_ds = std::cos(omega*m_slice_ds);
+            sinh_omega_ds = std::sinh(omega*m_slice_ds);
+            cosh_omega_ds = std::cosh(omega*m_slice_ds);
+            
+            if (m_k > 0.0_prt)
+            {
+
+                // horizontally focusing quad case
+                lambdax = -gyro_const * ( py*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+                lambday = -gyro_const * ( px*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+
+            } else if (m_k < 0.0_prt)
+            {
+
+                // horizontally defocusing quad case
+                lambdax = -gyro_const * ( px*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+                lambday = -gyro_const * ( py*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+
+            } else {
+                // treat as a drift
+            }
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+ 
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

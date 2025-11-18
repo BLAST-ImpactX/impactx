@@ -19,11 +19,13 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <ablastr/constant.H>
+
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
-#include <ablastr/constant.H>
+
 #include <cmath>
 #include <stdexcept>
 

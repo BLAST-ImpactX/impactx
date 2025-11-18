@@ -344,7 +344,7 @@ namespace impactx::elements
             amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
             amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
             amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
-            
+
             if (m_k > 0.0_prt)
             {
 

@@ -1,4 +1,4 @@
-.. _examples-fodo:
+.. _examples-polygon-aperture:
 
 Polygon Aperture
 ================
@@ -30,39 +30,43 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_polygon_aperture.py
-          :language: python3
-          :caption: You can copy this file from ``examples/polygon_aperture/run_polygon_aperture.py``.
+      .. literalinclude:: run_polygon_aperture.py
+         :language: python3
+         :caption: You can copy this file from ``examples/polygon_aperture/run_polygon_aperture.py``.
 
    .. tab-item:: Executable: Input File
 
-       .. literalinclude:: input_fodo.in
-          :language: ini
-          :caption: You can copy this file from ``examples/polygon_aperture/input_polygon_aperture.in``.
+      .. literalinclude:: input_polygon_aperture.in
+         :language: ini
+         :caption: You can copy this file from ``examples/polygon_aperture/input_polygon_aperture.in``.
 
 Other examples are
-..
-   * Aperture that absorbs
-      :Python:
-         ``examples/polygon_aperture/run_polygon_aperture_absorb.py``
-      :Input file:
-         ``examples/polygon_aperture/input_polygon_aperture_absorb.in``
-   * Aperture with rotation that absorbs
-      :Python:
-         ``examples/polygon_aperture/run_polygon_aperture_absorb_rotate.py``
-      :Input file:
-         ``examples/polygon_aperture/input_polygon_aperture_absorb_rotate.in``
-   * Aperture with offset that absorbs
-      :Python:
-         ``examples/polygon_aperture/run_polygon_aperture_absorb_offset.py``
-      :Input file:
-         ``examples/polygon_aperture/input_polygon_aperture_absorb_offset.in``
-   * Aperture with offset and rotation that absorbs
-      :Python:
-         ``examples/polygon_aperture/run_polygon_aperture_absorb_rotate_offset.py
-      :Input file:
-         ``examples/polygon_aperture/input_polygon_aperture_absorb_rotate_offset.in``
 
+.. tab-set::
+
+   .. tab-item:: Aperture that absorbs
+
+      .. literalinclude:: run_polygon_aperture_absorb.py
+         :language: python3
+         :caption: You can copy this file from ``examples/polygon_aperture/run_polygon_aperture_absorb.py``.
+
+   .. tab-item:: Aperture with rotation that absorbs
+
+      .. literalinclude:: run_polygon_aperture_absorb_rotate.py
+         :language: python3
+         :caption: You can copy this file from ``examples/polygon_aperture/run_polygon_aperture_absorb_rotate.py``.
+
+   .. tab-item:: Aperture with offset that absorbs
+
+      .. literalinclude:: run_polygon_aperture_absorb_offset.py
+         :language: python3
+         :caption: You can copy this file from run_polygon_aperture_absorb_offset.py
+
+   .. tab-item:: Aperture with offset and rotation that absorbs
+
+      .. literalinclude:: run_polygon_aperture_absorb_rotate_offset.py
+         :language: python3
+         :caption: You can copy this file from ``examples/polygon_aperture/run_polygon_aperture_absorb_rotate_offset.py``.
 
 Analyze
 -------

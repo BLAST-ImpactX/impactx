@@ -60,7 +60,7 @@ vertices_y = [
 mr2 = 2 * 0.5e-3**2
 
 aperture = elements.PolygonAperture(
-    vertices_x, vertices_y, action="absorb", dx=0.0006, dy=-0.0012, rotation=30.0
+    vertices_x, vertices_y, action="absorb", dx=0.0006, dy=-0.0012
 )
 
 print(aperture.to_dict())

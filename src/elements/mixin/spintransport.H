@@ -52,9 +52,9 @@ namespace impactx::elements::mixin
             amrex::ParticleReal angle = std::sqrt(lambdax*lambdax+lambday*lambday+lambdaz*lambdaz);
             auto const [sin_half_angle, cos_half_angle] = amrex::Math::sincos(angle/2_prt);
             amrex::ParticleReal w0 = cos_half_angle;
-            amrex::ParticleReal w1 = (theta==0_prt) ? 0_prt : -(lambdax/theta)*sin_half_angle;
-            amrex::ParticleReal w2 = (theta==0_prt) ? 0_prt : -(lambday/theta)*sin_half_angle;
-            amrex::ParticleReal w3 = (theta==0_prt) ? 0_prt : -(lambdaz/theta)*sin_half_angle;
+            amrex::ParticleReal w1 = (angle==0_prt) ? 0_prt : -(lambdax/angle)*sin_half_angle;
+            amrex::ParticleReal w2 = (angle==0_prt) ? 0_prt : -(lambday/angle)*sin_half_angle;
+            amrex::ParticleReal w3 = (angle==0_prt) ? 0_prt : -(lambdaz/angle)*sin_half_angle;
 
             // Apply rotation
             amrex::ParticleReal sxout = (1_prt-2_prt*(w2*w2+w3*w3))*sx + 2_prt*(w1*w2+w0*w3)*sy + 2_prt*(w1*w3-w0*w2)*sz;

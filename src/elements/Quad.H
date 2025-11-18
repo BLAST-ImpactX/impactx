@@ -299,26 +299,26 @@ namespace impactx::elements
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
          * @param sx particle spin x-component
          * @param sy particle spin y-component
          * @param sz particle spin z-component
-         * @param idcpu particle global index
-         * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
-            T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT sz
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -340,11 +340,11 @@ namespace impactx::elements
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
 
             // compute trigonometric quantities
-            sin_omega_ds = std::sin(omega*m_slice_ds);
-            cos_omega_ds = std::cos(omega*m_slice_ds);
-            sinh_omega_ds = std::sinh(omega*m_slice_ds);
-            cosh_omega_ds = std::cosh(omega*m_slice_ds);
-
+            amrex::ParticleReal const sin_omega_ds = std::sin(omega*slice_ds);
+            amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
+            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
+            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
+            
             if (m_k > 0.0_prt)
             {
 

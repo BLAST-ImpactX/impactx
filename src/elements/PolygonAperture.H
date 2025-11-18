@@ -27,7 +27,9 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <map>
 #include <stdexcept>
+#include <vector>
 
 
 namespace impactx::elements

@@ -133,7 +133,7 @@ namespace impactx::elements
             // verify that first and last vertices are the same
             if ((vertices_x[0] != vertices_x[m_nvert-1]) ||
                 (vertices_y[0] != vertices_y[m_nvert-1])) {
-                    throw std::runtime_error("PolygonAperture: first and last vertex must be exactly equal!");    
+                    throw std::runtime_error("PolygonAperture: first and last vertex must be exactly equal!");
             }
 
             // host data

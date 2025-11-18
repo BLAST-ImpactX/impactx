@@ -130,6 +130,12 @@ namespace impactx::elements
                 throw std::runtime_error("PolygonAperture: horizontal and vertical vertices arrays must have same length!");
             }
 
+            // verify that first and last vertices are the same
+            if ((vertices_x[0] != vertices_x[m_nvert-1]) ||
+                (vertices_y[0] != vertices_y[m_nvert-1])) {
+                    throw std::runtime_error("PolygonAperture: first and last vertex must be exactly equal!");    
+            }
+
             // host data
             PolygonApertureData::h_vertices_x[m_id] = vertices_x;
             PolygonApertureData::h_vertices_y[m_id] = vertices_y;

@@ -1063,6 +1063,30 @@ add_impactx_test(polygon_aperture.py
     examples/polygon_aperture/analysis_polygon_aperture.py
     examples/polygon_aperture/plot_polygon_aperture.py
 )
+add_impactx_test(polygon_aperture_absorb.py
+    examples/polygon_aperture/run_polygon_aperture_absorb.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
+add_impactx_test(polygon_aperture_absorb_offset.py
+    examples/polygon_aperture/run_polygon_aperture_absorb_offset.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
+add_impactx_test(polygon_aperture_absorb_rotate.py
+    examples/polygon_aperture/run_polygon_aperture_absorb_rotate.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
+add_impactx_test(polygon_aperture_absorb_rotate_offset.py
+    examples/polygon_aperture/run_polygon_aperture_absorb_rotate_offset.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
 
 # Apochromat drift-quad example ##########################################################
 #

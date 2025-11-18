@@ -344,7 +344,7 @@ namespace impactx::elements
             cos_omega_ds = std::cos(omega*m_slice_ds);
             sinh_omega_ds = std::sinh(omega*m_slice_ds);
             cosh_omega_ds = std::cosh(omega*m_slice_ds);
-            
+
             if (m_k > 0.0_prt)
             {
 
@@ -365,7 +365,7 @@ namespace impactx::elements
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
- 
+
         }
 
 

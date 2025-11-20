@@ -10,6 +10,7 @@
 #ifndef IMPACTX_TO_FIXED_S_H
 #define IMPACTX_TO_FIXED_S_H
 
+#include "particles/transformation/SafeInverse.H"
 #include "particles/ImpactXParticleContainer.H"
 
 #include <AMReX_GpuQualifiers.H>
@@ -59,6 +60,14 @@ namespace impactx::transformation
             using namespace amrex::literals;
             using amrex::Math::powi;
 
+            // small tolerance to avoid division by zero and improve single precision stability
+            constexpr amrex::ParticleReal tol =
+#ifdef AMREX_SINGLE_PRECISION_PARTICLES
+                1.0e-6_prt;  // single precision
+#else
+                1.0e-12_prt;  // double precision
+#endif
+
             // compute value of reference ptd = -gamma
             amrex::ParticleReal const argd = 1.0_prt + powi<2>(m_pzd);
             AMREX_ASSERT_WITH_MESSAGE(argd > 0.0_prt, "invalid ptd arg (<=0)");
@@ -71,25 +80,33 @@ namespace impactx::transformation
             pz = pz * m_pzd;
 
             // compute value of particle pt = -gamma
-            amrex::ParticleReal const arg = 1.0_prt + powi<2>(m_pzd + pz) + powi<2>(px) + powi<2>(py);
+            amrex::ParticleReal const pz_total = m_pzd + pz;
+            amrex::ParticleReal const arg = 1.0_prt + powi<2>(pz_total) + powi<2>(px) + powi<2>(py);
             AMREX_ASSERT_WITH_MESSAGE(arg > 0.0_prt, "invalid pt arg (<=0)");
             amrex::ParticleReal const ptf = arg > 0.0_prt ? -std::sqrt(arg) : -1.0_prt;
 
             // transform position and momentum (from fixed t to fixed s)
-            x = x - px * z / (m_pzd + pz);
-            // px = px;
-            y = y - py * z / (m_pzd + pz);
-            // py = py;
+            //   numerical stability: avoid division by very small numbers
+            amrex::ParticleReal const inv_pz_total = safe_inverse(pz_total, tol);
+            // Compute products once to reduce rounding errors
+            amrex::ParticleReal const px_z = px * z;
+            amrex::ParticleReal const py_z = py * z;
+            amrex::ParticleReal const ptf_z = ptf * z;
+            x = x - px_z * inv_pz_total;
+            y = y - py_z * inv_pz_total;
             auto & t = z;    // We store t in the same memory slot as z.
-            t = ptf * z / (m_pzd + pz);
+            t = ptf_z * inv_pz_total;
+            // px = px;
+            // py = py;
             auto & pt = pz;  // We store pt in the same memory slot as pz.
             pt = ptf - ptdf;
 
             // transform momenta to static units (eg, so that momenta are
             // normalized by pzd):
-            px = px / m_pzd;
-            py = py / m_pzd;
-            pt = pz / m_pzd;
+            amrex::ParticleReal const inv_pzd = 1.0_prt / m_pzd;
+            px = px * inv_pzd;
+            py = py * inv_pzd;
+            pt = pt * inv_pzd;
         }
 
     private:

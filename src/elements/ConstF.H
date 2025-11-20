@@ -4,7 +4,7 @@
  *
  * This file is part of ImpactX.
  *
- * Authors: Chad Mitchell, Axel Huebl
+ * Authors: Chad Mitchell, Axel Huebl, Kyrre Sjobak
  * License: BSD-3-Clause-LBNL
  */
 #ifndef IMPACTX_CONSTF_H

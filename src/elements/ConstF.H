@@ -284,7 +284,7 @@ namespace impactx::elements
 
             // trigo
             // Note: The convention here is m_kx[1/m] = sign(k)*sqrt(abs(k))
-	    // while k[1/m^2] is in the usual quadrupole-like convention
+        // while k[1/m^2] is in the usual quadrupole-like convention
             amrex::ParticleReal sin_kxds, cos_kxds, const_x, sincx;
             if (m_kx > 0_prt) {
                 std::tie(sin_kxds, cos_kxds) = amrex::Math::sincos(m_kx * slice_ds);

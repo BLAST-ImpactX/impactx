@@ -340,8 +340,7 @@ namespace impactx::elements
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
 
             // compute trigonometric quantities
-            amrex::ParticleReal const sin_omega_ds = std::sin(omega*slice_ds);
-            amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
+            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*slice_ds);
             amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
             amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
 

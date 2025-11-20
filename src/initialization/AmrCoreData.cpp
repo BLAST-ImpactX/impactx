@@ -128,6 +128,8 @@ namespace impactx::initialization
         // for MR levels (TODO):
         //cba.coarsen(refRatio(lev - 1));
 
+        auto space_charge = get_space_charge_algo();
+
         // staggering and number of charge components in the field
         auto const rho_nodal_flag = amrex::IntVect::TheNodeVector();
         int const num_components_rho = 1;
@@ -145,14 +147,29 @@ namespace impactx::initialization
                 amrex::MultiFab{amrex::convert(cba, rho_nodal_flag), dm, num_components_rho, num_guards_rho, tag("rho")});
 
         // scalar potential
-        auto const phi_nodal_flag = rho_nodal_flag;
         int const num_components_phi = 1;
-        int const num_guards_phi = num_guards_rho + 1; // todo: I think this just depends on max(MLMG, force calc)
+        amrex::IntVect num_guards_phi{num_guards_rho + 1}; // todo: I think this just depends on max(MLMG, force calc)
+        amrex::BoxArray phi_ba = cba;
+        if (space_charge == SpaceChargeAlgo::True_2D) {
+            num_guards_phi[2] = 0;
+            amrex::BoxList bl(amrex::IndexType{rho_nodal_flag});
+            bl.reserve(cba.size());
+            for (int i = 0, N = cba.size(); i < N; ++i) {
+                amrex::Box b = cba[i];
+                b.convert(rho_nodal_flag).setRange(2,0); // Flatten box in z-direction
+                bl.push_back(b);
+            }
+            phi_ba = amrex::BoxArray(std::move(bl));
+        } else {
+            phi_ba.convert(rho_nodal_flag);
+        }
         track_particles.m_phi.emplace(
                 lev,
-                amrex::MultiFab{amrex::convert(cba, phi_nodal_flag), dm, num_components_phi, num_guards_phi, tag("phi")});
+                amrex::MultiFab{phi_ba, dm, num_components_phi, num_guards_phi, tag("phi")});
 
         // space charge force
+        amrex::IntVect num_guards_force(num_guards_rho);
+        if (space_charge == SpaceChargeAlgo::True_2D) { num_guards_force[2] = 0; }
         std::unordered_map<std::string, amrex::MultiFab> f_comp;
         for (std::string const comp : {"x", "y", "z"})
         {
@@ -160,10 +177,10 @@ namespace impactx::initialization
             f_comp.emplace(
                     comp,
                     amrex::MultiFab{
-                            amrex::convert(cba, rho_nodal_flag),
+                            phi_ba,
                             dm,
                             num_components_rho,
-                            num_guards_rho,
+                            num_guards_force,
                             tag(str_tag)
                     }
             );

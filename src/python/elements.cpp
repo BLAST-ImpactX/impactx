@@ -10,8 +10,7 @@
 #include <elements/mixin/lineartransport.H>
 #include <elements/transformation/Insert.H>
 
-#include <AMReX.H>
-
+#include <AMReX_Enum.H>
 #include <AMReX_REAL.H>
 
 #include <map>
@@ -249,7 +248,9 @@ void init_elements(py::module& m)
 
     py::class_<elements::mixin::Named>(mx, "Named")
         .def_property("name",
-            [](elements::mixin::Named & nm) { return nm.name(); },
+            [](elements::mixin::Named & nm) -> std::optional<std::string> {
+                return nm.has_name() ? std::optional<std::string>{nm.name()} : std::nullopt;
+            },
             [](elements::mixin::Named & nm, std::string new_name) { nm.set_name(new_name); },
             "segment length in m"
         )
@@ -352,6 +353,7 @@ void init_elements(py::module& m)
             &diagnostics::BeamMonitor::name,
             "name of the series"
         )
+        .def_property_readonly("has_name", &diagnostics::BeamMonitor::has_name)
         .def_property("nonlinear_lens_invariants",
             [](diagnostics::BeamMonitor & bm) { return detail::get_or_throw<bool>(bm.name(), "nonlinear_lens_invariants"); },
             [](diagnostics::BeamMonitor & bm, bool nonlinear_lens_invariants) {
@@ -807,7 +809,16 @@ void init_elements(py::module& m)
                      std::make_pair("psi", dip_edge.m_psi),
                      std::make_pair("rc", dip_edge.m_rc),
                      std::make_pair("g", dip_edge.m_g),
-                     std::make_pair("K2", dip_edge.m_K2)
+                     std::make_pair("R", dip_edge.m_R),
+                     std::make_pair("K0", dip_edge.m_K0),
+                     std::make_pair("K1", dip_edge.m_K1),
+                     std::make_pair("K2", dip_edge.m_K2),
+                     std::make_pair("K3", dip_edge.m_K3),
+                     std::make_pair("K4", dip_edge.m_K4),
+                     std::make_pair("K5", dip_edge.m_K5),
+                     std::make_pair("K6", dip_edge.m_K6),
+                     std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
                  );
              }
         )
@@ -818,29 +829,61 @@ void init_elements(py::module& m)
                      std::make_pair("psi", dip_edge.m_psi),
                      std::make_pair("rc", dip_edge.m_rc),
                      std::make_pair("g", dip_edge.m_g),
-                     std::make_pair("K2", dip_edge.m_K2)
+                     std::make_pair("R", dip_edge.m_R),
+                     std::make_pair("K0", dip_edge.m_K0),
+                     std::make_pair("K1", dip_edge.m_K1),
+                     std::make_pair("K2", dip_edge.m_K2),
+                     std::make_pair("K3", dip_edge.m_K3),
+                     std::make_pair("K4", dip_edge.m_K4),
+                     std::make_pair("K5", dip_edge.m_K5),
+                     std::make_pair("K6", dip_edge.m_K6),
+                     std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
                  );
              }
         )
-        .def(py::init<
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
-                std::optional<std::string>
-             >(),
-             py::arg("psi"),
-             py::arg("rc"),
-             py::arg("g"),
-             py::arg("K2"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("name") = py::none(),
-             "Edge focusing associated with bend entry or exit."
+        .def(py::init([](
+            amrex::ParticleReal psi,
+            amrex::ParticleReal rc,
+            amrex::ParticleReal g,
+            amrex::ParticleReal R,
+            amrex::ParticleReal K0,
+            amrex::ParticleReal K1,
+            amrex::ParticleReal K2,
+            amrex::ParticleReal K3,
+            amrex::ParticleReal K4,
+            amrex::ParticleReal K5,
+            amrex::ParticleReal K6,
+            std::string const & model,
+            std::string const & location,
+            amrex::ParticleReal dx,
+            amrex::ParticleReal dy,
+            amrex::ParticleReal rotation_degree,
+            std::optional<std::string> name
+            )
+            {
+                dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
+                dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
+                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
+            }),
+            py::arg("psi"),
+            py::arg("rc"),
+            py::arg("g"),
+            py::arg("R") = 1,
+            py::arg("K0") = ablastr::constant::math::pi*ablastr::constant::math::pi/6.0,
+            py::arg("K1") = 0,
+            py::arg("K2") = 1.0,
+            py::arg("K3") = 1.0/6.0,
+            py::arg("K4") = 0,
+            py::arg("K5") = 0,
+            py::arg("K6") = 0,
+            py::arg("model") = "linear",
+            py::arg("location") = "entry",
+            py::arg("dx") = 0,
+            py::arg("dy") = 0,
+            py::arg("rotation") = 0,
+            py::arg("name") = py::none(),
+            "Edge focusing associated with bend entry or exit."
         )
         .def_property("psi",
             [](DipEdge & dip_edge) { return dip_edge.m_psi; },
@@ -857,11 +900,61 @@ void init_elements(py::module& m)
             [](DipEdge & dip_edge, amrex::ParticleReal g) { dip_edge.m_g = g; },
             "Gap parameter in m"
         )
+        .def_property("R",
+            [](DipEdge & dip_edge) { return dip_edge.m_R; },
+            [](DipEdge & dip_edge, amrex::ParticleReal R) { dip_edge.m_R = R; },
+            "Length scale for field integrals in m"
+        )
+        .def_property("K0",
+            [](DipEdge & dip_edge) { return dip_edge.m_K0; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K0) { dip_edge.m_K0 = K0; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K1",
+            [](DipEdge & dip_edge) { return dip_edge.m_K1; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K1) { dip_edge.m_K1 = K1; },
+            "Fringe field integral (unitless)"
+        )
         .def_property("K2",
             [](DipEdge & dip_edge) { return dip_edge.m_K2; },
             [](DipEdge & dip_edge, amrex::ParticleReal K2) { dip_edge.m_K2 = K2; },
             "Fringe field integral (unitless)"
         )
+        .def_property("K3",
+            [](DipEdge & dip_edge) { return dip_edge.m_K3; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K3) { dip_edge.m_K3 = K3; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K4",
+            [](DipEdge & dip_edge) { return dip_edge.m_K4; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K4) { dip_edge.m_K4 = K4; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K5",
+            [](DipEdge & dip_edge) { return dip_edge.m_K5; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K5) { dip_edge.m_K5 = K5; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("K6",
+            [](DipEdge & dip_edge) { return dip_edge.m_K6; },
+            [](DipEdge & dip_edge, amrex::ParticleReal K6) { dip_edge.m_K6 = K6; },
+            "Fringe field integral (unitless)"
+        )
+        .def_property("model",
+            [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_model); },
+            [](DipEdge & dip_edge, std::string const & model) {
+                dip_edge.m_model = amrex::getEnum<dipedge::Model>(model);
+            },
+            "Fringe field model (linear or nonlinear)"
+        )
+        .def_property("location",
+            [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_location); },
+            [](DipEdge & dip_edge, std::string const & location) {
+                dip_edge.m_location = amrex::getEnum<dipedge::Location>(location);
+            },
+            "Fringe field location (entry or exit)"
+        )
+
     ;
     register_push(py_DipEdge);
 
@@ -1392,7 +1485,7 @@ void init_elements(py::module& m)
     ;
     register_push(py_Multipole);
 
-    py::class_<Empty, elements::mixin::Thin> py_Empty(me, "Empty");
+    py::class_<Empty, elements::mixin::Named, elements::mixin::Thin> py_Empty(me, "Empty");
     py_Empty
         .def("__repr__",
              [](Empty const & /* empty */) {
@@ -2365,10 +2458,10 @@ void init_elements(py::module& m)
         .def(py::init<>())
         .def(py::init<KnownElements>())
         .def(py::init([](py::list const & l){
-            auto v = new KnownElementsList;
+            KnownElementsList v;
             for (auto const & handle : l)
-                v->push_back(handle.cast<KnownElements>());
-            return v;
+                v.push_back(handle.cast<KnownElements>());
+            return v;  // return by value
         }))
 
         .def("append", [](KnownElementsList &v, KnownElements el) { v.emplace_back(std::move(el)); },
@@ -2393,15 +2486,24 @@ void init_elements(py::module& m)
              "Add a list of elements to the list."
         )
 
+        .def("size", &KnownElementsList::size)
         .def("clear", &KnownElementsList::clear,
              "Clear the list to become empty.")
+        .def("is_empty", &KnownElementsList::empty)
         .def("pop_back", &KnownElementsList::pop_back,
              "Return and remove the last element of the list.")
         .def("__len__", [](const KnownElementsList &v) { return v.size(); },
              "The length of the list.")
         .def("__iter__", [](KnownElementsList &v) {
             return py::make_iterator(v.begin(), v.end());
-        }, py::keep_alive<0, 1>()) /* Keep list alive while iterator is used */
+        }, py::keep_alive<0, 1>())  // Keep list alive while iterator is used
+        .def("__getitem__", [](KnownElementsList &v, size_t index) -> elements::KnownElements& {
+            if (index >= v.size()) {
+                throw std::out_of_range("Index out of range");
+            }
+            auto it = std::next(v.begin(), index);
+            return *it;  // return by reference
+        }, py::return_value_policy::reference_internal)
     ;
 
 

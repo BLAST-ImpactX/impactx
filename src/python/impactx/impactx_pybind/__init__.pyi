@@ -33,11 +33,13 @@ __all__: list[str] = [
     "ImpactXParticleContainer",
     "Map6x6",
     "RefPart",
+    "UnorderedMap",
     "amr",
     "coordinate_transformation",
     "create_envelope",
     "distribution",
     "elements",
+    "flatten_charge_to_2D",
     "push",
     "s",
     "t",
@@ -311,12 +313,26 @@ class ImpactX:
         The currently finest level of mesh-refinement used. This is always less or equal to max_level.
         """
     @property
+    def hook(self) -> UnorderedMap:
+        """
+        User-defined function hooks that are called, e.g, during tracking.
+        """
+    @hook.setter
+    def hook(self, arg0: UnorderedMap) -> None: ...
+    @property
     def isr(self) -> bool:
         """
         Enable or disable Incoherent Synchrotron Radiation (ISR) calculations (default: disabled).
         """
     @isr.setter
     def isr(self, arg1: bool) -> None: ...
+    @property
+    def isr_on_ref_part(self) -> bool:
+        """
+        Flag to determine whether ISR radiation loss is applied to the reference particle (default: False).
+        """
+    @isr_on_ref_part.setter
+    def isr_on_ref_part(self, arg1: bool) -> None: ...
     @property
     def isr_order(self) -> bool:
         """
@@ -450,6 +466,27 @@ class ImpactX:
     @space_charge.setter
     def space_charge(self, arg1: bool | str) -> None: ...
     @property
+    def space_charge_gauss_charge_z_bins(self) -> int:
+        """
+        Number of steps for computing the integrals (default: ``129``).
+        """
+    @space_charge_gauss_charge_z_bins.setter
+    def space_charge_gauss_charge_z_bins(self, arg1: typing.SupportsInt) -> None: ...
+    @property
+    def space_charge_gauss_nint(self) -> int:
+        """
+        Number of steps for computing the integrals (default: ``101``).
+        """
+    @space_charge_gauss_nint.setter
+    def space_charge_gauss_nint(self, arg1: typing.SupportsInt) -> None: ...
+    @property
+    def space_charge_gauss_taylor_delta(self) -> int:
+        """
+        Initial region for computing the integrals (default: ``0.01``).
+        """
+    @space_charge_gauss_taylor_delta.setter
+    def space_charge_gauss_taylor_delta(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
     def tiny_profiler(self) -> bool:
         """
         This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
@@ -463,6 +500,64 @@ class ImpactX:
         """
     @tiny_profiler_file.setter
     def tiny_profiler_file(self, arg1: str) -> None: ...
+    @property
+    def tracking_element(
+        self,
+    ) -> (
+        elements.Empty
+        | elements.Aperture
+        | elements.Buncher
+        | elements.CFbend
+        | elements.ChrAcc
+        | elements.ChrDrift
+        | elements.ChrPlasmaLens
+        | elements.ChrQuad
+        | elements.ConstF
+        | elements.BeamMonitor
+        | elements.DipEdge
+        | elements.Drift
+        | elements.ExactCFbend
+        | elements.ExactDrift
+        | elements.ExactMultipole
+        | elements.ExactQuad
+        | elements.ExactSbend
+        | elements.Kicker
+        | elements.LinearMap
+        | elements.Marker
+        | elements.Multipole
+        | elements.NonlinearLens
+        | elements.PlaneXYRot
+        | elements.Programmable
+        | elements.PRot
+        | elements.Quad
+        | elements.QuadEdge
+        | elements.RFCavity
+        | elements.Sbend
+        | elements.ShortRF
+        | elements.SoftSolenoid
+        | elements.SoftQuadrupole
+        | elements.Sol
+        | elements.Source
+        | elements.TaperedPL
+        | elements.ThinDipole
+        | None
+    ):
+        """
+        For tracking hooks/callbacks, the current lattice element.
+        """
+    @property
+    def tracking_period(self) -> int:
+        """
+        For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period)
+        """
+    @property
+    def tracking_step(self) -> int:
+        """
+        For tracking hooks/callbacks, a global step of the simulation.
+
+        A state of internal simulation steps, increments also for space charge slice steps in elements.
+        We start in 'step 0' (initial state).
+        """
     @property
     def verbose(self) -> int:
         """
@@ -554,7 +649,6 @@ class ImpactXParticleContainer(
         """
 
         Return the history of the beam as calculated by the reduced beam characteristics on every step.
-
         """
     def beam_moments_history_list(self) -> list[dict[str, float]]:
         """
@@ -594,7 +688,6 @@ class ImpactXParticleContainer(
         -------
         A matplotlib figure with containing the plot.
         For MPI-parallel ranks, the figure is only created on the root_rank.
-
         """
     def record_beam_moments(self) -> None:
         """
@@ -638,7 +731,6 @@ class RefPart:
         :param RefPart ref: ImpactX reference particle (passed by reference)
         :param madx_file: file name to MAD-X file with beamline elements
         :return: list of ImpactX.KnownElements
-
         """
     def __init__(self) -> None:
         """
@@ -799,6 +891,27 @@ class RefPart:
     @z.setter
     def z(self, arg0: typing.SupportsFloat) -> None: ...
 
+class UnorderedMap:
+    def __bool__(self) -> bool:
+        """
+        Check whether the map is nonempty
+        """
+    @typing.overload
+    def __contains__(self, arg0: str) -> bool: ...
+    @typing.overload
+    def __contains__(self, arg0: typing.Any) -> bool: ...
+    def __delitem__(self, arg0: str) -> None: ...
+    def __getitem__(self, arg0: str) -> collections.abc.Callable[[ImpactX], None]: ...
+    def __init__(self) -> None: ...
+    def __iter__(self) -> collections.abc.Iterator[str]: ...
+    def __len__(self) -> int: ...
+    def __setitem__(
+        self, arg0: str, arg1: collections.abc.Callable[[ImpactX], None]
+    ) -> None: ...
+    def items(self) -> typing.ItemsView: ...
+    def keys(self) -> typing.KeysView: ...
+    def values(self) -> typing.ValuesView: ...
+
 def coordinate_transformation(
     pc: ImpactXParticleContainer, direction: CoordSystem
 ) -> None:
@@ -818,6 +931,14 @@ def create_envelope(
     | distribution.Waterbag,
     arg1: typing.SupportsFloat | None,
 ) -> Envelope: ...
+def flatten_charge_to_2D(
+    arg0: ImpactX,
+) -> dict[
+    int,
+    tuple[
+        amrex.space3d.amrex_3d_pybind.MultiFab, amrex.space3d.amrex_3d_pybind.MultiFab
+    ],
+]: ...
 @typing.overload
 def push(
     pc: ImpactXParticleContainer,
@@ -912,6 +1033,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.10"
+__version__: str = "25.11"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

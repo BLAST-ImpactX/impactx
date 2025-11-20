@@ -6,6 +6,8 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+import asyncio
+
 from . import server, state
 from .app import application
 from .Input.defaults import DashboardDefaults
@@ -42,6 +44,10 @@ class DashboardApp:
 
     def start(self):
         setup_dashboard()
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
         server.start()
         return 0
 

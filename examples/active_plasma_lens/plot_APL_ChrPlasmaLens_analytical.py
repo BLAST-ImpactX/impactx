@@ -37,14 +37,9 @@ for APL_g in g_def:
 
 plt.figure(1)
 plt.plot(g_def, beta)
-plt.xlabel("g_APL [T/m]")
-plt.ylabel("sqrt(beta)")
 
 plt.figure(2)
 plt.plot(g_def, alpha)
-plt.xlabel("g_APL [T/m]")
-plt.ylabel("alpha")
-
 
 # positive g (defocusing, rigidity is negative)
 beta = []
@@ -60,13 +55,13 @@ for APL_g in g_def:
 
 plt.figure(1)
 plt.plot(g_def, beta)
-plt.xlabel("g_APL [T/m]")
-plt.ylabel("sqrt(beta)")
+plt.xlabel(r"$g_{APL}$ [T/m]")
+plt.ylabel(r"$\sqrt{\beta}$")
 plt.grid()
 plt.figure(2)
 plt.plot(g_def, alpha)
-plt.xlabel("g_APL [T/m]")
-plt.ylabel("alpha")
+plt.xlabel("$g_{APL}$ [T/m]")
+plt.ylabel(r"$\alpha$")
 plt.grid()
 
 plt.show()

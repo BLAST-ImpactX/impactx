@@ -72,7 +72,6 @@ def run_APL_tracking(
 
     # Forward-propagate that through the focusing/defocusing lens
     # from the beginning, ignoring energy spread
-    # [Doesn't give same result as ChrPlasmaLens and ChrQuad for some reason, even when sigpt_0 = 0]
     (beta_end, alpha_end, gamma_end) = analytic_final_estimate(
         APL_g, ref.rigidity_Tm, APL_length, beta_0, alpha_0
     )

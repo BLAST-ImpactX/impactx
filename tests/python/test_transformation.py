@@ -9,7 +9,13 @@
 import numpy as np
 import pytest
 
-from impactx import CoordSystem, ImpactX, coordinate_transformation, distribution
+from impactx import (
+    Config,
+    CoordSystem,
+    ImpactX,
+    coordinate_transformation,
+    distribution,
+)
 
 
 def test_transformation():
@@ -75,8 +81,12 @@ def test_transformation():
     sim.finalize()
 
     # assert that forward-inverse transformation of the beam leaves beam unchanged
-    atol = 1e-14
-    rtol = 1e-10
+    if Config.precision == "SINGLE":
+        atol = 1e-6
+        rtol = 1e-6
+    else:
+        atol = 1e-14
+        rtol = 1e-10
     for key, val in rbc_s0.items():
         if not np.isclose(val, rbc_s[key], rtol=rtol, atol=atol):
             print(f"initial[{key}]={val}, final[{key}]={rbc_s[key]} not equal")

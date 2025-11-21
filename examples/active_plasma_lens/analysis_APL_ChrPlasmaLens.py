@@ -6,9 +6,10 @@
 #
 # -*- coding: utf-8 -*-
 
+import os
+
 import openpmd_api as io
 from scipy.stats import moment
-import os
 
 
 def get_moments(beam):

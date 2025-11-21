@@ -12,14 +12,17 @@ import numpy as np
 from impactx import ImpactX, distribution, elements
 
 
-def run_APL_tracking(
-    APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"
-):
+def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"):
     """
     Run a plasma lens tracking simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m].
     Can use lensType='ChrPlasmaLens' | 'ConstK' | 'ChrDrift' (expect APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
     """
-
+    print("", flush=True)
+    print(f"*** run_APL_tracking({APL_g}, {sigpt_0}, {sigma_mid}, {lensType}) :", flush=True)
+    print("", flush=True)
+    
+    #import sys
+    #sys.exit(1)
     sim = ImpactX()
 
     # set numerical parameters and IO control
@@ -49,12 +52,14 @@ def run_APL_tracking(
     beta_mid = sigma_mid**2 / emitg
     gamma_mid = 1 / beta_mid  # [1/m]
     print(
-        f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m], alpha_mid = {alpha_mid}"
+        f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m], alpha_mid = {alpha_mid}",
+        flush=True
     )
     print(
-        f"emitn = {emitn} [m], emitg = {emitg} [m], ref.beta_gamma = {ref.beta_gamma}, ref.rigidity_Tm = {ref.rigidity_Tm} [T*m]"
+        f"emitn = {emitn} [m], emitg = {emitg} [m], ref.beta_gamma = {ref.beta_gamma}, ref.rigidity_Tm = {ref.rigidity_Tm} [T*m]",
+        flush=True
     )
-    print()
+    print(flush=True)
 
     # Back-propagate 1/2 lens length as in vacuum,
     # from symmetry point in the middle of the lens to the start of the lens
@@ -66,9 +71,10 @@ def run_APL_tracking(
     sigmap_0 = math.sqrt(emitg * gamma_0)
     mu_0 = alpha_0 / math.sqrt(beta_0 * gamma_0)
     print(
-        f"sigma_0 = {sigma_0} [m], beta_0 = {beta_0} [m], alpha_0 = {alpha_0}, sigmap_0 = {sigmap_0}"
+        f"sigma_0 = {sigma_0} [m], beta_0 = {beta_0} [m], alpha_0 = {alpha_0}, sigmap_0 = {sigmap_0}",
+        flush=True
     )
-    print()
+    print(flush=True)
 
     # Forward-propagate that through the focusing/defocusing lens
     # from the beginning, ignoring energy spread
@@ -77,18 +83,19 @@ def run_APL_tracking(
     )
 
     print(
-        f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]"
+        f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]",
+        print(flush=True)
     )
     sigma_end = np.sqrt(emitg * beta_end)
     sigmap_end = np.sqrt(emitg * gamma_end)
-    print(f"sigma_end = {sigma_end} [m], sigmap_end = {sigmap_end} [-]")
-    # print()
+    print(f"sigma_end = {sigma_end} [m], sigmap_end = {sigmap_end} [-]", flush=True)
+    # print(flush=True)
 
     # Longitudinal parameters (sigpt_0 [-] from input arguments)
     sigt_0 = 1e-3  # [m]
     emit_t = math.sqrt(sigt_0**2 * sigpt_0**2 - 0**2)
-    print(f"sigt_0 = {sigt_0} [m], sigpt_0 = {sigpt_0} [-], emit_t = {emit_t}")
-    print()
+    print(f"sigt_0 = {sigt_0} [m], sigpt_0 = {sigpt_0} [-], emit_t = {emit_t}", flush=True)
+    print(flush=True)
 
     #   particle bunch
     distr = distribution.Gaussian(
@@ -110,7 +117,8 @@ def run_APL_tracking(
     # Plasma lens parameters for ConstF
     APL_k = APL_g / ref.rigidity_Tm
     APL_k_sqrt = np.sign(APL_k) * np.sqrt(np.abs(APL_k))
-    print(f"APL_g = {APL_g} [T/m], APL_k = {APL_k} [1/m^2]")
+    print(f"APL_g = {APL_g} [T/m], APL_k = {APL_k} [1/m^2]", flush=True)
+    print(flush=True)
 
     ns = 40  # number of slices per ds in the element
     monitor = elements.BeamMonitor("monitor", backend="h5")
@@ -155,7 +163,7 @@ def analytic_final_estimate(APL_g, rigidity_Tm, APL_length, beta_0, alpha_0):
     "Analytical estimates of the beam Twiss parameters after the Plasma Lens"
     k = APL_g / rigidity_Tm
 
-    print(f"k = {k} [1/m^2]")
+    print(f"k = {k} [1/m^2]", flush=True)
     if k > 0:
         M = np.asarray(
             [
@@ -187,10 +195,10 @@ def analytic_final_estimate(APL_g, rigidity_Tm, APL_length, beta_0, alpha_0):
     # Do the Twiss propagation
     B0 = np.asarray([[beta_0, -alpha_0], [-alpha_0, (1 + alpha_0**2) / beta_0]])
     B = M @ B0 @ M.T
-    # print(B)
+    # print(B, flush=True)
 
-    beta_end = B[0, 0]
+    beta_end  =  B[0, 0]
     alpha_end = -B[0, 1]
-    gamma_end = B[1, 1]
+    gamma_end =  B[1, 1]
 
     return (beta_end, alpha_end, gamma_end)

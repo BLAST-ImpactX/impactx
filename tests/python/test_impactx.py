@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from conftest import basepath
 
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 # FIXME in AMReX via https://github.com/AMReX-Codes/amrex/pull/3727
 # def test_impactx_module():
@@ -26,8 +26,16 @@ def validate_fodo(beam):
     """see examples/fodo/analysis_fodo.py"""
     num_particles = beam.total_number_of_particles()
     assert num_particles == 10000
-    atol = 0.0  # ignored
-    rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+    if Config.precision == "SINGLE":
+        atol = 0.0  # ignored
+        rtol = (
+            2.5 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
+    else:
+        atol = 0.0  # ignored
+        rtol = (
+            2.2 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
 
     # in situ calculate the reduced beam characteristics
     rbc = beam.beam_moments()
@@ -160,7 +168,7 @@ def test_impactx_nofile():
 
     # simulate full lattice but keep beam global position
     sim.track_particles()
-    assert np.allclose([ref.s], [7.0])
+    assert ref.s == pytest.approx(7.0)
 
     # finalize simulation
     sim.finalize()
@@ -283,6 +291,41 @@ def test_impactx_change_resolution():
     assert iter(rho).length > 0
     assert not rho.is_all_cell_centered
     assert rho.is_all_nodal
+
+    # finalize simulation
+    sim.finalize()
+
+
+def test_impactx_fodo_hook():
+    """
+    Test hooks (callback functions) into evolve loops
+    """
+    sim = ImpactX()
+
+    sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
+
+    sim.init_grids()
+    sim.init_beam_distribution_from_inputs()
+    sim.init_lattice_elements_from_inputs()
+
+    def hook_before_element(sim):
+        element = sim.tracking_element
+        print(
+            f"  Current element name: {element.name} with ds={element.ds:.2f}",
+            flush=True,
+        )
+
+        if element.name != "monitor":
+            print(f"  Drift ds is: {element.ds:.2f}m", flush=True)
+
+    sim.hook["before_element"] = hook_before_element
+
+    assert sim.tracking_element is None
+    sim.track_particles()
+    assert sim.tracking_element is None
+
+    # validate the results
+    validate_fodo(sim.particle_container())
 
     # finalize simulation
     sim.finalize()

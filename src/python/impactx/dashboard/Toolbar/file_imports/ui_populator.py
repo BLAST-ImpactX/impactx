@@ -26,6 +26,19 @@ def on_import_file_change(import_file, **kwargs):
             state.importing_file = False
 
 
+def _apply_distribution_inputs():
+    """
+    Push any cached distribution parameters into the UI.
+    """
+
+    imported_params = getattr(state, "imported_distribution_parameters", None)
+    if imported_params:
+        for param_name, raw_value in imported_params.items():
+            if param_name in state.selected_distribution_parameters:
+                ctrl.update_distribution_parameter(param_name, raw_value)
+        state.imported_distribution_parameters = None
+
+
 def populate_impactx_simulation_file_to_ui(file) -> None:
     """
     Auto fills the dashboard with parsed inputs.
@@ -45,21 +58,20 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)
 
-    _populate_distribution_inputs_to_ui(imported_distribution_data)
+    _prepare_distribution_update(imported_distribution_data)
     _populate_lattice_config_to_ui(imported_lattice_data)
     _populate_lattice_config_variables_to_ui(parsed_variables)
 
 
 @staticmethod
-def _populate_distribution_inputs_to_ui(parsed_data):
+def _prepare_distribution_update(parsed_data):
     # the below two calls do not call state.change("distribution") or state.change("distribution_type")
     # since they are both part of a nested state (ie. distribution_type=["Twiss","Quadratic"]).
+    parameters = parsed_data["parameters"]
+    state.imported_distribution_parameters = parameters.copy() if parameters else None
     state.distribution = parsed_data["name"]
     state.distribution_type = parsed_data["type"]
     state.flush()  # force calls state.change("distribution") and state.change("distribution_type")
-
-    for distr_param_name, distr_param_value in parsed_data["parameters"].items():
-        ctrl.update_distribution_parameter(distr_param_name, distr_param_value)
 
 
 @staticmethod

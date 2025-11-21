@@ -68,6 +68,10 @@ namespace detail
 void init_ImpactX (py::module& m)
 {
     py::class_<ImpactX> impactx(m, "ImpactX", py::dynamic_attr());
+
+    using ImpactXHooks = std::unordered_map<std::string, std::function<void(ImpactX *)> >;
+    py::bind_map<ImpactXHooks>(m, "UnorderedMap");
+
     impactx
         .def(py::init<>())
 
@@ -242,6 +246,16 @@ void init_ImpactX (py::module& m)
             },
             "Number of terms in the Taylor series retained for quantum effects (default: 1)."
         )
+        .def_property("isr_on_ref_part",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "isr_on_ref_part");
+            },
+            [](ImpactX & /* ix */, bool isr_on_ref_part) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("isr_on_ref_part", isr_on_ref_part);
+            },
+            "Flag to determine whether ISR radiation loss is applied to the reference particle (default: False)."
+        )
         .def_property("eigenemittances",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("diag", "eigenemittances");
@@ -271,14 +285,58 @@ void init_ImpactX (py::module& m)
                 else
                 {
                     std::string const space_charge = std::get<std::string>(space_charge_v);
-                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D") {
-                        throw std::runtime_error("Space charge model must be 2D, 3D or Gauss3D but is: " + space_charge);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D" && space_charge != "Gauss2p5D" ) {
+                        throw std::runtime_error("Space charge model must be 2D, 3D, Gauss3D or Gauss2p5D but is: " + space_charge);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("space_charge", space_charge);
                 }
             },
             "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
+        )
+        .def_property("space_charge_gauss_nint",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_nint");
+            },
+            [](ImpactX & /* ix */, int const gauss_nint) {
+                if (gauss_nint < 1) {
+                    throw std::runtime_error("space_charge_gauss_nint must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_nint", gauss_nint);
+            },
+            "Number of steps for computing the integrals (default: ``101``)."
+        )
+        .def_property("space_charge_gauss_charge_z_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_charge_z_bins");
+            },
+            [](ImpactX & /* ix */, int const gauss_charge_z_bins) {
+                if (gauss_charge_z_bins < 1) {
+                    throw std::runtime_error("space_charge_gauss_charge_z_bins must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_charge_z_bins", gauss_charge_z_bins);
+            },
+            "Number of steps for computing the integrals (default: ``129``)."
+        )
+        .def_property("space_charge_gauss_taylor_delta",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_taylor_delta");
+            },
+            [](ImpactX & /* ix */, amrex::Real const gauss_taylor_delta) {
+                if (gauss_taylor_delta < 0) {
+                    throw std::runtime_error("space_charge_gauss_taylor_delta must be strictly positive");
+                }
+                if (gauss_taylor_delta > 0.05) {
+                    throw std::runtime_error("space_charge_gauss_taylor_delta must be less than 0.05");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_taylor_delta", gauss_taylor_delta);
+            },
+            "Initial region for computing the integrals (default: ``0.01``)."
         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
@@ -492,6 +550,10 @@ void init_ImpactX (py::module& m)
             "If it's not empty, it specifies the file name for the output. "
             "Note that /dev/null is a special name that mean a null file."
         )
+        .def_readwrite("hook",
+            &ImpactX::m_hook,
+            "User-defined function hooks that are called, e.g, during tracking."
+        )
 
         .def("deposit_charge",
             [](ImpactX & ix) {
@@ -567,6 +629,22 @@ void init_ImpactX (py::module& m)
         )
         .def("track_reference", &ImpactX::track_reference,
              "Run the reference orbit tracking simulation loop."
+        )
+
+
+        .def_property_readonly("tracking_period",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_period; },
+            "For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period)"
+        )
+        .def_property_readonly("tracking_step",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_step; },
+            "For tracking hooks/callbacks, a global step of the simulation.\n\n"
+            "A state of internal simulation steps, increments also for space charge slice steps in elements.\n"
+            "We start in 'step 0' (initial state)."
+        )
+        .def_property_readonly("tracking_element",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_element; },
+            "For tracking hooks/callbacks, the current lattice element."
         )
 
         .def("resize_mesh", &ImpactX::ResizeMesh,

@@ -290,6 +290,14 @@ add_impactx_test(FODO.programmable.py
     examples/fodo_programmable/plot_fodo.py
 )
 
+# Python: Change Elements Per Turn ############################################
+#
+add_impactx_test(turn_update.py
+    examples/turn_update/run_turn_update.py
+    OFF  # ImpactX MPI-parallel
+    examples/turn_update/analysis_turn_update.py
+    OFF  # no plot script yet
+)
 
 # Python MADX: FODO Cell ######################################################
 #
@@ -1441,6 +1449,21 @@ add_impactx_test(FODO.Gauss3d.sc.py
     OFF  # no plot script yet
 )
 
+# FODO cell with Gaussian 2.5D space charge using particle tracking #############
+#
+add_impactx_test(FODO.Gauss2p5d.sc
+    examples/fodo_space_charge/input_fodo_Gauss2p5D_sc.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_Gauss2p5D_sc.py
+    OFF  # no plot script yet
+)
+add_impactx_test(FODO.Gauss2p5d.sc.py
+    examples/fodo_space_charge/run_fodo_Gauss2p5D_sc.py
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_Gauss2p5D_sc.py
+    OFF  # no plot script yet
+)
+
 # A single bend with incoherent synchrotron radiation ######################
 #
 # no space charge
@@ -1454,6 +1477,21 @@ add_impactx_test(bend-isr.py
     examples/incoherent_synchrotron/run_bend_isr.py
     OFF   # ImpactX MPI-parallel
     examples/incoherent_synchrotron/analysis_bend_isr.py
+    OFF  # no plot script yet
+)
+
+# A single bend with incoherent synchrotron radiation & reference energy loss #################
+# no space charge
+add_impactx_test(bend-isr-ref
+    examples/incoherent_synchrotron/input_bend_isr_ref.in
+    ON   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr_ref.py
+    OFF  # no plot script yet
+)
+add_impactx_test(bend-isr-ref.py
+    examples/incoherent_synchrotron/run_bend_isr_ref.py
+    OFF   # ImpactX MPI-parallel
+    examples/incoherent_synchrotron/analysis_bend_isr_ref.py
     OFF  # no plot script yet
 )
 
@@ -1711,5 +1749,48 @@ add_impactx_test(solenoid-softedge-solvable.py
     examples/solenoid_softedge/run_solenoid_softedge_solvable.py
     ON   # ImpactX MPI-parallel
     examples/solenoid_softedge/analysis_solenoid_softedge_solvable.py
+    OFF  # no plot script yet
+)
+
+# Expanding unbunched beam in free space with 2D space charge ######################
+#
+# with space charge
+add_impactx_test(expanding-fft-2d
+    examples/expanding_beam/input_expanding_fft_2D.in
+    ON   # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2D.py
+    OFF  # no plot script yet
+)
+add_impactx_test(expanding-fft-2d.py
+    examples/expanding_beam/run_expanding_fft_2D.py
+    OFF   # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2D.py
+    OFF  # no plot script yet
+)
+
+# FODO cell with 2D space charge using particle tracking ######################
+#
+# with space charge
+add_impactx_test(fodo-2d-sc
+    examples/fodo_space_charge/input_fodo_2d_sc.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_2d_sc.py
+    OFF  # no plot script yet
+)
+add_impactx_test(fodo-2d-sc.py
+    examples/fodo_space_charge/run_fodo_2d_sc.py
+    ON    # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_2d_sc.py
+    OFF  # no plot script yet
+)
+
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/edge_effects/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dipedge-nonlinear.py)
+add_impactx_test(dipedge-nonlinear.py
+    examples/edge_effects/run_dipedge.py
+    ON   # ImpactX MPI-parallel
+    examples/edge_effects/analysis_dipedge.py
     OFF  # no plot script yet
 )

@@ -22,6 +22,7 @@ namespace impactx
         False,    /**< Disabled: no space charge calculation */
         True_3D,  /**< 3D beam distribution */
         Gauss3D,  /**< Assume a 3D Gaussian beam distribution */
+        Gauss2p5D,  /**< Assume a transverse 2D Gaussian beam distribution */
         True_2D   /**< Averaged 2D transverse beam distribution with a current along s */
     );
 

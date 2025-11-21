@@ -9,6 +9,8 @@
  */
 #include "GatherAndPush.H"
 
+#include "initialization/Algorithms.H"
+
 #include <ablastr/particles/NodalFieldGather.H>
 
 #include <AMReX_BLProfiler.H>
@@ -28,6 +30,8 @@ namespace impactx::particles::spacecharge
         BL_PROFILE("impactx::spacecharge::GatherAndPush");
 
         using namespace amrex::literals;
+
+        auto space_charge = get_space_charge_algo();
 
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
 
@@ -59,6 +63,8 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
                 amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
                 amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
+                amrex::ParticleReal const beta_gamma = pc.GetRefParticle().beta_gamma();
+                amrex::ParticleReal const beta = beta_gamma / gamma;
                 amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
 
                 amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
@@ -76,32 +82,67 @@ namespace impactx::particles::spacecharge
                 amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
 
                 // gather to each particle and push momentum
-                amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
-                    // access SoA Real data
-                    amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
-                    amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
-                    amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
-                    amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                    amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                    amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+                if (space_charge == SpaceChargeAlgo::True_2D) {
+                    // flatten 3rd dimension
+                    auto prob_lo_2D = gm.ProbLoArray();
+                    prob_lo_2D[2] = 0.0_rt;
 
-                    // force gather
-                    amrex::GpuArray<amrex::Real, 3> const field_interp =
-                        ablastr::particles::doGatherVectorFieldNodal (
-                            x, y, z,
-                            scf_arr_x, scf_arr_y, scf_arr_z,
-                            invdr,
-                            prob_lo);
+                    // TODO: add in z-dependent scaling by current?
 
-                    // push momentum
-                    px += field_interp[0] * push_consts;
-                    py += field_interp[1] * push_consts;
-                    pz += field_interp[2] * push_consts;
+                    amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
+                        // access SoA Real data
+                        amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
+                        amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
+                        amrex::ParticleReal z = 0.0_prt;  // flatten 3rd dimension
+                        amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
+                        amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
+                        amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
 
-                    // push position is done in the lattice elements
-                });
+                        // force gather
+                        amrex::GpuArray<amrex::Real, 3> const field_interp =
+                            ablastr::particles::doGatherVectorFieldNodal<2>(
+                                x, y, z,
+                                scf_arr_x, scf_arr_y, scf_arr_z,
+                                invdr,
+                                prob_lo_2D
+                            );
 
+                        // push momentum
+                        px += field_interp[0] * push_consts * dr[2] / (beta * c0_SI);
+                        py += field_interp[1] * push_consts * dr[2] / (beta * c0_SI);
+                        pz += 0.0_rt;
+                        //pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
 
+                        // push position is done in the lattice elements
+                    });
+                }
+                if (space_charge == SpaceChargeAlgo::True_3D) {
+                    amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
+                        // access SoA Real data
+                        amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
+                        amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
+                        amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
+                        amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
+                        amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
+                        amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+
+                        // force gather
+                        amrex::GpuArray<amrex::Real, 3> const field_interp =
+                            ablastr::particles::doGatherVectorFieldNodal(
+                                x, y, z,
+                                scf_arr_x, scf_arr_y, scf_arr_z,
+                                invdr,
+                                prob_lo
+                            );
+
+                        // push momentum
+                        px += field_interp[0] * push_consts;
+                        py += field_interp[1] * push_consts;
+                        pz += field_interp[2] * push_consts;
+
+                        // push position is done in the lattice elements
+                    });
+                }
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }

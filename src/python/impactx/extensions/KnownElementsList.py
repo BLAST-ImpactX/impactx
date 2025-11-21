@@ -28,7 +28,7 @@ def load_file(self, filename, nslice=1):
         return
 
     elif extension_inner == ".pals":
-        from pals_schema.BeamLine import BeamLine
+        from pals.BeamLine import BeamLine
 
         # examples: fodo.pals.yaml, fodo.pals.json
         with open(filename, "r") as file:
@@ -61,20 +61,20 @@ def from_pals(self, pals_beamline, nslice=1):
 
     https://github.com/campa-consortium/pals-python
     """
-    from pals_schema.DriftElement import DriftElement
-    from pals_schema.QuadrupoleElement import QuadrupoleElement
+    from pals.Drift import Drift
+    from pals.Quadrupole import Quadrupole
 
     # Loop over the pals_beamline and create a new ImpactX KnownElementsList from it.
     #       Use self.extend(...) on the latter.
     ix_beamline = []
     for pals_element in pals_beamline.line:
-        if isinstance(pals_element, DriftElement):
+        if isinstance(pals_element, Drift):
             ix_beamline.append(
                 elements.Drift(
                     name=pals_element.name, ds=pals_element.length, nslice=nslice
                 )
             )
-        elif isinstance(pals_element, QuadrupoleElement):
+        elif isinstance(pals_element, Quadrupole):
             ix_beamline.append(
                 elements.ChrQuad(
                     name=pals_element.name,

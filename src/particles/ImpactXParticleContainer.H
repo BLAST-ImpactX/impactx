@@ -278,8 +278,8 @@ namespace impactx
          * charge. In MPI-parallel contexts, this also performs a communication
          * of boundary regions to sum neighboring contributions.
          *
-         * @param rho charge grid per level to deposit on
-         * @param ref_ratio mesh refinement ratios between levels
+         * @param[out] rho charge grid per level to deposit on
+         * @param[in] ref_ratio mesh refinement ratios between levels
          */
         void
         DepositCharge (std::unordered_map<int, amrex::MultiFab> & rho,

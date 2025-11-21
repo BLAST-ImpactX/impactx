@@ -70,24 +70,36 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
-        Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
-
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
-      * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+      * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+      * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
-        This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-        Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
+        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+        Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
+
+   .. py:property:: space_charge_gauss_nint
+
+      Number of steps for computing the integrals (default: ``101``).
+
+   .. py:property:: space_charge_gauss_taylor_delta
+
+      Initial integral region to avoid integrand divergence at 0 (default: ``0.01``).
+
+   .. py:property:: space_charge_gauss_charge_z_bins
+
+      Number of bins for longitudinal charge density deposition (default: ``129``).
+
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.
       Either ``"fft"`` (default) or ``"multigrid"``.
 
-      Currently, this is a 3D solver.
-      An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
+      Currently, the multigrid solver supports only 3D space charge.  The fft solver supports either 2D or 3D space charge.
+      An additional `2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).
@@ -173,6 +185,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: isr_order
 
       The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in Niel et al, equations (25) and (41) describing quantum effects.
+
+   .. py:property:: isr_on_ref_part
+
+      Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_on_ref_part = False``, the reference particle does not lose energy due to radiation, and the
+      mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
+      When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
 
    .. py:property:: diagnostics
 
@@ -302,6 +320,44 @@ Collective Effects & Overall Simulation Parameters
       Run the reference orbit tracking simulation loop.
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+
+   .. py:property:: hook
+
+      User-defined function hooks that are called, e.g, during tracking.
+      Supported hook locations names are:
+
+      * ``"before_period"``: before each period (e.g., turn or channel period)
+      * ``"after_period"``: after each period (e.g., turn or channel period)
+      * ``"before_element"``: before each element is entered
+      * ``"after_element"``: after each element is exited
+      * ``"before_slice"``: before each element slice
+
+      Example: Function hook that can be called before each turn (sim):
+
+      .. code-block:: python3
+
+         def hook_before_period(sim):
+             beam = sim.particle_container()
+             turn = sim.tracking_period
+             # Example: you could now manipulate elements in sim.lattice
+             #          for the next turn.
+
+         sim.hook["before_period"] = hook_before_period
+
+   .. py:property:: tracking_step
+
+      For tracking hooks/callbacks, a global step of the simulation.
+
+      A state of internal simulation steps, increments also for space charge slice steps in elements.
+      We start in "step 0" (initial state).
+
+   .. py:property:: tracking_period
+
+      For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period).
+
+   .. py:property:: tracking_element
+
+      For tracking hooks/callbacks, the current lattice element.
 
    .. py:method:: resize_mesh()
 
@@ -757,20 +813,40 @@ This module provides elements and methods for the accelerator lattice.
 
    Edge focusing associated with bend entry or exit
 
-   This model assumes a first-order effect of nonzero gap.
-   Here we use the linear fringe field map, given to first order in g/rc (gap / radius of curvature).
+   The model here is based on:
 
-   References:
-
-   * K. L. Brown, SLAC Report No. 75 (1982).
    * K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
 
-   :param psi: Pole face angle in rad
-   :param rc: Radius of curvature in m
-   :param g: Gap parameter in m
-   :param K2: Fringe field integral (unitless)
-   :param dx: horizontal translation error in m
-   :param dy: vertical translation error in m
+   as represented in the explicit, symplectic form provided in:
+
+   * C. Mitchell and K. Hwang, in Proc. NAPAC2025, TUP040, Sacramento, CA (2025).
+
+   Here, ``g`` denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values ``K0`` - ``K6`` denote
+   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of the first reference above.  In
+   particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are
+   those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
+
+   When ``model = "linear"``, the linearized map is used.  This model is identical to:
+
+   * K. L. Brown, SLAC Report No. 75 (1982)
+
+   when expanded to first order in ``g/rc`` (gap / radius of curvature).
+
+   :param psi: Pole face angle [radians]
+   :param rc: Radius of curvature [m]
+   :param g: Gap parameter [m]
+   :param R: Length scale used in fringe field integrals [m]
+   :param K0: Fringe field integral [unitless]
+   :param K1: Fringe field integral [unitless]
+   :param K2: Fringe field integral [unitless]
+   :param K3: Fringe field integral [unitless]
+   :param K4: Fringe field integral [unitless]
+   :param K5: Fringe field integral [unitless]
+   :param K6: Fringe field integral [unitless]
+   :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
+   :param location: the fringe field edge location: ``entry`` (default) or ``exit``
+   :param dx: horizontal translation error [m]
+   :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
@@ -904,7 +980,7 @@ This module provides elements and methods for the accelerator lattice.
       number of integration steps per slice used for symplectic integration
 
 
-.. py:class:: impactx.elements.ExactMultipole(ds, K_normal, K_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -920,8 +996,8 @@ This module provides elements and methods for the accelerator lattice.
    and H_2 is the term containing the vector potential, which is a superposition of multipole contributions.
 
    :param ds: Segment length in m.
-   :param K_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
-   :param K_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
+   :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
    :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

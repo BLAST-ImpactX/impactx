@@ -12,17 +12,22 @@ import numpy as np
 from impactx import ImpactX, distribution, elements
 
 
-def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"):
+def run_APL_tracking(
+    APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"
+):
     """
     Run a plasma lens tracking simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m].
     Can use lensType='ChrPlasmaLens' | 'ConstK' | 'ChrDrift' (expect APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
     """
     print("", flush=True)
-    print(f"*** run_APL_tracking({APL_g}, {sigpt_0}, {sigma_mid}, {lensType}) :", flush=True)
+    print(
+        f"*** run_APL_tracking({APL_g}, {sigpt_0}, {sigma_mid}, {lensType}) :",
+        flush=True,
+    )
     print("", flush=True)
-    
-    #import sys
-    #sys.exit(1)
+
+    # import sys
+    # sys.exit(1)
     sim = ImpactX()
 
     # set numerical parameters and IO control
@@ -53,11 +58,11 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType: s
     gamma_mid = 1 / beta_mid  # [1/m]
     print(
         f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m], alpha_mid = {alpha_mid}",
-        flush=True
+        flush=True,
     )
     print(
         f"emitn = {emitn} [m], emitg = {emitg} [m], ref.beta_gamma = {ref.beta_gamma}, ref.rigidity_Tm = {ref.rigidity_Tm} [T*m]",
-        flush=True
+        flush=True,
     )
     print(flush=True)
 
@@ -72,7 +77,7 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType: s
     mu_0 = alpha_0 / math.sqrt(beta_0 * gamma_0)
     print(
         f"sigma_0 = {sigma_0} [m], beta_0 = {beta_0} [m], alpha_0 = {alpha_0}, sigmap_0 = {sigmap_0}",
-        flush=True
+        flush=True,
     )
     print(flush=True)
 
@@ -84,7 +89,7 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType: s
 
     print(
         f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]",
-        print(flush=True)
+        print(flush=True),
     )
     sigma_end = np.sqrt(emitg * beta_end)
     sigmap_end = np.sqrt(emitg * gamma_end)
@@ -94,7 +99,9 @@ def run_APL_tracking(APL_g: float, sigpt_0: float, sigma_mid: float, lensType: s
     # Longitudinal parameters (sigpt_0 [-] from input arguments)
     sigt_0 = 1e-3  # [m]
     emit_t = math.sqrt(sigt_0**2 * sigpt_0**2 - 0**2)
-    print(f"sigt_0 = {sigt_0} [m], sigpt_0 = {sigpt_0} [-], emit_t = {emit_t}", flush=True)
+    print(
+        f"sigt_0 = {sigt_0} [m], sigpt_0 = {sigpt_0} [-], emit_t = {emit_t}", flush=True
+    )
     print(flush=True)
 
     #   particle bunch
@@ -197,8 +204,8 @@ def analytic_final_estimate(APL_g, rigidity_Tm, APL_length, beta_0, alpha_0):
     B = M @ B0 @ M.T
     # print(B, flush=True)
 
-    beta_end  =  B[0, 0]
+    beta_end = B[0, 0]
     alpha_end = -B[0, 1]
-    gamma_end =  B[1, 1]
+    gamma_end = B[1, 1]
 
     return (beta_end, alpha_end, gamma_end)

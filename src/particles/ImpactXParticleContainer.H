@@ -51,6 +51,9 @@ namespace impactx
             px,  ///< momentum in x, scaled by the magnitude of the reference momentum [unitless] (at fixed s or t)
             py,  ///< momentum in y, scaled by the magnitude of the reference momentum [unitless] (at fixed s or t)
             pt,  ///< energy deviation, scaled by speed of light * the magnitude of the reference momentum [unitless] (at fixed s)
+            sx,  ///< spin vector x-component [unitless] (at fixed s or t)
+            sy,  ///< spin vector y-component [unitless] (at fixed s or t)
+            sz,  ///< spin vector z-component [unitless] (at fixed s or t)
             qm,  ///< charge to mass ratio, in q_e/m_e [q_e/eV]
             w,   ///< particle weight, number of real particles represented by this macroparticle [unitless]
             nattribs ///< the number of attributes above (always last)
@@ -63,9 +66,9 @@ namespace impactx
         };
 
         //! named labels for fixed s
-        static constexpr auto names_s = { "position_x", "position_y", "position_t", "momentum_x", "momentum_y", "momentum_t", "qm", "weighting" };
+        static constexpr auto names_s = { "position_x", "position_y", "position_t", "momentum_x", "momentum_y", "momentum_t", "spin_x", "spin_y", "spin_z", "qm", "weighting" };
         //! named labels for fixed t
-        static constexpr auto names_t = { "position_x", "position_y", "position_z", "momentum_x", "momentum_y", "momentum_z", "qm", "weighting" };
+        static constexpr auto names_t = { "position_x", "position_y", "position_z", "momentum_x", "momentum_y", "momentum_z", "spin_x", "spin_y", "spin_z", "qm", "weighting" };
         static_assert(names_s.size() == nattribs);
         static_assert(names_t.size() == nattribs);
     };
@@ -176,6 +179,9 @@ namespace impactx
          * @param px momentum in x
          * @param py momentum in y
          * @param pt momentum in t
+         * @param sx spin component in x
+         * @param sy spin component in y
+         * @param sz spin component in z
          * @param qm charge over mass in 1/eV
          * @param bunch_charge total charge within a bunch in C
          * @param w weight of each particle: how many real particles to represent
@@ -188,6 +194,9 @@ namespace impactx
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & px,
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sx,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sy,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sz,
             amrex::ParticleReal qm,
             std::optional<amrex::ParticleReal> bunch_charge = std::nullopt,
             std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt

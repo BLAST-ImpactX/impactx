@@ -240,6 +240,9 @@ namespace impactx
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & px,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
+        amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sx,
+        amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sy,
+        amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sz,
         amrex::ParticleReal qm,
         std::optional<amrex::ParticleReal> bunch_charge,
         std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w
@@ -260,6 +263,9 @@ namespace impactx
         AMREX_ALWAYS_ASSERT(x.size() == px.size());
         AMREX_ALWAYS_ASSERT(x.size() == py.size());
         AMREX_ALWAYS_ASSERT(x.size() == pt.size());
+        AMREX_ALWAYS_ASSERT(x.size() == sx.size());
+        AMREX_ALWAYS_ASSERT(x.size() == sy.size());
+        AMREX_ALWAYS_ASSERT(x.size() == sz.size());
         if (has_w) { AMREX_ALWAYS_ASSERT(x.size() == w->size()); }
 
         // number of particles to add
@@ -331,6 +337,9 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT px_arr = soa[RealSoA::px].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT py_arr = soa[RealSoA::py].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT pt_arr = soa[RealSoA::pt].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT sx_arr = soa[RealSoA::sx].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT sy_arr = soa[RealSoA::sy].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT sz_arr = soa[RealSoA::sz].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT qm_arr = soa[RealSoA::qm].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT w_arr  = soa[RealSoA::w ].dataPtr();
 
@@ -342,6 +351,9 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal const * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT sx_ptr = sx.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT sy_ptr = sy.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT sz_ptr = sz.data();
             amrex::ParticleReal const * const AMREX_RESTRICT w_ptr = has_w ? w->data() : nullptr;
             amrex::ParticleReal const bunch_charge_value = has_w ? 0_prt : bunch_charge.value();
 
@@ -357,6 +369,10 @@ namespace impactx
                 px_arr[old_np+i] = px_ptr[my_offset+i];
                 py_arr[old_np+i] = py_ptr[my_offset+i];
                 pt_arr[old_np+i] = pt_ptr[my_offset+i];
+
+                sx_arr[old_np+i] = sx_ptr[my_offset+i];
+                sy_arr[old_np+i] = sy_ptr[my_offset+i];
+                sz_arr[old_np+i] = sz_ptr[my_offset+i];
 
                 qm_arr[old_np+i] = qm;
                 w_arr[old_np+i]  = has_w ? w_ptr[my_offset+i] : bunch_charge_value / ablastr::constant::SI::q_e/np;

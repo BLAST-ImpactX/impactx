@@ -922,7 +922,7 @@ See there ``nslice`` option on lattice elements for slicing.
     When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
   * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
-  
+
   * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
     These models are supported only in particle tracking mode (when ``algo.track = "particles"``).

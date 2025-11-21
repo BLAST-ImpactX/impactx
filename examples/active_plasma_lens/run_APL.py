@@ -89,7 +89,7 @@ def run_APL_tracking(
 
     print(
         f"beta_end = {beta_end} [m], alpha_end = {alpha_end} [-], gamma_end = {gamma_end} [1/m]",
-        print(flush=True),
+        flush=True,
     )
     sigma_end = np.sqrt(emitg * beta_end)
     sigmap_end = np.sqrt(emitg * gamma_end)

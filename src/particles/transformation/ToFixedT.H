@@ -10,7 +10,6 @@
 #ifndef IMPACTX_TO_FIXED_T_H
 #define IMPACTX_TO_FIXED_T_H
 
-#include "particles/transformation/SafeInverse.H"
 #include "particles/ImpactXParticleContainer.H"
 
 #include <AMReX_GpuQualifiers.H>
@@ -60,12 +59,12 @@ namespace impactx::transformation
             using namespace amrex::literals;
             using amrex::Math::powi;
 
-            // small tolerance to avoid NaN for pz<0 and improve single precision stability
+            // small tolerance to avoid NaN for pz<0:
             constexpr amrex::ParticleReal tol =
 #ifdef AMREX_SINGLE_PRECISION_PARTICLES
-                1.0e-6_prt;  // single precision
+                1.0e-6_prt;
 #else
-                1.0e-12_prt;  // double precision
+                1.0e-12_prt;
 #endif
 
             // compute value of reference pzd = beta*gamma
@@ -80,29 +79,25 @@ namespace impactx::transformation
             pt = pt * pzdf;
 
             // compute value of particle pz = beta*gamma
-            amrex::ParticleReal const pt_total = m_ptd + pt;
-            amrex::ParticleReal const arg = -1.0_prt + powi<2>(pt_total) - powi<2>(px) - powi<2>(py);
+            amrex::ParticleReal const arg = -1.0_prt + powi<2>(m_ptd+pt) - powi<2>(px) - powi<2>(py);
             // AMREX_ASSERT_WITH_MESSAGE(arg > 0.0_prt, "invalid pz arg (<=0)");
             amrex::ParticleReal const pzf = arg > 0.0_prt ? std::sqrt(arg) : tol;
 
             // transform position and momentum (from fixed s to fixed t)
-            //   numerical stability: avoid division by very small numbers
-            amrex::ParticleReal const inv_pt_total = safe_inverse(pt_total, tol);
-            x = x + px * t * inv_pt_total;
-            y = y + py * t * inv_pt_total;
-            auto & z = t;    // We store z in the same memory slot as t.
-            z = pzf * t * inv_pt_total;
+            x = x + px*t/(m_ptd+pt);
             // px = px;
+            y = y + py*t/(m_ptd+pt);
             // py = py;
+            auto & z = t;    // We store z in the same memory slot as t.
+            z = pzf * t / (m_ptd + pt);
             auto & pz = pt;  // We store pz in the same memory slot as pt.
             pz = pzf - pzdf;
 
             // transform momenta to static units (eg, so that momenta are
             // normalized by pzdf):
-            amrex::ParticleReal const inv_pzdf = 1.0_prt / pzdf;
-            px = px * inv_pzdf;
-            py = py * inv_pzdf;
-            pz = pz * inv_pzdf;
+            px = px / pzdf;
+            py = py / pzdf;
+            pz = pz / pzdf;
         }
 
     private:

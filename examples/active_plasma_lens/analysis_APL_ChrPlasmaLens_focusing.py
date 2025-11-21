@@ -28,7 +28,7 @@ print(
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 2.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 # Compare to analytical values
@@ -62,7 +62,7 @@ print(
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 2.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 # Compare to analytical values

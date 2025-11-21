@@ -8,6 +8,7 @@
 
 import openpmd_api as io
 from scipy.stats import moment
+import os
 
 
 def get_moments(beam):
@@ -55,7 +56,11 @@ def get_twiss(beam):
 
 def get_beams():
     "Load the initial and final beam from last simulation"
-    series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+
+    getFname = "diags/openPMD/monitor.h5"
+    print(f"** get_beams(): Loading {os.path.abspath(getFname)}")
+
+    series = io.Series(getFname, io.Access.read_only)
     last_step = list(series.iterations)[-1]
     initial = series.iterations[1].particles["beam"].to_df()
     beam_final = series.iterations[last_step].particles["beam"]

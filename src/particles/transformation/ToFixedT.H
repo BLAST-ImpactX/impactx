@@ -88,14 +88,10 @@ namespace impactx::transformation
             // transform position and momentum (from fixed s to fixed t)
             //   numerical stability: avoid division by very small numbers
             amrex::ParticleReal const inv_pt_total = safe_inverse(pt_total, tol);
-            // Compute products once to reduce rounding errors
-            amrex::ParticleReal const px_t = px * t;
-            amrex::ParticleReal const py_t = py * t;
-            amrex::ParticleReal const pzf_t = pzf * t;
-            x = x + px_t * inv_pt_total;
-            y = y + py_t * inv_pt_total;
+            x = x + px * t * inv_pt_total;
+            y = y + py * t * inv_pt_total;
             auto & z = t;    // We store z in the same memory slot as t.
-            z = pzf_t * inv_pt_total;
+            z = pzf * t * inv_pt_total;
             // px = px;
             // py = py;
             auto & pz = pt;  // We store pz in the same memory slot as pt.

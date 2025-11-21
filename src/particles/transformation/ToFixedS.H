@@ -60,14 +60,6 @@ namespace impactx::transformation
             using namespace amrex::literals;
             using amrex::Math::powi;
 
-            // small tolerance to avoid division by zero and improve single precision stability
-            constexpr amrex::ParticleReal tol =
-#ifdef AMREX_SINGLE_PRECISION_PARTICLES
-                1.0e-6_prt;  // single precision
-#else
-                1.0e-12_prt;  // double precision
-#endif
-
             // compute value of reference ptd = -gamma
             amrex::ParticleReal const argd = 1.0_prt + powi<2>(m_pzd);
             AMREX_ASSERT_WITH_MESSAGE(argd > 0.0_prt, "invalid ptd arg (<=0)");
@@ -87,15 +79,11 @@ namespace impactx::transformation
 
             // transform position and momentum (from fixed t to fixed s)
             //   numerical stability: avoid division by very small numbers
-            amrex::ParticleReal const inv_pz_total = safe_inverse(pz_total, tol);
-            // Compute products once to reduce rounding errors
-            amrex::ParticleReal const px_z = px * z;
-            amrex::ParticleReal const py_z = py * z;
-            amrex::ParticleReal const ptf_z = ptf * z;
-            x = x - px_z * inv_pz_total;
-            y = y - py_z * inv_pz_total;
+            amrex::ParticleReal const inv_pz_total = safe_inverse(pz_total);
+            x = x - px * z * inv_pz_total;
+            y = y - py * z * inv_pz_total;
             auto & t = z;    // We store t in the same memory slot as z.
-            t = ptf_z * inv_pz_total;
+            t = ptf * z * inv_pz_total;
             // px = px;
             // py = py;
             auto & pt = pz;  // We store pt in the same memory slot as pz.

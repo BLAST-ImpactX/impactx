@@ -307,7 +307,7 @@ namespace impactx::elements
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (
+        void spin_push (
             [[maybe_unused]] T_Real & AMREX_RESTRICT x,
             [[maybe_unused]] T_Real & AMREX_RESTRICT y,
             [[maybe_unused]] T_Real & AMREX_RESTRICT t,

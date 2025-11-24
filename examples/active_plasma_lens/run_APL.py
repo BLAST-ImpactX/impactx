@@ -10,10 +10,11 @@ import math
 import numpy as np
 
 # Physical reference parameters
-APL_length     = 20e-3       # [m]
-kin_energy_MeV = 200         # [MeV] reference energy
-mass_MeV       = 0.510998950 # [MeV]
-bunch_charge_C = 1.0e-9      # used with space charge
+APL_length = 20e-3  # [m]
+kin_energy_MeV = 200  # [MeV] reference energy
+mass_MeV = 0.510998950  # [MeV]
+bunch_charge_C = 1.0e-9  # used with space charge
+
 
 def run_APL_tracking(
     APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"
@@ -52,8 +53,10 @@ def run_APL_tracking(
     ref = sim.particle_container().ref_particle()
     ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV)
 
-    (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(sigma_mid, APL_g, ref.beta_gamma, ref.rigidity_Tm)
-    
+    (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(
+        sigma_mid, APL_g, ref.beta_gamma, ref.rigidity_Tm
+    )
+
     # Longitudinal parameters (sigpt_0 [-] from input arguments)
     sigt_0 = 1e-3  # [m]
     emit_t = math.sqrt(sigt_0**2 * sigpt_0**2 - 0**2)
@@ -123,18 +126,23 @@ def run_APL_tracking(
     # clean shutdown
     sim.finalize()
 
-def get_beta_gamma(Ek : float, m0 : float):
-    "Get beta*gamma given Ek and m_0c^2 in the same units (e.g. MeV)"
-    E0 = Ek+m0
-    gamma_rel = E0/m0
-    beta_rel = np.sqrt((1.0-1.0/np.sqrt(gamma_rel))*(1.0+1.0/np.sqrt(gamma_rel)))
-    return beta_rel*gamma_rel
 
-def get_rigidity(P0 : float):
+def get_beta_gamma(Ek: float, m0: float):
+    "Get beta*gamma given Ek and m_0c^2 in the same units (e.g. MeV)"
+    E0 = Ek + m0
+    gamma_rel = E0 / m0
+    beta_rel = np.sqrt(
+        (1.0 - 1.0 / np.sqrt(gamma_rel)) * (1.0 + 1.0 / np.sqrt(gamma_rel))
+    )
+    return beta_rel * gamma_rel
+
+
+def get_rigidity(P0: float):
     "Convert momentum P0 [eV/c] to magnetic rigidity [T*m] for electron"
-    return -P0/299792458
-    
-def do_analytic_backprop(sigma_mid : float, APL_g : float, beta_gamma : float, rigidity):
+    return -P0 / 299792458
+
+
+def do_analytic_backprop(sigma_mid: float, APL_g: float, beta_gamma: float, rigidity):
     """
     Make analytical back-propagation from lens midpoint to entry,
     taking the beam sigma at the midpoint [m] and APL gradient [T/m],
@@ -147,13 +155,13 @@ def do_analytic_backprop(sigma_mid : float, APL_g : float, beta_gamma : float, r
       (emitg, beta_0, gamma_0, mu_0, alpha_0),
       which defines the beam parameters at the lens entry.
     """
-    
+
     # Midpoint parameters
     alpha_mid = 0.0
     # sigma_mid = 10e-6  # [m]
     emitn = 10e-6  # [m]
-    emitg = emitn / beta_gamma # [m]
-    beta_mid = sigma_mid**2 / emitg #[m]
+    emitg = emitn / beta_gamma  # [m]
+    beta_mid = sigma_mid**2 / emitg  # [m]
     gamma_mid = 1 / beta_mid  # [1/m]
     print(
         f"sigma_mid = {sigma_mid} [m], beta_mid = {beta_mid} [m], gamma_mid = {gamma_mid} [m], alpha_mid = {alpha_mid}",
@@ -197,7 +205,15 @@ def do_analytic_backprop(sigma_mid : float, APL_g : float, beta_gamma : float, r
 
     return (emitg, beta_0, gamma_0, mu_0, alpha_0)
 
-def analytic_final_estimate(APL_g : float, rigidity : float, APL_length : float, beta_0 : float, alpha_0 : float, printk = True):
+
+def analytic_final_estimate(
+    APL_g: float,
+    rigidity: float,
+    APL_length: float,
+    beta_0: float,
+    alpha_0: float,
+    printk=True,
+):
     "Analytical estimates of the beam Twiss parameters after the Plasma Lens"
     k = APL_g / rigidity
     if printk:
@@ -243,28 +259,33 @@ def analytic_final_estimate(APL_g : float, rigidity : float, APL_length : float,
 
     return (beta_end, alpha_end, gamma_end)
 
+
 def analytic_sigma_function(APL_g: float, sigma_mid: float):
     """
     Do a plasma lens analytical envelope calculation with
     the given APL gradient APL_g [T/m] and sigma_mid [m].
     """
 
-    E_MeV  = kin_energy_MeV + mass_MeV
-    P0_MeV_c = np.sqrt(E_MeV**2-mass_MeV**2)
+    E_MeV = kin_energy_MeV + mass_MeV
+    P0_MeV_c = np.sqrt(E_MeV**2 - mass_MeV**2)
 
-    beta_gamma = get_beta_gamma(E_MeV,mass_MeV)
-    rigidity = get_rigidity(P0_MeV_c*1e6) #[T*m]
-    
-    (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(sigma_mid, APL_g, beta_gamma, rigidity)
-    
-    s = np.linspace(0,APL_length)
+    beta_gamma = get_beta_gamma(E_MeV, mass_MeV)
+    rigidity = get_rigidity(P0_MeV_c * 1e6)  # [T*m]
+
+    (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(
+        sigma_mid, APL_g, beta_gamma, rigidity
+    )
+
+    s = np.linspace(0, APL_length)
     sigma = np.empty_like(s)
-    
-    for i,s_ in enumerate(s):
-        (beta_i, alpha_i, gamma_i) = analytic_final_estimate(APL_g, rigidity, s_, beta_0, alpha_0, printk=False)
-        sigma[i] = np.sqrt(beta_i*emitg)
+
+    for i, s_ in enumerate(s):
+        (beta_i, alpha_i, gamma_i) = analytic_final_estimate(
+            APL_g, rigidity, s_, beta_0, alpha_0, printk=False
+        )
+        sigma[i] = np.sqrt(beta_i * emitg)
 
     print(s)
     print(sigma)
-    
-    return (s,sigma)
+
+    return (s, sigma)

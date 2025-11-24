@@ -32,13 +32,13 @@ plot_sigmas(rbc)
 # Start/end
 plt.axhline(0.0001314429025974998 * millimeter, ls="--", color="k")
 plt.axhline(100e-6 * millimeter, ls="--", color="k")
-#plt.axvline(10e-3, ls="--", color="k")
+# plt.axvline(10e-3, ls="--", color="k")
 # As function of s
-(s,sigma) = analytic_sigma_function(+1000, 100e-6)
-plt.plot(s,sigma*1e3,ls='--', color='green', label='Analytical')
+(s, sigma) = analytic_sigma_function(+1000, 100e-6)
+plt.plot(s, sigma * 1e3, ls="--", color="green", label="Analytical")
 
-plt.legend(loc='center left')
-plt.title(r'Defocusing e$^-$, 200 MeV, $g$ = 1000 [T/m]')
+plt.legend(loc="center left")
+plt.title(r"Defocusing e$^-$, 200 MeV, $g$ = 1000 [T/m]")
 plt.tight_layout()
 
 if args.save_png:

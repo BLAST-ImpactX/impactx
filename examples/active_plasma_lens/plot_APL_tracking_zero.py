@@ -33,11 +33,11 @@ plt.axhline(2.737665020201518e-05 * millimeter, ls="--", color="k")
 plt.axhline(10e-6 * millimeter, ls="--", color="k")
 plt.axvline(10e-3, ls="--", color="k")
 # As function of s
-(s,sigma) = analytic_sigma_function(0.0, 10e-6)
-plt.plot(s,sigma*1e3,ls='--', color='green', label='Analytical')
+(s, sigma) = analytic_sigma_function(0.0, 10e-6)
+plt.plot(s, sigma * 1e3, ls="--", color="green", label="Analytical")
 
-plt.legend(loc='center')
-plt.title(r'No-field e$^-$, 200 MeV, $g$ = 0 [T/m]')
+plt.legend(loc="center")
+plt.title(r"No-field e$^-$, 200 MeV, $g$ = 0 [T/m]")
 plt.tight_layout()
 
 if args.save_png:

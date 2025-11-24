@@ -69,6 +69,7 @@ def get_beams():
 
     return (initial, beam_final, final)
 
+
 # Load data from envelope simulation
 def read_time_series(file_pattern):
     """Read in all CSV files from each MPI rank (and potentially OpenMP
@@ -79,10 +80,11 @@ def read_time_series(file_pattern):
     pandas.DataFrame
     """
 
-    import pandas as pd
     import glob
     import re
-    
+
+    import pandas as pd
+
     def read_file(file_pattern):
         for filename in glob.glob(file_pattern):
             df = pd.read_csv(filename, delimiter=r"\s+")

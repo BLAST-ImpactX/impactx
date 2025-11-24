@@ -123,6 +123,7 @@ def run_APL_tracking(
     # clean shutdown
     sim.finalize()
 
+
 def run_APL_envelope(
     APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"
 ):
@@ -183,8 +184,8 @@ def run_APL_envelope(
         muypy=mu_0,
         mutpt=0.0,
     )
-    #npart = 100000  # number of macro particles
-    #sim.add_particles(bunch_charge_C, distr, npart)
+    # npart = 100000  # number of macro particles
+    # sim.add_particles(bunch_charge_C, distr, npart)
 
     # create the accelerator lattice
 
@@ -226,7 +227,7 @@ def run_APL_envelope(
 
     # run simulation
     sim.lattice.extend(lattice)
-    sim.init_envelope(ref,distr)
+    sim.init_envelope(ref, distr)
     sim.track_envelope()
 
     # clean shutdown

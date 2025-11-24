@@ -32,7 +32,7 @@ namespace impactx::distribution
          * C. Pinzon and K. Jung, "Fast Python sampler of the von Mises Fisher distribution", in the special
          * case of the 2-sphere.  Additional references used include:
          * K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999
-         * S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat.   
+         * S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat.
          * and Comput. 34, 106 (2024), https://doi.org/10.1007/s11222-024-10419-3
          * Return sampling from a vMF distribution.
          *

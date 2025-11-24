@@ -19,6 +19,7 @@
 #include "Thermal.H"
 #include "Triangle.H"
 #include "Waterbag.H"
+#include "SpinvMF.H"
 
 #include <variant>
 
@@ -34,7 +35,8 @@ namespace impactx::distribution
         Thermal,
         Triangle,
         Semigaussian,
-        Waterbag
+        Waterbag,
+        SpinvMF
     >;
 
 } // namespace impactx::distribution

@@ -28,6 +28,12 @@ namespace impactx::distribution
          *  bijective correspondence between vMF distributions and mean
          *  (polarization) vectors.
          *
+         * The algorithm used here is a simplification of the algorithm described in:
+         * C. Pinzon and K. Jung, "Fast Python sampler of the von Mises Fisher distribution", in the special
+         * case of the 2-sphere.  Additional references used include:
+         * K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999
+         * S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat.   
+         * and Comput. 34, 106 (2024), https://doi.org/10.1007/s11222-024-10419-3
          * Return sampling from a vMF distribution.
          *
          * @param mux,muy,muz components of a unit vector specifying the mean direction
@@ -101,6 +107,9 @@ namespace impactx::distribution
             amrex::ParticleReal c = std::cos(2_prt*pi*x1);
             amrex::ParticleReal s = std::sin(2_prt*pi*x1);
             amrex::ParticleReal t;
+            // The form of the function below is obtained from eq (30) of:
+            // D. Frisch and U. D. Hanebeck, "Deterministic Von Mises-Fisher Sampling on the Sphere Using
+            // Fibonacci Lattices", IEEE, 2023, DOI: 10.1109/SDF-MFI59545.2023.10361396
             if(m_kappa > 0) {
                t = 1_prt + std::log1p(x2 * std::expm1(-2*m_kappa))/m_kappa;
             } else {

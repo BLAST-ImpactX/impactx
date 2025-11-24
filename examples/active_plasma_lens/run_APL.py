@@ -17,11 +17,11 @@ def run_APL_tracking(
 ):
     """
     Run a plasma lens tracking simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m].
-    Can use lensType='ChrPlasmaLens' | 'ConstK' | 'ChrDrift' (expect APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
+    Can use lensType='ChrPlasmaLens' | 'ConstF' | 'ChrDrift' (expect APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
     """
     print("", flush=True)
     print(
-        f"*** run_APL_tracking({APL_g}, {sigpt_0}, {sigma_mid}, {lensType}) :",
+        f"*** run_APL_tracking({APL_g}, {sigpt_0}, {sigma_mid}, '{lensType}') :",
         flush=True,
     )
     print("", flush=True)
@@ -116,7 +116,7 @@ def run_APL_tracking(
         muypy=mu_0,
         mutpt=0.0,
     )
-    npart = 10000  # number of macro particles
+    npart = 100000  # number of macro particles
     sim.add_particles(bunch_charge_C, distr, npart)
 
     # create the accelerator lattice
@@ -135,8 +135,8 @@ def run_APL_tracking(
             name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns
         )
 
-    elif lensType == "ConstK":
-        APL = elements.ConstK(
+    elif lensType == "ConstF":
+        APL = elements.ConstF(
             name="APL", ds=APL_length, kx=APL_k_sqrt, ky=APL_k_sqrt, kt=0.0, nslice=ns
         )
 

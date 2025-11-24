@@ -13,7 +13,7 @@ from analysis_APL_ChrPlasmaLens import get_beams, get_moments, get_twiss
 (initial, beam_final, final) = get_beams()
 
 # compare number of particles
-num_particles = 10000
+num_particles = 100000
 assert num_particles == len(initial)
 assert num_particles == len(final)
 
@@ -31,12 +31,12 @@ atol = 0.0  # ignored
 rtol = 2.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-# Compare to analytical values
+# Compare initial beam to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
-        0.00010003246877770656,
-        0.00010003246877770656,
+        2.737665020201518e-05,
+        2.737665020201518e-05,
         0.001,
         2.548491664266332e-08,
         2.548491664266332e-08,
@@ -45,7 +45,6 @@ assert np.allclose(
     rtol=rtol,
     atol=atol,
 )
-
 
 print("")
 print("Final Beam:")
@@ -62,18 +61,18 @@ print(
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 4.5 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 2.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-# Compare to analytical values
+# Compare final beam to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
     [
-        0.0001314429025974998,
-        0.0001314429025974998,
+        2.737665020201518e-05,
+        2.737665020201518e-05,
         0.001,
-        2.514662e-08,
-        2.514662e-08,
+        2.548491664266332e-08,
+        2.548491664266332e-08,
         1e-06,
         20e-3,
         3.923902e02,

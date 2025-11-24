@@ -1660,28 +1660,51 @@ add_impactx_test(fodo-pals.py
 # Active Plasma Lens tests ####################################
 #
 # ChrPlasmaLens, k = 0 (acting like a drift)
-add_impactx_test(APL_ChrPlasmaLens_zero.py
-  examples/active_plasma_lens/run_APL_ChrPlasmaLens_zero.py
+add_impactx_test(APL_ChrPlasmaLens_tracking_zero.py
+  examples/active_plasma_lens/run_APL_ChrPlasmaLens_tracking_zero.py
   OFF # No MPI needed
-  examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_zero.py
-  examples/active_plasma_lens/plot_APL_ChrPlasmaLens_zero.py
+  examples/active_plasma_lens/analysis_APL_tracking_zero.py
+  examples/active_plasma_lens/plot_APL_tracking_zero.py
+)
+# ConstF, k = 0 (acting like a drift)
+add_impactx_test(APL_ConstF_tracking_zero.py
+  examples/active_plasma_lens/run_APL_ConstF_tracking_zero.py
+  OFF # No MPI needed
+  examples/active_plasma_lens/analysis_APL_tracking_zero.py
+  examples/active_plasma_lens/plot_APL_tracking_zero.py
 )
 
 # ChrPlasmaLens, mg = -1000T/m (focusing)
-add_impactx_test(APL_ChrPlasmaLens_focusing.py
-  examples/active_plasma_lens/run_APL_ChrPlasmaLens_focusing.py
+add_impactx_test(APL_ChrPlasmaLens_tracking_focusing.py
+  examples/active_plasma_lens/run_APL_ChrPlasmaLens_tracking_focusing.py
   OFF # No MPI needed
-  examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_focusing.py
-  examples/active_plasma_lens/plot_APL_ChrPlasmaLens_focusing.py
+  examples/active_plasma_lens/analysis_APL_tracking_focusing.py
+  examples/active_plasma_lens/plot_APL_tracking_focusing.py
+)
+
+# ConstF, mg = -1000T/m (focusing)
+add_impactx_test(APL_ConstF_tracking_focusing.py
+  examples/active_plasma_lens/run_APL_ConstF_tracking_focusing.py
+  OFF # No MPI needed
+  examples/active_plasma_lens/analysis_APL_tracking_focusing.py
+  examples/active_plasma_lens/plot_APL_tracking_focusing.py
 )
 
 # ChrPlasmaLens, mg = 1000T/m (defocusing)
-add_impactx_test(APL_ChrPlasmaLens_defocusing.py
-  examples/active_plasma_lens/run_APL_ChrPlasmaLens_defocusing.py
+add_impactx_test(APL_ChrPlasmaLens_tracking_defocusing.py
+  examples/active_plasma_lens/run_APL_ChrPlasmaLens_tracking_defocusing.py
   OFF # No MPI needed
-  examples/active_plasma_lens/analysis_APL_ChrPlasmaLens_defocusing.py
-  examples/active_plasma_lens/plot_APL_ChrPlasmaLens_defocusing.py
-  )
+  examples/active_plasma_lens/analysis_APL_tracking_defocusing.py
+  examples/active_plasma_lens/plot_APL_tracking_defocusing.py
+)
+
+  # ConstF, mg = 1000T/m (defocusing)
+add_impactx_test(APL_ConstF_tracking_defocusing.py
+  examples/active_plasma_lens/run_APL_ConstF_tracking_defocusing.py
+  OFF # No MPI needed
+  examples/active_plasma_lens/analysis_APL_tracking_defocusing.py
+  examples/active_plasma_lens/plot_APL_tracking_defocusing.py
+)
 
 # Exactly-solvable (non-uniform) soft-edge solenoid ##############
 #

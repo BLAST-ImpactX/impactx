@@ -21,7 +21,7 @@ def run_APL_tracking(
 ):
     """
     Run a plasma lens tracking simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m].
-    Can use lensType='ChrPlasmaLens' | 'ConstF' | 'ChrDrift' (expect APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
+    Can use lensType='ChrPlasmaLens' | 'ConstF' | 'ChrDrift' (expects APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
     """
 
     from impactx import ImpactX, distribution, elements
@@ -33,8 +33,6 @@ def run_APL_tracking(
     )
     print("", flush=True)
 
-    # import sys
-    # sys.exit(1)
     sim = ImpactX()
 
     # set numerical parameters and IO control
@@ -117,11 +115,119 @@ def run_APL_tracking(
         APL,
         monitor,
     ]
-    # assign a fodo segment
-    sim.lattice.extend(lattice)
 
     # run simulation
+    sim.lattice.extend(lattice)
     sim.track_particles()
+
+    # clean shutdown
+    sim.finalize()
+
+def run_APL_envelope(
+    APL_g: float, sigpt_0: float, sigma_mid: float, lensType: str = "ChrPlasmaLens"
+):
+    """
+    Run a plasma lens envelope simulation with the given APL gradient APL_g [T/m], sigma_pt [-], and sigma_mid [m].
+    Can specify lensType='ChrPlasmaLens' | 'ConstF' | 'ChrDrift' (expects APL_g = 0) | 'ChrQuad' (only horizontal plane valid)
+    Note that for lensType='ChrPlasmaLens' | 'ChrDrift' | 'ChrQuad', the envelope simulation is not yet implemented.
+    """
+
+    from impactx import ImpactX, distribution, elements
+
+    print("", flush=True)
+    print(
+        f"*** run_APL_envelope({APL_g}, {sigpt_0}, {sigma_mid}, '{lensType}') :",
+        flush=True,
+    )
+    print("", flush=True)
+
+    sim = ImpactX()
+
+    # set numerical parameters and IO control
+    sim.space_charge = False
+    # sim.diagnostics = False  # benchmarking
+    sim.slice_step_diagnostics = True
+
+    # domain decomposition & space charge mesh
+    sim.init_grids()
+
+    ## Physics parameters for test (APL_g from input arguments)
+
+    # Load a 200 MeV electron beam with alpha=0 (x and y)
+    #  in the center of the APL
+    # reference particle
+    ref = sim.particle_container().ref_particle()
+    ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV)
+
+    (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(
+        sigma_mid, APL_g, ref.beta_gamma, ref.rigidity_Tm
+    )
+
+    # Longitudinal parameters (sigpt_0 [-] from input arguments)
+    sigt_0 = 1e-3  # [m]
+    emit_t = math.sqrt(sigt_0**2 * sigpt_0**2 - 0**2)
+    print(
+        f"sigt_0 = {sigt_0} [m], sigpt_0 = {sigpt_0} [-], emit_t = {emit_t}", flush=True
+    )
+    print(flush=True)
+
+    #   particle bunch
+    distr = distribution.Gaussian(
+        lambdaX=math.sqrt(emitg / gamma_0),
+        lambdaY=math.sqrt(emitg / gamma_0),
+        lambdaT=sigt_0,  # OK for mutpt=0
+        lambdaPx=math.sqrt(emitg / beta_0),
+        lambdaPy=math.sqrt(emitg / beta_0),
+        lambdaPt=sigpt_0,  # OK for mutpt=0
+        muxpx=mu_0,
+        muypy=mu_0,
+        mutpt=0.0,
+    )
+    #npart = 100000  # number of macro particles
+    #sim.add_particles(bunch_charge_C, distr, npart)
+
+    # create the accelerator lattice
+
+    # Plasma lens parameters for ConstF
+    APL_k = APL_g / ref.rigidity_Tm
+    APL_k_sqrt = np.sign(APL_k) * np.sqrt(np.abs(APL_k))
+    print(f"APL_g = {APL_g} [T/m], APL_k = {APL_k} [1/m^2]", flush=True)
+    print(flush=True)
+
+    ns = 40  # number of slices per ds in the element
+    monitor = elements.BeamMonitor("monitor", backend="h5")
+    APL = None
+    if lensType == "ChrPlasmaLens":
+        APL = elements.ChrPlasmaLens(
+            name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns
+        )
+
+    elif lensType == "ConstF":
+        APL = elements.ConstF(
+            name="APL", ds=APL_length, kx=APL_k_sqrt, ky=APL_k_sqrt, kt=0.0, nslice=ns
+        )
+
+    elif lensType == "ChrDrift":
+        # For comparison with k=0
+        assert float(APL_g) == 0.0
+        APL = elements.ChrDrift(name="APL", ds=APL_length, nslice=ns)
+
+    elif lensType == "ChrQuad":
+        # For comparison with k != 0, single plane
+        APL = elements.ChrQuad(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
+    else:
+        raise ValueError(f"Unknown lensType {lensType}")
+
+    lattice = [
+        monitor,
+        APL,
+        monitor,
+    ]
+
+    # run simulation
+    sim.lattice.extend(lattice)
+    sim.init_envelope(ref,distr)
+    sim.track_envelope()
 
     # clean shutdown
     sim.finalize()

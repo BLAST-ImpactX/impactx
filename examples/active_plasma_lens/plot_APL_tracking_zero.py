@@ -11,7 +11,9 @@ import argparse
 from plot_APL import millimeter, plot_sigmas, plt, read_time_series
 
 # options to run this script, this one is used by the CTest harness
-parser = argparse.ArgumentParser(description="Plot the ChrPlasmaLens_zero and ConstF_tracking_zero benchmarks.")
+parser = argparse.ArgumentParser(
+    description="Plot the ChrPlasmaLens_zero and ConstF_tracking_zero benchmarks."
+)
 parser.add_argument(
     "--save-png", action="store_true", help="non-interactive run: save to PNGs"
 )
@@ -25,13 +27,12 @@ rbc = read_time_series("diags/reduced_beam_characteristics.*")
 # Plot beam transverse sizes
 plot_sigmas(rbc)
 
-#Analytical estimates
+# Analytical estimates
 # Start/end
 plt.axhline(2.737665020201518e-05 * millimeter, ls="--", color="k")
 # mid
 plt.axhline(10e-6 * millimeter, ls="--", color="k")
 plt.axvline(10e-3, ls="--", color="k")
-
 
 
 if args.save_png:

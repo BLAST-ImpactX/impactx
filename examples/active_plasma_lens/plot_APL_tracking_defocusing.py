@@ -27,7 +27,7 @@ rbc = read_time_series("diags/reduced_beam_characteristics.*")
 # Plot beam transverse sizes
 plot_sigmas(rbc)
 
-#Analytical estimates
+# Analytical estimates
 # Start/end
 plt.axhline(0.0001314429025974998 * millimeter, ls="--", color="k")
 plt.axhline(100e-6 * millimeter, ls="--", color="k")

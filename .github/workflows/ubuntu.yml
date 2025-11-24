@@ -27,7 +27,7 @@ jobs:
         docker-images: true
         swap-storage: false
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: install dependencies
       run: |
@@ -121,7 +121,7 @@ jobs:
         docker-images: true
         swap-storage: false
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: install dependencies
       run: |

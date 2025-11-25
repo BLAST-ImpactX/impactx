@@ -62,7 +62,7 @@ print(
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 10 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 2.5 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 # Compare to analytical values
@@ -72,8 +72,8 @@ assert np.allclose(
         0.0001314429025974998,
         0.0001314429025974998,
         0.001,
-        2.514662e-08,
-        2.514662e-08,
+        2.548491664266332e-08,
+        2.548491664266332e-08,
         1e-06,
         20e-3,
         3.923902e02,

@@ -552,6 +552,25 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
+``polygon_aperture``
+^^^^^^^^^^^^^^^^^^^^
+
+``polygon_aperture`` for a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
+and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+The first and last vertices must be identical. These parameters define the element:
+
+* ``<element_name>.vertices_x`` (``float``, in meters) array of horizontal locations of aperture vertices
+* ``<element_name>.vertices_y`` (``float``, in meters) array of vertical locations of aperture vertices
+* ``<element_name>.min_radius2`` (``float``, in meters-squared) optional minimum radius-squared of a circle fully inscribed within the polygon. Particles with
+  radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped. (default ``0``)
+* ``<element_name>.repeat_x`` (``float``, in meters) horizontal period for repeated aperture masking (inactive by default)
+* ``<element_name>.repeat_y`` (``float``, in meters) vertical period for repeated aperture masking (inactive by default)
+* ``<element_name>.shift_odd_x`` (``bool``) for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+* ``<element_name>.action`` (``string``) action of the aperture domain: ``transmit`` (default) or ``absorb``
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
 ``prot``
 ^^^^^^^^
 
@@ -903,6 +922,7 @@ See there ``nslice`` option on lattice elements for slicing.
     When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
   * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+
   * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
     These models are supported only in particle tracking mode (when ``algo.track = "particles"``).

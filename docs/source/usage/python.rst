@@ -1462,6 +1462,30 @@ This module provides elements and methods for the accelerator lattice.
 
       maximum vertical coordinate
 
+.. py:class:: impactx.elements.PolygonAperture(vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
+
+   This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
+   and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+   The first and last vertices must be identical.
+
+   :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
+   :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m
+   :param min_radius2: radius-squared of a circle fully inscribed by the polygon aperture (default 0) (meters-squared)
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
+   .. py:property:: min_radius2
+
+      radius-squared of a fully inscribed circle. Particles with radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped.
+
+      aperture type (transmit, absorb)
+
 .. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge quadrupole.

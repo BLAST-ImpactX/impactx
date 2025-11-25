@@ -1,6 +1,6 @@
 /* Copyright 2021-2023 The ImpactX Community
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Eric G. Stern
  * License: BSD-3-Clause-LBNL
  */
 #include "pyImpactX.H"
@@ -1610,6 +1610,108 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_PlaneXYRot);
+
+    py::class_<PolygonAperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PolygonAperture(me, "PolygonAperture");
+    py_PolygonAperture
+        .def("__repr__",
+             [](PolygonAperture const & polygon_aperture) {
+                 return element_name(
+                    polygon_aperture,
+                    std::make_pair("action", polygon_aperture.action_name(polygon_aperture.m_action))
+                );
+             }
+        )
+        .def("to_dict",
+            [](PolygonAperture const & polygon_aperture) {
+                using namespace amrex::literals;
+                return element_dict(
+                    polygon_aperture,
+                    std::make_pair("vertices_x", PolygonApertureData::h_vertices_x[polygon_aperture.m_id]),
+                    std::make_pair("vertices_y", PolygonApertureData::h_vertices_y[polygon_aperture.m_id]),
+                    std::make_pair("min_radius2", polygon_aperture.m_min_radius2),
+                    std::make_pair("action", polygon_aperture.m_action),
+                    std::make_pair("repeat_x", polygon_aperture.m_repeat_x),
+                    std::make_pair("repeat_y", polygon_aperture.m_repeat_y),
+                    std::make_pair("shift_odd_x", polygon_aperture.m_shift_odd_x)
+                );
+            }
+        )
+        .def(py::init([](
+                 std::vector<amrex::ParticleReal> vertices_x,
+                 std::vector<amrex::ParticleReal> vertices_y,
+                 amrex::ParticleReal min_radius2,
+                 amrex::ParticleReal repeat_x,
+                 amrex::ParticleReal repeat_y,
+                 bool shift_odd_x,
+                 std::string const & action,
+                 amrex::ParticleReal dx,
+                 amrex::ParticleReal dy,
+                 amrex::ParticleReal rotation_degree,
+                 std::optional<std::string> name
+             )
+             {
+                 PolygonAperture::Action pa_action;
+                 if (action == "transmit") {
+                    pa_action = PolygonAperture::Action::transmit;
+                 } else if (action == "absorb") {
+                    pa_action = PolygonAperture::Action::absorb;
+                 } else
+                     throw std::runtime_error(R"(action must be "transmit" or "absorb")");
+
+                 return new PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y, shift_odd_x, pa_action, dx, dy, rotation_degree, name);
+             }),
+             py::arg("vertices_x"),
+             py::arg("vertices_y"),
+             py::arg("min_radius2")=0.0,
+             py::arg("repeat_x") = 0,
+             py::arg("repeat_y") = 0,
+             py::arg("shift_odd_x") = false,
+             py::arg("action") = "transmit",
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             "A short collimator element described by a polygon with vertices given by their x and y coordinates."
+        )
+        .def_property("action",
+            [](PolygonAperture & ap)
+            {
+                return ap.action_name(ap.m_action);
+            },
+            [](PolygonAperture & ap, std::string const & action)
+            {
+                if (action != "transmit" && action != "absorb")
+                    throw std::runtime_error(R"(action must be "transmit" or "absorb")");
+
+                ap.m_action = action == "transmit" ?
+                    PolygonAperture::Action::transmit :
+                    PolygonAperture::Action::absorb;
+            },
+            "action type (transmit, absorb)"
+        )
+        .def_property("min_radius2",
+            [](PolygonAperture & pa) { return pa.m_min_radius2; },
+            [](PolygonAperture & pa, amrex::ParticleReal mr2) { pa.m_min_radius2 = mr2; },
+            "All particles with radius squared smaller than min_radius2 pass the aperture"
+        )
+        .def_property("repeat_x",
+            [](PolygonAperture & ap) { return ap.m_repeat_x; },
+            [](PolygonAperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
+            "horizontal period for repeated aperture masking"
+        )
+        .def_property("repeat_y",
+            [](PolygonAperture & ap) { return ap.m_repeat_y; },
+            [](PolygonAperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
+            "vertical period for repeated aperture masking"
+        )
+        .def_property("shift_odd_x",
+            [](PolygonAperture & ap) { return ap.m_shift_odd_x; },
+            [](PolygonAperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
+            "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. "
+            "Use alignment offsets dx,dy to move whole mask as needed."
+        )
+    ;
+    register_push(py_PolygonAperture);
 
     py::class_<Programmable, elements::mixin::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",

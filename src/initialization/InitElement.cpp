@@ -651,6 +651,38 @@ element_name) );
             }
 
             m_lattice.emplace_back(LinearMap(transport_map, ds, a["dx"], a["dy"], a["rotation_degree"]) );
+        } else if (element_type == "polygon_aperture")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal repeat_x = 0.0;
+            amrex::ParticleReal repeat_y = 0.0;
+            bool shift_odd_x = false;
+            std::string action_str = "transmit";
+
+            std::vector<amrex::ParticleReal> vertices_x = {0.0};
+            std::vector<amrex::ParticleReal> vertices_y = {0.0};
+            amrex::ParticleReal min_radius2 = 0.0;
+
+            detail::queryAddResize(pp_element, "vertices_x", vertices_x);
+            detail::queryAddResize(pp_element, "vertices_y", vertices_y);
+            pp_element.queryAddWithParser("min_radius2", min_radius2);
+
+            pp_element.queryAddWithParser("repeat_x", repeat_x);
+            pp_element.queryAddWithParser("repeat_y", repeat_y);
+            pp_element.queryAdd("shift_odd_x", shift_odd_x);  // https://github.com/AMReX-Codes/amrex/issues/4535
+            pp_element.queryAdd("action", action_str);
+
+            //AMREX_ALWAYS_ASSERT_WITH_MESSAGE(action_str == "transmit" || action_str == "absorb",
+            //                                 element_name + ".action must be \"transmit\" or \"absorb\"");
+
+            PolygonAperture::Action action = action_str == "transmit" ?
+                                        PolygonAperture::Action::transmit :
+                                        PolygonAperture::Action::absorb;
+
+            m_lattice.emplace_back(PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y,
+                shift_odd_x, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);
         }

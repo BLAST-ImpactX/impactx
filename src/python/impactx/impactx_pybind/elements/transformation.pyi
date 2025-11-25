@@ -36,6 +36,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.Multipole
     | impactx.impactx_pybind.elements.NonlinearLens
     | impactx.impactx_pybind.elements.PlaneXYRot
+    | impactx.impactx_pybind.elements.PolygonAperture
     | impactx.impactx_pybind.elements.Programmable
     | impactx.impactx_pybind.elements.PRot
     | impactx.impactx_pybind.elements.Quad

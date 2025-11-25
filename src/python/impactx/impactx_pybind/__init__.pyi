@@ -527,6 +527,7 @@ class ImpactX:
         | elements.Multipole
         | elements.NonlinearLens
         | elements.PlaneXYRot
+        | elements.PolygonAperture
         | elements.Programmable
         | elements.PRot
         | elements.Quad
@@ -965,6 +966,7 @@ def push(
     | elements.Multipole
     | elements.NonlinearLens
     | elements.PlaneXYRot
+    | elements.PolygonAperture
     | elements.Programmable
     | elements.PRot
     | elements.Quad
@@ -1011,6 +1013,7 @@ def push(
     | elements.Multipole
     | elements.NonlinearLens
     | elements.PlaneXYRot
+    | elements.PolygonAperture
     | elements.Programmable
     | elements.PRot
     | elements.Quad

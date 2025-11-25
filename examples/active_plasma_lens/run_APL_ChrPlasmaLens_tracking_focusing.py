@@ -8,7 +8,7 @@
 
 from run_APL import run_APL_tracking
 
-# Run the ChrPlasmaLens APL test in focusing mode
+# Run the ChrPlasmaLens/tracking APL test in focusing mode
 # (rigiditiy is also negative. Gradient given in [T/m])
 run_APL_tracking(-1000, 1.0e-3, 100e-6, lensType="ChrPlasmaLens")
 

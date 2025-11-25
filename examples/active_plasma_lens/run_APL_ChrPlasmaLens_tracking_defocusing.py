@@ -8,6 +8,6 @@
 
 from run_APL import run_APL_tracking
 
-# Run the ChrPlasmaLens APL test in defocusing mode
+# Run the ChrPlasmaLens/tracking APL test in defocusing mode
 # (rigiditiy is negative. Gradient given in [T/m])
 run_APL_tracking(+1000, 1.0e-3, 100e-6, lensType="ChrPlasmaLens")

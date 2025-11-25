@@ -6,8 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-from run_APL import run_APL_tracking
+from run_APL import run_APL_envelope
 
-# Run the ConstF/tracking APL test in defocusing mode
+# Run the ConstF/envelope APL test in focusing mode
 # (rigiditiy is negative. Gradient given in [T/m])
-run_APL_tracking(+1000, 1.0e-3, 100e-6, lensType="ConstF")
+run_APL_envelope(-1000, 1.0e-3, 100e-6, lensType="ConstF")
+

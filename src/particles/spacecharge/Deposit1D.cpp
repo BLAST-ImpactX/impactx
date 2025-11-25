@@ -36,8 +36,6 @@ namespace impactx::particles::spacecharge
 
         using namespace amrex::literals;
 
-        amrex::ParticleReal const charge = pc.GetRefParticle().charge;
-
         // Set parameters for charge deposition
         bool const is_unity_particle_weight = false;
         bool const GetNumberDensity = true;

@@ -13,22 +13,22 @@ rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 print("Initial Beam:")
 
-sigx = rbc['sigma_x'].iloc[0]
-sigy = rbc['sigma_y'].iloc[0]
-sigt = rbc['sigma_t'].iloc[0]
-emittance_x = rbc['emittance_x'].iloc[0]
-emittance_y = rbc['emittance_y'].iloc[0]
-emittance_t = rbc['emittance_t'].iloc[0]
+sigx = rbc["sigma_x"].iloc[0]
+sigy = rbc["sigma_y"].iloc[0]
+sigt = rbc["sigma_t"].iloc[0]
+emittance_x = rbc["emittance_x"].iloc[0]
+emittance_y = rbc["emittance_y"].iloc[0]
+emittance_t = rbc["emittance_t"].iloc[0]
 
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
 
-betax = rbc['beta_x'].iloc[0]
-betay = rbc['beta_y'].iloc[0]
-alphax = rbc['alpha_x'].iloc[0]
-alphay = rbc['alpha_y'].iloc[0]
+betax = rbc["beta_x"].iloc[0]
+betay = rbc["beta_y"].iloc[0]
+alphax = rbc["alpha_x"].iloc[0]
+alphay = rbc["alpha_y"].iloc[0]
 
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
@@ -54,14 +54,14 @@ assert np.allclose(
 print("")
 print("Final Beam:")
 
-sigx = rbc['sigma_x'].iloc[-1]
-sigy = rbc['sigma_y'].iloc[-1]
-sigt = rbc['sigma_t'].iloc[-1]
-emittance_x = rbc['emittance_x'].iloc[-1]
-emittance_y = rbc['emittance_y'].iloc[-1]
-emittance_t = rbc['emittance_t'].iloc[-1]
+sigx = rbc["sigma_x"].iloc[-1]
+sigy = rbc["sigma_y"].iloc[-1]
+sigt = rbc["sigma_t"].iloc[-1]
+emittance_x = rbc["emittance_x"].iloc[-1]
+emittance_y = rbc["emittance_y"].iloc[-1]
+emittance_t = rbc["emittance_t"].iloc[-1]
 
-s_ref = rbc['s'].iloc[-1]
+s_ref = rbc["s"].iloc[-1]
 
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
@@ -69,10 +69,10 @@ print(
     f"  s_ref={s_ref:e}"
 )
 
-betax = rbc['beta_x'].iloc[-1]
-betay = rbc['beta_y'].iloc[-1]
-alphax = rbc['alpha_x'].iloc[-1]
-alphay = rbc['alpha_y'].iloc[-1]
+betax = rbc["beta_x"].iloc[-1]
+betay = rbc["beta_y"].iloc[-1]
+alphax = rbc["alpha_x"].iloc[-1]
+alphay = rbc["alpha_y"].iloc[-1]
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored

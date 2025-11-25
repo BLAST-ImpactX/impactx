@@ -6,11 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
-import glob
-import re
 
 import matplotlib.pyplot as plt
-import pandas as pd
 from matplotlib.ticker import MaxNLocator
 
 # scaling to units

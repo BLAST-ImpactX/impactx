@@ -11,4 +11,3 @@ from run_APL import run_APL_envelope
 # Run the ConstF/envelope APL test in focusing mode
 # (rigiditiy is negative. Gradient given in [T/m])
 run_APL_envelope(-1000, 1.0e-3, 100e-6, lensType="ConstF")
-

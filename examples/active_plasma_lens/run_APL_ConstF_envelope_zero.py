@@ -10,4 +10,3 @@ from run_APL import run_APL_envelope
 
 # Run the ConstF/envelope APL test in no-field mode
 run_APL_envelope(0.0, 1e-3, 10e-6, lensType="ConstF")
-

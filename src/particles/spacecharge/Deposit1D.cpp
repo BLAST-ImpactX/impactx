@@ -25,8 +25,8 @@ namespace impactx::particles::spacecharge
 
     void Deposit1D (
         ImpactXParticleContainer & pc,
-        amrex::Real * beam_profile,
-        amrex::Real * beam_profile_slope,
+        [[maybe_unused]] amrex::Real * beam_profile,
+        [[maybe_unused]] amrex::Real * beam_profile_slope,
         amrex::Real bin_min,
         amrex::Real bin_max,
         int num_bins

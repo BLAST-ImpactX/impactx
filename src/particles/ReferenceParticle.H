@@ -252,21 +252,21 @@ namespace impactx
             return charge / mass;
         }
 
-        /** Set reference particle anomalous magnetic dipole moment 
+        /** Set reference particle anomalous magnetic dipole moment
          *  (aka gyromagnetic anomaly).
          *
          * @param gyromagnetic_anomaly_ref unitless
-         */ 
+         */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         RefPart &
         set_gyromagnetic_anomaly (amrex::ParticleReal const gyromagnetic_anomaly_ref)
         {
             using namespace amrex::literals;
-            
+
             this->gyromagnetic_anomaly = gyromagnetic_anomaly_ref;
-          
+
             return *this;
-        }           
+        }
 
     };
 

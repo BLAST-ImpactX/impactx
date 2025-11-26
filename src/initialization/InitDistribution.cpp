@@ -62,7 +62,7 @@ namespace impactx
         } else if (particle_type == "Hminus") {
             qe = -1.0;
             massE = 939.294308;  // value used in TraceWin
-            gyromagnetic_anomaly = 1.7928473446; // this value is difficult to find, and needs to be checked   
+            gyromagnetic_anomaly = 1.7928473446; // this value is difficult to find, and needs to be checked
         }
         else {  // default to electron
             ablastr::warn_manager::WMRecordWarning(

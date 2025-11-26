@@ -7,6 +7,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+
 from analysis_APL import read_time_series
 
 rbc = read_time_series("diags/reduced_beam_characteristics.*")

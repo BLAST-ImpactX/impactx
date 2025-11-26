@@ -31,6 +31,9 @@ indicating the element used (``ChrPlasmaLens`` or ``ConstF``),
 the field in the lens (``zero``, ``focusing``, or ``defocusing``),
 and simulation type (``tracking`` or ``envelope``).
 
+These both run the simulation, and produce analytical reference parameters
+which are used for comparison by the analysis scripts.
+
 * ``python3 run_APL_ChrPlasmaLens_tracking_zero.py``
 * ``python3 run_APL_ChrPlasmaLens_tracking_focusing.py``
 * ``python3 run_APL_ChrPlasmaLens_tracking_defocusing.py``
@@ -108,10 +111,15 @@ The scripts used to start the simulations:
 Analyze
 -------
 
-The following scripts can be used to analyze correctness of the output, by comparing it to a reference output.
-Here, the output should be the same accross elements (``ConstF`` or ``ChrPlasmaLens``),
+The following scripts can be used to analyze correctness of the output,
+by comparing it to a reference output that is produced and outputed to
+the standard output (terminal) from the run scripts.
+
+The output should be the same accross elements (``ConstF`` or ``ChrPlasmaLens``),
 but depend on the field in the lens (``zero``, ``focusing``, or ``defocusing``),
 and simulation type (``tracking`` or ``envelope``).
+The analysis scripts are therefore the same for both element types.
+
 All analysis scripts look at the output from most recent simulation run in
 the current working directory, i.e. the ``diags`` folder.
 
@@ -172,7 +180,9 @@ The analysis scripts are:
 Visualize
 ---------
 You can run the following scripts to visualize the beam evolution over time (e.g. :math:`s`),
-and compare to analytical expactation:
+and compare to analytical expectation.
+Here, For this, the output format is identical accross the element- and simulation-types,
+only depending on the selected lens field (``zero``, ``focusing``, or ``defocusing``).
 
 * ``python3 plot_APL_zero.py``
 * ``python3 plot_APL_focusing.py``

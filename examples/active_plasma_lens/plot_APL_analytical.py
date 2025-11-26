@@ -11,6 +11,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from run_APL import analytic_final_estimate
 
 rigidity_Tm = -0.6688305274603505  # [T*m], 200MeV electrons

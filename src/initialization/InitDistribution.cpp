@@ -422,7 +422,7 @@ namespace impactx
         if (has_spin) {
             amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
                                                           ref.qm_ratio_SI(),
-                                                bunch_charge * rel_part_this_proc, sx, sy, sz);
+                                                bunch_charge * rel_part_this_proc, std::nullopt, sx, sy, sz);
         } else {
             amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
                                                           ref.qm_ratio_SI(),

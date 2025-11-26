@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from conftest import basepath
 
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 # FIXME in AMReX via https://github.com/AMReX-Codes/amrex/pull/3727
 # def test_impactx_module():
@@ -26,8 +26,16 @@ def validate_fodo(beam):
     """see examples/fodo/analysis_fodo.py"""
     num_particles = beam.total_number_of_particles()
     assert num_particles == 10000
-    atol = 0.0  # ignored
-    rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+    if Config.precision == "SINGLE":
+        atol = 0.0  # ignored
+        rtol = (
+            2.5 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
+    else:
+        atol = 0.0  # ignored
+        rtol = (
+            2.2 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
 
     # in situ calculate the reduced beam characteristics
     rbc = beam.beam_moments()
@@ -160,7 +168,7 @@ def test_impactx_nofile():
 
     # simulate full lattice but keep beam global position
     sim.track_particles()
-    assert np.allclose([ref.s], [7.0])
+    assert ref.s == pytest.approx(7.0)
 
     # finalize simulation
     sim.finalize()

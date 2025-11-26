@@ -328,9 +328,8 @@ namespace impactx::elements
             T_Real lambday = 0_prt;
             T_Real lambdaz = 0_prt;
 
-            // the value of the gyromagnetic anomaly (TO BE PASSED FROM USER INPUT)
-            // currently, the default value for electrons is used
-            amrex::ParticleReal G = 0.00115965218046;
+            // access reference particle values
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
             amrex::ParticleReal const gyro_const = 1_prt + G * refpart.gamma();
 
             // length of the current slice

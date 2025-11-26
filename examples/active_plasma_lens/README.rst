@@ -197,25 +197,36 @@ as well as ``run_APL.py`` and ``analysis_APL.py`` which are described above.
       :language: python3
       :caption: You can copy this file from ``examples/active_plasma_lens/plot_APL.py``.
 
-The plotting scripts are:
+The plotting scripts are given below, together with their graphical output.
+For the plots, output from the ``ChrPlasmaLens_tracking`` simulations were used,
+which shows some error in the envelope due to statistical fluctuations in the initial particle distribution.
 
-.. dropdown:: ``plot_APL_zero.py``
+.. dropdown:: ``plot_APL_zero.py`` and output figures:
 
    .. literalinclude:: plot_APL_zero.py
       :language: python3
       :caption: You can copy this file from ``examples/active_plasma_lens/plot_APL_zero.py``.
 
-.. dropdown:: ``plot_APL_focusing.py``
+   .. figure:: APL_zero-sigma_REF.png
+      :alt: The calculated :math:`\sigma` values throughout the lens without field, for both planes and a separate analytical estimate.
+
+.. dropdown:: ``plot_APL_focusing.py`` and output figures:
 
    .. literalinclude:: plot_APL_focusing.py
       :language: python3
       :caption: You can copy this file from ``examples/active_plasma_lens/plot_APL_focusing.py``.
 
-.. dropdown:: ``plot_APL_defocusing.py``
+   .. figure:: APL_focusing-sigma_REF.png
+      :alt: The calculated :math:`\sigma` values throughout the lens with focusing field, for both planes and a separate analytical estimate.
+
+.. dropdown:: ``plot_APL_defocusing.py`` and output figures:
 
    .. literalinclude:: plot_APL_defocusing.py
       :language: python3
       :caption: You can copy this file from ``examples/active_plasma_lens/plot_APL_defocusing.py``.
+
+   .. figure:: APL_defocusing-sigma_REF.png
+      :alt: The calculated :math:`\sigma` values throughout the lens with defocusing field, for both planes and a separate analytical estimate.
 
 Additionally, it is also possible to run ``python3 plot_APL_analytical.py``,
 which plots the expected Twiss :math:`\alpha` and :math:`\beta` functions at the end of the lens

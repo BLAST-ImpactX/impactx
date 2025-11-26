@@ -11,5 +11,5 @@ from run_APL import run_APL_tracking
 # Run the ChrPlasmaLens/tracking APL test in no-field mode
 run_APL_tracking(0.0, 1e-3, 10e-6, lensType="ChrPlasmaLens")
 
-# Gives the same output -- for creating the analysis file
+# Gives the same output
 # run_APL_tracking(0.0, 1e-3, 10e-6, lensType='ChrDrift')

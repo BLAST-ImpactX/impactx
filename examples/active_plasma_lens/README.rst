@@ -78,7 +78,7 @@ The scripts used to start the simulations:
       :language: python3
       :caption: You can copy this file from ``examples/active_plasma_lens/run_APL_ConstF_tracking_zero.py``.
 
-.. dropdown:: Scrip``run_APL_ConstF_tracking_focusing.py``
+.. dropdown:: ``run_APL_ConstF_tracking_focusing.py``
 
    .. literalinclude:: run_APL_ConstF_tracking_focusing.py
       :language: python3

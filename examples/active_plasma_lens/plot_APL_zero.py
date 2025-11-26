@@ -42,6 +42,6 @@ plt.title(r"No-field e$^-$, 200 MeV, $g$ = 0 [T/m]")
 plt.tight_layout()
 
 if args.save_png:
-    plt.savefig("APL_tracking_zero-sigma.png")
+    plt.savefig("APL_zero-sigma.png")
 else:
     plt.show()

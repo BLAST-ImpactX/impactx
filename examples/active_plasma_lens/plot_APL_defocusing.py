@@ -43,6 +43,6 @@ plt.title(r"Defocusing e$^-$, 200 MeV, $g$ = 1000 [T/m]")
 plt.tight_layout()
 
 if args.save_png:
-    plt.savefig("APL_tracking_defocusing-sigma.png")
+    plt.savefig("APL_defocusing-sigma.png")
 else:
     plt.show()

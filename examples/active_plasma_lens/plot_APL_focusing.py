@@ -43,6 +43,6 @@ plt.title(r"Focusing e$^-$, 200 MeV, $g$ = -1000 [T/m]")
 plt.tight_layout()
 
 if args.save_png:
-    plt.savefig("APL_tracking_focusing-sigma.png")
+    plt.savefig("APL_focusing-sigma.png")
 else:
     plt.show()

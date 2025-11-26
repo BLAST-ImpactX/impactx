@@ -222,8 +222,14 @@ which plots the expected Twiss :math:`\alpha` and :math:`\beta` functions at the
 as a function of the lens gradient. This uses the stand-alone Twiss propagation function
 ``analytic_final_estimate()`` from ``run_APL.py``.
 
-.. dropdown:: ``plot_APL_analytical.py``
+.. dropdown:: ``plot_APL_analytical.py`` and output figures:
 
    .. literalinclude:: plot_APL_analytical.py
       :language: python3
       :caption: You can copy this file from ``examples/active_plasma_lens/plot_APL_analytical.py``.
+
+   .. figure:: APL_analytical_sqrtBeta_REF.png
+      :alt: The analytically computed :math:`\sqrt{\beta}` value at the end of the lens (proportional to beam size), as a function of gradient.
+
+   .. figure:: APL_analytical_alpha_REF.png
+      :alt: The analytically computed :math:`\alpha` value at the end of the lens, as a function of gradient.

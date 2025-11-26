@@ -419,9 +419,15 @@ namespace impactx
             distribution.finalize();
         }, distr);
 
-        amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
-                                                      ref.qm_ratio_SI(),
-                                            bunch_charge * rel_part_this_proc);
+        if (has_spin) {
+            amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
+                                                          ref.qm_ratio_SI(),
+                                                bunch_charge * rel_part_this_proc, sx, sy, sz);
+        } else {
+            amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
+                                                          ref.qm_ratio_SI(),
+                                                bunch_charge * rel_part_this_proc);
+        }
 
         auto space_charge = get_space_charge_algo();
 

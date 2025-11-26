@@ -14,6 +14,7 @@
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
+#include "particles/distribution/SpinvMF.H"
 #include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
@@ -295,7 +296,8 @@ namespace impactx
     ImpactX::add_particles (
         amrex::ParticleReal bunch_charge,
         distribution::KnownDistributions distr,
-        amrex::Long npart
+        amrex::Long npart,
+        std::optional<distribution::SpinvMF> spin_distr
     )
     {
         BL_PROFILE("ImpactX::add_particles");
@@ -337,12 +339,20 @@ namespace impactx
         // alloc data for particle attributes
         amrex::Gpu::DeviceVector<amrex::ParticleReal> x, y, t;
         amrex::Gpu::DeviceVector<amrex::ParticleReal> px, py, pt;
+        amrex::Gpu::DeviceVector<amrex::ParticleReal> sx, sy, sz;
         x.resize(npart_this_proc);
         y.resize(npart_this_proc);
         t.resize(npart_this_proc);
         px.resize(npart_this_proc);
         py.resize(npart_this_proc);
         pt.resize(npart_this_proc);
+
+        bool const has_spin = spin_distr.has_value();
+        if (has_spin) {
+            sx.resize(npart_this_proc);
+            sy.resize(npart_this_proc);
+            sz.resize(npart_this_proc);
+        }
 
         std::visit([&](auto&& distribution){
             // initialize distributions
@@ -354,6 +364,9 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
+            amrex::ParticleReal * const AMREX_RESTRICT sx_ptr = sx.data();
+            amrex::ParticleReal * const AMREX_RESTRICT sy_ptr = sy.data();
+            amrex::ParticleReal * const AMREX_RESTRICT sz_ptr = sz.data();
 
             using Distribution = std::decay_t<decltype(distribution)>;
 
@@ -373,6 +386,7 @@ namespace impactx
                 npart_this_thread = thread_chunk.size;
 #endif
 
+                // phase space init
                 initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
                     distribution,
                     x_ptr + my_offset,
@@ -384,6 +398,20 @@ namespace impactx
                 );
 
                 amrex::ParallelForRNG(npart_this_thread, init_single_particle_data);
+
+                // spin init
+                if (has_spin) {
+                    auto spinv = spin_distr.value();
+                    amrex::ParallelForRNG(npart_this_thread,
+                        [=] AMREX_GPU_DEVICE (int i, amrex::RandomEngine const& engine) noexcept {
+                        spinv(
+                            sx_ptr[i + my_offset],
+                            sy_ptr[i + my_offset],
+                            sz_ptr[i + my_offset],
+                            engine
+                        );
+                    });
+                }
             }
 
             // finalize distributions and deallocate temporary device global memory
@@ -548,15 +576,28 @@ namespace impactx
             std::string unit_type;  // System of units
             pp_dist.get("units", unit_type);
 
+            // phase space distribution
             distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
             std::string distribution;
             pp_dist.get("distribution", distribution);
+
+            // spin distribution
+            amrex::ParticleReal polarization_x = 0.0_prt,
+                                polarization_y = 0.0_prt,
+                                polarization_z = 0.0_prt;
+            pp_dist.queryWithParser("polarization_x", polarization_x);
+            pp_dist.queryWithParser("polarization_y", polarization_y);
+            pp_dist.queryWithParser("polarization_z", polarization_z);
+            // TODO: check magnitude of x,y,z is in range [0:1]
+            // TODO: calculate kappa from mag(x,y,z)
+            amrex::ParticleReal kappa = 1.0;  // FIXME: root finding
+            distribution::SpinvMF spin_dist(polarization_x, polarization_y, polarization_z, kappa);
 
             amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
             {
                 pp_dist.getWithParser("npart", npart);
-                add_particles(bunch_charge, dist, npart);
+                add_particles(bunch_charge, dist, npart, spin_dist);
             }
 
             // print information on the initialized beam

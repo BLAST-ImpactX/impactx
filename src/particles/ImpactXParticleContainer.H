@@ -179,12 +179,12 @@ namespace impactx
          * @param px momentum in x
          * @param py momentum in y
          * @param pt momentum in t
-         * @param sx spin component in x
-         * @param sy spin component in y
-         * @param sz spin component in z
          * @param qm charge over mass in 1/eV
          * @param bunch_charge total charge within a bunch in C
          * @param w weight of each particle: how many real particles to represent
+         * @param sx spin component in x
+         * @param sy spin component in y
+         * @param sz spin component in z
          */
         void
         AddNParticles (
@@ -194,12 +194,12 @@ namespace impactx
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & px,
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
-            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sx,
-            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sy,
-            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & sz,
             amrex::ParticleReal qm,
             std::optional<amrex::ParticleReal> bunch_charge = std::nullopt,
-            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sx = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sy = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sz = std::nullopt
         );
 
         /** Register storage for lost particles

@@ -51,26 +51,6 @@ namespace impactx::distribution
         {
         }
 
-        /** Initialize the distribution.
-         *
-         * Nothing to do here.
-         *
-         * @param bunch_charge charge of the beam in C
-         * @param ref the reference particle
-         */
-        void initialize ([[maybe_unused]] amrex::ParticleReal bunch_charge, [[maybe_unused]] RefPart const & ref)
-        {
-        }
-
-        /** Close and deallocate all data and handles.
-         *
-         * Nothing to do here.
-         */
-        void
-        finalize ()
-        {
-        }
-
         /** Return 1 3D spin (unit) vector
          *
          * @param sx particle spin component in x
@@ -113,13 +93,13 @@ namespace impactx::distribution
             // D. Frisch and U. D. Hanebeck, "Deterministic Von Mises-Fisher Sampling on the Sphere Using
             // Fibonacci Lattices", IEEE, 2023, DOI: 10.1109/SDF-MFI59545.2023.10361396
             if(m_kappa > 0) {
-               t = 1_prt + std::log1p(x2 * std::expm1(-2*m_kappa))/m_kappa;
+               t = 1_prt + std::log1p(x2 * std::expm1(-2_prt * m_kappa)) / m_kappa;
             } else {
                t = 1_prt - 2_prt * x2;
             }
 
             // Evaluation of the spin components
-            amrex::ParticleReal u=std::sqrt(1_prt-powi<2>(t));
+            amrex::ParticleReal u = std::sqrt(1_prt-powi<2>(t));
             sx = u * (b*c + a*muz*s) + t*mux;
             sy = u * (-a*c + b*muz*s) + t*muy;
             sz = u * (-muperp*s) + t*muz;

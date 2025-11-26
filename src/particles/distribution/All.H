@@ -26,6 +26,7 @@
 
 namespace impactx::distribution
 {
+    // Phase space distributions
     using KnownDistributions = std::variant<
         Empty, /* must be first, so KnownDistributions creates a default constructor */
         Gaussian,
@@ -35,8 +36,7 @@ namespace impactx::distribution
         Thermal,
         Triangle,
         Semigaussian,
-        Waterbag,
-        SpinvMF
+        Waterbag
     >;
 
 } // namespace impactx::distribution

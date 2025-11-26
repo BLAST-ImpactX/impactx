@@ -10,9 +10,9 @@
 #  as a function of APL gradient [T/m]
 
 import argparse
+
 import matplotlib.pyplot as plt
 import numpy as np
-
 from run_APL import analytic_final_estimate
 
 # options to run this script, this one is used by the CTest harness

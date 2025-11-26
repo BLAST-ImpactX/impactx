@@ -8,9 +8,9 @@
 
 import argparse
 
-from run_APL import analytic_sigma_function
 from analysis_APL import read_time_series
 from plot_APL import millimeter, plot_sigmas, plt
+from run_APL import analytic_sigma_function
 
 # options to run this script, this one is used by the CTest harness
 parser = argparse.ArgumentParser(

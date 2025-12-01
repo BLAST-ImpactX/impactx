@@ -98,7 +98,7 @@ As a last step, we expose our C++ beamline elements to Python in `src/python/ele
       :language: cpp
       :dedent: 4
       :start-at: py::class_<Drift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Drift(me, "Drift");
-      :end-at: register_envelope_push(py_Drift);
+      :end-at: register_push(py_Drift);
 
 Pull requests that added a new element and can be taken as examples are:
 

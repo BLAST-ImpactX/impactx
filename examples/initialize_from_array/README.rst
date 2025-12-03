@@ -48,6 +48,15 @@ This example can **only** be run with **Python**:
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
+.. attention::
+
+   In MPI-parallel simulations, ``pc.add_n_particles(...)`` is local to the MPI rank, spatial locality does not matter.
+   Thus, you can add particles at any MPI rank, e.g., equally chuncked up for perfect load balancing.
+
+   You do NOT want to add the same unique particle at multiple MPI ranks.
+
+   When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
+
 .. literalinclude:: run_from_array.py
     :language: python3
     :caption: You can copy this file from ``examples/initialize_from_array/run_from_array.py``.

@@ -122,11 +122,11 @@ void init_impactxparticlecontainer(py::module& m)
         )
         .def("reduced_beam_characteristics",
              [](ImpactXParticleContainer & pc) {
-                 ablastr::warn_manager::WMRecordWarning(
-                    "reduced_beam_characteristics",
+                 py::warnings::warn(
                     "WARNING: reduced_beam_characteristics() is deprecated. "
                     "Use beam_moments() instead.",
-                    ablastr::warn_manager::WarnPriority::medium
+                    PyExc_DeprecationWarning,
+                    2
                  );
                  return diagnostics::reduced_beam_characteristics(pc);
              },

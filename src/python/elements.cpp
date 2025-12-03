@@ -2190,7 +2190,8 @@ void init_elements(py::module& m)
                  return element_name(
                      src,
                      std::make_pair("distribution", src.m_distribution),
-                     std::make_pair("path", src.m_series_name)
+                     std::make_pair("path", src.m_series_name),
+                     std::make_pair("active_once", src.m_active_once)
                  );
              }
         )
@@ -2199,17 +2200,20 @@ void init_elements(py::module& m)
                 return element_dict(
                     src,
                     std::make_pair("distribution", src.m_distribution),
-                    std::make_pair("path", src.m_series_name)
+                    std::make_pair("path", src.m_series_name),
+                    std::make_pair("active_once", src.m_active_once)
                 );
             }
         )
         .def(py::init<
              std::string,
              std::string,
+             bool,
              std::optional<std::string>
          >(),
              py::arg("distribution"),
              py::arg("openpmd_path"),
+             py::arg("active_once") = true,
              py::arg("name") = py::none(),
              "A particle source."
         )
@@ -2222,6 +2226,11 @@ void init_elements(py::module& m)
             [](Source & src) { return src.m_series_name; },
             [](Source & src, std::string series_name) { src.m_series_name = series_name; },
             "Path to openPMD series as accepted by openPMD_api.Series"
+        )
+        .def_property("active_once",
+            [](Source & src) { return src.m_active_once; },
+            [](Source & src, bool actice_once) { src.m_active_once = actice_once; },
+            "Inject particles only for the first lattice period."
         )
     ;
     register_push(py_Source);

@@ -35,16 +35,19 @@ namespace impactx::elements
          *
          * @param distribution Must read "openPMD" for this constructor
          * @param openpmd_path path to openPMD series as accepted by openPMD::Series
+         * @param active_once inject particles only for the first lattice period
          * @param name a user defined and not necessarily unique name of the element
          */
         Source (
             std::string distribution,
             std::string openpmd_path,
+            bool active_once = true,
             std::optional<std::string> name = std::nullopt
         )
         : Named(std::move(name)),
           m_distribution(distribution),
-          m_series_name(std::move(openpmd_path))
+          m_series_name(std::move(openpmd_path)),
+          m_active_once(active_once)
         {
             if (distribution != "openPMD") {
                 throw std::runtime_error("Only 'openPMD' distribution is supported if openpmd_path is provided!");
@@ -62,7 +65,7 @@ namespace impactx::elements
         void operator() (
             ImpactXParticleContainer & pc,
             [[maybe_unused]] int step,
-            [[maybe_unused]] int period
+            int period
         );
 
         /** This function returns the linear transport map.
@@ -86,6 +89,7 @@ namespace impactx::elements
 
         std::string m_distribution; //! Distribution type of particles in the source
         std::string m_series_name; //! openPMD filename
+        bool m_active_once = true; //! Inject particles only for the first lattice period
     };
 
 } // namespace impactx

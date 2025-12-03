@@ -346,13 +346,13 @@ This requires these additional parameters:
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
 * ``<element_name>.g`` (``float``, in meters) the full magnetic gap size
 * ``<element_name>.R`` (``float``, in meters) scale length for the field integrals (default: ``1 m``)
-* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field (default: ``pi/6``)
+* ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field (FINT, default: ``1``)
-* ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field (default: ``1/6``)
+* ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
 * ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error

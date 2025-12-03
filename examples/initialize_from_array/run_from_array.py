@@ -117,6 +117,17 @@ pc.add_n_particles(
     dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, w=w_podv
 )
 
+# Note for MPI-parallel simulations:
+#   `pc.add_n_particles(...)` is local to the MPI rank, spatial
+#   locality does not matter. Thus, you can add particles at any
+#   MPI rank, e.g., equally chuncked up for perfect load balancing.
+#
+#   You do NOT want to add the same unique particle at multiple
+#   MPI ranks.
+#
+#   When ImpactX needs to sort particles spatially, it will
+#   redistribute them over MPI ranks automatically during tracking.
+
 # build the accelerator lattice
 monitor = elements.BeamMonitor("monitor", backend="h5")
 sim.lattice.extend(

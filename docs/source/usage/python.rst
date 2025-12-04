@@ -193,11 +193,11 @@ Collective Effects & Overall Simulation Parameters
       When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
 
    .. py:property:: spin
-   
+
       Enable (``True``) or disable (``False``) particle spin tracking (default: ``False``).
-      
+
       Whether to track particle spin.  This feature is not yet supported.
-   
+
    .. py:property:: diagnostics
 
       Enable (``True``) or disable (``False``) diagnostics generally (default: ``True``).

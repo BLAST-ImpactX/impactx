@@ -1088,7 +1088,7 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
 
 
 .. _running-cpp-parameters-spin:
-  
+
 Spin Tracking
 ^^^^^^^^^^^^^
 
@@ -1097,7 +1097,7 @@ By construction, all spin tracking methods rely on pushing particles using spin 
 used for pushing the phase space vector.
 
 Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
-  
+
 * ``algo.spin`` (``boolean``, optional, default: ``false``)
 
   Whether to track particle spin.

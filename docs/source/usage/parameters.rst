@@ -138,6 +138,16 @@ Initial Beam Distributions
     * ``beam.normalize_halo`` (``float``, dimensionless) normalizing constant for halo population
     * ``beam.halo`` (``float``, dimensionless) fraction of charge in halo
 
+Initial Spin Distributions
+---------------------------
+
+  The specification of an initial particle spin distribution is optional, and is required only if spin tracking is used.
+  The default distribution type is the von Mises-Fisher distribution, uniquely determined by the input polarization vector.
+  The polarization vector provided by the user must lie within the unit ball.
+     
+* ``beam.polarization_x`` (``float``, dimensionless) mean value of the spin vector x-component
+* ``beam.polarization_y`` (``float``, dimensionless) mean value of the spin vector y-component
+* ``beam.polarization_z`` (``float``, dimensionless) mean value of the spin vector z-component
 
 .. _running-cpp-parameters-lattice:
 

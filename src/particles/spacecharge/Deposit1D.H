@@ -24,16 +24,14 @@ namespace impactx::particles::spacecharge
      *  so-called 2.5D models.
      *
      * @param[in] pc container of the particles that deposited rho
-     * @param[out] beam_profile deposited charge density
-     * @param[out] beam_profile_slope derivative of deposited charge density
      * @param[in] bin_min location of lower endpoint for binning
      * @param[in] bin_max location of upper endpoint for binning
      * @param[in] num_bins number of longitudinal bins
+     * @return beam_profile deposited charge density
      */
-    void Deposit1D (
+    amrex::Gpu::DeviceVector<amrex::Real>
+    Deposit1D (
         ImpactXParticleContainer & pc,
-        amrex::Real * beam_profile,
-        amrex::Real * beam_profile_slope,
         amrex::Real bin_min,
         amrex::Real bin_max,
         int num_bins

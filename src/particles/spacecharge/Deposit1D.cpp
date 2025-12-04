@@ -23,10 +23,9 @@
 namespace impactx::particles::spacecharge
 {
 
-    void Deposit1D (
+    amrex::Gpu::DeviceVector<amrex::Real>
+    Deposit1D (
         ImpactXParticleContainer & pc,
-        [[maybe_unused]] amrex::Real * beam_profile,
-        [[maybe_unused]] amrex::Real * beam_profile_slope,
         amrex::Real bin_min,
         amrex::Real bin_max,
         int num_bins
@@ -38,7 +37,6 @@ namespace impactx::particles::spacecharge
 
         // Set parameters for charge deposition
         bool const is_unity_particle_weight = false;
-        bool const GetNumberDensity = true;
 
         amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);  // number of evaluation points
         // Allocate memory for the charge profile
@@ -54,13 +52,7 @@ namespace impactx::particles::spacecharge
             amrex::ParallelDescriptor::Communicator()
         );
 
-        // Call charge density derivative function
-        amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);
-        impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, slopes, bin_size,GetNumberDensity);
-
-        beam_profile = charge_distribution.data();
-        beam_profile_slope = slopes.data();
-
+        return charge_distribution;
     }
 
 }  // namespace impactx::particles::spacecharge

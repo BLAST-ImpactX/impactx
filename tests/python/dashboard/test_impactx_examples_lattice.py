@@ -6,19 +6,13 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from pathlib import Path
-
-from .utils import DashboardTester, get_impactx_root_dir
+from .utils import DashboardTester
 
 
 class DashboardExamples:
     def __init__(self, dashboard: DashboardTester):
         self.dashboard = dashboard
         self.sb = dashboard.sb
-
-        # Set up the examples directory path once
-        impactx_directory = Path(get_impactx_root_dir())
-        self.examples_directory = impactx_directory / "examples"
 
     def _load_example(self, example_path):
         self.dashboard.load_example(example_path)

@@ -106,6 +106,38 @@ namespace impactx::distribution
 
         }
 
+                
+        /** This function evaluatates the inverse Langevin function, in order to return
+         *  the value of concentration (kappa) required to produce a given polarization magnitude.
+         *  It is used to prepare for spin sampling using the vMF distribution.
+         *
+         *  Here, we use an approximate expression due to R. Petrosyan.  See:
+         *  R. Petrosyan, Rheologica Acta 56, 21-26, 2016; doi:10.1007/s00397-016-0977-9
+         *  R. Jedynak, Mathematics and Mechanics of Solids 24, 1-25, 2018; doi:10.1177/1081286518811395
+         *
+         * @param pmag polarization magnitude
+         * @returns required value of concentration kappa
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        static amrex::ParticleReal
+        inverse_Langevin (amrex::ParticleReal const & AMREX_RESTRICT pmag)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            amrex::ParticleReal concentration;
+            
+            // Evaluation of the inverse Langevin function.  Here, we use the approximate expression
+            // due to R. Petrosyan.  See:
+            // R. Petrosyan, Rheologica Acta 56, 21-26, 2016; doi:10.1007/s00397-016-0977-9
+            // R. Jedynak, Mathematics and Mechanics of Solids 24, 1-25, 2018; doi:10.1177/1081286518811395
+
+            concentration = 3_prt*pmag + powi<2>(pmag)/5_prt*std::sin(7_prt*pmag/2_prt) + powi<3>(pmag)/(1_prt-pmag);
+
+            return concentration;
+        }
+            
+
         amrex::ParticleReal m_muX, m_muY, m_muZ, m_kappa;  //! parameters specifying the vMF distribution
     };
 

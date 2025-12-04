@@ -601,9 +601,17 @@ namespace impactx
             pp_dist.queryWithParser("polarization_x", polarization_x);
             pp_dist.queryWithParser("polarization_y", polarization_y);
             pp_dist.queryWithParser("polarization_z", polarization_z);
-            // TODO: check magnitude of x,y,z is in range [0:1]
-            // TODO: calculate kappa from mag(x,y,z)
-            amrex::ParticleReal kappa = 1.0;  // FIXME: root finding
+            amrex::ParticleReal pmag = 0.0_prt;
+            amrex::ParticleReal kappa = 0.0_prt;
+
+            // magnitude of the polarization vector (= polarization magnitude)
+            pmag = std::sqrt(polarization_x*polarization_x+polarization_y*polarization_y+polarization_z*polarization_z);
+
+            if (pmag < 1) {
+               kappa = distribution::SpinvMF::inverse_Langevin(pmag);
+            } else {
+                throw std::runtime_error("Initial polarization magnitude must currently be < 1.");
+            }
             distribution::SpinvMF spin_dist(polarization_x, polarization_y, polarization_z, kappa);
 
             amrex::Long npart = 0;  // Number of simulation particles

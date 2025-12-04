@@ -6,7 +6,6 @@ Authors: Parthib Roy, Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
-from pathlib import Path
 from typing import Union
 
 from .. import state
@@ -140,18 +139,3 @@ class GeneralFunctions:
         current_input = getattr(state, state_name)
         numeric_input = GeneralFunctions.convert_to_numeric(current_input)
         setattr(state, state_name, numeric_input)
-
-    def get_impactx_root_dir() -> Path | None:
-        """
-        Locates the ImpactX source directory.
-
-        Looks for the outermost parent directory named 'impactx' that contains a '.git' folder.
-        """
-
-        current_directory = Path(__file__).resolve()
-        root_dir = None
-
-        for parent_dir in current_directory.parents:
-            if parent_dir.name == "impactx" and (parent_dir / ".git").is_dir():
-                root_dir = parent_dir  # keep going until we reach the highest match
-        return root_dir

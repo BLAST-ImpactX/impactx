@@ -81,7 +81,7 @@ class DashboardExamplesLoader:
 
         state.impactx_example_list.clear()
 
-        impactx_directory = GeneralFunctions.get_impactx_root_dir()
+        impactx_directory = DashboardExamplesLoader.get_impactx_path()
         impactx_examples_directory = impactx_directory / "examples"
         print(" the examples directory is ", impactx_examples_directory)
 

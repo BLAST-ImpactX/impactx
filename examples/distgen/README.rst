@@ -222,7 +222,7 @@ We run the following script to analyze correctness:
 
 
 .. _examples-distgen-spinvmf:
-    
+
 Spin Sampling from a vMF Distribution
 ===============================================
 
@@ -255,7 +255,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
           :language: ini
           :caption: You can copy this file from ``examples/distgen/input_kurth4d_spin.in``.
 
-   
+
 Analyze
 -------
 
@@ -266,5 +266,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_kurth4d_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/distgen/analysis_kurth4d_spin.py``.
-
-

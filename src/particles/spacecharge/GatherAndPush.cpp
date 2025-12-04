@@ -39,8 +39,8 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
 
         // Deposit 1D charge density in cases where it is required.
-        amrex::Real * beam_profile = nullptr;
-        amrex::Real * beam_profile_slope = nullptr;
+        amrex::Gpu::DeviceVector<amrex::Real> beam_profile(num_bins + 1, 0.0);
+        amrex::Gpu::DeviceVector<amrex::Real> beam_profile_slope(num_bins, 0.0);
         int num_bins = 129;
 
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
@@ -52,7 +52,7 @@ namespace impactx::particles::spacecharge
 
         if (space_charge == SpaceChargeAlgo::True_2p5D) {
 
-            Deposit1D ( pc, beam_profile, beam_profile_slope, bin_min, bin_max, num_bins);
+            Deposit1D( pc, beam_profile, beam_profile_slope, bin_min, bin_max, num_bins);
         }
 
         // loop over refinement levels
@@ -152,9 +152,9 @@ namespace impactx::particles::spacecharge
 
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =
-                            ablastr::particles::doGatherVectorFieldNodal<2>(
+                            ablastr::particles::doGatherScalarFieldNodal<2>(
                                 x, y, z,
-                                scf_arr_x, scf_arr_y, scf_arr_z,
+                                phi_arr,
                                 invdr,
                                 prob_lo_2D
                             );

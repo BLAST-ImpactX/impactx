@@ -83,7 +83,6 @@ class DashboardExamplesLoader:
 
         impactx_directory = DashboardExamplesLoader.get_impactx_path()
         impactx_examples_directory = impactx_directory / "examples"
-        print(" the examples directory is ", impactx_examples_directory)
 
         for path in impactx_examples_directory.glob("**/run*"):
             relative_path = path.relative_to(impactx_examples_directory)

@@ -16,15 +16,15 @@ state.impactx_example_list = []
 
 DASHBOARD_EXAMPLES = {
     "fodo/run_fodo.py",
-    # "chicane/run_chicane_csr.py",
-    # "fodo_space_charge/run_fodo_envelope_sc.py",
-    # "apochromatic/run_apochromatic.py",
-    # "kurth/run_kurth_10nC_periodic.py",
-    # "expanding_beam/run_expanding_fft.py",
-    # "expanding_beam/run_expanding_envelope.py",
-    # "iota_lattice/run_iotalattice.py",
-    # "cyclotron/run_cyclotron.py",
-    # "dogleg/run_dogleg.py",
+    "chicane/run_chicane_csr.py",
+    "fodo_space_charge/run_fodo_envelope_sc.py",
+    "apochromatic/run_apochromatic.py",
+    # "kurth/run_kurth_10nC_periodic.py", - running into recursion issues
+    "expanding_beam/run_expanding_fft.py",
+    "expanding_beam/run_expanding_envelope.py",
+    "iota_lattice/run_iotalattice.py",
+    "cyclotron/run_cyclotron.py",
+    "dogleg/run_dogleg.py",
 }
 
 
@@ -64,7 +64,7 @@ class DashboardExamplesLoader:
         Retrieve the selected ImpactX example file and populate the UI with its values.
         """
 
-        impactx_directory = DashboardExamplesLoader.get_impactx_path()
+        impactx_directory = GeneralFunctions.get_impactx_root_dir()
         impactx_example_file_path = impactx_directory / "examples" / file_name
 
         file_content_as_str = impactx_example_file_path.read_text()

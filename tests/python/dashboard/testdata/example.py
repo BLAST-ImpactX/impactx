@@ -32,15 +32,20 @@ distr = distribution.Waterbag(
 )
 
 ns = 25
+
+quad1 = elements.Quad(ds=1.0, k=1.0, nslice=ns, name="quad1")
 lattice_configuration = [
-    elements.Drift(ds=0.25, nslice=ns, name="drift1"),
-    elements.Quad(ds=1.0, k=1.0, nslice=ns, name="quad1"),
     elements.Drift(ds=0.5, nslice=ns, name="drift2"),
     elements.Quad(ds=1.0, k=-1.0, nslice=ns, name="quad2"),
     elements.Drift(ds=0.25, nslice=ns, name="drift3"),
 ]
 
+sim.lattice.append(elements.Drift(ds=0.25, nslice=ns, name="drift1"))
+sim.lattice.append(quad1)
 sim.lattice.extend(lattice_configuration)
+lattice_configuration.reverse()
+sim.lattice.extend(lattice_configuration)
+
 sim.periods = 2
 
 # Simulate

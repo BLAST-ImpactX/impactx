@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 from selenium.common.exceptions import TimeoutException
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
 TIMEOUT = 120
 APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
 
@@ -23,7 +24,7 @@ def start_dashboard() -> subprocess.Popen[str]:
     """
     Starts the impactx-dashboard in a subprocess.
     """
-    repo_root = get_impactx_root_dir()
+    repo_root = REPO_ROOT
     working_directory = os.path.normpath(
         os.path.join(repo_root, "src", "python", "impactx")
     )
@@ -36,21 +37,6 @@ def start_dashboard() -> subprocess.Popen[str]:
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     )
-
-
-def get_impactx_root_dir():
-    """
-    Locates the ImpactX source directory.
-
-    Looks for the first parent directory named 'impactx' that contains a '.git' folder.
-    """
-
-    current_directory = Path(__file__).resolve()
-
-    for parent_dir in current_directory.parents:
-        if parent_dir.name == "impactx" and (parent_dir / ".git").is_dir():
-            return parent_dir
-    return None
 
 
 def wait_for_interaction_ready(sb, timeout=TIMEOUT):
@@ -97,7 +83,7 @@ class DashboardTester:
         self.sb = sb
 
         # Set up the examples directory path once
-        impactx_directory = Path(get_impactx_root_dir())
+        impactx_directory = REPO_ROOT
         self.examples_directory = impactx_directory / "examples"
         self.testing_directory = impactx_directory / "tests" / "python" / "dashboard"
 

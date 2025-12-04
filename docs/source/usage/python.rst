@@ -809,7 +809,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, K2, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -831,6 +831,9 @@ This module provides elements and methods for the accelerator lattice.
    * K. L. Brown, SLAC Report No. 75 (1982)
 
    when expanded to first order in ``g/rc`` (gap / radius of curvature).
+
+   By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
+   the corresponding default value of ``K2`` is set to 1).
 
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]

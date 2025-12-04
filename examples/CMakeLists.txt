@@ -1756,3 +1756,19 @@ add_impactx_test(dipedge-nonlinear.py
     examples/edge_effects/analysis_dipedge.py
     OFF  # no plot script yet
 )
+
+# Spin Sampling from a vMF Distribution ######################
+# without space charge
+add_impactx_test(distgen-spinvmf
+    examples/distgen/input_kurth4d_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/distgen/analysis_kurth4d_spin.py
+    OFF  # no plot script yet
+)
+#TODO: add Python test
+#add_impactx_test(distgen-spinvmf.py
+#    examples/distgen/run_kurth4d_spin.py
+#    ON    # ImpactX MPI-parallel
+#    examples/distgen/analysis_kurth4d_spin.py
+#    OFF  # no plot script yet
+#)

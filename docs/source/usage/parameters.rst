@@ -829,6 +829,8 @@ Currently, this only supports openPMD files from our ``beam_monitor``.
   Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
 * ``<element_name>.openpmd_path`` (``string``)
   path to the openPMD series
+* ``<element_name>.active_once`` (``boolean``, default: ``true``)
+  Inject particles only for the first lattice period.
 
 
 ``tapered_pl``

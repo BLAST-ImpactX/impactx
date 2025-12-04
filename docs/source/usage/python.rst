@@ -1093,6 +1093,7 @@ This module provides elements and methods for the accelerator lattice.
 
    :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
    :param openpmd_path: path to the openPMD series
+   :param active_once: Inject particles only for the first lattice period. Default: ``True``
    :param name: an optional name for the element
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)

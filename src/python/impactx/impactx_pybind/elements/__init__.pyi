@@ -2786,7 +2786,11 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
 class Source(mixin.Named, mixin.Thin):
     def __init__(
-        self, distribution: str, openpmd_path: str, name: str | None = None
+        self,
+        distribution: str,
+        openpmd_path: str,
+        active_once: bool = True,
+        name: str | None = None,
     ) -> None:
         """
         A particle source.
@@ -2825,6 +2829,13 @@ class Source(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
         | None,
     ]: ...
+    @property
+    def active_once(self) -> bool:
+        """
+        Inject particles only for the first lattice period.
+        """
+    @active_once.setter
+    def active_once(self, arg1: bool) -> None: ...
     @property
     def distribution(self) -> str:
         """

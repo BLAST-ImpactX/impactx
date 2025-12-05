@@ -51,7 +51,7 @@ def plot_survey(
     # element_s = np.cumulative_sum(element_lengths, include_initial=True)
     # backport:
     element_s = np.insert(np.cumsum(element_lengths), 0, 0)
-    
+
     height_scale = element_s[-1] / 6
     # use total length in s as scale for y-axis
 
@@ -135,5 +135,5 @@ def plot_survey(
     ax.set_yticks([])
 
     ax.set_aspect(1 / 1.618)  # golden ratio
-    
+
     return ax

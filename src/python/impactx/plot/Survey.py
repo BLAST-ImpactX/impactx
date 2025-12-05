@@ -51,6 +51,9 @@ def plot_survey(
     # element_s = np.cumulative_sum(element_lengths, include_initial=True)
     # backport:
     element_s = np.insert(np.cumsum(element_lengths), 0, 0)
+    
+    height_scale = element_s[-1] / 6
+    # use total length in s as scale for y-axis
 
     ax.hlines(0, 0, element_s[-1], color="black", linestyle="--")
 
@@ -75,23 +78,23 @@ def plot_survey(
         color = get_element_color(el_type, palette=palette)
 
         y0 = 0  # default start in y for unspecified elements
-        height = 0.5  # default height for unspecified elements
+        height = 0.5 * height_scale  # default height for unspecified elements
 
         # note the sub-string matching for el_type
         if el_type == "BeamMonitor":
-            y0 = -0.5
-            height = 1.0
+            y0 = -0.5 * height_scale
+            height = 1.0 * height_scale
         if "Quad" in el_type:
-            height = copysign(0.8, el_dict["k"] * charge_qe)
+            height = copysign(0.8, el_dict["k"] * charge_qe) * height_scale
         if "Sbend" in el_type:
             if ref is not None:
-                height = copysign(0.8, element.rc(ref))
+                height = copysign(0.8, element.rc(ref)) * height_scale
             else:  # guess
                 if el_type == "Sbend":
                     el_dict["phi"] = (
                         el_dict["ds"] / (2 * np.pi * el_dict["rc"]) * 360
                     )  # calculate bending angle (in degrees) and add to dict
-                height = copysign(0.8, el_dict["phi"])
+                height = copysign(0.8, el_dict["phi"]) * height_scale
         # TODO: sign dependent, read m_p_scale
         # if el_type == "Kicker":
         #    height = copysign(0.8, el_dict["xkick"])
@@ -128,9 +131,9 @@ def plot_survey(
 
     ax.set_xlabel(r"$s$ [m]")
 
-    ax.set_ylim(-1, 1)
+    ax.set_ylim(-height_scale, height_scale)
     ax.set_yticks([])
 
     ax.set_aspect(1 / 1.618)  # golden ratio
-
+    
     return ax

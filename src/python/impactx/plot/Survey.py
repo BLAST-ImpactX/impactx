@@ -131,6 +131,6 @@ def plot_survey(
     ax.set_ylim(-1, 1)
     ax.set_yticks([])
 
-    ax.set_box_aspect(1/6)  # some nice aspect ratio 
+    ax.set_box_aspect(1 / 6)  # some nice aspect ratio
 
     return ax

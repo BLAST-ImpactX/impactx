@@ -46,15 +46,18 @@ namespace impactx
 
         amrex::ParticleReal qe;     // charge (elementary charge)
         amrex::ParticleReal massE;  // MeV/c^2
+        constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
+        constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
+        constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
         if (particle_type == "electron") {
             qe = -1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+            massE = m_e / MeV_inv_c2;
         } else if (particle_type == "positron") {
             qe = 1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+            massE = m_e / MeV_inv_c2;
         } else if (particle_type == "proton") {
             qe = 1.0;
-            massE = ablastr::constant::SI::m_p / ablastr::constant::SI::MeV_invc2;
+            massE = m_p / MeV_inv_c2;
         } else if (particle_type == "Hminus") {
             qe = -1.0;
             massE = 939.294308;  // value used in TraceWin
@@ -66,7 +69,7 @@ namespace impactx
                     ablastr::warn_manager::WarnPriority::low
             );
             qe = -1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+            massE = m_e / MeV_inv_c2;
         }
 
         // configure a new reference particle

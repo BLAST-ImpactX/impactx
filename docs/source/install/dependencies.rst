@@ -32,11 +32,12 @@ Optional dependencies include:
 - `Ninja <https://ninja-build.org>`__: for faster parallel compiles
 - `Python 3.9+ <https://www.python.org>`__
 
+  - `matplotlib 3.3+ <https://matplotlib.org>`__
   - `mpi4py <https://mpi4py.readthedocs.io>`__
   - `numpy <https://numpy.org>`__
+  - `openPMD-api <https://github.com/openPMD/openPMD-api>`__
   - `pals-schema <https://github.com/campa-consortium/pals-python>`__
   - `quantiphy <https://quantiphy.readthedocs.io/>`__
-  - `openPMD-api <https://github.com/openPMD/openPMD-api>`__
   - see our ``requirements.txt`` file for compatible versions
   - web browser/Jupyter Dashboard: `trame <https://kitware.github.io/trame/>`__
 

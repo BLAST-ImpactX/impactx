@@ -6,6 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
+import os
+
 import openpmd_api as io
 from scipy.stats import moment
 
@@ -55,10 +57,44 @@ def get_twiss(beam):
 
 def get_beams():
     "Load the initial and final beam from last simulation"
-    series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+
+    getFname = "diags/openPMD/monitor.h5"
+    print(f"** get_beams(): Loading {os.path.abspath(getFname)}")
+
+    series = io.Series(getFname, io.Access.read_only)
     last_step = list(series.iterations)[-1]
     initial = series.iterations[1].particles["beam"].to_df()
     beam_final = series.iterations[last_step].particles["beam"]
     final = beam_final.to_df()
 
     return (initial, beam_final, final)
+
+
+# Load data from envelope simulation
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+
+    import glob
+    import re
+
+    import pandas as pd
+
+    def read_file(file_pattern):
+        for filename in glob.glob(file_pattern):
+            df = pd.read_csv(filename, delimiter=r"\s+")
+            if "step" not in df.columns:
+                step = int(re.findall(r"[0-9]+", filename)[0])
+                df["step"] = step
+            yield df
+
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')

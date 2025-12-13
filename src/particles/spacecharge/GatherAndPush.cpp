@@ -185,8 +185,7 @@ namespace impactx::particles::spacecharge
                        // push momentum
                        px += field_interp[0] * Fxy * push_consts;
                        py += field_interp[1] * Fxy * push_consts;
-                       pz += 0.0_rt;
-                       //pz -= (eintz + pz_push_const) * Fz * push_consts;
+                       pz += potential_interp * Fz * push_consts; // DRAFT ONLY - TO UPDATE
 
                     // push position is done in the lattice elements
                     });

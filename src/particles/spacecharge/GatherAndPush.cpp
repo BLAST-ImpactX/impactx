@@ -138,6 +138,7 @@ namespace impactx::particles::spacecharge
                 if (space_charge == SpaceChargeAlgo::True_2p5D) {
                     // flatten 3rd dimension
                     auto prob_lo_2D = gm.ProbLoArray();
+                    amrex::Array4<const amrex::Real> const phi_arr;
                     prob_lo_2D[2] = 0.0_rt;
 
                     // group together constants for the momentum push
@@ -154,6 +155,15 @@ namespace impactx::particles::spacecharge
 
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =
+                            ablastr::particles::doGatherVectorFieldNodal<2>(
+                                x, y, z,
+                                scf_arr_x, scf_arr_y, scf_arr_z,
+                                invdr,
+                                prob_lo_2D
+                            );
+
+                        // potential gather
+                        amrex::Real const potential_interp =
                             ablastr::particles::doGatherScalarFieldNodal<2>(
                                 x, y, z,
                                 phi_arr,

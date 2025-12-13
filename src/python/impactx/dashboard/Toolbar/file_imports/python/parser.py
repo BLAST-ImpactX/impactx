@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .... import state
 from .helper import DashboardParserHelper
+from .lattice_helper import DashboardLatticeParser
 
 state.import_file = False
 state.import_file_details = None
@@ -63,22 +64,22 @@ class DashboardParser:
 
         file_content = DashboardParserHelper.import_file_content(file, state)
 
+        lattice_parser = DashboardLatticeParser(file_content)
         single_input_contents = DashboardParserHelper.parse_single_inputs(file_content)
         list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
         distribution_contents = DashboardParserHelper.parse_distribution(file_content)
-        lattice_element_contents = DashboardParserHelper.parse_lattice_elements(
-            file_content
-        )
-        used_vars = lattice_element_contents.pop("used_lattice_variables", set())
+        lattice_contents = lattice_parser.parse()
 
+        used_inputs = lattice_parser.extract_lattice_inputs(lattice_contents)
         variable_contents = DashboardParserHelper.parse_variables(
-            file_content, used_vars
+            file_content, used_inputs
         )
+
         parsed_values_dictionary = {
             **single_input_contents,
             **list_input_contents,
             **distribution_contents,
-            **lattice_element_contents,
+            **lattice_contents,
             "variables": variable_contents,
         }
 

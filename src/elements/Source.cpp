@@ -26,9 +26,14 @@ namespace impactx::elements
     Source::operator() (
         ImpactXParticleContainer & pc,
         int,
-        int
+        int period
     )
     {
+        // Check if only active for lattice period zero (0), e.g., in rings
+        if (m_active_once && period > 0) {
+            return;
+        }
+
 #ifdef ImpactX_USE_OPENPMD
         auto series = io::Series(m_series_name, io::Access::READ_ONLY
 #   if openPMD_HAVE_MPI==1

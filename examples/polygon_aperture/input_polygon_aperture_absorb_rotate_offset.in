@@ -1,0 +1,47 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 50000
+beam.units = static
+beam.kin_energy = 800.0
+beam.charge = 1.0e-9
+beam.particle = proton
+beam.distribution = waterbag
+beam.lambdaX = 2.0e-3
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 0.4
+beam.lambdaPx = 4.0e-4
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.0e-3
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor pa monitor
+lattice.nslice = 1
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+pa.type = polygon_aperture
+pa.vertices_x = 0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3 1.5e-3 1.5e-3 0.5e-3
+pa.vertices_y = 0.5e-3 1.5e-3 1.5e-3 0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3
+pa.min_radius2 = 5.0e-7
+pa.action = "absorb" # absorb particles within the polygon
+pa.rotation = 30.0 # degrees?
+pa.dx = 0.0006
+pa.dy = -0.0012
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

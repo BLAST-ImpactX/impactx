@@ -527,6 +527,7 @@ class ImpactX:
         | elements.Multipole
         | elements.NonlinearLens
         | elements.PlaneXYRot
+        | elements.PolygonAperture
         | elements.Programmable
         | elements.PRot
         | elements.Quad
@@ -608,8 +609,8 @@ class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
 class ImpactXParticleContainer(
     amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default
 ):
-    const_iterator = ImpactXParConstIter
-    iterator = ImpactXParIter
+    ConstIterator = ImpactXParConstIter
+    Iterator = ImpactXParIter
     def add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -965,6 +966,7 @@ def push(
     | elements.Multipole
     | elements.NonlinearLens
     | elements.PlaneXYRot
+    | elements.PolygonAperture
     | elements.Programmable
     | elements.PRot
     | elements.Quad
@@ -1011,6 +1013,7 @@ def push(
     | elements.Multipole
     | elements.NonlinearLens
     | elements.PlaneXYRot
+    | elements.PolygonAperture
     | elements.Programmable
     | elements.PRot
     | elements.Quad
@@ -1033,6 +1036,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.11"
+__version__: str = "25.12"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

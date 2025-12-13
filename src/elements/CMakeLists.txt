@@ -1,6 +1,7 @@
 target_sources(lib
   PRIVATE
     Aperture.cpp
+    PolygonAperture.cpp
     Programmable.cpp
     Source.cpp
 )

@@ -65,12 +65,12 @@ void init_impactxparticlecontainer(py::module& m)
         // simpler particle iterator loops: return types of this particle box
         // note: overwritten to return ImpactX instead of (py)AMReX iterators
         .def_property_readonly_static(
-            "iterator",
+            "Iterator",
             [](py::object /* pc */){ return py::type::of<impactx::ParIterSoA>(); },
             "ImpactX iterator for particle boxes"
         )
         .def_property_readonly_static(
-            "const_iterator",
+            "ConstIterator",
             [](py::object /* pc */){ return py::type::of<impactx::ParConstIterSoA>(); },
             "ImpactX constant iterator for particle boxes (read-only)"
         )
@@ -126,11 +126,11 @@ void init_impactxparticlecontainer(py::module& m)
         )
         .def("reduced_beam_characteristics",
              [](ImpactXParticleContainer & pc) {
-                 ablastr::warn_manager::WMRecordWarning(
-                    "reduced_beam_characteristics",
+                 py::warnings::warn(
                     "WARNING: reduced_beam_characteristics() is deprecated. "
                     "Use beam_moments() instead.",
-                    ablastr::warn_manager::WarnPriority::medium
+                    PyExc_DeprecationWarning,
+                    2
                  );
                  return diagnostics::reduced_beam_characteristics(pc);
              },

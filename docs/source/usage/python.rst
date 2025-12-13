@@ -809,7 +809,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, K2, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -831,6 +831,9 @@ This module provides elements and methods for the accelerator lattice.
    * K. L. Brown, SLAC Report No. 75 (1982)
 
    when expanded to first order in ``g/rc`` (gap / radius of curvature).
+
+   By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
+   the corresponding default value of ``K2`` is set to 1).
 
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]
@@ -1093,6 +1096,7 @@ This module provides elements and methods for the accelerator lattice.
 
    :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
    :param openpmd_path: path to the openPMD series
+   :param active_once: Inject particles only for the first lattice period. Default: ``True``
    :param name: an optional name for the element
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
@@ -1461,6 +1465,30 @@ This module provides elements and methods for the accelerator lattice.
    .. py:property:: ymax
 
       maximum vertical coordinate
+
+.. py:class:: impactx.elements.PolygonAperture(vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
+
+   This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
+   and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+   The first and last vertices must be identical.
+
+   :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
+   :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m
+   :param min_radius2: radius-squared of a circle fully inscribed by the polygon aperture (default 0) (meters-squared)
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
+   .. py:property:: min_radius2
+
+      radius-squared of a fully inscribed circle. Particles with radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped.
+
+      aperture type (transmit, absorb)
 
 .. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 

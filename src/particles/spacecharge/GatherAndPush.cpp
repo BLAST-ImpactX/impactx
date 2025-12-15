@@ -148,7 +148,8 @@ namespace impactx::particles::spacecharge
                         // access SoA Real data
                         amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
                         amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
-                        amrex::ParticleReal z = 0.0_prt;  // flatten 3rd dimension
+                        amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
+                        amrex::ParticleReal z_flat = 0.0_prt;  // flatten 3rd dimension
                         amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
                         amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
                         amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
@@ -156,7 +157,7 @@ namespace impactx::particles::spacecharge
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =
                             ablastr::particles::doGatherVectorFieldNodal<2>(
-                                x, y, z,
+                                x, y, z_flat,
                                 scf_arr_x, scf_arr_y, scf_arr_z,
                                 invdr,
                                 prob_lo_2D
@@ -165,7 +166,7 @@ namespace impactx::particles::spacecharge
                         // potential gather
                         amrex::Real const potential_interp =
                             ablastr::particles::doGatherScalarFieldNodal<2>(
-                                x, y, z,
+                               x, y, z_flat,
                                 phi_arr,
                                 invdr,
                                 prob_lo_2D
@@ -179,8 +180,8 @@ namespace impactx::particles::spacecharge
                             std::cerr << "Warning: Index out of range for 2.5D SC: " << idx << std::endl;
                        }
                        #endif
-                       [[maybe_unused]] amrex::ParticleReal const Fxy = beam_profile[idx] * chargesign;
-                       [[maybe_unused]] amrex::ParticleReal const Fz = beam_profile_slope[idx] * charge;
+                       amrex::ParticleReal const Fxy = beam_profile[idx] * chargesign;
+                       amrex::ParticleReal const Fz = beam_profile_slope[idx] * charge;
 
                        // push momentum
                        px += field_interp[0] * Fxy * push_consts;

@@ -1758,9 +1758,9 @@ add_impactx_test(dipedge-nonlinear.py
 )
 
 # FODO cell with 2.5D space charge using particle tracking #############
-#   
+#
 add_impactx_test(FODO.2p5d.sc
-    examples/fodo_space_charge/input_fodo_2p5D_sc.in  
+    examples/fodo_space_charge/input_fodo_2p5D_sc.in
     ON   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_2p5D_sc.py
     OFF  # no plot script yet
@@ -1771,4 +1771,3 @@ add_impactx_test(FODO.2p5d.sc.py
     examples/fodo_space_charge/analysis_fodo_2p5D_sc.py
     OFF  # no plot script yet
 )
-

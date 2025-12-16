@@ -611,7 +611,7 @@ void init_ImpactX (py::module& m)
         .def("add_particles", &ImpactX::add_particles,
              py::arg("bunch_charge"),
              py::arg("distr"), py::arg("npart"),
-             py::arg("spin_distr") = py::none(),  // TODO: bind the distribution::SpinvMF object to Python
+             py::arg("spin_distr") = py::none(),
              "Particle tracking mode:"
              "Generate and add n particles to the particle container.\n\n"
              "Will also resize the geometry based on the updated particle\n"

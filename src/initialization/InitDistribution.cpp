@@ -14,6 +14,7 @@
 #include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/All.H"
+#include "particles/distribution/SpinvMF.H"
 #include "particles/SplitEqually.H"
 
 #include <ablastr/constant.H>
@@ -46,18 +47,21 @@ namespace impactx
 
         amrex::ParticleReal qe;     // charge (elementary charge)
         amrex::ParticleReal massE;  // MeV/c^2
+        constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
+        constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
+        constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
         amrex::ParticleReal gyromagnetic_anomaly;  // anomalous magnetic dipole moment
         if (particle_type == "electron") {
             qe = -1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+            massE = m_e / MeV_inv_c2;
             gyromagnetic_anomaly = 0.00115965218062;
         } else if (particle_type == "positron") {
             qe = 1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+            massE = m_e / MeV_inv_c2;
             gyromagnetic_anomaly = 0.00115965218062;
         } else if (particle_type == "proton") {
             qe = 1.0;
-            massE = ablastr::constant::SI::m_p / ablastr::constant::SI::MeV_invc2;
+            massE = m_p / MeV_inv_c2;
             gyromagnetic_anomaly = 1.7928473446;
         } else if (particle_type == "Hminus") {
             qe = -1.0;
@@ -71,7 +75,7 @@ namespace impactx
                     ablastr::warn_manager::WarnPriority::low
             );
             qe = -1.0;
-            massE = ablastr::constant::SI::m_e / ablastr::constant::SI::MeV_invc2;
+            massE = m_e / MeV_inv_c2;
             gyromagnetic_anomaly = 0.00115965218062;
         }
 
@@ -301,7 +305,8 @@ namespace impactx
     ImpactX::add_particles (
         amrex::ParticleReal bunch_charge,
         distribution::KnownDistributions distr,
-        amrex::Long npart
+        amrex::Long npart,
+        std::optional<distribution::SpinvMF> spin_distr
     )
     {
         BL_PROFILE("ImpactX::add_particles");
@@ -343,12 +348,20 @@ namespace impactx
         // alloc data for particle attributes
         amrex::Gpu::DeviceVector<amrex::ParticleReal> x, y, t;
         amrex::Gpu::DeviceVector<amrex::ParticleReal> px, py, pt;
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sx, sy, sz;
         x.resize(npart_this_proc);
         y.resize(npart_this_proc);
         t.resize(npart_this_proc);
         px.resize(npart_this_proc);
         py.resize(npart_this_proc);
         pt.resize(npart_this_proc);
+
+        bool const has_spin = spin_distr.has_value();
+        if (has_spin) {
+            sx = amrex::Gpu::DeviceVector<amrex::ParticleReal>(npart_this_proc);
+            sy = amrex::Gpu::DeviceVector<amrex::ParticleReal>(npart_this_proc);
+            sz = amrex::Gpu::DeviceVector<amrex::ParticleReal>(npart_this_proc);
+        }
 
         std::visit([&](auto&& distribution){
             // initialize distributions
@@ -360,6 +373,9 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
+            amrex::ParticleReal * const AMREX_RESTRICT sx_ptr = has_spin ? sx->data() : nullptr;
+            amrex::ParticleReal * const AMREX_RESTRICT sy_ptr = has_spin ? sy->data() : nullptr;
+            amrex::ParticleReal * const AMREX_RESTRICT sz_ptr = has_spin ? sz->data() : nullptr;
 
             using Distribution = std::decay_t<decltype(distribution)>;
 
@@ -379,6 +395,7 @@ namespace impactx
                 npart_this_thread = thread_chunk.size;
 #endif
 
+                // phase space init
                 initialization::InitSingleParticleData<Distribution> const init_single_particle_data(
                     distribution,
                     x_ptr + my_offset,
@@ -388,8 +405,18 @@ namespace impactx
                     py_ptr + my_offset,
                     pt_ptr + my_offset
                 );
-
                 amrex::ParallelForRNG(npart_this_thread, init_single_particle_data);
+
+                // spin init
+                if (has_spin) {
+                    initialization::InitSingleParticleSpin const init_single_particle_spin(
+                        spin_distr.value(),
+                        sx_ptr + my_offset,
+                        sy_ptr + my_offset,
+                        sz_ptr + my_offset
+                    );
+                    amrex::ParallelForRNG(npart_this_thread, init_single_particle_spin);
+                }
             }
 
             // finalize distributions and deallocate temporary device global memory
@@ -397,9 +424,14 @@ namespace impactx
             distribution.finalize();
         }, distr);
 
-        amr_data->track_particles.m_particle_container->AddNParticles(x, y, t, px, py, pt,
-                                                      ref.qm_ratio_SI(),
-                                            bunch_charge * rel_part_this_proc);
+        amr_data->track_particles.m_particle_container->AddNParticles(
+            x, y, t,
+            px, py, pt,
+            ref.qm_ratio_SI(),
+            bunch_charge * rel_part_this_proc,
+            std::nullopt,
+            sx, sy, sz
+        );
 
         auto space_charge = get_space_charge_algo();
 
@@ -554,15 +586,29 @@ namespace impactx
             std::string unit_type;  // System of units
             pp_dist.get("units", unit_type);
 
+            // phase space distribution
             distribution::KnownDistributions dist = initialization::read_distribution(pp_dist);
             std::string distribution;
             pp_dist.get("distribution", distribution);
+
+            // spin distribution
+            amrex::ParticleReal polarization_x = 0.0_prt,
+                                polarization_y = 0.0_prt,
+                                polarization_z = 0.0_prt;
+            bool const has_sx = pp_dist.queryWithParser("polarization_x", polarization_x);
+            bool const has_sy = pp_dist.queryWithParser("polarization_y", polarization_y);
+            bool const has_sz = pp_dist.queryWithParser("polarization_z", polarization_z);
+
+            std::optional<distribution::SpinvMF> spin_dist;
+            if (has_sx || has_sy || has_sz) {
+                spin_dist = distribution::SpinvMF(polarization_x, polarization_y, polarization_z);
+            }
 
             amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
             {
                 pp_dist.getWithParser("npart", npart);
-                add_particles(bunch_charge, dist, npart);
+                add_particles(bunch_charge, dist, npart, spin_dist);
             }
 
             // print information on the initialized beam

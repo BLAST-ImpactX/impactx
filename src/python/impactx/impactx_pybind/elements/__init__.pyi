@@ -39,6 +39,7 @@ __all__: list[str] = [
     "NonlinearLens",
     "PRot",
     "PlaneXYRot",
+    "PolygonAperture",
     "Programmable",
     "Quad",
     "QuadEdge",
@@ -1382,6 +1383,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.Multipole
         | impactx.impactx_pybind.elements.NonlinearLens
         | impactx.impactx_pybind.elements.PlaneXYRot
+        | impactx.impactx_pybind.elements.PolygonAperture
         | impactx.impactx_pybind.elements.Programmable
         | impactx.impactx_pybind.elements.PRot
         | impactx.impactx_pybind.elements.Quad
@@ -1424,6 +1426,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.Multipole
         | impactx.impactx_pybind.elements.NonlinearLens
         | impactx.impactx_pybind.elements.PlaneXYRot
+        | impactx.impactx_pybind.elements.PolygonAperture
         | impactx.impactx_pybind.elements.Programmable
         | impactx.impactx_pybind.elements.PRot
         | impactx.impactx_pybind.elements.Quad
@@ -1466,6 +1469,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.Multipole
         | impactx.impactx_pybind.elements.NonlinearLens
         | impactx.impactx_pybind.elements.PlaneXYRot
+        | impactx.impactx_pybind.elements.PolygonAperture
         | impactx.impactx_pybind.elements.Programmable
         | impactx.impactx_pybind.elements.PRot
         | impactx.impactx_pybind.elements.Quad
@@ -1509,6 +1513,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.Multipole
         | impactx.impactx_pybind.elements.NonlinearLens
         | impactx.impactx_pybind.elements.PlaneXYRot
+        | impactx.impactx_pybind.elements.PolygonAperture
         | impactx.impactx_pybind.elements.Programmable
         | impactx.impactx_pybind.elements.PRot
         | impactx.impactx_pybind.elements.Quad
@@ -2063,6 +2068,94 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     @angle.setter
     def angle(self, arg1: typing.SupportsFloat) -> None: ...
+
+class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        vertices_x: collections.abc.Sequence[typing.SupportsFloat],
+        vertices_y: collections.abc.Sequence[typing.SupportsFloat],
+        min_radius2: typing.SupportsFloat = 0.0,
+        repeat_x: typing.SupportsFloat = 0,
+        repeat_y: typing.SupportsFloat = 0,
+        shift_odd_x: bool = False,
+        action: str = "transmit",
+        dx: typing.SupportsFloat = 0,
+        dy: typing.SupportsFloat = 0,
+        rotation: typing.SupportsFloat = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A short collimator element described by a polygon with vertices given by their x and y coordinates.
+        """
+    def __repr__(self) -> str: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt = 0,
+        period: typing.SupportsInt = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def action(self) -> str:
+        """
+        action type (transmit, absorb)
+        """
+    @action.setter
+    def action(self, arg1: str) -> None: ...
+    @property
+    def min_radius2(self) -> float:
+        """
+        All particles with radius squared smaller than min_radius2 pass the aperture
+        """
+    @min_radius2.setter
+    def min_radius2(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def repeat_x(self) -> float:
+        """
+        horizontal period for repeated aperture masking
+        """
+    @repeat_x.setter
+    def repeat_x(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def repeat_y(self) -> float:
+        """
+        vertical period for repeated aperture masking
+        """
+    @repeat_y.setter
+    def repeat_y(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def shift_odd_x(self) -> bool:
+        """
+        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+        """
+    @shift_odd_x.setter
+    def shift_odd_x(self, arg1: bool) -> None: ...
 
 class Programmable(mixin.Named):
     def __init__(
@@ -2693,7 +2786,11 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
 class Source(mixin.Named, mixin.Thin):
     def __init__(
-        self, distribution: str, openpmd_path: str, name: str | None = None
+        self,
+        distribution: str,
+        openpmd_path: str,
+        active_once: bool = True,
+        name: str | None = None,
     ) -> None:
         """
         A particle source.
@@ -2732,6 +2829,13 @@ class Source(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
         | None,
     ]: ...
+    @property
+    def active_once(self) -> bool:
+        """
+        Inject particles only for the first lattice period.
+        """
+    @active_once.setter
+    def active_once(self, arg1: bool) -> None: ...
     @property
     def distribution(self) -> str:
         """

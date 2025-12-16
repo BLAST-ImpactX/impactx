@@ -7,36 +7,41 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from analysis_APL_ChrPlasmaLens import get_beams, get_moments, get_twiss
+from analysis_APL import read_time_series
 
-# initial/final beam
-(initial, beam_final, final) = get_beams()
-
-# compare number of particles
-num_particles = 10000
-assert num_particles == len(initial)
-assert num_particles == len(final)
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 print("Initial Beam:")
-sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(initial)
+
+sigx = rbc["sigma_x"].iloc[0]
+sigy = rbc["sigma_y"].iloc[0]
+sigt = rbc["sigma_t"].iloc[0]
+emittance_x = rbc["emittance_x"].iloc[0]
+emittance_y = rbc["emittance_y"].iloc[0]
+emittance_t = rbc["emittance_t"].iloc[0]
+
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}"
 )
 
-(betax, betay, alphax, alphay) = get_twiss(initial)
+betax = rbc["beta_x"].iloc[0]
+betay = rbc["beta_y"].iloc[0]
+alphax = rbc["alpha_x"].iloc[0]
+alphay = rbc["alpha_y"].iloc[0]
+
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 1e-5
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-# Compare to analytical values
+# Compare initial beam to analytical values
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [
-        0.00010003246877770656,
-        0.00010003246877770656,
+        2.737665020201518e-05,
+        2.737665020201518e-05,
         0.001,
         2.548491664266332e-08,
         2.548491664266332e-08,
@@ -46,37 +51,45 @@ assert np.allclose(
     atol=atol,
 )
 
-
 print("")
 print("Final Beam:")
-sigx, sigy, sigt, emittance_x, emittance_y, emittance_t = get_moments(final)
-s_ref = beam_final.get_attribute("s_ref")
-gamma_ref = beam_final.get_attribute("gamma_ref")
+
+sigx = rbc["sigma_x"].iloc[-1]
+sigy = rbc["sigma_y"].iloc[-1]
+sigt = rbc["sigma_t"].iloc[-1]
+emittance_x = rbc["emittance_x"].iloc[-1]
+emittance_y = rbc["emittance_y"].iloc[-1]
+emittance_t = rbc["emittance_t"].iloc[-1]
+
+s_ref = rbc["s"].iloc[-1]
+
 print(f"  sigx={sigx:e} sigy={sigy:e} sigt={sigt:e}")
 print(
     f"  emittance_x={emittance_x:e} emittance_y={emittance_y:e} emittance_t={emittance_t:e}\n"
-    f"  s_ref={s_ref:e} gamma_ref={gamma_ref:e}"
+    f"  s_ref={s_ref:e}"
 )
 
-(betax, betay, alphax, alphay) = get_twiss(final)
+betax = rbc["beta_x"].iloc[-1]
+betay = rbc["beta_y"].iloc[-1]
+alphax = rbc["alpha_x"].iloc[-1]
+alphay = rbc["alpha_y"].iloc[-1]
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 1e-5
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
-# Compare to analytical values
+# Compare final beam to analytical values
 assert np.allclose(
-    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref, gamma_ref],
+    [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t, s_ref],
     [
-        7.161196476484095e-05,
-        7.161196476484095e-05,
+        2.737665020201518e-05,
+        2.737665020201518e-05,
         0.001,
         2.548491664266332e-08,
         2.548491664266332e-08,
         1e-06,
         20e-3,
-        3.923902e02,
     ],
     rtol=rtol,
     atol=atol,

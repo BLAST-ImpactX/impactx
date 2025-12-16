@@ -14,6 +14,7 @@
 // include <pybind11/numpy.h>  // not yet used
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/warnings.h>
 
 #include <ImpactX.H>
 #include <elements/All.H>

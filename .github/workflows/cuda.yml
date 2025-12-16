@@ -30,14 +30,14 @@ jobs:
         docker-images: true
         swap-storage: false
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: install dependencies
       run: |
         .github/workflows/dependencies/nvcc11-openmpi.sh
 
     - name: CCache Cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       # - once stored under a key, they become immutable (even if local cache path content changes)
       # - for a refresh the key has to change, e.g., hash of a tracked file in the key
       with:
@@ -64,4 +64,4 @@ jobs:
           -DImpactX_PRECISION=SINGLE   \
           -DAMReX_CUDA_ERROR_CROSS_EXECUTION_SPACE_CALL=ON \
           -DAMReX_CUDA_ERROR_CAPTURE_THIS=ON
-        cmake --build build -j 4
+        cmake --build build -j 3

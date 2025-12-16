@@ -84,9 +84,13 @@ def plot_survey(
         if "Quad" in el_type:
             height = copysign(0.8, el_dict["k"] * charge_qe)
         if "Sbend" in el_type:
-            if ref is None:
+            if ref is not None:
                 height = copysign(0.8, element.rc(ref))
             else:  # guess
+                if el_type == "Sbend":
+                    el_dict["phi"] = (
+                        el_dict["ds"] / (2 * np.pi * el_dict["rc"]) * 360
+                    )  # calculate bending angle (in degrees) and add to dict
                 height = copysign(0.8, el_dict["phi"])
         # TODO: sign dependent, read m_p_scale
         # if el_type == "Kicker":
@@ -127,6 +131,6 @@ def plot_survey(
     ax.set_ylim(-1, 1)
     ax.set_yticks([])
 
-    ax.set_aspect(1 / 1.618)  # golden ratio
+    ax.set_box_aspect(1 / 6)  # some nice aspect ratio
 
     return ax

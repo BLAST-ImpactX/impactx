@@ -233,7 +233,7 @@ Collective Effects & Overall Simulation Parameters
 
       This must come first, before particle beams and lattice elements are initialized.
 
-   .. py:method:: add_particles(charge_C, distr, npart)
+   .. py:method:: add_particles(charge_C, distr, npart, spinv=None)
 
       Particle tracking mode: Generate and add n particles to the particle container.
       Note: Set the reference particle properties (charge, mass, energy) first.
@@ -243,6 +243,7 @@ Collective Effects & Overall Simulation Parameters
       :param float charge_C: bunch charge (C)
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
+      :param SpinvMF spinv: optional spin distribution
 
    .. py:method:: init_envelope(ref, distr, intensity=None)
 
@@ -584,8 +585,8 @@ Particles
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
 
 
-Initial Beam Distributions
---------------------------
+Initial Beam Phase Space Distributions
+--------------------------------------
 
 This module provides particle beam distributions that can be used to initialize particle beams in an :py:class:`impactx.ParticleContainer`.
 
@@ -664,6 +665,25 @@ For the input from Twiss parameters in Python, please use the helper function ``
 .. py:class:: impactx.distribution.Thermal(k, kT, kT_halo, normalize, normalize_halo, halo=0.0)
 
    A 6D stationary thermal or bithermal distribution.
+
+Initial Beam Spin Distribution
+------------------------------
+
+.. py:class:: impactx.distribution.SpinvMF(mux, muy, muz)
+
+   A von Mises-Fisher (vMF) distribution on the unit 2-sphere.
+
+   This is used for initializing particle spin. There is a natural bijective correspondence between vMF distributions and mean (polarization) vectors.
+
+   The algorithm used here is a simplification of the algorithm described in:
+   C. Pinzon and K. Jung, "Fast Python sampler of the von Mises Fisher distribution", in the special case of the 2-sphere. Additional references used include:
+
+   - K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999;
+   - S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat. and Comput. 34, 106 (2024), `DOI:10.1007/s11222-024-10419-3 <https://doi.org/10.1007/s11222-024-10419-3>`__
+
+   :param mux: x component of the unit vector specifying the mean direction
+   :param muy: y component of the unit vector specifying the mean direction
+   :param muz: z component of the unit vector specifying the mean direction
 
 
 Lattice Elements
@@ -815,7 +835,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, K2, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -837,6 +857,9 @@ This module provides elements and methods for the accelerator lattice.
    * K. L. Brown, SLAC Report No. 75 (1982)
 
    when expanded to first order in ``g/rc`` (gap / radius of curvature).
+
+   By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
+   the corresponding default value of ``K2`` is set to 1).
 
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]
@@ -1099,6 +1122,7 @@ This module provides elements and methods for the accelerator lattice.
 
    :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
    :param openpmd_path: path to the openPMD series
+   :param active_once: Inject particles only for the first lattice period. Default: ``True``
    :param name: an optional name for the element
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
@@ -1467,6 +1491,30 @@ This module provides elements and methods for the accelerator lattice.
    .. py:property:: ymax
 
       maximum vertical coordinate
+
+.. py:class:: impactx.elements.PolygonAperture(vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
+
+   This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
+   and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+   The first and last vertices must be identical.
+
+   :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
+   :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m
+   :param min_radius2: radius-squared of a circle fully inscribed by the polygon aperture (default 0) (meters-squared)
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param name: an optional name for the element
+
+   .. py:property:: min_radius2
+
+      radius-squared of a fully inscribed circle. Particles with radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped.
+
+      aperture type (transmit, absorb)
 
 .. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 

@@ -128,7 +128,7 @@ namespace impactx
         {
             using namespace amrex::literals;
 
-            constexpr amrex::ParticleReal inv_MeV_invc2 = 1.0_prt / ablastr::constant::SI::MeV_invc2;
+            constexpr amrex::ParticleReal inv_MeV_invc2 = 1.0_prt / ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
             return amrex::ParticleReal(mass * inv_MeV_invc2);
         }
 
@@ -146,7 +146,7 @@ namespace impactx
             AMREX_ASSERT_WITH_MESSAGE(massE != 0.0_prt,
                                       "set_mass_MeV: Mass cannot be zero!");
 
-            mass = massE * ablastr::constant::SI::MeV_invc2;
+            mass = massE * ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
 
             // re-scale pt and pz
             if (pt != 0.0_prt)

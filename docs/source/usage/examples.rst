@@ -30,6 +30,7 @@ Single Particle Dynamics
    examples/kicker/README.rst
    examples/thin_dipole/README.rst
    examples/aperture/README.rst
+   examples/polygon_aperture/README.rst
    examples/iota_lens/README.rst
    examples/achromatic_spectrometer/README.rst
    examples/fodo_userdef/README.rst

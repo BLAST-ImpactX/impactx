@@ -38,8 +38,8 @@ Analyze
 
 We run the following script to analyze correctness:
 
-.. dropdown:: Script ``analysis_exact_quad.py``
+.. dropdown:: Script ``analysis_dipedge.py``
 
-   .. literalinclude:: analysis_exact_quad.py
+   .. literalinclude:: analysis_dipedge.py
       :language: python3
       :caption: You can copy this file from ``examples/edge_effects/analysis_dipedge.py``.

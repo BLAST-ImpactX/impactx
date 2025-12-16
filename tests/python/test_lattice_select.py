@@ -521,9 +521,9 @@ def test_complex_scenarios():
         quad.k *= 1.1  # Increase strength by 10%
 
     # Verify modifications affected original elements
-    assert lattice[1].k == 1.1  # qf1
-    assert lattice[5].k == -1.1  # qd1
-    assert lattice[7].k == 1.1  # qf2
+    assert lattice[1].k == pytest.approx(1.1)  # qf1
+    assert lattice[5].k == pytest.approx(-1.1)  # qd1
+    assert lattice[7].k == pytest.approx(1.1)  # qf2
 
     # Scenario 3b: Find all quadrupoles and modify their strength (type-based)
     all_quads_type = lattice.select(kind=elements.Quad)
@@ -546,8 +546,8 @@ def test_complex_scenarios():
         bend.ds *= 0.9  # Decrease length by 10%
 
     # Verify modifications
-    assert lattice[3].ds == 0.9  # bend1
-    assert lattice[9].ds == 0.9  # bend2
+    assert lattice[3].ds == pytest.approx(0.9)  # bend1
+    assert lattice[9].ds == pytest.approx(0.9)  # bend2
 
     # Scenario 4b: Find all bends and modify their length (type-based)
     all_bends_type = lattice.select(kind=elements.Sbend)

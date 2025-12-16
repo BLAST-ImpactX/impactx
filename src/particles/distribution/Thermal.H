@@ -89,6 +89,7 @@ namespace distribution
             using namespace amrex::literals;  // for _rt and _prt
             using namespace ablastr::constant::math;  // for pi
             using amrex::Math::powi;
+            constexpr amrex::ParticleReal ep0 = ablastr::constant::SI::epsilon_0_v<amrex::ParticleReal>;
 
             // Get relativistic beta*gamma
             amrex::ParticleReal bg = refpart.beta_gamma();
@@ -99,7 +100,7 @@ namespace distribution
             amrex::ParticleReal q_e = refpart.charge_qe();
 
             // Set space charge intensity
-            m_Cintensity = q_e*bunch_charge/(powi<2>(bg)*Erest*ablastr::constant::SI::ep0);
+            m_Cintensity = q_e*bunch_charge/(powi<2>(bg)*Erest*ep0);
 
             // Set minimum and maximum radius
             amrex::ParticleReal r_scale = matched_scale_radius();

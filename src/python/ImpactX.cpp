@@ -275,7 +275,11 @@ void init_ImpactX (py::module& m)
                     amrex::ParmParse pp_algo("algo");
                     if (std::get<bool>(space_charge_v)) {
                         // TODO: boolean True is deprecated since 25.03, remove some time after
-                        py::print("sim.space_charge = True is deprecated, please use space_charge = \"3D\"");
+                        py::warnings::warn(
+                            "sim.space_charge = True is deprecated, please use space_charge = \"3D\"",
+                            PyExc_DeprecationWarning,
+                            2
+                        );
                         pp_algo.add("space_charge", std::string("3D"));
                     } else {
                         // map boolean False to "false" / off
@@ -607,6 +611,7 @@ void init_ImpactX (py::module& m)
         .def("add_particles", &ImpactX::add_particles,
              py::arg("bunch_charge"),
              py::arg("distr"), py::arg("npart"),
+             py::arg("spin_distr") = py::none(),
              "Particle tracking mode:"
              "Generate and add n particles to the particle container.\n\n"
              "Will also resize the geometry based on the updated particle\n"
@@ -616,7 +621,12 @@ void init_ImpactX (py::module& m)
 
         .def("evolve",  /** TODO: deprecated API. Only for internal use. Remove after a few releases. */
              [](ImpactX & ix) {
-                py::print("Warning: evolve() is deprecated and will soon be removed. Use track_particles() instead.");
+                py::warnings::warn(
+                    "Warning: evolve() is deprecated and will soon be removed. "
+                    "Use track_particles() instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
                 ix.evolve();
              },
              "Run the main simulation loop."

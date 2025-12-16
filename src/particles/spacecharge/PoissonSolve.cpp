@@ -153,7 +153,7 @@ namespace impactx::particles::spacecharge
         // fix side effect on rho from previous call
         for (int lev=0; lev<=finest_level; lev++) {
             using namespace ablastr::constant::SI;
-            rho[lev].mult(-1._rt * ep0);
+            rho[lev].mult(-1._rt * epsilon_0);
         }
 
         // We may need to copy phi from phi_2d

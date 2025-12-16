@@ -32,6 +32,7 @@
 #include "Multipole.H"
 #include "NonlinearLens.H"
 #include "PlaneXYRot.H"
+#include "PolygonAperture.H"
 #include "Programmable.H"
 #include "PRot.H"
 #include "Quad.H"
@@ -76,6 +77,7 @@ namespace impactx::elements
         Multipole,
         NonlinearLens,
         PlaneXYRot,
+        PolygonAperture,
         Programmable,
         PRot,
         Quad,

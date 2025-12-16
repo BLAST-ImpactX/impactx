@@ -19,9 +19,11 @@ def on_import_file_change(import_file, **kwargs):
             state.importing_file = True
             DashboardParser.file_details(import_file)
             populate_impactx_simulation_file_to_ui(import_file)
-        except Exception:
+        except Exception as error:
             state.import_file_error = True
-            state.import_file_error_message = "Unable to parse"
+            state.import_file_error_message = (
+                f"Unable to parse because of the following error: {error}"
+            )
         finally:
             state.importing_file = False
 
@@ -80,7 +82,7 @@ def _populate_lattice_config_to_ui(parsed_data):
     state.selected_lattice_list = []
 
     for lattice_element_index, element in enumerate(parsed_data):
-        parsed_element = element["element"]
+        parsed_element = element["name"]
         parsed_parameters = element["parameters"]
 
         state.selected_lattice = parsed_element

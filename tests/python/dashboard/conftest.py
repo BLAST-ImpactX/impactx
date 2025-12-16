@@ -1,5 +1,10 @@
+import pathlib
+import sys
+
 import pytest
 from seleniumbase import SB
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3] / "src" / "python"))
 
 from .utils import (
     DashboardTester,

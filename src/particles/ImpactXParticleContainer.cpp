@@ -242,28 +242,40 @@ namespace impactx
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
         amrex::ParticleReal qm,
         std::optional<amrex::ParticleReal> bunch_charge,
-        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w,
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sx,
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sy,
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sz
     )
     {
         BL_PROFILE("ImpactX::AddNParticles");
 
         using namespace amrex::literals;  // for _rt and _prt
 
+        // number of particles to add
+        std::size_t const np_s = x.size();
+
+        // input validation
         bool const has_w = w.has_value();
         if (!(bunch_charge.has_value() ^ has_w))
         {
             throw std::runtime_error("AddNParticles: Exactly one of bunch_charge or w must be provided!");
         }
 
-        AMREX_ALWAYS_ASSERT(x.size() == y.size());
-        AMREX_ALWAYS_ASSERT(x.size() == t.size());
-        AMREX_ALWAYS_ASSERT(x.size() == px.size());
-        AMREX_ALWAYS_ASSERT(x.size() == py.size());
-        AMREX_ALWAYS_ASSERT(x.size() == pt.size());
-        if (has_w) { AMREX_ALWAYS_ASSERT(x.size() == w->size()); }
+        bool const has_spin = sx.has_value();
 
-        // number of particles to add
-        amrex::Long const np = x.size();
+        AMREX_ALWAYS_ASSERT(np_s == y.size());
+        AMREX_ALWAYS_ASSERT(np_s == t.size());
+        AMREX_ALWAYS_ASSERT(np_s == px.size());
+        AMREX_ALWAYS_ASSERT(np_s == py.size());
+        AMREX_ALWAYS_ASSERT(np_s == pt.size());
+        if (has_spin) {
+            AMREX_ALWAYS_ASSERT(sy.has_value());
+            AMREX_ALWAYS_ASSERT(sz.has_value());
+            AMREX_ALWAYS_ASSERT(np_s == sy.value().size());
+            AMREX_ALWAYS_ASSERT(np_s == sz.value().size());
+        }
+        if (has_w) { AMREX_ALWAYS_ASSERT(np_s == w->size()); }
 
         // we add particles to lev 0, grid 0
         int lid = 0, gid = 0;
@@ -288,7 +300,8 @@ namespace impactx
             DefineAndReturnParticleTile(lid, gid, ithr);
         }
 
-        amrex::Long pid = ParticleType::NextID();
+        amrex::Long const pid = ParticleType::NextID();
+        amrex::Long const np = np_s;
         ParticleType::NextID(pid + np);
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
             pid + np < amrex::LongParticleIds::LastParticleID,
@@ -331,6 +344,9 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT px_arr = soa[RealSoA::px].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT py_arr = soa[RealSoA::py].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT pt_arr = soa[RealSoA::pt].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT sx_arr = soa[RealSoA::sx].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT sy_arr = soa[RealSoA::sy].dataPtr();
+            amrex::ParticleReal * const AMREX_RESTRICT sz_arr = soa[RealSoA::sz].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT qm_arr = soa[RealSoA::qm].dataPtr();
             amrex::ParticleReal * const AMREX_RESTRICT w_arr  = soa[RealSoA::w ].dataPtr();
 
@@ -342,6 +358,9 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal const * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal const * const AMREX_RESTRICT pt_ptr = pt.data();
+            amrex::ParticleReal const * const AMREX_RESTRICT sx_ptr = has_spin ? sx.value().data() : nullptr;
+            amrex::ParticleReal const * const AMREX_RESTRICT sy_ptr = has_spin ? sy.value().data() : nullptr;
+            amrex::ParticleReal const * const AMREX_RESTRICT sz_ptr = has_spin ? sz.value().data() : nullptr;
             amrex::ParticleReal const * const AMREX_RESTRICT w_ptr = has_w ? w->data() : nullptr;
             amrex::ParticleReal const bunch_charge_value = has_w ? 0_prt : bunch_charge.value();
 
@@ -357,6 +376,16 @@ namespace impactx
                 px_arr[old_np+i] = px_ptr[my_offset+i];
                 py_arr[old_np+i] = py_ptr[my_offset+i];
                 pt_arr[old_np+i] = pt_ptr[my_offset+i];
+
+                if (has_spin) {
+                    sx_arr[old_np+i] = sx_ptr[my_offset+i];
+                    sy_arr[old_np+i] = sy_ptr[my_offset+i];
+                    sz_arr[old_np+i] = sz_ptr[my_offset+i];
+                } else {
+                    sx_arr[old_np+i] = 0_prt;
+                    sy_arr[old_np+i] = 0_prt;
+                    sz_arr[old_np+i] = 0_prt;
+                }
 
                 qm_arr[old_np+i] = qm;
                 w_arr[old_np+i]  = has_w ? w_ptr[my_offset+i] : bunch_charge_value / ablastr::constant::SI::q_e/np;

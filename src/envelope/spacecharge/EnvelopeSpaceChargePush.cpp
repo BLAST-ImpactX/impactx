@@ -40,8 +40,8 @@ namespace impactx::envelope::spacecharge
         Map6x6 R = Map6x6::Identity();
 
         // physical constants and reference quantities
-        using ablastr::constant::SI::c;
-        using ablastr::constant::SI::ep0;
+        constexpr amrex::ParticleReal c = ablastr::constant::SI::c_v<amrex::ParticleReal>;
+        constexpr amrex::ParticleReal ep0 = ablastr::constant::SI::epsilon_0_v<amrex::ParticleReal>;
         using ablastr::constant::math::pi;
         amrex::ParticleReal const mass = refpart.mass;
         amrex::ParticleReal const charge = refpart.charge;
@@ -88,8 +88,8 @@ namespace impactx::envelope::spacecharge
         Map6x6 R = Map6x6::Identity();
 
         // physical constants and reference quantities
-        using ablastr::constant::SI::c;
-        using ablastr::constant::SI::ep0;
+        constexpr amrex::ParticleReal c = ablastr::constant::SI::c_v<amrex::ParticleReal>;
+        constexpr amrex::ParticleReal ep0 = ablastr::constant::SI::epsilon_0_v<amrex::ParticleReal>;
         using ablastr::constant::math::pi;
         amrex::ParticleReal const mass = refpart.mass;
         amrex::ParticleReal const charge = refpart.charge;

@@ -19,12 +19,14 @@
 #include "Thermal.H"
 #include "Triangle.H"
 #include "Waterbag.H"
+#include "SpinvMF.H"
 
 #include <variant>
 
 
 namespace impactx::distribution
 {
+    // Phase space distributions
     using KnownDistributions = std::variant<
         Empty, /* must be first, so KnownDistributions creates a default constructor */
         Gaussian,

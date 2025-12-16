@@ -187,6 +187,21 @@ void init_distribution(py::module& m)
              "A 6D Waterbag distribution"
         );
 
+    py::class_<distribution::SpinvMF>(md, "SpinvMF")
+        .def(py::init<
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
+             >(),
+             py::arg("mux"), py::arg("muy"), py::arg("muz"),
+             "A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin."
+        )
+        .def_static("inverse_Langevin",
+            &distribution::SpinvMF::inverse_Langevin,
+            py::arg("pmag"),
+            "This function evaluates the inverse Langevin function, in order to return "
+            "the value of concentration (kappa) required to produce a given polarization magnitude."
+        )
+    ;
+
     py::class_<Envelope>(m, "Envelope")
         .def(py::init<>())
         .def(py::init<CovarianceMatrix, amrex::ParticleReal>())

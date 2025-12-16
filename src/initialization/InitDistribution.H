@@ -129,6 +129,69 @@ namespace impactx::initialization
         amrex::ParticleReal* const AMREX_RESTRICT m_part_pt;
     };
 
+    /** Initialize a single particle's spin using the SpinvMF distribution
+     *
+     * Note: we usually would just write a C++ lambda below in ParallelForRNG. But, due to restrictions
+     * in NVCC as of 11.5, we cannot write a lambda in a lambda as we also std::visit the element
+     * types of our lattice elements list.
+     *    error #3206-D: An extended __device__ lambda cannot be defined inside a generic lambda expression("operator()").
+     * Thus, we fall back to writing a C++ functor here, instead of nesting two lambdas.
+     *
+     * Nvidia bug report: 3458976
+     * Minimal demonstrator: https://cuda.godbolt.org/z/39e4q53Ye
+     */
+    struct InitSingleParticleSpin
+    {
+        /** Constructor taking in pointers to particle data
+         *
+         * @param spinv spin distribution function to call
+         * @param part_sx the array to the particle spin in x (sx)
+         * @param part_sy the array to the particle spin in y (sy)
+         * @param part_sz the array to the particle spin in z (sz)
+         */
+        InitSingleParticleSpin (
+            distribution::SpinvMF spinv,
+            amrex::ParticleReal* AMREX_RESTRICT part_sx,
+            amrex::ParticleReal* AMREX_RESTRICT part_sy,
+            amrex::ParticleReal* AMREX_RESTRICT part_sz
+        )
+        : m_spinv(std::move(spinv)),
+          m_part_sx(part_sx), m_part_sy(part_sy), m_part_sz(part_sz)
+        {
+        }
+
+        InitSingleParticleSpin () = delete;
+        InitSingleParticleSpin (InitSingleParticleSpin const &) = default;
+        InitSingleParticleSpin (InitSingleParticleSpin &&) = default;
+        ~InitSingleParticleSpin () = default;
+
+        /** Initialize the spin for a single particle
+         *
+         * @param i particle index in the current box
+         * @param engine a random number engine (with associated state)
+         */
+        AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+        void
+        operator() (
+            amrex::Long i,
+            amrex::RandomEngine const & engine
+        ) const
+        {
+            m_spinv(
+                m_part_sx[i],
+                m_part_sy[i],
+                m_part_sz[i],
+                engine
+            );
+        }
+
+    private:
+        distribution::SpinvMF const m_spinv;
+        amrex::ParticleReal* const AMREX_RESTRICT m_part_sx;
+        amrex::ParticleReal* const AMREX_RESTRICT m_part_sy;
+        amrex::ParticleReal* const AMREX_RESTRICT m_part_sz;
+    };
+
 
     /** Initialize the input parameters for all distributions that read phase space ellipse parameters from the input
      *

@@ -138,6 +138,16 @@ Initial Beam Distributions
     * ``beam.normalize_halo`` (``float``, dimensionless) normalizing constant for halo population
     * ``beam.halo`` (``float``, dimensionless) fraction of charge in halo
 
+Initial Spin Distributions
+--------------------------
+
+  The specification of an initial particle spin distribution is optional, and is required only if spin tracking is used.
+  The default distribution type is the von Mises-Fisher distribution, uniquely determined by the input polarization vector.
+  The polarization vector provided by the user must lie within the unit ball.
+
+* ``beam.polarization_x`` (``float``, dimensionless) mean value of the spin vector x-component
+* ``beam.polarization_y`` (``float``, dimensionless) mean value of the spin vector y-component
+* ``beam.polarization_z`` (``float``, dimensionless) mean value of the spin vector z-component
 
 .. _running-cpp-parameters-lattice:
 
@@ -338,19 +348,21 @@ If ``model = "linear"``, then the linearized map is used.  This model is identic
 
 when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
+By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while the corresponding default value of ``K2`` is set to 1).
+
 This requires these additional parameters:
 
 * ``<element_name>.psi`` (``float``, in radians) the pole face rotation angle
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
 * ``<element_name>.g`` (``float``, in meters) the full magnetic gap size
 * ``<element_name>.R`` (``float``, in meters) scale length for the field integrals (default: ``1 m``)
-* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field (FINT)
-* ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field
-* ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field (default: ``pi/6``)
+* ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field (FINT, default: ``1``)
+* ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field (default: ``1/6``)
+* ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
 * ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
@@ -551,6 +563,25 @@ This requires these additional parameters:
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
+
+``polygon_aperture``
+^^^^^^^^^^^^^^^^^^^^
+
+``polygon_aperture`` for a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
+and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+The first and last vertices must be identical. These parameters define the element:
+
+* ``<element_name>.vertices_x`` (``float``, in meters) array of horizontal locations of aperture vertices
+* ``<element_name>.vertices_y`` (``float``, in meters) array of vertical locations of aperture vertices
+* ``<element_name>.min_radius2`` (``float``, in meters-squared) optional minimum radius-squared of a circle fully inscribed within the polygon. Particles with
+  radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped. (default ``0``)
+* ``<element_name>.repeat_x`` (``float``, in meters) horizontal period for repeated aperture masking (inactive by default)
+* ``<element_name>.repeat_y`` (``float``, in meters) vertical period for repeated aperture masking (inactive by default)
+* ``<element_name>.shift_odd_x`` (``bool``) for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+* ``<element_name>.action`` (``string``) action of the aperture domain: ``transmit`` (default) or ``absorb``
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 
 ``prot``
 ^^^^^^^^
@@ -810,6 +841,8 @@ Currently, this only supports openPMD files from our ``beam_monitor``.
   Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
 * ``<element_name>.openpmd_path`` (``string``)
   path to the openPMD series
+* ``<element_name>.active_once`` (``boolean``, default: ``true``)
+  Inject particles only for the first lattice period.
 
 
 ``tapered_pl``

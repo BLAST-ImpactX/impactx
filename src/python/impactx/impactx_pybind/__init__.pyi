@@ -121,6 +121,7 @@ class ImpactX:
         | distribution.Semigaussian
         | distribution.Waterbag,
         npart: typing.SupportsInt,
+        spin_distr: distribution.SpinvMF | None = None,
     ) -> None:
         """
         Particle tracking mode:Generate and add n particles to the particle container.
@@ -527,6 +528,7 @@ class ImpactX:
         | elements.Multipole
         | elements.NonlinearLens
         | elements.PlaneXYRot
+        | elements.PolygonAperture
         | elements.Programmable
         | elements.PRot
         | elements.Quad
@@ -568,48 +570,48 @@ class ImpactX:
     def verbose(self, arg1: typing.SupportsInt) -> None: ...
 
 class ImpactXParConstIter(
-    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_8_0_default
+    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_default
 ):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
 
-class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_8_0_default):
+class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_default):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
 
 class ImpactXParticleContainer(
-    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_8_0_default
+    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default
 ):
-    const_iterator = ImpactXParConstIter
-    iterator = ImpactXParIter
+    ConstIterator = ImpactXParConstIter
+    Iterator = ImpactXParIter
     def add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -621,6 +623,9 @@ class ImpactXParticleContainer(
         qm: typing.SupportsFloat,
         bunch_charge: typing.SupportsFloat | None = None,
         w: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+        sx: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+        sy: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+        sz: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
     ) -> None:
         """
         Add new particles to the container for fixed s.
@@ -639,7 +644,9 @@ class ImpactXParticleContainer(
         :param py: momentum in y
         :param pt: momentum in t
         :param qm: charge over mass in 1/eV
-        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent
+        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
+        :param sy: spin component in y
+        :param sz: spin component in z
         """
     def beam_moments(self) -> dict[str, float]:
         """
@@ -965,6 +972,7 @@ def push(
     | elements.Multipole
     | elements.NonlinearLens
     | elements.PlaneXYRot
+    | elements.PolygonAperture
     | elements.Programmable
     | elements.PRot
     | elements.Quad
@@ -1011,6 +1019,7 @@ def push(
     | elements.Multipole
     | elements.NonlinearLens
     | elements.PlaneXYRot
+    | elements.PolygonAperture
     | elements.Programmable
     | elements.PRot
     | elements.Quad
@@ -1033,6 +1042,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.11"
+__version__: str = "25.12"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

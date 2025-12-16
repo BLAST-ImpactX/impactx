@@ -125,7 +125,7 @@ class FilteredElementsList:
         kind=None,
         name=None,
     ):
-        """Apply filtering to this filtered list.
+        r"""Apply filtering to this filtered list.
 
         This method applies additional filtering to an already filtered list,
         maintaining references to the original elements and enabling chaining.
@@ -364,7 +364,7 @@ def select(
     kind=None,
     name=None,
 ) -> FilteredElementsList:
-    """Filter elements by type and name with OR-based logic.
+    r"""Filter elements by type and name with OR-based logic.
 
     This method supports filtering elements by their type and/or name using keyword arguments.
     Returns references to original elements, allowing modification and chaining.

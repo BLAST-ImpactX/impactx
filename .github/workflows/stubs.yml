@@ -18,10 +18,10 @@ jobs:
       OMP_NUM_THREAD: 4
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       if: github.event_name != 'push' || github.repository != 'BLAST-ImpactX/impactx' || github.ref != 'refs/heads/development'
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:
         token: ${{ secrets.IMPACTX_PUSH_TOKEN }}
@@ -41,7 +41,7 @@ jobs:
         python3 -m pip install -U pybind11-stubgen pre-commit
 
     - name: Set Up Cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/ccache
         key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}

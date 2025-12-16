@@ -85,12 +85,14 @@ namespace impactx
          * @param bunch_charge bunch charge (C)
          * @param distr distribution function to draw from (object)
          * @param npart number of particles to draw
+         * @param spin_distr optional spin distribution
          */
         void
         add_particles (
             amrex::ParticleReal bunch_charge,
             distribution::KnownDistributions distr,
-            amrex::Long npart
+            amrex::Long npart,
+            std::optional<distribution::SpinvMF> spin_distr = std::nullopt
         );
 
         /** Validate the simulation is ready to run the particle tracking loop via @see track_particles

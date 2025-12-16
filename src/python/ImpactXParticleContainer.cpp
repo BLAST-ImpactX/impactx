@@ -84,6 +84,7 @@ void init_impactxparticlecontainer(py::module& m)
              py::arg("x"), py::arg("y"), py::arg("t"),
              py::arg("px"), py::arg("py"), py::arg("pt"),
              py::arg("qm"), py::arg("bunch_charge")=py::none(), py::arg("w")=py::none(),
+             py::arg("sx")=py::none(), py::arg("sy")=py::none(), py::arg("sz")=py::none(),
              "Add new particles to the container for fixed s.\n\n"
              "Either the total charge (bunch_charge) or the weight of each\n"
              "particle (w) must be provided.\n\n"
@@ -99,6 +100,9 @@ void init_impactxparticlecontainer(py::module& m)
              ":param qm: charge over mass in 1/eV\n"
              ":param bunch_charge: total charge within a bunch in C"
              ":param w: weight of each particle: how many real particles to represent"
+             ":param sx: spin component in x\n"
+             ":param sy: spin component in y\n"
+             ":param sz: spin component in z\n"
         )
         .def("ref_particle",
             py::overload_cast<>(&ImpactXParticleContainer::GetRefParticle),

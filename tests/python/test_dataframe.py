@@ -107,6 +107,9 @@ def test_df_pandas(save_png=True):
         "momentum_x",
         "momentum_y",
         "momentum_t",
+        "spin_x",
+        "spin_y",
+        "spin_z",
         "qm",
         "weighting",
     ]

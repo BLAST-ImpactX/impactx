@@ -1121,6 +1121,22 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
    ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
 
+.. _running-cpp-parameters-spin:
+
+Spin Tracking
+^^^^^^^^^^^^^
+
+Spin tracking is performed by updating the particle spin 3-vector in the presence of each element's electromagnetic fields, using methods based on the Thomas-BMT equation.
+By construction, all spin tracking methods rely on pushing particles using spin maps that lie in SO(3).  The algorithm implemented for each element is consistent with the algorithm
+used for pushing the phase space vector.
+
+Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
+
+* ``algo.spin`` (``boolean``, optional, default: ``false``)
+
+  Whether to track particle spin.
+
+
 .. _running-cpp-parameters-parser:
 
 Math parser and user-defined constants

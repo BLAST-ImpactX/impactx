@@ -256,6 +256,16 @@ void init_ImpactX (py::module& m)
             },
             "Flag to determine whether ISR radiation loss is applied to the reference particle (default: False)."
         )
+        .def_property("spin",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "spin");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("spin", enable);
+            },
+            "Enable or disable particle spin tracking (default: disabled)."
+        )
         .def_property("eigenemittances",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("diag", "eigenemittances");

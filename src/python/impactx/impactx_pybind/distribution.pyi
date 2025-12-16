@@ -13,6 +13,7 @@ __all__: list[str] = [
     "Kurth4D",
     "Kurth6D",
     "Semigaussian",
+    "SpinvMF",
     "Thermal",
     "Triangle",
     "Waterbag",
@@ -162,6 +163,22 @@ class Semigaussian:
     ) -> None:
         """
         A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
+        """
+
+class SpinvMF:
+    @staticmethod
+    def inverse_Langevin(pmag: typing.SupportsFloat) -> float:
+        """
+        This function evaluates the inverse Langevin function, in order to return the value of concentration (kappa) required to produce a given polarization magnitude.
+        """
+    def __init__(
+        self,
+        mux: typing.SupportsFloat,
+        muy: typing.SupportsFloat,
+        muz: typing.SupportsFloat,
+    ) -> None:
+        """
+        A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin.
         """
 
 class Thermal:

@@ -227,7 +227,7 @@ Collective Effects & Overall Simulation Parameters
 
       This must come first, before particle beams and lattice elements are initialized.
 
-   .. py:method:: add_particles(charge_C, distr, npart)
+   .. py:method:: add_particles(charge_C, distr, npart, spinv=None)
 
       Particle tracking mode: Generate and add n particles to the particle container.
       Note: Set the reference particle properties (charge, mass, energy) first.
@@ -237,6 +237,7 @@ Collective Effects & Overall Simulation Parameters
       :param float charge_C: bunch charge (C)
       :param distr: distribution function to draw from (object from :py:mod:`impactx.distribution`)
       :param int npart: number of particles to draw
+      :param SpinvMF spinv: optional spin distribution
 
    .. py:method:: init_envelope(ref, distr, intensity=None)
 
@@ -578,8 +579,8 @@ Particles
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
 
 
-Initial Beam Distributions
---------------------------
+Initial Beam Phase Space Distributions
+--------------------------------------
 
 This module provides particle beam distributions that can be used to initialize particle beams in an :py:class:`impactx.ParticleContainer`.
 
@@ -658,6 +659,25 @@ For the input from Twiss parameters in Python, please use the helper function ``
 .. py:class:: impactx.distribution.Thermal(k, kT, kT_halo, normalize, normalize_halo, halo=0.0)
 
    A 6D stationary thermal or bithermal distribution.
+
+Initial Beam Spin Distribution
+------------------------------
+
+.. py:class:: impactx.distribution.SpinvMF(mux, muy, muz)
+
+   A von Mises-Fisher (vMF) distribution on the unit 2-sphere.
+
+   This is used for initializing particle spin. There is a natural bijective correspondence between vMF distributions and mean (polarization) vectors.
+
+   The algorithm used here is a simplification of the algorithm described in:
+   C. Pinzon and K. Jung, "Fast Python sampler of the von Mises Fisher distribution", in the special case of the 2-sphere. Additional references used include:
+
+   - K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999;
+   - S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat. and Comput. 34, 106 (2024), `DOI:10.1007/s11222-024-10419-3 <https://doi.org/10.1007/s11222-024-10419-3>`__
+
+   :param mux: x component of the unit vector specifying the mean direction
+   :param muy: y component of the unit vector specifying the mean direction
+   :param muz: z component of the unit vector specifying the mean direction
 
 
 Lattice Elements

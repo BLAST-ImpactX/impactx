@@ -1824,10 +1824,9 @@ add_impactx_test(distgen-spinvmf
     examples/distgen/analysis_kurth4d_spin.py
     OFF  # no plot script yet
 )
-#TODO: add Python test
-#add_impactx_test(distgen-spinvmf.py
-#    examples/distgen/run_kurth4d_spin.py
-#    ON    # ImpactX MPI-parallel
-#    examples/distgen/analysis_kurth4d_spin.py
-#    OFF  # no plot script yet
-#)
+add_impactx_test(distgen-spinvmf.py
+    examples/distgen/run_kurth4d_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/distgen/analysis_kurth4d_spin.py
+    OFF  # no plot script yet
+)

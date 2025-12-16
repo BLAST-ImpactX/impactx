@@ -187,14 +187,7 @@ void init_distribution(py::module& m)
              "A 6D Waterbag distribution"
         );
 
-    py::class_<Envelope>(m, "Envelope")
-        .def(py::init<>())
-        .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
-        .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
-        .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
-    ;
-
-    py::class_<distribution::SpinvMF>(m, "SpinvMF")
+    py::class_<distribution::SpinvMF>(md, "SpinvMF")
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
@@ -207,6 +200,13 @@ void init_distribution(py::module& m)
             "This function evaluates the inverse Langevin function, in order to return "
             "the value of concentration (kappa) required to produce a given polarization magnitude."
         )
+    ;
+
+    py::class_<Envelope>(m, "Envelope")
+        .def(py::init<>())
+        .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
+        .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
+        .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
     ;
 
     m.def("create_envelope", &initialization::create_envelope);

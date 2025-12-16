@@ -40,16 +40,22 @@ namespace impactx::distribution
          * Return sampling from a vMF distribution.
          *
          * @param mux,muy,muz components of a unit vector specifying the mean direction
-         * @param kappa concentration parameter
          */
         SpinvMF (
             amrex::ParticleReal mux,
             amrex::ParticleReal muy,
-            amrex::ParticleReal muz,
-            amrex::ParticleReal kappa
+            amrex::ParticleReal muz
         )
-        : m_muX(mux), m_muY(muy), m_muZ(muz), m_kappa(kappa)
+        : m_muX(mux), m_muY(muy), m_muZ(muz)
         {
+            // magnitude of the polarization vector (= polarization magnitude)
+            amrex::ParticleReal const pmag = std::sqrt(
+                mux * mux +
+                muy * muy +
+                muz * muz
+            );
+
+            m_kappa = inverse_Langevin(pmag);
         }
 
         /** Return 1 3D spin (unit) vector
@@ -121,25 +127,29 @@ namespace impactx::distribution
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         static amrex::ParticleReal
-        inverse_Langevin (amrex::ParticleReal const & AMREX_RESTRICT pmag)
+        inverse_Langevin (amrex::ParticleReal pmag)
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
 
-            amrex::ParticleReal concentration;
+            AMREX_ASSERT_WITH_MESSAGE(pmag >= 0_prt, "Polarization magnitude must be greater or equal 0.");
+            AMREX_ASSERT_WITH_MESSAGE(pmag < 1_prt, "Polarization magnitude must be less than 1.");
 
             // Evaluation of the inverse Langevin function.  Here, we use the approximate expression
             // due to R. Petrosyan.  See:
             // R. Petrosyan, Rheologica Acta 56, 21-26, 2016; doi:10.1007/s00397-016-0977-9
             // R. Jedynak, Mathematics and Mechanics of Solids 24, 1-25, 2018; doi:10.1177/1081286518811395
 
-            concentration = 3_prt*pmag + powi<2>(pmag)/5_prt*std::sin(7_prt*pmag/2_prt) + powi<3>(pmag)/(1_prt-pmag);
+            amrex::ParticleReal concentration =
+                3_prt * pmag +
+                powi<2>(pmag) / 5_prt * std::sin(7_prt * pmag * 0.5_prt) +
+                powi<3>(pmag) / (1_prt - pmag);
 
             return concentration;
         }
 
-
-        amrex::ParticleReal m_muX, m_muY, m_muZ, m_kappa;  //! parameters specifying the vMF distribution
+        amrex::ParticleReal m_muX, m_muY, m_muZ;  //! components of a unit vector specifying the mean direction
+        amrex::ParticleReal m_kappa;  //! concentration parameter
     };
 
 } // namespace impactx::distribution

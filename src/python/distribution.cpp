@@ -196,11 +196,9 @@ void init_distribution(py::module& m)
 
     py::class_<distribution::SpinvMF>(m, "SpinvMF")
         .def(py::init<
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
              py::arg("mux"), py::arg("muy"), py::arg("muz"),
-             py::arg("kappa"),
              "A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin."
         )
         .def_static("inverse_Langevin",

@@ -593,24 +593,13 @@ namespace impactx
             amrex::ParticleReal polarization_x = 0.0_prt,
                                 polarization_y = 0.0_prt,
                                 polarization_z = 0.0_prt;
-            pp_dist.queryWithParser("polarization_x", polarization_x);
-            pp_dist.queryWithParser("polarization_y", polarization_y);
-            pp_dist.queryWithParser("polarization_z", polarization_z);
-            amrex::ParticleReal pmag = 0.0_prt;
-            amrex::ParticleReal kappa = 0.0_prt;
-
-            // magnitude of the polarization vector (= polarization magnitude)
-            pmag = std::sqrt(polarization_x*polarization_x+polarization_y*polarization_y+polarization_z*polarization_z);
+            bool const has_sx = pp_dist.queryWithParser("polarization_x", polarization_x);
+            bool const has_sy = pp_dist.queryWithParser("polarization_y", polarization_y);
+            bool const has_sz = pp_dist.queryWithParser("polarization_z", polarization_z);
 
             std::optional<distribution::SpinvMF> spin_dist;
-            if (pmag == 0.0_prt) {
-                // no spin init
-            }
-            else if (pmag < 1_prt) {
-               kappa = distribution::SpinvMF::inverse_Langevin(pmag);
-               spin_dist = distribution::SpinvMF(polarization_x, polarization_y, polarization_z, kappa);
-            } else {
-                throw std::runtime_error("Initial polarization magnitude must currently be < 1.");
+            if (has_sx || has_sy || has_sz) {
+                spin_dist = distribution::SpinvMF(polarization_x, polarization_y, polarization_z);
             }
 
             amrex::Long npart = 0;  // Number of simulation particles

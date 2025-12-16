@@ -71,10 +71,10 @@ set(ImpactX_pyamrex_src ""
 
 # Git fetcher
 option(ImpactX_pyamrex_internal "Download & build pyAMReX" ON)
-set(ImpactX_pyamrex_repo "https://github.com/ax3l/pyamrex.git"
+set(ImpactX_pyamrex_repo "https://github.com/AMReX-Codes/pyamrex.git"
     CACHE STRING
     "Repository URI to pull and build pyamrex from if(ImpactX_pyamrex_internal)")
-set(ImpactX_pyamrex_branch "topic-pc-impactx-spin"
+set(ImpactX_pyamrex_branch "74e213e3186371d5a7412af3d2a5d6040fab51ce"
     CACHE STRING
     "Repository branch for ImpactX_pyamrex_repo if(ImpactX_pyamrex_internal)")
 

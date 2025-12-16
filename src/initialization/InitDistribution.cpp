@@ -399,21 +399,17 @@ namespace impactx
                     py_ptr + my_offset,
                     pt_ptr + my_offset
                 );
-
                 amrex::ParallelForRNG(npart_this_thread, init_single_particle_data);
 
                 // spin init
                 if (has_spin) {
-                    auto spinv = spin_distr.value();
-                    amrex::ParallelForRNG(npart_this_thread,
-                        [=] AMREX_GPU_DEVICE (int i, amrex::RandomEngine const& engine) noexcept {
-                        spinv(
-                            sx_ptr[i + my_offset],
-                            sy_ptr[i + my_offset],
-                            sz_ptr[i + my_offset],
-                            engine
-                        );
-                    });
+                    initialization::InitSingleParticleSpin const init_single_particle_spin(
+                        spin_distr.value(),
+                        sx_ptr + my_offset,
+                        sy_ptr + my_offset,
+                        sz_ptr + my_offset
+                    );
+                    amrex::ParallelForRNG(npart_this_thread, init_single_particle_spin);
                 }
             }
 

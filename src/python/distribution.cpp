@@ -194,5 +194,22 @@ void init_distribution(py::module& m)
         .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
     ;
 
+    py::class_<distribution::SpinvMF>(m, "SpinvMF")
+        .def(py::init<
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal
+             >(),
+             py::arg("mux"), py::arg("muy"), py::arg("muz"),
+             py::arg("kappa"),
+             "A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin."
+        )
+        .def_static("inverse_Langevin",
+            &distribution::SpinvMF::inverse_Langevin,
+            py::arg("pmag"),
+            "This function evaluates the inverse Langevin function, in order to return "
+            "the value of concentration (kappa) required to produce a given polarization magnitude."
+        )
+    ;
+
     m.def("create_envelope", &initialization::create_envelope);
 }

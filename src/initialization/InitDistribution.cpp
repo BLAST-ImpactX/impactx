@@ -342,7 +342,7 @@ namespace impactx
         // alloc data for particle attributes
         amrex::Gpu::DeviceVector<amrex::ParticleReal> x, y, t;
         amrex::Gpu::DeviceVector<amrex::ParticleReal> px, py, pt;
-        amrex::Gpu::DeviceVector<amrex::ParticleReal> sx, sy, sz;
+        std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sx, sy, sz;
         x.resize(npart_this_proc);
         y.resize(npart_this_proc);
         t.resize(npart_this_proc);
@@ -352,9 +352,9 @@ namespace impactx
 
         bool const has_spin = spin_distr.has_value();
         if (has_spin) {
-            sx.resize(npart_this_proc);
-            sy.resize(npart_this_proc);
-            sz.resize(npart_this_proc);
+            sx = amrex::Gpu::DeviceVector<amrex::ParticleReal>(npart_this_proc);
+            sy = amrex::Gpu::DeviceVector<amrex::ParticleReal>(npart_this_proc);
+            sz = amrex::Gpu::DeviceVector<amrex::ParticleReal>(npart_this_proc);
         }
 
         std::visit([&](auto&& distribution){
@@ -367,9 +367,9 @@ namespace impactx
             amrex::ParticleReal * const AMREX_RESTRICT px_ptr = px.data();
             amrex::ParticleReal * const AMREX_RESTRICT py_ptr = py.data();
             amrex::ParticleReal * const AMREX_RESTRICT pt_ptr = pt.data();
-            amrex::ParticleReal * const AMREX_RESTRICT sx_ptr = sx.data();
-            amrex::ParticleReal * const AMREX_RESTRICT sy_ptr = sy.data();
-            amrex::ParticleReal * const AMREX_RESTRICT sz_ptr = sz.data();
+            amrex::ParticleReal * const AMREX_RESTRICT sx_ptr = has_spin ? sx->data() : nullptr;
+            amrex::ParticleReal * const AMREX_RESTRICT sy_ptr = has_spin ? sy->data() : nullptr;
+            amrex::ParticleReal * const AMREX_RESTRICT sz_ptr = has_spin ? sz->data() : nullptr;
 
             using Distribution = std::decay_t<decltype(distribution)>;
 
@@ -422,22 +422,14 @@ namespace impactx
             distribution.finalize();
         }, distr);
 
-        if (has_spin) {
-            amr_data->track_particles.m_particle_container->AddNParticles(
-                x, y, t,
-                px, py, pt,
-                ref.qm_ratio_SI(),
-                bunch_charge * rel_part_this_proc, std::nullopt,
-                sx, sy, sz
-            );
-        } else {
-            amr_data->track_particles.m_particle_container->AddNParticles(
-                x, y, t,
-                px, py, pt,
-                ref.qm_ratio_SI(),
-                bunch_charge * rel_part_this_proc
-            );
-        }
+        amr_data->track_particles.m_particle_container->AddNParticles(
+            x, y, t,
+            px, py, pt,
+            ref.qm_ratio_SI(),
+            bunch_charge * rel_part_this_proc,
+            std::nullopt,
+            sx, sy, sz
+        );
 
         auto space_charge = get_space_charge_algo();
 
@@ -610,12 +602,16 @@ namespace impactx
             // magnitude of the polarization vector (= polarization magnitude)
             pmag = std::sqrt(polarization_x*polarization_x+polarization_y*polarization_y+polarization_z*polarization_z);
 
-            if (pmag < 1) {
+            std::optional<distribution::SpinvMF> spin_dist;
+            if (pmag == 0.0_prt) {
+                // no spin init
+            }
+            else if (pmag < 1_prt) {
                kappa = distribution::SpinvMF::inverse_Langevin(pmag);
+               spin_dist = distribution::SpinvMF(polarization_x, polarization_y, polarization_z, kappa);
             } else {
                 throw std::runtime_error("Initial polarization magnitude must currently be < 1.");
             }
-            distribution::SpinvMF spin_dist(polarization_x, polarization_y, polarization_z, kappa);
 
             amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")

@@ -24,9 +24,10 @@ namespace impactx::distribution
     struct SpinvMF
     {
         /** A von Mises-Fisher (vMF) distribution on the unit 2-sphere.
-         *  This is used for initializing particle spin.  There is a natural
-         *  bijective correspondence between vMF distributions and mean
-         *  (polarization) vectors.
+         *
+         * This is used for initializing particle spin.  There is a natural
+         * bijective correspondence between vMF distributions and mean
+         * (polarization) vectors.
          *
          * The algorithm used here is a simplification of the algorithm described in:
          * C. Pinzon and K. Jung, "Fast Python sampler of the von Mises Fisher distribution", in the special
@@ -107,7 +108,7 @@ namespace impactx::distribution
         }
 
 
-        /** This function evaluatates the inverse Langevin function, in order to return
+        /** This function evaluates the inverse Langevin function, in order to return
          *  the value of concentration (kappa) required to produce a given polarization magnitude.
          *  It is used to prepare for spin sampling using the vMF distribution.
          *

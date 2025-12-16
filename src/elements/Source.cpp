@@ -50,7 +50,7 @@ namespace impactx::elements
         std::string const species_name = "beam";
         io::ParticleSpecies beam = iteration.particles[species_name];
         // TODO: later we can make the bunch charge an option (i.e., allow rescaling a distribution)
-        amrex::ParticleReal bunch_charge = beam.getAttribute("charge_C").get<amrex::ParticleReal>();
+        // amrex::ParticleReal bunch_charge = beam.getAttribute("charge_C").get<amrex::ParticleReal>();
 
         auto const scalar = openPMD::RecordComponent::SCALAR;
         auto const getComponentRecord = [&beam](std::string comp_name) {
@@ -73,8 +73,6 @@ namespace impactx::elements
         int const nleft = npart - navg * nprocs;
         std::uint64_t const npart_this_proc = (myproc < nleft) ? navg+1 : navg;  // add 1 to each proc until distributed
         std::uint64_t npart_before_this_proc = (myproc < nleft) ? (navg+1) * myproc : navg * myproc + nleft;
-        auto const rel_part_this_proc =
-            amrex::ParticleReal(npart_this_proc) / amrex::ParticleReal(npart);
 
         // alloc data for particle attributes
         std::map<std::string, amrex::Gpu::PinnedVector<amrex::ParticleReal>> pinned_SoA;
@@ -118,11 +116,14 @@ namespace impactx::elements
         // finalize distributions and deallocate temporary device global memory
         amrex::Gpu::streamSynchronize();
 
-        // TODO: at this point, we ignore the "id", "qm" and "weighting" in the file. Could be improved
+        // TODO: at this point, we ignore the "id" and "qm" in the file. Could be improved
+
         pc.AddNParticles(d_SoA["position_x"], d_SoA["position_y"], d_SoA["position_t"],
                          d_SoA["momentum_x"], d_SoA["momentum_y"], d_SoA["momentum_t"],
                          pc.GetRefParticle().qm_ratio_SI(),
-                         bunch_charge * rel_part_this_proc);
+                         std::nullopt,
+                         d_SoA["weighting"],
+                         d_SoA["spin_x"], d_SoA["spin_y"], d_SoA["spin_z"]);
 
 #else  // ImpactX_USE_OPENPMD
         amrex::ignore_unused(pc);

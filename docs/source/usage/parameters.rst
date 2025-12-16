@@ -139,7 +139,7 @@ Initial Beam Distributions
     * ``beam.halo`` (``float``, dimensionless) fraction of charge in halo
 
 Initial Spin Distributions
----------------------------
+--------------------------
 
   The specification of an initial particle spin distribution is optional, and is required only if spin tracking is used.
   The default distribution type is the von Mises-Fisher distribution, uniquely determined by the input polarization vector.

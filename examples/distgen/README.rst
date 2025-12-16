@@ -224,7 +224,7 @@ We run the following script to analyze correctness:
 .. _examples-distgen-spinvmf:
 
 Spin Sampling from a vMF Distribution
-===============================================
+=====================================
 
 This tests the sampling of initial particle spin from a von Mises-Fisher distribution, given an initial input polarization.
 The phase space distribution coincides with the 4D Kurth distribution used in examples-distgen-kurth4d.

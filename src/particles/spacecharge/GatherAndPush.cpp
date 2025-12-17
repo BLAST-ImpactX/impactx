@@ -40,7 +40,7 @@ namespace impactx::particles::spacecharge
 
         // Deposit 1D charge density in cases where it is required.
         int num_bins = 1;
-        amrex::ParmParse pp_algo("algo.space_charge"); 
+        amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("num_longitudinal_bins", num_bins);
         amrex::Gpu::DeviceVector<amrex::Real> beam_profile(num_bins + 1, 0.0);
         amrex::Gpu::DeviceVector<amrex::Real> beam_profile_slope(num_bins, 0.0);

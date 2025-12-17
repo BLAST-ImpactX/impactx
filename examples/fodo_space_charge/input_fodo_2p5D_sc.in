@@ -56,7 +56,7 @@ algo.poisson_solver = "fft"
 
 amr.n_cell = 32 32 1
 amr.blocking_factor_x = 16
-amr.blocking_factor_y = 16  
+amr.blocking_factor_y = 16
 amr.blocking_factor_z = 1
 
 geometry.prob_relative = 1.1

@@ -78,7 +78,11 @@ namespace impactx
         pp_algo.query("csr", csr);
         if (csr)
         {
-            throw std::runtime_error("CSR effects cannot be modeled for single particle tracking.");
+            throw std::runtime_error(
+                "Coherent Synchrotron Radiation (CSR) cannot be "
+                "modeled for single particle tracking. "
+                "Please set the CSR option to false."
+            );
         }
 
         // periods through the lattice

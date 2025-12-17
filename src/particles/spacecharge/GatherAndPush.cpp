@@ -44,6 +44,7 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("num_longitudinal_bins", num_bins);
         amrex::Gpu::DeviceVector<amrex::Real> beam_profile(num_bins + 1, 0.0);
         amrex::Gpu::DeviceVector<amrex::Real> beam_profile_slope(num_bins, 0.0);
+        amrex::Real Qb_abs = 0.0;
 
         bool apply_longitudinal_kick = false;
 
@@ -60,6 +61,8 @@ namespace impactx::particles::spacecharge
             beam_profile = Deposit1D( pc, bin_min, bin_max, num_bins);
             bool const GetNumberDensity = true;
             impactx::particles::wakefields::DerivativeCharge1D(beam_profile, beam_profile_slope, bin_size, GetNumberDensity);
+            Qb_abs = bin_size * std::accumulate(beam_profile.begin(), beam_profile.end(), 0.0_rt);
+
         }
 
         // loop over refinement levels
@@ -147,7 +150,7 @@ namespace impactx::particles::spacecharge
                     prob_lo_2D[2] = 0.0_rt;
 
                     // group together constants for the momentum push
-                    amrex::ParticleReal const chargesign = charge / std::abs(charge);
+                    amrex::ParticleReal const charge_abs = std::abs(charge);
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
@@ -188,14 +191,13 @@ namespace impactx::particles::spacecharge
                             std::cerr << "Warning: Index out of range for 2.5D SC: " << idx << std::endl;
                        }
                        #endif
-                       amrex::ParticleReal const Fxy = beam_profile[idx] * chargesign;
-                       amrex::ParticleReal const Fz = beam_profile_slope[idx] * charge;
+                       amrex::ParticleReal const Fxy = (Qb_abs==0.0) ? 0.0 : beam_profile[idx] / Qb_abs;
+                       amrex::ParticleReal const Fz = (Qb_abs==0.0) ? 0.0 : beam_profile_slope[idx] * charge_abs / Qb_abs;
 
                        // push momentum
-                       amrex::ParticleReal const Qb = -1.0e-9;  //This is the total bunch charge in C, to be passed or determined from beam_profile.
-                       px += field_interp[0] * Fxy * push_consts * dr[2] / Qb;
-                       py += field_interp[1] * Fxy * push_consts * dr[2] / Qb;
-                       pz += potential_interp * Fz * push_consts * dr[2] / Qb;
+                       px += field_interp[0] * Fxy * push_consts * dr[2];
+                       py += field_interp[1] * Fxy * push_consts * dr[2];
+                       pz += potential_interp * Fz * push_consts * dr[2];
 
                     // push position is done in the lattice elements
                     });

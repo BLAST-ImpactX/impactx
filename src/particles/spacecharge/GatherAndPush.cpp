@@ -164,13 +164,17 @@ namespace impactx::particles::spacecharge
                             );
 
                         // potential gather
-                        amrex::Real const potential_interp =
-                            ablastr::particles::doGatherScalarFieldNodal<2>(
-                               x, y, z_flat,
-                                phi_arr,
-                                invdr,
-                                prob_lo_2D
-                            );
+                        bool apply_longitudinal_kick = false; //TODO - read in this value
+                        amrex::Real potential_interp = 0.0;
+                        if (apply_longitudinal_kick) {
+                           potential_interp =
+                               ablastr::particles::doGatherScalarFieldNodal<2>(
+                                  x, y, z_flat,
+                                   phi_arr,
+                                   invdr,
+                                   prob_lo_2D
+                               );
+                       }
 
                        // Update momentae with the 2.5D SC force
                        int const idx = static_cast<int>((z - bin_min) / bin_size);  // Find index position along z
@@ -184,9 +188,10 @@ namespace impactx::particles::spacecharge
                        amrex::ParticleReal const Fz = beam_profile_slope[idx] * charge;
 
                        // push momentum
-                       px += field_interp[0] * Fxy * push_consts;
-                       py += field_interp[1] * Fxy * push_consts;
-                       pz += potential_interp * Fz * push_consts; // DRAFT ONLY - TO UPDATE
+                       amrex::ParticleReal const Qb = -1.0e-9;  //This is the total bunch charge in C, to be passed or determined from beam_profile.
+                       px += field_interp[0] * Fxy * push_consts * dr[2] / Qb;
+                       py += field_interp[1] * Fxy * push_consts * dr[2] / Qb;
+                       pz += potential_interp * Fz * push_consts * dr[2] / Qb; // DRAFT ONLY - TO UPDATE
 
                     // push position is done in the lattice elements
                     });

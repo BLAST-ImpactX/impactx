@@ -56,7 +56,7 @@ namespace impactx::particles::spacecharge
 
         if (space_charge == SpaceChargeAlgo::True_2p5D) {
 
-            pp_algo.queryAddWithParser("apply_longitudinal_kick", apply_longitudinal_kick);
+            pp_algo.queryAdd("apply_longitudinal_kick", apply_longitudinal_kick);
             beam_profile = Deposit1D( pc, bin_min, bin_max, num_bins);
             bool const GetNumberDensity = true;
             impactx::particles::wakefields::DerivativeCharge1D(beam_profile, beam_profile_slope, bin_size, GetNumberDensity);
@@ -195,7 +195,7 @@ namespace impactx::particles::spacecharge
                        amrex::ParticleReal const Qb = -1.0e-9;  //This is the total bunch charge in C, to be passed or determined from beam_profile.
                        px += field_interp[0] * Fxy * push_consts * dr[2] / Qb;
                        py += field_interp[1] * Fxy * push_consts * dr[2] / Qb;
-                       pz += potential_interp * Fz * push_consts * dr[2] / Qb; // DRAFT ONLY - TO UPDATE
+                       pz += potential_interp * Fz * push_consts * dr[2] / Qb;
 
                     // push position is done in the lattice elements
                     });

@@ -39,9 +39,13 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
 
         // Deposit 1D charge density in cases where it is required.
-        int num_bins = 129;
+        int num_bins = 1;
+        amrex::ParmParse pp_algo("algo.space_charge"); 
+        pp_algo.queryAddWithParser("num_longitudinal_bins", num_bins);
         amrex::Gpu::DeviceVector<amrex::Real> beam_profile(num_bins + 1, 0.0);
         amrex::Gpu::DeviceVector<amrex::Real> beam_profile_slope(num_bins, 0.0);
+
+        bool apply_longitudinal_kick = false;
 
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
             pc.MinAndMaxPositions();
@@ -52,6 +56,7 @@ namespace impactx::particles::spacecharge
 
         if (space_charge == SpaceChargeAlgo::True_2p5D) {
 
+            pp_algo.queryAddWithParser("apply_longitudinal_kick", apply_longitudinal_kick);
             beam_profile = Deposit1D( pc, bin_min, bin_max, num_bins);
             bool const GetNumberDensity = true;
             impactx::particles::wakefields::DerivativeCharge1D(beam_profile, beam_profile_slope, bin_size, GetNumberDensity);
@@ -164,7 +169,6 @@ namespace impactx::particles::spacecharge
                             );
 
                         // potential gather
-                        bool apply_longitudinal_kick = false; //TODO - read in this value
                         amrex::Real potential_interp = 0.0;
                         if (apply_longitudinal_kick) {
                            potential_interp =

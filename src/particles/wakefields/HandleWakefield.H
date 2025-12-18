@@ -62,7 +62,7 @@ namespace impactx::particles::wakefields
             [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
                 particle_container.MinAndMaxPositions();
 
-            // Ensure we have a beam with a finite extend in t
+            // Ensure we have a beam with a finite extent in t
             if (t_min == t_max)
             {
                 auto const npart = particle_container.TotalNumberOfParticles();
@@ -75,7 +75,7 @@ namespace impactx::particles::wakefields
                 }
                 error_msg.append(
                     "CSR modeling is a collective effect and requires "
-                    "a particle beam with a finite extend in t. "
+                    "a particle beam with a finite extent in t. "
                     "Please set the CSR option to false."
                 );
                 throw std::runtime_error(error_msg);

@@ -196,7 +196,10 @@ def test_impactx_noparticles():
     sim.lattice.append(elements.Drift(ds=0.5))
 
     with pytest.raises(
-        RuntimeError, match="No particles found. Cannot run evolve without a beam."
+        RuntimeError,
+        match="No particles found. "
+        "Cannot track particles without an initialized beam. "
+        "Did you forget to call sim.add_particles ?",
     ):
         sim.track_particles()
 

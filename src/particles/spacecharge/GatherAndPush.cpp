@@ -42,8 +42,8 @@ namespace impactx::particles::spacecharge
         int num_bins = 1;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("num_longitudinal_bins", num_bins);
-        amrex::Gpu::DeviceVector<amrex::Real> beam_profile(num_bins + 1, 0.0);
-        amrex::Gpu::DeviceVector<amrex::Real> beam_profile_slope(num_bins, 0.0);
+        amrex::Gpu::DeviceVector<amrex::Real> charge_distribution(num_bins + 1, 0.0);
+        amrex::Gpu::DeviceVector<amrex::Real> charge_distribution_slope(num_bins, 0.0);
         amrex::Real Qb_abs = 0.0;
 
         bool apply_longitudinal_kick = false;
@@ -58,12 +58,14 @@ namespace impactx::particles::spacecharge
         if (space_charge == SpaceChargeAlgo::True_2p5D) {
 
             pp_algo.queryAdd("apply_longitudinal_kick", apply_longitudinal_kick);
-            beam_profile = Deposit1D( pc, bin_min, bin_max, num_bins);
+            charge_distribution = Deposit1D( pc, bin_min, bin_max, num_bins);
             bool const GetNumberDensity = true;
-            impactx::particles::wakefields::DerivativeCharge1D(beam_profile, beam_profile_slope, bin_size, GetNumberDensity);
-            Qb_abs = bin_size * std::accumulate(beam_profile.begin(), beam_profile.end(), 0.0_rt);
-
+            impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, charge_distribution_slope, bin_size, GetNumberDensity);
+            Qb_abs = bin_size * std::accumulate(charge_distribution.begin(), charge_distribution.end(), 0.0_rt);
         }
+
+        amrex::Real const * const beam_profile = charge_distribution.data();
+        amrex::Real const * const beam_profile_slope = charge_distribution_slope.data();
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();

@@ -342,6 +342,29 @@ void init_ImpactX (py::module& m)
             },
             "Initial region for computing the integrals (default: ``0.01``)."
         )
+        .def_property("space_charge_num_longitudinal_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "num_longitudinal_bins");
+            },
+            [](ImpactX & /* ix */, int const num_longitudinal_bins) {
+                if (num_longitudinal_bins < 1) {
+                    throw std::runtime_error("space_charge_num_longitudinal_bins must be strictly positive");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("num_longitudinal_bins", num_longitudinal_bins);
+            },
+            "Number of longitudinal bins for 2.5D space charge calculation (default: ``101``)."
+        )
+        .def_property("apply_longitudinal_kick",
+             [](ImpactX & /* ix */) {  
+                 return detail::get_or_throw<bool>("algo.space_charge", "enable");
+             },
+             [](ImpactX & /* ix */, bool const enable) {
+                 amrex::ParmParse pp_algo("algo.space_charge");
+                 pp_algo.add("enable", enable);
+             },
+             "Enable or disable longitudinal space charge kick in 2.5D space charge solver (default: enabled).\n"
+         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<std::string>("algo", "poisson_solver");

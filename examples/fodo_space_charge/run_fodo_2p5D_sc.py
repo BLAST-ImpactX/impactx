@@ -11,8 +11,23 @@ from impactx import ImpactX, distribution, elements
 sim = ImpactX()
 
 # set numerical parameters and IO control
+sim.max_level = 0
+sim.n_cell = [32, 32, 1]
+sim.blocking_factor_x = [16]
+sim.blocking_factor_y = [16]
+sim.blocking_factor_z = [1]
+
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "2p5D"
+sim.poisson_solver = "fft"
+sim.dynamic_size = True
+sim.prob_relative = [1.1]
+
+# special parameters for the 2.5D space charge solver
+sim.space_charge_num_longitudinal_bins = 100
+sim.space_charge_apply_longitudinal_kick = False
+
+# beam diagnostics
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh

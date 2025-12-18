@@ -356,7 +356,7 @@ void init_ImpactX (py::module& m)
             "Number of longitudinal bins for 2.5D space charge calculation (default: ``101``)."
         )
         .def_property("apply_longitudinal_kick",
-             [](ImpactX & /* ix */) {  
+             [](ImpactX & /* ix */) {
                  return detail::get_or_throw<bool>("algo.space_charge", "enable");
              },
              [](ImpactX & /* ix */, bool const enable) {

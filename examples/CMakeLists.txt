@@ -1831,6 +1831,21 @@ add_impactx_test(FODO.2p5d.sc.py
     OFF  # no plot script yet
 )
 
+# FODO cell with 2.5D space charge (matched KV beam) #############
+#
+add_impactx_test(FODO.2p5d-KV.sc
+    examples/fodo_space_charge/input_fodo_2p5D_KV_sc.in
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_2p5D_KV_sc.py
+    OFF  # no plot script yet
+)   
+add_impactx_test(FODO.2p5d-KV.sc.py
+    examples/fodo_space_charge/run_fodo_2p5D_KV_sc.py
+    ON   # ImpactX MPI-parallel
+    examples/fodo_space_charge/analysis_fodo_2p5D_KV_sc.py
+    OFF  # no plot script yet
+)    
+
 # Spin Sampling from a vMF Distribution ######################
 # without space charge
 add_impactx_test(distgen-spinvmf

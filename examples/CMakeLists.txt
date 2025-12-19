@@ -1838,13 +1838,13 @@ add_impactx_test(FODO.2p5d-KV.sc
     ON   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_2p5D_KV_sc.py
     OFF  # no plot script yet
-)   
+)
 add_impactx_test(FODO.2p5d-KV.sc.py
     examples/fodo_space_charge/run_fodo_2p5D_KV_sc.py
     ON   # ImpactX MPI-parallel
     examples/fodo_space_charge/analysis_fodo_2p5D_KV_sc.py
     OFF  # no plot script yet
-)    
+)
 
 # Spin Sampling from a vMF Distribution ######################
 # without space charge

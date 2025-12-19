@@ -51,7 +51,7 @@ drift3.ds = 0.25
 algo.particle_shape = 2
 algo.space_charge = 2p5D
 algo.space_charge.num_longitudinal_bins = 100
-algo.space_charge.apply_longitudinal_kick = false
+algo.space_charge.apply_longitudinal_kick = true
 algo.poisson_solver = "fft"
 
 amr.n_cell = 32 32 1

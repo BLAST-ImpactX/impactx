@@ -99,9 +99,13 @@ Collective Effects & Overall Simulation Parameters
 
         These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
 
-   .. py:property:: space_charge_z_bins
+   .. py:property:: space_charge_num_longitudinal_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``129``).
+      Number of bins for longitudinal charge density deposition (default: ``1``).
+
+   .. py:property:: space_charge_apply_longitudinal_kick
+
+      Enable or disable the longitudinal space charge kick (default: ``false``).
 
    .. py:property:: poisson_solver
 

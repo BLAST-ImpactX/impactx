@@ -25,7 +25,7 @@ sim.prob_relative = [1.1]
 
 # special parameters for the 2.5D space charge solver
 sim.space_charge_num_longitudinal_bins = 100
-sim.space_charge_apply_longitudinal_kick = False
+sim.space_charge_apply_longitudinal_kick = True
 
 # beam diagnostics
 sim.slice_step_diagnostics = True

@@ -962,11 +962,15 @@ longitudinal line density determined by charge deposition (2.5D model).  Longitu
 
     This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
 
-    This model supports the following sub-option:
+    This model supports the following sub-options:
 
-    * ``algo.space_charge.charge_z_bins`` (``int``, default: ``129``)
+    * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``1``)
 
-      Number of bins for longitudinal line density deposition.
+      The number of bins for longitudinal line density deposition.
+
+    * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``false``)
+
+      Enable or disable the longitudinal space charge kick.
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 

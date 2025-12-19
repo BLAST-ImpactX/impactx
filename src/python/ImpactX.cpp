@@ -355,13 +355,13 @@ void init_ImpactX (py::module& m)
             },
             "Number of longitudinal bins for 2.5D space charge calculation (default: ``101``)."
         )
-        .def_property("apply_longitudinal_kick",
+        .def_property("space_charge_apply_longitudinal_kick",
              [](ImpactX & /* ix */) {
-                 return detail::get_or_throw<bool>("algo.space_charge", "enable");
+                 return detail::get_or_throw<bool>("algo.space_charge", "apply_longitudinal_kick");
              },
-             [](ImpactX & /* ix */, bool const enable) {
+             [](ImpactX & /* ix */, bool const apply_longitudinal_kick) {
                  amrex::ParmParse pp_algo("algo.space_charge");
-                 pp_algo.add("enable", enable);
+                 pp_algo.add("apply_longitudinal_kick", apply_longitudinal_kick);
              },
              "Enable or disable longitudinal space charge kick in 2.5D space charge solver (default: enabled).\n"
          )

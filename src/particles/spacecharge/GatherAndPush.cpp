@@ -26,6 +26,7 @@ namespace impactx::particles::spacecharge
     void GatherAndPush (
         ImpactXParticleContainer & pc,
         std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
+        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal const slice_ds
     )
@@ -90,6 +91,9 @@ namespace impactx::particles::spacecharge
                 auto const scf_arr_y = space_charge_field.at(lev).at("y")[pti].array();
                 auto const scf_arr_z = space_charge_field.at(lev).at("z")[pti].array();
 
+                // get the device pointer-wrapper Array4 for 3D potential access
+                auto const phi_arr = space_charge_potential.at(lev)[pti].const_array();
+
                 // physical constants and reference quantities
                 amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
                 amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
@@ -148,7 +152,7 @@ namespace impactx::particles::spacecharge
                 if (space_charge == SpaceChargeAlgo::True_2p5D) {
                     // flatten 3rd dimension
                     auto prob_lo_2D = gm.ProbLoArray();
-                    amrex::Array4<const amrex::Real> const phi_arr;
+                  //  amrex::Array4<const amrex::Real> const phi_arr;
                     prob_lo_2D[2] = 0.0_rt;
 
                     // group together constants for the momentum push
@@ -199,7 +203,7 @@ namespace impactx::particles::spacecharge
                        // push momentum
                        px += field_interp[0] * Fxy * push_consts * dr[2] / beta;
                        py += field_interp[1] * Fxy * push_consts * dr[2] / beta;
-                       pz += potential_interp * Fz * push_consts * dr[2] / beta;
+                       pz -= potential_interp * Fz * push_consts * dr[2] / beta;
 
                     // push position is done in the lattice elements
                     });

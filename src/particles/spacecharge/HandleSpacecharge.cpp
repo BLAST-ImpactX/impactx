@@ -100,6 +100,7 @@ namespace impactx::particles::spacecharge
             spacecharge::GatherAndPush(
                 *amr_data->track_particles.m_particle_container,
                 amr_data->track_particles.m_space_charge_field,
+                amr_data->track_particles.m_phi,
                 amr_data->Geom(),
                 slice_ds
             );

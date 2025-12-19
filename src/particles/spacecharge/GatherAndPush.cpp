@@ -197,9 +197,9 @@ namespace impactx::particles::spacecharge
                        amrex::ParticleReal const Fz = (Qb_abs==0.0) ? 0.0 : beam_profile_slope[idx] * charge_abs / Qb_abs;
 
                        // push momentum
-                       px += field_interp[0] * Fxy * push_consts * dr[2];
-                       py += field_interp[1] * Fxy * push_consts * dr[2];
-                       pz += potential_interp * Fz * push_consts * dr[2];
+                       px += field_interp[0] * Fxy * push_consts * dr[2] / beta;
+                       py += field_interp[1] * Fxy * push_consts * dr[2] / beta;
+                       pz += potential_interp * Fz * push_consts * dr[2] / beta;
 
                     // push position is done in the lattice elements
                     });

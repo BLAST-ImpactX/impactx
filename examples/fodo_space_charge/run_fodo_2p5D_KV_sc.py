@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements, twiss
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -41,7 +41,7 @@ ref = sim.particle_container().ref_particle()
 ref.set_charge_qe(1.0).set_mass_MeV(938.2720894).set_kin_energy_MeV(kin_energy_MeV)
 
 #  bunch charge
-bunch_charge_C = 1.0e-12 
+bunch_charge_C = 1.0e-12
 npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   particle bunch
@@ -53,7 +53,7 @@ distr = distribution.KVdist(
     lambdaPy=1.1641443538999e-3,
     lambdaPt=0.0,
     muxpx=0.926836840601929,
-    muypy=-0.926836840601929,  
+    muypy=-0.926836840601929,
     mutpt=0.0,
 )
 sim.add_particles(bunch_charge_C, distr, npart)

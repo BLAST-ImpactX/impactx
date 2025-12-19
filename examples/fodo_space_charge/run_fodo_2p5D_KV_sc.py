@@ -24,7 +24,7 @@ sim.dynamic_size = True
 sim.prob_relative = [1.1]
 
 # special parameters for the 2.5D space charge solver
-sim.space_charge_num_longitudinal_bins = 100
+sim.space_charge_num_longitudinal_bins = 2
 sim.space_charge_apply_longitudinal_kick = False
 
 # beam diagnostics
@@ -40,25 +40,23 @@ kin_energy_MeV = 6.7  # reference energy
 ref = sim.particle_container().ref_particle()
 ref.set_charge_qe(1.0).set_mass_MeV(938.2720894).set_kin_energy_MeV(kin_energy_MeV)
 
-#  beam current in A
-beam_current_A = 0.5
+#  bunch charge
+bunch_charge_C = 1.0e-12 
 npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   particle bunch
 distr = distribution.KVdist(
-    **twiss(
-        beta_x=0.737881,
-        beta_y=0.737881,
-        beta_t=0.5,
-        emitt_x=1.0e-6,
-        emitt_y=1.0e-6,
-        emitt_t=1.0e-12,
-        alpha_x=2.4685083,
-        alpha_y=-2.4685083,
-        alpha_t=0.0,
-    )
+    lambdaX=3.22523868393e-4,
+    lambdaY=3.22523868393e-4,
+    lambdaT=1.73205080757e-4,
+    lambdaPx=1.1641443538999e-3,
+    lambdaPy=1.1641443538999e-3,
+    lambdaPt=0.0,
+    muxpx=0.926836840601929,
+    muypy=-0.926836840601929,  
+    mutpt=0.0,
 )
-sim.add_particles(beam_current_A, distr, npart)
+sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")

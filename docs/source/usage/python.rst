@@ -769,6 +769,16 @@ This module provides elements and methods for the accelerator lattice.
       :return: True if at least one element of the specified kind exists
       :rtype: bool
 
+   .. py::method:: transfer_map(ref, order="linear", fallback_identity_map=False)
+
+      Calculate the transfer map of the elements in the list.
+
+      :param ref: A reference particle.
+      :param order: So far, only the calculation of linear transfer maps are supported in this function.
+      :param fallback_identity_map: For elements with an undefined transfer map in lattice, assume the identity matrix.
+      :return: The transfer map map of all elements in the list.
+      :rtype: Map6x6
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.
@@ -777,7 +787,6 @@ This module provides elements and methods for the accelerator lattice.
 
       Either populates the matplotlib axes in ax or creates a new axes containing the plot.
 
-      :param self: The KnownElementsList class in ImpactX
       :param ref: A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.

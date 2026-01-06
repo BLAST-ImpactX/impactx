@@ -213,7 +213,7 @@ We run the following script to analyze correctness:
 .. _examples-fodo-2p5d-sc:
 
 FODO Cell with 2.5D Space Charge using FFT IGF Poisson Solver
-=================================================================
+=============================================================
 
 This example illustrates a 1 nC electron beam with a kinetic energy of 100 MeV in a FODO cell, with 2.5D space charge included.  The problem setup is identical
 to ``examples-fodo-2p5dGaussian-sc`` above, except for the choice of space charge model.
@@ -264,7 +264,7 @@ We run the following script to analyze correctness:
 .. _examples-fodo-2p5d-kv-sc:
 
 FODO Cell with 2.5D Space Charge using FFT IGF Poisson Solver (Matched)
-========================================================================
+=======================================================================
 
 This example illustrates an 0.5 A proton beam with a kinetic energy of 6.7 MeV in a FODO cell, with 2.5D space charge included.  A KV beam distribution is used.  The problem setup is identical
 to ``examples-fodo-2d-sc`` above, except for the following features:

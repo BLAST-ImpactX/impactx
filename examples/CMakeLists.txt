@@ -1831,7 +1831,7 @@ add_impactx_test(distgen-spinvmf.py
     OFF  # no plot script yet
 )
 
-# Spin Depolarization in a Quadrupole ######################  
+# Spin Depolarization in a Quadrupole ######################
 # without space charge
 add_impactx_test(quad-spin
     examples/spin_tracking/input_quad_spin.in

@@ -353,7 +353,7 @@ void init_ImpactX (py::module& m)
                 amrex::ParmParse pp_algo("algo.space_charge");
                 pp_algo.add("num_longitudinal_bins", num_longitudinal_bins);
             },
-            "Number of longitudinal bins for 2.5D space charge calculation (default: ``101``)."
+            "Number of longitudinal bins for 2.5D space charge calculation (default: ``100``)."
         )
         .def_property("space_charge_apply_longitudinal_kick",
              [](ImpactX & /* ix */) {

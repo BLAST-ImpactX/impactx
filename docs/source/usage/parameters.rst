@@ -964,11 +964,11 @@ longitudinal line density determined by charge deposition (2.5D model).  Longitu
 
     This model supports the following sub-options:
 
-    * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``1``)
+    * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``100``)
 
       The number of bins for longitudinal line density deposition.
 
-    * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``false``)
+    * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``true``)
 
       Enable or disable the longitudinal space charge kick.
 

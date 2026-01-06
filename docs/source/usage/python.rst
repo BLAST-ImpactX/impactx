@@ -101,11 +101,11 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_num_longitudinal_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``1``).
+      Number of bins for longitudinal charge density deposition (default: ``100``).
 
    .. py:property:: space_charge_apply_longitudinal_kick
 
-      Enable or disable the longitudinal space charge kick (default: ``false``).
+      Enable or disable the longitudinal space charge kick (default: ``True``).
 
    .. py:property:: poisson_solver
 

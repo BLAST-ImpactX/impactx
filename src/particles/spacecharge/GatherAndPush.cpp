@@ -40,14 +40,14 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
 
         // Deposit 1D charge density in cases where it is required.
-        int num_bins = 1;
+        int num_bins = 100;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("num_longitudinal_bins", num_bins);
         amrex::Gpu::DeviceVector<amrex::Real> charge_distribution(num_bins + 1, 0.0);
         amrex::Gpu::DeviceVector<amrex::Real> charge_distribution_slope(num_bins, 0.0);
         amrex::Real Qb_abs = 0.0;
 
-        bool apply_longitudinal_kick = false;
+        bool apply_longitudinal_kick = true;
 
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
             pc.MinAndMaxPositions();

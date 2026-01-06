@@ -196,7 +196,8 @@ Collective Effects & Overall Simulation Parameters
 
       Enable (``True``) or disable (``False``) particle spin tracking (default: ``False``).
 
-      Whether to track particle spin.  This feature is not yet supported.
+      Whether to track particle spin.
+      Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
 
    .. py:property:: diagnostics
 

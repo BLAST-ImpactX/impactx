@@ -74,6 +74,10 @@ namespace impactx
         {
             return SpaceChargeAlgo::True_2D;
         }
+        else if (space_charge == "2p5D")
+        {
+            return SpaceChargeAlgo::True_2p5D;
+        }
         else
         {
             throw std::runtime_error("algo.space_charge = " + space_charge + " is not a valid option");

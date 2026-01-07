@@ -10,19 +10,23 @@
 #include "GatherAndPush.H"
 
 #include "initialization/Algorithms.H"
+#include "particles/wakefields/ChargeBinning.H"
+#include "particles/spacecharge/Deposit1D.H"
 
 #include <ablastr/particles/NodalFieldGather.H>
 
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>       // for Real
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
-
+#include <AMReX_GpuContainers.H>
+#include <AMReX_ParmParse.H>
 
 namespace impactx::particles::spacecharge
 {
     void GatherAndPush (
         ImpactXParticleContainer & pc,
         std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
+        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal const slice_ds
     )
@@ -34,6 +38,35 @@ namespace impactx::particles::spacecharge
         auto space_charge = get_space_charge_algo();
 
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
+
+        // Deposit 1D charge density in cases where it is required.
+        int num_bins = 100;
+        amrex::ParmParse pp_algo("algo.space_charge");
+        pp_algo.queryAddWithParser("num_longitudinal_bins", num_bins);
+        amrex::Gpu::DeviceVector<amrex::Real> charge_distribution(num_bins + 1, 0.0);
+        amrex::Gpu::DeviceVector<amrex::Real> charge_distribution_slope(num_bins, 0.0);
+        amrex::Real Qb_abs = 0.0;
+
+        bool apply_longitudinal_kick = true;
+
+        [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
+            pc.MinAndMaxPositions();
+
+        amrex::Real bin_min = t_min;
+        amrex::Real bin_max = t_max;
+        amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);
+
+        if (space_charge == SpaceChargeAlgo::True_2p5D) {
+
+            pp_algo.queryAdd("apply_longitudinal_kick", apply_longitudinal_kick);
+            charge_distribution = Deposit1D( pc, bin_min, bin_max, num_bins);
+            bool const GetNumberDensity = true;
+            impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, charge_distribution_slope, bin_size, GetNumberDensity);
+            Qb_abs = bin_size * std::accumulate(charge_distribution.begin(), charge_distribution.end(), 0.0_rt);
+        }
+
+        amrex::Real const * const beam_profile = charge_distribution.data();
+        amrex::Real const * const beam_profile_slope = charge_distribution_slope.data();
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -57,6 +90,9 @@ namespace impactx::particles::spacecharge
                 auto const scf_arr_x = space_charge_field.at(lev).at("x")[pti].array();
                 auto const scf_arr_y = space_charge_field.at(lev).at("y")[pti].array();
                 auto const scf_arr_z = space_charge_field.at(lev).at("z")[pti].array();
+
+                // get the device pointer-wrapper Array4 for 3D potential access
+                auto const phi_arr = space_charge_potential.at(lev)[pti].const_array();
 
                 // physical constants and reference quantities
                 amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
@@ -87,8 +123,6 @@ namespace impactx::particles::spacecharge
                     auto prob_lo_2D = gm.ProbLoArray();
                     prob_lo_2D[2] = 0.0_rt;
 
-                    // TODO: add in z-dependent scaling by current?
-
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
                         amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
@@ -111,9 +145,67 @@ namespace impactx::particles::spacecharge
                         px += field_interp[0] * push_consts * dr[2] / (beta * c0_SI);
                         py += field_interp[1] * push_consts * dr[2] / (beta * c0_SI);
                         pz += 0.0_rt;
-                        //pz += field_interp[2] * push_consts;  // TODO: non-zero in 2.5D, but we will add a toggle to turn it off there, too
 
                         // push position is done in the lattice elements
+                    });
+                }
+                if (space_charge == SpaceChargeAlgo::True_2p5D) {
+                    // flatten 3rd dimension
+                    auto prob_lo_2D = gm.ProbLoArray();
+                  //  amrex::Array4<const amrex::Real> const phi_arr;
+                    prob_lo_2D[2] = 0.0_rt;
+
+                    // group together constants for the momentum push
+                    amrex::ParticleReal const charge_abs = std::abs(charge);
+
+                    amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
+                        // access SoA Real data
+                        amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
+                        amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
+                        amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
+                        amrex::ParticleReal z_flat = 0.0_prt;  // flatten 3rd dimension
+                        amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
+                        amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
+                        amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+
+                        // force gather
+                        amrex::GpuArray<amrex::Real, 3> const field_interp =
+                            ablastr::particles::doGatherVectorFieldNodal<2>(
+                                x, y, z_flat,
+                                scf_arr_x, scf_arr_y, scf_arr_z,
+                                invdr,
+                                prob_lo_2D
+                            );
+
+                        // potential gather
+                        amrex::Real potential_interp = 0.0;
+                        if (apply_longitudinal_kick) {
+                           potential_interp =
+                               ablastr::particles::doGatherScalarFieldNodal<2>(
+                                  x, y, z_flat,
+                                   phi_arr,
+                                   invdr,
+                                   prob_lo_2D
+                               );
+                       }
+
+                       // Update momentae with the 2.5D SC force
+                       int const idx = static_cast<int>((z - bin_min) / bin_size);  // Find index position along z
+                       #if (defined(AMREX_DEBUG) || defined(DEBUG)) && !defined(AMREX_USE_GPU)
+                       if (idx < 0 || idx >= num_bins)
+                       {
+                            std::cerr << "Warning: Index out of range for 2.5D SC: " << idx << std::endl;
+                       }
+                       #endif
+                       amrex::ParticleReal const Fxy = (Qb_abs==0.0) ? 0.0 : beam_profile[idx] / Qb_abs;
+                       amrex::ParticleReal const Fz = (Qb_abs==0.0) ? 0.0 : beam_profile_slope[idx] * charge_abs / Qb_abs;
+
+                       // push momentum
+                       px += field_interp[0] * Fxy * push_consts * dr[2] / beta;
+                       py += field_interp[1] * Fxy * push_consts * dr[2] / beta;
+                       pz -= potential_interp * Fz * push_consts * dr[2] / beta;
+
+                    // push position is done in the lattice elements
                     });
                 }
                 if (space_charge == SpaceChargeAlgo::True_3D) {

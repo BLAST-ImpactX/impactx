@@ -31,12 +31,14 @@ namespace impactx::particles::spacecharge
      *
      * @param[inout] pc container of the particles that deposited rho
      * @param[in] space_charge_field space charge force component in x,y,z per level
+     * @param[in] space_charge_potential space charge potential in x,y,z per level
      * @param[in] geom geometry object
      * @param[in] slice_ds segment length in meters
      */
     void GatherAndPush (
         ImpactXParticleContainer & pc,
         std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
+        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal slice_ds
     );

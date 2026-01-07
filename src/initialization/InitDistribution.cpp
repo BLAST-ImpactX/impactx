@@ -637,7 +637,7 @@ namespace impactx
 
             amrex::ParticleReal intensity = 0.0; // bunch charge (C) for 3D model, beam current (A) for 2D model
 
-            if (space_charge == SpaceChargeAlgo::True_3D)
+            if (space_charge == SpaceChargeAlgo::True_3D || space_charge == SpaceChargeAlgo::True_2p5D)
             {
                 pp_dist.get("charge", intensity);
                 amr_data->track_envelope.m_env = impactx::initialization::create_envelope(dist, intensity);

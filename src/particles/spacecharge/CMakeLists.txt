@@ -4,6 +4,7 @@ target_sources(lib
     Gauss3dPush.cpp
     Gauss2p5dPush.cpp
     GatherAndPush.cpp
+    Deposit1D.cpp
     HandleSpacecharge.cpp
     PoissonSolve.cpp
 )

@@ -56,7 +56,7 @@ namespace impactx::particles::spacecharge
                 auto scf_arr_y = space_charge_field[lev]["y"][mfi].array();
                 auto scf_arr_z = space_charge_field[lev]["z"][mfi].array();
 
-                if (space_charge == SpaceChargeAlgo::True_2D) {
+                if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
                     AMREX_ALWAYS_ASSERT_WITH_MESSAGE(bx.size()[2] == 1,
                                                      "2D space charge requires exactly 1 slice in z");
                     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int ) noexcept {

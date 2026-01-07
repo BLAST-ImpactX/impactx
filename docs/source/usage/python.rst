@@ -75,6 +75,7 @@ Collective Effects & Overall Simulation Parameters
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
       * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+
       * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
         These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
@@ -92,6 +93,19 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: space_charge_gauss_charge_z_bins
 
       Number of bins for longitudinal charge density deposition (default: ``129``).
+
+      * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
+        longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
+
+        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+
+   .. py:property:: space_charge_num_longitudinal_bins
+
+      Number of bins for longitudinal charge density deposition (default: ``100``).
+
+   .. py:property:: space_charge_apply_longitudinal_kick
+
+      Enable or disable the longitudinal space charge kick (default: ``True``).
 
    .. py:property:: poisson_solver
 

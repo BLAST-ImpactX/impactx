@@ -53,7 +53,13 @@ distr = distribution.Triangle(
         alpha_t=0.0,
     )
 )
-sim.add_particles(bunch_charge_C, distr, npart)
+spin = distribution.SpinvMF(
+    0.7,
+    0.0,
+    0.0,
+)
+
+sim.add_particles(bunch_charge_C, distr, npart, spin)
 
 # design the accelerator lattice
 ns = 1  # number of slices per ds in the element

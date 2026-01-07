@@ -462,14 +462,21 @@ class ImpactX:
     @property
     def space_charge(self) -> str:
         """
-        The model to be used when calculating space charge effects. Either off, 2D, or 3D.
+        The model to be used when calculating space charge effects. Either off, 2D, 3D, Gauss3D, Gauss2p5D, or 2p5D.
         """
     @space_charge.setter
     def space_charge(self, arg1: bool | str) -> None: ...
     @property
+    def space_charge_apply_longitudinal_kick(self) -> bool:
+        """
+        Enable or disable longitudinal space charge kick in 2.5D space charge solver (default: enabled).
+        """
+    @space_charge_apply_longitudinal_kick.setter
+    def space_charge_apply_longitudinal_kick(self, arg1: bool) -> None: ...
+    @property
     def space_charge_gauss_charge_z_bins(self) -> int:
         """
-        Number of steps for computing the integrals (default: ``129``).
+        Number of longitudinal bins for computing the linear charge density (default: ``129``).
         """
     @space_charge_gauss_charge_z_bins.setter
     def space_charge_gauss_charge_z_bins(self, arg1: typing.SupportsInt) -> None: ...
@@ -487,6 +494,13 @@ class ImpactX:
         """
     @space_charge_gauss_taylor_delta.setter
     def space_charge_gauss_taylor_delta(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def space_charge_num_longitudinal_bins(self) -> int:
+        """
+        Number of longitudinal bins for 2.5D space charge calculation (default: ``100``).
+        """
+    @space_charge_num_longitudinal_bins.setter
+    def space_charge_num_longitudinal_bins(self, arg1: typing.SupportsInt) -> None: ...
     @property
     def tiny_profiler(self) -> bool:
         """

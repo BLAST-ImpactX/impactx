@@ -58,6 +58,6 @@ def test_lattice_linear_map():
     with pytest.raises(RuntimeError):
         lattice.transfer_map(ref)
 
-    # Now the user explicitly assumes that undefined maps are identify maps
+    # Now the user explicitly assumes that undefined maps are identity maps
     R = lattice.transfer_map(ref, fallback_identity_map=True)
     assert np.allclose(R.to_numpy(), R_expected)

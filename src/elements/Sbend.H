@@ -366,10 +366,10 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
-           
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
-               
+
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
             T_Real lambday = 0_prt;
@@ -383,7 +383,7 @@ namespace impactx::elements
 
             // compute trigonometric quantities
             amrex::ParticleReal const h = 1.0_prt/m_rc;
-            amrex::ParticleReal const theta = slice_ds * h;  
+            amrex::ParticleReal const theta = slice_ds * h;
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
             auto const [sin_Gtheta, cos_Gtheta] = amrex::Math::sincos(G*gamma*theta);
 
@@ -399,7 +399,7 @@ namespace impactx::elements
             lambdax = 0.0_prt;
             lambday = -theta*G*gamma;
             lambdaz = 0.0_prt;
-            
+
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 

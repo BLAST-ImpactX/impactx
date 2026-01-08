@@ -334,6 +334,77 @@ namespace impactx::elements
             return R;
         }
 
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+           
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+               
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // access reference particle values
+            amrex::ParticleReal const beta = refpart.beta();
+            amrex::ParticleReal const gamma = refpart.gamma();
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const gyro_const = 1_prt + G * gamma;
+
+            // compute trigonometric quantities
+            amrex::ParticleReal const h = 1.0_prt/m_rc;
+            amrex::ParticleReal const theta = slice_ds * h;  
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            auto const [sin_Gtheta, cos_Gtheta] = amrex::Math::sincos(G*gamma*theta);
+
+            // axis-angle vector components generating the remainder spin map
+            lambdax = py * (gamma - 1.0_prt)/gamma * (1.0_prt - cos_Gtheta);
+            lambday = -gyro_const * (px*(1.0_prt - cos_theta) + (pt/beta + h*x)*sin_theta) + pt*G*beta*gamma*theta;
+            lambdaz = py * (gamma - 1.0_prt)/gamma * sin_Gtheta;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // axis-angle vector components generating the reference spin map
+            lambdax = 0.0_prt;
+            lambday = -theta*G*gamma;
+            lambdaz = 0.0_prt;
+            
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+        }
+
         amrex::ParticleReal m_rc; //! bend radius in m
 
       private:

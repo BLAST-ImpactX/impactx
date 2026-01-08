@@ -774,9 +774,9 @@ This module provides elements and methods for the accelerator lattice.
       Calculate the transfer map of the elements in the list.
 
       :param ref: A reference particle.
-      :param order: So far, only the calculation of linear transfer maps are supported in this function.
-      :param fallback_identity_map: For elements with an undefined transfer map in lattice, assume the identity matrix.
-      :return: The transfer map map of all elements in the list.
+      :param order: So far, only the calculation of linear transfer maps is supported.
+      :param fallback_identity_map: For elements with an undefined transfer map in the lattice, assume the identity matrix.
+      :return: The transfer map of all elements in the list.
       :rtype: Map6x6
 
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)

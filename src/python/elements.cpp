@@ -2620,7 +2620,7 @@ void init_elements(py::module& m)
             "transfer_map",
             [](
                 KnownElementsList &v,
-                RefPart const & ref,
+                RefPart ref, // note: intentional copy
                 std::string order,
                 bool fallback_identity_map
             )
@@ -2628,9 +2628,17 @@ void init_elements(py::module& m)
                 if (order != "linear") {
                     throw std::runtime_error("So far, only the calculation of linear transfer maps are supported in this function.");
                 }
-                Map6x6 result = Map6x6::Identity();
-                for (auto & el_v : v) {
-                    std::visit([&result, &ref, &fallback_identity_map](auto const & el) {
+                Map6x6 linear_transfer_map = Map6x6::Identity();
+                for (auto & el_v : v)
+                {
+                    // advance reference particle
+                    std::visit([&ref](auto && el) {
+                        el(ref);
+                    }, el_v);
+
+                    // extract element transport map, handle fallback
+                    Map6x6 element_transport_map = Map6x6::Identity();
+                    std::visit([&ref, &fallback_identity_map, &element_transport_map](auto const & el) {
                         using Element = std::decay_t<decltype(el)>;
                         std::string not_impl_msg = "Undefined transfer map in lattice for element ";
                         if (el.has_name()) not_impl_msg += el.name() + " ";
@@ -2638,8 +2646,8 @@ void init_elements(py::module& m)
 
                         if constexpr (std::is_base_of_v<elements::mixin::LinearTransport<Element>, Element>) {
                             try {
-                                result = result * el.transport_map(ref);
-                            } catch (std::exception const & e) {
+                                element_transport_map = el.transport_map(ref);
+                            } catch (std::exception const &) {
                                 if (!fallback_identity_map) {
                                     throw std::runtime_error(not_impl_msg);
                                 }
@@ -2650,8 +2658,13 @@ void init_elements(py::module& m)
                             }
                         }
                     }, el_v);
+
+                    // advance linear transfer map
+                    linear_transfer_map = linear_transfer_map * element_transport_map;
+                    // TODO: shorthand needs https://github.com/AMReX-Codes/amrex/pull/4880 from AMReX 26.02+
+                    // result *= element_transport_map;
                 }
-                return result;
+                return linear_transfer_map;
             },
             py::arg("ref"),
             py::arg("order") = "linear",

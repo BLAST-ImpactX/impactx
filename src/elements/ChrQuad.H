@@ -288,6 +288,95 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // access reference particle values
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal beta_ref = refpart.beta();
+            amrex::ParticleReal gamma_ref = refpart.gamma();
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // compute particle momentum deviation delta + 1
+            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/beta_ref + powi<2>(pt));
+            T_Real const delta = delta1 - 1_prt;
+
+            // compute particle relativistic gamma
+            T_Real const gamma = gamma_ref * (1_prt - beta_ref*gamma_ref*pt);
+            T_Real const gyro_const = 1_prt + G * gamma;            
+
+            // compute phase advance per unit length in s (in rad/m)
+            // chromatic dependence on delta is included
+            T_Real const omega = sqrt(abs(m_g)/delta1);
+
+            // compute trigonometric quantities
+            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*slice_ds);
+            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
+            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
+
+            if (m_g > 0.0_prt)
+            {
+
+                // horizontally focusing quad case
+                lambdax = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+                lambday = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+
+            } else if (m_g < 0.0_prt)
+            {
+
+                // horizontally defocusing quad case
+                lambdax = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+                lambday = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+
+            } else {
+                // treat as a drift
+            }
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+        }
+
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 

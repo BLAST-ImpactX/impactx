@@ -209,7 +209,7 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-            
+
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -236,7 +236,7 @@ namespace impactx::elements
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
             [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,  
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
             [[maybe_unused]] T_Real & AMREX_RESTRICT sz
         ) const
         {

@@ -342,7 +342,7 @@ namespace impactx::elements
 
             // compute particle relativistic gamma
             T_Real const gamma = gamma_ref * (1_prt - beta_ref*gamma_ref*pt);
-            T_Real const gyro_const = 1_prt + G * gamma;            
+            T_Real const gyro_const = 1_prt + G * gamma;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included

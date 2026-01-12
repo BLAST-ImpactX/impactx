@@ -1,0 +1,50 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 99.48900104
+beam.charge = 25.0e-12
+beam.particle = electron
+beam.distribution = triangle_from_twiss
+beam.alphaX = 0.0
+beam.alphaY = 0.0
+beam.alphaT = 0.0
+beam.betaX = 0.002
+beam.betaY = beam.betaX
+beam.betaT = 0.00004
+beam.emittX = 7.626114e-9
+beam.emittY = beam.emittX
+beam.emittT = 2.5e-08
+beam.polarization_x = 0.7
+beam.polarization_y = 0.0
+beam.polarization_z = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor quad1 monitor
+lattice.nslice = 1
+
+monitor.type = beam_monitor
+monitor.name = "monitor"
+monitor.backend = h5
+
+quad1.type = quad_exact
+quad1.ds = 0.02903
+quad1.k = 207.0
+quad1.units = 1
+quad1.mapsteps = 5
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.spin = true
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

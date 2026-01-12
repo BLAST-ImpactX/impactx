@@ -50,18 +50,23 @@ namespace impactx
         constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
         constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
         constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
+        amrex::ParticleReal gyromagnetic_anomaly;  // anomalous magnetic dipole moment
         if (particle_type == "electron") {
             qe = -1.0;
             massE = m_e / MeV_inv_c2;
+            gyromagnetic_anomaly = 0.00115965218062;
         } else if (particle_type == "positron") {
             qe = 1.0;
             massE = m_e / MeV_inv_c2;
+            gyromagnetic_anomaly = 0.00115965218062;
         } else if (particle_type == "proton") {
             qe = 1.0;
             massE = m_p / MeV_inv_c2;
+            gyromagnetic_anomaly = 1.7928473446;
         } else if (particle_type == "Hminus") {
             qe = -1.0;
             massE = 939.294308;  // value used in TraceWin
+            gyromagnetic_anomaly = 1.7928473446; // this value is difficult to find, and needs to be checked
         }
         else {  // default to electron
             ablastr::warn_manager::WMRecordWarning(
@@ -71,11 +76,12 @@ namespace impactx
             );
             qe = -1.0;
             massE = m_e / MeV_inv_c2;
+            gyromagnetic_anomaly = 0.00115965218062;
         }
 
         // configure a new reference particle
         RefPart ref;
-        ref.set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy);
+        ref.set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy).set_gyromagnetic_anomaly(gyromagnetic_anomaly);
         return ref;
     }
 

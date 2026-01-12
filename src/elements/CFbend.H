@@ -316,9 +316,9 @@ namespace impactx::elements
 
             // trigonometry
             auto const [sinx, cosx] = amrex::Math::sincos(omega_x * slice_ds);
-            amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
-            amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
-            auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
+            // amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
+            // amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
+            // auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
             amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
             amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
             auto const [sinG, cosG] = amrex::Math::sincos(G * h * gamma * slice_ds);

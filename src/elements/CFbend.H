@@ -339,7 +339,7 @@ namespace impactx::elements
             // set the angle-axis generator based on the phase space variables
             lambdax = A13 * y + A14 * py;
             lambday = A21 * x + A22 * px + A26 * pt;
-            lambdaz = A33 * y + A34 * py;
+            lambdaz = A33 * y + A34 * py; 
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);

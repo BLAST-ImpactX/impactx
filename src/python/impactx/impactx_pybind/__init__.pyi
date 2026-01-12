@@ -502,6 +502,13 @@ class ImpactX:
     @space_charge_num_longitudinal_bins.setter
     def space_charge_num_longitudinal_bins(self, arg1: typing.SupportsInt) -> None: ...
     @property
+    def spin(self) -> bool:
+        """
+        Enable or disable particle spin tracking (default: disabled).
+        """
+    @spin.setter
+    def spin(self, arg1: bool) -> None: ...
+    @property
     def tiny_profiler(self) -> bool:
         """
         This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.

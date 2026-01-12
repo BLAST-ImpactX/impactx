@@ -240,7 +240,7 @@ namespace impactx::elements
             [[maybe_unused]] T_Real & AMREX_RESTRICT sz
         ) const
         {
-             // spin is unaffected
+             // spin is unaffected 
         }
 
 

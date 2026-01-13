@@ -18,6 +18,7 @@
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
 #include "mixin/thick.H"
+#include "mixin/spintransport.H"
 
 #include <ablastr/constant.H>
 
@@ -112,6 +113,7 @@ namespace RFCavityData
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "RFCavity";
@@ -337,6 +339,64 @@ namespace RFCavityData
             refpart.s = s + slice_ds;
         }
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // store the phase space variables in vector form
+            amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
+
+            // get the spin-orbit coupling matrix 
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+
+            // use phase space variables to obtain the angle-axis generator of spin rotation
+            auto const out = A * v;    
+            
+            // update the angle-axis generator
+            lambdax = out[1];
+            lambday = out[2];
+            lambdaz = out[3];
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+        }
+
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
@@ -448,10 +508,14 @@ namespace RFCavityData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
             refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
             refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
+        
+            // TODO: update spin-orbit coupling matrix here
+            refpart.spin_coupling = A;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -489,6 +553,7 @@ namespace RFCavityData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
             amrex::ParticleReal const s = tau/refpart.beta_gamma();
             amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2_prt*k);
 
@@ -501,6 +566,9 @@ namespace RFCavityData
             refpart.map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
             refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
             refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
+
+            // TODO: update spin-orbit coupling matrix here
+            refpart.spin_coupling = A;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -541,6 +609,7 @@ namespace RFCavityData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
             amrex::ParticleReal const M = E0*(ezintf-ezint)*k * std::sin(k*t+phi);
             amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2_prt*k)+M*0.5_prt;
 
@@ -552,6 +621,9 @@ namespace RFCavityData
 
             refpart.map(6,5) = M*R(5,5) + R(6,5);
             refpart.map(6,6) = M*R(5,6) + R(6,6);
+
+            // TODO: update spin-orbit coupling matrix here
+            refpart.spin_coupling = A;
         }
 
         /** Close and deallocate all data and handles.

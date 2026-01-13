@@ -380,12 +380,12 @@ namespace RFCavityData
             // store the phase space variables in vector form
             amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
 
-            // get the spin-orbit coupling matrix 
+            // get the spin-orbit coupling matrix
             amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
 
             // use phase space variables to obtain the angle-axis generator of spin rotation
-            auto const out = A * v;    
-            
+            auto const out = A * v;
+
             // update the angle-axis generator
             lambdax = out[1];
             lambday = out[2];
@@ -513,7 +513,7 @@ namespace RFCavityData
 
             refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
             refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
-        
+
             // TODO: update spin-orbit coupling matrix here
             refpart.spin_coupling = A;
         }

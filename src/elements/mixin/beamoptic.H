@@ -55,7 +55,7 @@ namespace detail
          * @param part_pt the array to the particle momentum (t)
          * @param part_idcpu the array to the particle global index
          * @param ref_part the struct containing the reference particle
-         * @param part_sx the array to the particle spin (x)  
+         * @param part_sx the array to the particle spin (x)
          * @param part_sy the array to the particle spin (y)
          * @param part_sz the array to the particle spin (z)
          */

@@ -344,6 +344,14 @@ namespace impactx::elements
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
+            // axis-angle vector components generating the reference spin map
+            lambdax = 0.0_prt;
+            lambday = -theta*G*gamma;
+            lambdaz = 0.0_prt;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
         }
 
 

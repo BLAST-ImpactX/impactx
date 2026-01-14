@@ -291,6 +291,7 @@ namespace impactx::elements
             // compute trigonometric quantities
             auto const [sin_G, cos_G] = amrex::Math::sincos(2_prt * G * theta);
 
+            // axis-angle vector components generating the remainder spin map
             lambdax = rel_const * ((2*px + m_ks*y)*sin_G - (2*py - m_ks*x)*(1-cos_G));
             lambday = rel_const * ((2*py - m_ks*x)*sin_G + (2*px + m_ks*y)*(1-cos_G));
             lambdaz = -2_prt * theta * (1_prt + G) * pt / beta;
@@ -298,6 +299,13 @@ namespace impactx::elements
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
+            // axis-angle vector components generating the reference spin map
+            lambdax = 0.0_prt;
+            lambday = 0.0_prt;
+            lambdaz = -2_prt * theta * (1_prt + G);
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
         }
 
 

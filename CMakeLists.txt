@@ -499,13 +499,6 @@ if(ImpactX_PYTHON)
             ${ImpactX_SOURCE_DIR}/src/python/impactx
             $<TARGET_FILE_DIR:pyImpactX>
     )
-
-    # copy examples into pip package, e.g., for dashboard GUI
-    add_custom_command(TARGET pyImpactX POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${ImpactX_SOURCE_DIR}/examples
-            $<TARGET_FILE_DIR:pyImpactX>/examples
-    )
 endif()
 
 

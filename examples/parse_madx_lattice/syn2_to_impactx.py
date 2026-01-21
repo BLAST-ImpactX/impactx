@@ -6,33 +6,38 @@
 # This probably has to be called after all the ImpactX initialization with
 # the reference particle.
 
+from enum import Enum
+
 import numpy as np
 import synergia
+
 import impactx
 
-from enum import Enum
 
 class Order(Enum):
     linear = 0
     chr = 1
     exact = 2
 
+
 ET = synergia.lattice.element_type
 
 nslice_by_elem_type = {
-    'drift': 1,
-    'sbend': 4,
-    'quadrupole': 8,
-    'sextupole': 1,
-    'octupole': 1,
-    'multipole': 1,
-    'rfcavity': 1}
+    "drift": 1,
+    "sbend": 4,
+    "quadrupole": 8,
+    "sextupole": 1,
+    "octupole": 1,
+    "multipole": 1,
+    "rfcavity": 1,
+}
+
 
 # linear flag if true uses linearized models
 def cnv_drift(elem, order):
     ds = elem.get_length()
     nm = elem.get_name()
-    ns = nslice_by_elem_type['drift']
+    ns = nslice_by_elem_type["drift"]
     if order == Order.exact:
         return impactx.elements.ExactDrift(ds, nslice=ns, name=nm)
     elif order == Order.linear:
@@ -40,69 +45,75 @@ def cnv_drift(elem, order):
     elif order == Order.chr:
         return impactx.elements.ChrDrift(ds, nslice, name=nm)
     else:
-        raise RuntimeError(f'unknown order: {order}')
+        raise RuntimeError(f"unknown order: {order}")
+
 
 def cnv_dipedge(elem, order):
-    rc = 1/elem.get_double_attribute('h', 0.0)
-    e1 = elem.get_double_attribute('e1', 0.0)
-    fint = elem.get_double_attribute('fint', 0.0)
-    hgap = elem.get_double_attribute('hgap', 0.0)
+    rc = 1 / elem.get_double_attribute("h", 0.0)
+    e1 = elem.get_double_attribute("e1", 0.0)
+    fint = elem.get_double_attribute("fint", 0.0)
+    hgap = elem.get_double_attribute("hgap", 0.0)
     # sneaky, MAD-X dipedge uses HGAP or half-gap while ImpactX uses
     # g for full gap
     if order == Order.linear:
-        model = 'linear'
+        model = "linear"
     elif order == Order.exact or order == Order.chr:
-        model = 'nonlinear'
+        model = "nonlinear"
     ##
     ## ImpactX has the location= argument which can be either 'entry' or 'exit'
     ## but MAD-X doesn't. How do we resolve this?
-    ix_elem = impactx.elements.DipEdge(psi=e1, rc=rc, g=hgap*2,
-                                       K2=fint, model=model, name=elem.get_name())
+    ix_elem = impactx.elements.DipEdge(
+        psi=e1, rc=rc, g=hgap * 2, K2=fint, model=model, name=elem.get_name()
+    )
     return ix_elem
+
 
 # linear flag if true uses linearized ImpactX models
 def cnv_sbend(elem, order):
     bendangle = elem.get_bend_angle()
     length = elem.get_length()
-    radius_of_curvature = length/bendangle
+    radius_of_curvature = length / bendangle
     nm = elem.get_name()
-    k1 = elem.get_double_attribute('k1', 0.0)
-    k1s = elem.get_double_attribute('k1s', 0.0)
-    k2 = elem.get_double_attribute('k2', 0.0)
-    e1 = elem.get_double_attribute('e1', 0.0)
-    e2 = elem.get_double_attribute('e2', 0.0)
-    fint = elem.get_double_attribute('fint', 0.0)
-    hgap = elem.get_double_attribute('hgap', 0.0)
+    k1 = elem.get_double_attribute("k1", 0.0)
+    k1s = elem.get_double_attribute("k1s", 0.0)
+    k2 = elem.get_double_attribute("k2", 0.0)
+    e1 = elem.get_double_attribute("e1", 0.0)
+    e2 = elem.get_double_attribute("e2", 0.0)
+    fint = elem.get_double_attribute("fint", 0.0)
+    hgap = elem.get_double_attribute("hgap", 0.0)
     us_dipedge = None
     ds_dipedge = None
     cf = (k1 != 0.0) or (k2 != 0.0) or (k1s != 0.0)
 
     # model for dipedges
     if order == Order.linear:
-        de_model = 'linear'
+        de_model = "linear"
     elif order == Order.exact or order == Order.chr:
-        de_model = 'nonlinear'
+        de_model = "nonlinear"
 
     if e1 != 0.0:
-        us_dipedge = impactx.elements.DipEdge(e1, radius_of_curvature, \
-                                              2*hgap, fint, \
-                                              location='entry', \
-                                              model=de_model, \
-                                              name = nm+"_usedge")
+        us_dipedge = impactx.elements.DipEdge(
+            e1,
+            radius_of_curvature,
+            2 * hgap,
+            fint,
+            location="entry",
+            model=de_model,
+            name=nm + "_usedge",
+        )
         pass
     if e2 != 0.0:
-        ds_dipedge = impactx.elements.DipEdge(e2, radius_of_curvature, \
-                                              2*hgap, fint, \
-                                              model=de_model, \
-                                              name = nm+"_dsedge")
+        ds_dipedge = impactx.elements.DipEdge(
+            e2, radius_of_curvature, 2 * hgap, fint, model=de_model, name=nm + "_dsedge"
+        )
         pass
 
-    if elem.get_double_attribute('h1', 0.0) != 0.0:
-        print('h1 attribute not supported for sbend in ImpactX')
-    if elem.get_double_attribute('h2', 0.0) != 0.0:
-        print('h2 attribute not supported for sbend in ImpactX')
+    if elem.get_double_attribute("h1", 0.0) != 0.0:
+        print("h1 attribute not supported for sbend in ImpactX")
+    if elem.get_double_attribute("h2", 0.0) != 0.0:
+        print("h2 attribute not supported for sbend in ImpactX")
 
-    ns = nslice_by_elem_type['sbend']
+    ns = nslice_by_elem_type["sbend"]
     ds = length
 
     if not cf:
@@ -110,39 +121,39 @@ def cnv_sbend(elem, order):
         # What kind of screwy program accepts angles in degrees?
 
         if order == Order.linear:
-            main_bend_elem = \
-                impactx.elements.Sbend(ds, radius_of_curvature, \
-                name = nm, nslice=ns)
+            main_bend_elem = impactx.elements.Sbend(
+                ds, radius_of_curvature, name=nm, nslice=ns
+            )
         else:
-            phi = bendangle * 180/np.pi
-            main_bend_elem = \
-                impactx.elements.ExactSbend(ds, phi, nslice=ns, name=nm)
+            phi = bendangle * 180 / np.pi
+            main_bend_elem = impactx.elements.ExactSbend(ds, phi, nslice=ns, name=nm)
         pass
     else:
         if order == Order.linear:
             # only do first order bend
-            main_bend_elem = \
-                impactx.elements.CFbend(ds, radius_of_curvature,
-                k1, nslice=ns, name=nm)
+            main_bend_elem = impactx.elements.CFbend(
+                ds, radius_of_curvature, k1, nslice=ns, name=nm
+            )
         else:
             # CF bend
-            if (k2 == 0.0):
-                knormal = [1/radius_of_curvature, k1]
+            if k2 == 0.0:
+                knormal = [1 / radius_of_curvature, k1]
                 kskew = [0.0, k1s, 0.0]
             else:
-                knormal = [1/radius_of_curvature, k1, k2]
+                knormal = [1 / radius_of_curvature, k1, k2]
                 kskew = [0.0, k1s, 0.0]
 
-            main_bend_elem = impactx.elements.ExactCFbend(ds=length, \
-                    k_normal=knormal, \
-                    k_skew = kskew, \
-                    int_order=2, \
-                    nslice=ns, \
-                    name=nm)
+            main_bend_elem = impactx.elements.ExactCFbend(
+                ds=length,
+                k_normal=knormal,
+                k_skew=kskew,
+                int_order=2,
+                nslice=ns,
+                name=nm,
+            )
             pass
         pass
 
-    
     # collect the pieces
     ixelem = []
     if us_dipedge:
@@ -153,7 +164,8 @@ def cnv_sbend(elem, order):
         ixelem.append(ds_dipedge)
         pass
 
-    return(ixelem)
+    return ixelem
+
 
 def cnv_rbend(elem, order):
     # the RBEND is converted to an SBEND with dipedge elements
@@ -162,17 +174,17 @@ def cnv_rbend(elem, order):
     bendangle = elem.get_bend_angle()
     straight_length = elem.get_length()
     # MAD-X RBEND langths is the straight length.
-    radius_of_curvature = straight_length/(2*np.sin(0.5*bendangle))
-    length = radius_of_curvature*bendangle
+    radius_of_curvature = straight_length / (2 * np.sin(0.5 * bendangle))
+    length = radius_of_curvature * bendangle
 
     nm = elem.get_name()
-    k1 = elem.get_double_attribute('k1', 0.0)
-    k1s = elem.get_double_attribute('k1s', 0.0)
-    k2 = elem.get_double_attribute('k2', 0.0)
-    e1 = elem.get_double_attribute('e1', 0.0)
-    e2 = elem.get_double_attribute('e2', 0.0)
-    fint = elem.get_double_attribute('fint', 0.0)
-    hgap = elem.get_double_attribute('hgap', 0.0)
+    k1 = elem.get_double_attribute("k1", 0.0)
+    k1s = elem.get_double_attribute("k1s", 0.0)
+    k2 = elem.get_double_attribute("k2", 0.0)
+    e1 = elem.get_double_attribute("e1", 0.0)
+    e2 = elem.get_double_attribute("e2", 0.0)
+    fint = elem.get_double_attribute("fint", 0.0)
+    hgap = elem.get_double_attribute("hgap", 0.0)
     us_dipedge = None
     ds_dipedge = None
     cf = (k1 != 0.0) or (k2 != 0.0) or (k1s != 0.0)
@@ -180,37 +192,35 @@ def cnv_rbend(elem, order):
     # for RBENDS, the dipedge angles are relative to bendangle/2 and
     # have opposite sense depending on the sign of the bend.
     if bendangle > 0.0:
-        e1 = e1 + bendangle/2
-        e2 = e2 + bendangle/2
+        e1 = e1 + bendangle / 2
+        e2 = e2 + bendangle / 2
     else:
-        e1 = -e1 - bendangle/2
-        e2 = -e2 - bendangle/2
+        e1 = -e1 - bendangle / 2
+        e2 = -e2 - bendangle / 2
 
     # model for dipedges
     if order == Order.linear:
-        de_model = 'linear'
+        de_model = "linear"
     elif order == Order.exact or order == Order.chr:
-        de_model = 'nonlinear'
+        de_model = "nonlinear"
 
     if e1 != 0.0:
-        us_dipedge = impactx.elements.DipEdge(e1, radius_of_curvature,
-                                              2*hgap, fint, \
-                                              model=de_model, \
-                                              name = nm+"_usedge")
+        us_dipedge = impactx.elements.DipEdge(
+            e1, radius_of_curvature, 2 * hgap, fint, model=de_model, name=nm + "_usedge"
+        )
         pass
     if e2 != 0.0:
-        ds_dipedge = impactx.elements.DipEdge(e2, radius_of_curvature,
-                                              2*hgap, fint,
-                                              model=de_model, \
-                                              name = nm+"_dsedge")
+        ds_dipedge = impactx.elements.DipEdge(
+            e2, radius_of_curvature, 2 * hgap, fint, model=de_model, name=nm + "_dsedge"
+        )
         pass
 
-    if elem.get_double_attribute('h1', 0.0) != 0.0:
-        print('h1 attribute not supported for sbend in ImpactX')
-    if elem.get_double_attribute('h2', 0.0) != 0.0:
-        print('h2 attribute not supported for sbend in ImpactX')
+    if elem.get_double_attribute("h1", 0.0) != 0.0:
+        print("h1 attribute not supported for sbend in ImpactX")
+    if elem.get_double_attribute("h2", 0.0) != 0.0:
+        print("h2 attribute not supported for sbend in ImpactX")
 
-    ns = nslice_by_elem_type['sbend']
+    ns = nslice_by_elem_type["sbend"]
     ds = length
 
     if not cf:
@@ -218,13 +228,12 @@ def cnv_rbend(elem, order):
         # What kind of screwy program accepts angles in degrees?
 
         if order == Order.linear:
-            main_bend_elem = \
-                impactx.elements.Sbend(ds, radius_of_curvature, \
-                name = nm, nslice=ns)
+            main_bend_elem = impactx.elements.Sbend(
+                ds, radius_of_curvature, name=nm, nslice=ns
+            )
         else:
-            phi = bendangle * 180/np.pi
-            main_bend_elem = \
-                impactx.elements.ExactSbend(ds, phi, nslice=ns, name=nm)
+            phi = bendangle * 180 / np.pi
+            main_bend_elem = impactx.elements.ExactSbend(ds, phi, nslice=ns, name=nm)
         pass
 
     else:
@@ -232,27 +241,29 @@ def cnv_rbend(elem, order):
 
         if order == Order.linear:
             # only do linear bend
-            main_bend_elem = \
-                impactx.elements.CFbend(ds, radius_of_curvature,
-                k1, nslice=ns, name=nm)
+            main_bend_elem = impactx.elements.CFbend(
+                ds, radius_of_curvature, k1, nslice=ns, name=nm
+            )
         else:
             # full CF bend
-            if (k2 == 0.0):
-                knormal = [1/radius_of_curvature, k1]
+            if k2 == 0.0:
+                knormal = [1 / radius_of_curvature, k1]
                 kskew = [0.0, k1s]
             else:
-                knormal = [1/radius_of_curvature, k1, k2]
+                knormal = [1 / radius_of_curvature, k1, k2]
                 kskew = [0.0, k1s, 0.0]
 
-            main_bend_elem = impactx.elements.ExactCFbend(ds=length,
-                    k_normal=knormal,
-                    k_skew = kskew,
-                    int_order=2,
-                    nslice=ns,
-                    name=nm)
+            main_bend_elem = impactx.elements.ExactCFbend(
+                ds=length,
+                k_normal=knormal,
+                k_skew=kskew,
+                int_order=2,
+                nslice=ns,
+                name=nm,
+            )
             pass
         pass
-    
+
     # collect the pieces
     ixelem = []
     if us_dipedge:
@@ -263,43 +274,45 @@ def cnv_rbend(elem, order):
         ixelem.append(ds_dipedge)
         pass
 
-    return(ixelem)
+    return ixelem
+
 
 # linear flag if true uses linearized models
 def cnv_quadrupole(elem, order):
     ds = elem.get_length()
-    k1 = elem.get_double_attribute('k1', 0.0)
+    k1 = elem.get_double_attribute("k1", 0.0)
     nm = elem.get_name()
     if order == Order.linear:
-        ix_elem = impactx.elements.Quad(ds, k1,
-            nslice=nslice_by_elem_type['quadrupole'],
-            name=nm)
+        ix_elem = impactx.elements.Quad(
+            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm
+        )
     elif order == Order.chr:
-        ix_elem = impactx.elements.ChrQuad(ds, k1,
-            nslice=nslice_by_elem_type['quadruple'],
-            name=nm)
+        ix_elem = impactx.elements.ChrQuad(
+            ds, k1, nslice=nslice_by_elem_type["quadruple"], name=nm
+        )
     elif order == Order.exact:
-        ix_elem = impactx.elements.ChrQuad(ds, k1,
-            nslice=nslice_by_elem_type['quadrupole'],
-            name=nm)
+        ix_elem = impactx.elements.ChrQuad(
+            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm
+        )
     else:
-        raise RuntimeError(f'error, unknown order: {order}')
+        raise RuntimeError(f"error, unknown order: {order}")
 
     return ix_elem
+
 
 def cnv_multipole(elem, order):
     # ImpactX multipole elements only have a single order each so
     # we have to peel each order and possibly create multiple elements to get the
     # full description.
     nm = elem.get_name()
-    knlvect = elem.get_vector_attribute('knl', [])
-    kslvect = elem.get_vector_attribute('ksl', [])
+    knlvect = elem.get_vector_attribute("knl", [])
+    kslvect = elem.get_vector_attribute("ksl", [])
     nlen = len(knlvect)
     slen = len(kslvect)
     maxlen = max(nlen, slen)
     if order == Order.linear:
         # truncate at order 1
-        maxlen = max(maxlen, 2) # 2 means dipole+quadrupole
+        maxlen = max(maxlen, 2)  # 2 means dipole+quadrupole
     norm_mom = np.zeros(maxlen)
     skew_mom = np.zeros(maxlen)
     norm_mom[:nlen] = knlvect
@@ -309,40 +322,47 @@ def cnv_multipole(elem, order):
         # is there anything this order?
         if norm_mom[i] == 0.0 and skew_mom[i] == 0.0:
             pass
-        elem_list.append(impactx.elements.Multipole(i+1, norm_mom[i], skew_mom[i],
-                                                    name=f'{nm}_{order}'))
+        elem_list.append(
+            impactx.elements.Multipole(
+                i + 1, norm_mom[i], skew_mom[i], name=f"{nm}_{order}"
+            )
+        )
     return elem_list
+
 
 def cnv_rfcavity(elem, refpart, order):
     # I don't have a linear model of the RF cavity itself, but if there are
     # drifts surrounding it, they should be linear if the linear model is
     # requested
     mp = refpart.get_mass()
-    rfvolt = elem.get_double_attribute('volt', 0.0)/1000.0 # get the voltage in GV
-    freq = elem.get_double_attribute('freq', 0.0)*1.0e6 # get the freq in Hz
-    phase = elem.get_double_attribute('lag', 0.0)*360.0-90.0
+    rfvolt = elem.get_double_attribute("volt", 0.0) / 1000.0  # get the voltage in GV
+    freq = elem.get_double_attribute("freq", 0.0) * 1.0e6  # get the freq in Hz
+    phase = elem.get_double_attribute("lag", 0.0) * 360.0 - 90.0
     # if cavity length > 0, create two drifts to sandwich it
     L = elem.get_length()
 
     # if cavity length > 0, create two drifts to sandwich it
-    RFelem = impactx.elements.ShortRF(rfvolt/mp, freq, phase, name=elem.get_name())
+    RFelem = impactx.elements.ShortRF(rfvolt / mp, freq, phase, name=elem.get_name())
     if L == 0.0:
         # exactly 0 should be allowable for == comparison
         return RFelem
     else:
-        halfL = L/2
+        halfL = L / 2
         if order == Order.linear:
-            d1 = impactx.elements.Drift(halfL, nslice=1, name=f'{elem.get_name()}_U')
-            d2 = impactx.elements.Drift(halfL, nslice=1, name=f'{elem.get_name()}_D')
+            d1 = impactx.elements.Drift(halfL, nslice=1, name=f"{elem.get_name()}_U")
+            d2 = impactx.elements.Drift(halfL, nslice=1, name=f"{elem.get_name()}_D")
         else:
-            d1 = impactx.elements.ExactDrift(halfL, nslice=1, name=f'{elem.get_name()}_U')
-            d2 = impactx.elements.ExactDrift(halfL, nslice=1, name=f'{elem.get_name()}_D')
+            d1 = impactx.elements.ExactDrift(
+                halfL, nslice=1, name=f"{elem.get_name()}_U"
+            )
+            d2 = impactx.elements.ExactDrift(
+                halfL, nslice=1, name=f"{elem.get_name()}_D"
+            )
             pass
-   
-        RFunit = [ d1,
-                   RFelem,
-                   d2]
+
+        RFunit = [d1, RFelem, d2]
     return RFunit
+
 
 # Hi Rob,
 
@@ -379,13 +399,14 @@ def cnv_rfcavity(elem, refpart, order):
 
 #     Eric
 
+
 def cnv_sextupole(elem, order):
     L = elem.get_length()
-    k2 = elem.get_double_attribute('k2', 0.0)
+    k2 = elem.get_double_attribute("k2", 0.0)
     # The Booster lattice includes elements with the tilt attribute
-    tilt = elem.get_double_attribute('tilt', 0.0)
-    k2n = k2 * np.cos(3*tilt)
-    k2s = -k2 * np.sin(3*tilt)
+    tilt = elem.get_double_attribute("tilt", 0.0)
+    k2n = k2 * np.cos(3 * tilt)
+    k2s = -k2 * np.sin(3 * tilt)
     nm = elem.get_name()
     knorm = np.array([0, 0, k2n])
     kskew = np.array([0, 0, k2s])
@@ -394,22 +415,25 @@ def cnv_sextupole(elem, order):
         # There is no linear Sextupole. Use a linear drift
         sxelem = impactx.elements.Drift(L, name=nm)
     else:
-
-        sxelem = impactx.elements.ExactMultipole(ds=L, k_normal=knorm, \
-                                    k_skew=kskew, int_order=4, \
-                                    nslice=nslice_by_elem_type['sextupole'],
-                                    name=nm)
+        sxelem = impactx.elements.ExactMultipole(
+            ds=L,
+            k_normal=knorm,
+            k_skew=kskew,
+            int_order=4,
+            nslice=nslice_by_elem_type["sextupole"],
+            name=nm,
+        )
     return sxelem
 
 
 # octupole follows similar logic as sextupole
 def cnv_octupole(elem):
     L = elem.get_length()
-    k3 = elem.get_double_attribute('k3', 0.0)
+    k3 = elem.get_double_attribute("k3", 0.0)
     # The Booster lattice includes elements with the tilt attribute
-    tilt = elem.get_double_attribute('tilt', 0.0)
-    k3n = k2 * np.cos(4*tilt)
-    k3s = -k2 * np.sin(4*tilt)
+    tilt = elem.get_double_attribute("tilt", 0.0)
+    k3n = k2 * np.cos(4 * tilt)
+    k3s = -k2 * np.sin(4 * tilt)
     nm = elem.get_name()
     knorm = np.array([0, 0, 0, k3n])
     kskew = np.array([0, 0, 0, k3s])
@@ -418,12 +442,17 @@ def cnv_octupole(elem):
         # There is no linear Octupole. Use a linear drift
         ocelem = impactx.elements.Drift(L, name=nm)
     else:
-        ocelem = impactx.elements.ExactMultipole(ds=L, k_normal=knorm, \
-                        k_skew=kskew, order=4, \
-                        nslice=nslice_by_elem_type['octupole'],
-                        name=nm)
+        ocelem = impactx.elements.ExactMultipole(
+            ds=L,
+            k_normal=knorm,
+            k_skew=kskew,
+            order=4,
+            nslice=nslice_by_elem_type["octupole"],
+            name=nm,
+        )
 
     return ocelem
+
 
 def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.exact):
     # lattice must have a reference particle
@@ -432,10 +461,10 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
     except:
         print("cannot get reference particle.")
         return None
-    print('using order:', order)
+    print("using order:", order)
 
     impactx_lattice = []
-    
+
     # We may define the monitor element if needed
     monitor = None
     if init_monitor:
@@ -496,7 +525,7 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
             else:
                 impactx_lattice.append(mpelem)
         else:
-            print('warning: unsupported element: ', etype)
+            print("warning: unsupported element: ", etype)
 
         pass
 
@@ -507,9 +536,11 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
         impactx_lattice.append(monitor)
 
     return impactx_lattice
-    
+
+
 # given an ImpactX lattice as a sequence of elements, unroll the lattice
 # and return a python program that reccreates the lattice
+
 
 def unroll_impactx_lattice(lattice):
     # define the output lattice as a list
@@ -518,19 +549,19 @@ def unroll_impactx_lattice(lattice):
     for elem in lattice:
         output_elem = ""
         edict = elem.to_dict()
-        etype = edict['type']
-        output_elem = f'impactx.elements.{etype}('
+        etype = edict["type"]
+        output_elem = f"impactx.elements.{etype}("
         firstparm = True
 
         # for ExactSbend the member phi which is the angle has been converted into radians but
         # I need to convert it back to degrees which is what the contructor needs.
-        if etype == 'ExactSbend':
-            edict['phi'] = edict['phi'] * 180/np.pi
+        if etype == "ExactSbend":
+            edict["phi"] = edict["phi"] * 180 / np.pi
 
-        if etype == 'DipEdge' or etype == 'ShortRF' or etype == 'BeamMonitor':
+        if etype == "DipEdge" or etype == "ShortRF" or etype == "BeamMonitor":
             # remove extra attributes
-            del edict['nslice']
-            del edict['ds']
+            del edict["nslice"]
+            del edict["ds"]
 
         # skipping BeamMonitors for now. They seem to cause trouble
         if etype == "BeamMonitor":
@@ -547,7 +578,7 @@ def unroll_impactx_lattice(lattice):
             if pname == "name" or pname == "location" or pname == "model":
                 output_elem = output_elem + f'{pname}="{edict.get(pname)}"'
             else:
-                output_elem = output_elem + f'{pname}={edict.get(pname)}'
+                output_elem = output_elem + f"{pname}={edict.get(pname)}"
             firstparm = False
         # close out this element
         output_elem = output_elem + ")"
@@ -558,6 +589,7 @@ def unroll_impactx_lattice(lattice):
     output_lattice = output_lattice + "]"
 
     return output_lattice
+
 
 __misc_txt = """
     beam, particle=proton, energy=0.8+pmass;
@@ -577,30 +609,30 @@ __simple_booster_txt = """
 // From JFO 2022-12-08
 // The simplified booster lattice is trivial. I have no madx lattice (you could make one
 // very easily) - I just use pyorbit classes directly to instantiate a basic cell;  it is then
-// replicated 24 times. I took the bending magnets lengths and 
-// strengths directly from the official MADX  lattice file. 
+// replicated 24 times. I took the bending magnets lengths and
+// strengths directly from the official MADX  lattice file.
 
-// The basic cell is 
+// The basic cell is
 
-// d1 fmag d2 dmag d3 
+// d1 fmag d2 dmag d3
 
 // d1, d2, d3 : drifts of lengths 0.6 0.5 and 3.0 m
-// fmag:  focusing      bend   L = 2.889612 m 
+// fmag:  focusing      bend   L = 2.889612 m
 // dmag   defocusing bend   L = 2.889612 m
 
 // total cell length: 19.758 m
-// total ring  length = 24*19.758 = 474.20 m 
+// total ring  length = 24*19.758 = 474.20 m
 
-// The length, focusing strengths and curvature radius of the 
-// magnets are as in the booster MADX file.  
+// The length, focusing strengths and curvature radius of the
+// magnets are as in the booster MADX file.
 
 // If you entered 1 cell correctly, you should get the periodic solution:
 // bx = 33.86 m ax = 0
-// by = 5.39m    ay =0 
+// by = 5.39m    ay =0
 // For 24 cells, the raw tunes are nux = 7.017 and nuy = 6.675.  You will need to tweak the nominal focusing strengths a bit to avoid resonances.
 
 
-//--------- Nominal Gradient Magnet Definitions  
+//--------- Nominal Gradient Magnet Definitions
 
 // EGS
 // The apparent cell structure is actually:
@@ -654,7 +686,7 @@ __simple_booster_txt = """
 ! MULTIPOLE QS{S|L}ERR, l=0
 ! SEXTUPOLE SX{L|S}, l=0.024 (normal)
 ! SEXTUPOLE SS{L|S}, l=0.024 (skew)
-! 
+!
 
 ke1 = 0.8;  !800 MeV kinetic energy at injection
 
@@ -788,7 +820,7 @@ dmagu08: dmag;
 dmagd08: dmag;
 
 cell08 : line = (sa, cpshort, sb, fmagu08, mins, dmagu08, dlong, cplong, drifte, dmagd08, mins, fmagd08, sc);
- 
+
 fmagu09: fmag;
 fmagd09: fmag;
 dmagu09: dmag;
@@ -1280,55 +1312,54 @@ beam, particle=proton, energy=pmass+0.0025;
 
 def test_linear(lattice, line):
     import synergia
-    import impactx
 
     reader = synergia.lattice.MadX_reader()
     reader.parse(lattice)
 
     lattice = reader.get_lattice(line)
-    print('synergia lattice')
+    print("synergia lattice")
     print(lattice)
     print()
 
     ix_lattice = syn2_to_impactx(lattice, order=Order.linear)
 
-    print('impactx lattice')
+    print("impactx lattice")
     print(ix_lattice)
     print()
-    print('unrolled impactx lattice')
+    print("unrolled impactx lattice")
     print(unroll_impactx_lattice(ix_lattice))
 
     return
 
+
 def test_exact(lattice, line):
     import synergia
-    import impactx
 
     reader = synergia.lattice.MadX_reader()
     reader.parse(lattice)
 
     lattice = reader.get_lattice(line)
-    print('synergia lattice')
+    print("synergia lattice")
     print(lattice)
     print()
 
     ix_lattice = syn2_to_impactx(lattice, order=Order.exact)
 
-    print('impactx lattice')
+    print("impactx lattice")
     print(ix_lattice)
     print()
-    print('unrolled impactx lattice')
+    print("unrolled impactx lattice")
     print(unroll_impactx_lattice(ix_lattice))
 
     return
 
+
 if __name__ == "__main__":
-    test_linear(__misc_txt, 'misc')
-    test_exact(__misc_txt, 'misc')
+    test_linear(__misc_txt, "misc")
+    test_exact(__misc_txt, "misc")
 
-    test_linear(__simple_booster_txt, 'booster')
-    test_exact(__simple_booster_txt, 'booster')
+    test_linear(__simple_booster_txt, "booster")
+    test_exact(__simple_booster_txt, "booster")
 
-    test_linear(__iota_txt, 'iota')
-    test_exact(__iota_txt, 'iota')
-    
+    test_linear(__iota_txt, "iota")
+    test_exact(__iota_txt, "iota")

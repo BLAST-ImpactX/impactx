@@ -81,10 +81,9 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
+        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
         Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
-
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
 
    .. py:property:: space_charge_gauss_nint
 

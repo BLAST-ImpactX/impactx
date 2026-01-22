@@ -70,6 +70,9 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
+      * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
+        longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
+
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
@@ -78,9 +81,10 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
         Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
+
+        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
 
    .. py:property:: space_charge_gauss_nint
 
@@ -92,16 +96,11 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_gauss_charge_z_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``129``).
-
-      * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
-        longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
-
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+      Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
 
    .. py:property:: space_charge_num_longitudinal_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``100``).
+      Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.
 
    .. py:property:: space_charge_apply_longitudinal_kick
 
@@ -112,8 +111,7 @@ Collective Effects & Overall Simulation Parameters
       The numerical solver to solve the Poisson equation when calculating space charge effects.
       Either ``"fft"`` (default) or ``"multigrid"``.
 
-      Currently, the multigrid solver supports only 3D space charge.  The fft solver supports either 2D or 3D space charge.
-      An additional `2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
+      Currently, the multigrid solver supports only 3D space charge.  The fft solver supports 2D, 2.5D or 3D space charge.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).

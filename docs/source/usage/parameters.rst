@@ -933,14 +933,14 @@ See there ``nslice`` option on lattice elements for slicing.
 
   * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
     longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
-  
+
     This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-  
+
     This model supports the following sub-options:
 
     * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``100``)
-   
-      The number of bins for longitudinal line density deposition. 
+
+      The number of bins for longitudinal line density deposition.
 
     * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``true``)
 

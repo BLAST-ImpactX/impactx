@@ -13,6 +13,7 @@ from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 
 state.impactx_example_list = []
 
+IMPACTX_PYTHON_ROOT = Path(__file__).resolve().parents[3]
 
 DASHBOARD_EXAMPLES = {
     "fodo/run_fodo.py",
@@ -64,7 +65,7 @@ class DashboardExamplesLoader:
         Retrieve the selected ImpactX example file and populate the UI with its values.
         """
 
-        impactx_directory = GeneralFunctions.get_impactx_root_dir()
+        impactx_directory = IMPACTX_PYTHON_ROOT
         impactx_example_file_path = impactx_directory / "examples" / file_name
 
         file_content_as_str = impactx_example_file_path.read_text()

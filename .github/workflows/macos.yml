@@ -28,6 +28,7 @@ jobs:
         brew install ccache
         brew install cmake
         brew install fftw
+        brew uninstall hdf5 || true
         brew install hdf5-mpi
         brew install libomp
         brew link --overwrite --force libomp
@@ -69,7 +70,8 @@ jobs:
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_PYTHON=ON          \
-          -DImpactX_TEST_CLEANUP=ON
+          -DImpactX_TEST_CLEANUP=ON    \
+          -DopenPMD_USE_HDF5=ON
         cmake --build build -j 3
 
         du -hs ~/Library/Caches/ccache

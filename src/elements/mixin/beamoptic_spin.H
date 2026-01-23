@@ -7,8 +7,8 @@
  * Authors: Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
-#define IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
+#ifndef IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_SPIN_H
+#define IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_SPIN_H
 
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/PushAll.H"
@@ -18,6 +18,7 @@
 #include <AMReX_SIMD.H>
 
 #include <type_traits>
+#include <variant>
 
 
 namespace impactx::elements::mixin
@@ -38,7 +39,7 @@ namespace detail
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
      */
     template <typename T_Element>
-    struct PushSingleParticle
+    struct PushSingleParticleSpin
     {
         using PType = ImpactXParticleContainer::ParticleType;
         using ParticleTileType = amrex::ParticleTile<amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs>,RealSoA::nattribs, IntSoA::nattribs>;
@@ -54,8 +55,11 @@ namespace detail
          * @param part_pt the array to the particle momentum (t)
          * @param part_idcpu the array to the particle global index
          * @param ref_part the struct containing the reference particle
+         * @param part_sx the array to the particle spin (x)
+         * @param part_sy the array to the particle spin (y)
+         * @param part_sz the array to the particle spin (z)
          */
-        PushSingleParticle (T_Element element,
+        PushSingleParticleSpin (T_Element element,
                             amrex::ParticleReal* AMREX_RESTRICT part_x,
                             amrex::ParticleReal* AMREX_RESTRICT part_y,
                             amrex::ParticleReal* AMREX_RESTRICT part_t,
@@ -63,22 +67,26 @@ namespace detail
                             amrex::ParticleReal* AMREX_RESTRICT part_py,
                             amrex::ParticleReal* AMREX_RESTRICT part_pt,
                             uint64_t* AMREX_RESTRICT part_idcpu,
-                            RefPart ref_part)
+                            RefPart ref_part,
+                            amrex::ParticleReal* AMREX_RESTRICT part_sx,
+                            amrex::ParticleReal* AMREX_RESTRICT part_sy,
+                            amrex::ParticleReal* AMREX_RESTRICT part_sz)
             : m_element(std::move(element)),
               m_part_x(part_x), m_part_y(part_y), m_part_t(part_t),
               m_part_px(part_px), m_part_py(part_py), m_part_pt(part_pt),
               m_part_idcpu(part_idcpu),
-              m_ref_part(std::move(ref_part))
+              m_ref_part(std::move(ref_part)),
+              m_part_sx(part_sx), m_part_sy(part_sy), m_part_sz(part_sz)
         {
             // pre-compute and cache constants that are independent of the
             // individually tracked particle
             m_element.compute_constants(m_ref_part);
         }
 
-        PushSingleParticle () = delete;
-        PushSingleParticle (PushSingleParticle const &) = default;
-        PushSingleParticle (PushSingleParticle &&) = default;
-        ~PushSingleParticle () = default;
+        PushSingleParticleSpin () = delete;
+        PushSingleParticleSpin (PushSingleParticleSpin const &) = default;
+        PushSingleParticleSpin (PushSingleParticleSpin &&) = default;
+        ~PushSingleParticleSpin () = default;
 
         /** Push a single particle through an element
          *
@@ -97,9 +105,18 @@ namespace detail
             amrex::ParticleReal & AMREX_RESTRICT py = m_part_py[i];
             amrex::ParticleReal & AMREX_RESTRICT pt = m_part_pt[i];
             uint64_t & AMREX_RESTRICT idcpu = m_part_idcpu[i];
+            amrex::ParticleReal & AMREX_RESTRICT sx = m_part_sx[i];
+            amrex::ParticleReal & AMREX_RESTRICT sy = m_part_sy[i];
+            amrex::ParticleReal & AMREX_RESTRICT sz = m_part_sz[i];
 
-            // push through element
+            // push spin through element (currently Quad only)
+            if (m_element.type == "Quad") {
+               m_element.spin_push(x, y, t, px, py, pt, idcpu, m_ref_part, sx, sy, sz);
+            }
+
+            // push orbit through element
             m_element(x, y, t, px, py, pt, idcpu, m_ref_part);
+
         }
 
 #ifdef AMREX_USE_SIMD
@@ -124,6 +141,9 @@ namespace detail
             SIMDParticleReal<SIMD_WIDTH> part_py;
             SIMDParticleReal<SIMD_WIDTH> part_pt;
             SIMDIdCpu<decltype(part_x)> part_idcpu;
+            SIMDParticleReal<SIMD_WIDTH> part_sx;
+            SIMDParticleReal<SIMD_WIDTH> part_sy;
+            SIMDParticleReal<SIMD_WIDTH> part_sz;
 
             // initialize vector registers
             // TODO stdx::vector_aligned needs alignment guarantees
@@ -136,8 +156,17 @@ namespace detail
             part_py.copy_from(&m_part_py[i], stdx::element_aligned);
             part_pt.copy_from(&m_part_pt[i], stdx::element_aligned);
             part_idcpu.copy_from(&m_part_idcpu[i], stdx::element_aligned);
+            part_sx.copy_from(&m_part_sx[i], stdx::element_aligned);
+            part_sy.copy_from(&m_part_sy[i], stdx::element_aligned);
+            part_sz.copy_from(&m_part_sz[i], stdx::element_aligned);
 
-            // push through element
+
+            // push spin through element (currently Quad only)
+            if (m_element.type == "Quad") {
+               m_element.spin_push(part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, m_ref_part, part_sx, part_sy, part_sz);
+            }
+
+            // push orbit through element
             m_element(part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, m_ref_part);
 
             // write back to memory
@@ -158,6 +187,13 @@ namespace detail
                 part_pt.copy_to(&m_part_pt[i], stdx::element_aligned);
             if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 6))
                 part_idcpu.copy_to(&m_part_idcpu[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 7))
+                part_sx.copy_to(&m_part_sx[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 8))
+                part_sy.copy_to(&m_part_sy[i], stdx::element_aligned);
+            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 9))
+                part_sz.copy_to(&m_part_sz[i], stdx::element_aligned);
+
         }
 #endif
 
@@ -171,12 +207,15 @@ namespace detail
         amrex::ParticleReal* const AMREX_RESTRICT m_part_pt;
         uint64_t* const AMREX_RESTRICT m_part_idcpu;
         RefPart m_ref_part;
+        amrex::ParticleReal* const AMREX_RESTRICT m_part_sx;
+        amrex::ParticleReal* const AMREX_RESTRICT m_part_sy;
+        amrex::ParticleReal* const AMREX_RESTRICT m_part_sz;
     };
 
     /** This pushes all particles on a particle iterator tile/box
      */
     template< typename T_Element >
-    void push_all_particles (
+    void push_all_particles_spin (
         ImpactXParticleContainer::iterator & pti,
         RefPart & AMREX_RESTRICT ref_part,
         T_Element & element
@@ -194,17 +233,21 @@ namespace detail
 
         uint64_t* const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
-        detail::PushSingleParticle<T_Element> const pushSingleParticle(
-            element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
+        amrex::ParticleReal* const AMREX_RESTRICT part_sx = soa_real[RealSoA::sx].dataPtr();
+        amrex::ParticleReal* const AMREX_RESTRICT part_sy = soa_real[RealSoA::sy].dataPtr();
+        amrex::ParticleReal* const AMREX_RESTRICT part_sz = soa_real[RealSoA::sz].dataPtr();
+
+        detail::PushSingleParticleSpin<T_Element> const pushSingleParticleSpin(
+            element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part, part_sx, part_sy, part_sz);
 
         // loop over beam particles in the box
 #ifdef AMREX_USE_SIMD
         if constexpr (amrex::simd::is_vectorized<T_Element>) {
-            amrex::ParallelForSIMD<T_Element::simd_width>(np, pushSingleParticle);  // TODO: test 2,4,8, ... and handle remainder
+            amrex::ParallelForSIMD<T_Element::simd_width>(np, pushSingleParticleSpin);  // TODO: test 2,4,8, ... and handle remainder
         } else
 #endif
         {
-            amrex::ParallelFor(np, pushSingleParticle);
+            amrex::ParallelFor(np, pushSingleParticleSpin);
         }
     }
 } // namespace detail
@@ -215,7 +258,7 @@ namespace detail
      * All particles are pushed independently with the same logic.
      */
     template<typename T_Element>
-    struct BeamOptic
+    struct BeamOpticSpin
     {
         /** Push first the reference particle, then all other particles
          *
@@ -230,8 +273,8 @@ namespace detail
         )
         {
             static_assert(
-                std::is_base_of_v<BeamOptic, T_Element>,
-                "BeamOptic can only be used as a mixin class!"
+                std::is_base_of_v<BeamOpticSpin, T_Element>,
+                "BeamOpticSpin can only be used as a mixin class!"
             );
 
             T_Element& element = *static_cast<T_Element*>(this);
@@ -251,15 +294,15 @@ namespace detail
          )
          {
             static_assert(
-                std::is_base_of_v<BeamOptic, T_Element>,
-                "BeamOptic can only be used as a mixin class!"
+                std::is_base_of_v<BeamOpticSpin, T_Element>,
+                "BeamOpticSpin can only be used as a mixin class!"
             );
 
             T_Element& element = *static_cast<T_Element*>(this);
-            detail::push_all_particles<T_Element>(pti, ref_part, element);
+            detail::push_all_particles_spin<T_Element>(pti, ref_part, element);
          }
     };
 
 } // namespace impactx::elements::mixin
 
-#endif // IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
+#endif // IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_SPIN_H

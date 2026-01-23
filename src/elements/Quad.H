@@ -14,6 +14,7 @@
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
+#include "mixin/beamoptic_spin.H"
 #include "mixin/thick.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"

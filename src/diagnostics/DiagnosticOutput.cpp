@@ -49,6 +49,11 @@ namespace
             bool compute_eigenemittances = false;
             pp_diag.queryAdd("eigenemittances", compute_eigenemittances);
 
+            // determine whether to output spin moments
+            amrex::ParmParse pp_algo("algo");
+            bool compute_spin_moments = false;
+            pp_algo.queryAdd("spin", compute_spin_moments);
+
             file_handler << "step" << " " << "s" << " "
                          << "mean_x" << " " << "min_x" << " " << "max_x" << " "
                          << "mean_y" << " " << "min_y" << " " << "max_y" << " "
@@ -68,6 +73,12 @@ namespace
             {
                 file_handler << " "
                              << "emittance_1" << " " << "emittance_2" << " " << "emittance_3";
+            }
+            if (compute_spin_moments)
+            {
+                file_handler << " "
+                             << "mean_sx" << " " << "mean_sy" << " " << "mean_sz" 
+                             << "sigma_sx" << " " << "sigma_sy" << " " << "sigma_sz";
             }
             file_handler << " " << "charge_C"
                          << "\n";
@@ -130,6 +141,11 @@ namespace
         amrex::ParmParse pp_diag("diag");
         bool compute_eigenemittances = false;
         pp_diag.queryAdd("eigenemittances", compute_eigenemittances);
+            
+        // determine whether to output spin moments
+        amrex::ParmParse pp_algo("algo");
+        bool compute_spin_moments = false;
+        pp_algo.queryAdd("spin", compute_spin_moments);
 
         file_handler << step << " " << s << " "
                 << rbc.at("mean_x") << " " << rbc.at("min_x") << " " << rbc.at("max_x") << " "
@@ -150,6 +166,12 @@ namespace
             file_handler << " "
                          << rbc.at("emittance_1") << " " << rbc.at("emittance_2") << " " << rbc.at("emittance_3");
 
+        }
+        if (compute_spin_moments) {
+            file_handler << " "
+                         << rbc.at("mean_sx") << " " << rbc.at("mean_sy") << " " << rbc.at("mean_sz") << " "
+                         << rbc.at("sigma_sx") << " " << rbc.at("sigma_sy") << " " << rbc.at("sigma_sz");
+        
         }
         file_handler << " " << rbc.at("charge_C")
                      << "\n";

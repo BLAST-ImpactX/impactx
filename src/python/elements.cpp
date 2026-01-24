@@ -1757,7 +1757,7 @@ void init_elements(py::module& m)
         .def_property("beam_particles",
               [](Programmable & p) { return p.m_beam_particles; },
               [](Programmable & p,
-                 std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> new_hook
+                 std::function<void(ImpactXParticleContainer::iterator *, RefPart &, bool)> new_hook
               ) { p.m_beam_particles = std::move(new_hook); },
               "hook for beam particles (pti, RefPart)"
         )

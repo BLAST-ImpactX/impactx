@@ -14,7 +14,6 @@
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
-#include "mixin/beamoptic_spin.H"
 #include "mixin/thick.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
@@ -308,7 +307,7 @@ namespace impactx::elements
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void spin_push (
+        void spin_and_phasespace_push (
             [[maybe_unused]] T_Real & AMREX_RESTRICT x,
             [[maybe_unused]] T_Real & AMREX_RESTRICT y,
             [[maybe_unused]] T_Real & AMREX_RESTRICT t,
@@ -365,6 +364,8 @@ namespace impactx::elements
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
 
 

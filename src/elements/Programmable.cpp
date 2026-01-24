@@ -36,14 +36,15 @@ namespace impactx::elements
     void
     Programmable::operator() (
         ImpactXParticleContainer::iterator & pti,
-        RefPart & ref_part
+        RefPart & ref_part,
+        bool spin
     ) const
     {
         if (m_beam_particles == nullptr)
             // TODO: only if verbose mode is set
             amrex::AllPrint() << "Programmable element - all particles: NO HOOK\n";
         else
-            m_beam_particles(&pti, ref_part);
+            m_beam_particles(&pti, ref_part, spin);
     }
 
     void

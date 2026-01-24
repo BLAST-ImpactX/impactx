@@ -31,11 +31,9 @@ monitor.type = beam_monitor
 monitor.name = "monitor"
 monitor.backend = h5
 
-quad1.type = quad_exact
+quad1.type = quad
 quad1.ds = 0.02903
 quad1.k = 207.0
-quad1.units = 1
-quad1.mapsteps = 5
 
 ###############################################################################
 # Algorithms

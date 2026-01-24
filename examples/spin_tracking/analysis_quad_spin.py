@@ -40,7 +40,7 @@ print(
     f"  polarization_x={polarization_x:e} polarization_y={polarization_y:e} polarization_z={polarization_z:e}"
 )
 
-atol = 1.3e12 * num_particles**-0.5  # from random sampling of a smooth distribution
+atol = 1.3 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -60,7 +60,7 @@ print(
     f"  polarization_x={polarization_x:e} polarization_y={polarization_y:e} polarization_z={polarization_z:e}"
 )
 
-atol = 1.3e12 * num_particles**-0.5  # from random sampling of a smooth distribution
+atol = 1.3 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  atol={atol}")
 
 assert np.allclose(

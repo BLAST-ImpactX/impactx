@@ -70,9 +70,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # element names consistent with HTU_base_lattice_matched.lte Elegant input
 
 drift1 = elements.ExactDrift(name="drift1", ds=0.046, nslice=ns)
-quad1 = elements.Quad(
-    name="quad1", ds=0.02903, k=207.0, nslice=ns
-)
+quad1 = elements.Quad(name="quad1", ds=0.02903, k=207.0, nslice=ns)
 
 # set the lattice
 sim.lattice.append(monitor)

@@ -7,9 +7,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.constants import c, e, m_e
 
-from impactx import ImpactX, distribution, elements, twiss
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -22,7 +21,7 @@ sim.slice_step_diagnostics = True
 sim.init_grids()
 
 # basic beam parameters
-kin_energy_MeV = 100.0 # reference energy (kinetic)
+kin_energy_MeV = 100.0  # reference energy (kinetic)
 mass_MeV = 0.510998950  # particle mass
 bunch_charge_C = 25.0e-12  # used with space charge
 npart = 100000  # number of macro particles
@@ -33,15 +32,15 @@ ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV
 
 #   particle bunch
 distr = distribution.Gaussian(
-        lambdaX=0.0003,
-        lambdaY=0.0003,
-        lambdaT=1.0e-6,
-        lambdaPx=0.0002,
-        lambdaPy=0.0002,
-        lambdaPt=1.0e-6,
-        muxpx=0.0,
-        muypy=0.0,
-        mutpt=0.0,
+    lambdaX=0.0003,
+    lambdaY=0.0003,
+    lambdaT=1.0e-6,
+    lambdaPx=0.0002,
+    lambdaPy=0.0002,
+    lambdaPt=1.0e-6,
+    muxpx=0.0,
+    muypy=0.0,
+    mutpt=0.0,
 )
 spin = distribution.SpinvMF(
     0.4,
@@ -63,11 +62,9 @@ print("k_value")
 print(k_value)
 
 # length for this test should be one period
-ds_value = 2.0*np.pi / np.sqrt(k_value)
+ds_value = 2.0 * np.pi / np.sqrt(k_value)
 
-quad1 = elements.Quad(
-    name="quad1", ds=ds_value, k=k_value, nslice=ns
-)
+quad1 = elements.Quad(name="quad1", ds=ds_value, k=k_value, nslice=ns)
 
 # set the lattice
 sim.lattice.append(monitor)

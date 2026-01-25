@@ -30,9 +30,20 @@ initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
-num_particles = 10000
+num_particles = 100000
 assert num_particles == len(initial)
 assert num_particles == len(final)
+
+# numerical parameters based on input file
+
+gryo_anomaly = 0.001159652181644 # for electrons
+rel_gamma = 196.69511809100055 # for 100 MeV
+quad_gradient = 100 # value in 1/m^2 from input
+sigma_y = 0.0003 # value in m = lambdaY from input
+sigma_py = 0.0002 # value in rad = lambdaPy from input
+Pxi = 0.4 # polarization_x from input
+Pyi = 0.9 # polarization_y from input
+Pzi = 0.1 # polarization_z from input
 
 print("Initial Beam:")
 polarization_x, polarization_y, polarization_z = get_polarization(initial)
@@ -46,12 +57,19 @@ print(f"  atol={atol}")
 assert np.allclose(
     [polarization_x, polarization_y, polarization_z],
     [
-        0.7,
-        0.0,
-        0.0,
+        Pxi,
+        Pyi,
+        Pzi,
     ],
     atol=atol,
 )
+
+# predicted final polarization
+damping_eigenvalue = (1+gryo_anomaly*rel_gamma) * np.sqrt(sigma_py**2*(np.cosh(2*np.pi)-1)**2 + sigma_y**2*quad_gradient*np.sinh(2*np.pi)**2)
+damping_factor = np.exp(-damping_eigenvalue**2/2.0)
+Pxf = Pxi
+Pyf = damping_factor*Pyi
+Pzf = damping_factor*Pzi
 
 print("")
 print("Final Beam:")
@@ -66,9 +84,9 @@ print(f"  atol={atol}")
 assert np.allclose(
     [polarization_x, polarization_y, polarization_z],
     [
-        0.7,
-        0.0,
-        0.0,
+        Pxf,
+        Pyf,
+        Pzf,
     ],
     atol=atol,
 )

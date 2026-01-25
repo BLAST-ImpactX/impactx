@@ -111,7 +111,7 @@ namespace detail
             uint64_t & AMREX_RESTRICT idcpu = m_part_idcpu[i];
 
             // push spin & phase space through element
-            m_element.spin_and_phasespace_push(x, y, t, px, py, pt, idcpu, m_ref_part, sx, sy, sz);
+            m_element.spin_and_phasespace_push(x, y, t, px, py, pt, sx, sy, sz, idcpu, m_ref_part);
         }
 
 #ifdef AMREX_USE_SIMD

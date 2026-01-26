@@ -54,26 +54,26 @@ namespace impactx::elements::mixin
         ) const
         {
             using namespace amrex::literals;  // for _prt
+            using namespace std; // for cmath(float)
 
             // Compute quaternion coefficients
-            amrex::ParticleReal angle = std::sqrt(lambdax*lambdax+lambday*lambday+lambdaz*lambdaz);
+            T_Real angle = sqrt(lambdax*lambdax+lambday*lambday+lambdaz*lambdaz);
             auto const [sin_half_angle, cos_half_angle] = amrex::Math::sincos(angle*0.5_prt);
-            amrex::ParticleReal w0 = cos_half_angle;
-            amrex::ParticleReal w1 = (angle==0_prt) ? 0_prt : -(lambdax/angle)*sin_half_angle;
-            amrex::ParticleReal w2 = (angle==0_prt) ? 0_prt : -(lambday/angle)*sin_half_angle;
-            amrex::ParticleReal w3 = (angle==0_prt) ? 0_prt : -(lambdaz/angle)*sin_half_angle;
+            T_Real w0 = cos_half_angle;
+            T_Real w1 = (angle==0_prt) ? 0_prt : -(lambdax/angle)*sin_half_angle;
+            T_Real w2 = (angle==0_prt) ? 0_prt : -(lambday/angle)*sin_half_angle;
+            T_Real w3 = (angle==0_prt) ? 0_prt : -(lambdaz/angle)*sin_half_angle;
 
             // Apply rotation
-            amrex::ParticleReal sxout = (1_prt-2_prt*(w2*w2+w3*w3))*sx + 2_prt*(w1*w2+w0*w3)*sy + 2_prt*(w1*w3-w0*w2)*sz;
-            amrex::ParticleReal syout = 2_prt*(w1*w2-w0*w3)*sx + (1_prt-2_prt*(w1*w1+w3*w3))*sy + 2_prt*(w0*w1+w2*w3)*sz;
-            amrex::ParticleReal szout = 2_prt*(w0*w2+w1*w3)*sx + 2_prt*(w2*w3-w0*w1)*sy + (1_prt-2_prt*(w1*w1+w2*w2))*sz;
+            T_Real sxout = (1_prt-2_prt*(w2*w2+w3*w3))*sx + 2_prt*(w1*w2+w0*w3)*sy + 2_prt*(w1*w3-w0*w2)*sz;
+            T_Real syout = 2_prt*(w1*w2-w0*w3)*sx + (1_prt-2_prt*(w1*w1+w3*w3))*sy + 2_prt*(w0*w1+w2*w3)*sz;
+            T_Real szout = 2_prt*(w0*w2+w1*w3)*sx + 2_prt*(w2*w3-w0*w1)*sy + (1_prt-2_prt*(w1*w1+w2*w2))*sz;
 
             // Update spin vector
             sx = sxout;
             sy = syout;
             sz = szout;
         }
-
     };
 
 } // namespace impactx::elements::mixin

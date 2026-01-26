@@ -162,25 +162,25 @@ namespace detail
             // TODO stdx::vector_aligned needs alignment guarantees
             //      https://github.com/AMReX-Codes/amrex/issues/4592
             //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 0))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 0))
                 part_x.copy_to(&m_part_x[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 1))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 1))
                 part_y.copy_to(&m_part_y[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 2))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 2))
                 part_t.copy_to(&m_part_t[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 3))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 3))
                 part_px.copy_to(&m_part_px[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 4))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 4))
                 part_py.copy_to(&m_part_py[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 5))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 5))
                 part_pt.copy_to(&m_part_pt[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 6))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 6))
                 part_sx.copy_to(&m_part_sx[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 7))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 7))
                 part_sy.copy_to(&m_part_sy[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 8))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 8))
                 part_sz.copy_to(&m_part_sz[i], stdx::element_aligned);
-            if constexpr (is_nth_arg_non_const(&T_Element::template operator()<decltype(part_x), decltype(part_idcpu)>, 9))
+            if constexpr (is_nth_arg_non_const(&T_Element::template spin_and_phasespace_push<decltype(part_x), decltype(part_idcpu)>, 9))
                 part_idcpu.copy_to(&m_part_idcpu[i], stdx::element_aligned);
         }
 #endif

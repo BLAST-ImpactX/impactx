@@ -133,7 +133,7 @@ namespace impactx::elements
         bool m_threadsafe = false;
 
         std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
-        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pc, ref)
+        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
         std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
         std::function<void()> m_finalize; //! hook for finalize cleanup
     };

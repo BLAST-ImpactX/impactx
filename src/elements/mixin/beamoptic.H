@@ -449,7 +449,7 @@ namespace detail
          void operator() (
             ImpactXParticleContainer::iterator & pti,
             RefPart & AMREX_RESTRICT ref_part,
-            bool spin /* = false */
+            bool spin
          )
          {
             static_assert(

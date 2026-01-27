@@ -36,7 +36,8 @@ namespace impactx::elements
     void
     Programmable::operator() (
         ImpactXParticleContainer::iterator & pti,
-        RefPart & ref_part
+        RefPart & ref_part,
+        bool /* spin */
     ) const
     {
         if (m_beam_particles == nullptr)

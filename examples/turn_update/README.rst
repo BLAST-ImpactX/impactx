@@ -1,6 +1,6 @@
 .. _examples-turn-update:
 
-Turn-Dependend Element Changes
+Turn-Dependent Element Changes
 ==============================
 
 10 periods of drift elements, where each drift is a stand-in for a "turn" map.

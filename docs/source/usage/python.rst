@@ -70,6 +70,9 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
+      * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
+        longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
+
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
         When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
@@ -92,16 +95,11 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_gauss_charge_z_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``129``).
-
-      * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
-        longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
-
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+      Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
 
    .. py:property:: space_charge_num_longitudinal_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``100``).
+      Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.
 
    .. py:property:: space_charge_apply_longitudinal_kick
 
@@ -112,8 +110,7 @@ Collective Effects & Overall Simulation Parameters
       The numerical solver to solve the Poisson equation when calculating space charge effects.
       Either ``"fft"`` (default) or ``"multigrid"``.
 
-      Currently, the multigrid solver supports only 3D space charge.  The fft solver supports either 2D or 3D space charge.
-      An additional `2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
+      Currently, the multigrid solver supports only 3D space charge.  The fft solver supports 2D, 2.5D or 3D space charge.
 
       * ``fft``: Poisson's equation is solved using an Integrated Green Function method (which requires FFT calculations).
         See these references for more details `Qiang et al. (2006) <https://doi.org/10.1103/PhysRevSTAB.9.044204>`__ (+ `Erratum <https://doi.org/10.1103/PhysRevSTAB.10.129901>`__).
@@ -205,6 +202,13 @@ Collective Effects & Overall Simulation Parameters
       Flag specifying whether ISR is to be applied to the reference particle.  When ``sim.isr_on_ref_part = False``, the reference particle does not lose energy due to radiation, and the
       mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
       When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
+
+   .. py:property:: spin
+
+      Enable (``True``) or disable (``False``) particle spin tracking (default: ``False``).
+
+      Whether to track particle spin.
+      Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
 
    .. py:property:: diagnostics
 
@@ -783,6 +787,16 @@ This module provides elements and methods for the accelerator lattice.
       :return: True if at least one element of the specified kind exists
       :rtype: bool
 
+   .. py::method:: transfer_map(ref, order="linear", fallback_identity_map=False)
+
+      Calculate the transfer map of the elements in the list.
+
+      :param ref: A reference particle.
+      :param order: So far, only the calculation of linear transfer maps is supported.
+      :param fallback_identity_map: For elements with an undefined transfer map in the lattice, assume the identity matrix.
+      :return: The transfer map of all elements in the list.
+      :rtype: Map6x6
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.
@@ -791,7 +805,6 @@ This module provides elements and methods for the accelerator lattice.
 
       Either populates the matplotlib axes in ax or creates a new axes containing the plot.
 
-      :param self: The KnownElementsList class in ImpactX
       :param ref: A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.

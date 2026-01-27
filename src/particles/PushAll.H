@@ -42,6 +42,11 @@ namespace impactx
         std::string const profile_name = "impactx::push::" + std::string(T_Element::type);
         BL_PROFILE(profile_name);
 
+        // is spin tracking enabled?
+        bool spin = false;
+        amrex::ParmParse pp_algo("algo");
+        pp_algo.query("spin", spin);
+
         // preparing to access reference particle data: RefPart
         RefPart & ref_part = pc.GetRefParticle();
 
@@ -62,7 +67,7 @@ namespace impactx
 #endif
             for (ParIt pti(pc, lev); pti.isValid(); ++pti) {
                 // push beam particles relative to reference particle
-                element(pti, ref_part);
+                element(pti, ref_part, spin);
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }

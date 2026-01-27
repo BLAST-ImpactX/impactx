@@ -2661,8 +2661,6 @@ void init_elements(py::module& m)
 
                     // advance linear transfer map
                     linear_transfer_map = element_transport_map * linear_transfer_map;
-                    // TODO: shorthand needs https://github.com/AMReX-Codes/amrex/pull/4880 from AMReX 26.02+
-                    // result *= element_transport_map;
                 }
                 return linear_transfer_map;
             },

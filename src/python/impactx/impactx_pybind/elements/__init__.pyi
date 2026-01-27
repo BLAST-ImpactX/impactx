@@ -1714,6 +1714,15 @@ class KnownElementsList:
             # All modifications affect the original lattice elements
         """
     def size(self) -> int: ...
+    def transfer_map(
+        self,
+        ref: impactx.impactx_pybind.RefPart,
+        order: str = "linear",
+        fallback_identity_map: bool = False,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Calculate the transfer map of the elements in the list.
+        """
 
 class LinearMap(mixin.Named, mixin.Alignment):
     def __init__(

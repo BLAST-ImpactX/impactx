@@ -9,6 +9,7 @@
 #include <elements/All.H>
 #include <elements/mixin/lineartransport.H>
 #include <elements/transformation/Insert.H>
+#include <particles/CovarianceMatrix.H>
 
 #include <AMReX_Enum.H>
 #include <AMReX_REAL.H>
@@ -20,7 +21,6 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <particles/transformation/CoordinateTransformation.H>
 
 namespace py = pybind11;
 using namespace impactx;
@@ -313,7 +313,7 @@ void init_elements(py::module& m)
         )
     ;
 
-    /*
+    /* TODO
     py::class_<elements::mixin::LinearTransport>(mx, "LinearTransport")
         // type of map
         .def_property_readonly_static("Map6x6",
@@ -2615,6 +2615,60 @@ void init_elements(py::module& m)
             auto it = std::next(v.begin(), index);
             return *it;  // return by reference
         }, py::return_value_policy::reference_internal)
+
+        .def(
+            "transfer_map",
+            [](
+                KnownElementsList &v,
+                RefPart ref, // note: intentional copy
+                std::string order,
+                bool fallback_identity_map
+            )
+            {
+                if (order != "linear") {
+                    throw std::runtime_error("So far, only the calculation of linear transfer maps are supported in this function.");
+                }
+                Map6x6 linear_transfer_map = Map6x6::Identity();
+                for (auto & el_v : v)
+                {
+                    // advance reference particle
+                    std::visit([&ref](auto && el) {
+                        el(ref);
+                    }, el_v);
+
+                    // extract element transport map, handle fallback
+                    Map6x6 element_transport_map = Map6x6::Identity();
+                    std::visit([&ref, &fallback_identity_map, &element_transport_map](auto const & el) {
+                        using Element = std::decay_t<decltype(el)>;
+                        std::string not_impl_msg = "Undefined transfer map in lattice for element ";
+                        if (el.has_name()) not_impl_msg += el.name() + " ";
+                        not_impl_msg += std::string("of type ") + Element::type;
+
+                        if constexpr (std::is_base_of_v<elements::mixin::LinearTransport<Element>, Element>) {
+                            try {
+                                element_transport_map = el.transport_map(ref);
+                            } catch (std::exception const &) {
+                                if (!fallback_identity_map) {
+                                    throw std::runtime_error(not_impl_msg);
+                                }
+                            }
+                        } else {
+                            if (!fallback_identity_map) {
+                                throw std::runtime_error(not_impl_msg);
+                            }
+                        }
+                    }, el_v);
+
+                    // advance linear transfer map
+                    linear_transfer_map = element_transport_map * linear_transfer_map;
+                }
+                return linear_transfer_map;
+            },
+            py::arg("ref"),
+            py::arg("order") = "linear",
+            py::arg("fallback_identity_map") = false,
+            "Calculate the transfer map of the elements in the list."
+            )
     ;
 
 

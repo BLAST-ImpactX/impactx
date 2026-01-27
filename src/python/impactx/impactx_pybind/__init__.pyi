@@ -502,6 +502,13 @@ class ImpactX:
     @space_charge_num_longitudinal_bins.setter
     def space_charge_num_longitudinal_bins(self, arg1: typing.SupportsInt) -> None: ...
     @property
+    def spin(self) -> bool:
+        """
+        Enable or disable particle spin tracking (default: disabled).
+        """
+    @spin.setter
+    def spin(self, arg1: bool) -> None: ...
+    @property
     def tiny_profiler(self) -> bool:
         """
         This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.
@@ -770,6 +777,12 @@ class RefPart:
         """
         Set reference particle charge (positive elementary charge) [q_e]
         """
+    def set_gyromagnetic_anomaly(
+        self, gyromagnetic_anomaly: typing.SupportsFloat
+    ) -> RefPart:
+        """
+        Set reference particle gyromagnetic anomaly value (for spin tracking)
+        """
     def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
         """
         Set reference particle kinetic energy [MeV]
@@ -805,6 +818,13 @@ class RefPart:
         """
         Get reference particle relativistic gamma
         """
+    @property
+    def gyromagnetic_anomaly(self) -> float:
+        """
+        reference particle gyromagnetic anomaly [unitless]
+        """
+    @gyromagnetic_anomaly.setter
+    def gyromagnetic_anomaly(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def kin_energy_MeV(self) -> float:
         """
@@ -1056,6 +1076,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "25.12"
+__version__: str = "26.01"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

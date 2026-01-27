@@ -40,6 +40,7 @@ namespace impactx
         amrex::ParticleReal pt = 0.0; ///< energy, normalized by rest energy
         amrex::ParticleReal mass = 0.0; ///< reference rest mass, in kg
         amrex::ParticleReal charge = 0.0; ///< reference charge, in C
+        amrex::ParticleReal gyromagnetic_anomaly = 0.0; ///< anomalous magnetic moment [unitless]
 
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
         amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
@@ -250,6 +251,23 @@ namespace impactx
         {
             return charge / mass;
         }
+
+        /** Set reference particle anomalous magnetic dipole moment
+         *  (aka gyromagnetic anomaly).
+         *
+         * @param gyromagnetic_anomaly_ref unitless
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        RefPart &
+        set_gyromagnetic_anomaly (amrex::ParticleReal const gyromagnetic_anomaly_ref)
+        {
+            using namespace amrex::literals;
+
+            this->gyromagnetic_anomaly = gyromagnetic_anomaly_ref;
+
+            return *this;
+        }
+
     };
 
 } // namespace impactx

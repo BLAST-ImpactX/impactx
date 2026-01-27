@@ -340,7 +340,6 @@ namespace impactx::elements
 
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/beta_ref + powi<2>(pt));
-            T_Real const delta = delta1 - 1_prt;
 
             // compute particle relativistic gamma
             T_Real const gamma = gamma_ref * (1_prt - beta_ref*gamma_ref*pt);

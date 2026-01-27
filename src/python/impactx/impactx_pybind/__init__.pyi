@@ -777,6 +777,12 @@ class RefPart:
         """
         Set reference particle charge (positive elementary charge) [q_e]
         """
+    def set_gyromagnetic_anomaly(
+        self, gyromagnetic_anomaly: typing.SupportsFloat
+    ) -> RefPart:
+        """
+        Set reference particle gyromagnetic anomaly value (for spin tracking)
+        """
     def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
         """
         Set reference particle kinetic energy [MeV]
@@ -812,6 +818,13 @@ class RefPart:
         """
         Get reference particle relativistic gamma
         """
+    @property
+    def gyromagnetic_anomaly(self) -> float:
+        """
+        reference particle gyromagnetic anomaly [unitless]
+        """
+    @gyromagnetic_anomaly.setter
+    def gyromagnetic_anomaly(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def kin_energy_MeV(self) -> float:
         """

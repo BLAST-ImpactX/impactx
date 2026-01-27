@@ -351,8 +351,8 @@ namespace impactx::elements
 
             // compute trigonometric quantities
             auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*slice_ds);
-            T_Real const sinh_omega_ds = std::sinh(omega*slice_ds);
-            T_Real const cosh_omega_ds = std::cosh(omega*slice_ds);
+            T_Real const sinh_omega_ds = sinh(omega*slice_ds);
+            T_Real const cosh_omega_ds = cosh(omega*slice_ds);
 
             if (m_g > 0.0_prt)
             {

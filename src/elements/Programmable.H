@@ -65,7 +65,8 @@ namespace impactx::elements
         /** Push all particles relative to the reference particle */
         void operator() (
             ImpactXParticleContainer::iterator & pti,
-            RefPart & ref_part
+            RefPart & ref_part,
+            [[maybe_unused]] bool spin
         ) const;
 
         /** This pushes the reference particle.
@@ -132,7 +133,7 @@ namespace impactx::elements
         bool m_threadsafe = false;
 
         std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
-        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles
+        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
         std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
         std::function<void()> m_finalize; //! hook for finalize cleanup
     };

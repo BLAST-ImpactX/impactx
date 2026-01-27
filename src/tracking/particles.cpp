@@ -91,10 +91,13 @@ namespace impactx
         pp_algo.query("csr", csr);
         bool isr = false;
         pp_algo.query("isr", isr);
+        bool spin = false;
+        pp_algo.query("spin", spin);
 
         if (verbose > 0) {
             amrex::Print() << " CSR effects: " << csr << "\n";
             amrex::Print() << " ISR effects: " << isr << "\n";
+            amrex::Print() << " Spin tracking: " << spin << "\n";
         }
 
         // periods through the lattice

@@ -931,6 +931,21 @@ See there ``nslice`` option on lattice elements for slicing.
 
   * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
+  * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
+    longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
+
+    This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
+
+    This model supports the following sub-options:
+
+    * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``100``)
+
+      The number of bins for longitudinal line density deposition.
+
+    * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``true``)
+
+      Enable or disable the longitudinal space charge kick.
+
   * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
     When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
@@ -956,21 +971,6 @@ See there ``nslice`` option on lattice elements for slicing.
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 
       Number of bins for longitudinal line density deposition.
-
-  * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
-longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
-
-    This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-
-    This model supports the following sub-options:
-
-    * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``100``)
-
-      The number of bins for longitudinal line density deposition.
-
-    * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``true``)
-
-      Enable or disable the longitudinal space charge kick.
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 
@@ -1134,6 +1134,22 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
 .. note::
 
    ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+
+
+.. _running-cpp-parameters-spin:
+
+Spin Tracking
+^^^^^^^^^^^^^
+
+Spin tracking is performed by updating the particle spin 3-vector in the presence of each element's electromagnetic fields, using methods based on the Thomas-BMT equation.
+By construction, all spin tracking methods rely on pushing particles using spin maps that lie in SO(3).  The algorithm implemented for each element is consistent with the algorithm
+used for pushing the phase space vector.
+
+Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
+
+* ``algo.spin`` (``boolean``, optional, default: ``false``)
+
+  Whether to track particle spin.
 
 
 .. _running-cpp-parameters-parser:

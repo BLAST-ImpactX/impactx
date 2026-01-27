@@ -18,6 +18,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -36,6 +37,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element in DP, and no benefit in SP, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
@@ -350,18 +352,18 @@ namespace impactx::elements
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void spin_push (
+        void spin_and_phasespace_push (
             [[maybe_unused]] T_Real & AMREX_RESTRICT x,
             [[maybe_unused]] T_Real & AMREX_RESTRICT y,
             [[maybe_unused]] T_Real & AMREX_RESTRICT t,
             [[maybe_unused]] T_Real & AMREX_RESTRICT px,
             [[maybe_unused]] T_Real & AMREX_RESTRICT py,
             [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
-            T_Real & AMREX_RESTRICT sx,
-            T_Real & AMREX_RESTRICT sy,
-            T_Real & AMREX_RESTRICT sz
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -403,6 +405,8 @@ namespace impactx::elements
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
 
         amrex::ParticleReal m_rc; //! bend radius in m

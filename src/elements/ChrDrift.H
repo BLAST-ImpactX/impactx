@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -37,6 +38,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -218,29 +220,33 @@ namespace impactx::elements
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index
-         * @param refpart reference particle (unused)
          * @param sx particle spin x-component
          * @param sy particle spin y-component
          * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void spin_push (
+        void spin_and_phasespace_push (
             [[maybe_unused]] T_Real & AMREX_RESTRICT x,
             [[maybe_unused]] T_Real & AMREX_RESTRICT y,
             [[maybe_unused]] T_Real & AMREX_RESTRICT t,
             [[maybe_unused]] T_Real & AMREX_RESTRICT px,
             [[maybe_unused]] T_Real & AMREX_RESTRICT py,
             [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart,
             [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
             [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
              // spin is unaffected
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
         }
 
 

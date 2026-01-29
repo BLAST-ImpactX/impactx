@@ -69,9 +69,9 @@ namespace impactx::elements::mixin
             T_Real w1 = 0_prt;
             amrex::simd::stdx::where(non_zero_angle, w1) = lambdax * c_sin_half;
             T_Real w2 = 0_prt;
-            amrex::simd::stdx::where(non_zero_angle, w1) = lambday * c_sin_half;
+            amrex::simd::stdx::where(non_zero_angle, w2) = lambday * c_sin_half;
             T_Real w3 = 0_prt;
-            amrex::simd::stdx::where(non_zero_angle, w1) = lambdaz * c_sin_half;
+            amrex::simd::stdx::where(non_zero_angle, w3) = lambdaz * c_sin_half;
 #else
             T_Real w1 = non_zero_angle ? lambdax * c_sin_half : 0_prt;
             T_Real w2 = non_zero_angle ? lambday * c_sin_half : 0_prt;

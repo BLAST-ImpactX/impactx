@@ -614,43 +614,43 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanx=0.0, meany=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Gaussian distribution.
 
-   :param lambdax: phase space position axis intercept; for zero correlation, these are the related RMS sizes (in meters)
-   :param lambday: see lambdax
-   :param lambdat: see lambdax
-   :param lambdapx: phase space momentum axis intercept; for zero correlation, these are the related normalized RMS momenta (in radians)
-   :param lambdapy: see lambdapx
-   :param lambdapt: see lambdapx
+   :param lambdaX: phase space position axis intercept; for zero correlation, these are the related RMS sizes (in meters)
+   :param lambdaY: see lambdaX
+   :param lambdaT: see lambdaX
+   :param lambdaPx: phase space momentum axis intercept; for zero correlation, these are the related normalized RMS momenta (in radians)
+   :param lambdaPy: see lambdaPx
+   :param lambdaPt: see lambdaPx
    :param muxpx: correlation length-momentum
    :param muypy: see muxpx
    :param mutpt: see muxpx
-   :param meanx: mean value of x-coordinate
-   :param meany: see meanx
-   :param meant: see meant
-   :param meanpx: mean value of x-momentum
-   :param meanpy: see meanpx
-   :param meanpt: see meanpt
-   :param dispx: beam horizontal dispersion (in meters)
-   :param disppx: beam horizontal dispersion derivative (dimensionless)
-   :param dispy: see dispx
-   :param disppy: see disppx
+   :param meanX: mean value of x-coordinate
+   :param meanY: see meanX
+   :param meanT: see meanT
+   :param meanPx: mean value of x-momentum
+   :param meanPy: see meanPx
+   :param meanPt: see meanPt
+   :param dispX: beam horizontal dispersion (in meters)
+   :param dispPx: beam horizontal dispersion derivative (dimensionless)
+   :param dispY: see dispX
+   :param dispPy: see dispPx
 
-.. py:class:: impactx.distribution.Kurth4D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Kurth4D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 4D Kurth distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
 
-.. py:class:: impactx.distribution.Kurth6D(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Kurth6D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Kurth distribution.
 
    R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)
    C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
 
-.. py:class:: impactx.distribution.KVdist(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.KVdist(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A K-V distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
@@ -659,18 +659,18 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
    This distribution sets all values to zero.
 
-.. py:class:: impactx.distribution.Semigaussian(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Semigaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
 
-.. py:class:: impactx.distribution.Triangle(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Triangle(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A triangle distribution for laser-plasma acceleration related applications.
 
    A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
    The transverse distribution is a 4D waterbag.
 
-.. py:class:: impactx.distribution.Waterbag(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx=0.0, muypy=0.0, mutpt=0.0, meant=0.0, meanpx=0.0, meanpy=0.0, meanpt=0.0, dispx=0.0, disppx=0.0, dispy=0.0, disppy=0.0)
+.. py:class:: impactx.distribution.Waterbag(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Waterbag distribution.
 

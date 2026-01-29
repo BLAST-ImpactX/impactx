@@ -15,6 +15,15 @@ iterations = list(series.iterations)
 iter0 = iterations[0]
 iter1 = iterations[-1]
 
+s_by_iterations = np.array([ series.iterations[it].particles["beam"].get_attribute("s_ref") for it in iterations])
+npart_by_iterations = np.array( [ series.iterations[it].particles["beam"]["position"]["x"].shape[0] for it in iterations ] )
+
+plt.figure()
+plt.title("macroparticles")
+plt.plot(s_by_iterations, npart_by_iterations)
+plt.xlabel("s [m]")
+plt.ylabel("macroparticles")
+
 
 rbc_0 = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=1, max_rows=1)
 
@@ -97,6 +106,7 @@ print()
 
 
 
+plt.figure()
 plt.subplot(221)
 plt.suptitle('sigmas vs. slice')
 plt.plot(sigma_x, label='sigma_x')

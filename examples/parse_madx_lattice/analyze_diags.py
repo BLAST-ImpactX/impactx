@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import openpmd_api as io
 import scipy
-import openpmd_api as io
 
 # columns in rbc file
 # step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
@@ -15,8 +14,18 @@ iterations = list(series.iterations)
 iter0 = iterations[0]
 iter1 = iterations[-1]
 
-s_by_iterations = np.array([ series.iterations[it].particles["beam"].get_attribute("s_ref") for it in iterations])
-npart_by_iterations = np.array( [ series.iterations[it].particles["beam"]["position"]["x"].shape[0] for it in iterations ] )
+s_by_iterations = np.array(
+    [
+        series.iterations[it].particles["beam"].get_attribute("s_ref")
+        for it in iterations
+    ]
+)
+npart_by_iterations = np.array(
+    [
+        series.iterations[it].particles["beam"]["position"]["x"].shape[0]
+        for it in iterations
+    ]
+)
 
 plt.figure()
 plt.title("macroparticles")
@@ -105,7 +114,7 @@ print(
 print("sigma_x")
 print(sigma_x[:30])
 print()
-print('sigma_y')
+print("sigma_y")
 print(sigma_y[:30])
 print()
 
@@ -136,8 +145,7 @@ plt.subplot(223)
 plt.plot(s, sigma_t, label="sigma_t")
 plt.legend(loc="best")
 plt.subplot(224)
-plt.plot(s, charge, label='charge')
-plt.legend(loc='best')
+plt.plot(s, charge, label="charge")
+plt.legend(loc="best")
 
 plt.show()
-

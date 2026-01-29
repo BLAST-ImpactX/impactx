@@ -130,7 +130,7 @@ namespace impactx::elements
             std::string warning_message;
             if (m_R == 0_prt) {
                 warning_message.append(
-                 "In DipEdge user set R = 0.  This must be a positiv value.  Setting R=1. "
+                 "In DipEdge user has set R = 0.  This must be a positive value.  Setting R=1. "
                 );  
                ablastr::warn_manager::WMRecordWarning(
                 "elements::DipEdge",

@@ -856,7 +856,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 

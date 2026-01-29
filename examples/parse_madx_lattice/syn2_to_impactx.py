@@ -218,6 +218,7 @@ def cnv_rbend(elem, order):
         e2 = -e2 - bendangle / 2
 
     # model for dipedges
+    de_model = "foo"
     if order == Order.linear:
         de_model = "linear"
     elif order == Order.exact or order == Order.chr:
@@ -232,7 +233,7 @@ def cnv_rbend(elem, order):
             model=de_model,
             name=nm + "_usedge",
         )
-        pass
+
     if e2 != 0.0:
         ds_dipedge = impactx.elements.DipEdge(
             e2,
@@ -242,7 +243,6 @@ def cnv_rbend(elem, order):
             model=de_model,
             name=nm + "_dsedge",
         )
-        pass
 
     if elem.get_double_attribute("h1", 0.0) != 0.0:
         print("h1 attribute not supported for sbend in ImpactX")
@@ -582,7 +582,7 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
         elif etype == ET.hkicker or etype == ET.vkicker or etype == ET.kicker:
             # both H and V kickers handled by same routine since
             # ImpactX has only one type of kicker element
-            impactx_lattice.append(cnv_kicker(elem))
+            impactx_lattice.append(cnv_kicker(elem), order)
         elif etype == ET.nllens:
             raise RuntimeError("nllens not yet implemented")
             # impactx_lattice.append(cnv_nllens(elem))

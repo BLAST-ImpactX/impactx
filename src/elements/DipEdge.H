@@ -26,7 +26,7 @@
 
 #include <cmath>
 #include <stdexcept>
-
+#include <ablastr/warn_manager/WarnManager.H>
 
 namespace impactx::elements
 {
@@ -125,6 +125,20 @@ namespace impactx::elements
             using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
+
+            // verify that the length scale constant R > 0
+            std::string warning_message;
+            if (m_R == 0_prt) {
+                warning_message.append(
+                 "In DipEdge user set R = 0.  This must be a positiv value.  Setting R=1. "
+                );  
+               ablastr::warn_manager::WMRecordWarning(
+                "elements::DipEdge",
+                   warning_message,
+                   ablastr::warn_manager::WarnPriority::medium
+               );
+               m_R = 1_prt;
+            }
 
             // constants for linear map:
 

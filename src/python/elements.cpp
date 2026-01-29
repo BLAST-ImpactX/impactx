@@ -864,7 +864,7 @@ void init_elements(py::module& m)
             {
                  if (R < 0.0)
                      throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
-                     R = 1
+                     R = 1;
 
                 dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
                 dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);

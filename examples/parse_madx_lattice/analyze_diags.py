@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-import sys, os
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import openpmd_api as io
 import scipy
 import openpmd_api as io
 
 # columns in rbc file
-#step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
+# step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
 
 
-series = io.Series('diags/openPMD/monitor.h5', io.Access.read_only)
+series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 iterations = list(series.iterations)
 iter0 = iterations[0]
 iter1 = iterations[-1]
@@ -87,51 +87,54 @@ emittance_xn = rbc[:, 39]
 emittance_yn = rbc[:, 40]
 emittance_tn = rbc[:, 41]
 
-charge = rbc[:, 42]/scipy.constants.eV
+charge = rbc[:, 42] / scipy.constants.eV
 
 
-
-print('initial rbc stdx: ', sigma_x[0])
-print('initial monitor stdx: ', series.iterations[iter0].particles["beam"].get_attribute("sigma_x"))
+print("initial rbc stdx: ", sigma_x[0])
+print(
+    "initial monitor stdx: ",
+    series.iterations[iter0].particles["beam"].get_attribute("sigma_x"),
+)
 print()
-print('final rbc std: ', sigma_x[-1])
-print('final monitor stdx: ', series.iterations[iter1].particles["beam"].get_attribute("sigma_x"))
+print("final rbc std: ", sigma_x[-1])
+print(
+    "final monitor stdx: ",
+    series.iterations[iter1].particles["beam"].get_attribute("sigma_x"),
+)
 
-print('sigma_x')
+print("sigma_x")
 print(sigma_x[:30])
 print()
 print('sigma_y')
 print(sigma_y[:30])
 print()
 
-
-
 plt.figure()
 plt.subplot(221)
-plt.suptitle('sigmas vs. slice')
-plt.plot(sigma_x, label='sigma_x')
-plt.legend(loc='best')
+plt.suptitle("sigmas vs. slice")
+plt.plot(sigma_x, label="sigma_x")
+plt.legend(loc="best")
 plt.subplot(222)
-plt.plot(sigma_y, label='sigma_y')
-plt.legend(loc='best')
+plt.plot(sigma_y, label="sigma_y")
+plt.legend(loc="best")
 plt.subplot(223)
-plt.plot(sigma_t, label='sigma_t')
-plt.legend(loc='best')
+plt.plot(sigma_t, label="sigma_t")
+plt.legend(loc="best")
 plt.subplot(224)
-plt.plot(charge, label='charge')
-plt.legend(loc='best')
+plt.plot(charge, label="charge")
+plt.legend(loc="best")
 
 plt.figure()
-plt.suptitle('sigmas vs. s')
+plt.suptitle("sigmas vs. s")
 plt.subplot(221)
-plt.plot(s, sigma_x, label='sigma_x')
-plt.legend(loc='best')
+plt.plot(s, sigma_x, label="sigma_x")
+plt.legend(loc="best")
 plt.subplot(222)
-plt.plot(s, sigma_y, label='sigma_y')
-plt.legend(loc='best')
+plt.plot(s, sigma_y, label="sigma_y")
+plt.legend(loc="best")
 plt.subplot(223)
-plt.plot(s, sigma_t, label='sigma_t')
-plt.legend(loc='best')
+plt.plot(s, sigma_t, label="sigma_t")
+plt.legend(loc="best")
 plt.subplot(224)
 plt.plot(s, charge, label='charge')
 plt.legend(loc='best')

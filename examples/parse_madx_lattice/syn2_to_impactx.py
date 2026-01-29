@@ -110,7 +110,7 @@ def cnv_sbend(elem, order):
             e1,
             radius_of_curvature,
             2 * hgap,
-            K2 = fint,
+            K2=fint,
             location="entry",
             model=de_model,
             name=nm + "_usedge",
@@ -118,7 +118,12 @@ def cnv_sbend(elem, order):
         pass
     if e2 != 0.0:
         ds_dipedge = impactx.elements.DipEdge(
-            e2, radius_of_curvature, 2 * hgap, K2=fint, model=de_model, name=nm + "_dsedge"
+            e2,
+            radius_of_curvature,
+            2 * hgap,
+            K2=fint,
+            model=de_model,
+            name=nm + "_dsedge",
         )
         pass
 
@@ -220,12 +225,22 @@ def cnv_rbend(elem, order):
 
     if e1 != 0.0:
         us_dipedge = impactx.elements.DipEdge(
-            e1, radius_of_curvature, 2 * hgap, K2=fint, model=de_model, name=nm + "_usedge"
+            e1,
+            radius_of_curvature,
+            2 * hgap,
+            K2=fint,
+            model=de_model,
+            name=nm + "_usedge",
         )
         pass
     if e2 != 0.0:
         ds_dipedge = impactx.elements.DipEdge(
-            e2, radius_of_curvature, 2 * hgap, K2=fint, model=de_model, name=nm + "_dsedge"
+            e2,
+            radius_of_curvature,
+            2 * hgap,
+            K2=fint,
+            model=de_model,
+            name=nm + "_dsedge",
         )
         pass
 
@@ -351,7 +366,7 @@ def cnv_rfcavity(elem, refpart, order):
     mp = refpart.get_mass()
     # The cavity voltage is in relationship to the reference particle mass
     # The MAD-X convention is for the voltage to be in MV
-    rfvolt = elem.get_double_attribute("volt", 0.0) / 1000.0 # convert to GV
+    rfvolt = elem.get_double_attribute("volt", 0.0) / 1000.0  # convert to GV
     freq = elem.get_double_attribute("freq", 0.0) * 1.0e6  # get the freq in Hz
     phase = elem.get_double_attribute("lag", 0.0) * 360.0 - 90.0
     # if cavity length > 0, create two drifts to sandwich it
@@ -378,31 +393,32 @@ def cnv_rfcavity(elem, refpart, order):
         RFunit = [d1, RFelem, d2]
     return RFunit
 
+
 def cnv_kicker(elem, order):
     L = elem.get_length()
     ename = elem.get_name()
-    
+
     xkick = 0.0
     ykick = 0.0
     if elem.get_type() == ET.hkicker:
-        if elem.has_double_attribute('kick'):
-            xkick = elem.get_double_attribute('kick')
-        elif elem.has_double_attribute('hkick'):
+        if elem.has_double_attribute("kick"):
+            xkick = elem.get_double_attribute("kick")
+        elif elem.has_double_attribute("hkick"):
             # some lattice files use hkick attribute instead of kick
-            xkick = elem.get_double_attribute('hkick')
+            xkick = elem.get_double_attribute("hkick")
 
     elif elem.get_type() == ET.vkicker:
-        if elem.has_double_attribute('kick'):
-            ykick = elem.get_double_attribute('kick')
-        elif elem.has_double_attribute('vkick'):
+        if elem.has_double_attribute("kick"):
+            ykick = elem.get_double_attribute("kick")
+        elif elem.has_double_attribute("vkick"):
             # some lattice files use vkick attribute instead of kick
-            ykick = elem.get_double_attribute('vkick')
+            ykick = elem.get_double_attribute("vkick")
 
     elif elem.get_type() == ET.kicker:
-        if elem.has_double_attribute('hkick'):
-            xkick = elem.get_double_attribute('hkick')
-        if elem.has_double_attribute('vkick'):
-            ykick = elem.get_double_attribute('vkick')
+        if elem.has_double_attribute("hkick"):
+            xkick = elem.get_double_attribute("hkick")
+        if elem.has_double_attribute("vkick"):
+            ykick = elem.get_double_attribute("vkick")
 
     kickelem = impactx.elements.Kicker(xkick=xkick, ykick=ykick, name=ename)
 
@@ -411,16 +427,17 @@ def cnv_kicker(elem, order):
         return kickelem
     # if length is >0, create drifts on both sides of the
     # thin kick
-    
+
     if order == Order.linear:
-        d1 = impactx.elements.Drift(L/2, nslice=1, name=f"{ename}_U")
-        d2 = impactx.elements.Drift(L/2, nslice=1, name=f"{ename}_D")
+        d1 = impactx.elements.Drift(L / 2, nslice=1, name=f"{ename}_U")
+        d2 = impactx.elements.Drift(L / 2, nslice=1, name=f"{ename}_D")
     else:
-        d1 = impactx.elements.ExactDrift(L/2, nslice=1, name=f"{ename}_U")
-        d2 = impactx.elements.ExactDrift(L/2, nslice=1, name=f"{ename}_D")
+        d1 = impactx.elements.ExactDrift(L / 2, nslice=1, name=f"{ename}_U")
+        d2 = impactx.elements.ExactDrift(L / 2, nslice=1, name=f"{ename}_D")
 
     kickunit = [d1, kickelem, d2]
     return kickunit
+
 
 # Hi Rob,
 
@@ -568,7 +585,7 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
             impactx_lattice.append(cnv_kicker(elem))
         elif etype == ET.nllens:
             raise RuntimeError("nllens not yet implemented")
-            #impactx_lattice.append(cnv_nllens(elem))
+            # impactx_lattice.append(cnv_nllens(elem))
         elif etype == ET.dipedge:
             impactx_lattice.append(cnv_dipedge(elem, order))
         elif etype == ET.rfcavity:

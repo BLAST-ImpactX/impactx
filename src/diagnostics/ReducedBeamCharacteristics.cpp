@@ -97,7 +97,7 @@ namespace impactx::diagnostics
                 return {p_w,
                         p_x_mean, p_y_mean, p_t_mean,
                         p_px_mean, p_py_mean, p_pt_mean,
-                        p_sx_mean, p_sy_mean, p_sz_mean, 
+                        p_sx_mean, p_sy_mean, p_sz_mean,
                         p_x, p_y, p_t, p_px, p_py, p_pt,
                         p_x, p_y, p_t, p_px, p_py, p_pt,
                         p_sx, p_sy, p_sz};
@@ -132,7 +132,7 @@ namespace impactx::diagnostics
         amrex::ParticleReal const mean_pt = values_per_rank_1st.at(6) /= w_sum;
         amrex::ParticleReal const mean_sx = values_per_rank_1st.at(7) /= w_sum;
         amrex::ParticleReal const mean_sy = values_per_rank_1st.at(8) /= w_sum;
-        amrex::ParticleReal const mean_sz = values_per_rank_1st.at(9) /= w_sum; 
+        amrex::ParticleReal const mean_sz = values_per_rank_1st.at(9) /= w_sum;
 
         std::vector<amrex::ParticleReal> values_per_rank_min(num_red_ops_1_min);
 
@@ -481,7 +481,7 @@ namespace impactx::diagnostics
         data["mean_sz"] = mean_sz;
         data["sigma_sx"] = sigma_sx;
         data["sigma_sy"] = sigma_sy;
-        data["sigma_sz"] = sigma_sz; 
+        data["sigma_sz"] = sigma_sz;
 
         return data;
     }

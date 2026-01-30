@@ -1871,11 +1871,13 @@ add_impactx_test(quad-spin
     examples/spin_tracking/input_quad_spin.in
     ON   # ImpactX MPI-parallel
     examples/spin_tracking/analysis_quad_spin.py
+    examples/spin_tracking/analysis_quad_spin_rbc.py
     OFF  # no plot script yet
 )
 add_impactx_test(quad-spin.py
     examples/spin_tracking/run_quad_spin.py
     ON    # ImpactX MPI-parallel
     examples/spin_tracking/analysis_quad_spin.py
+    examples/spin_tracking/analysis_quad_spin_rbc.py
     OFF  # no plot script yet
 )

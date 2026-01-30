@@ -77,7 +77,7 @@ namespace
             if (compute_spin_moments)
             {
                 file_handler << " "
-                             << "mean_sx" << " " << "mean_sy" << " " << "mean_sz"
+                             << "mean_sx" << " " << "mean_sy" << " " << "mean_sz" << " "
                              << "sigma_sx" << " " << "sigma_sy" << " " << "sigma_sz";
             }
             file_handler << " " << "charge_C"

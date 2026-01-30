@@ -6,7 +6,7 @@
 #
 
 import numpy as np
-import openpmd_api as io
+
 
 # Load data from envelope simulation
 def read_time_series(file_pattern):
@@ -17,12 +17,12 @@ def read_time_series(file_pattern):
     -------
     pandas.DataFrame
     """
-    
+
     import glob
     import re
-    
+
     import pandas as pd
-    
+
     def read_file(file_pattern):
         for filename in glob.glob(file_pattern):
             df = pd.read_csv(filename, delimiter=r"\s+")
@@ -36,6 +36,7 @@ def read_time_series(file_pattern):
         axis=0,
         ignore_index=True,
     )  # .set_index('id')
+
 
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
@@ -126,4 +127,3 @@ assert np.allclose(
     ],
     atol=atol,
 )
-

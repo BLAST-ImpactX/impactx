@@ -582,7 +582,7 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
         elif etype == ET.hkicker or etype == ET.vkicker or etype == ET.kicker:
             # both H and V kickers handled by same routine since
             # ImpactX has only one type of kicker element
-            impactx_lattice.append(cnv_kicker(elem), order)
+            impactx_lattice.append(cnv_kicker(elem, order))
         elif etype == ET.nllens:
             raise RuntimeError("nllens not yet implemented")
             # impactx_lattice.append(cnv_nllens(elem))

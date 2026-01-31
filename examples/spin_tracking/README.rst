@@ -41,10 +41,18 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 Analyze
 -------
 
-We run the following script to analyze correctness:
+The analysis can be run using **either** of the following scripts:
+
 
 .. dropdown:: Script ``analysis_quad_spin.py``
 
    .. literalinclude:: analysis_quad_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_quad_spin.py``.
+
+.. dropdown:: Script ``analysis_quad_spin_rbc.py``
+
+   .. literalinclude:: analysis_quad_spin_rbc.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_quad_spin_rbc.py``.
+

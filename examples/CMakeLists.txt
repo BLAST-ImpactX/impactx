@@ -1896,4 +1896,3 @@ add_impactx_test(quad-spin.py
     examples/spin_tracking/analysis_quad_spin_rbc.py
     OFF  # no plot script yet
 )
-

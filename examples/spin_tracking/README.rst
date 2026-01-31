@@ -55,4 +55,3 @@ The analysis can be run using **either** of the following scripts:
    .. literalinclude:: analysis_quad_spin_rbc.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_quad_spin_rbc.py``.
-

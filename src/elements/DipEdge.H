@@ -27,6 +27,7 @@
 #include <cmath>
 #include <stdexcept>
 
+
 namespace impactx::elements
 {
     namespace dipedge

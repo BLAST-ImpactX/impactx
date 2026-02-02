@@ -215,13 +215,8 @@ namespace detail
             pp_element.queryAdd("location", location_str);
             dipedge::Location const location = amrex::getEnum<dipedge::Location>(location_str);
 
-            if (R < 0) {
-                ablastr::warn_manager::WMRecordWarning(
-                    "ImpactX::read_element",
-                    element_name + " User passed R < 0 to DipEdge.  Please set R > 0. ",
-                    ablastr::warn_manager::WarnPriority::high
-                    );
-                    R = 1;
+            if (R <= 0) {
+                throw std::runtime_error(element_name + ".R must be >0 but is: " + std::to_string(R));
             }
 
             m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, a["dx"], a["dy"], a["rotation_degree"], element_name) );

@@ -99,7 +99,6 @@ namespace impactx::diagnostics
                         p_px_mean, p_py_mean, p_pt_mean,
                         p_sx_mean, p_sy_mean, p_sz_mean,
                         p_x, p_y, p_t, p_px, p_py, p_pt,
-                        p_x, p_y, p_t, p_px, p_py, p_pt,
                         p_x, p_y, p_t, p_px, p_py, p_pt};
             },
             reduce_ops_1

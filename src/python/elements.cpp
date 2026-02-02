@@ -905,7 +905,11 @@ void init_elements(py::module& m)
         )
         .def_property("R",
             [](DipEdge & dip_edge) { return dip_edge.m_R; },
-            [](DipEdge & dip_edge, amrex::ParticleReal R) { dip_edge.m_R = R; },
+            [](DipEdge & dip_edge, amrex::ParticleReal R) {
+                if (R <= 0.0)
+                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+                dip_edge.m_R = R;
+            },
             "Length scale for field integrals in m"
         )
         .def_property("K0",

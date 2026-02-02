@@ -49,7 +49,7 @@ namespace impactx::diagnostics
          * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
          */
         // numbers of same type reduction operations in first concurrent batch
-        static constexpr std::size_t num_red_ops_1_sum = 13;  // summation
+        static constexpr std::size_t num_red_ops_1_sum = 10;  // summation
         static constexpr std::size_t num_red_ops_1_min = 6;  // minimum
         static constexpr std::size_t num_red_ops_1_max = 6;  // maximum
 
@@ -100,7 +100,7 @@ namespace impactx::diagnostics
                         p_sx_mean, p_sy_mean, p_sz_mean,
                         p_x, p_y, p_t, p_px, p_py, p_pt,
                         p_x, p_y, p_t, p_px, p_py, p_pt,
-                        p_sx, p_sy, p_sz};
+                        p_x, p_y, p_t, p_px, p_py, p_pt};
             },
             reduce_ops_1
         );

@@ -629,10 +629,10 @@ For the input from Twiss parameters in Python, please use the helper function ``
    :param mutpt: see muxpx
    :param meanX: mean value of x-coordinate
    :param meanY: see meanX
-   :param meanT: see meanT
+   :param meanT: see meanX
    :param meanPx: mean value of x-momentum
    :param meanPy: see meanPx
-   :param meanPt: see meanPt
+   :param meanPt: see meanPx
    :param dispX: beam horizontal dispersion (in meters)
    :param dispPx: beam horizontal dispersion derivative (dimensionless)
    :param dispY: see dispX

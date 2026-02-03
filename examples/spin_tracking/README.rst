@@ -95,5 +95,3 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_fodo_channel_spin.in
           :language: ini
           :caption: You can copy this file from ``examples/spin_tracking/input_fodo_channel_spin.in``.
-
-

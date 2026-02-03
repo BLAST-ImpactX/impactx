@@ -1895,7 +1895,7 @@ add_impactx_test(quad-spin-rbc.py
     OFF  # no plot script yet
 )
 
-    
+
 # Spin Depolarization in a FODO Channel ###################
 # without space charge
 add_impactx_test(fodo-spin
@@ -1910,4 +1910,3 @@ add_impactx_test(fodo-spin.py
     examples/spin_tracking/analysis_fodo_channel_spin.py
     OFF  # no plot script yet
 )
-

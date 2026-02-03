@@ -61,9 +61,9 @@ assert np.allclose(
 print("")
 print("Final Beam:")
 polarization_x, polarization_y, polarization_z = get_polarization(final)
-print(  
+print(
     f"  polarization_x={polarization_x:e} polarization_y={polarization_y:e} polarization_z={polarization_z:e}"
-)       
+)
 
 atol = 2.0 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  atol={atol}")

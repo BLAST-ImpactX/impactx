@@ -55,3 +55,45 @@ The analysis can be run using **either** of the following scripts:
    .. literalinclude:: analysis_quad_spin_rbc.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_quad_spin_rbc.py``.
+
+
+.. _examples-fodo-spin:
+
+Spin Depolarization in a FODO Channel
+======================================
+
+This example illustrates the decay of the polarization vector (describing the mean of the three spin components) for a matched beam in a FODO channel.
+
+We use a 10 GeV electron beam, with an initially 6D Gaussian distribution in the phase space.  The FODO channel and Twiss parameters are otherwise identical to
+those appearing in examples/fodo_channel.
+
+The beam spin undergoes rapid mixing and depolarization.
+
+In this test, the initial and final values of :math:`\polarization_x`, :math:`\polarization_y`, and :math:`\polarization_z` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_fodo_channel_spin.py`` or
+* ImpactX **executable** using an input file: ``impactx input_fodo_channel_spin.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_fodo_channel_spin.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_fodo_channel_spin.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_fodo_channel_spin.in
+          :language: ini
+          :caption: You can copy this file from ``examples/spin_tracking/input_fodo_channel_spin.in``.
+
+

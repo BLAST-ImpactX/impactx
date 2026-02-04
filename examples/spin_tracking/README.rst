@@ -67,7 +67,7 @@ bending in the x-z plane in a sector dipole.
 
 We use a 2 GeV electron beam.  The beam parameters (in particular, the momentum and energy spread) are artificially large in order to enhance the effect.
 
-The beam propagates over one period, as set by the design spin tune.  By increasing the number of slices, and turning on diagnostics, one can view precession of the polarization vector about 
+The beam propagates over one period, as set by the design spin tune.  By increasing the number of slices, and turning on diagnostics, one can view precession of the polarization vector about
 the vertical direction.  A clean precession over 1 period becomes visible when the beam size, momentum spread, and energy spread are set to small values.
 
 In this test, the initial and final values of :math:`\polarization_x`, :math:`\polarization_y`, and :math:`\polarization_z` must agree with nominal values.

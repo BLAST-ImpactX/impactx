@@ -1909,4 +1909,3 @@ add_impactx_test(sbend-spin.py
     examples/spin_tracking/analysis_sbend_spin_rbc.py
     OFF  # no plot script yet
 )
-

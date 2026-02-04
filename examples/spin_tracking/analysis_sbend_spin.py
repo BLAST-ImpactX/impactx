@@ -45,9 +45,9 @@ Pxi = 0.4  # polarization_x from input
 Pyi = 0.9  # polarization_y from input
 Pzi = 0.1  # polarization_z from input
 
-rel_gamma = 3914.902367118367246  #relativistic gamma
-rel_beta = 0.999999967376681  #relativistic beta
-h = 1.0/10.0 # 1/radius of bend curvature from input
+rel_gamma = 3914.902367118367246  # relativistic gamma
+rel_beta = 0.999999967376681  # relativistic beta
+h = 1.0 / 10.0  # 1/radius of bend curvature from input
 
 print("Initial Beam:")
 polarization_x, polarization_y, polarization_z = get_polarization(initial)
@@ -70,10 +70,14 @@ assert np.allclose(
 
 # predicted final polarization
 gyro_const = 1.0 + gyro_anomaly * rel_gamma
-sin1 = np.sin(np.pi/(gyro_anomaly * rel_gamma))
-sin2 = np.sin(2 * np.pi/(gyro_anomaly * rel_gamma))
-damping_eigenvalue2 = 4 * sigma_px**2 * gyro_const**2 * sin1**4 + h**2 * gyro_const**2 * sigma_x**2 * sin2**2 + sigma_pt**2*(-2.0*np.pi*rel_beta**2 + gyro_const * sin2)**2/rel_beta**2
-damping_eigenvalue = np.sqrt(damping_eigenvalue2) 
+sin1 = np.sin(np.pi / (gyro_anomaly * rel_gamma))
+sin2 = np.sin(2 * np.pi / (gyro_anomaly * rel_gamma))
+damping_eigenvalue2 = (
+    4 * sigma_px**2 * gyro_const**2 * sin1**4
+    + h**2 * gyro_const**2 * sigma_x**2 * sin2**2
+    + sigma_pt**2 * (-2.0 * np.pi * rel_beta**2 + gyro_const * sin2) ** 2 / rel_beta**2
+)
+damping_eigenvalue = np.sqrt(damping_eigenvalue2)
 damping_factor = np.exp(-(damping_eigenvalue**2) / 2.0)
 
 Pxf = damping_factor * Pxi
@@ -82,9 +86,7 @@ Pzf = damping_factor * Pzi
 
 print("")
 print("Predicted Final Polarization:")
-print(
-    f"  polarization_x={Pxf:e} polarization_y={Pyf:e} polarization_z={Pzf:e}"
-)
+print(f"  polarization_x={Pxf:e} polarization_y={Pyf:e} polarization_z={Pzf:e}")
 
 print("")
 print("Final Beam:")

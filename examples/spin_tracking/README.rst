@@ -67,7 +67,7 @@ bending in the x-z plane in a sector dipole.
 
 We use a 2 GeV electron beam.  The beam parameters (in particular, the momentum and energy spread) are artificially large in order to enhance the effect.
 
-The beam propagates over one period, as set by the spin tune.  By increasing the number of slices, and turning on diagnostics, one can view precession of the polarization vector about the 
+The beam propagates over one period, as set by the spin tune.  By increasing the number of slices, and turning on diagnostics, one can view precession of the polarization vector about the
 vertical direction.
 
 In this test, the initial and final values of :math:`\polarization_x`, :math:`\polarization_y`, and :math:`\polarization_z` must agree with nominal values.
@@ -98,16 +98,15 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
           :caption: You can copy this file from ``examples/spin_tracking/input_sbend_spin.in``.
 
 
-   
+
 Analyze
 -------
 
 The analysis can be run using **either** of the following script:
 
-       
+
 .. dropdown:: Script ``analysis_sbend_spin.py``
-          
+
    .. literalinclude:: analysis_sbend_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_sbend_spin.py``.
-       

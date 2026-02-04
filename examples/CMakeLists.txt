@@ -1906,6 +1906,6 @@ add_impactx_test(sbend-spin-rbc
 add_impactx_test(sbend-spin.py
     examples/spin_tracking/run_sbend_spin.py
     ON    # ImpactX MPI-parallel
-    examples/spin_tracking/analysis_sbend_spin_rbc.py
+    examples/spin_tracking/analysis_sbend_spin.py
     OFF  # no plot script yet
 )

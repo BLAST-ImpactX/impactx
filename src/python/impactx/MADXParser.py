@@ -51,6 +51,12 @@ class MADXInputWarning(UserWarning):
     pass
 
 
+class _ReturnStatement(Exception):
+    """Internal signal that a RETURN statement was encountered in a CALL'd file."""
+
+    pass
+
+
 # =============================================================================
 # Token Types
 # =============================================================================
@@ -961,13 +967,20 @@ class MADXParser:
             self._parse_variable_assignment(integer=True)
             return
 
+        if name == "call":
+            self._parse_call_command()
+            return
+
+        if name == "return":
+            # RETURN stops reading the current file (used in CALL'd files)
+            self._skip_until_semicolon()
+            raise _ReturnStatement()
+
         if name in (
             "title",
             "option",
             "select",
             "twiss",
-            "call",
-            "return",
             "print",
             "value",
             "show",
@@ -1289,6 +1302,91 @@ class MADXParser:
                     self._parse_expression()
 
         self._expect(TokenType.SEMICOLON)
+
+    def _parse_call_command(self):
+        """
+        Parse the CALL command.
+
+        Supports both MAD-X and MAD-8 syntax:
+          CALL, FILE="other_file";
+          CALL, FILENAME="other_file";
+
+        The called file is read and parsed. If the called file contains a
+        RETURN statement, parsing stops at that point. Called files may
+        themselves contain CALL statements to any depth.
+        """
+        self._advance()  # skip 'call'
+
+        filename = None
+
+        while self._current().type == TokenType.COMMA:
+            self._advance()  # skip comma
+
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            attr_name = self._advance().value.lower()
+
+            if attr_name in ("file", "filename"):
+                self._expect(TokenType.EQUALS)
+                if self._current().type == TokenType.STRING:
+                    filename = self._advance().value
+                elif self._current().type == TokenType.IDENTIFIER:
+                    # Some MAD-X files use unquoted filenames
+                    filename = self._advance().value
+                else:
+                    raise MADXInputError(
+                        "Expected filename after FILE=", self._current().line
+                    )
+            else:
+                # Unknown attribute, skip its value
+                if self._current().type == TokenType.EQUALS:
+                    self._advance()
+                    self._parse_expression()
+
+        self._expect(TokenType.SEMICOLON)
+
+        if filename is None:
+            raise MADXInputError("CALL command requires FILE= or FILENAME= attribute")
+
+        # Resolve the filename relative to the current file's directory
+        if self._current_file and self._current_file != "<string>":
+            base_dir = os.path.dirname(os.path.abspath(self._current_file))
+            resolved = os.path.join(base_dir, filename)
+        else:
+            resolved = filename
+
+        if not os.path.isfile(resolved):
+            raise FileNotFoundError(
+                f"CALL: File '{filename}' not found (resolved to '{resolved}')"
+            )
+
+        # Save parser state
+        saved_tokens = self.tokens
+        saved_pos = self.pos
+        saved_file = self._current_file
+
+        try:
+            # Parse the called file
+            self._current_file = resolved
+            with open(resolved, "r") as f:
+                text = f.read()
+
+            lexer = MADXLexer(text)
+            self.tokens = lexer.tokenize()
+            self.pos = 0
+
+            while self._current().type != TokenType.EOF:
+                self._parse_statement()
+                self._skip_semicolons()
+        except _ReturnStatement:
+            # RETURN was encountered in the called file — stop reading it
+            pass
+        finally:
+            # Restore parser state
+            self.tokens = saved_tokens
+            self.pos = saved_pos
+            self._current_file = saved_file
 
     # =========================================================================
     # Public Interface (backward compatible with old parser)

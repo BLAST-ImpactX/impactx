@@ -6,6 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
+import math
 import warnings
 
 from impactx import RefPart, elements
@@ -43,6 +44,7 @@ def lattice(parsed_beamline, nslice=1):
         "MARKER": "None",
         "DRIFT": "Drift",
         "SBEND": "Sbend",  # Sector Bending Magnet
+        "RBEND": "Sbend",  # Rectangular Bending Magnet -> DipEdge + Sbend + DipEdge
         "SOLENOID": "Sol",  # Ideal, thick Solenoid: MAD-X user guide 10.9 p78
         "QUADRUPOLE": "Quad",  # Quadrupole
         "DIPEDGE": "DipEdge",
@@ -80,6 +82,58 @@ def lattice(parsed_beamline, nslice=1):
                 impactx_beamline.append(
                     elements.Sbend(
                         name=d["name"], ds=d["l"], rc=d["l"] / d["angle"], nslice=nslice
+                    )
+                )
+            elif d["type"] == "rbend":
+                # RBEND: rectangular bending magnet
+                # Converts to DipEdge + SBend + DipEdge
+                # Reference: https://mad.web.cern.ch/mad/webguide/manual.html#Ch11.S3
+                angle = d["angle"]
+                l_chord = d["l"]
+
+                # Convert chord length to arc length (RBARC=true is MAD-X default)
+                if abs(angle) > 0:
+                    l_arc = l_chord * angle / (2.0 * math.sin(angle / 2.0))
+                else:
+                    l_arc = l_chord
+
+                rc = l_arc / angle if abs(angle) > 0 else 0.0
+
+                # RBEND edge angles: effective = E1/E2 + ANGLE/2
+                e1 = d.get("e1", 0.0) + angle / 2.0
+                e2 = d.get("e2", 0.0) + angle / 2.0
+
+                hgap = d.get("hgap", 0.0)
+                fint = d.get("fint", 0.0)
+                fintx = d.get("fintx", fint)
+
+                # Entry DipEdge
+                impactx_beamline.append(
+                    elements.DipEdge(
+                        name=d["name"] + "_edge_entry",
+                        psi=e1,
+                        rc=rc,
+                        g=2.0 * hgap,
+                        K2=fint,
+                    )
+                )
+                # SBend body
+                impactx_beamline.append(
+                    elements.Sbend(
+                        name=d["name"],
+                        ds=l_arc,
+                        rc=rc,
+                        nslice=nslice,
+                    )
+                )
+                # Exit DipEdge
+                impactx_beamline.append(
+                    elements.DipEdge(
+                        name=d["name"] + "_edge_exit",
+                        psi=e2,
+                        rc=rc,
+                        g=2.0 * hgap,
+                        K2=fintx,
                     )
                 )
             elif d["type"] == "solenoid":

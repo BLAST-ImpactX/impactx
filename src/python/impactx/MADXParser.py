@@ -1,644 +1,1421 @@
 #!/usr/bin/env python3
 #
 # Copyright 2022-2023 ImpactX contributors
-# Authors: Matthias Frey, Andreas Adelmann, Marco Garten
+# Authors: Matthias Frey, Andreas Adelmann, Marco Garten, Axel Huebl
 # License: BSD-3-Clause
 #
-# Changelog:
-#   Oct 13th, 2017: original version for pyAcceLEGOrator elements
-#   Aug 10th, 2022: adapted for standalone use
-#
 # -*- coding: utf-8 -*-
+"""
+A MAD-X parser that aims to be compliant with the upstream MAD-X format.
+
+References:
+    - https://mad.web.cern.ch/mad/webguide/manual.html
+    - https://github.com/MethodicalAcceleratorDesign/MAD-X/blob/master/doc/latexuguide/format.tex
+"""
+
+import math
 import os
-import re
 import warnings
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import Any, Optional
 
 
 class MADXParserError(Exception):
+    """Base exception for MAD-X parser errors."""
+
     pass
 
 
 class MADXInputError(MADXParserError):
-    def __init__(self, args, with_traceback):
-        self.args = args
-        self.with_traceback = with_traceback
+    """Error in MAD-X input syntax or semantics."""
+
+    def __init__(self, message, line_number=None, context=None):
+        self.message = message
+        self.line_number = line_number
+        self.context = context
+        super().__init__(self._format_message())
+
+    def _format_message(self):
+        msg = self.message
+        if self.line_number is not None:
+            msg = f"Line {self.line_number}: {msg}"
+        if self.context:
+            msg = f"{msg}\n  Context: {self.context}"
+        return msg
 
 
 class MADXInputWarning(UserWarning):
+    """Warning for non-fatal MAD-X input issues."""
+
     pass
+
+
+# =============================================================================
+# Token Types
+# =============================================================================
+
+
+class TokenType(Enum):
+    """Token types for the MAD-X lexer."""
+
+    # Literals
+    NUMBER = auto()
+    STRING = auto()
+    IDENTIFIER = auto()
+
+    # Operators
+    PLUS = auto()
+    MINUS = auto()
+    STAR = auto()
+    SLASH = auto()
+    CARET = auto()
+    EQUALS = auto()
+    COLON_EQUALS = auto()
+    COLON = auto()
+    COMMA = auto()
+    SEMICOLON = auto()
+    LPAREN = auto()
+    RPAREN = auto()
+    LBRACE = auto()
+    RBRACE = auto()
+    ARROW = auto()  # ->
+    LT = auto()  # <
+    GT = auto()  # >
+
+    # Special
+    EOF = auto()
+    NEWLINE = auto()
+
+
+@dataclass
+class Token:
+    """A token from the MAD-X lexer."""
+
+    type: TokenType
+    value: Any
+    line: int
+    column: int
+
+    def __repr__(self):
+        return f"Token({self.type.name}, {self.value!r}, line={self.line})"
+
+
+# =============================================================================
+# Lexer
+# =============================================================================
+
+
+class MADXLexer:
+    """
+    Lexer (tokenizer) for MAD-X input.
+
+    Handles:
+    - Single-line comments (! or //)
+    - Multi-line comments (/* ... */)
+    - Case insensitivity (except for quoted strings)
+    - Numbers (integer, real, scientific notation)
+    - Identifiers
+    - Operators and delimiters
+    """
+
+    def __init__(self, text: str):
+        self.text = text
+        self.pos = 0
+        self.line = 1
+        self.column = 1
+        self.length = len(text)
+
+    def _peek(self, offset: int = 0) -> Optional[str]:
+        """Look at character at current position + offset."""
+        pos = self.pos + offset
+        if pos < self.length:
+            return self.text[pos]
+        return None
+
+    def _advance(self) -> Optional[str]:
+        """Advance position and return the character."""
+        if self.pos >= self.length:
+            return None
+        char = self.text[self.pos]
+        self.pos += 1
+        if char == "\n":
+            self.line += 1
+            self.column = 1
+        else:
+            self.column += 1
+        return char
+
+    def _skip_whitespace(self):
+        """Skip whitespace characters (but not newlines for statement tracking)."""
+        while self.pos < self.length and self.text[self.pos] in " \t\r\n":
+            self._advance()
+
+    def _skip_comment(self) -> bool:
+        """Skip comments. Returns True if a comment was skipped."""
+        # Single-line comment with !
+        if self._peek() == "!":
+            while self._peek() is not None and self._peek() != "\n":
+                self._advance()
+            return True
+
+        # Single-line comment with //
+        if self._peek() == "/" and self._peek(1) == "/":
+            while self._peek() is not None and self._peek() != "\n":
+                self._advance()
+            return True
+
+        # Multi-line comment /* ... */
+        if self._peek() == "/" and self._peek(1) == "*":
+            self._advance()  # /
+            self._advance()  # *
+            while self.pos < self.length:
+                if self._peek() == "*" and self._peek(1) == "/":
+                    self._advance()  # *
+                    self._advance()  # /
+                    return True
+                self._advance()
+            raise MADXInputError("Unterminated multi-line comment", self.line)
+
+        return False
+
+    def _read_number(self) -> Token:
+        """Read a number (integer, real, or scientific notation)."""
+        start_line = self.line
+        start_col = self.column
+        chars = []
+
+        # Optional leading sign is handled by the parser, not lexer
+        # Read integer part
+        while self._peek() is not None and self._peek().isdigit():
+            chars.append(self._advance())
+
+        # Decimal point
+        if self._peek() == ".":
+            chars.append(self._advance())
+            while self._peek() is not None and self._peek().isdigit():
+                chars.append(self._advance())
+
+        # Exponent (E, e, D, d)
+        if self._peek() is not None and self._peek().upper() in "ED":
+            chars.append(self._advance())
+            if self._peek() in "+-":
+                chars.append(self._advance())
+            while self._peek() is not None and self._peek().isdigit():
+                chars.append(self._advance())
+
+        value_str = "".join(chars).upper().replace("D", "E")
+        try:
+            value = float(value_str)
+        except ValueError:
+            raise MADXInputError(f"Invalid number: {value_str}", start_line)
+
+        return Token(TokenType.NUMBER, value, start_line, start_col)
+
+    def _read_string(self) -> Token:
+        """Read a quoted string."""
+        start_line = self.line
+        start_col = self.column
+        quote = self._advance()  # ' or "
+        chars = []
+
+        while self._peek() is not None and self._peek() != quote:
+            if self._peek() == "\n":
+                raise MADXInputError("Unterminated string", start_line)
+            chars.append(self._advance())
+
+        if self._peek() is None:
+            raise MADXInputError("Unterminated string", start_line)
+
+        self._advance()  # closing quote
+        return Token(TokenType.STRING, "".join(chars), start_line, start_col)
+
+    def _read_identifier(self) -> Token:
+        """Read an identifier (converted to lowercase)."""
+        start_line = self.line
+        start_col = self.column
+        chars = []
+
+        # First character must be a letter
+        if self._peek() is not None and (self._peek().isalpha() or self._peek() == "_"):
+            chars.append(self._advance())
+
+        # Subsequent characters: letters, digits, underscore, period
+        while self._peek() is not None and (
+            self._peek().isalnum() or self._peek() in "_."
+        ):
+            chars.append(self._advance())
+
+        # MAD-X is case-insensitive for identifiers
+        value = "".join(chars).lower()
+        return Token(TokenType.IDENTIFIER, value, start_line, start_col)
+
+    def tokenize(self) -> list[Token]:
+        """Tokenize the entire input."""
+        tokens = []
+
+        while self.pos < self.length:
+            # Skip whitespace and comments
+            self._skip_whitespace()
+            while self._skip_comment():
+                self._skip_whitespace()
+
+            if self.pos >= self.length:
+                break
+
+            char = self._peek()
+            start_line = self.line
+            start_col = self.column
+
+            # Number
+            if char.isdigit() or (
+                char == "." and self._peek(1) and self._peek(1).isdigit()
+            ):
+                tokens.append(self._read_number())
+
+            # String
+            elif char in "\"'":
+                tokens.append(self._read_string())
+
+            # Identifier
+            elif char.isalpha() or char == "_":
+                tokens.append(self._read_identifier())
+
+            # Two-character operators
+            elif char == ":" and self._peek(1) == "=":
+                self._advance()
+                self._advance()
+                tokens.append(
+                    Token(TokenType.COLON_EQUALS, ":=", start_line, start_col)
+                )
+
+            elif char == "-" and self._peek(1) == ">":
+                self._advance()
+                self._advance()
+                tokens.append(Token(TokenType.ARROW, "->", start_line, start_col))
+
+            # Single-character operators
+            elif char == "+":
+                self._advance()
+                tokens.append(Token(TokenType.PLUS, "+", start_line, start_col))
+
+            elif char == "-":
+                self._advance()
+                tokens.append(Token(TokenType.MINUS, "-", start_line, start_col))
+
+            elif char == "*":
+                self._advance()
+                tokens.append(Token(TokenType.STAR, "*", start_line, start_col))
+
+            elif char == "/":
+                self._advance()
+                tokens.append(Token(TokenType.SLASH, "/", start_line, start_col))
+
+            elif char == "^":
+                self._advance()
+                tokens.append(Token(TokenType.CARET, "^", start_line, start_col))
+
+            elif char == "=":
+                self._advance()
+                tokens.append(Token(TokenType.EQUALS, "=", start_line, start_col))
+
+            elif char == ":":
+                self._advance()
+                tokens.append(Token(TokenType.COLON, ":", start_line, start_col))
+
+            elif char == ",":
+                self._advance()
+                tokens.append(Token(TokenType.COMMA, ",", start_line, start_col))
+
+            elif char == ";":
+                self._advance()
+                tokens.append(Token(TokenType.SEMICOLON, ";", start_line, start_col))
+
+            elif char == "(":
+                self._advance()
+                tokens.append(Token(TokenType.LPAREN, "(", start_line, start_col))
+
+            elif char == ")":
+                self._advance()
+                tokens.append(Token(TokenType.RPAREN, ")", start_line, start_col))
+
+            elif char == "{":
+                self._advance()
+                tokens.append(Token(TokenType.LBRACE, "{", start_line, start_col))
+
+            elif char == "}":
+                self._advance()
+                tokens.append(Token(TokenType.RBRACE, "}", start_line, start_col))
+
+            elif char == "<":
+                self._advance()
+                tokens.append(Token(TokenType.LT, "<", start_line, start_col))
+
+            elif char == ">":
+                self._advance()
+                tokens.append(Token(TokenType.GT, ">", start_line, start_col))
+
+            else:
+                raise MADXInputError(f"Unexpected character: {char!r}", start_line)
+
+        tokens.append(Token(TokenType.EOF, None, self.line, self.column))
+        return tokens
+
+
+# =============================================================================
+# Expression AST and Evaluator
+# =============================================================================
+
+
+@dataclass
+class Expression:
+    """Base class for expressions."""
+
+    pass
+
+
+@dataclass
+class NumberExpr(Expression):
+    """A literal number."""
+
+    value: float
+
+
+@dataclass
+class StringExpr(Expression):
+    """A literal string."""
+
+    value: str
+
+
+@dataclass
+class VariableExpr(Expression):
+    """A variable reference."""
+
+    name: str
+
+
+@dataclass
+class AttributeExpr(Expression):
+    """Element/command attribute access (element->attribute)."""
+
+    element: str
+    attribute: str
+
+
+@dataclass
+class UnaryExpr(Expression):
+    """Unary operation (+x, -x)."""
+
+    operator: str
+    operand: Expression
+
+
+@dataclass
+class BinaryExpr(Expression):
+    """Binary operation (x op y)."""
+
+    operator: str
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class FunctionExpr(Expression):
+    """Function call."""
+
+    name: str
+    arguments: list[Expression]
+
+
+@dataclass
+class ListExpr(Expression):
+    """A list of elements (for LINE definitions)."""
+
+    elements: list
+
+
+# =============================================================================
+# Parser
+# =============================================================================
+
+
+class MADXExpressionParser:
+    """
+    Parser for MAD-X expressions.
+
+    Implements operator precedence:
+    1. ^ (exponentiation, right associative)
+    2. * / (multiplication, division)
+    3. + - (addition, subtraction)
+    """
+
+    # MAD-X built-in functions
+    FUNCTIONS = {
+        "sqrt": (1, math.sqrt),
+        "log": (1, math.log),
+        "log10": (1, math.log10),
+        "exp": (1, math.exp),
+        "sin": (1, math.sin),
+        "cos": (1, math.cos),
+        "tan": (1, math.tan),
+        "asin": (1, math.asin),
+        "acos": (1, math.acos),
+        "atan": (1, math.atan),
+        "sinh": (1, math.sinh),
+        "cosh": (1, math.cosh),
+        "tanh": (1, math.tanh),
+        "abs": (1, abs),
+        "floor": (1, math.floor),
+        "ceil": (1, math.ceil),
+        "round": (1, round),
+        "sinc": (1, lambda x: 1.0 if x == 0 else math.sin(x) / x),
+        "erf": (1, math.erf),
+        "erfc": (1, math.erfc),
+        "frac": (1, lambda x: x - math.floor(x)),
+        "atan2": (2, math.atan2),
+        "max": (2, max),
+        "min": (2, min),
+    }
+
+    def __init__(self, tokens: list[Token]):
+        self.tokens = tokens
+        self.pos = 0
+
+    def _current(self) -> Token:
+        """Get current token."""
+        if self.pos < len(self.tokens):
+            return self.tokens[self.pos]
+        return self.tokens[-1]  # EOF
+
+    def _peek(self, offset: int = 0) -> Token:
+        """Look ahead at token."""
+        pos = self.pos + offset
+        if pos < len(self.tokens):
+            return self.tokens[pos]
+        return self.tokens[-1]
+
+    def _advance(self) -> Token:
+        """Advance and return current token."""
+        token = self._current()
+        if self.pos < len(self.tokens) - 1:
+            self.pos += 1
+        return token
+
+    def _expect(self, *types: TokenType) -> Token:
+        """Expect one of the given token types."""
+        token = self._current()
+        if token.type not in types:
+            expected = " or ".join(t.name for t in types)
+            raise MADXInputError(
+                f"Expected {expected}, got {token.type.name}", token.line
+            )
+        return self._advance()
+
+    def parse_expression(self) -> Expression:
+        """Parse an expression (entry point)."""
+        return self._parse_additive()
+
+    def _parse_additive(self) -> Expression:
+        """Parse additive expression (+ -)."""
+        left = self._parse_multiplicative()
+
+        while self._current().type in (TokenType.PLUS, TokenType.MINUS):
+            op = self._advance().value
+            right = self._parse_multiplicative()
+            left = BinaryExpr(op, left, right)
+
+        return left
+
+    def _parse_multiplicative(self) -> Expression:
+        """Parse multiplicative expression (* /)."""
+        left = self._parse_power()
+
+        while self._current().type in (TokenType.STAR, TokenType.SLASH):
+            op = self._advance().value
+            right = self._parse_power()
+            left = BinaryExpr(op, left, right)
+
+        return left
+
+    def _parse_power(self) -> Expression:
+        """Parse power expression (^), right associative."""
+        left = self._parse_unary()
+
+        if self._current().type == TokenType.CARET:
+            self._advance()
+            right = self._parse_power()  # Right associative
+            left = BinaryExpr("^", left, right)
+
+        return left
+
+    def _parse_unary(self) -> Expression:
+        """Parse unary expression (+x, -x)."""
+        if self._current().type in (TokenType.PLUS, TokenType.MINUS):
+            op = self._advance().value
+            operand = self._parse_unary()
+            return UnaryExpr(op, operand)
+
+        return self._parse_primary()
+
+    def _parse_primary(self) -> Expression:
+        """Parse primary expression (numbers, variables, function calls, parenthesized)."""
+        token = self._current()
+
+        # Number literal
+        if token.type == TokenType.NUMBER:
+            self._advance()
+            return NumberExpr(token.value)
+
+        # String literal
+        if token.type == TokenType.STRING:
+            self._advance()
+            return StringExpr(token.value)
+
+        # Parenthesized expression or line element list
+        if token.type == TokenType.LPAREN:
+            self._advance()
+            # Check if this is a list (for LINE definitions)
+            expr = self._parse_additive()
+            if self._current().type == TokenType.COMMA:
+                # This is a list
+                elements = [expr]
+                while self._current().type == TokenType.COMMA:
+                    self._advance()
+                    elements.append(self._parse_additive())
+                self._expect(TokenType.RPAREN)
+                return ListExpr(elements)
+            self._expect(TokenType.RPAREN)
+            return expr
+
+        # Identifier (variable, function call, or attribute access)
+        if token.type == TokenType.IDENTIFIER:
+            name = self._advance().value
+
+            # Function call
+            if self._current().type == TokenType.LPAREN:
+                self._advance()
+                args = []
+                if self._current().type != TokenType.RPAREN:
+                    args.append(self.parse_expression())
+                    while self._current().type == TokenType.COMMA:
+                        self._advance()
+                        args.append(self.parse_expression())
+                self._expect(TokenType.RPAREN)
+                return FunctionExpr(name, args)
+
+            # Attribute access (element->attribute)
+            if self._current().type == TokenType.ARROW:
+                self._advance()
+                attr = self._expect(TokenType.IDENTIFIER).value
+                return AttributeExpr(name, attr)
+
+            # Simple variable
+            return VariableExpr(name)
+
+        raise MADXInputError(
+            f"Unexpected token in expression: {token.type.name}", token.line
+        )
+
+
+# =============================================================================
+# Symbol Table and Evaluation Context
+# =============================================================================
+
+
+@dataclass
+class Variable:
+    """A variable in the symbol table."""
+
+    name: str
+    value: Any
+    expression: Optional[Expression] = None  # For deferred evaluation
+    deferred: bool = False
+    constant: bool = False
+
+
+@dataclass
+class Element:
+    """A MAD-X element definition."""
+
+    name: str
+    type: str
+    attributes: dict[str, Any] = field(default_factory=dict)
+    attribute_exprs: dict[str, Expression] = field(default_factory=dict)
+
+
+@dataclass
+class Line:
+    """A MAD-X LINE definition."""
+
+    name: str
+    elements: list  # List of element names or (multiplier, name) tuples
+
+
+@dataclass
+class Beam:
+    """MAD-X BEAM command parameters."""
+
+    particle: str = ""
+    energy: float = 1.0  # GeV, MAD-X default
+    pc: float = 0.0  # momentum
+    mass: float = 0.0
+    charge: float = 0.0
+    # Add other beam parameters as needed
+
+
+class EvaluationContext:
+    """
+    Context for evaluating expressions.
+
+    Holds variables, elements, lines, and provides expression evaluation.
+    """
+
+    # MAD-X predefined constants (from PDG)
+    PREDEFINED_CONSTANTS = {
+        "pi": math.pi,
+        "twopi": 2 * math.pi,
+        "degrad": 180.0 / math.pi,
+        "raddeg": math.pi / 180.0,
+        "e": math.e,
+        "emass": 0.51099895000e-3,  # GeV
+        "pmass": 0.93827208816,  # GeV
+        "nmass": 0.93956542052,  # GeV
+        "umass": 0.93149410242,  # GeV
+        "mumass": 0.1056583715,  # GeV
+        "clight": 2.99792458e8,  # m/s
+        "qelect": 1.602176634e-19,  # A.s
+        "hbar": 6.582119569e-25,  # MeV.s
+        "erad": 2.8179403262e-15,  # m
+        "prad": 2.8179403262e-15 * 0.51099895000e-3 / 0.93827208816,  # m
+        # Compatibility aliases
+        "true": 1.0,
+        "false": 0.0,
+    }
+
+    def __init__(self):
+        self.variables: dict[str, Variable] = {}
+        self.elements: dict[str, Element] = {}
+        self.lines: dict[str, Line] = {}
+        self.beam = Beam()
+        self.selected_sequence: Optional[str] = None
+
+        # Initialize predefined constants
+        for name, value in self.PREDEFINED_CONSTANTS.items():
+            self.variables[name] = Variable(name, value, constant=True)
+
+    def set_variable(
+        self,
+        name: str,
+        value: Any = None,
+        expression: Expression = None,
+        deferred: bool = False,
+        constant: bool = False,
+    ):
+        """Set a variable value."""
+        name = name.lower()
+
+        # Check if trying to modify a constant
+        if name in self.variables and self.variables[name].constant:
+            if constant:
+                # Allow redefining constants
+                pass
+            else:
+                raise MADXInputError(f"Cannot modify constant: {name}")
+
+        if deferred and expression is not None:
+            self.variables[name] = Variable(
+                name, None, expression, deferred=True, constant=constant
+            )
+        else:
+            if expression is not None:
+                value = self.evaluate(expression)
+            self.variables[name] = Variable(
+                name, value, expression, deferred=False, constant=constant
+            )
+
+    def get_variable(self, name: str) -> Any:
+        """Get a variable value, evaluating deferred expressions."""
+        name = name.lower()
+        if name not in self.variables:
+            warnings.warn(f"Undefined variable '{name}', using 0.0", MADXInputWarning)
+            return 0.0
+
+        var = self.variables[name]
+        if var.deferred and var.expression is not None:
+            return self.evaluate(var.expression)
+        return var.value
+
+    def get_element_attribute(self, element_name: str, attr_name: str) -> Any:
+        """Get an element's attribute value."""
+        element_name = element_name.lower()
+        attr_name = attr_name.lower()
+
+        if element_name not in self.elements:
+            raise MADXInputError(f"Unknown element: {element_name}")
+
+        element = self.elements[element_name]
+
+        # Check if attribute has a deferred expression
+        if attr_name in element.attribute_exprs:
+            return self.evaluate(element.attribute_exprs[attr_name])
+
+        if attr_name in element.attributes:
+            return element.attributes[attr_name]
+
+        raise MADXInputError(f"Element '{element_name}' has no attribute '{attr_name}'")
+
+    def evaluate(self, expr: Expression) -> Any:
+        """Evaluate an expression."""
+        if isinstance(expr, NumberExpr):
+            return expr.value
+
+        if isinstance(expr, StringExpr):
+            return expr.value
+
+        if isinstance(expr, VariableExpr):
+            return self.get_variable(expr.name)
+
+        if isinstance(expr, AttributeExpr):
+            return self.get_element_attribute(expr.element, expr.attribute)
+
+        if isinstance(expr, UnaryExpr):
+            val = self.evaluate(expr.operand)
+            if expr.operator == "-":
+                return -val
+            return val
+
+        if isinstance(expr, BinaryExpr):
+            left = self.evaluate(expr.left)
+            right = self.evaluate(expr.right)
+
+            if expr.operator == "+":
+                return left + right
+            if expr.operator == "-":
+                return left - right
+            if expr.operator == "*":
+                return left * right
+            if expr.operator == "/":
+                if right == 0:
+                    raise MADXInputError("Division by zero")
+                return left / right
+            if expr.operator == "^":
+                return left**right
+
+            raise MADXInputError(f"Unknown operator: {expr.operator}")
+
+        if isinstance(expr, FunctionExpr):
+            name = expr.name.lower()
+            if name not in MADXExpressionParser.FUNCTIONS:
+                raise MADXInputError(f"Unknown function: {name}")
+
+            nargs, func = MADXExpressionParser.FUNCTIONS[name]
+            if len(expr.arguments) != nargs:
+                raise MADXInputError(
+                    f"Function {name} expects {nargs} arguments, got {len(expr.arguments)}"
+                )
+
+            args = [self.evaluate(arg) for arg in expr.arguments]
+            return func(*args)
+
+        if isinstance(expr, ListExpr):
+            return [self.evaluate(e) for e in expr.elements]
+
+        raise MADXInputError(f"Cannot evaluate expression type: {type(expr)}")
+
+
+# =============================================================================
+# Main Parser
+# =============================================================================
 
 
 class MADXParser:
     """
-    Simple MADX parser.
-    It expects a single line per element.
+    MAD-X Parser.
+
+    Parses MAD-X input files and builds a representation of the lattice.
     """
 
     def __init__(self):
-        self.__drift = {"name": "", "l": 0.0, "type": "drift"}
+        self.context = EvaluationContext()
+        self.tokens: list[Token] = []
+        self.pos = 0
+        self._current_file = None
 
-        self.__drift_pattern = r"(.*):drift,(.*)=(.*);"
+    def _current(self) -> Token:
+        """Get current token."""
+        if self.pos < len(self.tokens):
+            return self.tokens[self.pos]
+        return self.tokens[-1]
 
-        self.__monitor = {"name": "", "l": 0.0, "type": "monitor"}
+    def _peek(self, offset: int = 0) -> Token:
+        """Look ahead at token."""
+        pos = self.pos + offset
+        if pos < len(self.tokens):
+            return self.tokens[pos]
+        return self.tokens[-1]
 
-        self.__monitor_pattern = (
-            r"(.*):monitor,(.*)=(.*);"  # note: L is optional, default is 0m
-        )
+    def _advance(self) -> Token:
+        """Advance and return current token."""
+        token = self._current()
+        if self.pos < len(self.tokens) - 1:
+            self.pos += 1
+        return token
 
-        self.__quadrupole = {"name": "", "l": 0.0, "k1": 0.0, "type": "quadrupole"}
+    def _expect(self, *types: TokenType) -> Token:
+        """Expect one of the given token types."""
+        token = self._current()
+        if token.type not in types:
+            expected = " or ".join(t.name for t in types)
+            raise MADXInputError(
+                f"Expected {expected}, got {token.type.name} ({token.value!r})",
+                token.line,
+            )
+        return self._advance()
 
-        # don't count name and type --> len - 2
-        self.__nQuad = 2 * (len(self.__quadrupole) - 2)
+    def _skip_semicolons(self):
+        """Skip any semicolons."""
+        while self._current().type == TokenType.SEMICOLON:
+            self._advance()
 
-        self.quad_pattern = r"(.*):quadrupole,(.*)=(.*),(.*)=(.*);"
-
-        self.__sbend = {
-            "name": "",
-            "l": 0.0,
-            "angle": 0.0,
-            "k1": 0.0,
-            "e1": 0.0,
-            "e2": 0.0,
-            "type": "sbend",
-        }
-
-        self.__sbend_pattern = (
-            r"(.*):sbend,(.*)=(.*),(.*)=(.*),(.*)=(.*),(.*)=(.*),(.*)=(.*);"
-        )
-
-        # don't count name and type --> len - 2
-        # TODO add rbend
-        self.__nDipole = 2 * (len(self.__sbend) - 2)
-
-        self.__sol = {
-            "name": "",
-            "l": 0.0,
-            "ks": 0.0,
-            "type": "solenoid",
-        }
-
-        self.__sol_pattern = r"(.*):solenoid,(.*)=(.*),(.*)=(.*);"
-
-        # don't count name and type --> len - 2
-        self.__nSol = 2 * (len(self.__sol) - 2)
-
-        self.__dipedge = {
-            "name": "",
-            "h": 0.0,
-            "e1": 0.0,
-            "fint": 0.0,
-            "hgap": 0.0,
-            "tilt": 0.0,
-            "type": "dipedge",
-        }
-
-        self.__dipedge_pattern = (
-            r"(.*):dipedge,(.*)=(.*),(.*)=(.*),(.*)=(.*),(.*)=(.*),(.*)=(.*);"
-        )
-
-        # don't count name and type --> len - 2
-        self.__nDipedge = 2 * (len(self.__dipedge) - 2)
-
-        self.__kicker = {"name": "", "hkick": 0.0, "vkick": 0.0, "type": "kicker"}
-
-        self.__kicker_pattern = r"(.*):kicker,(.*)=(.*),(.*)=(.*);"
-        # equivalent to kicker
-        # http://mad.web.cern.ch/mad/madx.old/Introduction/tkickers.html
-        self.__tkicker_pattern = r"(.*):tkicker,(.*)=(.*),(.*)=(.*);"
-        # horizontal kicker without vkick
-        self.__hkicker_pattern = r"(.*):hkicker,(.*)=(.*);"
-        # vertical kicker without hkick
-        self.__vkicker_pattern = r"(.*):vkicker,(.*)=(.*);"
-
-        # don't count name and type --> len - 2
-        self.__nKicker = 2 * (len(self.__kicker) - 2)
-        self.__nHkicker = self.__nKicker - 2
-        self.__nVkicker = self.__nKicker - 2
-
-        self.beam = {
-            "energy": 0.0,
-            # TODO extend by 'PC'
-            "particle": "",
-        }
-
-        self.__nBeam = 2 * len(self.beam)
-
-        self.beam_pattern = r"beam,(.*)=(.*),(.*)=(.*);"
-
-        self.__line = {
-            "name": "",
-            "elem": [],
-        }
-
-        self.__line_pattern = r"(.*):line=\(+(.*)\);"
-
-        self.sequence = {"name": ""}
-
-        self.seq_pattern = r"use,sequence=(.*);"
-
-        self.__elements = []
-        self.__lines = []
-
-        self.__lattice = []
-
-    # nonblank_lines inspired by
-    # https://stackoverflow.com/questions/4842057/easiest-way-to-ignore-blank-lines-when-reading-a-file-in-python
-    def nonblank_lines_to_lowercase(self, f):
-        for ln in f:
-            line = ln.rstrip().casefold()
-            if line:
-                yield line
-
-    def parse(self, fn):
+    def parse(self, fn: str):
         """
-        fn (str)    filename
+        Parse a MAD-X file.
 
+        Args:
+            fn: Filename to parse
         """
-
         if not os.path.isfile(fn):
             raise FileNotFoundError(f"File '{fn}' not found!")
 
-        nLine = 0
+        self._current_file = fn
 
         with open(fn, "r") as f:
-            for line in self.nonblank_lines_to_lowercase(f):
-                # print(line)
-                nLine += 1
-                line = self._noWhitespace(line)
-
-                if line[0] == "!":
-                    # this is a comment
-                    pass
-
-                elif "drift" in line:
-                    obj = re.match(self.__drift_pattern, line)
-
-                    # first tag is name
-                    self.__drift["name"] = obj.group(1)
-
-                    if obj.group(2) in self.__drift:
-                        self.__drift[obj.group(2)] = float(obj.group(3))
-                    else:
-                        raise MADXInputError(
-                            "Drift",
-                            "Line "
-                            + str(nLine)
-                            + ": Parameter "
-                            + "'"
-                            + obj.group(2)
-                            + "'"
-                            + " does not exist for drift.",
-                        )
-
-                    self.__elements.append(self.__drift.copy())
-
-                elif "monitor" in line:
-                    obj = re.match(self.__monitor_pattern, line)
-
-                    # first tag is name
-                    self.__monitor["name"] = obj.group(1)
-
-                    if obj.group(2) in self.__monitor:
-                        self.__monitor[obj.group(2)] = float(obj.group(3))
-                    else:
-                        raise MADXInputError(
-                            "Monitor",
-                            "Line "
-                            + str(nLine)
-                            + ": Parameter "
-                            + "'"
-                            + obj.group(2)
-                            + "'"
-                            + " does not exist for monitor.",
-                        )
-
-                    self.__elements.append(self.__monitor.copy())
-
-                elif "quadrupole" in line:
-                    obj = re.match(self.quad_pattern, line)
-
-                    # first tag is name
-                    self.__quadrupole["name"] = obj.group(1)
-
-                    for i in range(2, self.__nQuad + 2, 2):
-                        if obj.group(i) in self.__quadrupole:
-                            self.__quadrupole[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "Quadrupole",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for quadrupole.",
-                            )
-
-                    self.__elements.append(self.__quadrupole.copy())
-
-                elif "sbend" in line:
-                    obj = re.match(self.__sbend_pattern, line)
-
-                    # first tag is name
-                    self.__sbend["name"] = obj.group(1)
-
-                    for i in range(2, self.__nDipole + 2, 2):
-                        if obj.group(i) in self.__sbend:
-                            self.__sbend[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "Dipole",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for dipole.",
-                            )
-
-                    self.__elements.append(self.__sbend.copy())
-
-                elif "solenoid" in line:
-                    obj = re.match(self.__sol_pattern, line)
-
-                    # first tag is name
-                    self.__sol["name"] = obj.group(1)
-
-                    for i in range(2, self.__nSol + 2, 2):
-                        if obj.group(i) in self.__sol:
-                            self.__sol[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "Solenoid",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for thick solenoid.",
-                            )
-
-                    self.__elements.append(self.__sol.copy())
-
-                elif "dipedge" in line:
-                    obj = re.match(self.__dipedge_pattern, line)
-
-                    # first tag is name
-                    self.__dipedge["name"] = obj.group(1)
-
-                    for i in range(2, self.__nDipedge + 2, 2):
-                        if obj.group(i) in self.__dipedge:
-                            self.__dipedge[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "DipEdge",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for dipole edge.",
-                            )
-
-                    self.__elements.append(self.__dipedge.copy())
-
-                elif re.search(r":\bkicker\b", line):
-                    obj = re.match(self.__kicker_pattern, line)
-
-                    # first tag is name
-                    self.__kicker["name"] = obj.group(1)
-
-                    for i in range(2, self.__nKicker + 2, 2):
-                        if obj.group(i) in self.__kicker:
-                            self.__kicker[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "Kicker",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for kicker.",
-                            )
-
-                    self.__elements.append(self.__kicker.copy())
-
-                elif re.search(r":\bhkicker\b", line):
-                    obj = re.match(self.__hkicker_pattern, line)
-
-                    # first tag is name
-                    self.__kicker["name"] = obj.group(1)
-                    self.__kicker["vkick"] = 0.0
-
-                    for i in range(2, self.__nHkicker + 2, 2):
-                        if obj.group(i) in self.__kicker:
-                            self.__kicker[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "HKicker",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for hkicker.",
-                            )
-
-                    self.__elements.append(self.__kicker.copy())
-
-                elif re.search(r":\bvkicker\b", line):
-                    obj = re.match(self.__vkicker_pattern, line)
-
-                    # first tag is name
-                    self.__kicker["name"] = obj.group(1)
-                    self.__kicker["hkick"] = 0.0
-
-                    for i in range(2, self.__nVkicker + 2, 2):
-                        if obj.group(i) in self.__kicker:
-                            self.__kicker[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "VKicker",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for vkicker.",
-                            )
-
-                    self.__elements.append(self.__kicker.copy())
-
-                # We treat TKICKER elements exactly like KICKER elements for now
-                # http://mad.web.cern.ch/mad/madx.old/Introduction/tkickers.html
-                elif re.search(r":\btkicker\b", line):
-                    obj = re.match(self.__tkicker_pattern, line)
-
-                    # first tag is name
-                    self.__kicker["name"] = obj.group(1)
-
-                    for i in range(2, self.__nKicker + 2, 2):
-                        if obj.group(i) in self.__kicker:
-                            self.__kicker[obj.group(i)] = float(obj.group(i + 1))
-                        else:
-                            raise MADXInputError(
-                                "TKicker",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for tkicker.",
-                            )
-
-                    self.__elements.append(self.__kicker.copy())
-
-                elif "marker" in line:
-                    pass
-
-                elif "beam" in line:
-                    obj = re.match(self.beam_pattern, line)
-
-                    for i in range(1, self.__nBeam, 2):
-                        if obj.group(i) in self.beam:
-                            if obj.group(i + 1).isdigit():
-                                self.beam[obj.group(i)] = float(obj.group(i + 1))
-                            else:
-                                self.beam[obj.group(i)] = obj.group(i + 1)
-
-                        else:
-                            raise MADXInputError(
-                                "Beam",
-                                "Line "
-                                + str(nLine)
-                                + ": Parameter "
-                                + "'"
-                                + obj.group(i)
-                                + "'"
-                                + " does not exist for beam.",
-                            )
-
-                elif "line" in line:
-                    obj = re.match(self.__line_pattern, line)
-
-                    self.__line["name"] = obj.group(1)
-
-                    lines = obj.group(2).split(",")
-                    newlines = []
-
-                    # check multiplication and insert that many lines
-                    for ln in lines:
-                        if "*" in ln:
-                            tmp = ln.split("*")
-
-                            n = 0
-                            ll = ""
-
-                            if tmp[0].isdigit():
-                                n = int(tmp[0])
-                                ll = tmp[1]
-                            else:
-                                n = int(tmp[1])
-                                ll = tmp[0]
-
-                            newlines += [ll] * n
-
-                        else:
-                            newlines.append(ln)
-
-                    self.__line["elem"] = newlines
-
-                    self.__lines.append(self.__line.copy())
-
-                elif "use" in line and "sequence" in line:
-                    obj = re.match(self.seq_pattern, line)
-
-                    self.sequence["name"] = obj.group(1)
-                else:
-                    raise MADXInputError(
-                        ("Error at line " + str(nLine), "Parsed line: " + str(line)),
-                        with_traceback=True,
-                    )
-
-        # 14. Oct. 2017,
-        # https://stackoverflow.com/questions/7900882/extract-item-from-list-of-dictionaries
-        start = [ln for ln in self.__lines if ln["name"] == self.sequence["name"]][0]
-
-        self._flatten(start)
-
-        # we need to add start line
-        self.__lattice = [start] + self.__lattice
-
-        self.__lattice = self._combine(self.__lattice)
-
-    def _flatten(self, line):
-        """
-        Find sublines.
-
-        """
-
-        name = line["name"]
-
-        for ln in self.__lines:
-            if name in ln["name"]:
-                for ll in ln["elem"]:
-                    for lll in self.__lines:
-                        if lll["name"] == ll:
-                            self.__lattice.append(lll)
-                            self._flatten(lll)
-
-    def _combine(self, lattice):
-        """
-        Combine to one list of all basic
-        elements.
-
-        return a list of element dictionaries
-        """
-
-        l1 = self.__lattice[0]
-
-        for i in range(1, len(self.__lattice)):
-            l2 = self.__lattice[i]
-
-            for e in l1["elem"]:
-                if l2["name"] == e:
-                    idx = l1["elem"].index(e)
-                    l1["elem"].remove(e)
-                    l1["elem"] = l1["elem"][0:idx] + l2["elem"] + l1["elem"][idx:]
-
-        return l1
-
-    def _noWhitespace(self, string):
-        """
-        Remove white space from a string.
-
-        14. Oct. 2017,
-        https://stackoverflow.com/questions/3739909/how-to-strip-all-whitespace-from-string
-
-        """
-        return "".join(string.split())
-
-    def __str__(self):
-        if self.__lattice:
-            length = 0.0
-
-            # drift, monitor, dipole, solenoid, quadrupole, dipedge, kicker
-            nTypes = [0, 0, 0, 0, 0, 0, 0]
-
-            for elem in self.__lattice["elem"]:
-                for e in self.__elements:
-                    if elem == e["name"]:
-                        if "l" in e:
-                            length += e["l"]
-
-                        if e["type"] == "drift":
-                            nTypes[0] += 1
-                        elif e["type"] == "monitor":
-                            nTypes[1] += 1
-                        elif e["type"] == "sbend":
-                            nTypes[2] += 1
-                        elif e["type"] == "solenoid":
-                            nTypes[3] += 1
-                        elif e["type"] == "quadrupole":
-                            nTypes[4] += 1
-                        elif e["type"] == "dipedge":
-                            nTypes[5] += 1
-                        elif e["type"] == "kicker":
-                            nTypes[6] += 1
-                        break
-
-            sign = "*" * 70
-            info = (
-                sign
-                + "\n"
-                + "MADX-Parser information:\n"
-                + "         length:\t"
-                + str(length)
-                + " [m]\n"
-                + "      #elements:\t"
-                + str(len(self.__lattice["elem"]))
-                + "\n"
-                + "            *       #drift:\t"
-                + str(nTypes[0])
-                + "\n"
-                + "            *       #monitor:\t"
-                + str(nTypes[1])
-                + "\n"
-                + "            *      #dipole:\t"
-                + str(nTypes[2])
-                + "\n"
-                + "            *      #solenoid:\t"
-                + str(nTypes[3])
-                + "\n"
-                + "            *  #quadrupole:\t"
-                + str(nTypes[4])
-                + "\n"
-                + "            *     #dipedge:\t"
-                + str(nTypes[5])
-                + "\n"
-                + "            *     #kicker:\t"
-                + str(nTypes[6])
-                + "\n"
-                + "           beam:\t\n"
-                + "            *     particle:\t"
-                + self.beam["particle"]
-                + "\n"
-                + "            * total energy:\t"
-                + str(self.beam["energy"])
-                + " [GeV]\n"
-                + sign
+            text = f.read()
+
+        self._parse_text(text)
+
+    def parse_string(self, text: str):
+        """Parse MAD-X input from a string."""
+        self._current_file = "<string>"
+        self._parse_text(text)
+
+    def _parse_text(self, text: str):
+        """Internal method to parse text."""
+        lexer = MADXLexer(text)
+        self.tokens = lexer.tokenize()
+        self.pos = 0
+
+        while self._current().type != TokenType.EOF:
+            self._parse_statement()
+            self._skip_semicolons()
+
+    def _parse_statement(self):
+        """Parse a single statement."""
+        token = self._current()
+
+        if token.type == TokenType.EOF:
+            return
+
+        if token.type == TokenType.SEMICOLON:
+            self._advance()
+            return
+
+        if token.type != TokenType.IDENTIFIER:
+            raise MADXInputError(
+                f"Expected identifier, got {token.type.name}", token.line
             )
 
-            return info
+        name = token.value.lower()
+
+        # Check for label: definition
+        if self._peek(1).type == TokenType.COLON:
+            self._parse_labeled_definition()
+            return
+
+        # Check for variable assignment
+        if self._peek(1).type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
+            self._parse_variable_assignment()
+            return
+
+        # Check for commands
+        if name == "beam":
+            self._parse_beam_command()
+            return
+
+        if name == "use":
+            self._parse_use_command()
+            return
+
+        if name == "const":
+            self._parse_const_declaration()
+            return
+
+        if name == "real":
+            self._advance()  # skip 'real'
+            self._parse_variable_assignment()
+            return
+
+        if name == "int":
+            self._advance()  # skip 'int'
+            self._parse_variable_assignment(integer=True)
+            return
+
+        if name in (
+            "title",
+            "option",
+            "select",
+            "twiss",
+            "call",
+            "return",
+            "print",
+            "value",
+            "show",
+            "help",
+            "stop",
+            "quit",
+            "exit",
+        ):
+            # Skip these commands - just consume until semicolon
+            self._skip_until_semicolon()
+            return
+
+        # Unknown statement - skip it with a warning
+        warnings.warn(
+            f"Skipping unknown statement starting with '{name}'", MADXInputWarning
+        )
+        self._skip_until_semicolon()
+
+    def _skip_until_semicolon(self):
+        """Skip tokens until semicolon or EOF."""
+        while self._current().type not in (TokenType.SEMICOLON, TokenType.EOF):
+            self._advance()
+        if self._current().type == TokenType.SEMICOLON:
+            self._advance()
+
+    def _parse_labeled_definition(self):
+        """Parse a labeled definition (element or line)."""
+        name = self._advance().value  # identifier
+        self._expect(TokenType.COLON)  # :
+
+        # Get the type/keyword
+        keyword = self._expect(TokenType.IDENTIFIER).value.lower()
+
+        if keyword == "line":
+            self._parse_line_definition(name)
         else:
-            return "No information available."
+            self._parse_element_definition(name, keyword)
 
-    def getBeamline(self):
-        if self.__lattice:
-            beamline = []
+    def _parse_element_definition(self, name: str, element_type: str):
+        """Parse an element definition."""
+        attributes = {}
+        attribute_exprs = {}
 
-            for elem in self.__lattice["elem"]:
-                for e in self.__elements:
-                    if elem == e["name"]:
-                        if e["type"] == "drift":
-                            # print("Drift L= " + str(e["l"]))
-                            beamline.append(e)
-                        elif e["type"] == "monitor":
-                            # print("BeamMonitor L= " + str(e["l"]))
-                            beamline.append(e)
-                        elif e["type"] == "sbend":
-                            # print("Sbend L= ", e["l"], " angle = ", e["angle"])
-                            beamline.append(e)
-                        elif e["type"] == "solenoid":
-                            # print("Sol L= ", e["l"], " ks = ", e["ks"])
-                            beamline.append(e)
-                        elif e["type"] == "quadrupole":
-                            # print("Quadrupole L= ", e["l"], " k1 = ", e["k1"])
-                            beamline.append(e)
-                        elif e["type"] == "dipedge":
-                            # print("Dipedge H= ", e["h"], " E1 = ", e["e1"])
-                            beamline.append(e)
-                        elif e["type"] == "kicker":
-                            # print("Kicker hkick= ", e["hkick"], " vkick = ", e["vkick"])
-                            beamline.append(e)
-                        else:
-                            print("Skipping element type " + "'" + e["type"] + "'")
-            return beamline
+        # Parse attributes
+        while self._current().type == TokenType.COMMA:
+            self._advance()  # ,
 
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            attr_name = self._advance().value.lower()
+
+            # Check for = or :=
+            if self._current().type == TokenType.COLON_EQUALS:
+                self._advance()
+                expr = self._parse_expression()
+                attribute_exprs[attr_name] = expr
+                attributes[attr_name] = self.context.evaluate(expr)
+            elif self._current().type == TokenType.EQUALS:
+                self._advance()
+                expr = self._parse_expression()
+                attributes[attr_name] = self.context.evaluate(expr)
+            else:
+                # Boolean flag
+                attributes[attr_name] = True
+
+        self._expect(TokenType.SEMICOLON)
+
+        # Store the element
+        element = Element(name, element_type, attributes, attribute_exprs)
+        self.context.elements[name] = element
+
+    def _parse_line_definition(self, name: str):
+        """Parse a LINE definition."""
+        self._expect(TokenType.EQUALS)
+        self._expect(TokenType.LPAREN)
+
+        elements = self._parse_line_elements()
+
+        self._expect(TokenType.RPAREN)
+        self._expect(TokenType.SEMICOLON)
+
+        line = Line(name, elements)
+        self.context.lines[name] = line
+
+    def _parse_line_elements(self) -> list:
+        """Parse the elements inside a LINE definition."""
+        elements = []
+
+        while True:
+            elem = self._parse_line_element()
+            if elem is not None:
+                elements.append(elem)
+
+            if self._current().type != TokenType.COMMA:
+                break
+            self._advance()  # ,
+
+        return elements
+
+    def _parse_line_element(self):
+        """Parse a single line element (possibly with multiplier or reversal)."""
+        # Check for reversal operator (-)
+        reversed_flag = False
+        if self._current().type == TokenType.MINUS:
+            self._advance()
+            reversed_flag = True
+
+        # Check for multiplier: n * element or (n * subline)
+        multiplier = 1
+
+        # Check for parenthesized group with potential multiplier
+        if self._current().type == TokenType.LPAREN:
+            # Could be (n * element) or just (elements)
+            self._advance()
+
+            # Check if first thing is a number followed by *
+            if (
+                self._current().type == TokenType.NUMBER
+                and self._peek(1).type == TokenType.STAR
+            ):
+                multiplier = int(self._advance().value)
+                self._expect(TokenType.STAR)
+
+            # Now parse the inner elements
+            inner_elements = self._parse_line_elements()
+            self._expect(TokenType.RPAREN)
+
+            return {
+                "multiplier": multiplier,
+                "elements": inner_elements,
+                "reversed": reversed_flag,
+            }
+
+        # Check for number * element
+        if self._current().type == TokenType.NUMBER:
+            num = self._advance().value
+            if self._current().type == TokenType.STAR:
+                self._advance()
+                multiplier = int(num)
+            else:
+                # Shouldn't happen in valid MAD-X
+                raise MADXInputError(
+                    "Expected * after number in LINE", self._current().line
+                )
+
+        # Now we should have an identifier
+        if self._current().type == TokenType.IDENTIFIER:
+            elem_name = self._advance().value
+            return {
+                "name": elem_name,
+                "multiplier": multiplier,
+                "reversed": reversed_flag,
+            }
+
+        return None
+
+    def _parse_expression(self) -> Expression:
+        """Parse an expression using the expression parser."""
+        # Find the extent of the expression (until comma, semicolon, or rparen at depth 0)
+        start = self.pos
+        depth = 0
+
+        while self._current().type != TokenType.EOF:
+            if self._current().type == TokenType.LPAREN:
+                depth += 1
+            elif self._current().type == TokenType.RPAREN:
+                if depth == 0:
+                    break
+                depth -= 1
+            elif (
+                self._current().type in (TokenType.COMMA, TokenType.SEMICOLON)
+                and depth == 0
+            ):
+                break
+            self.pos += 1
+
+        end = self.pos
+        self.pos = start
+
+        # Extract tokens for expression parser
+        expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
+        expr_parser = MADXExpressionParser(expr_tokens)
+        expr = expr_parser.parse_expression()
+
+        # Advance past the expression tokens
+        self.pos = end
+
+        return expr
+
+    def _parse_variable_assignment(self, integer: bool = False):
+        """Parse a variable assignment."""
+        name = self._expect(TokenType.IDENTIFIER).value
+
+        deferred = False
+        if self._current().type == TokenType.COLON_EQUALS:
+            self._advance()
+            deferred = True
         else:
-            return []
+            self._expect(TokenType.EQUALS)
 
-    def getParticle(self):
-        particle = self.beam["particle"]
+        expr = self._parse_expression()
+        self._expect(TokenType.SEMICOLON)
+
+        if integer:
+            value = int(self.context.evaluate(expr))
+            self.context.set_variable(
+                name, value=value, expression=expr, deferred=deferred
+            )
+        else:
+            self.context.set_variable(name, expression=expr, deferred=deferred)
+
+    def _parse_const_declaration(self):
+        """Parse a CONST declaration."""
+        self._advance()  # skip 'const'
+
+        # Optional 'real' or 'int'
+        integer = False
+        if self._current().type == TokenType.IDENTIFIER:
+            if self._current().value == "int":
+                integer = True
+                self._advance()
+            elif self._current().value == "real":
+                self._advance()
+
+        name = self._expect(TokenType.IDENTIFIER).value
+
+        deferred = False
+        if self._current().type == TokenType.COLON_EQUALS:
+            self._advance()
+            deferred = True
+        else:
+            self._expect(TokenType.EQUALS)
+
+        expr = self._parse_expression()
+        self._expect(TokenType.SEMICOLON)
+
+        value = self.context.evaluate(expr)
+        if integer:
+            value = int(value)
+
+        self.context.set_variable(
+            name, value=value, expression=expr, deferred=deferred, constant=True
+        )
+
+    def _parse_beam_command(self):
+        """Parse the BEAM command."""
+        self._advance()  # skip 'beam'
+
+        while self._current().type == TokenType.COMMA:
+            self._advance()
+
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            attr_name = self._advance().value.lower()
+
+            if self._current().type == TokenType.EQUALS:
+                self._advance()
+
+                if attr_name == "particle":
+                    if self._current().type == TokenType.STRING:
+                        self.context.beam.particle = self._advance().value.lower()
+                    elif self._current().type == TokenType.IDENTIFIER:
+                        self.context.beam.particle = self._advance().value.lower()
+                    else:
+                        raise MADXInputError(
+                            "Expected particle name", self._current().line
+                        )
+                elif attr_name == "energy":
+                    expr = self._parse_expression()
+                    self.context.beam.energy = self.context.evaluate(expr)
+                elif attr_name == "pc":
+                    expr = self._parse_expression()
+                    self.context.beam.pc = self.context.evaluate(expr)
+                elif attr_name == "mass":
+                    expr = self._parse_expression()
+                    self.context.beam.mass = self.context.evaluate(expr)
+                elif attr_name == "charge":
+                    expr = self._parse_expression()
+                    self.context.beam.charge = self.context.evaluate(expr)
+                else:
+                    # Unknown attribute, skip the value
+                    self._parse_expression()
+            elif self._current().type == TokenType.COLON_EQUALS:
+                self._advance()
+                # Deferred expression - just evaluate immediately for now
+                expr = self._parse_expression()
+                if attr_name == "energy":
+                    self.context.beam.energy = self.context.evaluate(expr)
+                elif attr_name == "particle":
+                    val = self.context.evaluate(expr)
+                    if isinstance(val, str):
+                        self.context.beam.particle = val.lower()
+
+        self._expect(TokenType.SEMICOLON)
+
+    def _parse_use_command(self):
+        """Parse the USE command."""
+        self._advance()  # skip 'use'
+
+        while self._current().type == TokenType.COMMA:
+            self._advance()
+
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            attr_name = self._advance().value.lower()
+
+            if attr_name in ("sequence", "period"):
+                self._expect(TokenType.EQUALS)
+                if self._current().type == TokenType.IDENTIFIER:
+                    self.context.selected_sequence = self._advance().value
+                elif self._current().type == TokenType.STRING:
+                    self.context.selected_sequence = self._advance().value.lower()
+            else:
+                if self._current().type == TokenType.EQUALS:
+                    self._advance()
+                    self._parse_expression()
+
+        self._expect(TokenType.SEMICOLON)
+
+    # =========================================================================
+    # Public Interface (backward compatible with old parser)
+    # =========================================================================
+
+    @property
+    def beam(self) -> dict:
+        """Get beam parameters as a dictionary (backward compatible)."""
+        return {
+            "particle": self.context.beam.particle,
+            "energy": self.context.beam.energy,
+        }
+
+    @property
+    def sequence(self) -> dict:
+        """Get selected sequence (backward compatible)."""
+        return {"name": self.context.selected_sequence or ""}
+
+    def _flatten_line(self, line_name: str) -> list[str]:
+        """Recursively flatten a line definition to element names."""
+        line_name = line_name.lower()
+
+        if line_name not in self.context.lines:
+            # It might be a direct element reference
+            if line_name in self.context.elements:
+                return [line_name]
+            raise MADXInputError(f"Unknown line or element: {line_name}")
+
+        line = self.context.lines[line_name]
+        result = []
+
+        for elem in line.elements:
+            if isinstance(elem, dict):
+                multiplier = elem.get("multiplier", 1)
+                reversed_flag = elem.get("reversed", False)
+
+                if "elements" in elem:
+                    # Nested group
+                    for _ in range(multiplier):
+                        inner = []
+                        for inner_elem in elem["elements"]:
+                            inner.extend(self._process_line_element(inner_elem))
+                        if reversed_flag:
+                            inner = inner[::-1]
+                        result.extend(inner)
+                elif "name" in elem:
+                    name = elem["name"]
+                    for _ in range(multiplier):
+                        expanded = self._flatten_line(name)
+                        if reversed_flag:
+                            expanded = expanded[::-1]
+                        result.extend(expanded)
+
+        return result
+
+    def _process_line_element(self, elem) -> list[str]:
+        """Process a single line element specification."""
+        if isinstance(elem, str):
+            return self._flatten_line(elem)
+
+        if isinstance(elem, dict):
+            multiplier = elem.get("multiplier", 1)
+            reversed_flag = elem.get("reversed", False)
+
+            if "elements" in elem:
+                inner = []
+                for inner_elem in elem["elements"]:
+                    inner.extend(self._process_line_element(inner_elem))
+                if reversed_flag:
+                    inner = inner[::-1]
+                return inner * multiplier
+            elif "name" in elem:
+                expanded = self._flatten_line(elem["name"])
+                if reversed_flag:
+                    expanded = expanded[::-1]
+                return expanded * multiplier
+
+        return []
+
+    def getBeamline(self) -> list[dict]:
+        """
+        Get the beamline as a list of element dictionaries.
+
+        Returns a list compatible with the old parser format.
+        """
+        if not self.context.selected_sequence:
+            # Try to find a line if no sequence selected
+            if self.context.lines:
+                self.context.selected_sequence = list(self.context.lines.keys())[0]
+            else:
+                return []
+
+        # Flatten the line to get element names
+        element_names = self._flatten_line(self.context.selected_sequence)
+
+        # Build the beamline
+        beamline = []
+        for name in element_names:
+            if name in self.context.elements:
+                elem = self.context.elements[name]
+
+                # Re-evaluate any deferred expressions
+                attrs = {}
+                for attr_name, value in elem.attributes.items():
+                    if attr_name in elem.attribute_exprs:
+                        attrs[attr_name] = self.context.evaluate(
+                            elem.attribute_exprs[attr_name]
+                        )
+                    else:
+                        attrs[attr_name] = value
+
+                elem_dict = {
+                    "name": elem.name,
+                    "type": elem.type,
+                    **attrs,
+                }
+                beamline.append(elem_dict)
+            else:
+                warnings.warn(
+                    f"Element '{name}' referenced but not defined", MADXInputWarning
+                )
+
+        return beamline
+
+    def getParticle(self) -> str:
+        """Get the particle type."""
+        particle = self.context.beam.particle
         known_particles = [
             "positron",
             "electron",
@@ -649,15 +1426,67 @@ class MADXParser:
             "ion",
         ]
 
-        if particle not in known_particles:
-            warning_message = (
-                "No particle type " + "'" + self.beam["particle"] + "' available."
-            )
-            warnings.warn(warning_message, MADXInputWarning)
-        else:
-            pass
+        if particle and particle not in known_particles:
+            warnings.warn(f"Unknown particle type '{particle}'", MADXInputWarning)
 
         return particle
 
-    def getEtot(self):
-        return self.beam["energy"]
+    def getEtot(self) -> float:
+        """Get total energy in GeV."""
+        return self.context.beam.energy
+
+    def getVariable(self, name: str) -> Any:
+        """Get a variable value."""
+        return self.context.get_variable(name)
+
+    def getElement(self, name: str) -> Optional[Element]:
+        """Get an element by name."""
+        return self.context.elements.get(name.lower())
+
+    def getLine(self, name: str) -> Optional[Line]:
+        """Get a line by name."""
+        return self.context.lines.get(name.lower())
+
+    def __str__(self) -> str:
+        """String representation with lattice information."""
+        if not self.context.selected_sequence:
+            return "No sequence selected."
+
+        try:
+            beamline = self.getBeamline()
+        except Exception as e:
+            return f"Error getting beamline: {e}"
+
+        if not beamline:
+            return "Empty beamline."
+
+        length = 0.0
+        type_counts = {}
+
+        for elem in beamline:
+            if "l" in elem:
+                length += elem["l"]
+            elem_type = elem.get("type", "unknown")
+            type_counts[elem_type] = type_counts.get(elem_type, 0) + 1
+
+        sign = "*" * 70
+        lines = [
+            sign,
+            "MAD-X Parser Information:",
+            f"         length: {length:.6f} [m]",
+            f"      #elements: {len(beamline)}",
+        ]
+
+        for elem_type, count in sorted(type_counts.items()):
+            lines.append(f"            * #{elem_type}: {count}")
+
+        lines.extend(
+            [
+                "           beam:",
+                f"            *     particle: {self.context.beam.particle}",
+                f"            * total energy: {self.context.beam.energy} [GeV]",
+                sign,
+            ]
+        )
+
+        return "\n".join(lines)

@@ -49,7 +49,10 @@ def lattice(parsed_beamline, nslice=1):
         # Kicker, idealized thin element,
         # MADX also defines length "L" and a roll angle around the longitudinal axis "TILT"
         # https://mad.web.cern.ch/mad/webguide/manual.html#Ch11.S11
-        "KICKER": "Kicker",  # TKICKER, HKICKER and VKICKER become KICKER elements
+        "KICKER": "Kicker",
+        "TKICKER": "Kicker",  # thin kicker, treated same as KICKER
+        "HKICKER": "Kicker",  # horizontal kicker
+        "VKICKER": "Kicker",  # vertical kicker
         # note: in MAD-X, this keeps track only of the beam centroid,
         # "In addition it serves to record the beam position for closed orbit correction."
         "MONITOR": "BeamMonitor",  # drift + output diagnostics
@@ -94,12 +97,28 @@ def lattice(parsed_beamline, nslice=1):
                         K2=d["fint"],
                     )
                 )
-            elif d["type"] == "kicker":
+            elif d["type"] in ("kicker", "tkicker"):
                 impactx_beamline.append(
                     elements.Kicker(
                         name=d["name"],
-                        xkick=d["hkick"],
-                        ykick=d["vkick"],
+                        xkick=d.get("hkick", 0.0),
+                        ykick=d.get("vkick", 0.0),
+                    )
+                )
+            elif d["type"] == "hkicker":
+                impactx_beamline.append(
+                    elements.Kicker(
+                        name=d["name"],
+                        xkick=d.get("hkick", 0.0),
+                        ykick=0.0,
+                    )
+                )
+            elif d["type"] == "vkicker":
+                impactx_beamline.append(
+                    elements.Kicker(
+                        name=d["name"],
+                        xkick=0.0,
+                        ykick=d.get("vkick", 0.0),
                     )
                 )
             elif d["type"] == "monitor":

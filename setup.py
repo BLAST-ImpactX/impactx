@@ -39,7 +39,12 @@ class CopyPreBuild(build):
 
         # copy Python module artifacts and sources
         dst_path = os.path.join(self.build_lib, "impactx")
-        shutil.copytree(PYIMPACTX_libdir, dst_path, dirs_exist_ok=True)
+        shutil.copytree(
+            PYIMPACTX_libdir,
+            dst_path,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns("diags", "diags.*"),
+        )
 
 
 class CMakeExtension(Extension):

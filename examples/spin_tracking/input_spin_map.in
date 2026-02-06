@@ -24,7 +24,7 @@ beam.polarization_z = 0.1
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.periods = 5
+lattice.periods = 1
 lattice.elements = monitor map1
 
 monitor.type = beam_monitor

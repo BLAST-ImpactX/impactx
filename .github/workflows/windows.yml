@@ -231,7 +231,8 @@ jobs:
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^
               -DImpactX_TEST_CLEANUP=ON      ^
-              -DopenPMD_USE_HDF5=ON
+              -DopenPMD_USE_HDF5=ON          ^
+              -DAMReX_FFTW_IGNORE_OMP=ON
         if errorlevel 1 exit 1
         cmake --build build --config Debug --parallel 4
         if errorlevel 1 exit 1

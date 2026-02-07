@@ -70,7 +70,7 @@ We use a 2 GeV electron beam.  The beam parameters (in particular, the momentum 
 The beam propagates over one period, as set by the design spin tune.  By increasing the number of slices, and turning on diagnostics, one can view precession of the polarization vector about
 the vertical direction.  A clean precession over 1 period becomes visible when the beam size, momentum spread, and energy spread are set to small values.
 
-In this test, the initial and final values of `mean_sx`, `mean_sy`, and `mean_sz` must agree with nominal values.
+In this test, the initial and final values of :math:`\langle{s_x\rangle}`, :math:`\langle{s_y\rangle}`, :math:`\langle{s_z\rangle}` must agree with nominal values.
 
 
 Run

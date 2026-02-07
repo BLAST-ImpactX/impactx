@@ -8,7 +8,7 @@
 
 # from elements import LinearTransport
 
-from impactx import ImpactX, Map3x6, Vector3, distribution, elements, twiss
+from impactx import ImpactX, Vector3, distribution, elements, twiss
 
 sim = ImpactX()
 
@@ -64,7 +64,6 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # initialize the spin map generators
 vmat = Vector3
-Amat = Map3x6
 
 # matrix elements for the horizontal plane
 vmat = [1.0, 0.0, 0.0]

@@ -47,11 +47,11 @@ Single Particle Dynamics
 
 Spin and Polarization
 ----------------------
-   
+
 .. toctree::
    :maxdepth: 1
-   
-   examples/spin_tracking/README.rst  
+
+   examples/spin_tracking/README.rst
 
 Collective Effects
 ------------------

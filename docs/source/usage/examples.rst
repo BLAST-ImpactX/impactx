@@ -45,6 +45,14 @@ Single Particle Dynamics
    examples/active_plasma_lens/README.rst
    examples/edge_effects/README.rst
 
+Spin and Polarization
+----------------------
+   
+.. toctree::
+   :maxdepth: 1
+   
+   examples/spin_tracking/README.rst  
+
 Collective Effects
 ------------------
 

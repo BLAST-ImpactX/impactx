@@ -102,7 +102,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 Analyze
 -------
 
-The analysis can be run using **either** of the following script:
+The analysis can be run using:
 
 
 .. dropdown:: Script ``analysis_sbend_spin.py``

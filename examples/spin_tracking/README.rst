@@ -10,7 +10,7 @@ We use a 250 MeV proton beam with initial unnormalized rms emittance of 1 micron
 
 The beam propagates over one horizontal betatron period, to a location where the polarization vector is described by a simple expression.
 
-In this test, the initial and final values of :math:`\polarization_x`, :math:`\polarization_y`, and :math:`\polarization_z` must agree with nominal values.
+In this test, the initial and final values of `mean_sx`, `mean_sy`, and `mean_sz` must agree with nominal values.
 
 
 Run
@@ -70,7 +70,7 @@ We use a 2 GeV electron beam.  The beam parameters (in particular, the momentum 
 The beam propagates over one period, as set by the design spin tune.  By increasing the number of slices, and turning on diagnostics, one can view precession of the polarization vector about
 the vertical direction.  A clean precession over 1 period becomes visible when the beam size, momentum spread, and energy spread are set to small values.
 
-In this test, the initial and final values of :math:`\polarization_x`, :math:`\polarization_y`, and :math:`\polarization_z` must agree with nominal values.
+In this test, the initial and final values of `mean_sx`, `mean_sy`, and `mean_sz` must agree with nominal values.
 
 
 Run

@@ -90,7 +90,7 @@ smax = max(s)
 # print(particle_42)
 
 # steps & corresponding z
-#steps = list(series.iterations)
+# steps = list(series.iterations)
 
 # print beam transverse size over steps
 f = plt.figure(figsize=(9, 4.8))
@@ -124,9 +124,7 @@ im_sx = ax1.plot(s, polarization_x, label=r"$<S_x>$")
 im_sy = ax1.plot(s, polarization_y, label=r"$<S_y>$")
 im_sz = ax1.plot(s, polarization_z, label=r"$<S_z>$")
 
-ax1.legend(
-    handles=im_sx + im_sy + im_sz, loc="upper center", prop={'size': 11}
-)
+ax1.legend(handles=im_sx + im_sy + im_sz, loc="upper center", prop={"size": 11})
 ax1.set_xlabel(r"$z$ [m]", fontsize=14)
 ax1.set_ylabel(r"polarization", fontsize=14)
 ax1.xaxis.set_major_locator(MaxNLocator(integer=True))

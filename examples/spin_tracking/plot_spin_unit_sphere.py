@@ -5,17 +5,12 @@
 # License: BSD-3-Clause-LBNL
 #
 
-import argparse
-import glob
-import re
-       
+
 import matplotlib.pyplot as plt
 import numpy as np
 import openpmd_api as io
-import pandas as pd
-from matplotlib.ticker import MaxNLocator
+
 # Required for 3D projection
-from mpl_toolkits.mplot3d import Axes3D
 
 # Collect data for the initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -24,12 +19,12 @@ initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # Create a new figure and add a 3D subplot
-fig, axs = plt.subplots(1, 2, subplot_kw={'projection': '3d'})
+fig, axs = plt.subplots(1, 2, subplot_kw={"projection": "3d"})
 
 # Define the spherical coordinates
 # u and v are parameters for the surface
-u = np.linspace(0, 2 * np.pi, 100) # Azimuth angle, ranges from 0 to 2*pi
-v = np.linspace(0, np.pi, 100)     # Elevation angle, ranges from 0 to pi
+u = np.linspace(0, 2 * np.pi, 100)  # Azimuth angle, ranges from 0 to 2*pi
+v = np.linspace(0, np.pi, 100)  # Elevation angle, ranges from 0 to pi
 
 # Create a meshgrid from u and v
 u, v = np.meshgrid(u, v)
@@ -47,19 +42,19 @@ ax2 = axs[1]
 
 # Plot the surface
 # alpha controls opacity (0.3 makes it somewhat transparent)
-ax1.plot_surface(x, y, z, color='b', alpha=0.3)
-ax2.plot_surface(x, y, z, color='b', alpha=0.3)
+ax1.plot_surface(x, y, z, color="b", alpha=0.3)
+ax2.plot_surface(x, y, z, color="b", alpha=0.3)
 
 # Set axis labels
 # Rotate axes so that z is longitudinal and y is vertical:
-ax1.set_xlabel('$S_z$', fontsize=14, weight='bold')
-ax1.set_ylabel('$S_x$', fontsize=14, weight='bold')
-ax1.set_zlabel('$S_y$', fontsize=14, weight='bold')
-ax1.set_title('Initial Particle Spin')
-ax2.set_xlabel('$S_z$', fontsize=14, weight='bold')
-ax2.set_ylabel('$S_x$', fontsize=14, weight='bold')
-ax2.set_zlabel('$S_y$', fontsize=14, weight='bold')
-ax2.set_title('Final Particle Spin')
+ax1.set_xlabel("$S_z$", fontsize=14, weight="bold")
+ax1.set_ylabel("$S_x$", fontsize=14, weight="bold")
+ax1.set_zlabel("$S_y$", fontsize=14, weight="bold")
+ax1.set_title("Initial Particle Spin")
+ax2.set_xlabel("$S_z$", fontsize=14, weight="bold")
+ax2.set_ylabel("$S_x$", fontsize=14, weight="bold")
+ax2.set_zlabel("$S_y$", fontsize=14, weight="bold")
+ax2.set_title("Final Particle Spin")
 
 # Ensure the aspect ratio is equal so the sphere looks like a sphere and not an ellipsoid
 # This involves manually setting limits based on the maximum extent of the data.
@@ -82,9 +77,9 @@ ax2.set_zticks([-1.0, -0.5, 0.0, 0.5, 1.0])
 # scatter plot of initial particle spin on the sphere
 ax1.scatter3D(
     initial.spin_z,
-    initial.spin_x,  
+    initial.spin_x,
     initial.spin_y,
-    c='k',
+    c="k",
     s=0.03,
 )
 
@@ -93,12 +88,12 @@ ax2.scatter3D(
     final.spin_z,
     final.spin_x,
     final.spin_y,
-    c='k',
+    c="k",
     s=0.03,
 )
 
 # Adjust plot location and spacing
-plt.subplots_adjust(left=0.05,wspace=0.3)
+plt.subplots_adjust(left=0.05, wspace=0.3)
 
 # Display the plot
 plt.show()

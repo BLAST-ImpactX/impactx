@@ -14,6 +14,7 @@ import openpmd_api as io
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
 
+
 def read_file(file_pattern):
     for filename in glob.glob(file_pattern):
         df = pd.read_csv(filename, delimiter=r"\s+")
@@ -120,9 +121,7 @@ im_sx = ax1.plot(s, polarization_x, label=r"$<S_x>$")
 im_sy = ax1.plot(s, polarization_y, label=r"$<S_y>$")
 im_sz = ax1.plot(s, polarization_z, label=r"$<S_z>$")
 
-ax1.legend(
-    handles=im_sx + im_sy + im_sz, loc="upper center"
-)
+ax1.legend(handles=im_sx + im_sy + im_sz, loc="upper center")
 ax1.set_xlabel(r"$z$ [m]")
 ax1.set_ylabel(r"polarization")
 ax1.xaxis.set_major_locator(MaxNLocator(integer=True))

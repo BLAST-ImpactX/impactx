@@ -57,4 +57,4 @@ algo.spin = true
 ###############################################################################
 # Diagnostics
 ###############################################################################
-diag.slice_step_diagnostics = false
+diag.slice_step_diagnostics = true

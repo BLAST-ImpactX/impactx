@@ -1902,11 +1902,12 @@ add_impactx_test(fodo-spin
     examples/spin_tracking/input_fodo_channel_spin.in
     ON   # ImpactX MPI-parallel
     examples/spin_tracking/analysis_fodo_channel_spin.py
-    OFF  # no plot script yet
+    examples/spin_tracking/plot_fodo_polarization.py
+
 )
 add_impactx_test(fodo-spin.py
     examples/spin_tracking/run_fodo_channel_spin.py
     ON    # ImpactX MPI-parallel
     examples/spin_tracking/analysis_fodo_channel_spin.py
-    OFF  # no plot script yet
+    examples/spin_tracking/plot_fodo_polarization.py
 )

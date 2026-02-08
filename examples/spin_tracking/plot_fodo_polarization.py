@@ -82,13 +82,15 @@ polarization_y = rbc["mean_sy"]
 polarization_z = rbc["mean_sz"]
 
 length = len(s) - 1
+smin = min(s)
+smax = max(s)
 
 # select a single particle by id
 # particle_42 = beam[beam["id"] == 42]
 # print(particle_42)
 
 # steps & corresponding z
-steps = list(series.iterations)
+#steps = list(series.iterations)
 
 # print beam transverse size over steps
 f = plt.figure(figsize=(9, 4.8))
@@ -103,10 +105,11 @@ im_emittance_y = ax2.plot(s, emittance_y, ":", label=r"$\epsilon_y$")
 ax1.legend(
     handles=im_sigx + im_sigy + im_emittance_x + im_emittance_y, loc="lower center"
 )
-ax1.set_xlabel(r"$z$ [m]")
-ax1.set_ylabel(r"$\sigma_{x,y}$ [mm]")
-ax2.set_ylabel(r"$\epsilon_{x,y}$ [nm]")
+ax1.set_xlabel(r"$s$ [m]", fontsize=14)
+ax1.set_ylabel(r"$\sigma_{x,y}$ [mm]", fontsize=14)
+ax2.set_ylabel(r"$\epsilon_{x,y}$ [nm]", fontsize=14)
 ax2.set_ylim([1.5, 2.5])
+ax1.set_xlim([smin, smax])
 ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 plt.tight_layout()
 if args.save_png:
@@ -121,10 +124,13 @@ im_sx = ax1.plot(s, polarization_x, label=r"$<S_x>$")
 im_sy = ax1.plot(s, polarization_y, label=r"$<S_y>$")
 im_sz = ax1.plot(s, polarization_z, label=r"$<S_z>$")
 
-ax1.legend(handles=im_sx + im_sy + im_sz, loc="upper center")
-ax1.set_xlabel(r"$z$ [m]")
-ax1.set_ylabel(r"polarization")
+ax1.legend(
+    handles=im_sx + im_sy + im_sz, loc="upper center", prop={'size': 11}
+)
+ax1.set_xlabel(r"$z$ [m]", fontsize=14)
+ax1.set_ylabel(r"polarization", fontsize=14)
 ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+ax1.set_xlim([smin, smax])
 plt.tight_layout()
 if args.save_png:
     plt.savefig("fodo_polarization.png")

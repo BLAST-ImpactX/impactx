@@ -1895,6 +1895,20 @@ add_impactx_test(quad-spin-rbc.py
     OFF  # no plot script yet
 )
 
+# Spin Depolarization in a Dipole ###################
+# without space charge
+add_impactx_test(sbend-spin-rbc
+    examples/spin_tracking/input_sbend_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sbend_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(sbend-spin.py
+    examples/spin_tracking/run_sbend_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sbend_spin.py
+    OFF  # no plot script yet
+)
 
 # Spin Depolarization in a FODO Channel ###################
 # without space charge

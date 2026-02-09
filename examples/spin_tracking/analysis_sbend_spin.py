@@ -45,8 +45,9 @@ Pxi = 0.4  # polarization_x from input
 Pyi = 0.9  # polarization_y from input
 Pzi = 0.1  # polarization_z from input
 
-rel_gamma = 3914.902367118367246  # relativistic gamma
-rel_beta = 0.999999967376681  # relativistic beta
+beam_initial = series.iterations[1].particles["beam"]
+rel_gamma = beam_initial.get_attribute("gamma_ref")
+rel_beta = beam_initial.get_attribute("beta_ref")
 h = 1.0 / 10.0  # 1/radius of bend curvature from input
 
 print("Initial Beam:")

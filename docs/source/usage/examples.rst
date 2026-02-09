@@ -46,7 +46,7 @@ Single Particle Dynamics
    examples/edge_effects/README.rst
 
 Spin and Polarization
-----------------------
+---------------------
 
 .. toctree::
    :maxdepth: 1

@@ -41,7 +41,6 @@ def read_time_series(file_pattern):
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 # numerical parameters based on input file
-
 gryo_anomaly = 0.001159652181644  # for electrons
 rel_gamma = 196.69511809100055  # for 100 MeV
 quad_gradient = 100  # value in 1/m^2 from input

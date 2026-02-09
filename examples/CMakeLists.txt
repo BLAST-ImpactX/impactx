@@ -1908,6 +1908,7 @@ add_impactx_test(sbend-spin.py
     ON    # ImpactX MPI-parallel
     examples/spin_tracking/analysis_sbend_spin.py
     OFF  # no plot script yet
+)
 
 # Spin Depolarization in a FODO Channel ###################
 # without space charge

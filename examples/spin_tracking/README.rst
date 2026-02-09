@@ -60,12 +60,12 @@ The analysis can be run using **either** of the following scripts:
 .. _examples-fodo-spin:
 
 Spin Depolarization in a FODO Channel
-======================================
+=====================================
 
 This example illustrates the decay of the polarization vector (describing the mean of the three spin components) for a matched beam in a FODO channel.
 
 We use a 10 GeV electron beam, with an initially 6D Gaussian distribution in the phase space.  The FODO channel and Twiss parameters are otherwise identical to
-those appearing in examples/fodo_channel.
+those appearing in ``examples/fodo_channel``.
 
 The beam spin undergoes rapid mixing and depolarization.
 

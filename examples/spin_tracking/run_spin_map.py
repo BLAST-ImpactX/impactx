@@ -7,6 +7,7 @@
 # -*- coding: utf-8 -*-
 
 # from elements import LinearTransport
+import numpy as np
 
 from impactx import ImpactX, distribution, elements, twiss
 

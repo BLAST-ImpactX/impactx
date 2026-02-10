@@ -3,52 +3,59 @@
 ###############################################################################
 beam.npart = 10000
 beam.units = static
-beam.kin_energy = 45.6e3
-beam.charge = 2.72370027e-8  #population 1.7e11
+beam.kin_energy = 10.0e3
+beam.charge = 1.0e-9
 beam.particle = electron
-beam.distribution = waterbag_from_twiss
-beam.alphaX = 0.0
-beam.alphaY = 0.0
+beam.distribution = gaussian_from_twiss
+beam.alphaX = -1.5905003499999992
+beam.alphaY = -beam.alphaX
 beam.alphaT = 0.0
-beam.betaX = 0.15
-beam.betaY = 0.8e-3
-beam.betaT = 9.210526315789473
-beam.emittX = 0.27e-09
-beam.emittY = 1e-12
-beam.emittT = 1.33e-6
+beam.betaX = 2.8216194100262637
+beam.betaY = beam.betaX
+beam.betaT = 0.5
+beam.emittX = 2e-04
+beam.emittY = 2e-04
+beam.emittT = 2e-12
 beam.polarization_x = 0.4
 beam.polarization_y = 0.9
 beam.polarization_z = 0.1
 
-
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.periods = 1
-lattice.elements = monitor map1
+lattice.elements = monitor map1 quad1 map2 bend1 monitor
+lattice.nslice = 1
 
 monitor.type = beam_monitor
 monitor.backend = h5
 
-map1.type = spin_map
-# spin rotation vector
-map1.v1 = 1.0
-map1.v2 = 0.0
-map1.v3 = 0.0
-# spin-orbit coupling matrix
-map1.A11 = 0.642252653176584
-map1.A12 = 0.114973951021402
-map1.A21 = -5.109953378728999
-map1.A22 = 0.642252653176584
-map1.A31 = 0.5
-map1.A36 = -0.2
+quad1.type = quad
+quad1.ds = 1.0
+quad1.k = 1.0
+
+map1.type = spin_map  # Inverse spin map for quad1
+map1.A13 = 27.846376647658047
+map1.A14 = 12.868288416407257
+map1.A21 = 19.9386437894808211
+map1.A22 = 10.8925307463018033
+
+bend1.type = sbend
+bend1.ds = 1.0
+bend1.rc = 10.0
+
+map2.type = spin_map  # Inverse spin map for bend1
+map2.v2 = 2.269498669527234
+map2.A14 = 1.643140677773437
+map2.A21 = 0.236555147919017
+map2.A22 = 0.118376237268958
+map2.A26 = 0.096052815713841
+map2.A34 = -0.765638392807848
 
 ###############################################################################
 # Algorithms
 ###############################################################################
 algo.space_charge = false
 algo.spin = true
-
 
 ###############################################################################
 # Diagnostics

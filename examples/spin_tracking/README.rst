@@ -217,7 +217,6 @@ In this test, a beam is propagated forward through an element of length ds, foll
 
 In this test, the initial and final spin components :math:`s_x`, :math:`s_y`, and :math:`s_z` are compared.  The norm of the change in the spin vector must lie within a very small tolerance.
 
-
 Run
 ---
 
@@ -246,7 +245,6 @@ Analyze
 -------
 
 The analysis can be run using:
-
 
 .. dropdown:: Script ``analysis_reversibility_spin.py``
 
@@ -302,3 +300,58 @@ The analysis can be run using:
    .. literalinclude:: analysis_cfbend_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_cfbend_spin.py``.
+
+
+.. _examples-spin-map:
+
+Illustration of a User-Defined Spin Map
+=======================================
+
+This example illustrates the application of a user-defined map that affects only the spin variables :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:
+
+
+:math:`\vec{s}_f = M(\zeta)\vec{s}_i` where :math:`M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}`.
+
+Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit
+coupling for particles not on the design orbit.  Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase space variables as deviations from the design orbit.  The quantities :math:`L_x`, :math:`L_y`, and :math:`L_z` are standard 3x3 matrices that define a basis for the Lie algebra :math:`so(3)`.
+
+
+In this test, the inverses of the spin maps for a quadrupole and a sector bend are provided by the user as input.  The inverse spin map for a quadrupole is composed with
+spin tracking in a quadrupole element, which should return all spin variables to their initial values.  The same procedure is repeated for a sector bend.
+
+In this test, the vector norm of the difference between the initial and final spins for all particles tracked must vanish to machine precision.
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_spin_map.py`` or
+* ImpactX **executable** using an input file: ``impactx input_spin_map.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_spin_map.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_spin_map.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_spin_map.in
+          :language: ini
+          :caption: You can copy this file from ``examples/spin_tracking/input_spin_map.in``.
+
+Analyze
+-------
+
+The analysis can be run using:
+
+.. dropdown:: Script ``analysis_spin_map.py``
+
+   .. literalinclude:: analysis_spin_map.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_spin_map.py``.

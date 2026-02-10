@@ -65,6 +65,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # initialize the spin map generators
 vmat = [1.0, 0.0, 0.0]
 
+Amat = np.zeros((3, 6))
 Amat[1, 1] = 0.642252653176584
 Amat[1, 2] = 0.114973951021402
 Amat[2, 1] = -5.109953378728999

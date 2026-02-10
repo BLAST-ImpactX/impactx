@@ -231,9 +231,7 @@ jobs:
               -DImpactX_MPI=OFF              ^
               -DImpactX_PYTHON=ON            ^
               -DImpactX_TEST_CLEANUP=ON      ^
-              -DopenPMD_USE_HDF5=ON          ^
-              -DImpactX_amrex_repo="https://github.com/ax3l/amrex.git"  ^
-              -DImpactX_amrex_branch="cmake-fftw-windows-more-flex"
+              -DopenPMD_USE_HDF5=ON
         if errorlevel 1 exit 1
         cmake --build build --config Debug --parallel 4
         if errorlevel 1 exit 1

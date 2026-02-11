@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -37,6 +38,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -287,6 +289,97 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
+
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // access reference particle values
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal beta_ref = refpart.beta();
+            amrex::ParticleReal gamma_ref = refpart.gamma();
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // compute particle momentum deviation delta + 1
+            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/beta_ref + powi<2>(pt));
+
+            // compute particle relativistic gamma
+            T_Real const gamma = gamma_ref * (1_prt - beta_ref*gamma_ref*pt);
+            T_Real const gyro_const = 1_prt + G * gamma;
+
+            // compute phase advance per unit length in s (in rad/m)
+            // chromatic dependence on delta is included
+            T_Real const omega = sqrt(abs(m_g)/delta1);
+
+            // compute trigonometric quantities
+            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*slice_ds);
+            T_Real const sinh_omega_ds = sinh(omega*slice_ds);
+            T_Real const cosh_omega_ds = cosh(omega*slice_ds);
+
+            if (m_g > 0.0_prt)
+            {
+
+                // horizontally focusing quad case
+                lambdax = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+                lambday = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+
+            } else if (m_g < 0.0_prt)
+            {
+
+                // horizontally defocusing quad case
+                lambdax = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+                lambday = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+
+            } else {
+                // treat as a drift
+            }
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

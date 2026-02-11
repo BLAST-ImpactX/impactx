@@ -356,7 +356,7 @@ This requires these additional parameters:
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
 * ``<element_name>.g`` (``float``, in meters) the full magnetic gap size
 * ``<element_name>.R`` (``float``, in meters) scale length for the field integrals (default: ``1 m``)
-* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field (default: ``pi/6``)
+* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field (default: ``pi**2/6``)
 * ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field (FINT, default: ``1``)
 * ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field (default: ``1/6``)

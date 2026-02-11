@@ -35,15 +35,20 @@ assert num_particles == len(initial)
 assert num_particles == len(final)
 
 # numerical parameters based on input file
-beam_initial = series.iterations[1].particles["beam"]
-gryo_anomaly = 0.001159652181644  # for electrons
-rel_gamma = beam_initial.get_attribute("gamma_ref")  # for 100 MeV
+
+gyro_anomaly = 0.001159652181644  # for electrons
 quad_gradient = 100  # value in 1/m^2 from input
-sigma_y = 0.0003  # value in m = lambdaY from input
-sigma_py = 0.0002  # value in rad = lambdaPy from input
+sigma_x = 0.003  # value in m = lambdaX from input
+sigma_px = 0.2  # value in rad = lambdaPx from input
+sigma_pt = 0.2  # value = lambdaPt from input
 Pxi = 0.4  # polarization_x from input
 Pyi = 0.9  # polarization_y from input
 Pzi = 0.1  # polarization_z from input
+
+beam_initial = series.iterations[1].particles["beam"]
+rel_gamma = beam_initial.get_attribute("gamma_ref")
+rel_beta = beam_initial.get_attribute("beta_ref")
+h = 1.0 / 10.0  # 1/radius of bend curvature from input
 
 print("Initial Beam:")
 polarization_x, polarization_y, polarization_z = get_polarization(initial)
@@ -65,14 +70,24 @@ assert np.allclose(
 )
 
 # predicted final polarization
-damping_eigenvalue = (1 + gryo_anomaly * rel_gamma) * np.sqrt(
-    sigma_py**2 * (np.cosh(2 * np.pi) - 1) ** 2
-    + sigma_y**2 * quad_gradient * np.sinh(2 * np.pi) ** 2
+gyro_const = 1.0 + gyro_anomaly * rel_gamma
+sin1 = np.sin(np.pi / (gyro_anomaly * rel_gamma))
+sin2 = np.sin(2 * np.pi / (gyro_anomaly * rel_gamma))
+damping_eigenvalue2 = (
+    4 * sigma_px**2 * gyro_const**2 * sin1**4
+    + h**2 * gyro_const**2 * sigma_x**2 * sin2**2
+    + sigma_pt**2 * (-2.0 * np.pi * rel_beta**2 + gyro_const * sin2) ** 2 / rel_beta**2
 )
+damping_eigenvalue = np.sqrt(damping_eigenvalue2)
 damping_factor = np.exp(-(damping_eigenvalue**2) / 2.0)
-Pxf = Pxi
-Pyf = damping_factor * Pyi
+
+Pxf = damping_factor * Pxi
+Pyf = Pyi
 Pzf = damping_factor * Pzi
+
+print("")
+print("Predicted Final Polarization:")
+print(f"  polarization_x={Pxf:e} polarization_y={Pyf:e} polarization_z={Pzf:e}")
 
 print("")
 print("Final Beam:")

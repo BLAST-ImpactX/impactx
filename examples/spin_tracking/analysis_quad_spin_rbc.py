@@ -6,38 +6,43 @@
 #
 
 import numpy as np
-import openpmd_api as io
 
 
-def get_polarization(beam):
-    """Calculate polarization vector, given by the mean values of spin components.
+# Load data from envelope simulation
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
 
     Returns
     -------
-    polarization_x, polarization_y, polarization_z
+    pandas.DataFrame
     """
-    polarization_x = np.mean(beam["spin_x"])
-    polarization_y = np.mean(beam["spin_y"])
-    polarization_z = np.mean(beam["spin_z"])
 
-    return (polarization_x, polarization_y, polarization_z)
+    import glob
+    import re
+
+    import pandas as pd
+
+    def read_file(file_pattern):
+        for filename in glob.glob(file_pattern):
+            df = pd.read_csv(filename, delimiter=r"\s+")
+            if "step" not in df.columns:
+                step = int(re.findall(r"[0-9]+", filename)[0])
+                df["step"] = step
+            yield df
+
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')
 
 
-# initial/final beam
-series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
-last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
-final = series.iterations[last_step].particles["beam"].to_df()
-
-# compare number of particles
-num_particles = 100000
-assert num_particles == len(initial)
-assert num_particles == len(final)
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 # numerical parameters based on input file
-beam_initial = series.iterations[1].particles["beam"]
 gryo_anomaly = 0.001159652181644  # for electrons
-rel_gamma = beam_initial.get_attribute("gamma_ref")  # for 100 MeV
+rel_gamma = 196.69511809100055  # for 100 MeV
 quad_gradient = 100  # value in 1/m^2 from input
 sigma_y = 0.0003  # value in m = lambdaY from input
 sigma_py = 0.0002  # value in rad = lambdaPy from input
@@ -46,10 +51,15 @@ Pyi = 0.9  # polarization_y from input
 Pzi = 0.1  # polarization_z from input
 
 print("Initial Beam:")
-polarization_x, polarization_y, polarization_z = get_polarization(initial)
+polarization_x = rbc["mean_sx"].iloc[0]
+polarization_y = rbc["mean_sy"].iloc[0]
+polarization_z = rbc["mean_sz"].iloc[0]
 print(
     f"  polarization_x={polarization_x:e} polarization_y={polarization_y:e} polarization_z={polarization_z:e}"
 )
+
+# Number of particles (from input file)
+num_particles = 100000
 
 atol = 1.3 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  atol={atol}")
@@ -76,7 +86,9 @@ Pzf = damping_factor * Pzi
 
 print("")
 print("Final Beam:")
-polarization_x, polarization_y, polarization_z = get_polarization(final)
+polarization_x = rbc["mean_sx"].iloc[-1]
+polarization_y = rbc["mean_sy"].iloc[-1]
+polarization_z = rbc["mean_sz"].iloc[-1]
 print(
     f"  polarization_x={polarization_x:e} polarization_y={polarization_y:e} polarization_z={polarization_z:e}"
 )
@@ -90,6 +102,27 @@ assert np.allclose(
         Pxf,
         Pyf,
         Pzf,
+    ],
+    atol=atol,
+)
+
+# numerical tests of spin moment conditions
+sigma_sx = rbc["sigma_sx"].iloc[-1]
+sigma_sy = rbc["sigma_sy"].iloc[-1]
+sigma_sz = rbc["sigma_sz"].iloc[-1]
+polarization = np.sqrt(polarization_x**2 + polarization_y**2 + polarization_z**2)
+condition = sigma_sx**2 + sigma_sy**2 + sigma_sz**2 + polarization**2
+
+print("")
+print(f"Spin moment consistency condition = {condition:e}")
+
+atol = 1.0e-12  # machine precision
+print(f"  atol={atol}")
+
+assert np.allclose(
+    [condition],
+    [
+        1.0,
     ],
     atol=atol,
 )

@@ -24,9 +24,12 @@
 #SBATCH -o ImpactX.o%j
 #SBATCH -e ImpactX.e%j
 
-# executable & inputs file or python interpreter & PICMI script here
-EXE=./impactx
-INPUTS=inputs
+# python interpreter & script here
+EXE=python3
+INPUTS=run_fodo.py
+# or executable & inputs file
+#EXE=./impactx
+#INPUTS=input_fodo.in
 
 # pin to closest NIC to GPU
 export MPICH_OFI_NIC_POLICY=GPU

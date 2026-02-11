@@ -10,12 +10,12 @@
 #SBATCH --ntasks-per-node=8
 #SBATCH --gpus-per-node=8
 
-# executable & inputs file or ...
-EXE=./impactx
-INPUTS=inputs
-# ... python interpreter & PICMI script here
-#EXE=python3
-#INPUTS=run_fodo.py
+# python interpreter & script here
+EXE=python3
+INPUTS=run_fodo.py
+# or executable & inputs file
+#EXE=./impactx
+#INPUTS=input_fodo.in
 
 date
 

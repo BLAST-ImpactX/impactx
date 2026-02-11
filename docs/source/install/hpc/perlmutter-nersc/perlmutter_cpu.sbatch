@@ -18,9 +18,12 @@
 #SBATCH -o ImpactX.o%j
 #SBATCH -e ImpactX.e%j
 
-# executable & inputs file or python interpreter & PICMI script here
-EXE=./impactx
-INPUTS=inputs_small
+# python interpreter & script here
+EXE=python3
+INPUTS=run_fodo.py
+# or executable & inputs file
+#EXE=./impactx
+#INPUTS=input_fodo.in
 
 # each CPU node on Perlmutter (NERSC) has 64 hardware cores with
 # 2x Hyperthreading/SMP

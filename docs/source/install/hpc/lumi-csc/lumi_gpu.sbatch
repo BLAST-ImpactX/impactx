@@ -81,7 +81,9 @@ CPU_BIND="${CPU_BIND},7e00000000,7e0000000000"
 
 export OMP_NUM_THREADS=6
 
+# GPU-aware MPI
 export MPICH_GPU_SUPPORT_ENABLED=1
+export AMREX_DEFAULT_INIT="amrex.use_gpu_aware_mpi=1"
 
 srun --cpu-bind=${CPU_BIND} ./select_gpu  \
   ${EXE} ${INPUTS}                        \

@@ -48,11 +48,11 @@ export MPICH_OFI_NIC_POLICY=GPU
 export SRUN_CPUS_PER_TASK=16
 
 # GPU-aware MPI optimizations
-GPU_AWARE_MPI="amrex.use_gpu_aware_mpi=1"
+export AMREX_DEFAULT_INIT="amrex.use_gpu_aware_mpi=1"
 
 # CUDA visible devices are ordered inverse to local task IDs
 #   Reference: nvidia-smi topo -m
 srun --cpu-bind=cores bash -c "
     export CUDA_VISIBLE_DEVICES=\$((3-SLURM_LOCALID));
-    ${EXE} ${INPUTS} ${GPU_AWARE_MPI}" \
+    ${EXE} ${INPUTS}" \
   > output.txt

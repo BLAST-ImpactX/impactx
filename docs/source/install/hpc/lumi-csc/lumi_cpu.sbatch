@@ -17,6 +17,15 @@ INPUTS=run_fodo.py
 #EXE=./impactx
 #INPUTS=input_fodo.in
 
+# enviroment setup
+if [[ -z "${MY_PROFILE}" ]]; then
+    echo "WARNING: FORGOT TO"
+    echo "   source $HOME/lumi_cpu_impactx.profile"
+    echo "before submission. Doing that now."
+
+    source $HOME/lumi_cpu_impactx.profile
+fi
+
 date
 
 # note (12-12-22)

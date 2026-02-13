@@ -31,6 +31,15 @@ INPUTS=run_fodo.py
 #EXE=./impactx
 #INPUTS=input_fodo.in
 
+# enviroment setup
+if [[ -z "${MY_PROFILE}" ]]; then
+    echo "WARNING: FORGOT TO"
+    echo "   source $HOME/perlmutter_gpu_impactx.profile"
+    echo "before submission. Doing that now."
+
+    source $HOME/perlmutter_gpu_impactx.profile
+fi
+
 # pin to closest NIC to GPU
 export MPICH_OFI_NIC_POLICY=GPU
 

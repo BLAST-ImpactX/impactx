@@ -25,6 +25,15 @@ INPUTS=run_fodo.py
 #EXE=./impactx
 #INPUTS=input_fodo.in
 
+# enviroment setup
+if [[ -z "${MY_PROFILE}" ]]; then
+    echo "WARNING: FORGOT TO"
+    echo "   source $HOME/perlmutter_cpu_impactx.profile"
+    echo "before submission. Doing that now."
+
+    source $HOME/perlmutter_cpu_impactx.profile
+fi
+
 # each CPU node on Perlmutter (NERSC) has 64 hardware cores with
 # 2x Hyperthreading/SMP
 # https://en.wikichip.org/wiki/amd/epyc/7763

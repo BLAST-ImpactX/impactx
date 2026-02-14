@@ -156,12 +156,12 @@ namespace impactx::elements
             // trigonometry for spin calculation
             amrex::ParticleReal const h = (m_rc == 0_prt) ? 0_prt : 1_prt/m_rc;
             auto const [sinG, cosG] = amrex::Math::sincos(G * h * gamma * slice_ds);
-            
+
             // intermediate constants for spin calculation
             amrex::ParticleReal const factor = 1_prt / (-gy + powi<2>(G * h * gamma));
 
             // nonvanishing components of spin rotation at the design point
-            m_lambday = -G * h * gamma * slice_ds;   
+            m_lambday = -G * h * gamma * slice_ds;
 
             // elements of the spin-orbit coupling matrix (horizontally-focusing case)
             m_A13 = (G*h*gyro_const2*gy*cy*sinG + gy*(powi<2>(G*h)*(gamma - 1_prt)*gamma - gy*gyro_const1 )*sy*cosG) * factor;

@@ -163,7 +163,7 @@ namespace impactx::elements
             // nonvanishing components of spin rotation at the design point
             m_lambday = -G * h * gamma * slice_ds;
 
-            // elements of the spin-orbit coupling matrix (horizontally-focusing case)
+            // elements of the spin-orbit coupling matrix
             m_A13 = (G*h*gyro_const2*gy*cy*sinG + gy*(powi<2>(G*h)*(gamma - 1_prt)*gamma - gy*gyro_const1 )*sy*cosG) * factor;
             m_A14 = (G*h*gyro_const2*gy*sy*sinG + (powi<2>(G*h)*(gamma - 1_prt)*gamma - gy*gyro_const1)*(1_prt - cosG*cy))*factor;
             m_A21 = -gyro_const1 * gx * sx;

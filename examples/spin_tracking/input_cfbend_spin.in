@@ -39,7 +39,7 @@ iquad1.k = 60.0
 
 #sbend-like cfbend
 cfbend2.type = cfbend
-cfbend2.ds = 1.5       # projected length 0.5 m, angle 3.76 deg
+cfbend2.ds = 1.5 
 cfbend2.rc = 10.0   # bending radius [m]
 cfbend2.k = 1.0e-8   # (upright) quadrupole component [m^(-2)]
 

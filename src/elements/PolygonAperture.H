@@ -17,7 +17,6 @@
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
-#include "mixin/nofinalize.H"
 
 #include <ablastr/constant.H>
 

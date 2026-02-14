@@ -29,7 +29,7 @@ lattice.nslice = 1
 
 #quad-like cfbend
 cfbend1.type = cfbend
-cfbend1.ds = 1.5       # projected length 0.5 m, angle 3.76 deg
+cfbend1.ds = 1.5
 cfbend1.rc = 1.0e8   # bending radius [m]
 cfbend1.k = 60.0   # (upright) quadrupole component [m^(-2)]
 

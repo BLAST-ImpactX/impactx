@@ -1928,7 +1928,7 @@ add_impactx_test(fodo-spin.py
 
 # Spin Limiting Cases of a Combined-Function Bend #############
 # without space charge
-add_impactx_test(cfbend-spin 
+add_impactx_test(cfbend-spin
     examples/spin_tracking/input_cfbend_spin.in
     ON   # ImpactX MPI-parallel
     examples/spin_tracking/analysis_cfbend_spin.py
@@ -1938,7 +1938,5 @@ add_impactx_test(cfbend-spin.py
     examples/spin_tracking/run_cfbend_spin.py
     OFF    # ImpactX MPI-parallel
     examples/spin_tracking/analysis_cfbend_spin.py
-    OFF  # no plot script yet  
+    OFF  # no plot script yet
 )
-    
-

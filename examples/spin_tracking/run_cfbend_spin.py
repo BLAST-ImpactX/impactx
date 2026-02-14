@@ -27,7 +27,9 @@ npart = 10000  # number of macro particles
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV).set_gyromagnetic_anomaly(gyromagnetic_anomaly)
+ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(
+    kin_energy_MeV
+).set_gyromagnetic_anomaly(gyromagnetic_anomaly)
 
 #   particle bunch
 distr = distribution.Waterbag(

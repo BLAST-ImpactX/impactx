@@ -17,13 +17,11 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/named.H"
-#include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuComplex.H>
 #include <AMReX_Math.H>
-#include <AMReX_Print.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 
@@ -65,8 +63,7 @@ namespace impactx::elements
       public mixin::LinearTransport<ExactMultipole>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::PipeAperture,
-      public mixin::NoFinalize
+      public mixin::PipeAperture
 #ifndef _WIN32
       // https://github.com/AMReX-Codes/amrex/issues/4609
       , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -119,7 +116,8 @@ namespace impactx::elements
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),m_id(MultipoleData::next_id)
+          m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps),
+          m_id(MultipoleData::next_id)
         {
             // next created ExactMultipole has another id for its data
             MultipoleData::next_id++;
@@ -149,7 +147,6 @@ namespace impactx::elements
             // low-level objects we can use on device
             m_k_normal_d_data = MultipoleData::d_k_normal[m_id].data();
             m_k_skew_d_data = MultipoleData::d_k_skew[m_id].data();
-
         }
 
         /** Push all particles */
@@ -396,14 +393,13 @@ namespace impactx::elements
             zeval += tau;
         }
 
-
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
-
+        void operator() (RefPart & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
+        {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
 
@@ -499,18 +495,19 @@ namespace impactx::elements
             R(4,4) = (-kminus * cos_omega_ds + kplus * cosh_omega_ds) / (2_prt * kabs);
             R(5,6) = slice_ds/betgam2;
 
+            /* Debugging:
             for (int j=1; j<=6; j++) {
                for (int k=1; k<=6; k++) {
                   amrex::Print() << "R(" << j << "," << k << ") = " << R(j,k) << "\n";
                }
             }
+            */
 
             return R;
         }
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
-
 
         /** Close and deallocate all data and handles.
          */

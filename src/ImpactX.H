@@ -51,10 +51,6 @@ namespace impactx
          */
         void finalize ();
 
-        /** Finalize elements
-         */
-        void finalize_elements ();
-
         /** Initialize AMReX blocks/grids for domain decomposition & space charge mesh.
          *
          * This must come first, before particle beams and lattice elements are

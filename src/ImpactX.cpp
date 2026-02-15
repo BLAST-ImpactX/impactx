@@ -41,11 +41,9 @@ namespace impactx {
 
     void ImpactX::finalize ()
     {
-        // loop over all beamline elements & finalize them
-        finalize_elements();
-
         if (m_grids_initialized)
         {
+            // loop over all beamline elements & finalize them
             m_lattice.clear();
 
             // this one last
@@ -56,17 +54,6 @@ namespace impactx {
 
             // only finalize once
             m_grids_initialized = false;
-        }
-    }
-
-    void ImpactX::finalize_elements ()
-    {
-        // loop over all beamline elements & finalize them
-        for (auto & element_variant : m_lattice)
-        {
-            std::visit([](auto&& element){
-                element.finalize();
-            }, element_variant);
         }
     }
 

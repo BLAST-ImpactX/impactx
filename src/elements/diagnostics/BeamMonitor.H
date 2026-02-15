@@ -175,6 +175,8 @@ namespace detail
         void
         finalize ();
 
+        ~BeamMonitor() { finalize(); }
+
     private:
         /** Open the openPMD series (on first access) */
         void open ();

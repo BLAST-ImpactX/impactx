@@ -599,7 +599,6 @@ namespace impactx::elements
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
-
         /** Close and deallocate all data and handles.
          */
         void

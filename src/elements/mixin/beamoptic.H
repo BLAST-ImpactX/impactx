@@ -434,6 +434,20 @@ namespace detail
     template<typename T_Element>
     struct BeamOptic
     {
+        /** Close and deallocate all data and handles.
+         *
+         * Some elements manager dynamic device memory for input data.
+         * This ensures their finalize() method is called when they
+         * get destroyed, so device memory is deallocated properly.
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        ~BeamOptic () {
+            AMREX_IF_ON_HOST((
+                T_Element& element = *static_cast<T_Element*>(this);
+                element.finalize();
+            ))
+        }
+
         /** Push first the reference particle, then all other particles
          *
          * @param[inout] pc container of the particles to push

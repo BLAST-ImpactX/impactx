@@ -120,6 +120,8 @@ namespace impactx::elements
         void
         finalize ();
 
+        ~Programmable () { finalize(); }
+
         amrex::ParticleReal m_ds = 0.0; //! segment length in m
         int m_nslice = 1; //! number of slices used for the application of space charge
 

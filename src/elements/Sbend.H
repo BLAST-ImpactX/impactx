@@ -112,33 +112,43 @@ namespace impactx::elements
             amrex::ParticleReal const ibet = 1.0_prt / refpart.beta();
             amrex::ParticleReal const ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
-            // treat the special case of zero field (equivalent to a drift)
-            if (m_rc==0_prt) {
-               m_R11 = 1.0_prt;
-               m_R12 = slice_ds;
-               m_R16 = 0.0_prt;
-               m_R21 = 0.0_prt;
-               m_R26 = 0.0_prt;
-               m_R34 = slice_ds;
-               m_R56 = slice_ds * ibetagam2;
+            // compute intermediate constants (curvature, bend angle, trigonometry)
+            amrex::ParticleReal const h = (m_rc == 0_prt) ? 0_prt : 1_prt/m_rc;
+            amrex::ParticleReal const theta = h * slice_ds;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
-            } else {
+            // nonvanishing linear matrix elements (if h = 0, this is equivalent to a drift)
+            m_R11 = (h == 0_prt) ? 1.0_prt : cos_theta;
+            m_R12 = (h == 0_prt) ? slice_ds : m_rc * sin_theta;
+            m_R16 = (h == 0_prt) ? 0.0_prt : -m_rc * ibet * (1.0_prt - cos_theta);
+            m_R21 = (h == 0_prt) ? 0.0_prt :-sin_theta * h;
+            // m_R22 = m_R11
+            m_R26 = (h == 0_prt) ? 0.0_prt : -sin_theta * ibet;
+            m_R34 = (h == 0_prt) ? slice_ds : m_rc * theta;
+            // m_R51 = -m_R26
+            // m_R52 = -m_R16
+            m_R56 = (h == 0_prt) ? slice_ds * ibetagam2 : m_rc * (-theta + sin_theta * ibet * ibet);
 
-               // calculate expensive terms once
-               amrex::ParticleReal const theta = slice_ds / m_rc;
-               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            // access reference particle values for spin calculation
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const gamma = refpart.gamma();
+            amrex::ParticleReal const beta = refpart.beta();
+            amrex::ParticleReal const gyro_const = 1_prt + G * gamma;
 
-               m_R11 = cos_theta;
-               m_R12 = m_rc * sin_theta;
-               m_R16 = -m_rc * ibet * (1.0_prt - cos_theta);
-               m_R21 = -sin_theta / m_rc;
-               // m_R22 = m_R11
-               m_R26 = -sin_theta * ibet;
-               m_R34 = m_rc * theta;
-               // m_R51 = -m_R26
-               // m_R52 = -m_R16
-               m_R56 = m_rc * (-theta + sin_theta * ibet * ibet);
-           }
+            // trigonometry for spin calculation
+            amrex::ParticleReal const spin_ref_angle = G * gamma * theta;
+            auto const [sin_Gtheta, cos_Gtheta] = amrex::Math::sincos(spin_ref_angle);
+
+            // nonvanishing components of spin rotation at the design point
+            m_lambday = -spin_ref_angle;
+
+            // elements of the spin-orbit coupling matrix
+            m_A14 = (gamma - 1.0_prt)/gamma * (1.0_prt - cos_Gtheta);
+            m_A21 = -gyro_const * h * sin_theta;
+            m_A22 = -gyro_const * (1.0_prt - cos_theta);
+            m_A26 = -gyro_const * ibet * sin_theta + G * beta * gamma * theta;
+            m_A34 = (gamma - 1.0_prt)/gamma * sin_Gtheta;
+
         }
 
         /** This is a sbend functor, so that a variable of this type can be used like a sbend function.
@@ -367,39 +377,23 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
             T_Real lambday = 0_prt;
             T_Real lambdaz = 0_prt;
 
-            // access reference particle values
-            amrex::ParticleReal const beta = refpart.beta();
-            amrex::ParticleReal const gamma = refpart.gamma();
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal const gyro_const = 1_prt + G * gamma;
-
-            // compute trigonometric quantities
-            amrex::ParticleReal const h = 1.0_prt/m_rc;
-            amrex::ParticleReal const theta = slice_ds * h;
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-            auto const [sin_Gtheta, cos_Gtheta] = amrex::Math::sincos(G*gamma*theta);
-
-            // axis-angle vector components generating the remainder spin map
-            lambdax = py * (gamma - 1.0_prt)/gamma * (1.0_prt - cos_Gtheta);
-            lambday = -gyro_const * (px*(1.0_prt - cos_theta) + (pt/beta + h*x)*sin_theta) + pt*G*beta*gamma*theta;
-            lambdaz = py * (gamma - 1.0_prt)/gamma * sin_Gtheta;
+            // set the angle-axis generator based on the phase space variables
+            lambdax = m_A14 * py;
+            lambday = m_A21 * x + m_A22 * px + m_A26 * pt;
+            lambdaz = m_A34 * py;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
             // axis-angle vector components generating the reference spin map
             lambdax = 0.0_prt;
-            lambday = -theta*G*gamma;
+            lambday = m_lambday;
             lambdaz = 0.0_prt;
 
             // push the spin vector using the generator just determined
@@ -415,6 +409,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_R11, m_R12, m_R16, m_R21, m_R26, m_R34, m_R56;
+        amrex::ParticleReal m_lambday, m_A14, m_A21, m_A22, m_A26, m_A34;
     };
 
 } // namespace impactx

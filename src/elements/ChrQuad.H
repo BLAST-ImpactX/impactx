@@ -338,7 +338,7 @@ namespace impactx::elements
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
 
             // compute particle relativistic gamma
-            T_Real const gamma = m_gamma * (1_prt - m_beta*m_gamma*pt);
+            T_Real const gamma = m_gamma * (1_prt - m_beta*pt);
             T_Real const gyro_const = 1_prt + m_gryo * gamma;
 
             // compute phase advance per unit length in s (in rad/m)

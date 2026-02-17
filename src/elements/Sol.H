@@ -117,7 +117,7 @@ namespace impactx::elements
 
             // access reference particle values required for spin push
             amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal const beta = refpart.beta();   
+            amrex::ParticleReal const beta = refpart.beta();
             amrex::ParticleReal const gamma = refpart.gamma();
             m_rel_const = 0.5_prt * (gamma - 1_prt);
             auto const [sin_G, cos_G] = amrex::Math::sincos(2_prt * G * theta);

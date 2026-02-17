@@ -48,7 +48,7 @@ iquad2.ds = -1.5
 iquad2.k = -60.0
 
 quad2.type = quad_chromatic
-quad2.ds = 1.5  
+quad2.ds = 1.5
 quad2.k = -60.0
 
 monitor.type = beam_monitor

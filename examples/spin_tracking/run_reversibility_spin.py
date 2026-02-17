@@ -6,7 +6,6 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
 
 from impactx import ImpactX, distribution, elements
 

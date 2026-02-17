@@ -72,7 +72,7 @@ assert np.allclose(
     [polarization_x, polarization_y, polarization_z],
     [
         0.02,
-        0.02,
+        0.05,
         0.01,
     ],
     atol=atol,

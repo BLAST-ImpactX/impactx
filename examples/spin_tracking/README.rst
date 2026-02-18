@@ -150,3 +150,58 @@ The analysis can be run using:
    .. literalinclude:: analysis_sbend_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_sbend_spin.py``.
+
+
+
+.. _examples-reversibility-spin:
+
+Element Reversibility with Spin
+====================================
+
+In the case of linear elements, including spin, the joint spin-orbit map has the following exact reversibility property.
+
+The effect of setting ds -> -ds is equivalent to replacing the map by its inverse.
+
+In this test, a beam is propagated forward through an element of length ds, following by the corresponding element with length -ds.  As a result, the composite map is the identity.  This provides a non-trivial test for consistency between the spin map and the orbit map.
+
+In this test, the initial and final spin components :math:`s_x`, :math:`s_y`, and :math:`s_z` are compared.  The norm of the change in the spin vector must lie within a very small tolerance.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_reversibility_spin.py`` or
+* ImpactX **executable** using an input file: ``impactx input_reversibility_spin.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_reversibility_spin.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_reversibility_spin.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_reversibility_spin.in
+          :language: ini
+          :caption: You can copy this file from ``examples/spin_tracking/input_reversibility_spin.in``.
+
+
+
+Analyze
+-------
+
+The analysis can be run using:
+
+
+.. dropdown:: Script ``analysis_reversibility_spin.py``
+
+   .. literalinclude:: analysis_reversibility_spin.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_reversibility_spin.py``.
+

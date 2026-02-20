@@ -184,6 +184,12 @@ jobs:
 
         python3 examples/fodo/run_fodo.py
 
+    - name: Python CodSpeedHQ Benchmarks
+      uses: CodSpeedHQ/action@v4
+      with:
+        mode: simulation
+        run: pytest tests/python/test_benchmark_elements.py --codspeed
+
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}
 
@@ -201,9 +207,3 @@ jobs:
           -DImpactX_SIMD=ON            \
           -DImpactX_TEST_CLEANUP=ON
         cmake --build build_sp -j 4
-
-    - name: Python CodSpeedHQ Benchmarks
-      uses: CodSpeedHQ/action@v4
-      with:
-        mode: simulation
-        run: pytest tests/ --codspeed

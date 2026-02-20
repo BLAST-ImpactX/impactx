@@ -28,6 +28,7 @@ namespace impactx::distribution
          *
          * Return sampling from a 6D Gaussian distribution with truncation in each phase plane.
          *
+         * @param cutx, cuty, cutt dimensionless cut parameter (number of sigma) in each phase plane
          * @param lambdax,lambday,lambdat phase space axis intercepts (position);
          *                                for zero correlation, these are the related RMS sizes (in meters)
          * @param lambdapx,lambdapy,lambdapt phase space axis intercepts (momentum)

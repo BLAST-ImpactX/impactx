@@ -30,7 +30,9 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 
 #   particle bunch
 distr = distribution.CutGaussian(
-    cutX=2.0, cutY=3.0, cutT=1.0,
+    cutX=2.0,
+    cutY=3.0,
+    cutT=1.0,
     **twiss(
         beta_x=2.8216194100262637,
         beta_y=2.8216194100262637,
@@ -41,7 +43,7 @@ distr = distribution.CutGaussian(
         alpha_x=-1.5905003499999992,
         alpha_y=1.5905003499999992,
         alpha_t=0.0,
-    )
+    ),
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 

@@ -186,10 +186,12 @@ jobs:
 
     - name: Python CodSpeedHQ Benchmarks
       uses: CodSpeedHQ/action@v4
+      env:
+        OMP_NUM_THREADS: 1
+        IS_CODESPEED_CPU_SIMULATION: 1
       with:
         mode: simulation
-        run: |
-          OMP_NUM_THREADS=1 pytest tests/python/test_benchmark_elements.py --codspeed
+        run: pytest tests/python/test_benchmark_elements.py --codspeed
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}

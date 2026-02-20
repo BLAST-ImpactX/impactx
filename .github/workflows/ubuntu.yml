@@ -6,6 +6,10 @@ concurrency:
   group: ${{ github.ref }}-${{ github.head_ref }}-ubuntu
   cancel-in-progress: true
 
+permissions:
+  contents: read   # required for actions/checkout
+  id-token: write  # required for OIDC authentication with CodSpeed
+
 jobs:
   build_gcc:
     name: GCC w/ MPI w/ Python
@@ -41,10 +45,9 @@ jobs:
         path: |
           ~/.ccache
           ~/.cache/ccache
-        key: ccache-openmp-gcc-${{ hashFiles('.github/workflows/ubuntu.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-openmp-gcc-${{ hashFiles('.github/workflows/ubuntu.yml') }}-
-          ccache-openmp-gcc-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
 
     - name: system info
       run: |
@@ -67,7 +70,7 @@ jobs:
 
     - name: run tests
       run: |
-        ctest --test-dir build --output-on-failure --label-exclude slow
+        ctest --test-dir build --output-on-failure --label-exclude slow -E pytest.AMReX
 
     - name: Upload dashboard screenshots
       if: always()
@@ -103,7 +106,7 @@ jobs:
 
   build_gcc_python:
     name: GCC w/ SIMD w/o MPI w/ Python
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event.pull_request.draft == false
     env:
       CMAKE_GENERATOR: Ninja
@@ -123,6 +126,11 @@ jobs:
 
     - uses: actions/checkout@v6
 
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+
     - name: install dependencies
       run: |
         .github/workflows/dependencies/gcc.sh
@@ -135,10 +143,9 @@ jobs:
         path: |
           ~/.ccache
           ~/.cache/ccache
-        key: ccache-openmp-pygcc-${{ hashFiles('.github/workflows/ubuntu.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-openmp-pygcc-${{ hashFiles('.github/workflows/ubuntu.yml') }}-
-          ccache-openmp-pygcc-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
 
     - name: build ImpactX
       run: |
@@ -156,7 +163,7 @@ jobs:
 
     - name: run tests
       run: |
-        ctest --test-dir build --output-on-failure --label-exclude slow
+        ctest --test-dir build --output-on-failure --label-exclude slow -E pytest.AMReX
 
     - name: run installed app
       run: |
@@ -194,3 +201,9 @@ jobs:
           -DImpactX_SIMD=ON            \
           -DImpactX_TEST_CLEANUP=ON
         cmake --build build_sp -j 4
+
+    - name: Python CodSpeedHQ Benchmarks
+      uses: CodSpeedHQ/action@v4
+      with:
+        mode: simulation
+        run: pytest tests/ --codspeed

@@ -134,7 +134,7 @@ namespace impactx::distribution
             // factors determined by the second cutoff value:
             f = m_cutY*m_cutY/2.0_prt;
             ef = std::exp(-f);
-            r2scale = 1_prt - f*ef/(1_prt - ef);   
+            r2scale = 1_prt - f*ef/(1_prt - ef);
             r2 = -2_prt * std::log(1_prt - u1*(1_prt - ef));
             ln1 = std::sqrt(r2 / r2scale);
             y = ln1 * std::cos(2_prt*pi*u2);
@@ -145,7 +145,7 @@ namespace impactx::distribution
             // factors determined by the third cutoff value:
             f = m_cutT*m_cutT/2.0_prt;
             ef = std::exp(-f);
-            r2scale = 1_prt - f*ef/(1_prt - ef);   
+            r2scale = 1_prt - f*ef/(1_prt - ef);
             r2 = -2_prt * std::log(1_prt - u1*(1_prt - ef));
             ln1 = std::sqrt(r2 / r2scale);
             t = ln1 * std::cos(2_prt*pi*u2);

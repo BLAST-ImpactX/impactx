@@ -10,6 +10,7 @@
 #ifndef IMPACTX_DISTRIBUTION_ALL_H
 #define IMPACTX_DISTRIBUTION_ALL_H
 
+#include "CutGaussian.H"
 #include "Gaussian.H"
 #include "Kurth4D.H"
 #include "Kurth6D.H"
@@ -29,6 +30,7 @@ namespace impactx::distribution
     // Phase space distributions
     using KnownDistributions = std::variant<
         Empty, /* must be first, so KnownDistributions creates a default constructor */
+        CutGaussian,
         Gaussian,
         Kurth4D,
         Kurth6D,

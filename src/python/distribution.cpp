@@ -187,6 +187,28 @@ void init_distribution(py::module& m)
              "A 6D Waterbag distribution"
         );
 
+    py::class_<distribution::CutGaussian>(md, "CutGaussian")
+        .def(py::init<
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal
+             >(),
+             py::arg("cutX"), py::arg("cutY"), py::arg("cutT"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
+             py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             "A cut 6D Gaussian distribution"
+        );
+
     py::class_<distribution::SpinvMF>(md, "SpinvMF")
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal

@@ -202,14 +202,14 @@ namespace impactx
                 amrex::ParticleReal cuty = 5.0;
                 amrex::ParticleReal cutt = 5.0;
                 pp_dist.queryWithParser("cutX", cutx);
-                pp_dist.queryWithParser("cutY", cuty);   
-                pp_dist.queryWithParser("cutT", cutt);   
+                pp_dist.queryWithParser("cutY", cuty);
+                pp_dist.queryWithParser("cutT", cutt);
                 dist = distribution::CutGaussian(
                         cutx, cuty, cutt,
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
-                        meanx, meany, meant, 
+                        meanx, meany, meant,
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "empty") {

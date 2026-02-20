@@ -520,6 +520,22 @@ add_impactx_test(semigaussian.py
 )
 
 
+# 6D Cut Gaussian Distribution from Twiss Test ####################################
+#
+add_impactx_test(cutgaussian_twiss
+    examples/distgen/input_cutgaussian_twiss.in
+    OFF  # ImpactX MPI-parallel
+    examples/distgen/analysis_gaussian.py
+    OFF  # no plot script yet
+)
+add_impactx_test(cutgaussian_twiss.py
+    examples/distgen/run_cutgaussian_twiss.py
+    OFF  # ImpactX MPI-parallel
+    examples/distgen/analysis_gaussian.py
+    OFF  # no plot script yet
+)
+
+
 # Chain of Multipoles Test ####################################################
 #
 add_impactx_test(multipole

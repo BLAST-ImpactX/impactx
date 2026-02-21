@@ -617,7 +617,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 .. py:class:: impactx.distribution.CutGaussian(cutX=5.0, cutY=5.0, cutT=5.0, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Gaussian distribution with truncation.  The user may specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt). The cut is performed in normalized
-   Courant-Snyder variables corresponding to the user-supplied second moments or Twiss functions. As a result, this is equivalent to a cut corresponding to the (linearized) action in each  
+   Courant-Snyder variables corresponding to the user-supplied second moments or Twiss functions. As a result, this is equivalent to a cut corresponding to the (linearized) action in each
    plane.
 
    :param cutX: number of sigma at which to cut the distribution in (x,px) (dimensionless)

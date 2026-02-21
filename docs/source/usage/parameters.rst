@@ -105,6 +105,18 @@ Initial Beam Distributions
 
   * ``gaussian`` or ``gaussian_from_twiss`` for initial 6D Gaussian (normal) distribution.
 
+  * ``cutgaussian`` or ``cutgaussian_from_twiss`` for initial 6D truncated Gaussian (normal) distribution.
+
+    This the user to specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt). The cut is performed in normalized 
+    Courant-Snyder variables corresponding to the user-supplied second moments or Twiss functions. As a result, this is equivalent to a cut 
+    corresponding to the (linearized) action in each plane.
+
+    Additional parameters:
+  
+    * ``beam.cutX`` (``float``, dimensionless, default=5) number of sigma at which to cut the distribution in (x,px)
+    * ``beam.cutY`` (``float``, dimensionless, default=5) number of sigma at which to cut the distribution in (y,py)
+    * ``beam.cutT`` (``float``, dimensionless, default=5) number of sigma at which to cut the distribution in (t,pt)
+
   * ``kvdist`` or ``kvdist_from_twiss`` for initial K-V distribution in the transverse plane.
 
     The distribution is uniform in t and Gaussian in pt.

@@ -286,8 +286,8 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // axis-angle vector components generating the remainder spin map
-            lambdax = m_rel_const * ((2*px + m_ks*y)*m_sin_G - (2*py - m_ks*x)*(1-m_cos_G));
-            lambday = m_rel_const * ((2*py - m_ks*x)*m_sin_G + (2*px + m_ks*y)*(1-m_cos_G));
+            lambdax = m_rel_const * ((2_prt*px + m_ks*y)*m_sin_G - (2_prt*py - m_ks*x)*(1_prt-m_cos_G));
+            lambday = m_rel_const * ((2_prt*py - m_ks*x)*m_sin_G + (2_prt*px + m_ks*y)*(1_prt-m_cos_G));
             lambdaz = -2_prt * m_theta_1pG * pt * m_ibeta;
 
             // push the spin vector using the generator just determined

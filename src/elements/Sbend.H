@@ -118,12 +118,12 @@ namespace impactx::elements
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
             // nonvanishing linear matrix elements (if h = 0, this is equivalent to a drift)
-            m_R11 = (h == 0_prt) ? 1.0_prt : cos_theta;
+            m_R11 = (h == 0_prt) ? 1_prt : cos_theta;
             m_R12 = (h == 0_prt) ? slice_ds : m_rc * sin_theta;
-            m_R16 = (h == 0_prt) ? 0.0_prt : -m_rc * ibet * (1.0_prt - cos_theta);
-            m_R21 = (h == 0_prt) ? 0.0_prt :-sin_theta * h;
+            m_R16 = (h == 0_prt) ? 0_prt : -m_rc * ibet * (1_prt - cos_theta);
+            m_R21 = (h == 0_prt) ? 0_prt :-sin_theta * h;
             // m_R22 = m_R11
-            m_R26 = (h == 0_prt) ? 0.0_prt : -sin_theta * ibet;
+            m_R26 = (h == 0_prt) ? 0_prt : -sin_theta * ibet;
             m_R34 = (h == 0_prt) ? slice_ds : m_rc * theta;
             // m_R51 = -m_R26
             // m_R52 = -m_R16
@@ -143,11 +143,11 @@ namespace impactx::elements
             m_lambday = -spin_ref_angle;
 
             // elements of the spin-orbit coupling matrix
-            m_A14 = (gamma - 1.0_prt)/gamma * (1.0_prt - cos_Gtheta);
+            m_A14 = (gamma - 1_prt)/gamma * (1_prt - cos_Gtheta);
             m_A21 = -gyro_const * h * sin_theta;
-            m_A22 = -gyro_const * (1.0_prt - cos_theta);
+            m_A22 = -gyro_const * (1_prt - cos_theta);
             m_A26 = -gyro_const * ibet * sin_theta + G * beta * gamma * theta;
-            m_A34 = (gamma - 1.0_prt)/gamma * sin_Gtheta;
+            m_A34 = (gamma - 1_prt)/gamma * sin_Gtheta;
 
         }
 

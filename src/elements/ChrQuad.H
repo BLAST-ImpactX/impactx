@@ -336,6 +336,7 @@ namespace impactx::elements
 
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+            T_Real const inv_delta1 = 1_prt / delta1;
 
             // compute particle relativistic gamma
             T_Real const gamma = m_gamma * (1_prt - m_beta*pt);
@@ -343,7 +344,7 @@ namespace impactx::elements
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
-            T_Real const omega = sqrt(abs(m_g)/delta1);
+            T_Real const omega = sqrt(abs(m_g)*inv_delta1);
 
             // compute trigonometric quantities
             auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*m_slice_ds);
@@ -355,14 +356,15 @@ namespace impactx::elements
 
                 // horizontally focusing quad case
                 lambdax = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
-                lambday = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+lambdax = -gyro_const * ( py*inv_delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
 
             } else if (m_g < 0.0_prt)
             {
 
                 // horizontally defocusing quad case
-                lambdax = gyro_const * ( py/delta1*(1_prt - cos_omega_ds) + y*omega*sin_omega_ds );
-                lambday = gyro_const * ( px/delta1*(cosh_omega_ds - 1_prt) + x*omega*sinh_omega_ds );
+                lambdax = gyro_const * ( py*inv_delta1*(1_prt - cos_omega_ds) + y*omega*sin_omega_ds );
+                lambday = gyro_const * ( px*inv_delta1*(cosh_omega_ds - 1_prt) + x*omega*sinh_omega_ds );
 
             } else {
                 // treat as a drift

@@ -121,8 +121,8 @@ namespace impactx::elements
             m_rel_const = 0.5_prt * (gamma - 1_prt);
             auto const [sin_G, cos_G] = amrex::Math::sincos(2_prt * G * theta);
             m_sin_G = sin_G;
-            m_cos_G = cos_G;
-            m_theta_1pG = theta * (1_prt + G);
+            m_1cos_G = 1_prt - cos_G;
+            m_neg2_theta_1pG = -2_prt * theta * (1_prt + G);
 
         }
 
@@ -286,9 +286,9 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // axis-angle vector components generating the remainder spin map
-            lambdax = m_rel_const * ((2_prt*px + m_ks*y)*m_sin_G - (2_prt*py - m_ks*x)*(1_prt-m_cos_G));
-            lambday = m_rel_const * ((2_prt*py - m_ks*x)*m_sin_G + (2_prt*px + m_ks*y)*(1_prt-m_cos_G));
-            lambdaz = -2_prt * m_theta_1pG * pt * m_ibeta;
+            lambdax = m_rel_const * ((2_prt*px + m_ks*y)*m_sin_G - (2_prt*py - m_ks*x)*m_1cos_G);
+            lambday = m_rel_const * ((2_prt*py - m_ks*x)*m_sin_G + (2_prt*px + m_ks*y)*m_1cos_G);
+            lambdaz = m_neg2_theta_1pG * pt * m_ibeta;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
@@ -296,7 +296,7 @@ namespace impactx::elements
             // axis-angle vector components generating the reference spin map
             lambdax = 0.0_prt;
             lambday = 0.0_prt;
-            lambdaz = -2_prt * m_theta_1pG;
+            lambdaz = m_neg2_theta_1pG;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
@@ -373,7 +373,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_ds_bg2, m_cos_theta, m_sin_theta, m_sin_theta_ialpha, m_neg_alpha_sin_theta;
-        amrex::ParticleReal m_rel_const, m_sin_G, m_cos_G, m_theta_1pG, m_ibeta;
+        amrex::ParticleReal m_rel_const, m_sin_G, m_1cos_G, m_neg2_theta_1pG, m_ibeta;
     };
 
 } // namespace impactx

@@ -116,10 +116,6 @@ namespace impactx::elements
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
             m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(m_gamma));
-
-            // used for spin push
-            m_gryo = refpart.gyromagnetic_anomaly;
-
         }
 
         /** This is a chrquad functor, so that a variable of this type can be used like a chrquad function.
@@ -340,7 +336,7 @@ namespace impactx::elements
 
             // compute particle relativistic gamma
             T_Real const gamma = m_gamma * (1_prt - m_beta*pt);
-            T_Real const gyro_const = 1_prt + m_gryo * gamma;
+            T_Real const gyro_const = 1_prt + refpart.gyromagnetic_anomaly * gamma;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
@@ -406,7 +402,6 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
         amrex::ParticleReal m_gamma;
         amrex::ParticleReal m_g;
         amrex::ParticleReal m_const1;
-        amrex::ParticleReal m_gryo;     //! gryomagnetic anomaly (for spin push)
     };
 
 } // namespace impactx

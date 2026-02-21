@@ -36,6 +36,7 @@ python3 -m pip install -U -r requirements.txt
 python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
 python3 -m pip install -U -r examples/requirements.txt
 python3 -m pip install -U -r tests/python/requirements.txt
+python3 -m pip install -U pytest-codspeed
 
 # extra tests
 python3 -m pip install -U -r examples/requirements_torch_cpu.txt

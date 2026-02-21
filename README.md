@@ -8,6 +8,7 @@
 [![DOI (paper)](https://img.shields.io/badge/DOI%20(paper)-10.18429%2FJACoW--NAPAC2022--TUYE2-blue.svg)](https://doi.org/10.18429/JACoW-NAPAC2022-TUYE2)  
 [![Language: C++17](https://img.shields.io/badge/language-C%2B%2B17-orange.svg)](https://isocpp.org/)
 [![Language: Python](https://img.shields.io/badge/language-Python-orange.svg)](https://python.org/)
+[![ImpactX CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/BLAST-ImpactX/impactx?utm_source=badge)
 
 ImpactX: an s-based beam dynamics code including space charge effects.
 This is the next generation of the [IMPACT-Z](https://github.com/impact-lbl/IMPACT-Z) code.

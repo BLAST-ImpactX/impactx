@@ -34,7 +34,7 @@ mapsteps = 4
 
 
 @pytest.fixture(scope="function")
-def sim():
+def sim(request):
     class SimContextManager:
         def __enter__(self):
             self.sim = ImpactX()
@@ -44,6 +44,11 @@ def sim():
             self.sim.space_charge = False
             self.sim.diagnostics = False  # benchmarking
             self.sim.slice_step_diagnostics = False
+
+            spin = getattr(
+                request, "param", False
+            )  # default to False if not parametrized
+            self.sim.spin = spin
 
             self.sim.init_grids()
 
@@ -75,7 +80,15 @@ def sim():
                     alpha_t=0.0,
                 )
             )
-            self.sim.add_particles(bunch_charge_C, distr, npart)
+            if spin:
+                spin_vectors = distribution.SpinvMF(
+                    0.4,
+                    0.9,
+                    0.1,
+                )
+                self.sim.add_particles(bunch_charge_C, distr, npart, spin_vectors)
+            else:
+                self.sim.add_particles(bunch_charge_C, distr, npart)
             assert self.sim.particle_container().total_number_of_particles() == npart
 
             self.sim.backup_beam = self.sim.particle_container().make_alike()
@@ -129,6 +142,7 @@ def test_CFbend(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrDrift(benchmark, sim):
     chrdrift = elements.ChrDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(chrdrift.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -141,6 +155,7 @@ def test_ChrPlasmaLens(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad(benchmark, sim):
     el = elements.ChrQuad(name="quad1", ds=1.0, k=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -165,6 +180,7 @@ def test_DipEdge(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Drift(benchmark, sim):
     el = elements.Drift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -175,6 +191,7 @@ def test_Drift(benchmark, sim):
 #    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactDrift(benchmark, sim):
     el = elements.ExactDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -258,6 +275,7 @@ def test_PRot(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(benchmark, sim):
     el = elements.Quad(name="quad1", ds=1.0, k=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -338,6 +356,7 @@ def test_RFCavity(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(benchmark, sim):
     el = elements.Sbend(name="sbend1", ds=0.5, rc=-10.346, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -446,6 +465,7 @@ def test_SoftSolenoid(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(benchmark, sim):
     el = elements.Sol(name="sol1", ds=3.820395, ks=0.8223219329893234)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)

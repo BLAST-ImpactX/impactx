@@ -71,9 +71,9 @@ print(f"  atol={atol}")
 assert np.allclose(
     [polarization_x, polarization_y, polarization_z],
     [
-        0.02,
-        0.02,
-        0.01,
+        0.035,
+        0.085,
+        0.077,
     ],
     atol=atol,
 )

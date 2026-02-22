@@ -330,43 +330,37 @@ namespace impactx::elements
             T_Real lambday = 0_prt;
             T_Real lambdaz = 0_prt;
 
-            // access reference particle values
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal beta_ref = refpart.beta();
-            amrex::ParticleReal gamma_ref = refpart.gamma();
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
             // compute particle momentum deviation delta + 1
-            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/beta_ref + powi<2>(pt));
+            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+            T_Real const inv_delta1 = 1_prt / delta1;
 
             // compute particle relativistic gamma
-            T_Real const gamma = gamma_ref * (1_prt - beta_ref*gamma_ref*pt);
-            T_Real const gyro_const = 1_prt + G * gamma;
+            T_Real const gamma = m_gamma * (1_prt - m_beta*pt);
+            T_Real const gyro_const = 1_prt + refpart.gyromagnetic_anomaly * gamma;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
-            T_Real const omega = sqrt(abs(m_g)/delta1);
+            T_Real const omega = sqrt(abs(m_g)*inv_delta1);
 
             // compute trigonometric quantities
-            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*slice_ds);
-            T_Real const sinh_omega_ds = sinh(omega*slice_ds);
-            T_Real const cosh_omega_ds = cosh(omega*slice_ds);
+            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*m_slice_ds);
+            T_Real const sinh_omega_ds = sinh(omega*m_slice_ds);
+            T_Real const cosh_omega_ds = cosh(omega*m_slice_ds);
 
             if (m_g > 0.0_prt)
             {
 
                 // horizontally focusing quad case
                 lambdax = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
-                lambday = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+lambdax = -gyro_const * ( py*inv_delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
 
             } else if (m_g < 0.0_prt)
             {
 
                 // horizontally defocusing quad case
-                lambdax = -gyro_const * ( px/delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
-                lambday = -gyro_const * ( py/delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+                lambdax = gyro_const * ( py*inv_delta1*(1_prt - cos_omega_ds) + y*omega*sin_omega_ds );
+                lambday = gyro_const * ( px*inv_delta1*(cosh_omega_ds - 1_prt) + x*omega*sinh_omega_ds );
 
             } else {
                 // treat as a drift

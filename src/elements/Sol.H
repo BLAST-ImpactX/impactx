@@ -101,6 +101,7 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1.0_prt;
+            m_ibeta = 1.0_prt / refpart.beta();
 
             // compute phase advance per unit length (in rad/m) and
             // rotation angle (in rad)
@@ -113,6 +114,16 @@ namespace impactx::elements
             m_sin_theta_ialpha = sin_theta / alpha;
             m_neg_alpha_sin_theta = -alpha * sin_theta;
             m_ds_bg2 = slice_ds / betgam2;
+
+            // access reference particle values required for spin push
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const gamma = refpart.gamma();
+            m_rel_const = 0.5_prt * (gamma - 1_prt);
+            auto const [sin_G, cos_G] = amrex::Math::sincos(2_prt * G * theta);
+            m_sin_G = sin_G;
+            m_1cos_G = 1_prt - cos_G;
+            m_neg2_theta_1pG = -2_prt * theta * (1_prt + G);
+
         }
 
         /** This is a sol functor, so that a variable of this type can be used like a sol function.
@@ -274,27 +285,10 @@ namespace impactx::elements
             T_Real lambday = 0_prt;
             T_Real lambdaz = 0_prt;
 
-            // access reference particle values
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal const beta = refpart.beta();
-            amrex::ParticleReal const gamma = refpart.gamma();
-            amrex::ParticleReal const rel_const = 0.5_prt * (gamma - 1_prt);
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // compute phase advance per unit length (in rad/m) and
-            // rotation angle (in rad)
-            amrex::ParticleReal const alpha = m_ks * 0.5_prt;
-            amrex::ParticleReal const theta = alpha*slice_ds;
-
-            // compute trigonometric quantities
-            auto const [sin_G, cos_G] = amrex::Math::sincos(2_prt * G * theta);
-
             // axis-angle vector components generating the remainder spin map
-            lambdax = rel_const * ((2*px + m_ks*y)*sin_G - (2*py - m_ks*x)*(1-cos_G));
-            lambday = rel_const * ((2*py - m_ks*x)*sin_G + (2*px + m_ks*y)*(1-cos_G));
-            lambdaz = -2_prt * theta * (1_prt + G) * pt / beta;
+            lambdax = m_rel_const * ((2_prt*px + m_ks*y)*m_sin_G - (2_prt*py - m_ks*x)*m_1cos_G);
+            lambday = m_rel_const * ((2_prt*py - m_ks*x)*m_sin_G + (2_prt*px + m_ks*y)*m_1cos_G);
+            lambdaz = m_neg2_theta_1pG * pt * m_ibeta;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
@@ -302,7 +296,7 @@ namespace impactx::elements
             // axis-angle vector components generating the reference spin map
             lambdax = 0.0_prt;
             lambday = 0.0_prt;
-            lambdaz = -2_prt * theta * (1_prt + G);
+            lambdaz = m_neg2_theta_1pG;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
@@ -379,6 +373,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_ds_bg2, m_cos_theta, m_sin_theta, m_sin_theta_ialpha, m_neg_alpha_sin_theta;
+        amrex::ParticleReal m_rel_const, m_sin_G, m_1cos_G, m_neg2_theta_1pG, m_ibeta;
     };
 
 } // namespace impactx

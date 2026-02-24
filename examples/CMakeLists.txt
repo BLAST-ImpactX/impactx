@@ -1940,3 +1940,18 @@ add_impactx_test(cfbend-spin.py
     examples/spin_tracking/analysis_cfbend_spin.py
     OFF  # no plot script yet
 )
+
+# Element Reversibility with Spin ###################
+# without space charge
+add_impactx_test(reversibility-spin
+    examples/spin_tracking/input_reversibility_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_reversibility_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(reversibility-spin.py
+    examples/spin_tracking/run_reversibility_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_reversibility_spin.py
+    OFF  # no plot script yet
+)

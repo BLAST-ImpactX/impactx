@@ -29,10 +29,9 @@ jobs:
         path: |
           ~/.ccache
           ~/.cache/ccache
-        key: ccache-hip-clang-${{ hashFiles('.github/workflows/hip.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-hip-clang-${{ hashFiles('.github/workflows/hip.yml') }}-
-          ccache-hip-clang-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
 
     - name: build ImpactX
       shell: bash

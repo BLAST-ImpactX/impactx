@@ -26,10 +26,9 @@ jobs:
         path: |
           ~/.ccache
           ~/.cache/ccache
-        key: ccache-openmp-clangsan-${{ hashFiles('.github/workflows/tooling.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-openmp-clangsan-${{ hashFiles('.github/workflows/tooling.yml') }}-
-          ccache-openmp-clangsan-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
 
     - name: build ImpactX
       env:

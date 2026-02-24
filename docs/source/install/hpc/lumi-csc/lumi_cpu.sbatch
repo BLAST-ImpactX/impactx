@@ -10,12 +10,21 @@
 #SBATCH --ntasks-per-node=16
 #SBATCH --cpus-per-task=8
 
-# executable & inputs file or ...
-EXE=./impactx
-INPUTS=inputs
-# ... python interpreter & PICMI script here
-#EXE=python3
-#INPUTS=run_fodo.py
+# python interpreter & script here
+EXE=python3
+INPUTS=run_fodo.py
+# or executable & inputs file
+#EXE=./impactx
+#INPUTS=input_fodo.in
+
+# enviroment setup
+if [[ -z "${MY_PROFILE}" ]]; then
+    echo "WARNING: FORGOT TO"
+    echo "   source $HOME/lumi_cpu_impactx.profile"
+    echo "before submission. Doing that now."
+
+    source $HOME/lumi_cpu_impactx.profile
+fi
 
 date
 

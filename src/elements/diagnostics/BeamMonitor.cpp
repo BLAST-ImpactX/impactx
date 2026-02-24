@@ -185,7 +185,6 @@ namespace detail {
 #   if openPMD_HAVE_MPI==1
                 , amrex::ParallelDescriptor::Communicator()
 #   endif
-                , "adios2.engine.usesteps = true"
             );
             series.setSoftware("ImpactX", IMPACTX_VERSION);
             series.setIterationEncoding( series_encoding );

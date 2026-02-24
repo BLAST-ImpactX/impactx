@@ -1955,3 +1955,18 @@ add_impactx_test(reversibility-spin.py
     examples/spin_tracking/analysis_reversibility_spin.py
     OFF  # no plot script yet
 )
+
+# Spin Depolarization in a Solenoid ###################
+# without space charge
+add_impactx_test(sol-spin
+    examples/spin_tracking/input_sol_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sol_spin.py
+    OFF  # no plot script yet   
+)
+add_impactx_test(sol-spin.py
+    examples/spin_tracking/run_sol_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sol_spin.py  
+    OFF  # no plot script yet
+)

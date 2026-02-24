@@ -196,8 +196,8 @@ Analyze
 -------
 
 The analysis can be run using:
-   
-   
+
+
 .. dropdown:: Script ``analysis_sol_spin.py``
 
    .. literalinclude:: analysis_sol_spin.py
@@ -304,5 +304,3 @@ The analysis can be run using:
    .. literalinclude:: analysis_cfbend_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_cfbend_spin.py``.
-
-

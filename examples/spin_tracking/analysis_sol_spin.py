@@ -65,19 +65,19 @@ assert np.allclose(
 )
 
 # predicted final polarization
-damping_eigenvalue = (1 + gyro_anomaly) * sol_strength_ks * sol_length_ds * sigma_pt / rel_beta
+damping_eigenvalue = (
+    (1 + gyro_anomaly) * sol_strength_ks * sol_length_ds * sigma_pt / rel_beta
+)
 damping_factor = np.exp(-(damping_eigenvalue**2) / 2.0)
-cosG = np.cos(2*(1+gyro_anomaly)*np.pi/gyro_anomaly)
-sinG = np.sin(2*(1+gyro_anomaly)*np.pi/gyro_anomaly)
+cosG = np.cos(2 * (1 + gyro_anomaly) * np.pi / gyro_anomaly)
+sinG = np.sin(2 * (1 + gyro_anomaly) * np.pi / gyro_anomaly)
 Pxf = damping_factor * (Pxi * cosG + Pyi * sinG)
 Pyf = damping_factor * (-Pxi * sinG + Pyi * cosG)
 Pzf = Pzi
 
 print("")
 print("Predicted Final Polarization:")
-print(
-    f"  polarization_x={Pxf:e} polarization_y={Pyf:e} polarization_z={Pzf:e}"
-)
+print(f"  polarization_x={Pxf:e} polarization_y={Pyf:e} polarization_z={Pzf:e}")
 
 print("")
 print("Final Beam:")

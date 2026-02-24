@@ -1940,3 +1940,12 @@ add_impactx_test(reversibility-spin.py
     examples/spin_tracking/analysis_reversibility_spin.py
     OFF  # no plot script yet
 )
+
+# Reconstruction of On-Axis Data from Coefficients #############
+# without space charge
+add_impactx_test(fourier-coeffs.py
+    examples/fourier_coefficients/run_quadrupole_fcoef.py
+    ON    # ImpactX MPI-parallel
+    examples/fourier_coefficients/analysis_quadrupole_fcoef.py
+    OFF  # no plot script yet
+)

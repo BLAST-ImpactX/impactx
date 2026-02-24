@@ -6,8 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
+from fcoef import calculate_coefficients, read_data
+
 from impactx import ImpactX, distribution, elements
-from fcoef import read_data, calculate_coefficients
 
 sim = ImpactX()
 
@@ -50,7 +51,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 
 # read in the on-axis quadrupole gradient data
-data = read_data('onaxis_data.in')
+data = read_data("onaxis_data.in")
 
 # compute the Fourier coefficients from on-axis quadrupole gradient data
 ncoef = 25

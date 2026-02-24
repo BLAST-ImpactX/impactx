@@ -137,6 +137,7 @@ def test_Buncher(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_CFbend(benchmark, sim):
     el = elements.CFbend(ds=0.5, rc=7.613657587094493, k=-7.057403, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)

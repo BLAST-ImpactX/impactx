@@ -59,7 +59,7 @@ cos_coeffs, sin_coeffs, gmax = calculate_coefficients(data, ncoef)
 
 quad1 = elements.SoftQuadrupole(
     name="quad1",
-    ds=1.0,
+    ds=0.2495,
     gscale=1.0,
     cos_coefficients=cos_coeffs,
     sin_coefficients=sin_coeffs,

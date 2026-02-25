@@ -61,8 +61,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # bend radius (> 0)
 ks_value = 1.0
-print("ks_value")
-print(ks_value)
+print(f"ks_value={ks_value}")
 
 # length for this test should be one period
 ds_value = 2.0 * np.pi / (gyromagnetic_anomaly * ks_value)

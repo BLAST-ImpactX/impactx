@@ -155,7 +155,7 @@ The analysis can be run using:
 .. _examples-sol-spin:
 
 Spin Depolarization in a Solenoid
-===================================
+=================================
 
 This example illustrates the decay of the polarization vector (describing the mean of the three spin components) along the horizontal x and vertical y directions for a 2 GeV proton beam undergoing
 transverse focusing and rotation in a solenoid.

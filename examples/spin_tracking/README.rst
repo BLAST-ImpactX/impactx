@@ -197,7 +197,6 @@ Analyze
 
 The analysis can be run using:
 
-
 .. dropdown:: Script ``analysis_sol_spin.py``
 
    .. literalinclude:: analysis_sol_spin.py

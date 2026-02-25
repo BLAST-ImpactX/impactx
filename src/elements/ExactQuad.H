@@ -19,6 +19,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -38,6 +39,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -411,6 +413,91 @@ namespace impactx::elements
             }
 
             return R;
+        }
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // shift due to alignment errors of the element
+            shift_in(x, y, px, py);
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // coordinates within the quad (not needed)
+            //amrex::ParticleReal const s = refpart.s;
+            //amrex::ParticleReal const sedge = refpart.sedge;
+
+            // numerical integration parameters
+            amrex::ParticleReal const zin = 0_prt;
+            amrex::ParticleReal const zout = m_slice_ds;
+            int const nsteps = m_mapsteps;
+
+            // initialize phase space 6-vector
+            amrex::SmallVector<T_Real, 6, 1> particle{
+                x, px, y, py, t, pt
+            };
+
+            // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
+            if (m_int_order == 2) {
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+            } else if (m_int_order == 4) {
+                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+            } else if (m_int_order == 6) {
+                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
+            } else {
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+            }
+
+            // assign updated values
+            x = particle(1);
+            px = particle(2);
+            y = particle(3);
+            py = particle(4);
+            t = particle(5);
+            pt = particle(6);
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+
+            // apply transverse aperture
+            apply_aperture(x, y, idcpu);
+
+            // undo shift due to alignment errors of the element
+            shift_out(x, y, px, py);
         }
 
         /** This pushes the covariance matrix. */

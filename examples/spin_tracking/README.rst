@@ -152,6 +152,58 @@ The analysis can be run using:
       :caption: You can copy this file from ``examples/spin_tracking/analysis_sbend_spin.py``.
 
 
+.. _examples-sol-spin:
+
+Spin Depolarization in a Solenoid
+=================================
+
+This example illustrates the decay of the polarization vector (describing the mean of the three spin components) along the horizontal x and vertical y directions for a 2 GeV proton beam undergoing
+transverse focusing and rotation in a solenoid.
+
+The beam propagates over a distance:  :math:`\Delta s = 2\pi/(Gk_s)`,
+
+where :math:`G` is the value of the gyromagnetic anomaly, :math:`k_s` denotes the solenoid focusing strength.
+At this location, the polarization vector is described by a simple expression.
+
+In this test, the initial and final values of :math:`\langle{s_x\rangle}`, :math:`\langle{s_y\rangle}`, :math:`\langle{s_z\rangle}` must agree with nominal values.
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_sol_spin.py`` or
+* ImpactX **executable** using an input file: ``impactx input_sol_spin.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_sol_spin.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_sol_spin.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_sol_spin.in
+          :language: ini
+          :caption: You can copy this file from ``examples/spin_tracking/input_sol_spin.in``.
+
+Analyze
+-------
+
+The analysis can be run using:
+
+.. dropdown:: Script ``analysis_sol_spin.py``
+
+   .. literalinclude:: analysis_sol_spin.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_sol_spin.py``.
+
+
+
 .. _examples-reversibility-spin:
 
 Element Reversibility with Spin

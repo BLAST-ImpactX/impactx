@@ -76,7 +76,9 @@ namespace
             },
             py::arg("pc"), py::arg("step")=0, py::arg("period")=0,
             "Push first the reference particle, then all other particles."
-        );
+        )
+        .def("finalize", &Element::finalize)
+        ;
     }
 
     /** Registers the mixin LinearTransport::operator method
@@ -396,7 +398,6 @@ void init_elements(py::module& m)
             },
             "Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I."
         )
-        .def("finalize", &diagnostics::BeamMonitor::finalize)
     ;
     register_push(py_BeamMonitor);
 

@@ -28,7 +28,6 @@ namespace impactx::distribution
          *
          * Return sampling from a 6D Gaussian distribution with truncation in each phase plane.
          *
-         * @param cutx, cuty, cutt dimensionless cut parameter (number of sigma) in each phase plane
          * @param lambdax,lambday,lambdat phase space axis intercepts (position);
          *                                for zero correlation, these are the related RMS sizes (in meters)
          * @param lambdapx,lambdapy,lambdapt phase space axis intercepts (momentum)
@@ -36,11 +35,9 @@ namespace impactx::distribution
          * @param meanx,meany,meant offsets of the mean (centroid) positions from those of the reference particle
          * @param meanpx,meanpy,meanpt offsets of the mean (centroid) momenta from those of the reference particle
          * @param dispx,disppx,dispy,disppy dispersion and its derivative in horizontal and vertical directions
+         * @param cutx, cuty, cutt dimensionless cut parameter (number of sigma) in each phase plane
          */
         CutGaussian (
-            amrex::ParticleReal cutx,
-            amrex::ParticleReal cuty,
-            amrex::ParticleReal cutt,
             amrex::ParticleReal lambdax,
             amrex::ParticleReal lambday,
             amrex::ParticleReal lambdat,
@@ -59,13 +56,15 @@ namespace impactx::distribution
             amrex::ParticleReal dispx=0.0,
             amrex::ParticleReal disppx=0.0,
             amrex::ParticleReal dispy=0.0,
-            amrex::ParticleReal disppy=0.0
+            amrex::ParticleReal disppy=0.0,
+            amrex::ParticleReal cutx=5.0,
+            amrex::ParticleReal cuty=5.0,
+            amrex::ParticleReal cutt=5.0
         )
-        : m_cutX(cutx), m_cutY(cuty), m_cutT(cutt),
-          m_lambdaX(lambdax), m_lambdaY(lambday), m_lambdaT(lambdat), m_lambdaPx(lambdapx), m_lambdaPy(lambdapy),
+        : m_lambdaX(lambdax), m_lambdaY(lambday), m_lambdaT(lambdat), m_lambdaPx(lambdapx), m_lambdaPy(lambdapy),
           m_lambdaPt(lambdapt), m_muxpx(muxpx), m_muypy(muypy), m_mutpt(mutpt), m_meanx(meanx), m_meany(meany),
           m_meant(meant), m_meanpx(meanpx), m_meanpy(meanpy), m_meanpt(meanpt), m_dispx(dispx), m_disppx(disppx),
-          m_dispy(dispy), m_disppy(disppy)
+          m_dispy(dispy), m_disppy(disppy), m_cutX(cutx), m_cutY(cuty), m_cutT(cutt)
         {
         }
 
@@ -184,13 +183,13 @@ namespace impactx::distribution
             pt = pt + m_meanpt;
         }
 
-        amrex::ParticleReal m_cutX, m_cutY, m_cutT;  //! dimensionless cutoff for each phase plane (in x, y, t)
         amrex::ParticleReal m_lambdaX, m_lambdaY, m_lambdaT;  //! related position axis intercepts (length) of the phase space ellipse
         amrex::ParticleReal m_lambdaPx, m_lambdaPy, m_lambdaPt;  //! related momentum axis intercepts of the phase space ellipse
         amrex::ParticleReal m_muxpx, m_muypy, m_mutpt;  //! correlation length-momentum
         amrex::ParticleReal m_meanx, m_meany, m_meant;  //! spatial coordinates of centroid offset
         amrex::ParticleReal m_meanpx, m_meanpy, m_meanpt;  //! momentum coordinates of centroid offset
         amrex::ParticleReal m_dispx, m_disppx, m_dispy, m_disppy;  //! dispersion and its derivative
+        amrex::ParticleReal m_cutX, m_cutY, m_cutT;  //! dimensionless cutoff for each phase plane (in x, y, t)
     };
 
 } // namespace impactx::distribution

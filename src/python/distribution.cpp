@@ -194,11 +194,10 @@ void init_distribution(py::module& m)
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal
+                amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("cutX"), py::arg("cutY"), py::arg("cutT"),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -206,6 +205,7 @@ void init_distribution(py::module& m)
              py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
              py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
              py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("cutX")=5.0, py::arg("cutY")=5.0, py::arg("cutT")=5.0,
              "A cut 6D Gaussian distribution"
         );
 

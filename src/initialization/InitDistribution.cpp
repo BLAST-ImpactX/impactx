@@ -205,13 +205,13 @@ namespace impactx
                 pp_dist.queryWithParser("cutY", cuty);
                 pp_dist.queryWithParser("cutT", cutt);
                 dist = distribution::CutGaussian(
-                        cutx, cuty, cutt,
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
                         meanx, meany, meant,
                         meanpx, meanpy, meanpt,
-                        dispx, disppx, dispy, disppy);
+                        dispx, disppx, dispy, disppy,
+                        cutx, cuty, cutt);
             } else if (base_dist_type == "empty") {
                 dist = distribution::Empty();
             } else

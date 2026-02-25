@@ -167,7 +167,6 @@ At this location, the polarization vector is described by a simple expression.
 
 In this test, the initial and final values of :math:`\langle{s_x\rangle}`, :math:`\langle{s_y\rangle}`, :math:`\langle{s_z\rangle}` must agree with nominal values.
 
-
 Run
 ---
 

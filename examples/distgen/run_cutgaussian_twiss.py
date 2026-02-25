@@ -43,7 +43,7 @@ distr = distribution.CutGaussian(
     ),
     cutX=2.0,
     cutY=3.0,
-    cutT=1.0
+    cutT=1.0,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 

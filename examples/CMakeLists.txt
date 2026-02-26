@@ -1957,7 +1957,7 @@ add_impactx_test(reversibility-spin.py
 )
 
 # Reconstruction of On-Axis Data from Coefficients #############
-# without space charge
+#
 file(COPY ${ImpactX_SOURCE_DIR}/examples/fourier_coefficients/onaxis_data.in
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/fourier-coeffs.py)
 add_impactx_test(fourier-coeffs.py

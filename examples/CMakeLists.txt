@@ -520,7 +520,7 @@ add_impactx_test(semigaussian.py
 )
 
 
-# 6D Cut Gaussian Distribution from Twiss Test ####################################
+# 6D Gaussian Distribution with Cut from Twiss Test ###########################
 #
 add_impactx_test(cutgaussian_twiss
     examples/distgen/input_cutgaussian_twiss.in

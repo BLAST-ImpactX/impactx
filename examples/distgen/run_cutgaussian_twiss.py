@@ -29,7 +29,7 @@ ref = sim.particle_container().ref_particle()
 ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
-distr = distribution.CutGaussian(
+distr = distribution.Gaussian(
     **twiss(
         beta_x=2.8216194100262637,
         beta_y=2.8216194100262637,

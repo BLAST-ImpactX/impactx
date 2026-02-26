@@ -10,7 +10,32 @@ def read_data(filename):
 
 
 def calculate_coefficients(data, ncoef):
-    """Calculate Fourier coefficients."""
+    """Calculate Fourier coefficients of on-axis field data.
+
+    Uses the trapezoidal rule with linear interpolation to compute
+    cosine and sine Fourier coefficients of the field profile,
+    centered about the midpoint of the data range.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        Two-column array with shape (N, 2).  Column 0 is the
+        longitudinal position z in meters.  Column 1 is the field or
+        field gradient in arbitrary units (typically scaled so that the
+        peak absolute value is 1; physical units are set later via
+        element parameters such as ``bscale`` or ``escale``).
+    ncoef : int
+        Number of Fourier coefficients to compute.
+
+    Returns
+    -------
+    cos_coeffs : numpy.ndarray
+        Cosine Fourier coefficients, length *ncoef*.
+    sin_coeffs : numpy.ndarray
+        Sine Fourier coefficients, length *ncoef*.
+    emax : float
+        Peak absolute field value from the input data (arbitrary units).
+    """
     zdata = data[:, 0]
     edata = data[:, 1]
     emax = np.max(np.abs(edata))

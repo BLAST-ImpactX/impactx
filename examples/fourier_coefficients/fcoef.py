@@ -45,47 +45,30 @@ def calculate_coefficients(data, ncoef):
     zmid = (zdata[-1] + zdata[0]) / 2
     zhalf = zlen / 2.0
     h = zlen / (ndatareal - 1)
-    pi = math.pi
 
-    cos_coeffs = np.zeros(ncoef)
-    sin_coeffs = np.zeros(ncoef)
+    j = np.arange(ncoef)  # (ncoef,)
 
-    """Contribution from the endpoints."""
-    for j in range(ncoef):
-        zz = zdata[0] - zmid
-        cos_coeffs[j] += (
-            -0.5 * edata[0] * math.cos((j) * 2 * pi * zz / zlen) * h
-        ) / zhalf
-        sin_coeffs[j] += (
-            -0.5 * edata[0] * math.sin((j) * 2 * pi * zz / zlen) * h
-        ) / zhalf
-        zz = zdata[-1] - zmid
-        cos_coeffs[j] -= (
-            0.5 * edata[-1] * math.cos((j) * 2 * pi * zz / zlen) * h
-        ) / zhalf
-        sin_coeffs[j] -= (
-            0.5 * edata[-1] * math.sin((j) * 2 * pi * zz / zlen) * h
-        ) / zhalf
+    # Endpoint correction (trapezoidal rule)
+    zz0 = zdata[0] - zmid
+    zz1 = zdata[-1] - zmid
+    angle0 = j * 2 * np.pi * zz0 / zlen  # (ncoef,)
+    angle1 = j * 2 * np.pi * zz1 / zlen  # (ncoef,)
 
-    """Contribution from the interior points."""
-    for i in range(ndatareal):
-        zz = i * h + zdata[0]
-        klo = 0
-        khi = ndatareal - 1
-        while khi - klo > 1:
-            k = (khi + klo) // 2
-            if zdata[k] > zz:
-                khi = k
-            else:
-                klo = k
-        hstep = zdata[khi] - zdata[klo]
-        slope = (edata[khi] - edata[klo]) / hstep
-        ez1 = edata[klo] + slope * (zz - zdata[klo])
+    cos_coeffs = (-0.5 * edata[0] * np.cos(angle0) * h) / zhalf
+    sin_coeffs = (-0.5 * edata[0] * np.sin(angle0) * h) / zhalf
+    cos_coeffs -= (0.5 * edata[-1] * np.cos(angle1) * h) / zhalf
+    sin_coeffs -= (0.5 * edata[-1] * np.sin(angle1) * h) / zhalf
 
-        zz = zdata[0] + i * h - zmid
-        for j in range(ncoef):
-            cos_coeffs[j] += (ez1 * math.cos((j) * 2 * pi * zz / zlen) * h) / zhalf
-            sin_coeffs[j] += (ez1 * math.sin((j) * 2 * pi * zz / zlen) * h) / zhalf
+    # Interior points: interpolate field onto uniform grid, then integrate
+    zz_uniform = np.arange(ndatareal) * h + zdata[0]  # (ndatareal,)
+    ez1 = np.interp(zz_uniform, zdata, edata)  # (ndatareal,)
+
+    zz_centered = zz_uniform - zmid  # (ndatareal,)
+    # Outer product: angles[i, j] = j * 2 * pi * zz_centered[i] / zlen
+    angles = np.outer(zz_centered, j * 2 * np.pi / zlen)  # (ndatareal, ncoef)
+
+    cos_coeffs += np.sum(ez1[:, np.newaxis] * np.cos(angles) * h, axis=0) / zhalf
+    sin_coeffs += np.sum(ez1[:, np.newaxis] * np.sin(angles) * h, axis=0) / zhalf
 
     return cos_coeffs, sin_coeffs, emax
 

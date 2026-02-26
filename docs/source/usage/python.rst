@@ -614,9 +614,13 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
 
-   A 6D Gaussian distribution.
+   A 6D Gaussian distribution, optionally with truncation.
+   The user may specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt).
+   The cut is performed in normalized Courant-Snyder variables corresponding to the user-supplied second moments or Twiss functions.
+   As a result, this is equivalent to a cut corresponding to the (linearized) action in each plane.
+   A cutoff value of 0 means no truncation (default).
 
    :param lambdaX: phase space position axis intercept; for zero correlation, these are the related RMS sizes (in meters)
    :param lambdaY: see lambdaX
@@ -637,6 +641,9 @@ For the input from Twiss parameters in Python, please use the helper function ``
    :param dispPx: beam horizontal dispersion derivative (dimensionless)
    :param dispY: see dispX
    :param dispPy: see dispPx
+   :param cutX: number of sigma at which to cut the distribution in (x,px) (dimensionless); 0 means no cut
+   :param cutY: number of sigma at which to cut the distribution in (y,py) (dimensionless); 0 means no cut
+   :param cutT: number of sigma at which to cut the distribution in (t,pt) (dimensionless); 0 means no cut
 
 .. py:class:: impactx.distribution.Kurth4D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 

@@ -51,11 +51,11 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 
 # read in the on-axis quadrupole gradient data
-data = read_data("onaxis_data.in")
+z, field_or_gradient = read_data("onaxis_data.in")
 
 # compute the Fourier coefficients from on-axis quadrupole gradient data
 ncoef = 25
-cos_coeffs, sin_coeffs = calculate_coefficients(data, ncoef)
+cos_coeffs, sin_coeffs = calculate_coefficients(z, field_or_gradient, ncoef)
 
 quad1 = elements.SoftQuadrupole(
     name="quad1",

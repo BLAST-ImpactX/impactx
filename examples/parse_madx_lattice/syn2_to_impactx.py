@@ -103,8 +103,6 @@ def cnv_sbend(elem, order):
         de_model = "nonlinear"
         pass
 
-    de_model = "linear"
-
     if e1 != 0.0:
         us_dipedge = impactx.elements.DipEdge(
             e1,
@@ -112,7 +110,9 @@ def cnv_sbend(elem, order):
             2 * hgap,
             K2=fint,
             location="entry",
-            model=de_model,
+            #model=de_model,
+            # use linear model dipedge
+            model="linear",
             name=nm + "_usedge",
         )
         pass
@@ -122,7 +122,10 @@ def cnv_sbend(elem, order):
             radius_of_curvature,
             2 * hgap,
             K2=fint,
-            model=de_model,
+            location="exit",
+            #model=de_model,
+            # use linear model dipedge
+            model="linear",
             name=nm + "_dsedge",
         )
         pass

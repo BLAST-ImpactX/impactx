@@ -19,10 +19,12 @@ beam_radius = 2e-3
 sigr = 500e-6
 sigpx = 10
 sigpy = 10
-px = np.random.normal(0, sigpx, N_part)
-py = np.random.normal(0, sigpy, N_part)
-theta = 2 * np.pi * np.random.rand(N_part)
-r = abs(np.random.normal(beam_radius, sigr, N_part))
+# fixed seed for deterministic test results
+rng = np.random.default_rng()
+px = rng.normal(0, sigpx, N_part)
+py = rng.normal(0, sigpy, N_part)
+theta = 2 * np.pi * rng.random(N_part)
+r = np.abs(rng.normal(beam_radius, sigr, N_part))
 x = r * np.cos(theta)
 y = r * np.sin(theta)
 z_mean = 0
@@ -31,7 +33,7 @@ z_std = 1e-3
 pz_std = 2e2
 zpz_std = -0.18
 zpz_cov_list = [[z_std**2, zpz_std], [zpz_std, pz_std**2]]
-z, pz = np.random.default_rng().multivariate_normal([0, 0], zpz_cov_list, N_part).T
+z, pz = rng.multivariate_normal([0, 0], zpz_cov_list, N_part).T
 pz += pz_mean
 
 sim = ImpactX()

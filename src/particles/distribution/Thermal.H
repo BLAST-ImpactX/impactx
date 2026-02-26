@@ -96,7 +96,7 @@ namespace distribution
             m_bg = bg;
 
             // Get reference particle rest energy (eV) and charge (q_e)
-            amrex::ParticleReal Erest = refpart.mass_MeV()*1.0e6;
+            amrex::ParticleReal Erest = refpart.mass_MeV() * 1.0e6_prt;
             amrex::ParticleReal q_e = refpart.charge_qe();
 
             // Set space charge intensity

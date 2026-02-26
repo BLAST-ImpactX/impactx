@@ -97,10 +97,10 @@ namespace impactx
      * `static` in AMReX, to `dynamic` in ImpactX.
      */
     class ParIterSoA
-        : public amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        : public amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     {
     public:
-        using amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>::ParIterSoA;
+        using amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>::ParIterSoA;
 
         ParIterSoA (ContainerType& pc, int level);
 
@@ -115,10 +115,10 @@ namespace impactx
      * `static` in AMReX, to `dynamic` in ImpactX.
      */
     class ParConstIterSoA
-        : public amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        : public amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     {
     public:
-        using amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>::ParConstIterSoA;
+        using amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>::ParConstIterSoA;
 
         ParConstIterSoA (ContainerType& pc, int level);
 
@@ -132,7 +132,7 @@ namespace impactx
      * This class stores particles, distributed over MPI ranks.
      */
     class ImpactXParticleContainer
-        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>
+        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     {
     public:
         //! amrex iterator for particle boxes

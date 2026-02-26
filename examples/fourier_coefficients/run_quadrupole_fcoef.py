@@ -55,7 +55,7 @@ data = read_data("onaxis_data.in")
 
 # compute the Fourier coefficients from on-axis quadrupole gradient data
 ncoef = 25
-cos_coeffs, sin_coeffs, gmax = calculate_coefficients(data, ncoef)
+cos_coeffs, sin_coeffs = calculate_coefficients(data, ncoef)
 
 quad1 = elements.SoftQuadrupole(
     name="quad1",

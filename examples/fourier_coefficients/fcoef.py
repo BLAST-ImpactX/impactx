@@ -33,12 +33,9 @@ def calculate_coefficients(data, ncoef):
         Cosine Fourier coefficients, length *ncoef*.
     sin_coeffs : numpy.ndarray
         Sine Fourier coefficients, length *ncoef*.
-    emax : float
-        Peak absolute field value from the input data (arbitrary units).
     """
     zdata = data[:, 0]
     edata = data[:, 1]
-    emax = np.max(np.abs(edata))
     ndatareal = len(zdata)
 
     zlen = zdata[-1] - zdata[0]
@@ -70,7 +67,7 @@ def calculate_coefficients(data, ncoef):
     cos_coeffs += np.sum(ez1[:, np.newaxis] * np.cos(angles) * h, axis=0) / zhalf
     sin_coeffs += np.sum(ez1[:, np.newaxis] * np.sin(angles) * h, axis=0) / zhalf
 
-    return cos_coeffs, sin_coeffs, emax
+    return cos_coeffs, sin_coeffs
 
 
 def write_coefficients(cos_coeffs, sin_coeffs, filename):
@@ -81,7 +78,7 @@ def write_coefficients(cos_coeffs, sin_coeffs, filename):
             f.write(f"{j} {coef} {coef2}\n")
 
 
-def write_data(cos_coeffs, sin_coeffs, zdata, emax, filename):
+def write_data(cos_coeffs, sin_coeffs, zdata, filename):
     """Write data to file."""
     zlen = zdata[-1] - zdata[0]
     zmid = (zdata[-1] + zdata[0]) / 2
@@ -121,9 +118,9 @@ def write_data(cos_coeffs, sin_coeffs, zdata, emax, filename):
 def main():
     data = read_data("onaxis_data.in")
     ncoef = int(input("How many Fourier coefficients do you want? "))
-    cos_coeffs, sin_coeffs, emax = calculate_coefficients(data, ncoef)
+    cos_coeffs, sin_coeffs = calculate_coefficients(data, ncoef)
     write_coefficients(cos_coeffs, sin_coeffs, "fcoef.out")
-    write_data(cos_coeffs, sin_coeffs, data[:, 0], emax, "onaxis_datax")
+    write_data(cos_coeffs, sin_coeffs, data[:, 0], "onaxis_datax")
 
 
 if __name__ == "__main__":

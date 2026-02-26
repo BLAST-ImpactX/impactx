@@ -1,20 +1,24 @@
 .. _examples-fourier-coeffs:
 
 Generation of Fourier coefficients from on-axis data
-=====================================================
+====================================================
 
 This example illustrates the computation of Fourier coefficients that are used to represent on-axis field or gradient data for soft-edge elements.
 
 Given data in the file ``onaxis_data.in``, execution of the Python script ``python3 fcoef.py`` results in the following output:
 
-``fcoef.out`` - a file containing a list of cosine and sine Fourier coefficients that can be used in ImpactX to define a soft-edge element
-``onaxis_data.out`` - a file containing the reconstructed on-axis signal, together with its first and second derivatives
+- ``fcoef.out``: a file containing a list of cosine and sine Fourier coefficients that can be used in ImpactX to define a soft-edge element
+- ``onaxis_data.out``: a file containing the reconstructed on-axis signal, together with its first and second derivatives
 
 The signal is represented in the form:
 
-g(z) = c0/2 + sum_{j=1}^{nmax}cj*cos(2*pi*j*(z-zmid)/L) + sum_{j=1}^{nmax}sj*sin(2*pi*j*(z-zmid)/L),
+.. math::
 
-where zmid = (zmin+zmax)/2 is the longitudinal location of the midpoint, and L = zmax - zmin is the total length of the z-domain.
+   g(z) = \frac{c_0}{2}
+        + \sum_{j=1}^{n_{\max}} c_j \cos\!\left(\frac{2\pi j\,(z - z_{\mathrm{mid}})}{L}\right)
+        + \sum_{j=1}^{n_{\max}} s_j \sin\!\left(\frac{2\pi j\,(z - z_{\mathrm{mid}})}{L}\right),
+
+where :math:`z_{\mathrm{mid}} = (z_{\min} + z_{\max})/2` is the longitudinal location of the midpoint, and :math:`L = z_{\max} - z_{\min}` is the total length of the z-domain.
 
 The benchmark test uses these coefficients to define and track through a soft-edge quadrupole element.
 

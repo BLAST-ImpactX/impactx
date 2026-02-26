@@ -1,0 +1,60 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 10.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = gaussian_from_twiss
+beam.alphaX = -1.5905003499999992
+beam.alphaY = -beam.alphaX
+beam.alphaT = 0.0
+beam.betaX = 2.8216194100262637
+beam.betaY = beam.betaX
+beam.betaT = 0.5
+beam.emittX = 2e-04
+beam.emittY = beam.emittX
+beam.emittT = 2e-05
+beam.polarization_x = 0.4
+beam.polarization_y = 0.9
+beam.polarization_z = 0.1
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor drift1 quad1 drift2 quad2 drift3 monitor
+lattice.nslice = 1
+lattice.periods = 101  # FODO channel of 101 periods
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+drift1.type = drift_chromatic
+drift1.ds = 0.25
+
+quad1.type = quad_chromatic
+quad1.ds = 1.0
+quad1.k = 1.0
+
+drift2.type = drift_chromatic
+drift2.ds = 0.5
+
+quad2.type = quad_chromatic
+quad2.ds = 1.0
+quad2.k = -1.0
+
+drift3.type = drift_chromatic
+drift3.ds = 0.25
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.spin = true
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

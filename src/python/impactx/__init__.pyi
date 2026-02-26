@@ -95,6 +95,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.01"
+__version__: str = "26.02"
 s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
 t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>

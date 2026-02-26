@@ -30,6 +30,7 @@ void init_refparticle(py::module& m)
         .def_readwrite("pt", &RefPart::pt, "energy deviation, normalized by rest energy")
         .def_readwrite("mass", &RefPart::charge, "reference rest mass [kg]")
         .def_readwrite("charge", &RefPart::mass, "reference charge [C]")
+        .def_readwrite("gyromagnetic_anomaly", &RefPart::gyromagnetic_anomaly, "reference particle gyromagnetic anomaly [unitless]")
 
         .def_readwrite("sedge", &RefPart::sedge, "value of s at entrance of the current beamline element")
         .def_readwrite("map", &RefPart::map, "linearized map")
@@ -58,5 +59,8 @@ void init_refparticle(py::module& m)
         .def("set_kin_energy_MeV", &RefPart::set_kin_energy_MeV,
              py::return_value_policy::reference_internal,
              "Set reference particle kinetic energy [MeV]", py::arg("kin_energy_MeV"))
+        .def("set_gyromagnetic_anomaly", &RefPart::set_gyromagnetic_anomaly,
+             py::return_value_policy::reference_internal,
+             "Set reference particle gyromagnetic anomaly value (for spin tracking)", py::arg("gyromagnetic_anomaly"))
     ;
 }

@@ -591,45 +591,45 @@ class ImpactX:
     def verbose(self, arg1: typing.SupportsInt) -> None: ...
 
 class ImpactXParConstIter(
-    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_default
+    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_polymorphic
 ):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
 
-class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_default):
+class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_polymorphic):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
 
 class ImpactXParticleContainer(
-    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default
+    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter
@@ -777,6 +777,12 @@ class RefPart:
         """
         Set reference particle charge (positive elementary charge) [q_e]
         """
+    def set_gyromagnetic_anomaly(
+        self, gyromagnetic_anomaly: typing.SupportsFloat
+    ) -> RefPart:
+        """
+        Set reference particle gyromagnetic anomaly value (for spin tracking)
+        """
     def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
         """
         Set reference particle kinetic energy [MeV]
@@ -812,6 +818,13 @@ class RefPart:
         """
         Get reference particle relativistic gamma
         """
+    @property
+    def gyromagnetic_anomaly(self) -> float:
+        """
+        reference particle gyromagnetic anomaly [unitless]
+        """
+    @gyromagnetic_anomaly.setter
+    def gyromagnetic_anomaly(self, arg0: typing.SupportsFloat) -> None: ...
     @property
     def kin_energy_MeV(self) -> float:
         """
@@ -1063,6 +1076,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.01"
+__version__: str = "26.02"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

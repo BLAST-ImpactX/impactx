@@ -76,7 +76,9 @@ namespace
             },
             py::arg("pc"), py::arg("step")=0, py::arg("period")=0,
             "Push first the reference particle, then all other particles."
-        );
+        )
+        .def("finalize", &Element::finalize)
+        ;
     }
 
     /** Registers the mixin LinearTransport::operator method
@@ -396,7 +398,6 @@ void init_elements(py::module& m)
             },
             "Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I."
         )
-        .def("finalize", &diagnostics::BeamMonitor::finalize)
     ;
     register_push(py_BeamMonitor);
 
@@ -862,6 +863,9 @@ void init_elements(py::module& m)
             std::optional<std::string> name
             )
             {
+                 if (R <= 0.0)
+                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+
                 dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
                 dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
@@ -902,7 +906,11 @@ void init_elements(py::module& m)
         )
         .def_property("R",
             [](DipEdge & dip_edge) { return dip_edge.m_R; },
-            [](DipEdge & dip_edge, amrex::ParticleReal R) { dip_edge.m_R = R; },
+            [](DipEdge & dip_edge, amrex::ParticleReal R) {
+                if (R <= 0.0)
+                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+                dip_edge.m_R = R;
+            },
             "Length scale for field integrals in m"
         )
         .def_property("K0",

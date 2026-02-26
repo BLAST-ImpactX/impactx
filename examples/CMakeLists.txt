@@ -79,19 +79,27 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
         set(ANALYSIS_ARGS "")
     endif()
 
+    # Always use Python_EXECUTABLE for analysis/plot scripts to ensure conda Python is used
+    if(is_python OR analysis_script OR plot_script)
+        # Try to find Python if not already set
+        # This is more robust in virtual envs (conda, venv) than
+        # relying only on /usr/bin/env python3
+        if(NOT Python_EXECUTABLE)
+            find_package(Python COMPONENTS Interpreter REQUIRED)
+        endif()
+    endif()
+
     # test run
     set(THIS_WORKING_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${name})
     set(THIS_MPI_TEST_EXE)
     if(is_mpi)
         set(THIS_MPI_TEST_EXE ${MPI_TEST_EXE})
     endif()
-    set(THIS_Python_EXE)
     if(is_python)
-        set(THIS_Python_EXE ${Python_EXECUTABLE})
         # for argparse, do not pass command-line arguments as one quoted string
         separate_arguments(INPUTS_ARGS UNIX_COMMAND "${INPUTS_ARGS}")
         add_test(NAME ${name}.run
-                 COMMAND ${THIS_MPI_TEST_EXE} ${THIS_Python_EXE} ${INPUTS_FILE} ${INPUTS_ARGS}
+                 COMMAND ${THIS_MPI_TEST_EXE} ${Python_EXECUTABLE} ${INPUTS_FILE} ${INPUTS_ARGS}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
         # TODO:
@@ -124,13 +132,9 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     set_tests_properties(${name}.run PROPERTIES SKIP_RETURN_CODE 42)
 
     # analysis and plots
-    set(THIS_Python_SCRIPT_EXE)
-    if(is_python OR WIN32)
-        set(THIS_Python_SCRIPT_EXE ${Python_EXECUTABLE})
-    endif()
     if(analysis_script)
         add_test(NAME ${name}.analysis
-                 COMMAND ${THIS_Python_SCRIPT_EXE} ${ImpactX_SOURCE_DIR}/${analysis_script}
+                 COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${analysis_script}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
         set_property(TEST ${name}.analysis APPEND PROPERTY DEPENDS "${name}.run")
@@ -145,7 +149,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
     endif()
     if(plot_script)
         add_test(NAME ${name}.plot
-                 COMMAND ${THIS_Python_SCRIPT_EXE} ${ImpactX_SOURCE_DIR}/${plot_script} --save-png
+                 COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${plot_script} --save-png
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
         set_property(TEST ${name}.plot APPEND PROPERTY DEPENDS "${name}.run")
@@ -1865,7 +1869,7 @@ add_impactx_test(distgen-spinvmf.py
 # without space charge
 add_impactx_test(quad-spin
     examples/spin_tracking/input_quad_spin.in
-    ON   # ImpactX MPI-parallel
+    OFF  # ImpactX MPI-parallel
     examples/spin_tracking/analysis_quad_spin.py
     OFF  # no plot script yet
 )
@@ -1873,5 +1877,96 @@ add_impactx_test(quad-spin.py
     examples/spin_tracking/run_quad_spin.py
     ON    # ImpactX MPI-parallel
     examples/spin_tracking/analysis_quad_spin.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a Quadrupole (rbc) ###################
+# without space charge
+add_impactx_test(quad-spin-rbc
+    examples/spin_tracking/input_quad_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_quad_spin_rbc.py
+    OFF  # no plot script yet
+)
+add_impactx_test(quad-spin-rbc.py
+    examples/spin_tracking/run_quad_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_quad_spin_rbc.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a Dipole ###################
+# without space charge
+add_impactx_test(sbend-spin-rbc
+    examples/spin_tracking/input_sbend_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sbend_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(sbend-spin.py
+    examples/spin_tracking/run_sbend_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sbend_spin.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a FODO Channel ###################
+# without space charge
+add_impactx_test(fodo-spin
+    examples/spin_tracking/input_fodo_channel_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_fodo_channel_spin.py
+    examples/spin_tracking/plot_fodo_polarization.py
+
+)
+add_impactx_test(fodo-spin.py
+    examples/spin_tracking/run_fodo_channel_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_fodo_channel_spin.py
+    examples/spin_tracking/plot_fodo_polarization.py
+)
+
+# Spin Limiting Cases of a Combined-Function Bend #############
+# without space charge
+add_impactx_test(cfbend-spin
+    examples/spin_tracking/input_cfbend_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(cfbend-spin.py
+    examples/spin_tracking/run_cfbend_spin.py
+    OFF    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin.py
+    OFF  # no plot script yet
+)
+
+# Element Reversibility with Spin ###################
+# without space charge
+add_impactx_test(reversibility-spin
+    examples/spin_tracking/input_reversibility_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_reversibility_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(reversibility-spin.py
+    examples/spin_tracking/run_reversibility_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_reversibility_spin.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a Solenoid ###################
+# without space charge
+add_impactx_test(sol-spin
+    examples/spin_tracking/input_sol_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sol_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(sol-spin.py
+    examples/spin_tracking/run_sol_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sol_spin.py
     OFF  # no plot script yet
 )

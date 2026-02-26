@@ -35,6 +35,13 @@ jobs:
         brew install open-mpi
         brew install pkg-config
         set -e
+    - name: install vir-simd
+      run: |
+        wget https://github.com/mattkretz/vir-simd/archive/refs/tags/v0.4.4.tar.gz
+        tar -xvf v0.4.4.tar.gz
+        rm -rf v0.4.4.tar.gz
+        cmake -S vir-simd-0.4.4 -B vir-simd-build
+        sudo cmake --build vir-simd-build --target install
     - name: install pip dependencies
       run: |
         python3 -m pip install --upgrade pip
@@ -51,10 +58,9 @@ jobs:
       # - for a refresh the key has to change, e.g., hash of a tracked file in the key
       with:
         path: /Users/runner/Library/Caches/ccache
-        key: ccache-macos-appleclang-${{ hashFiles('.github/workflows/macos.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-macos-appleclang-${{ hashFiles('.github/workflows/macos.yml') }}-
-          ccache-macos-appleclang-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
     - name: build ImpactX
       run: |
         export CCACHE_COMPRESS=1
@@ -69,6 +75,7 @@ jobs:
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
           -DImpactX_PYTHON=ON          \
+          -DImpactX_SIMD=ON            \
           -DImpactX_TEST_CLEANUP=ON
         cmake --build build -j 3
 

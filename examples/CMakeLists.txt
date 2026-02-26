@@ -1926,6 +1926,21 @@ add_impactx_test(fodo-spin.py
     examples/spin_tracking/plot_fodo_polarization.py
 )
 
+# Spin Limiting Cases of a Combined-Function Bend #############
+# without space charge
+add_impactx_test(cfbend-spin
+    examples/spin_tracking/input_cfbend_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(cfbend-spin.py
+    examples/spin_tracking/run_cfbend_spin.py
+    OFF    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin.py
+    OFF  # no plot script yet
+)
+
 # Element Reversibility with Spin ###################
 # without space charge
 add_impactx_test(reversibility-spin
@@ -1949,5 +1964,20 @@ add_impactx_test(fourier-coeffs.py
     examples/fourier_coefficients/run_quadrupole_fcoef.py
     ON    # ImpactX MPI-parallel
     examples/fourier_coefficients/analysis_quadrupole_fcoef.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a Solenoid ###################
+# without space charge
+add_impactx_test(sol-spin
+    examples/spin_tracking/input_sol_spin.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sol_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(sol-spin.py
+    examples/spin_tracking/run_sol_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_sol_spin.py
     OFF  # no plot script yet
 )

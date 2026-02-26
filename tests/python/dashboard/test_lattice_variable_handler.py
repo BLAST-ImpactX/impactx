@@ -127,10 +127,13 @@ def test_lattice_variable_handler(dashboard):
     assert_lattice_param_sim_input(dashboard, 0, "ds", 0.500194828041958)
     assert_lattice_param_sim_input(dashboard, 0, "rc", -10.346228368619553)
 
-    variables = dashboard.get_state("variables")
-    assert all(var["name"] != "ns" for var in variables), (
-        "Variable 'ns' was not deleted"
-    )
+    for i in range(TIMEOUT):
+        variables = dashboard.get_state("variables")
+        if variables is not None and all(var["name"] != "ns" for var in variables):
+            break
+        time.sleep(1)
+    else:
+        raise AssertionError("Variable 'ns' was not deleted")
 
     # Wait for nslice parameter to have 'ns' as sim_input (non-numeric after variable deletion)
     assert_lattice_param_sim_input(dashboard, 0, "nslice", "ns")

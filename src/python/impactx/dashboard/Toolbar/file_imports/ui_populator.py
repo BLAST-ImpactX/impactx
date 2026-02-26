@@ -31,13 +31,29 @@ def on_import_file_change(import_file, **kwargs):
 def _apply_distribution_inputs():
     """
     Push any cached distribution parameters into the UI.
+
+    Updates all parameters in a single batch to avoid repeated
+    state.dirty() calls that can disrupt trame state synchronisation.
     """
+    from ...Input.utils import GeneralFunctions
+    from ...Input.validation import DashboardValidation, errors_tracker
 
     imported_params = getattr(state, "imported_distribution_parameters", None)
     if imported_params:
+        updated = False
         for param_name, raw_value in imported_params.items():
-            if param_name in state.selected_distribution_parameters:
-                ctrl.update_distribution_parameter(param_name, raw_value)
+            parameter = state.selected_distribution_parameters.get(param_name)
+            if parameter:
+                numeric_input = GeneralFunctions.convert_to_numeric(raw_value)
+                error_message = DashboardValidation.validate(
+                    param_name, numeric_input, category="distribution"
+                )
+                parameter["value"] = numeric_input
+                parameter["error_message"] = error_message
+                updated = True
+        if updated:
+            errors_tracker.update_simulation_validation_status()
+            state.dirty("selected_distribution_parameters")
         state.imported_distribution_parameters = None
 
 

@@ -1,0 +1,63 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 2.0e3  #2 GeV
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 5.0e-6            # 5 um
+beam.lambdaY = 8.0e-6            # 8 um
+beam.lambdaT = 0.0599584916      # 200 ps
+beam.lambdaPx = 2.5543422003e-9  # exn = 50 pm-rad
+beam.lambdaPy = 1.5964638752e-9  # eyn = 50 pm-rad
+beam.lambdaPt = 9.0e-4           # approximately dE/E
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+beam.polarization_x = 0.4
+beam.polarization_y = 0.9
+beam.polarization_z = 0.1
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor cfbend1 iquad1 cfbend2 isbend1 monitor
+
+lattice.nslice = 1
+
+#quad-like cfbend
+cfbend1.type = cfbend
+cfbend1.ds = 1.5
+cfbend1.rc = 1.0e8   # bending radius [m]
+cfbend1.k = 60.0   # (upright) quadrupole component [m^(-2)]
+
+iquad1.type = quad  #inverse quad
+iquad1.ds = -1.5
+iquad1.k = 60.0
+
+#sbend-like cfbend
+cfbend2.type = cfbend
+cfbend2.ds = 1.5
+cfbend2.rc = 10.0   # bending radius [m]
+cfbend2.k = 1.0e-8   # (upright) quadrupole component [m^(-2)]
+
+isbend1.type = sbend  #inverse sbend
+isbend1.ds = -1.5
+isbend1.rc = 10.0
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.spin = true
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = false

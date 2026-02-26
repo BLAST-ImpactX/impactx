@@ -1,0 +1,46 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 100000
+beam.units = static
+beam.kin_energy = 2000.0
+beam.charge = 25.0e-12
+beam.particle = proton
+beam.distribution = gaussian
+beam.lambdaX = 0.003
+beam.lambdaY = 0.003
+beam.lambdaT = 1.0e-6
+beam.lambdaPx = 0.2
+beam.lambdaPy = 0.2
+beam.lambdaPt = 0.2
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+beam.polarization_x = 0.4
+beam.polarization_y = 0.9
+beam.polarization_z = 0.1
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor sol1 monitor
+lattice.nslice = 1
+
+monitor.type = beam_monitor
+monitor.name = "monitor"
+monitor.backend = h5
+
+sol1.type = solenoid
+sol1.ds = 3.504584663108292
+sol1.ks = 1.0
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.spin = true
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

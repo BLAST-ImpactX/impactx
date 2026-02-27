@@ -369,9 +369,9 @@ namespace impactx::elements
             T_Real const Bz = 0_prt;
 
             // Quantities required to evaluate the full Thomas-BMT precession vector.
-            T_Real const Pnorm = std::sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
+            T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
-            T_Real const Ps = std::sqrt(Pnorm*Pnorm - px*px - py*py);
+            T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
             T_Real const iPs = 1_prt/Ps;
             T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;

@@ -392,6 +392,11 @@ namespace impactx::elements
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
+            // update the spin variables
+            particle_spin(1) = sx;
+            particle_spin(2) = sy;
+            particle_spin(3) = sz;
+
             // The coordinates and momenta are not affected.
 
             zeval += 0_prt;
@@ -547,11 +552,13 @@ namespace impactx::elements
             if (m_int_order == 2) {
                 integrators::symp2_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,*this);
             } else if (m_int_order == 4) {
+                //TODO: update to include spin
                 integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
             } else if (m_int_order == 6) {
+                //TODO: update to include spin
                 integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
             } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,*this);
             }
 
             // assign updated values

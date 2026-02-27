@@ -254,8 +254,9 @@ add_impactx_test(FODO.MPI.py
 )
 
 
-# FODO channel using envelope tracking ########################################
+# FODO channel using envelope tracking ##############################
 #
+# w/o space charge
 add_impactx_test(FODO.envelope
     examples/fodo/input_fodo_envelope.in
     ON   # ImpactX MPI-parallel
@@ -269,7 +270,7 @@ add_impactx_test(FODO.envelope.py
     OFF  # no plot script yet
 )
 
-# FODO Cell using nonlinear tracking ##########################################
+# FODO Cell using nonlinear tracking ################################################
 #
 add_impactx_test(FODO-exact
     examples/fodo/input_fodo_exact.in
@@ -316,7 +317,7 @@ add_impactx_test(FODO.MADX.py
 )
 
 
-# Python: FODO Cell w/ custom linear element ##################################
+# Python: FODO Cell w/ custom linear element  #################################
 #
 add_impactx_test(FODO.userdef
     examples/fodo_userdef/input_fodo_userdef.in
@@ -580,7 +581,7 @@ if(ImpactX_FFT)
     )
 endif()
 
-# Expanding Beam Test Using Envelope Tracking #################################
+# Expanding Beam Test Using Envelope Tracking ##################################
 #
 add_impactx_test(expanding_beam_envelope
     examples/expanding_beam/input_expanding_envelope.in
@@ -627,8 +628,9 @@ add_impactx_test(iotalattice.MPI.py
 )
 
 
-# Kurth Beam in a Periodic Channel Test #######################################
+# Kurth Beam in a Periodic Channel Test ###################################################
 #
+# w/o space charge
 add_impactx_test(kurth_periodic
     examples/kurth/input_kurth_periodic.in
     OFF  # ImpactX MPI-parallel
@@ -642,6 +644,7 @@ add_impactx_test(kurth_periodic.py
     OFF  # no plot script yet
 )
 
+# w/ space charge
 add_impactx_test(kurth_10nC_periodic
     examples/kurth/input_kurth_10nC_periodic.in
     OFF  # ImpactX MPI-parallel
@@ -655,8 +658,9 @@ add_impactx_test(kurth_10nC_periodic.py
     OFF  # no plot script yet
 )
 
-# Kurth Beam in a Periodic Channel with Envelope Tracking #####################
+# Kurth Beam in a Periodic Channel with Envelope Tracking ######################
 #
+# with space charge
 add_impactx_test(kurth_10nC_periodic_envelope
     examples/kurth/input_kurth_10nC_periodic_envelope.in
     OFF  # ImpactX MPI-parallel
@@ -685,7 +689,7 @@ add_impactx_test(rfcavity.MPI.py
     OFF  # no plot script yet
 )
 
-# Acceleration by RF Cavities (Reference Particle) ############################
+# Acceleration by RF Cavities (Reference Particle) ####################################
 #
 add_impactx_test(rfcavity-ref-part
     examples/rfcavity/input_rfcavity_ref_part.in
@@ -702,6 +706,7 @@ add_impactx_test(rfcavity-ref-part.py
 
 # Ideal, Hard-Edge Solenoid ###################################################
 #
+# w/o space charge
 add_impactx_test(solenoid
     examples/solenoid/input_solenoid.in
     OFF  # ImpactX MPI-parallel
@@ -728,6 +733,7 @@ add_impactx_test(solenoid.MADX.py
 
 # Ideal, Hard-Edge Solenoid (Restart + 270 degrees) ###########################
 #
+# w/o space charge
 add_impactx_test(solenoid.restart
     examples/solenoid_restart/input_solenoid.in
     OFF  # ImpactX MPI-parallel
@@ -757,6 +763,7 @@ endif()
 
 # Pole-face rotation ##########################################################
 #
+# w/o space charge
 add_impactx_test(rotation
     examples/rotation/input_rotation.in
     ON   # ImpactX MPI-parallel
@@ -773,6 +780,7 @@ add_impactx_test(rotation.py
 
 # Soft-Edge Solenoid ##########################################################
 #
+# w/o space charge
 add_impactx_test(solenoid_softedge
     examples/solenoid_softedge/input_solenoid_softedge.in
     OFF  # ImpactX MPI-parallel
@@ -789,6 +797,7 @@ add_impactx_test(solenoid_softedge.py
 
 # Soft-Edge Quadrupole ########################################################
 #
+# w/o space charge
 add_impactx_test(quadrupole_softedge
     examples/quadrupole_softedge/input_quadrupole_softedge.in
     OFF  # ImpactX MPI-parallel
@@ -805,6 +814,7 @@ add_impactx_test(quadrupole_softedge.py
 
 # FODO Cell with Chromatic Elements ###########################################
 #
+# w/o space charge
 add_impactx_test(FODO.chromatic
     examples/fodo_chromatic/input_fodo_chr.in
     ON  # ImpactX MPI-parallel
@@ -821,6 +831,7 @@ add_impactx_test(FODO.chromatic.py
 
 # Positron Channel ############################################################
 #
+# w/o space charge
 add_impactx_test(positron_channel
     examples/positron_channel/input_positron.in
     ON  # ImpactX MPI-parallel
@@ -837,6 +848,7 @@ add_impactx_test(positron_channel.py
 
 # Cyclotron ###################################################################
 #
+# w/o space charge
 add_impactx_test(cyclotron
     examples/cyclotron/input_cyclotron.in
     ON  # ImpactX MPI-parallel
@@ -853,6 +865,7 @@ add_impactx_test(cyclotron.py
 
 # Combined-function bend ######################################################
 #
+# w/o space charge
 add_impactx_test(cfbend
     examples/cfbend/input_cfbend.in
     ON  # ImpactX MPI-parallel
@@ -869,6 +882,7 @@ add_impactx_test(cfbend.py
 
 # Ballistic compression #######################################################
 #
+# w/o space charge
 add_impactx_test(compression
     examples/compression/input_compression.in
     ON  # ImpactX MPI-parallel
@@ -885,6 +899,7 @@ add_impactx_test(compression.py
 
 # Kicker test #################################################################
 #
+# w/o space charge
 add_impactx_test(kicker
     examples/kicker/input_kicker.in
     ON   # ImpactX MPI-parallel
@@ -919,6 +934,7 @@ add_impactx_test(hvkicker_madx.py
 
 # FODO + RF EPAC2004 ##########################################################
 #
+# with space charge
 add_impactx_test(FODO.rf.sc
     examples/epac2004_benchmarks/input_fodo_rf_SC.in
     ON  # ImpactX MPI-parallel
@@ -934,6 +950,7 @@ add_impactx_test(FODO.rf.sc.py
 
 # FODO + RF EPAC2004 Using Envelope Tracking ##################################
 #
+# with space charge
 add_impactx_test(FODO.rf.sc.envelope
     examples/epac2004_benchmarks/input_fodo_rf_SC_envelope.in
     ON  # ImpactX MPI-parallel
@@ -949,6 +966,7 @@ add_impactx_test(FODO.rf.sc.envelope.py
 
 # Thermal Beam EPAC2004 #######################################################
 #
+# with space charge
 add_impactx_test(thermal
     examples/epac2004_benchmarks/input_thermal.in
     ON  # ImpactX MPI-parallel
@@ -960,6 +978,7 @@ label_impactx_test(thermal slow)
 
 # Bithermal Beam EPAC2004 #####################################################
 #
+# with space charge
 add_impactx_test(bithermal
     examples/epac2004_benchmarks/input_bithermal.in
     ON  # ImpactX MPI-parallel
@@ -976,6 +995,7 @@ add_impactx_test(bithermal.py
 
 # IOTA s-dependent nonlinear lens test ########################################
 #
+# w/o space charge
 add_impactx_test(IOTA_nll
     examples/iota_lens/input_iotalens_sdep.in
     ON   # ImpactX MPI-parallel
@@ -992,6 +1012,7 @@ add_impactx_test(IOTA_nll.py
 
 # IOTA nonlinear lattice test #################################################
 #
+# w/o space charge
 add_impactx_test(IOTA_lattice
     examples/iota_lattice/input_iotalattice_sdep.in
     ON   # ImpactX MPI-parallel
@@ -1008,6 +1029,7 @@ add_impactx_test(IOTA_lattice.py
 
 # Thin dipole #################################################################
 #
+# w/o space charge
 add_impactx_test(thin_dipole
     examples/thin_dipole/input_thin_dipole.in
     ON  # ImpactX MPI-parallel
@@ -1024,6 +1046,7 @@ add_impactx_test(thin_dipole.py
 
 # Aperture collimation ########################################################
 #
+# w/o space charge
 add_impactx_test(aperture
     examples/aperture/input_aperture.in
     ON  # ImpactX MPI-parallel
@@ -1040,6 +1063,7 @@ add_impactx_test(aperture.py
 
 # Absorber collimation ########################################################
 #
+# w/o space charge
 add_impactx_test(absorber
     examples/aperture/input_absorber.in
     ON  # ImpactX MPI-parallel
@@ -1053,7 +1077,7 @@ add_impactx_test(absorber.py
     OFF  # no plot script yet
 )
 
-# Polygon Aperture ############################################################
+# Polygon Aperture #######################################################################
 #
 add_impactx_test(polygon_aperture
     examples/polygon_aperture/input_polygon_aperture.in
@@ -1092,8 +1116,9 @@ add_impactx_test(polygon_aperture_absorb_rotate_offset.py
     OFF
 )
 
-# Apochromat drift-quad example ###############################################
+# Apochromat drift-quad example ##########################################################
 #
+# w/o space charge
 add_impactx_test(apochromat
     examples/apochromatic/input_apochromatic.in
     ON  # ImpactX MPI-parallel
@@ -1108,8 +1133,9 @@ add_impactx_test(apochromat.py
 )
 
 
-# Apochromat drift-plasma lens example ########################################
+# Apochromat drift-plasma lens example ###################################################
 #
+# w/o space charge
 add_impactx_test(apochromat_pl
     examples/apochromatic/input_apochromatic_pl.in
     ON  # ImpactX MPI-parallel
@@ -1126,6 +1152,7 @@ add_impactx_test(apochromat_pl.py
 
 # Misalignment Quad ###########################################################
 #
+# w/o space charge
 add_impactx_test(alignment
     examples/alignment/input_alignment.in
     ON   # ImpactX MPI-parallel
@@ -1140,8 +1167,9 @@ add_impactx_test(alignment.py
 )
 
 
-# Tune Calculation ############################################################
+# Tune Calculation ###########################################################
 #
+# w/o space charge
 add_impactx_test(FODO.tune
     examples/fodo_tune/input_fodo_tune.in
     ON   # ImpactX MPI-parallel
@@ -1156,8 +1184,9 @@ add_impactx_test(FODO.tune.py
 )
 
 
-# Optimize Triplet ############################################################
+# Optimize Triplet ###########################################################
 #
+# w/o space charge
 add_impactx_test(triplet.py
     examples/optimize_triplet/run_triplet.py
     OFF  # ImpactX MPI-parallel
@@ -1167,8 +1196,9 @@ add_impactx_test(triplet.py
 label_impactx_test(triplet.py slow)
 
 
-# Initialize a Beam from Arrays ###############################################
+# Initialize a Beam from Arrays ##############################################
 #
+# w/o space charge
 add_impactx_test(initialize_from_array.py
     examples/initialize_from_array/run_from_array.py
     OFF  # ImpactX MPI-parallel
@@ -1177,8 +1207,9 @@ add_impactx_test(initialize_from_array.py
 )
 
 
-# Achromatic Spectrometer #####################################################
+# Achromatic Spectrometer ####################################################
 #
+# w/o space charge
 add_impactx_test(spectrometer
     examples/achromatic_spectrometer/input_spectrometer.in
     ON   # ImpactX MPI-parallel
@@ -1193,7 +1224,7 @@ add_impactx_test(spectrometer.py
 )
 
 
-# Chicane with CSR ############################################################
+# Chicane with CSR ###########################################################
 #
 if(ImpactX_FFT)
     add_impactx_test(chicane_csr
@@ -1211,8 +1242,9 @@ if(ImpactX_FFT)
 endif()
 
 
-# Dogleg ######################################################################
+# Dogleg #####################################################################
 #
+# w/o space charge
 add_impactx_test(dogleg
     examples/dogleg/input_dogleg.in
     ON   # ImpactX MPI-parallel
@@ -1227,8 +1259,9 @@ add_impactx_test(dogleg.py
 )
 
 
-# Coupled Optics ##############################################################
+# Coupled Optics #############################################################
 #
+# w/o space charge
 add_impactx_test(coupled-optics
     examples/coupled_optics/input_coupled_optics.in
     ON   # ImpactX MPI-parallel
@@ -1243,8 +1276,9 @@ add_impactx_test(coupled-optics.py
 )
 
 
-# Aperture with Periodic Masking ##############################################
+# Aperture with Periodic Masking #########################################################
 #
+# w/o space charge
 add_impactx_test(aperture-periodic
     examples/aperture/input_aperture_periodic.in
     ON   # ImpactX MPI-parallel
@@ -1259,8 +1293,9 @@ add_impactx_test(aperture-periodic.py
 )
 
 
-# Rotation in the transverse plane ############################################
+# Rotation in the transverse plane #########################################################
 #
+# w/o space charge
 add_impactx_test(rotation-xy
     examples/rotation/input_rotation_xy.in
     ON   # ImpactX MPI-parallel
@@ -1275,8 +1310,9 @@ add_impactx_test(rotation-xy.py
 )
 
 
-# PIP-II linac segment ########################################################
+# PIP-II linac segment #########################################################
 #
+# with space charge
 add_impactx_test(linac-segment
     examples/linac_segment/input_linac_segment.in
     ON   # ImpactX MPI-parallel
@@ -1291,8 +1327,9 @@ add_impactx_test(linac-segment.py
 )
 
 
-# Cyclotron with dynamical losses #############################################
+# Cyclotron with dynamical losses ###############################################
 #
+# with space charge
 add_impactx_test(cyclotron-loss
     examples/cyclotron/input_cyclotron_loss.in
     ON   # ImpactX MPI-parallel
@@ -1307,8 +1344,9 @@ add_impactx_test(cyclotron-loss.py
 )
 
 
-# Drift with transverse aperture ##############################################
+# Drift with transverse aperture ################################################
 #
+# w/o space charge
 add_impactx_test(aperture-thick
     examples/aperture/input_aperture_thick.in
     ON   # ImpactX MPI-parallel
@@ -1323,8 +1361,9 @@ add_impactx_test(aperture-thick.py
 )
 
 
-# Iteration of a linear one-turn map ##########################################
+# Iteration of a linear one-turn map #########################################
 #
+# w/o space charge
 add_impactx_test(linear-map
     examples/linear_map/input_map.in
     ON   # ImpactX MPI-parallel
@@ -1339,7 +1378,7 @@ add_impactx_test(linear-map.py
 )
 
 
-# PyTorch Surrogate: Staged LPA ###############################################
+# PyTorch Surrogate: Staged LPA ##############################################
 #
 add_impactx_test(pytorch_surrogate_model
     examples/pytorch_surrogate_model/run_ml_surrogate_15_stage.py
@@ -1350,8 +1389,9 @@ add_impactx_test(pytorch_surrogate_model
 label_impactx_test(pytorch_surrogate_model slow)
 
 
-# IOTA s-dependent nonlinear lens with aperture ###############################
+# IOTA s-dependent nonlinear lens with aperture ##############################
 #
+# w/o space charge
 add_impactx_test(IOTA_nll_aperture
     examples/iota_lens/input_iotalens_sdep_aperture.in
     ON   # ImpactX MPI-parallel
@@ -1366,7 +1406,7 @@ add_impactx_test(IOTA_nll_aperture.py
 )
 
 
-# IOTA linear lattice using envelope tracking #################################
+# IOTA linear lattice using envelope tracking ############################
 #
 add_impactx_test(iotalattice.envelope
     examples/iota_lattice/input_iotalattice_envelope.in
@@ -1382,8 +1422,9 @@ add_impactx_test(iotalattice.envelope.py
 )
 
 
-# Expanding beam scraping against a vacuum pipe ###############################
+# Expanding beam scraping against a vacuum pipe ##############################
 #
+# w/o space charge
 add_impactx_test(scraping
     examples/scraping_beam/input_scraping.in
     ON   # ImpactX MPI-parallel
@@ -1399,6 +1440,7 @@ add_impactx_test(scraping.py
 
 # FODO cell with 2D space charge using envelope tracking ######################
 #
+# with space charge
 add_impactx_test(FODO.envelope.sc
     examples/fodo_space_charge/input_fodo_envelope_sc.in
     ON   # ImpactX MPI-parallel
@@ -1427,7 +1469,7 @@ add_impactx_test(FODO.Gauss3d.sc.py
     OFF  # no plot script yet
 )
 
-# FODO cell with Gaussian 2.5D space charge using particle tracking ###########
+# FODO cell with Gaussian 2.5D space charge using particle tracking #############
 #
 add_impactx_test(FODO.Gauss2p5d.sc
     examples/fodo_space_charge/input_fodo_Gauss2p5D_sc.in
@@ -1442,8 +1484,9 @@ add_impactx_test(FODO.Gauss2p5d.sc.py
     OFF  # no plot script yet
 )
 
-# A single bend with incoherent synchrotron radiation #########################
+# A single bend with incoherent synchrotron radiation ######################
 #
+# no space charge
 add_impactx_test(bend-isr
     examples/incoherent_synchrotron/input_bend_isr.in
     ON   # ImpactX MPI-parallel
@@ -1457,8 +1500,8 @@ add_impactx_test(bend-isr.py
     OFF  # no plot script yet
 )
 
-# A single bend with incoherent synchrotron radiation & reference energy loss #
-#
+# A single bend with incoherent synchrotron radiation & reference energy loss #################
+# no space charge
 add_impactx_test(bend-isr-ref
     examples/incoherent_synchrotron/input_bend_isr_ref.in
     ON   # ImpactX MPI-parallel
@@ -1472,8 +1515,9 @@ add_impactx_test(bend-isr-ref.py
     OFF  # no plot script yet
 )
 
-# Bending Dipole with Zero Field Strength #####################################
+# Bending Dipole with Zero Field Strength ######################
 #
+# no space charge
 add_impactx_test(zero-bend-inverse
     examples/reversibility/input_zero_bend_inverse.in
     ON   # ImpactX MPI-parallel
@@ -1487,8 +1531,9 @@ add_impactx_test(zero-bend-inverse.py
     OFF  # no plot script yet
 )
 
-# Testing Charge and Field Sign Consistency ###################################
+# Testing Charge and Field Sign Consistency ######################
 #
+# no space charge
 add_impactx_test(charge-sign
     examples/charge_sign/input_charge_sign.in
     ON   # ImpactX MPI-parallel
@@ -1502,7 +1547,7 @@ add_impactx_test(charge-sign.py
     OFF  # no plot script yet
 )
 
-# Chicane with ISR ############################################################
+# Chicane with ISR ###########################################################
 #
 add_impactx_test(chicane_isr
     examples/chicane/input_chicane_isr.in
@@ -1517,8 +1562,9 @@ add_impactx_test(chicane_isr.py
     OFF  # no plot script yet
 )
 
-# Symplectic Integration in an Exact Nonlinear Quadrupole #####################
+# Symplectic Integration in an Exact Nonlinear Quadrupole ##############
 #
+# no space charge
 add_impactx_test(exact-quad
     examples/symplectic_integration/input_exact_quad.in
     ON   # ImpactX MPI-parallel
@@ -1532,8 +1578,9 @@ add_impactx_test(exact-quad.py
     OFF  # no plot script yet
 )
 
-# FODO Channel with Quads Treated as Exact Multipoles #########################
+# FODO Channel with Quads Treated as Exact Multipoles ##############
 #
+# no space charge
 add_impactx_test(fodo-multipole
     examples/symplectic_integration/input_fodo_multipole.in
     ON   # ImpactX MPI-parallel
@@ -1547,8 +1594,9 @@ add_impactx_test(fodo_multipole.py
     OFF  # no plot script yet
 )
 
-# Symplectic Integration in a Long Sextupole ##################################
+# Symplectic Integration in a Long Sextupole ##############
 #
+# no space charge
 file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/initial_coords.csv
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/long-sextupole.py)
 file(COPY ${ImpactX_SOURCE_DIR}/examples/symplectic_integration/final_coords.csv
@@ -1560,8 +1608,9 @@ add_impactx_test(long-sextupole.py
     OFF  # no plot script yet
 )
 
-# Dogleg in Reverse ###########################################################
+# Dogleg in Reverse  ##############
 #
+# no space charge
 add_impactx_test(dogleg-reverse
     examples/dogleg/input_dogleg_reverse.in
     ON   # ImpactX MPI-parallel
@@ -1575,8 +1624,9 @@ add_impactx_test(dogleg-reverse.py
     OFF  # no plot script yet
 )
 
-# Dogleg with Energy Jitter ###################################################
+# Dogleg with Energy Jitter ##############
 #
+# no space charge
 add_impactx_test(dogleg-jitter
     examples/dogleg/input_dogleg_jitter.in
     ON   # ImpactX MPI-parallel
@@ -1590,8 +1640,9 @@ add_impactx_test(dogleg-jitter.py
     OFF  # no plot script yet
 )
 
-# HTU Beamline Model ##########################################################
+# HTU Beamline Model ##############
 #
+# no space charge
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/htu-beamline.py)
 add_impactx_test(htu-beamline.py
@@ -1601,7 +1652,7 @@ add_impactx_test(htu-beamline.py
     OFF  # no plot script yet
 )
 
-# HTU Beamline Model with Off-Energy Transport ################################
+# HTU Beamline Model with Off-Energy Transport ##############
 #
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/htu-beamline-offenergy1.py)
@@ -1620,8 +1671,9 @@ add_impactx_test(htu-beamline-offenergy2.py
     OFF  # no plot script yet
 )
 
-# Symplectic Integration in an Exact Combined-Function Bend ###################
+# Symplectic Integration in an Exact Combined-Function Bend ##############
 #
+# no space charge
 add_impactx_test(exact-cfbend
     examples/symplectic_integration/input_exact_cfbend.in
     ON   # ImpactX MPI-parallel
@@ -1635,8 +1687,9 @@ add_impactx_test(exact-cfbend.py
     OFF  # no plot script yet
 )
 
-# Symplectic Integration in an Exact Combined-Function Bend (Multipole test) ##
+# Symplectic Integration in an Exact Combined-Function Bend (Multipole test) ##############
 #
+# no space charge
 add_impactx_test(exact-cfbend-multipole
     examples/symplectic_integration/input_exact_cfbend_multipole.in
     ON   # ImpactX MPI-parallel
@@ -1650,7 +1703,7 @@ add_impactx_test(exact-cfbend_multipole.py
     OFF  # no plot script yet
 )
 
-# FODO Cell Based on PALS-Compliant Lattice Input #############################
+# FODO Cell Based on PALS-Compliant Lattice Input ##############
 #
 # copy PALS lattice file
 file(COPY ${ImpactX_SOURCE_DIR}/examples/pals/fodo.pals.yaml
@@ -1662,7 +1715,7 @@ add_impactx_test(fodo-pals.py
     OFF  # no plot script yet
 )
 
-# Active Plasma Lens tests ####################################################
+# Active Plasma Lens tests ####################################
 #
 # ChrPlasmaLens/tracking, k = 0 (acting like a drift)
 add_impactx_test(APL_ChrPlasmaLens_tracking_zero.py
@@ -1730,7 +1783,7 @@ add_impactx_test(APL_ConstF_envelope_defocusing.py
   examples/active_plasma_lens/plot_APL_defocusing.py
 )
 
-# Exactly-solvable (non-uniform) soft-edge solenoid ###########################
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
 #
 # copy PALS lattice file
 add_impactx_test(solenoid-softedge-solvable.py
@@ -1740,8 +1793,9 @@ add_impactx_test(solenoid-softedge-solvable.py
     OFF  # no plot script yet
 )
 
-# Expanding unbunched beam in free space with 2D space charge #################
+# Expanding unbunched beam in free space with 2D space charge ######################
 #
+# with space charge
 add_impactx_test(expanding-fft-2d
     examples/expanding_beam/input_expanding_fft_2D.in
     ON   # ImpactX MPI-parallel
@@ -1757,6 +1811,7 @@ add_impactx_test(expanding-fft-2d.py
 
 # FODO cell with 2D space charge using particle tracking ######################
 #
+# with space charge
 add_impactx_test(fodo-2d-sc
     examples/fodo_space_charge/input_fodo_2d_sc.in
     ON   # ImpactX MPI-parallel
@@ -1770,7 +1825,7 @@ add_impactx_test(fodo-2d-sc.py
     OFF  # no plot script yet
 )
 
-# Exactly-solvable (non-uniform) soft-edge solenoid ###########################
+# Exactly-solvable (non-uniform) soft-edge solenoid ##############
 #
 file(COPY ${ImpactX_SOURCE_DIR}/examples/edge_effects/initial_coords.csv
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dipedge-nonlinear.py)
@@ -1781,7 +1836,7 @@ add_impactx_test(dipedge-nonlinear.py
     OFF  # no plot script yet
 )
 
-# FODO cell with 2.5D space charge using particle tracking ####################
+# FODO cell with 2.5D space charge using particle tracking #############
 #
 add_impactx_test(FODO.2p5d.sc
     examples/fodo_space_charge/input_fodo_2p5D_sc.in
@@ -1796,7 +1851,7 @@ add_impactx_test(FODO.2p5d.sc.py
     OFF  # no plot script yet
 )
 
-# FODO cell with 2.5D space charge (matched KV beam) ##########################
+# FODO cell with 2.5D space charge (matched KV beam) #############
 #
 add_impactx_test(FODO.2p5d-KV.sc
     examples/fodo_space_charge/input_fodo_2p5D_KV_sc.in
@@ -1811,8 +1866,8 @@ add_impactx_test(FODO.2p5d-KV.sc.py
     OFF  # no plot script yet
 )
 
-# Spin Sampling from a vMF Distribution #######################################
-#
+# Spin Sampling from a vMF Distribution ######################
+# without space charge
 add_impactx_test(distgen-spinvmf
     examples/distgen/input_kurth4d_spin.in
     ON   # ImpactX MPI-parallel
@@ -1826,8 +1881,8 @@ add_impactx_test(distgen-spinvmf.py
     OFF  # no plot script yet
 )
 
-# Spin Depolarization in a Quadrupole #########################################
-#
+# Spin Depolarization in a Quadrupole ######################
+# without space charge
 add_impactx_test(quad-spin
     examples/spin_tracking/input_quad_spin.in
     OFF  # ImpactX MPI-parallel
@@ -1841,8 +1896,8 @@ add_impactx_test(quad-spin.py
     OFF  # no plot script yet
 )
 
-# Spin Depolarization in a Quadrupole (rbc) ###################################
-#
+# Spin Depolarization in a Quadrupole (rbc) ###################
+# without space charge
 add_impactx_test(quad-spin-rbc
     examples/spin_tracking/input_quad_spin.in
     ON   # ImpactX MPI-parallel
@@ -1856,8 +1911,8 @@ add_impactx_test(quad-spin-rbc.py
     OFF  # no plot script yet
 )
 
-# Spin Depolarization in a Dipole #############################################
-#
+# Spin Depolarization in a Dipole ###################
+# without space charge
 add_impactx_test(sbend-spin-rbc
     examples/spin_tracking/input_sbend_spin.in
     ON   # ImpactX MPI-parallel
@@ -1871,8 +1926,8 @@ add_impactx_test(sbend-spin.py
     OFF  # no plot script yet
 )
 
-# Spin Depolarization in a FODO Channel #######################################
-#
+# Spin Depolarization in a FODO Channel ###################
+# without space charge
 add_impactx_test(fodo-spin
     examples/spin_tracking/input_fodo_channel_spin.in
     ON   # ImpactX MPI-parallel
@@ -1887,8 +1942,8 @@ add_impactx_test(fodo-spin.py
     examples/spin_tracking/plot_fodo_polarization.py
 )
 
-# Spin Limiting Cases of a Combined-Function Bend #############################
-#
+# Spin Limiting Cases of a Combined-Function Bend #############
+# without space charge
 add_impactx_test(cfbend-spin
     examples/spin_tracking/input_cfbend_spin.in
     ON   # ImpactX MPI-parallel
@@ -1902,8 +1957,8 @@ add_impactx_test(cfbend-spin.py
     OFF  # no plot script yet
 )
 
-# Element Reversibility with Spin #############################################
-#
+# Element Reversibility with Spin ###################
+# without space charge
 add_impactx_test(reversibility-spin
     examples/spin_tracking/input_reversibility_spin.in
     ON   # ImpactX MPI-parallel
@@ -1917,8 +1972,8 @@ add_impactx_test(reversibility-spin.py
     OFF  # no plot script yet
 )
 
-# Spin Depolarization in a Solenoid ###########################################
-#
+# Spin Depolarization in a Solenoid ###################
+# without space charge
 add_impactx_test(sol-spin
     examples/spin_tracking/input_sol_spin.in
     ON   # ImpactX MPI-parallel

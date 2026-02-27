@@ -787,9 +787,17 @@ This module provides elements and methods for the accelerator lattice.
       :return: True if at least one element of the specified kind exists
       :rtype: bool
 
-   .. py::method:: transfer_map(ref, order="linear", fallback_identity_map=False)
+   .. py:method:: transfer_map(ref, order="linear", fallback_identity_map=False)
 
       Calculate the transfer map of the elements in the list.
+
+      .. dropdown:: Example
+         :color: light
+         :icon: info
+         :animate: fade-in-slide-down
+
+         .. literalinclude:: tests/python/test_lattice_optics.py
+            :language: bash
 
       :param ref: A reference particle.
       :param order: So far, only the calculation of linear transfer maps is supported.

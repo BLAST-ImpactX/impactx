@@ -27,11 +27,15 @@ __license__ = impactx_pybind.__license__
 __author__ = impactx_pybind.__author__
 
 from .distribution_input_helpers import twiss  # noqa
+from .fourier import calculate_coefficients  # noqa
 from .extensions.KnownElementsList import (
     register_KnownElementsList_extension,
 )
 from .extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
+)
+from .extensions.SoftQuadrupole import (
+    register_SoftQuadrupole_extension,
 )
 
 # at this place we can enhance Python classes with additional methods written
@@ -45,3 +49,6 @@ RefPart.load_file = read_beam  # noqa
 
 # Pure Python extensions to ImpactX types
 register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContainer)
+
+# SoftQuadrupole: alternative constructor from raw field data
+register_SoftQuadrupole_extension(impactx_pybind.elements.SoftQuadrupole)

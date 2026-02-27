@@ -6,9 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-from fcoef import calculate_coefficients, read_data, write_data
+from fcoef import read_data, write_data
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, calculate_coefficients, distribution, elements
 
 sim = ImpactX()
 
@@ -53,20 +53,19 @@ ns = 1  # number of slices per ds in the element
 # read in the on-axis quadrupole gradient data
 z, field_or_gradient = read_data("onaxis_data.in")
 
-# compute the Fourier coefficients from on-axis quadrupole gradient data
+# optional: compute and write coefficients to file (to visually compare)
 ncoef = 25
 cos_coeffs, sin_coeffs = calculate_coefficients(z, field_or_gradient, ncoef)
-
-# optional: write to file (to visually compare)
 write_data(cos_coeffs, sin_coeffs, z, "onaxis_data.out")
 
-# lattice
+# lattice: construct SoftQuadrupole directly from on-axis field data
 quad1 = elements.SoftQuadrupole(
     name="quad1",
     ds=0.2495,
     gscale=1.0,
-    cos_coefficients=cos_coeffs,
-    sin_coefficients=sin_coeffs,
+    z=z,
+    field_or_gradient=field_or_gradient,
+    ncoef=ncoef,
     mapsteps=400,
     nslice=ns,
 )

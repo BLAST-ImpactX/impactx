@@ -614,6 +614,10 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
+For computing Fourier coefficients from on-axis field data (used by :py:class:`~impactx.elements.SoftQuadrupole`):
+
+.. autofunction:: impactx.calculate_coefficients
+
 .. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
 
    A 6D Gaussian distribution, optionally with truncation.
@@ -1544,9 +1548,14 @@ This module provides elements and methods for the accelerator lattice.
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge quadrupole.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field/gradient data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.calculate_coefficients`.
 
    :param ds: Segment length in m.
    :param gscale: Scaling factor for on-axis field gradient in inverse meters
@@ -1554,6 +1563,9 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
+   :param z: array of longitudinal positions in m (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field or gradient values (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

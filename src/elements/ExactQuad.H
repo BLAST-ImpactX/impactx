@@ -357,7 +357,7 @@ namespace impactx::elements
             T_Real const px = particle(2);
             T_Real const y = particle(3);
             T_Real const py = particle(4);
-            T_Real const t = particle(5);
+            //T_Real const t = particle(5);
             T_Real const pt = particle(6);
             T_Real sx = particle_spin(1);
             T_Real sy = particle_spin(2);

@@ -124,10 +124,10 @@ namespace impactx::elements::mixin
             T_Real const & AMREX_RESTRICT gyro_anomaly,
             T_Real const & AMREX_RESTRICT Bx,
             T_Real const & AMREX_RESTRICT By,
-            T_Real const & AMREX_RESTRICT Bz, 
+            T_Real const & AMREX_RESTRICT Bz,
             [[maybe_unused]] T_Real const & AMREX_RESTRICT Ex,
             [[maybe_unused]] T_Real const & AMREX_RESTRICT Ey,
-            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ez,        
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ez,
             T_Real & AMREX_RESTRICT Omegax,
             T_Real & AMREX_RESTRICT Omegay,
             T_Real & AMREX_RESTRICT Omegaz
@@ -135,7 +135,7 @@ namespace impactx::elements::mixin
         {
             using namespace amrex::literals;  // for _prt
             using namespace std; // for cmath(float)
-         
+
             // Evaluation of the full Thomas-BMT precession vector.
             // TODO:  This is a draft in preparation form only.  For example, the contribution of Ex,Ey,Ez is
             // not yet included.

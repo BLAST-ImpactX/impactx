@@ -88,6 +88,66 @@ namespace impactx::elements::mixin
             sy = syout;
             sz = szout;
         }
+
+        /** Evaluate the Thomas-BMT precession vector in a given field,
+         *  based on the instantaneous particle orbit variables.  The model
+         *  below is evaluated in a Frenet-Serret coordinate system,
+         *  assuming a reference trajectory of curvature h, with (possible)
+         *  bending in the x-z plane.
+         *
+         * @param[in] x horizontal coordinate (in local coordinate system)
+         * @param[in] ux velocity unit direction x-component
+         * @param[in] uy velocity unit direction y-component
+         * @param[in] uz velocity unit direction z-component
+         * @param[in] gamma relativistic gamma
+         * @param[in] h design orbit curvature [1/m]
+         * @param[in] gyro_anomaly gyromagnetic anomaly
+         * @param[in] Bx magnetic field x-component [1/m, dynamic units]
+         * @param[in] By magnetic field y-component [1/m, dynamic units]
+         * @param[in] Bz magnetic field z-component [1/m, dynamic units]
+         * @param[in] Ex electric field x-component [1/m, dynamic units]
+         * @param[in] Ey electric field y-component [1/m, dynamic units]
+         * @param[in] Ez electric field z-component [1/m, dynamic units]
+         * @param[inout] Omegax precession vector x-component
+         * @param[inout] Omegay precession vector y-component
+         * @param[inout] Omegaz precession vector z-component
+         */
+        template<typename T_Real=amrex::ParticleReal>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void tbmt_precession_vector (
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT ux,
+            T_Real const & AMREX_RESTRICT uy,
+            T_Real const & AMREX_RESTRICT uz,
+            T_Real const & AMREX_RESTRICT gamma,
+            T_Real const & AMREX_RESTRICT h,
+            T_Real const & AMREX_RESTRICT gyro_anomaly,
+            T_Real const & AMREX_RESTRICT Bx,
+            T_Real const & AMREX_RESTRICT By,
+            T_Real const & AMREX_RESTRICT Bz, 
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ex,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ey,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ez,        
+            T_Real & AMREX_RESTRICT Omegax,
+            T_Real & AMREX_RESTRICT Omegay,
+            T_Real & AMREX_RESTRICT Omegaz
+        ) const
+        {
+            using namespace amrex::literals;  // for _prt
+            using namespace std; // for cmath(float)
+         
+            // Evaluation of the full Thomas-BMT precession vector.
+            // TODO:  This is a draft in preparation form only.  For example, the contribution of Ex,Ey,Ez is
+            // not yet included.
+            T_Real const beta_gamma_z = uz * sqrt(gamma*gamma - 1_prt);
+            T_Real const leading_factor = (1_prt + h * x) / beta_gamma_z;
+            T_Real const udotB = ux*Bx + uy*By + uz*Bz;
+            Omegax = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bx - gyro_anomaly*(gamma-1_prt)*udotB*ux);
+            Omegay = -leading_factor * ((1_prt + gyro_anomaly*gamma)*By - gyro_anomaly*(gamma-1_prt)*udotB*uy) + h;
+            Omegaz = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bz - gyro_anomaly*(gamma-1_prt)*udotB*uz);
+
+        }
+
     };
 
 } // namespace impactx::elements::mixin

@@ -8,7 +8,7 @@
 import argparse
 
 import matplotlib.pyplot as plt
-from fcoef import read_data
+import numpy as np
 from matplotlib.ticker import MaxNLocator
 
 # options to run this script
@@ -20,13 +20,13 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-data = read_data("onaxis_data.in")
-z = data[:, 0]
-g_onaxis = data[:, 1]
-data = read_data("onaxis_data.out")
-g_onaxis_reconstructed = data[:, 1]
-gp_onaxis_reconstructed = data[:, 2]
-gpp_onaxis_reconstructed = data[:, 3]
+data_in = np.loadtxt("onaxis_data.in")
+z = data_in[:, 0]
+g_onaxis = data_in[:, 1]
+data_out = np.loadtxt("onaxis_data.out")
+g_onaxis_reconstructed = data_out[:, 1]
+gp_onaxis_reconstructed = data_out[:, 2]
+gpp_onaxis_reconstructed = data_out[:, 3]
 diff_onaxis = g_onaxis - g_onaxis_reconstructed
 
 # print beam transverse size over steps

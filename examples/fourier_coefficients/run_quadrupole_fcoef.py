@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from fcoef import calculate_coefficients, read_data
+from fcoef import calculate_coefficients, read_data, write_data
 
 from impactx import ImpactX, distribution, elements
 
@@ -57,6 +57,10 @@ z, field_or_gradient = read_data("onaxis_data.in")
 ncoef = 25
 cos_coeffs, sin_coeffs = calculate_coefficients(z, field_or_gradient, ncoef)
 
+# optional: write to file (to visually compare)
+write_data(cos_coeffs, sin_coeffs, z, "onaxis_data.out")
+
+# lattice
 quad1 = elements.SoftQuadrupole(
     name="quad1",
     ds=0.2495,

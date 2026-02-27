@@ -591,45 +591,45 @@ class ImpactX:
     def verbose(self, arg1: typing.SupportsInt) -> None: ...
 
 class ImpactXParConstIter(
-    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_default
+    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_polymorphic
 ):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
 
-class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_default):
+class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_polymorphic):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
 
 class ImpactXParticleContainer(
-    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default
+    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter

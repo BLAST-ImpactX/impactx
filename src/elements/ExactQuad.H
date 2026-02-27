@@ -388,7 +388,7 @@ namespace impactx::elements
             lambdax = tau * Omegax;
             lambday = tau * Omegay;
             lambdaz = tau * Omegaz;
-            
+
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 

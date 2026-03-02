@@ -672,12 +672,17 @@ add_impactx_test(kurth_10nC_periodic_envelope.py
 
 # Acceleration by RF Cavities #################################################
 #
+# copy on-axis RF cavity field data
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity.MPI)
 add_impactx_test(rfcavity.MPI
     examples/rfcavity/input_rfcavity.in
     ON   # ImpactX MPI-parallel
     examples/rfcavity/analysis_rfcavity.py
     OFF  # no plot script yet
 )
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity.MPI.py)
 add_impactx_test(rfcavity.MPI.py
     examples/rfcavity/run_rfcavity.py
     ON   # ImpactX MPI-parallel
@@ -687,12 +692,16 @@ add_impactx_test(rfcavity.MPI.py
 
 # Acceleration by RF Cavities (Reference Particle) ############################
 #
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part)
 add_impactx_test(rfcavity-ref-part
     examples/rfcavity/input_rfcavity_ref_part.in
     OFF   # ImpactX MPI-parallel
     examples/rfcavity/analysis_rfcavity_ref_part.py
     OFF  # no plot script yet
 )
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part.py)
 add_impactx_test(rfcavity-ref-part.py
     examples/rfcavity/run_rfcavity_ref_part.py
     OFF   # ImpactX MPI-parallel

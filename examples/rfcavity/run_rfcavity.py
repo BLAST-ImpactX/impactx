@@ -6,8 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements
 import numpy as np
+
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 

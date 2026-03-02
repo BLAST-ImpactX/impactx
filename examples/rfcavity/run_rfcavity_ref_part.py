@@ -6,8 +6,9 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, elements
 import numpy as np
+
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 
@@ -34,7 +35,7 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_
 data_in = np.loadtxt("onaxis_data.in")
 z = data_in[:, 0]
 ez_onaxis = data_in[:, 1]
-ncoef = 25  
+ncoef = 25
 
 #   Drift elements
 dr1 = elements.Drift(name="dr1", ds=0.4, nslice=1)

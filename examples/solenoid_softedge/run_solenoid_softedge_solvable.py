@@ -6,9 +6,10 @@
 #
 # -*- coding: utf-8 -*-
 
+import numpy as np
+
 import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
-import numpy as np
 
 sim = ImpactX()
 
@@ -76,20 +77,20 @@ if amr.ParallelDescriptor.IOProcessor():
 
 # specify the on-axis field profile
 zmin = -1.0  # lower value of on-axis longitudinal coordinate (in meters)
-zmax = 1.0   # upper value of on-axis longitudinal coordinate (in meters)
-nz = 401     # number of longitudinal sampling points to be used
-g = 0.1      # gap parameter (in meters)
-zdata = np.linspace(zmin,zmax,nz)
-bdata = 1.0/(1.0 + (zdata / g)**2) 
+zmax = 1.0  # upper value of on-axis longitudinal coordinate (in meters)
+nz = 401  # number of longitudinal sampling points to be used
+g = 0.1  # gap parameter (in meters)
+zdata = np.linspace(zmin, zmax, nz)
+bdata = 1.0 / (1.0 + (zdata / g) ** 2)
 
 # design the accelerator lattice
 sol = elements.SoftSolenoid(
     name="sol1",
     ds=2.0,
     bscale=-1.0,
-    z = zdata,
-    field_or_gradient = bdata,
-    ncoef = 35,
+    z=zdata,
+    field_or_gradient=bdata,
+    ncoef=35,
     mapsteps=200,
     nslice=1,
 )

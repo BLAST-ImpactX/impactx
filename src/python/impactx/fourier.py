@@ -19,12 +19,14 @@ def fourier_coefficients(z, field_or_gradient, ncoef):
     Parameters
     ----------
     z : numpy.ndarray
-        Longitudinal positions in meters, shape (N,).
+        Longitudinal positions in meters, shape (N,), covering the
+        element from entry (``min(z)``) to exit (``max(z)``).
+        The range is scaled to the element length ``ds``.
     field_or_gradient : numpy.ndarray
-        On-axis field or field gradient values in arbitrary units,
-        shape (N,).  Typically scaled so that the peak absolute value
-        is 1; physical units are set later via element parameters such
-        as ``bscale`` or ``escale``.
+        On-axis field or field gradient values, shape (N,),
+        typically normalized to a peak absolute value of 1.
+        These values are multiplied by the element's scaling
+        parameter (``gscale``, ``bscale``, or ``escale``).
     ncoef : int
         Number of Fourier coefficients to compute.
 

@@ -614,7 +614,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-For computing Fourier coefficients from on-axis field data (used by :py:class:`~impactx.elements.SoftQuadrupole`):
+For computing Fourier coefficients from on-axis field data (used by :py:class:`~impactx.elements.RFCavity`, :py:class:`~impactx.elements.SoftQuadrupole`, and :py:class:`~impactx.elements.SoftSolenoid`):
 
 .. autofunction:: impactx.fourier_coefficients
 
@@ -1376,8 +1376,8 @@ This module provides elements and methods for the accelerator lattice.
    :param phase: RF driven phase in degrees
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
-   :param z: array of longitudinal positions in m (alternative to Fourier coefficients)
-   :param field_or_gradient: array of on-axis field values (alternative to Fourier coefficients)
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -1462,8 +1462,8 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
-   :param z: array of longitudinal positions in m (alternative to Fourier coefficients)
-   :param field_or_gradient: array of on-axis field values (alternative to Fourier coefficients)
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``bscale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param unit: specification of units for scaling of the on-axis longitudinal magnetic field
    :param dx: horizontal translation error in m
@@ -1578,8 +1578,8 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
-   :param z: array of longitudinal positions in m (alternative to Fourier coefficients)
-   :param field_or_gradient: array of on-axis field or gradient values (alternative to Fourier coefficients)
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field gradient values, typically normalized to a peak absolute value of 1; multiplied by ``gscale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

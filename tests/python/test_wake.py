@@ -47,9 +47,9 @@ def test_wake(save_png=True):
         bin_max = t_max
         bin_size = (bin_max - bin_min) / (num_bins - 1)
 
-        # Create charge_distribution and slopes as PODVector_real_std
-        charge_distribution = amr.PODVector_real_arena(num_bins + 1)
-        slopes = amr.PODVector_real_arena(num_bins)
+        # Create charge_distribution and slopes as device-compatible PODVectors
+        charge_distribution = amr.PODVector_real_default(num_bins + 1)
+        slopes = amr.PODVector_real_default(num_bins)
 
         # Call deposit_charge with the correct type
         wakeconvolution.deposit_charge(
@@ -96,8 +96,8 @@ def test_wake(save_png=True):
         else:
             plt.show()
 
-        # Create wake_function as PODVector_real_std with size 2 * len(slopes)
-        wake_function = amr.PODVector_real_arena(2 * len(slopes))
+        # Create wake_function as device-compatible PODVector with size 2 * len(slopes)
+        wake_function = amr.PODVector_real_default(2 * len(slopes))
         wake_function_xp = wake_function.to_xp()
         wake_s_values = np.linspace(bin_min, bin_max, 2 * len(slopes))
         for i in range(len(wake_function)):

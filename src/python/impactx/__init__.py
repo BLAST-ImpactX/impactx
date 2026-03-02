@@ -27,7 +27,7 @@ __license__ = impactx_pybind.__license__
 __author__ = impactx_pybind.__author__
 
 from .distribution_input_helpers import twiss  # noqa
-from .fourier import calculate_coefficients  # noqa
+from .fourier import fourier_coefficients  # noqa
 from .extensions.KnownElementsList import (
     register_KnownElementsList_extension,
 )

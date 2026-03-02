@@ -8,7 +8,7 @@
 
 from fcoef import read_data, write_data
 
-from impactx import ImpactX, calculate_coefficients, distribution, elements
+from impactx import ImpactX, distribution, elements, fourier_coefficients
 
 sim = ImpactX()
 
@@ -55,7 +55,7 @@ z, field_or_gradient = read_data("onaxis_data.in")
 
 # optional: compute and write coefficients to file (to visually compare)
 ncoef = 25
-cos_coeffs, sin_coeffs = calculate_coefficients(z, field_or_gradient, ncoef)
+cos_coeffs, sin_coeffs = fourier_coefficients(z, field_or_gradient, ncoef)
 write_data(cos_coeffs, sin_coeffs, z, "onaxis_data.out")
 
 # lattice: construct SoftQuadrupole directly from on-axis field data

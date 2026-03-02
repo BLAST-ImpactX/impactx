@@ -616,7 +616,7 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 For computing Fourier coefficients from on-axis field data (used by :py:class:`~impactx.elements.SoftQuadrupole`):
 
-.. autofunction:: impactx.calculate_coefficients
+.. autofunction:: impactx.fourier_coefficients
 
 .. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
 
@@ -1555,7 +1555,7 @@ This module provides elements and methods for the accelerator lattice.
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
    **or** raw on-axis field/gradient data (``z``, ``field_or_gradient``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
-   using :func:`impactx.calculate_coefficients`.
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param gscale: Scaling factor for on-axis field gradient in inverse meters

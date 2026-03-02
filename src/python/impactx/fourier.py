@@ -9,7 +9,7 @@ License: BSD-3-Clause-LBNL
 import numpy as np
 
 
-def calculate_coefficients(z, field_or_gradient, ncoef):
+def fourier_coefficients(z, field_or_gradient, ncoef):
     """Calculate Fourier coefficients of on-axis field data.
 
     Uses the trapezoidal rule with linear interpolation to compute

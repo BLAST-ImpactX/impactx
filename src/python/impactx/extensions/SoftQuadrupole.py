@@ -55,9 +55,9 @@ def register_SoftQuadrupole_extension(cls):
                     "SoftQuadrupole: when using field data, all three parameters "
                     "'z', 'field_or_gradient', and 'ncoef' must be provided."
                 )
-            from ..fourier import calculate_coefficients
+            from ..fourier import fourier_coefficients
 
-            cos_coefficients, sin_coefficients = calculate_coefficients(
+            cos_coefficients, sin_coefficients = fourier_coefficients(
                 z, field_or_gradient, ncoef
             )
 

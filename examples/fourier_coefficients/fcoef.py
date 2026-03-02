@@ -55,11 +55,11 @@ def write_data(cos_coeffs, sin_coeffs, z, filename):
 
 
 def main():
-    from impactx import calculate_coefficients
+    from impactx import fourier_coefficients
 
     z, field_or_gradient = read_data("onaxis_data.in")
     ncoef = int(input("How many Fourier coefficients do you want? "))
-    cos_coeffs, sin_coeffs = calculate_coefficients(z, field_or_gradient, ncoef)
+    cos_coeffs, sin_coeffs = fourier_coefficients(z, field_or_gradient, ncoef)
     write_coefficients(cos_coeffs, sin_coeffs, "fcoef.out")
     write_data(cos_coeffs, sin_coeffs, z, "onaxis_datax")
 

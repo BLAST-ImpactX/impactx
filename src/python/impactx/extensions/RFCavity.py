@@ -7,15 +7,14 @@ License: BSD-3-Clause-LBNL
 """
 
 
-def register_SoftQuadrupole_extension(cls):
-    """Extend SoftQuadrupole with an alternative constructor that accepts
-    raw on-axis field/gradient data and computes Fourier coefficients
-    internally.
+def register_RFCavity_extension(cls):
+    """Extend RFCavity with an alternative constructor that accepts
+    raw on-axis field data and computes Fourier coefficients internally.
 
     Parameters
     ----------
     cls : type
-        The pybind11 ``SoftQuadrupole`` class to extend.
+        The pybind11 ``RFCavity`` class to extend.
     """
     _original_init = cls.__init__
 
@@ -23,7 +22,9 @@ def register_SoftQuadrupole_extension(cls):
         self,
         *,
         ds,
-        gscale,
+        escale,
+        freq,
+        phase,
         cos_coefficients=None,
         sin_coefficients=None,
         z=None,
@@ -45,14 +46,14 @@ def register_SoftQuadrupole_extension(cls):
 
         if has_coefficients and has_field_data:
             raise ValueError(
-                "SoftQuadrupole: provide either (cos_coefficients, sin_coefficients) "
+                "RFCavity: provide either (cos_coefficients, sin_coefficients) "
                 "or (z, field_or_gradient, ncoef), not both."
             )
 
         if has_field_data:
             if z is None or field_or_gradient is None or ncoef is None:
                 raise ValueError(
-                    "SoftQuadrupole: when using field data, all three parameters "
+                    "RFCavity: when using field data, all three parameters "
                     "'z', 'field_or_gradient', and 'ncoef' must be provided."
                 )
             from ..fourier import fourier_coefficients
@@ -63,7 +64,9 @@ def register_SoftQuadrupole_extension(cls):
 
         kwargs = dict(
             ds=ds,
-            gscale=gscale,
+            escale=escale,
+            freq=freq,
+            phase=phase,
             dx=dx,
             dy=dy,
             rotation=rotation,

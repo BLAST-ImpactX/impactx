@@ -34,8 +34,14 @@ from .extensions.KnownElementsList import (
 from .extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
+from .extensions.RFCavity import (
+    register_RFCavity_extension,
+)
 from .extensions.SoftQuadrupole import (
     register_SoftQuadrupole_extension,
+)
+from .extensions.SoftSolenoid import (
+    register_SoftSolenoid_extension,
 )
 
 # at this place we can enhance Python classes with additional methods written
@@ -50,5 +56,7 @@ RefPart.load_file = read_beam  # noqa
 # Pure Python extensions to ImpactX types
 register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContainer)
 
-# SoftQuadrupole: alternative constructor from raw field data
+# Alternative constructors from raw field data
+register_RFCavity_extension(impactx_pybind.elements.RFCavity)
 register_SoftQuadrupole_extension(impactx_pybind.elements.SoftQuadrupole)
+register_SoftSolenoid_extension(impactx_pybind.elements.SoftSolenoid)

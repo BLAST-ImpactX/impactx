@@ -7,15 +7,14 @@ License: BSD-3-Clause-LBNL
 """
 
 
-def register_SoftQuadrupole_extension(cls):
-    """Extend SoftQuadrupole with an alternative constructor that accepts
-    raw on-axis field/gradient data and computes Fourier coefficients
-    internally.
+def register_SoftSolenoid_extension(cls):
+    """Extend SoftSolenoid with an alternative constructor that accepts
+    raw on-axis field data and computes Fourier coefficients internally.
 
     Parameters
     ----------
     cls : type
-        The pybind11 ``SoftQuadrupole`` class to extend.
+        The pybind11 ``SoftSolenoid`` class to extend.
     """
     _original_init = cls.__init__
 
@@ -23,12 +22,13 @@ def register_SoftQuadrupole_extension(cls):
         self,
         *,
         ds,
-        gscale,
+        bscale,
         cos_coefficients=None,
         sin_coefficients=None,
         z=None,
         field_or_gradient=None,
         ncoef=None,
+        unit=0,
         dx=0,
         dy=0,
         rotation=0,
@@ -45,14 +45,14 @@ def register_SoftQuadrupole_extension(cls):
 
         if has_coefficients and has_field_data:
             raise ValueError(
-                "SoftQuadrupole: provide either (cos_coefficients, sin_coefficients) "
+                "SoftSolenoid: provide either (cos_coefficients, sin_coefficients) "
                 "or (z, field_or_gradient, ncoef), not both."
             )
 
         if has_field_data:
             if z is None or field_or_gradient is None or ncoef is None:
                 raise ValueError(
-                    "SoftQuadrupole: when using field data, all three parameters "
+                    "SoftSolenoid: when using field data, all three parameters "
                     "'z', 'field_or_gradient', and 'ncoef' must be provided."
                 )
             from ..fourier import fourier_coefficients
@@ -63,7 +63,8 @@ def register_SoftQuadrupole_extension(cls):
 
         kwargs = dict(
             ds=ds,
-            gscale=gscale,
+            bscale=bscale,
+            unit=unit,
             dx=dx,
             dy=dy,
             rotation=rotation,

@@ -81,7 +81,6 @@ nz = 401     # number of longitudinal sampling points to be used
 g = 0.1      # gap parameter (in meters)
 zdata = np.linspace(zmin,zmax,nz)
 bdata = 1.0/(1.0 + (zdata / g)**2) 
-print(*bdata, sep='\n')
 
 # design the accelerator lattice
 sol = elements.SoftSolenoid(

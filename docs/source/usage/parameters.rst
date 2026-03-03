@@ -864,7 +864,7 @@ Spin maps are specified in the Lie-algebraic form:
 
 .. math::
 
-   \vec{s}_f = M(\zeta)\vec{s}_i where M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}.
+   \vec{s}_f = M(\zeta)\vec{s}_i,\quad\quad M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}.
 
 Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit coupling for particles not on the design orbit.
 Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase space variables as deviations from the design orbit. The quantities :math:`L_x`, :math:`L_y`, and :math:`L_z` are standard 3x3 matrices that define a basis for the Lie algebra :math:`so(3)`.
@@ -872,7 +872,7 @@ Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase spac
 The vector components :math:`v(i)` and the matrix elements :math:`A(i,j)` are indexed beginning with 1, so that :math:`i=1,2,3` and :math:`j=1,2,3,4,5,6`.
 The vector :math:`v` and the matrix :math:`A` are defaulted to zero, so only entries that differ from zero need to be specified.
 
-The matrix :math:`A` multiplies the phase space vector :math:`(x,px,y,py,t,pt)`, where coordinates :math:`(x,y,t)` have units of m
+The matrix :math:`A` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`, where coordinates :math:`(x,y,t)` have units of m
 and momenta :math:`(px,py,pt)` are dimensionless.  The three components output are dimensionless.  So, for example, :math:`A(1,1)` has units of 1/m, and :math:`A(1,2)` is dimensionless.
 All three components of :math:`v` are dimensionless.
 

@@ -27,6 +27,7 @@ The signal is represented in the form:
 where :math:`z_{\mathrm{mid}} = (z_{\min} + z_{\max})/2` is the longitudinal location of the midpoint, and :math:`L = z_{\max} - z_{\min}` is the total length of the z-domain.
 
 The benchmark test uses these coefficients to define and track through a soft-edge quadrupole element.
+Note that in practice, the ImpactX :ref:`soft-edge elements <theory-softedge-elements>` also support specifying the on-axis z data as arguments directly as arguments, performing he Fourier coefficient calculation automatically.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 

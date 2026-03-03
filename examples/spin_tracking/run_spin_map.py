@@ -7,9 +7,8 @@
 # -*- coding: utf-8 -*-
 
 # from elements import LinearTransport
-import numpy as np
 
-from impactx import ImpactX, distribution, elements, twiss
+from impactx import ImpactX, Map3x6, Vector3, distribution, elements, twiss
 
 sim = ImpactX()
 
@@ -64,9 +63,11 @@ sim.add_particles(bunch_charge_C, distr, npart, spin)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # initialize the spin map generators
-vmat = [1.0, 0.0, 0.0]
+vmat = Vector3()
+vmat[1] = 1.0
 
-Amat = np.zeros((3, 6))
+# initialize the linear map
+Amat = Map3x6()
 Amat[1, 1] = 0.642252653176584
 Amat[1, 2] = 0.114973951021402
 Amat[2, 1] = -5.109953378728999

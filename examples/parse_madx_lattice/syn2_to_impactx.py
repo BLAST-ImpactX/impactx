@@ -24,7 +24,7 @@ ET = synergia.lattice.element_type
 
 # nslice_by_elem_type = {
 #     "drift": 1,
-#     "sbend": 4,
+#     "sbend": 6,
 #     "quadrupole": 8,
 #     "sextupole": 1,
 #     "octupole": 1,
@@ -169,7 +169,8 @@ def cnv_sbend(elem, order):
                 ds=length,
                 k_normal=knormal,
                 k_skew=kskew,
-                int_order=2,
+                int_order=6,
+                mapsteps=6,
                 nslice=ns,
                 name=nm,
             )

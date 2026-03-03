@@ -110,7 +110,7 @@ def cnv_sbend(elem, order):
             2 * hgap,
             K2=fint,
             location="entry",
-            #model=de_model,
+            # model=de_model,
             # use linear model dipedge
             model="linear",
             name=nm + "_usedge",
@@ -123,7 +123,7 @@ def cnv_sbend(elem, order):
             2 * hgap,
             K2=fint,
             location="exit",
-            #model=de_model,
+            # model=de_model,
             # use linear model dipedge
             model="linear",
             name=nm + "_dsedge",

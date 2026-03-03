@@ -2411,22 +2411,28 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        escale: typing.SupportsFloat,
-        freq: typing.SupportsFloat,
-        phase: typing.SupportsFloat,
-        cos_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        sin_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        mapsteps: typing.SupportsInt = 1,
-        nslice: typing.SupportsInt = 1,
-        name: str | None = None,
-    ) -> None:
+        *,
+        ds,
+        escale,
+        freq,
+        phase,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_or_gradient=None,
+        ncoef=None,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
         """
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat, escale: typing.SupportsFloat, freq: typing.SupportsFloat, phase: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+
         An RF cavity.
         """
     def __repr__(self) -> str: ...
@@ -2623,20 +2629,26 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
 class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        gscale: typing.SupportsFloat,
-        cos_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        sin_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        mapsteps: typing.SupportsInt = 1,
-        nslice: typing.SupportsInt = 1,
-        name: str | None = None,
-    ) -> None:
+        *,
+        ds,
+        gscale,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_or_gradient=None,
+        ncoef=None,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
         """
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat, gscale: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+
         A soft-edge quadrupole.
         """
     def __repr__(self) -> str: ...
@@ -2692,21 +2704,27 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
 class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        bscale: typing.SupportsFloat,
-        cos_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        sin_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        unit: typing.SupportsFloat = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        mapsteps: typing.SupportsInt = 1,
-        nslice: typing.SupportsInt = 1,
-        name: str | None = None,
-    ) -> None:
+        *,
+        ds,
+        bscale,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_or_gradient=None,
+        ncoef=None,
+        unit=0,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
         """
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat, bscale: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], unit: typing.SupportsFloat = 0, dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+
         A soft-edge solenoid.
         """
     def __repr__(self) -> str: ...

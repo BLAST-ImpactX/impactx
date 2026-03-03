@@ -23,6 +23,10 @@ from impactx.extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
 from impactx.extensions.KnownElementsList import register_KnownElementsList_extension
+from impactx.extensions.RFCavity import register_RFCavity_extension
+from impactx.extensions.SoftQuadrupole import register_SoftQuadrupole_extension
+from impactx.extensions.SoftSolenoid import register_SoftSolenoid_extension
+from impactx.fourier import fourier_coefficients
 from impactx.impactx_pybind import (
     Config,
     CoordSystem,
@@ -50,6 +54,7 @@ from . import (
     MADXParser,
     distribution_input_helpers,
     extensions,
+    fourier,
     impactx_pybind,
     madx_to_impactx,
     plot,
@@ -78,6 +83,8 @@ __all__: list[str] = [
     "elements",
     "extensions",
     "flatten_charge_to_2D",
+    "fourier",
+    "fourier_coefficients",
     "impactx_pybind",
     "madx_to_impactx",
     "os",
@@ -86,6 +93,9 @@ __all__: list[str] = [
     "read_beam",
     "register_ImpactXParticleContainer_extension",
     "register_KnownElementsList_extension",
+    "register_RFCavity_extension",
+    "register_SoftQuadrupole_extension",
+    "register_SoftSolenoid_extension",
     "s",
     "t",
     "twiss",

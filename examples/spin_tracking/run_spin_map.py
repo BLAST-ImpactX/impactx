@@ -82,9 +82,7 @@ AmatB1[2, 6] = 0.096052815713841
 AmatB1[3, 4] = -0.765638392807848
 Map2 = elements.SpinMap(v=vmatB1, A=AmatB1)
 
-# line = [monitor, Map1, Q1, Map2, B1, monitor]
-# line = [monitor, Map1, Q1, monitor]
-line = [monitor, Map2, B1, monitor]
+line = [monitor, Map1, Q1, Map2, B1, monitor]
 
 sim.lattice.extend(line)
 

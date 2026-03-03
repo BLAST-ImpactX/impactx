@@ -15,14 +15,13 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.space_charge = False
 sim.spin = True
-sim.slice_step_diagnostics = True
+sim.slice_step_diagnostics = False
 
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# load a 2 GeV electron beam with an initial
-# unnormalized rms emittance of 2 nm
-kin_energy_MeV = 45.6e3  # reference energy
+# set beam reference values
+kin_energy_MeV = 10.0e3  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
 gyromagnetic_anomaly = 0.00115965218062  # value for an electron
 npart = 10000  # number of macro particles
@@ -33,22 +32,17 @@ ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(
     kin_energy_MeV
 ).set_gyromagnetic_anomaly(gyromagnetic_anomaly)
 
-#   target beta functions (m)
-beta_star_x = 0.15
-beta_star_y = 0.8e-3
-beta_star_t = 9.210526315789473
-
 #   particle bunch
-distr = distribution.Waterbag(
+distr = distribution.Gaussian(
     **twiss(
-        beta_x=beta_star_x,
-        beta_y=beta_star_y,
-        beta_t=beta_star_t,
-        emitt_x=0.27e-09,
-        emitt_y=1.0e-12,
-        emitt_t=1.33e-06,
-        alpha_x=0.0,
-        alpha_y=0.0,
+        beta_x=2.8216194100262637,
+        beta_y=2.8216194100262637,
+        beta_t=0.5,
+        emitt_x=2e-04,
+        emitt_y=2e-04,
+        emitt_t=2e-12,
+        alpha_x=-1.5905003499999992,
+        alpha_y=1.5905003499999992,
         alpha_t=0.0,
     )
 )
@@ -62,26 +56,37 @@ sim.add_particles(bunch_charge_C, distr, npart, spin)
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
-# initialize the spin map generators
-vmat = Vector3()
-vmat[1] = 1.0
-
-# initialize the linear map
-Amat = Map3x6()
-Amat[1, 1] = 0.642252653176584
-Amat[1, 2] = 0.114973951021402
-Amat[2, 1] = -5.109953378728999
-Amat[2, 2] = 0.642252653176584
-Amat[3, 1] = 0.5
-Amat[3, 6] = -0.2
-
 # design the accelerator lattice
-map = [
-    monitor,
-    elements.SpinMap(v=vmat, A=Amat),
-]
 
-sim.lattice.extend(map)
+# Elements for forward tracking
+Q1 = elements.Quad(name = "Q1", ds = 1.0, k = 1.0)
+B1 = elements.Sbend(name = "B1", ds = 1.0, rc = 10.0)
+
+# Inverse spin map for Quad1
+vmatQ1 = Vector3()
+AmatQ1 = Map3x6()
+AmatQ1[1, 3] = 27.846376647658047
+AmatQ1[1, 4] = 12.868288416407257
+AmatQ1[2, 1] = 19.9386437894808211
+AmatQ1[2, 2] = 10.8925307463018033
+Map1 = elements.SpinMap(v=vmatQ1, A=AmatQ1)
+
+# Inverse spin map for Bend1
+vmatB1 = Vector3()
+AmatB1 = Map3x6()
+vmatB1[2] = 2.269498669527234
+AmatB1[1, 4] = 1.643140677773437
+AmatB1[2, 1] = 0.236555147919017
+AmatB1[2, 2] = 0.118376237268958
+AmatB1[2, 6] = 0.096052815713841
+AmatB1[3, 4] = -0.765638392807848
+Map2 = elements.SpinMap(v=vmatB1, A=AmatB1)
+
+#line = [monitor, Map1, Q1, Map2, B1, monitor]
+#line = [monitor, Map1, Q1, monitor]
+line = [monitor, Map2, B1, monitor]
+    
+sim.lattice.extend(line)
 
 # number of periods through the lattice
 sim.periods = 1

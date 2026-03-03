@@ -856,7 +856,7 @@ Currently, this only supports openPMD files from our ``beam_monitor``.
 
 
 ``spin_map``
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
 ``spin_map`` for a custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.
 

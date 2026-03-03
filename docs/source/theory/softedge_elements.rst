@@ -29,6 +29,7 @@ An example illustrating the construction of the Fourier coefficients from on-axi
 The internal representation of the field is scaled based on the user-specified inputs.  In particular, the longitudinal coordinate is scaled to coincide with the element length.  Likewise, the field strength is scaled based on input parameters (called ``escale``, ``bscale``, or ``gscale`` for the three element types above).
 
 Examples demonstrating the use of soft-edge elements include:
+
 * :ref:`Acceleration by RF Cavities <examples-rfcavity>`
 * :ref:`Soft-edge solenoid <examples-solenoid-softedge>`
 * :ref:`Soft-Edge Quadrupole <examples-quadrupole-softedge>`

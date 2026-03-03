@@ -5,7 +5,6 @@
 # License: BSD-3-Clause-LBNL
 #
 
-import math
 
 import numpy as np
 import openpmd_api as io
@@ -25,7 +24,7 @@ sxf = final["spin_x"]
 syf = final["spin_y"]
 szf = final["spin_z"]
 
-dspin2 = (sxf - sxi)**2 + (syf - syi)**2 + (szf - szi)**2
+dspin2 = (sxf - sxi) ** 2 + (syf - syi) ** 2 + (szf - szi) ** 2
 dspin = np.sqrt(dspin2)
 dspinmax = dspin.max()
 

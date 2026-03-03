@@ -59,8 +59,8 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice
 
 # Elements for forward tracking
-Q1 = elements.Quad(name = "Q1", ds = 1.0, k = 1.0)
-B1 = elements.Sbend(name = "B1", ds = 1.0, rc = 10.0)
+Q1 = elements.Quad(name="Q1", ds=1.0, k=1.0)
+B1 = elements.Sbend(name="B1", ds=1.0, rc=10.0)
 
 # Inverse spin map for Quad1
 vmatQ1 = Vector3()
@@ -82,10 +82,10 @@ AmatB1[2, 6] = 0.096052815713841
 AmatB1[3, 4] = -0.765638392807848
 Map2 = elements.SpinMap(v=vmatB1, A=AmatB1)
 
-#line = [monitor, Map1, Q1, Map2, B1, monitor]
-#line = [monitor, Map1, Q1, monitor]
+# line = [monitor, Map1, Q1, Map2, B1, monitor]
+# line = [monitor, Map1, Q1, monitor]
 line = [monitor, Map2, B1, monitor]
-    
+
 sim.lattice.extend(line)
 
 # number of periods through the lattice

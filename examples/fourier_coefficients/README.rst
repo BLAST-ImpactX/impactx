@@ -10,6 +10,12 @@ Given data in the file ``onaxis_data.in``, execution of the Python script ``pyth
 - ``fcoef.out``: a file containing a list of cosine and sine Fourier coefficients that can be used in ImpactX to define a soft-edge element
 - ``onaxis_data.out``: a file containing the reconstructed on-axis signal, together with its first and second derivatives
 
+.. dropdown:: Script ``fcoef.py``
+
+   .. literalinclude:: fcoef.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fourier_coefficients/fcoef.py``.
+
 The signal is represented in the form:
 
 .. math::

@@ -614,6 +614,10 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
+For computing Fourier coefficients from on-axis field data (used by :py:class:`~impactx.elements.RFCavity`, :py:class:`~impactx.elements.SoftQuadrupole`, and :py:class:`~impactx.elements.SoftSolenoid`):
+
+.. autofunction:: impactx.fourier_coefficients
+
 .. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
 
    A 6D Gaussian distribution, optionally with truncation.
@@ -1364,9 +1368,14 @@ This module provides elements and methods for the accelerator lattice.
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A radiofrequency cavity.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param escale: scaling factor for on-axis RF electric field in 1/m
@@ -1374,8 +1383,10 @@ This module provides elements and methods for the accelerator lattice.
    :param freq: RF frequency in Hz
    :param phase: RF driven phase in degrees
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
-
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -1442,9 +1453,14 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, cos_coefficients, sin_coefficients, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge solenoid.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param bscale: Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0)
@@ -1454,6 +1470,9 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``bscale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param unit: specification of units for scaling of the on-axis longitudinal magnetic field
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -1552,9 +1571,14 @@ This module provides elements and methods for the accelerator lattice.
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge quadrupole.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field/gradient data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param gscale: Scaling factor for on-axis field gradient in inverse meters
@@ -1562,6 +1586,9 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field gradient values, typically normalized to a peak absolute value of 1; multiplied by ``gscale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

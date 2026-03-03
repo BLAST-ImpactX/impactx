@@ -25,6 +25,7 @@ Single Particle Dynamics
    examples/solenoid/README.rst
    examples/solenoid_softedge/README.rst
    examples/quadrupole_softedge/README.rst
+   examples/fourier_coefficients/README.rst
    examples/cfbend/README.rst
    examples/compression/README.rst
    examples/kicker/README.rst

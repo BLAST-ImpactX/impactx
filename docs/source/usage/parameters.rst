@@ -866,7 +866,7 @@ Spin maps are specified in the Lie-algebraic form:
 
    \vec{s}_f = M(\zeta)\vec{s}_i where M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}.
 
-Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit coupling for particles not on the design orbit. 
+Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit coupling for particles not on the design orbit.
 Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase space variables as deviations from the design orbit. The quantities :math:`L_x`, :math:`L_y`, and :math:`L_z` are standard 3x3 matrices that define a basis for the Lie algebra :math:`so(3)`.
 
 The vector components :math:`v(i)` and the matrix elements :math:`A(i,j)` are indexed beginning with 1, so that :math:`i=1,2,3` and :math:`j=1,2,3,4,5,6`.

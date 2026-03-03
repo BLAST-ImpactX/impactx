@@ -1572,7 +1572,7 @@ This module provides elements and methods for the accelerator lattice.
    :param name: an optional name for the element
 
 .. py:class:: impactx.elements.SpinMap(v=0, A=0, dx=0, dy=0, rotation=0, name=None)
-   
+
    A custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:
 
    .. math::

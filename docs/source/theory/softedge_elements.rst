@@ -1,7 +1,7 @@
 .. _theory-softedge-elements:
 
 Models of Soft-Edge Elements
-=============================
+============================
 
 Similarly to other beam dynamics codes, most beamline elements are modeled by using an ideal, hard-edge approximation for the potentials and fields.  In particular, this model assumes that the fields are independent of the longitudinal path-length coordinate :math:`s`.
 However, ImpactX also supports several additional soft-edge element models.  The models include:

@@ -1401,7 +1401,7 @@ void init_elements(py::module& m)
                 std::optional<std::string> name
              )
              {
-                 if (unit != "dimensionless" && unit != "T-m") 
+                 if (unit != "dimensionless" && unit != "T-m")
                      throw std::runtime_error(R"(unit must be "dimensionless" or "T-m")");
 
                  Kicker::UnitSystem const u = unit == "dimensionless" ?

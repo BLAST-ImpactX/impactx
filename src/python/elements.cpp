@@ -2646,7 +2646,8 @@ void init_elements(py::module& m)
 
                     // extract element transport map, handle fallback
                     Map6x6 element_transport_map = Map6x6::Identity();
-                    std::visit([&ref, &fallback_identity_map, &element_transport_map](auto const & el) {
+                    int element_nslice;
+                    std::visit([&ref, &fallback_identity_map, &element_transport_map, &element_nslice](auto const & el) {
                         using Element = std::decay_t<decltype(el)>;
                         std::string not_impl_msg = "Undefined transfer map in lattice for element ";
                         if (el.has_name()) not_impl_msg += el.name() + " ";
@@ -2655,6 +2656,7 @@ void init_elements(py::module& m)
                         if constexpr (std::is_base_of_v<elements::mixin::LinearTransport<Element>, Element>) {
                             try {
                                 element_transport_map = el.transport_map(ref);
+                                element_nslice = el.nslice();
                             } catch (std::exception const &) {
                                 if (!fallback_identity_map) {
                                     throw std::runtime_error(not_impl_msg);
@@ -2668,7 +2670,9 @@ void init_elements(py::module& m)
                     }, el_v);
 
                     // advance linear transfer map
-                    linear_transfer_map = element_transport_map * linear_transfer_map;
+                    for (int n = 0; n < element_nslice; n++) {
+                        linear_transfer_map = element_transport_map * linear_transfer_map;
+                    }
                 }
                 return linear_transfer_map;
             },

@@ -24,10 +24,10 @@ def test_lattice_linear_map():
     lattice = elements.KnownElementsList()
     lattice.extend(
         [
-            elements.Sbend(name="bend1", ds=1.0, rc=10.0),
-            elements.Drift(name="drift1", ds=2.0),
-            elements.Quad(name="quad1", ds=0.5, k=1.0),
-            elements.Drift(name="drift2", ds=1.0),
+            elements.Sbend(name="bend1", ds=1.0, rc=10.0, nslice=2),
+            elements.Drift(name="drift1", ds=2.0, nslice=2),
+            elements.Quad(name="quad1", ds=0.5, k=1.0, nslice=2),
+            elements.Drift(name="drift2", ds=1.0, nslice=2),
         ]
     )
 

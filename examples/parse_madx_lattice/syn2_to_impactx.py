@@ -324,8 +324,9 @@ def cnv_quadrupole(elem, order):
             ds, k1, nslice=nslice_by_elem_type["quadruple"], name=nm
         )
     elif order == Order.exact:
-        ix_elem = impactx.elements.ChrQuad(
-            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm
+        ix_elem = impactx.elements.ExactQuad(
+            ds, k1, nslice=nslice_by_elem_type["quadrupole"],
+            mapsteps=6, int_order=6, name=nm
         )
     else:
         raise RuntimeError(f"error, unknown order: {order}")

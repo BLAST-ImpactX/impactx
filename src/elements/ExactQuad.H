@@ -357,37 +357,41 @@ namespace impactx::elements
             T_Real const px = particle(2);
             T_Real const y = particle(3);
             T_Real const py = particle(4);
-            //T_Real const t = particle(5);
+            //T_Real const t = particle(5); // not used
             T_Real const pt = particle(6);
             T_Real sx = particle_spin(1);
             T_Real sy = particle_spin(2);
             T_Real sz = particle_spin(3);
 
-            // Magnetic field of the quadrupole normalized by rigidity Brho:
-            T_Real const Bx = m_g * y;
-            T_Real const By = m_g * x;
+            // Magnetic field normalized by q/mc:
+            T_Real const Bx = m_g * y * m_beta * m_gamma_ref;
+            T_Real const By = m_g * x * m_beta * m_gamma_ref;
             T_Real const Bz = 0_prt;
+
+            // Electric field normalized by q/mc^2:
+            T_Real const Ex = 0.0;
+            T_Real const Ey = 0.0;
+            T_Real const Ez = 0.0;
 
             // Quantities required to evaluate the full Thomas-BMT precession vector.
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const iPs = 1_prt/Ps;
             T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
 
-            // Evaluation of the full Thomas-BMT precession vector.  Is it better to move this into the spin mixin class?
-            T_Real const udotB = ux*Bx + uy*By + uz*Bz;
-            T_Real const Omegax = -((1_prt + m_gyro_anomaly*gamma)*Bx - m_gyro_anomaly*(gamma-1_prt)*udotB*ux) * iPs;
-            T_Real const Omegay = -((1_prt + m_gyro_anomaly*gamma)*By - m_gyro_anomaly*(gamma-1_prt)*udotB*uy) * iPs;
-            T_Real const Omegaz = -((1_prt + m_gyro_anomaly*gamma)*Bz - m_gyro_anomaly*(gamma-1_prt)*udotB*uz) * iPs;
+            // Zero curvature in a quadrupole
+            T_Real const h = 0.0;
+
+            // Evaluation of the full Thomas-BMT precession vector.
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
 
             // Generator of the spin rotation for a single step
-            lambdax = tau * Omegax;
-            lambday = tau * Omegay;
-            lambdaz = tau * Omegaz;
+            lambdax *= tau;
+            lambday *= tau;
+            lambdaz *= tau;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);

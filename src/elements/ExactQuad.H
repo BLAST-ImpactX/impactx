@@ -383,7 +383,7 @@ namespace impactx::elements
             T_Real const uz = Ps * iPnorm;
 
             // Zero curvature in a quadrupole
-            T_Real const h = 0.0;
+            amrex::ParticleReal const h = 0.0;
 
             // Evaluation of the full Thomas-BMT precession vector.
             tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);

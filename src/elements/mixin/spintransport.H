@@ -93,7 +93,9 @@ namespace impactx::elements::mixin
          *  based on the instantaneous particle orbit variables.  The model
          *  below is evaluated in a Frenet-Serret coordinate system,
          *  assuming a reference trajectory of curvature h, with (possible)
-         *  bending in the x-z plane.
+         *  bending in the x-z plane.  The field components Bx,By,Bz and
+         *  are normalized by q/mc (units of 1/m), and the field components
+         *  Ex,Ey,Ez are normalized by q/mc^2 (units of 1/m).
          *
          * @param[in] x horizontal coordinate (in local coordinate system)
          * @param[in] ux velocity unit direction x-component
@@ -112,8 +114,7 @@ namespace impactx::elements::mixin
          * @param[inout] Omegay precession vector y-component
          * @param[inout] Omegaz precession vector z-component
          */
-        //template<typename T_Real=amrex::ParticleReal>
-        template<typename T_Real>
+        template<typename T_Real=amrex::ParticleReal>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void tbmt_precession_vector (
             T_Real const & AMREX_RESTRICT x,
@@ -138,8 +139,7 @@ namespace impactx::elements::mixin
             using namespace std; // for cmath(float)
 
             // Evaluation of the full Thomas-BMT precession vector.
-            // TODO:  This is a draft in preparation form only.  For example, the contribution of Ex,Ey,Ez is
-            // not yet included.
+            // TODO: The contributions of Ex,Ey,Ez are not yet included.
             T_Real const beta_gamma_z = uz * sqrt(gamma*gamma - 1_prt);
             T_Real const leading_factor = (1_prt + h * x) / beta_gamma_z;
             T_Real const udotB = ux*Bx + uy*By + uz*Bz;

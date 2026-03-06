@@ -331,7 +331,6 @@ namespace impactx::integrators
         }
     }
 
-
    /** A second-order symplectic integration step based on a Hamiltonian
     *  splitting H = H_1 + H_2, with spin included.  The effect of spin
     *  is included by adding a third term in the splitting of the vector field,
@@ -372,7 +371,6 @@ namespace impactx::integrators
         element.map1(tau1,particle,zeval);
     }
 
-
    /** A fourth-order symplectic integration step based on a Hamiltonian
     *  splitting H = H_1 + H_2, with spin included.  The effect of spin
     *  is included by adding a third term in the splitting of the vector field,
@@ -412,7 +410,6 @@ namespace impactx::integrators
         symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
         symp2_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,element);
         symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
-
     }
 
 
@@ -455,7 +452,6 @@ namespace impactx::integrators
         symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
         symp4_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,element);
         symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
-
     }
 
 

@@ -331,7 +331,7 @@ namespace impactx::integrators
         }
     }
 
-     
+
    /** A second-order symplectic integration step based on a Hamiltonian
     *  splitting H = H_1 + H_2, with spin included.  The effect of spin
     *  is included by adding a third term in the splitting of the vector field,

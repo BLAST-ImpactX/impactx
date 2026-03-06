@@ -112,7 +112,8 @@ namespace impactx::elements::mixin
          * @param[inout] Omegay precession vector y-component
          * @param[inout] Omegaz precession vector z-component
          */
-        template<typename T_Real=amrex::ParticleReal>
+        //template<typename T_Real=amrex::ParticleReal>
+        template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void tbmt_precession_vector (
             T_Real const & AMREX_RESTRICT x,

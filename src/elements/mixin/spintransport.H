@@ -127,9 +127,9 @@ namespace impactx::elements::mixin
             T_Real const & AMREX_RESTRICT Bx,
             T_Real const & AMREX_RESTRICT By,
             T_Real const & AMREX_RESTRICT Bz,
-            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ex,
-            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ey,
-            [[maybe_unused]] T_Real const & AMREX_RESTRICT Ez,
+            T_Real const & AMREX_RESTRICT Ex,
+            T_Real const & AMREX_RESTRICT Ey,
+            T_Real const & AMREX_RESTRICT Ez,
             T_Real & AMREX_RESTRICT Omegax,
             T_Real & AMREX_RESTRICT Omegay,
             T_Real & AMREX_RESTRICT Omegaz
@@ -138,14 +138,17 @@ namespace impactx::elements::mixin
             using namespace amrex::literals;  // for _prt
             using namespace std; // for cmath(float)
 
-            // Evaluation of the full Thomas-BMT precession vector.
-            // TODO: The contributions of Ex,Ey,Ez are not yet included.
-            T_Real const beta_gamma_z = uz * sqrt(gamma*gamma - 1_prt);
+            // Evaluation of the full Thomas-BMT precession vector in the Frenet-Serret frame.
+            T_Real const beta_gamma = sqrt(gamma*gamma - 1_prt);
+            T_Real const beta_gamma_z = uz * beta_gamma;
             T_Real const leading_factor = (1_prt + h * x) / beta_gamma_z;
             T_Real const udotB = ux*Bx + uy*By + uz*Bz;
-            Omegax = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bx - gyro_anomaly*(gamma-1_prt)*udotB*ux);
-            Omegay = -leading_factor * ((1_prt + gyro_anomaly*gamma)*By - gyro_anomaly*(gamma-1_prt)*udotB*uy) + h;
-            Omegaz = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bz - gyro_anomaly*(gamma-1_prt)*udotB*uz);
+            T_Real const ucrossE_x = uy*Ez - uz*Ey;
+            T_Real const ucrossE_y = uz*Ex - ux*Ez;
+            T_Real const ucrossE_z = ux*Ey - uy*Ex;
+            Omegax = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bx - gyro_anomaly*(gamma-1_prt)*udotB*ux - (gyro_anomaly + 1_prt/(1_prt+gamma))*beta_gamma*ucrossE_x);
+            Omegay = -leading_factor * ((1_prt + gyro_anomaly*gamma)*By - gyro_anomaly*(gamma-1_prt)*udotB*uy - (gyro_anomaly + 1_prt/(1_prt+gamma))*beta_gamma*ucrossE_y) + h;
+            Omegaz = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bz - gyro_anomaly*(gamma-1_prt)*udotB*uz - (gyro_anomaly + 1_prt/(1_prt+gamma))*beta_gamma*ucrossE_z);
 
         }
 

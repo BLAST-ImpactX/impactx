@@ -125,7 +125,7 @@ namespace impactx::elements::mixin
 //            T_Real const & AMREX_RESTRICT h,
 //            T_Real const & AMREX_RESTRICT gyro_anomaly,
             amrex::ParticleReal const & AMREX_RESTRICT h,
-            amrex::ParticleReal const & AMREX_RESTRICT gyro_anomaly,           
+            amrex::ParticleReal const & AMREX_RESTRICT gyro_anomaly,
             T_Real const & AMREX_RESTRICT Bx,
             T_Real const & AMREX_RESTRICT By,
             T_Real const & AMREX_RESTRICT Bz,

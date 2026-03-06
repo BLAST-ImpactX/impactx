@@ -552,18 +552,8 @@ namespace impactx::elements
                 sx, sy, sz
             };
 
-            // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
-            if (m_int_order == 2) {
-                integrators::symp2_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,*this);
-            } else if (m_int_order == 4) {
-                //TODO: update to include spin
-                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
-            } else if (m_int_order == 6) {
-                //TODO: update to include spin
-                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
-            } else {
-                integrators::symp2_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,*this);
-            }
+            // call integrator to advance through slice
+            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,*this);
 
             // assign updated values
             x = particle(1);

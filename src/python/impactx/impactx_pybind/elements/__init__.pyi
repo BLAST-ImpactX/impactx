@@ -50,6 +50,7 @@ __all__: list[str] = [
     "SoftSolenoid",
     "Sol",
     "Source",
+    "SpinMap",
     "TaperedPL",
     "ThinDipole",
     "mixin",
@@ -107,6 +108,8 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -203,6 +206,8 @@ class BeamMonitor(mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -296,6 +301,8 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -363,6 +370,8 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -430,6 +439,8 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -495,6 +506,8 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -548,6 +561,8 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -615,6 +630,8 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -683,6 +700,8 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -764,6 +783,8 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -906,6 +927,8 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -947,6 +970,8 @@ class Empty(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -1003,6 +1028,8 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1075,6 +1102,8 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -1131,6 +1160,8 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1207,6 +1238,8 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1292,6 +1325,8 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1356,6 +1391,8 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1412,6 +1449,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole
     ): ...
@@ -1455,6 +1493,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole,
     ) -> None: ...
@@ -1498,6 +1537,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole
     ]: ...
@@ -1542,6 +1582,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole,
     ) -> None:
@@ -1787,6 +1828,8 @@ class LinearMap(mixin.Named, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1849,6 +1892,8 @@ class Marker(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -1899,6 +1944,8 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1969,6 +2016,8 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2029,6 +2078,8 @@ class PRot(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2091,6 +2142,8 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2152,6 +2205,8 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2213,6 +2268,8 @@ class Programmable(mixin.Named):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2334,6 +2391,8 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2391,6 +2450,8 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2468,6 +2529,8 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2552,6 +2615,8 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -2602,6 +2667,8 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2684,6 +2751,8 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2760,6 +2829,8 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2833,6 +2904,8 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2887,6 +2960,8 @@ class Source(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2910,6 +2985,72 @@ class Source(mixin.Named, mixin.Thin):
         """
     @series_name.setter
     def series_name(self, arg1: str) -> None: ...
+
+class SpinMap(mixin.Named, mixin.Alignment):
+    def __init__(
+        self,
+        v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
+        A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
+        ds: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat = 0,
+        dy: typing.SupportsFloat = 0,
+        rotation: typing.SupportsFloat = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        (A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt = 0,
+        period: typing.SupportsInt = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    @property
+    def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        spin-orbit coupling generator of rotation as a 3x6 matrix
+        """
+    @A.setter
+    def A(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def ds(self) -> float:
+        """
+        segment length in m
+        """
+    @ds.setter
+    def ds(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def nslice(self) -> int:
+        """
+        one, because we do not support slicing of this element
+        """
+    @property
+    def v(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
+        """
+        design axis-angle generator of spin rotation as a 3x1 vector
+        """
+    @v.setter
+    def v(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+    ) -> None: ...
 
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
@@ -2964,6 +3105,8 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -3034,6 +3177,8 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property

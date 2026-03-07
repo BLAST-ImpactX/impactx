@@ -17,6 +17,8 @@ from __future__ import annotations
 import os as os
 
 from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x1_F_SI1_double as Vector3
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x6_F_SI1_double as Map3x6
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 from impactx.distribution_input_helpers import twiss
 from impactx.extensions.ImpactXParticleContainer import (
@@ -71,10 +73,12 @@ __all__: list[str] = [
     "ItemsView",
     "KeysView",
     "MADXParser",
+    "Map3x6",
     "Map6x6",
     "RefPart",
     "UnorderedMap",
     "ValuesView",
+    "Vector3",
     "amr",
     "coordinate_transformation",
     "create_envelope",

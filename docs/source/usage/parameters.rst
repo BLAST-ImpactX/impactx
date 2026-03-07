@@ -855,6 +855,39 @@ Currently, this only supports openPMD files from our ``beam_monitor``.
   Inject particles only for the first lattice period.
 
 
+``spin_map``
+^^^^^^^^^^^^
+
+``spin_map`` for a custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.
+
+Spin maps are specified in the Lie-algebraic form:
+
+.. math::
+
+   \vec{s}_f = M(\zeta)\vec{s}_i,\quad\quad M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}.
+
+Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit coupling for particles not on the design orbit.
+Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase space variables as deviations from the design orbit. The quantities :math:`L_x`, :math:`L_y`, and :math:`L_z` are standard 3x3 matrices that define a basis for the Lie algebra :math:`so(3)`.
+
+The vector components :math:`v(i)` and the matrix elements :math:`A(i,j)` are indexed beginning with 1, so that :math:`i=1,2,3` and :math:`j=1,2,3,4,5,6`.
+The vector :math:`v` and the matrix :math:`A` are defaulted to zero, so only entries that differ from zero need to be specified.
+
+The matrix :math:`A` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`, where coordinates :math:`(x,y,t)` have units of m
+and momenta :math:`(p_x,p_y,p_t)` are dimensionless.  The three components output are dimensionless.  So, for example, :math:`A(1,1)` has units of 1/m, and :math:`A(1,2)` is dimensionless.
+All three components of :math:`v` are dimensionless.
+
+This element requires these additional parameters:
+
+* ``<element_name>.v(i)`` (``float``, ...) vector entries
+  a 1-indexed, 3x1, axis-angle vector that defines the spin rotation at the phase space design point
+* ``<element_name>.A(i,j)`` (``float``, ...) matrix entries
+  a 1-indexed, 3x6, spin-orbit coupling matrix to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)` that defines the spin rotation for off-design particles
+* ``<element_name>.ds`` (``float``, in meters) length associated with a user-defined spin map element (defaults to 0)
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error (not used, defaults to 0)
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error (not used, defaults to 0)
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane (not used, defaults to 0)
+
+
 ``tapered_pl``
 ^^^^^^^^^^^^^^
 

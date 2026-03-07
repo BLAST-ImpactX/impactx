@@ -189,6 +189,8 @@ namespace
         std::vector<int>,
         std::vector<long>,
         Map6x6,
+        Vector3,
+        Map3x6,
         py::none
     >;
 
@@ -235,6 +237,8 @@ void init_elements(py::module& m)
     using namespace elements;
 
     m.attr("Map6x6") = py::type::of<Map6x6>();
+    m.attr("Map3x6") = py::type::of<Map3x6>();
+    m.attr("Vector3") = py::type::of<Vector3>();
 
     py::module_ me = m.def_submodule(
         "elements",
@@ -2558,6 +2562,63 @@ void init_elements(py::module& m)
         )
      ;
      register_push(py_LinearMap);
+
+    py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment> py_SpinMap(me, "SpinMap");
+    py_SpinMap
+        .def("__repr__",
+             [](SpinMap const & spinmap) {
+                 return element_name(spinmap);
+             }
+        )
+/*        .def("to_dict",
+            [](SpinMap const & spinmap) {
+                return element_dict(
+                    spinmap,
+                    std::make_pair("v", spinmap.m_spin_rotation_vector),
+                    std::make_pair("A", spinmap.m_spin_orbit_coupling)
+                );
+            }
+        ) */
+        .def(py::init<
+                Vector3,
+                Map3x6,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                std::optional<std::string>
+             >(),
+             py::arg("v"),
+             py::arg("A"),
+             py::arg("ds") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             "(A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)"
+        )
+        .def_property("v",
+            [](SpinMap & spinmap) { return spinmap.m_spin_rotation_vector; },
+            [](SpinMap & spinmap, Vector3 v) { spinmap.m_spin_rotation_vector = v; },
+            "design axis-angle generator of spin rotation as a 3x1 vector"
+        )
+        .def_property("A",
+            [](SpinMap & spinmap) { return spinmap.m_spin_orbit_coupling; },
+            [](SpinMap & spinmap, Map3x6 A) { spinmap.m_spin_orbit_coupling = A; },
+            "spin-orbit coupling generator of rotation as a 3x6 matrix"
+        )
+        .def_property("ds",
+            [](SpinMap & spinmap) { return spinmap.m_ds; },
+            [](SpinMap & spinmap, amrex::ParticleReal ds) { spinmap.m_ds = ds; },
+            "segment length in m"
+        )
+        .def_property_readonly("nslice",
+            [](SpinMap & spinmap) { return spinmap.nslice(); },
+            "one, because we do not support slicing of this element"
+        )
+     ;
+     register_push(py_SpinMap);
+
 
     // freestanding push function
     m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),

@@ -7,8 +7,8 @@
  * Authors: Chad Mitchell, Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_ELEMENT_LINEAR_MAP_H
-#define IMPACTX_ELEMENT_LINEAR_MAP_H
+#ifndef IMPACTX_ELEMENT_SPIN_MAP_H
+#define IMPACTX_ELEMENT_SPIN_MAP_H
 
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/alignment.H"
@@ -22,39 +22,47 @@
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
+#include <AMReX_SmallMatrix.H>
 
 #include <cmath>
 #include <stdexcept>
 
+/** This defines the 3x6 and 3x1 matrix types used here. */
+
+using Map3x6 = amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1>;
+using Vector3 = amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1>;
 
 namespace impactx::elements
 {
-    struct LinearMap
+    struct SpinMap
     : public mixin::Named,
-      public mixin::BeamOptic<LinearMap>,
-      public mixin::LinearTransport<LinearMap>,
+      public mixin::BeamOptic<SpinMap>,
+      public mixin::LinearTransport<SpinMap>,
       public mixin::Alignment,
       public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
-        static constexpr auto type = "LinearMap";
+        static constexpr auto type = "SpinMap";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        /** A thin element that applies a user-provided linear transport map R
-         *  to the 6-vector of phase space coordinates (x,px,y,py,t,pt).
-         *  Thus  x_final = R(1,1)*x + R(1,2)*px + R(1,3)*y + ...,
-         *       px_final = R(2,1)*x + R(2,2)*px + R(2,3)*y + ..., etc.
+        /** A thin element that applies a user-provided spin map M
+         *  to the spin 3-vector (sx, sy, sz).  The map M is an
+         *  orthogonal transformation expressed in Lie-algebraic
+         *  (axis-angle) form, whose Lie generators may depend
+         *  linearly on the phase space (orbit) variables (x,px,y,py,t,pt).
          *
-         * @param R user-provided transport map
+         * @param v user-provided 3-vector describing spin rotation at the design point
+         * @param A user-provided 3x6 spin-orbit coupling matrix
          * @param ds Segment length in m
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param name a user defined and not necessarily unique name of the element
          */
-        LinearMap (
-            Map6x6 const & R,
+        SpinMap (
+            Vector3 const & v,
+            Map3x6 const & A,
             amrex::ParticleReal ds = 0,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
@@ -64,15 +72,16 @@ namespace impactx::elements
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree)
         {
-            m_transport_map = R;
+            m_spin_rotation_vector = v;
+            m_spin_orbit_coupling = A;
             m_ds = ds;
         }
 
         /** Push all particles */
         using BeamOptic::operator();
 
-        /** This is a LinearMap functor, so that a variable of this type can be used like a
-         *  LinearMap function.
+        /** This is a SpinMap functor, so that a variable of this type can be used like a
+         *  SpinMap function.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -86,39 +95,17 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-            using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
-            // input and output phase space vectors
-            amrex::SmallVector<T_Real, 6, 1> vectorin{
-                x, px, y, py, t, pt
-            };
-
-            // TODO amrex::SmallMatrix::operator* overloads on T for SIMD*scalar / scalar*SIMD
-            amrex::SmallVector<T_Real, 6, 1> const vectorout = m_transport_map * vectorin;
-
-            // assign updated values
-            x = vectorout(1);
-            px = vectorout(2);
-            y = vectorout(3);
-            py = vectorout(4);
-            t = vectorout(5);
-            pt = vectorout(6);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // This element does nothing to the phase space variables.
         }
 
         /** This pushes the reference particle.
@@ -126,40 +113,9 @@ namespace impactx::elements
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        void operator() ([[maybe_unused]] RefPart & AMREX_RESTRICT refpart) const
         {
-            if (m_ds > 0)  // Drift
-            {
-                using namespace amrex::literals; // for _rt and _prt
-                using amrex::Math::powi;
-
-                // assign input reference particle values
-                amrex::ParticleReal const x = refpart.x;
-                amrex::ParticleReal const px = refpart.px;
-                amrex::ParticleReal const y = refpart.y;
-                amrex::ParticleReal const py = refpart.py;
-                amrex::ParticleReal const z = refpart.z;
-                amrex::ParticleReal const pz = refpart.pz;
-                amrex::ParticleReal const t = refpart.t;
-                amrex::ParticleReal const pt = refpart.pt;
-                amrex::ParticleReal const s = refpart.s;
-
-                // length of the current slice
-                amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-                // assign intermediate parameter
-                amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
-
-                // advance position and momentum (drift)
-                refpart.x = x + step*px;
-                refpart.y = y + step*py;
-                refpart.z = z + step*pz;
-                refpart.t = t - step*pt;
-
-                // advance integrated path length
-                refpart.s = s + slice_ds;
-            }
-            // else nothing to do for a zero-length element
+            // This element does nothing to the reference particle.
         }
 
         /** Number of slices used for the application of space charge
@@ -191,11 +147,11 @@ namespace impactx::elements
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index
-         * @param refpart reference particle (unused)
          * @param sx particle spin x-component
          * @param sy particle spin y-component
          * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -213,11 +169,39 @@ namespace impactx::elements
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-             // spin is unaffected
+            using namespace amrex::literals; // for _rt and _prt
 
-            // phase space push
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // input phase space 6-vector
+            amrex::SmallVector<T_Real, 6, 1> vectorin{
+                x, px, y, py, t, pt
+            };
+
+            // determine the rotation vector for off-design particles
+            amrex::SmallVector<T_Real, 3, 1> const vectorout = m_spin_orbit_coupling * vectorin;
+
+            // assign updated values
+            lambdax = vectorout(1);
+            lambday = vectorout(2);
+            lambdaz = vectorout(3);
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // specify the design rotation vector
+            lambdax = m_spin_rotation_vector(1);
+            lambday = m_spin_rotation_vector(2);
+            lambdaz = m_spin_rotation_vector(3);
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push (the identity for this element)
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
-
         }
 
 
@@ -234,15 +218,14 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             Map6x6 R = Map6x6::Identity();
-            R = m_transport_map;
-
             return R;
         }
 
-        Map6x6 m_transport_map;  // 6x6 transport map
+        Vector3 m_spin_rotation_vector;  // 3x1 axis-angle vector for design spin rotation
+        Map3x6 m_spin_orbit_coupling;  // 3x6 spin-orbit coupling matrix
         amrex::ParticleReal m_ds;  // finite ds allowed for bookkeeping, but we do not allow slicing
     };
 
 } // namespace impactx
 
-#endif // IMPACTX_ELEMENT_LINEAR_MAP_H
+#endif // IMPACTX_ELEMENT_SPIN_MAP_H

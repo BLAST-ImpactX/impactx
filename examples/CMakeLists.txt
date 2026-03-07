@@ -1951,3 +1951,18 @@ add_impactx_test(sol-spin.py
     examples/spin_tracking/analysis_sol_spin.py
     OFF  # no plot script yet
 )
+
+# Illustration of a User-Defined Spin Map ###################
+# without space charge
+add_impactx_test(spin-map
+    examples/spin_tracking/input_spin_map.in
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_spin_map.py
+    OFF  # no plot script yet
+)
+add_impactx_test(spin-map.py
+    examples/spin_tracking/run_spin_map.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_spin_map.py
+    OFF  # no plot script yet
+)

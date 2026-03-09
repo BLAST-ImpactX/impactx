@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+#
+# Copyright 2022-2023 ImpactX contributors
+# Authors: Nikita Kuklev, Chad Mitchell
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
+
 import numpy as np
 
 import amrex.space3d as amr

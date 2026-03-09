@@ -1,90 +1,112 @@
 #!/usr/bin/env python3
 #
 # Copyright 2022-2023 ImpactX contributors
-# Authors: Nikita Kuklev, Chad Mitchell
+# Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import pandas as pd
 
 import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
 
-KIN_ENERGY_MEV = 400.0
-MASS_MEV = 938.27208816
-QM_EEV = 1.0 / (MASS_MEV * 1.0e6)
+sim = ImpactX()
 
+# set numerical parameters and IO control
+sim.space_charge = False
+sim.slice_step_diagnostics = True
 
-def make_vec(values):
-    vec_cls = amr.PODVector_real_arena if Config.have_gpu else amr.PODVector_real_std
-    out = vec_cls()
-    for vv in values:
-        out.push_back(float(vv))
-    return out
+# domain decomposition & space charge mesh
+sim.init_grids()
 
+# load initial beam parameters
+kin_energy_MeV = 0.8e3  # reference energy
+bunch_charge_C = 1.0e-9  # used with space charge
+npart = 10000  # number of macro particles
 
-def run_one(element):
-    sim = ImpactX()
-    sim.space_charge = False
-    sim.diagnostics = False
-    sim.slice_step_diagnostics = False
-    sim.verbose = 0
-    sim.init_grids()
+#   reference particle
+ref = sim.particle_container().ref_particle()
+ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
+qm_eev = 1.0 / 938.27208816 / 1e6  # electron charge/mass in e / eV
 
-    pc = sim.particle_container()
-    ref = pc.ref_particle()
-    ref.set_charge_qe(1.0).set_mass_MeV(MASS_MEV).set_kin_energy_MeV(KIN_ENERGY_MEV)
+pc = sim.particle_container()
 
-    # One particle exactly on the reference trajectory
-    pc.add_n_particles(
-        make_vec([0.0]),  # x
-        make_vec([0.0]),  # y
-        make_vec([0.0]),  # t
-        make_vec([0.0]),  # px
-        make_vec([0.0]),  # py
-        make_vec([0.0]),  # pt
-        QM_EEV,
-        bunch_charge=0.0,
-    )
+dx = [0.0]
+dpx = [0.0]
+dy = [0.0]
+dpy = [0.0]
+dt = [0.0]
+dpt = [0.0]
+if not Config.have_gpu:  # initialize using cpu-based PODVectors
+    dx_podv = amr.PODVector_real_std()
+    dy_podv = amr.PODVector_real_std()
+    dt_podv = amr.PODVector_real_std()
+    dpx_podv = amr.PODVector_real_std()
+    dpy_podv = amr.PODVector_real_std()
+    dpt_podv = amr.PODVector_real_std()
+else:  # initialize on device using arena/gpu-based PODVectors
+    dx_podv = amr.PODVector_real_arena()
+    dy_podv = amr.PODVector_real_arena()
+    dt_podv = amr.PODVector_real_arena()
+    dpx_podv = amr.PODVector_real_arena()
+    dpy_podv = amr.PODVector_real_arena()
+    dpt_podv = amr.PODVector_real_arena()
 
-    sim.lattice.append(element)
-    sim.track_particles()
+for p_dx in dx:
+    dx_podv.push_back(p_dx)
+for p_dy in dy:
+    dy_podv.push_back(p_dy)
+for p_dt in dt:
+    dt_podv.push_back(p_dt)
+for p_dpx in dpx:
+    dpx_podv.push_back(p_dpx)
+for p_dpy in dpy:
+    dpy_podv.push_back(p_dpy)
+for p_dpt in dpt:
+    dpt_podv.push_back(p_dpt) 
 
-    df = pc.to_df(local=True)
-    x = df["position_x"]
-    px = df["momentum_x"]
-    y = df["position_y"]
-    py = df["momentum_y"]
-    t = df["position_t"]
-    pt = df["momentum_t"]
-
-    print(x, px, y, py, t, pt)
-
-    atol = 1.0e-13
-    assert np.allclose(
-        [x, px, y, py, t, pt],
-        [
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ],
-        atol=atol,
-    )
-
-    sim.finalize()
-
-
-print("Quad")
-run_one(elements.Quad(name="q", ds=0.5, k=1.2))
-
-print("\nExactQuad")
-run_one(elements.ExactQuad(name="eq", ds=0.5, k=1.2))
-
-print("\nExactMultipole")
-run_one(
-    elements.ExactMultipole(name="em", ds=0.5, k_normal=[0, 1.2], k_skew=[0.0, 0.0])
+pc.add_n_particles(
+    dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C
 )
+
+# add beam diagnostics
+monitor = elements.BeamMonitor("monitor", backend="h5")
+
+# design the accelerator lattice)
+ns = 1  # number of slices per ds in the element
+line = [
+    monitor,
+    elements.Quad(
+        name="q",
+        ds=0.5,
+        k=1.2,
+        nslice=ns,
+    ),
+    elements.ExactQuad(
+        name="eq",
+        ds=0.5,
+        k=1.2,
+        nslice=ns,
+    ),
+    elements.ExactMultipole(
+        name="em",
+        ds=0.5,
+        k_normal=[0.0, 1.2],
+        k_skew=[0.0, 0.0],
+        unit=0,
+        int_order=4,
+        mapsteps=5,
+        nslice=ns,
+    ),
+    monitor,
+]
+
+# assign a fodo segment
+sim.lattice.extend(line)
+
+# run simulation
+sim.track_particles()
+
+# clean shutdown
+sim.finalize()

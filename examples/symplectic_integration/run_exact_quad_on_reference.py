@@ -1,8 +1,7 @@
 import numpy as np
+
 import amrex.space3d as amr
-
 from impactx import Config, ImpactX, elements
-
 
 KIN_ENERGY_MEV = 400.0
 MASS_MEV = 938.27208816
@@ -51,11 +50,11 @@ def run_one(element):
     py = df["momentum_y"]
     t = df["position_t"]
     pt = df["momentum_t"]
-    
+
     print(x, px, y, py, t, pt)
 
     atol = 1.0e-13
-    assert np.allclose(  
+    assert np.allclose(
         [x, px, y, py, t, pt],
         [
             0.0,
@@ -70,11 +69,14 @@ def run_one(element):
 
     sim.finalize()
 
+
 print("Quad")
 run_one(elements.Quad(name="q", ds=0.5, k=1.2))
 
 print("\nExactQuad")
-run_one(elements.ExactQuad(name="eq",ds=0.5,k=1.2))
+run_one(elements.ExactQuad(name="eq", ds=0.5, k=1.2))
 
 print("\nExactMultipole")
-run_one(elements.ExactMultipole(name="em",ds=0.5,k_normal=[0,1.2],k_skew=[0.0,0.0]))
+run_one(
+    elements.ExactMultipole(name="em", ds=0.5, k_normal=[0, 1.2], k_skew=[0.0, 0.0])
+)

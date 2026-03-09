@@ -6,7 +6,6 @@
 #
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 
 import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
@@ -64,7 +63,7 @@ for p_dpx in dpx:
 for p_dpy in dpy:
     dpy_podv.push_back(p_dpy)
 for p_dpt in dpt:
-    dpt_podv.push_back(p_dpt) 
+    dpt_podv.push_back(p_dpt)
 
 pc.add_n_particles(
     dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C

@@ -7,7 +7,6 @@
 
 import numpy as np
 import openpmd_api as io
-import pandas as pd
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -71,10 +70,10 @@ print(error_pyf)
 print(error_tf)
 print(error_ptf)
 
-atol = 1.0e-13  
+atol = 1.0e-13
 print(f"  atol={atol}")
 
-assert np.allclose(   
+assert np.allclose(
     [error_xf, error_pxf, error_yf, error_pyf, error_tf, error_ptf],
     [
         0.0,
@@ -86,4 +85,3 @@ assert np.allclose(
     ],
     atol=atol,
 )
-

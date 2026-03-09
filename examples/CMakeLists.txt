@@ -1966,3 +1966,11 @@ add_impactx_test(spin-map.py
     examples/spin_tracking/analysis_spin_map.py
     OFF  # no plot script yet
 )
+
+# Symplectic integration in an ExactQuad on Reference ###################
+add_impactx_test(exact-quad-on-reference.py
+    examples/symplectic_integration/run_exact_quad_on_reference.py
+    ON   # ImpactX MPI-parallel
+    examples/symplectic_integration/analysis_exact_quad_on_reference.py
+    OFF  # no additional analysis script needed
+)

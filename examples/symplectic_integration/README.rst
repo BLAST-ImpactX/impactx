@@ -178,3 +178,33 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: input_exact_cfbend.in
           :language: ini
           :caption: You can copy this file from ``examples/symplectic_integration/input_exact_cfbend.in``.
+
+
+.. _examples-exact-quad-on-reference:
+
+Symplectic Integration in an Exact Quadrupole on Reference
+===========================================================
+
+This benchmark tests the use of the ExactQuad (quadrupole_exact) element to verify that particles which coincide with the reference trajectory before tracking coincide with the reference trajectory after tracking.  The same test is performed using a Quad and an ExactMultiple of equivalent quadrupole gradient.
+
+The test is performed for 400 MeV protons.
+
+In this test, the final values of :math:`x`, :math:`y`, :math:`t`, :math:`p_x`, :math:`p_y`, and :math:`p_t` must vanish (to machine precision).
+
+
+Run and Analyze
+----------------
+
+This example can be run as:
+
+* **Python** script: ``python3 run_exact_quad_on_reference.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_exact_quad.py
+          :language: python3
+          :caption: You can copy this file from ``examples/symplectic_integration/run_exact_quad_on_reference.py``.

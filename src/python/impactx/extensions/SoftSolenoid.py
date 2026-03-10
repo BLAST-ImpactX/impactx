@@ -39,9 +39,7 @@ def register_SoftSolenoid_extension(cls):
         name=None,
     ):
         has_coefficients = cos_coefficients is not None or sin_coefficients is not None
-        has_field_data = (
-            z is not None or field_on_axis is not None or ncoef is not None
-        )
+        has_field_data = z is not None or field_on_axis is not None or ncoef is not None
 
         if has_coefficients and has_field_data:
             raise ValueError(

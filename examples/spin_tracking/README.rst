@@ -250,3 +250,51 @@ The analysis can be run using:
    .. literalinclude:: analysis_cfbend_spin.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_cfbend_spin.py``.
+
+
+.. _examples-exact-quad-spin-scaling:
+
+Test of Thomas-BMT Spin Integration in a FODO Channel
+======================================================
+      
+This example tests the propagation of spin in a single period of a FODO channel that uses symplectic integration for tracking via the ExactQuad element.
+
+The ExactQuad element incorportates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
+
+The physical parameters of this FODO channel are identical with those used in examples-fodo-spin.
+
+A small number of initial conditions are tracked, with increasing distance from the phase space design point.
+
+The final spin variables are compared against those obtained by tracking using the Quad element, which treats both orbit and spin variables to first order in the phase space variables.
+
+In this test, a scaling exponent is extracted when comparing the vector-norm of difference in final spin with the vector-norm of the initial phase space vector.  This exponent should be 2 (in the limit of small deviation).
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_exact_quad_spin_scaling.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+   
+.. tab-set::
+
+   .. tab-item:: Python: Script
+   
+       .. literalinclude:: run_exact_quad_spin_scaling.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_exact_quad_spin_scaling.py``.
+
+Analyze
+-------
+
+The analysis can be run using the following script:
+
+
+.. dropdown:: Script ``analysis_exact_quad_spin_scaling.py``
+
+   .. literalinclude:: analysis_exact_quad_spin_scaling.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_exact_quad_spin_scaling.py``.

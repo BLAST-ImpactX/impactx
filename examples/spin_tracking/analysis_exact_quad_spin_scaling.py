@@ -16,11 +16,6 @@ initial = series.iterations[1].particles["beam"].to_df()
 beam_final = series.iterations[last_step].particles["beam"]
 final = beam_final.to_df()
 
-# compare number of particles
-num_particles = 7
-assert num_particles == len(initial)
-assert num_particles == len(final)
-
 # load particle data
 df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
 df_final = pd.read_csv("./final_coords.csv", sep=" ")

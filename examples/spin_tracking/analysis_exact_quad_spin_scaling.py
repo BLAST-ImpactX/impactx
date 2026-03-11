@@ -38,15 +38,15 @@ szi = df_initial["sz"]
 norm_phase_space_vector = np.sqrt(xi**2 + pxi**2 + yi**2 + pyi**2 + ti**2 + pti**2)
 
 # difference of final coordinates from linear values
-diff_xf = (df_final["x"] - final["position_x"])
-diff_pxf = (df_final["px"] - final["momentum_x"])
-diff_yf = (df_final["y"] - final["position_y"])
-diff_pyf = (df_final["py"] - final["momentum_y"])
-diff_tf = (df_final["t"] - final["position_t"])
-diff_ptf = (df_final["pt"] - final["momentum_t"])
-diff_sxf = (df_final["sx"] - final["spin_x"])
-diff_syf = (df_final["sy"] - final["spin_y"])
-diff_szf = (df_final["sz"] - final["spin_z"])
+diff_xf = df_final["x"] - final["position_x"]
+diff_pxf = df_final["px"] - final["momentum_x"]
+diff_yf = df_final["y"] - final["position_y"]
+diff_pyf = df_final["py"] - final["momentum_y"]
+diff_tf = df_final["t"] - final["position_t"]
+diff_ptf = df_final["pt"] - final["momentum_t"]
+diff_sxf = df_final["sx"] - final["spin_x"]
+diff_syf = df_final["sy"] - final["spin_y"]
+diff_szf = df_final["sz"] - final["spin_z"]
 norm_spin_diff = np.sqrt(diff_sxf**2 + diff_syf**2 + diff_szf**2)
 
 print("")
@@ -55,7 +55,7 @@ print("Phase space vector norm:")
 print(norm_phase_space_vector)
 
 print(":")
-print("Spin difference norm:")                      
+print("Spin difference norm:")
 print(norm_spin_diff)
 
 m, b = np.polyfit(np.log(norm_phase_space_vector), np.log(norm_spin_diff), deg=1)

@@ -360,7 +360,7 @@ The analysis can be run using:
 
 Test of Thomas-BMT Spin Integration in a FODO Channel
 ======================================================
-      
+
 This example tests the propagation of spin in a single period of a FODO channel that uses symplectic integration for tracking via the ExactQuad element.
 
 The ExactQuad element incorportates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
@@ -382,11 +382,11 @@ This example can be run as:
 * **Python** script: ``python3 run_exact_quad_spin_scaling.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
-   
+
 .. tab-set::
 
    .. tab-item:: Python: Script
-   
+
        .. literalinclude:: run_exact_quad_spin_scaling.py
           :language: python3
           :caption: You can copy this file from ``examples/spin_tracking/run_exact_quad_spin_scaling.py``.
@@ -401,4 +401,3 @@ The analysis can be run using the following script:
    .. literalinclude:: analysis_exact_quad_spin_scaling.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_exact_quad_spin_scaling.py``.
-

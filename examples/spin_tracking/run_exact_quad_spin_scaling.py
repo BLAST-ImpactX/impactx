@@ -95,7 +95,18 @@ for p_dsz in dsz:
     dsz_podv.push_back(p_dsz)
 
 pc.add_n_particles(
-    dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C, dw_podv, dsx_podv, dsy_podv, dsz_podv
+    dx_podv,
+    dy_podv,
+    dt_podv,
+    dpx_podv,
+    dpy_podv,
+    dpt_podv,
+    qm_eev,
+    bunch_charge_C,
+    dw_podv,
+    dsx_podv,
+    dsy_podv,
+    dsz_podv,
 )
 
 # add beam diagnostics
@@ -103,14 +114,14 @@ monitor = elements.BeamMonitor("monitor", backend="h5", period_sample_intervals=
 
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element
-order = 4 # order of symplectic integration
-nmap = 10 # number of steps for symplectic integration
+order = 4  # order of symplectic integration
+nmap = 10  # number of steps for symplectic integration
 fodo = [
     monitor,
     elements.ExactDrift(ds=0.25, nslice=ns),
     elements.ExactQuad(ds=1.0, k=1.0, int_order=order, mapsteps=nmap, nslice=ns),
     elements.ExactDrift(ds=0.5, nslice=ns),
-    elements.ExactQuad(ds=1.0, k=-1.0, int_order=order, mapsteps=nmap, nslice=ns), 
+    elements.ExactQuad(ds=1.0, k=-1.0, int_order=order, mapsteps=nmap, nslice=ns),
     elements.ExactDrift(ds=0.25, nslice=ns),
     monitor,
 ]

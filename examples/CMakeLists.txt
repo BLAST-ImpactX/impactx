@@ -1932,9 +1932,9 @@ file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords.csv
 file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/final_coords.csv
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-quad-spin-scaling.py)
 add_impactx_test(exact-quad-spin-scaling.py
-    examples/spin_tracking/run_exact-quad-spin-scaling.py
+    examples/spin_tracking/run_exact_quad_spin_scaling.py
     ON    # ImpactX MPI-parallel
-    examples/spin_tracking/analysis_exact-quad-spin-scaling.py
+    examples/spin_tracking/analysis_exact_quad_spin_scaling.py
     OFF  # no plot script yet
 )
 

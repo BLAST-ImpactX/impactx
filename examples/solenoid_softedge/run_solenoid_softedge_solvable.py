@@ -6,6 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
+import numpy as np
+
 import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
 
@@ -73,35 +75,22 @@ if amr.ParallelDescriptor.IOProcessor():
         dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C
     )
 
+# specify the on-axis field profile
+zmin = -1.0  # lower value of on-axis longitudinal coordinate (in meters)
+zmax = 1.0  # upper value of on-axis longitudinal coordinate (in meters)
+nz = 401  # number of longitudinal sampling points to be used
+g = 0.1  # gap parameter (in meters)
+zdata = np.linspace(zmin, zmax, nz)
+bdata = 1.0 / (1.0 + (zdata / g) ** 2)
+
 # design the accelerator lattice
 sol = elements.SoftSolenoid(
     name="sol1",
     ds=2.0,
     bscale=-1.0,
-    cos_coefficients=[
-        0.294225534860747,
-        0.2317701877038734,
-        0.166794824926630,
-        0.122811705237718,
-        0.089180156215475,
-        0.065459443762749,
-        0.047593623793664,
-        0.034919898089417,
-        0.0253867332415233,
-        0.018635438261000,
-        0.013536778750496,
-        0.009948507321628,
-        0.0072152939652668,
-        0.005313407598416,
-        0.003843724102950,
-        0.002839750408934,
-        0.0020458821109883,
-        0.001519293408286,
-        0.001087477417341,
-        0.000814190355962,
-        0.000576771050997,
-    ],
-    sin_coefficients=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    z=zdata,
+    field_or_gradient=bdata,
+    ncoef=35,
     mapsteps=200,
     nslice=1,
 )

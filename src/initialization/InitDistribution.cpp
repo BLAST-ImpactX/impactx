@@ -158,13 +158,20 @@ namespace impactx
                         meanpx, meanpy, meanpt,
                         dispx, disppx, dispy, disppy);
             } else if (base_dist_type == "gaussian") {
+                amrex::ParticleReal cutx = 0.0;
+                amrex::ParticleReal cuty = 0.0;
+                amrex::ParticleReal cutt = 0.0;
+                pp_dist.queryWithParser("cutX", cutx);
+                pp_dist.queryWithParser("cutY", cuty);
+                pp_dist.queryWithParser("cutT", cutt);
                 dist = distribution::Gaussian(
                         sigx, sigy, sigt,
                         sigpx, sigpy, sigpt,
                         muxpx, muypy, mutpt,
                         meanx, meany, meant,
                         meanpx, meanpy, meanpt,
-                        dispx, disppx, dispy, disppy);
+                        dispx, disppx, dispy, disppy,
+                        cutx, cuty, cutt);
             } else if (base_dist_type == "kvdist") {
                 dist = distribution::KVdist(
                         sigx, sigy, sigt,

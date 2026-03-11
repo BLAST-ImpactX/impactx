@@ -614,9 +614,17 @@ For the input from Twiss parameters in Python, please use the helper function ``
 
 .. autofunction:: impactx.twiss
 
-.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+For computing Fourier coefficients from on-axis field data (used by :py:class:`~impactx.elements.RFCavity`, :py:class:`~impactx.elements.SoftQuadrupole`, and :py:class:`~impactx.elements.SoftSolenoid`):
 
-   A 6D Gaussian distribution.
+.. autofunction:: impactx.fourier_coefficients
+
+.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
+
+   A 6D Gaussian distribution, optionally with truncation.
+   The user may specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt).
+   The cut is performed in normalized Courant-Snyder variables corresponding to the user-supplied second moments or Twiss functions.
+   As a result, this is equivalent to a cut corresponding to the (linearized) action in each plane.
+   A cutoff value of 0 means no truncation (default).
 
    :param lambdaX: phase space position axis intercept; for zero correlation, these are the related RMS sizes (in meters)
    :param lambdaY: see lambdaX
@@ -637,6 +645,9 @@ For the input from Twiss parameters in Python, please use the helper function ``
    :param dispPx: beam horizontal dispersion derivative (dimensionless)
    :param dispY: see dispX
    :param dispPy: see dispPx
+   :param cutX: number of sigma at which to cut the distribution in (x,px) (dimensionless); 0 means no cut
+   :param cutY: number of sigma at which to cut the distribution in (y,py) (dimensionless); 0 means no cut
+   :param cutT: number of sigma at which to cut the distribution in (t,pt) (dimensionless); 0 means no cut
 
 .. py:class:: impactx.distribution.Kurth4D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
@@ -787,9 +798,17 @@ This module provides elements and methods for the accelerator lattice.
       :return: True if at least one element of the specified kind exists
       :rtype: bool
 
-   .. py::method:: transfer_map(ref, order="linear", fallback_identity_map=False)
+   .. py:method:: transfer_map(ref, order="linear", fallback_identity_map=False)
 
       Calculate the transfer map of the elements in the list.
+
+      .. dropdown:: Example
+         :color: light
+         :icon: info
+         :animate: fade-in-slide-down
+
+         .. literalinclude:: tests/python/test_lattice_optics.py
+            :language: bash
 
       :param ref: A reference particle.
       :param order: So far, only the calculation of linear transfer maps is supported.
@@ -1349,9 +1368,14 @@ This module provides elements and methods for the accelerator lattice.
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A radiofrequency cavity.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param escale: scaling factor for on-axis RF electric field in 1/m
@@ -1359,8 +1383,10 @@ This module provides elements and methods for the accelerator lattice.
    :param freq: RF frequency in Hz
    :param phase: RF driven phase in degrees
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
-
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -1427,9 +1453,14 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, cos_coefficients, sin_coefficients, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge solenoid.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param bscale: Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0)
@@ -1439,6 +1470,9 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``bscale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param unit: specification of units for scaling of the on-axis longitudinal magnetic field
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -1537,9 +1571,14 @@ This module provides elements and methods for the accelerator lattice.
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge quadrupole.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field/gradient data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param gscale: Scaling factor for on-axis field gradient in inverse meters
@@ -1547,6 +1586,9 @@ This module provides elements and methods for the accelerator lattice.
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param field_or_gradient: array of on-axis field gradient values, typically normalized to a peak absolute value of 1; multiplied by ``gscale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -1554,6 +1596,32 @@ This module provides elements and methods for the accelerator lattice.
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param mapsteps: number of integration steps per slice used for map and reference particle push in applied fields
    :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
+.. py:class:: impactx.elements.SpinMap(v=0, A=0, dx=0, dy=0, rotation=0, name=None)
+
+   A custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:
+
+   .. math::
+
+      \vec{s}_f = M(\zeta)\vec{s}_i,\quad\quad M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}.
+
+   Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit coupling for particles not on the design point.
+   Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase space variables as deviations from the design orbit. The quantities :math:`L_x`, :math:`L_y`, and :math:`L_z` are standard 3x3 matrices that define a basis for the Lie algebra :math:`so(3)`.
+
+   The vector components :math:`v(i)` and the matrix elements :math:`A(i,j)` are indexed beginning with 1, so that :math:`i=1,2,3` and :math:`j=1,2,3,4,5,6`.
+   The vector :math:`v` and the matrix :math:`A` are defaulted to zero, so only entries that differ from zero need to be specified.
+
+   The matrix :math:`A` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`, where coordinates :math:`(x,y,t)` have units of m
+   and momenta :math:`(p_x,p_y,p_t)` are dimensionless.  The three components output are dimensionless.  So, for example, :math:`A(1,1)` has units of 1/m, and :math:`A(1,2)` is dimensionless.
+   All three components of :math:`v` are dimensionless.
+
+   :param v: a 1-indexed, 3x1, axis-angle vector that defines the spin rotation at the phase space design point
+   :param R: a 1-indexed, 3x6, spin-orbit coupling matrix to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)` that defines the spin rotation for off-design particles
+   :param ds: length associated with a user-defined linear element (defaults to 0), in m
+   :param dx: horizontal translation error in m (not used, defaults to 0)
+   :param dy: vertical translation error in m (not used, defaults to 0)
+   :param rotation: rotation error in the transverse plane [degrees] (not used, defaults to 0)
    :param name: an optional name for the element
 
 .. py:class:: impactx.elements.ThinDipole(theta, rc, dx=0, dy=0, rotation=0, name=None)

@@ -43,6 +43,7 @@
 #include "SoftSol.H"
 #include "SoftQuad.H"
 #include "Sol.H"
+#include "SpinMap.H"
 #include "Source.H"
 #include "TaperedPL.H"
 #include "ThinDipole.H"
@@ -89,6 +90,7 @@ namespace impactx::elements
         SoftQuadrupole,
         Sol,
         Source,
+        SpinMap,
         TaperedPL,
         ThinDipole
     >;

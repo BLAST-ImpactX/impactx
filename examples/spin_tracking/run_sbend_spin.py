@@ -71,11 +71,11 @@ print(gamma)
 # length for this test should be one period
 ds_value = 2.0 * np.pi / (gyromagnetic_anomaly * gamma)
 
-quad1 = elements.Sbend(name="bend1", ds=ds_value, rc=rc_value, nslice=ns)
+bend1 = elements.Sbend(name="bend1", ds=ds_value, rc=rc_value, nslice=ns)
 
 # set the lattice
 sim.lattice.append(monitor)
-sim.lattice.append(quad1)
+sim.lattice.append(bend1)
 sim.lattice.append(monitor)
 
 # run simulation

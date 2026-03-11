@@ -323,7 +323,7 @@ namespace impactx::elements
             particle(2) = px;
             particle(3) = y + tau * py * (-1_prt + inv_pzden);
             particle(4) = py;
-            particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta));
+            particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta)*m_ibeta);
             particle(6) = pt;
 
             zeval += tau;

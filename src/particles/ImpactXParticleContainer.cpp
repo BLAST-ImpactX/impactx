@@ -45,24 +45,25 @@ namespace
 namespace impactx
 {
     ParIterSoA::ParIterSoA (ContainerType& pc, int level)
-        : amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>(pc, level,
+        : amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
                    amrex::MFItInfo().SetDynamic(do_omp_dynamic())) {}
 
     ParIterSoA::ParIterSoA (ContainerType& pc, int level, amrex::MFItInfo& info)
-        : amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>(pc, level,
+        : amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
               info.SetDynamic(do_omp_dynamic())) {}
 
     ParConstIterSoA::ParConstIterSoA (ContainerType& pc, int level)
-        : amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>(pc, level,
+        : amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
               amrex::MFItInfo().SetDynamic(do_omp_dynamic())) {}
 
     ParConstIterSoA::ParConstIterSoA (ContainerType& pc, int level, amrex::MFItInfo& info)
-        : amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>(pc, level,
+        : amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
               info.SetDynamic(do_omp_dynamic())) {}
 
     ImpactXParticleContainer::ImpactXParticleContainer (initialization::AmrCoreData* amr_core)
-        : amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>(amr_core->GetParGDB())
+        : amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(amr_core->GetParGDB())
     {
+        SetArena(amrex::The_Arena());
         SetParticleSize();
         SetSoACompileTimeNames(
             {RealSoA::names_s.begin(), RealSoA::names_s.end()},

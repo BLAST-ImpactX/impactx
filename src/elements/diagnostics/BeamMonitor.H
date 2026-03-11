@@ -30,7 +30,7 @@ namespace detail
 {
     class ImpactXParticleCounter {
     public:
-        using ParticleContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PinnedArenaAllocator>;
+        using ParticleContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
         using ParticleIter = typename ParticleContainer::ParIterType;
 
         ImpactXParticleCounter (ParticleContainer & pc);
@@ -70,7 +70,7 @@ namespace detail
     {
         static constexpr auto type = "BeamMonitor";
         using PType = typename ImpactXParticleContainer::ParticleType;
-        using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PinnedArenaAllocator>;
+        using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
 
         /** This element writes the particle beam out to openPMD data.
          *

@@ -27,7 +27,7 @@ def register_SoftQuadrupole_extension(cls):
         cos_coefficients=None,
         sin_coefficients=None,
         z=None,
-        field_or_gradient=None,
+        gradient_on_axis=None,
         ncoef=None,
         dx=0,
         dy=0,
@@ -40,25 +40,25 @@ def register_SoftQuadrupole_extension(cls):
     ):
         has_coefficients = cos_coefficients is not None or sin_coefficients is not None
         has_field_data = (
-            z is not None or field_or_gradient is not None or ncoef is not None
+            z is not None or gradient_on_axis is not None or ncoef is not None
         )
 
         if has_coefficients and has_field_data:
             raise ValueError(
                 "SoftQuadrupole: provide either (cos_coefficients, sin_coefficients) "
-                "or (z, field_or_gradient, ncoef), not both."
+                "or (z, gradient_on_axis, ncoef), not both."
             )
 
         if has_field_data:
-            if z is None or field_or_gradient is None or ncoef is None:
+            if z is None or gradient_on_axis is None or ncoef is None:
                 raise ValueError(
                     "SoftQuadrupole: when using field data, all three parameters "
-                    "'z', 'field_or_gradient', and 'ncoef' must be provided."
+                    "'z', 'gradient_on_axis', and 'ncoef' must be provided."
                 )
             from ..fourier import fourier_coefficients
 
             cos_coefficients, sin_coefficients = fourier_coefficients(
-                z, field_or_gradient, ncoef
+                z, gradient_on_axis, ncoef
             )
 
         kwargs = dict(

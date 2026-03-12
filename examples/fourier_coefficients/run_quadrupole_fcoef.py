@@ -51,11 +51,11 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 
 # read in the on-axis quadrupole gradient data
-z, field_or_gradient = read_data("onaxis_data.in")
+z, gradient_on_axis = read_data("onaxis_data.in")
 
 # optional: compute and write coefficients to file (to visually compare)
 ncoef = 25
-cos_coeffs, sin_coeffs = fourier_coefficients(z, field_or_gradient, ncoef)
+cos_coeffs, sin_coeffs = fourier_coefficients(z, gradient_on_axis, ncoef)
 write_data(cos_coeffs, sin_coeffs, z, "onaxis_data.out")
 
 # lattice: construct SoftQuadrupole directly from on-axis field data
@@ -64,7 +64,7 @@ quad1 = elements.SoftQuadrupole(
     ds=0.2495,
     gscale=1.0,
     z=z,
-    field_or_gradient=field_or_gradient,
+    gradient_on_axis=gradient_on_axis,
     ncoef=ncoef,
     mapsteps=400,
     nslice=ns,

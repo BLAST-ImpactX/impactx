@@ -338,4 +338,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PolygonAperture)
+
 #endif // IMPACTX_POLYGONAPERTURE_H

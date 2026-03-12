@@ -225,4 +225,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::QuadEdge)
+
 #endif // IMPACTX_QUADEDGE_H

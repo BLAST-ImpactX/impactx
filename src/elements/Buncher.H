@@ -188,4 +188,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Buncher)
+
 #endif // IMPACTX_BUNCHER_H

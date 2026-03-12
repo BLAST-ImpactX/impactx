@@ -423,4 +423,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::CFbend)
+
 #endif // IMPACTX_CFBEND_H

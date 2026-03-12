@@ -285,4 +285,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactDrift)
+
 #endif // IMPACTX_EXACTDRIFT_H

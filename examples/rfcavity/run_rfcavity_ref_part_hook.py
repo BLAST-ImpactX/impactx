@@ -72,7 +72,51 @@ def change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0):
         + Bsum * np.sin(k * (t0 - zmin / beta) + theta)
     )
     dgamma = -dpt
-    return dgamma
+
+    numerator = emax * (
+        -Bsum * np.cos(k * (t0 - zmin / beta) + theta)
+        + Asum * np.sin(k * (t0 - zmin / beta) + theta)
+    )
+
+    synch_phase = np.arctan(numerator/dpt)
+
+    return dgamma, synch_phase
+
+
+#TODO:  Eliminate duplication here by introducing a third function called by these two.
+def set_phase(cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0):
+    zmin = -L / (2.0 * beta)
+    w = 2.0 * np.pi * f
+    k = w / sconst.c
+    sinkL = np.sin(k * L / (2.0 * beta))
+
+    Abasearr = np.array(
+        [
+            (-1) ** j
+            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
+            for j in range(ncoef)
+        ]
+    )
+    Bbasearr = np.array(
+        [
+            (-1) ** j
+            * j
+            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
+            for j in range(ncoef)
+        ]
+    )
+    Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL
+    Bcoeffs = 4.0 * Bbasearr * np.pi * L * beta**2 * sin_coeffs * sinkL
+    Asum = sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
+    Bsum = sum(Bcoeffs[1 : ncoef - 1])
+
+    term1 = -Bsum - Asum * np.tan(synch_phase)
+    term2 = -Asum + Bsum * np.tan(synch_phase)
+    phase = -k*(t0 - zmin / beta) + np.arctan2(term1,term2)
+    phase_deg = np.degrees(np.mod(phase, 2*np.pi))
+
+    return phase_deg
+
 
 
 #   Drift elements
@@ -96,26 +140,6 @@ rf = elements.RFCavity(
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
-
-# sim.lattice.extend(
-#    [
-#        monitor,
-#        dr1,
-#        dr2,
-#        rf,
-#        dr2,
-#        dr2,
-#        monitor,
-#    ]
-# )
-
-# sim.lattice.extend(
-#    [
-#        monitor,
-#        rf,
-#        monitor,
-#    ]
-# )
 
 sim.lattice.extend(
     [
@@ -149,9 +173,11 @@ def hook_before_element(sim):
         emax = element.escale
         phase = element.phase
         t0 = ref.t
-        dgamma = change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0)
+        dgamma, synch_phase = change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0)
+        updated_phase = set_phase(cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0)
+        element.phase = updated_phase
         print(
-            f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gammai={ref.gamma:.2f}, gamma change={dgamma:.2f}",
+            f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gammai={ref.gamma:.2f}, gamma change={dgamma:.2f}, synch phase={synch_phase:.2f}, updated phase={updated_phase:.2f}",
             flush=True,
         )
 

@@ -38,24 +38,42 @@ ncoef = 25
 
 cos_coeffs, sin_coeffs = fourier_coefficients(z, ez_onaxis, ncoef)
 
+
 def change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0):
     # predicted energy gain
-    zmin = -L/(2.0*beta) 
+    zmin = -L / (2.0 * beta)
     theta = phase * np.pi / 180.0
-    w = 2.0*np.pi*f
+    w = 2.0 * np.pi * f
     k = w / sconst.c
-    sinkL = np.sin(k*L/(2.0*beta))
+    sinkL = np.sin(k * L / (2.0 * beta))
 
-    Abasearr = np.array([(-1)**j/((k*L-2*j*np.pi*beta)*(k*L+2*j*np.pi*beta)) for j in range(ncoef)])
-    Bbasearr = np.array([(-1)**j*j/((k*L-2*j*np.pi*beta)*(k*L+2*j*np.pi*beta)) for j in range(ncoef)])
+    Abasearr = np.array(
+        [
+            (-1) ** j
+            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
+            for j in range(ncoef)
+        ]
+    )
+    Bbasearr = np.array(
+        [
+            (-1) ** j
+            * j
+            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
+            for j in range(ncoef)
+        ]
+    )
     Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL
     Bcoeffs = 4.0 * Bbasearr * np.pi * L * beta**2 * sin_coeffs * sinkL
-    Asum = sum(Acoeffs[1:ncoef-1]) + Acoeffs[0]/2.0
-    Bsum = sum(Bcoeffs[1:ncoef-1])
+    Asum = sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
+    Bsum = sum(Bcoeffs[1 : ncoef - 1])
 
-    dpt = emax * (Asum * np.cos(k*(t0-zmin/beta) + theta) + Bsum * np.sin(k*(t0-zmin/beta) + theta))
+    dpt = emax * (
+        Asum * np.cos(k * (t0 - zmin / beta) + theta)
+        + Bsum * np.sin(k * (t0 - zmin / beta) + theta)
+    )
     dgamma = -dpt
     return dgamma
+
 
 #   Drift elements
 dr1 = elements.Drift(name="dr1", ds=0.4, nslice=1)
@@ -69,7 +87,7 @@ rf = elements.RFCavity(
     z=z,
     field_or_gradient=ez_onaxis,
     ncoef=ncoef,
-    freq=1.3e9, 
+    freq=1.3e9,
     phase=85.5,
     mapsteps=100,
     nslice=4,
@@ -79,7 +97,7 @@ rf = elements.RFCavity(
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
-#sim.lattice.extend(
+# sim.lattice.extend(
 #    [
 #        monitor,
 #        dr1,
@@ -89,15 +107,15 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 #        dr2,
 #        monitor,
 #    ]
-#)
+# )
 
-#sim.lattice.extend(
+# sim.lattice.extend(
 #    [
 #        monitor,
 #        rf,
 #        monitor,
 #    ]
-#)
+# )
 
 sim.lattice.extend(
     [
@@ -109,7 +127,7 @@ sim.lattice.extend(
         dr2,
         rf,
         dr2,
-        dr2,  
+        dr2,
         rf,
         dr2,
         dr2,
@@ -118,6 +136,7 @@ sim.lattice.extend(
         monitor,
     ]
 )
+
 
 def hook_before_element(sim):
     element = sim.tracking_element
@@ -134,10 +153,11 @@ def hook_before_element(sim):
         print(
             f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gammai={ref.gamma:.2f}, gamma change={dgamma:.2f}",
             flush=True,
-        )    
- 
+        )
+
+
 sim.hook["before_element"] = hook_before_element
-    
+
 # run simulation
 sim.track_reference(ref)
 

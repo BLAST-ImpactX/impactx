@@ -78,12 +78,12 @@ def change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0):
         + Asum * np.sin(k * (t0 - zmin / beta) + theta)
     )
 
-    synch_phase = np.arctan(numerator/dpt)
+    synch_phase = np.arctan(numerator / dpt)
 
     return dgamma, synch_phase
 
 
-#TODO:  Eliminate duplication here by introducing a third function called by these two.
+# TODO:  Eliminate duplication here by introducing a third function called by these two.
 def set_phase(cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0):
     zmin = -L / (2.0 * beta)
     w = 2.0 * np.pi * f
@@ -112,11 +112,10 @@ def set_phase(cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0):
 
     term1 = -Bsum - Asum * np.tan(synch_phase)
     term2 = -Asum + Bsum * np.tan(synch_phase)
-    phase = -k*(t0 - zmin / beta) + np.arctan2(term1,term2)
-    phase_deg = np.degrees(np.mod(phase, 2*np.pi))
+    phase = -k * (t0 - zmin / beta) + np.arctan2(term1, term2)
+    phase_deg = np.degrees(np.mod(phase, 2 * np.pi))
 
     return phase_deg
-
 
 
 #   Drift elements
@@ -173,8 +172,12 @@ def hook_before_element(sim):
         emax = element.escale
         phase = element.phase
         t0 = ref.t
-        dgamma, synch_phase = change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0)
-        updated_phase = set_phase(cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0)
+        dgamma, synch_phase = change_in_gamma(
+            cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0
+        )
+        updated_phase = set_phase(
+            cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0
+        )
         element.phase = updated_phase
         print(
             f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gammai={ref.gamma:.2f}, gamma change={dgamma:.2f}, synch phase={synch_phase:.2f}, updated phase={updated_phase:.2f}",

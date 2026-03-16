@@ -151,5 +151,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_rfcavity_ref_part_hook.py
       :language: python3
       :caption: You can copy this file from ``examples/rfcavity/analysis_rfcavity_ref_part_hook.py``.
-
-

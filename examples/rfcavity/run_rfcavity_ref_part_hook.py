@@ -39,83 +39,79 @@ ncoef = 25
 cos_coeffs, sin_coeffs = fourier_coefficients(z, ez_onaxis, ncoef)
 
 
-def change_in_gamma(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0):
+def get_effective_fourier_coeffs_AB(cos_coeffs, sin_coeffs, f, L, beta):
+    w = 2.0 * np.pi * f
+    k = w / sconst.c
+    sinkL = np.sin(k * L / (2.0 * beta))
+
+    Abasearr = np.array(
+        [
+            (-1) ** j
+            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
+            for j in range(ncoef)
+        ]
+    )
+    Bbasearr = np.array(
+        [
+            (-1) ** j
+            * j
+            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
+            for j in range(ncoef)
+        ]
+    )
+    Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL
+    Bcoeffs = 4.0 * Bbasearr * np.pi * L * beta**2 * sin_coeffs * sinkL
+    Asum = sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
+    Bsum = sum(Bcoeffs[1 : ncoef - 1])
+
+    A = Asum
+    B = Bsum
+
+    return A, B
+
+
+def get_synch_phase_Veff(cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0):
     # predicted energy gain
     zmin = -L / (2.0 * beta)
     theta = phase * np.pi / 180.0
     w = 2.0 * np.pi * f
     k = w / sconst.c
-    sinkL = np.sin(k * L / (2.0 * beta))
 
-    Abasearr = np.array(
-        [
-            (-1) ** j
-            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
-            for j in range(ncoef)
-        ]
-    )
-    Bbasearr = np.array(
-        [
-            (-1) ** j
-            * j
-            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
-            for j in range(ncoef)
-        ]
-    )
-    Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL
-    Bcoeffs = 4.0 * Bbasearr * np.pi * L * beta**2 * sin_coeffs * sinkL
-    Asum = sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
-    Bsum = sum(Bcoeffs[1 : ncoef - 1])
+    A, B = get_effective_fourier_coeffs_AB(cos_coeffs, sin_coeffs, f, L, beta)
 
     dpt = emax * (
-        Asum * np.cos(k * (t0 - zmin / beta) + theta)
-        + Bsum * np.sin(k * (t0 - zmin / beta) + theta)
+        A * np.cos(k * (t0 - zmin / beta) + theta)
+        + B * np.sin(k * (t0 - zmin / beta) + theta)
     )
     dgamma = -dpt
 
+    Veff = emax * np.sqrt(A**2 + B**2)
+
     numerator = emax * (
-        -Bsum * np.cos(k * (t0 - zmin / beta) + theta)
-        + Asum * np.sin(k * (t0 - zmin / beta) + theta)
+        -B * np.cos(k * (t0 - zmin / beta) + theta)
+        + A * np.sin(k * (t0 - zmin / beta) + theta)
     )
 
     synch_phase = np.arctan(numerator / dpt)
 
-    return dgamma, synch_phase
+    return synch_phase, Veff, dgamma
 
 
-# TODO:  Eliminate duplication here by introducing a third function called by these two.
-def set_phase(cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0):
+def get_phase_emax(cos_coeffs, sin_coeffs, f, L, Veff, beta, synch_phase, t0):
     zmin = -L / (2.0 * beta)
     w = 2.0 * np.pi * f
     k = w / sconst.c
-    sinkL = np.sin(k * L / (2.0 * beta))
 
-    Abasearr = np.array(
-        [
-            (-1) ** j
-            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
-            for j in range(ncoef)
-        ]
-    )
-    Bbasearr = np.array(
-        [
-            (-1) ** j
-            * j
-            / ((k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta))
-            for j in range(ncoef)
-        ]
-    )
-    Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL
-    Bcoeffs = 4.0 * Bbasearr * np.pi * L * beta**2 * sin_coeffs * sinkL
-    Asum = sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
-    Bsum = sum(Bcoeffs[1 : ncoef - 1])
+    A, B = get_effective_fourier_coeffs_AB(cos_coeffs, sin_coeffs, f, L, beta)
 
-    term1 = -Bsum - Asum * np.tan(synch_phase)
-    term2 = -Asum + Bsum * np.tan(synch_phase)
+    term1 = -B - A * np.tan(synch_phase)
+    term2 = -A + B * np.tan(synch_phase)
     phase = -k * (t0 - zmin / beta) + np.arctan2(term1, term2)
     phase_deg = np.degrees(np.mod(phase, 2 * np.pi))
 
-    return phase_deg
+    emax = Veff / np.sqrt(A**2 + B**2)
+
+    return phase_deg, emax
 
 
 #   Drift elements
@@ -172,15 +168,26 @@ def hook_before_element(sim):
         emax = element.escale
         phase = element.phase
         t0 = ref.t
-        dgamma, synch_phase = change_in_gamma(
+        print(
+            f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gamma at entry={ref.gamma:.2f}",
+            flush=True,
+        )
+        # Extract the effective RF voltage and synchronous phase from the ImpactX RFCavity input parameters:
+        synch_phase, Veff, dgamma = get_synch_phase_Veff(
             cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0
         )
-        updated_phase = set_phase(
-            cos_coeffs, sin_coeffs, f, L, emax, beta, synch_phase, t0
+        print( 
+            f"  RF cavity synchronous phase={synch_phase:.2f}, V effective={Veff:.2f}, predicted change in gamma={dgamma:.2f}",
+            flush=True,
+        )
+        # From the effective RF voltage and synchronous phase, set the ImpactX RFCavity input parameters:
+        updated_phase, updated_emax = get_phase_emax(
+            cos_coeffs, sin_coeffs, f, L, Veff, beta, synch_phase, t0
         )
         element.phase = updated_phase
+        element.escale = updated_emax
         print(
-            f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gammai={ref.gamma:.2f}, gamma change={dgamma:.2f}, synch phase={synch_phase:.2f}, updated phase={updated_phase:.2f}",
+            f"  RF cavity updated (reset) values of phase={updated_phase:.2f} and emax={updated_emax:.2f}",
             flush=True,
         )
 

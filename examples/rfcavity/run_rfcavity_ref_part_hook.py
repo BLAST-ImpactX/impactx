@@ -176,7 +176,7 @@ def hook_before_element(sim):
         synch_phase, Veff, dgamma = get_synch_phase_Veff(
             cos_coeffs, sin_coeffs, f, L, emax, beta, phase, t0
         )
-        print( 
+        print(
             f"  RF cavity synchronous phase={synch_phase:.2f}, V effective={Veff:.2f}, predicted change in gamma={dgamma:.2f}",
             flush=True,
         )

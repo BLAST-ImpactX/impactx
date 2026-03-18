@@ -244,6 +244,7 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
 
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 

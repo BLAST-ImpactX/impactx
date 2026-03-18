@@ -249,6 +249,7 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
+         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE

@@ -311,6 +311,7 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
+         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
@@ -325,8 +326,8 @@ namespace impactx::elements
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
-            amrex::ParticleReal const bet = std::sqrt(betgam2/(1.0_prt + betgam2));
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
+            amrex::ParticleReal const bet = refpart.beta;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();

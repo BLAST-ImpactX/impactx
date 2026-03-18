@@ -299,11 +299,12 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
+         * @param[in] refpart reference particle
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;

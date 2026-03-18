@@ -110,7 +110,7 @@ Acceleration by RF Cavities (Using a Callback Hook)
 
 This test is similar to the :ref:`test above <examples-rfcavity-ref-part>`, except that it illustrates the use of the callback hook feature :py:attr:`~impactx.ImpactX.hook` to provide an alternative method to set the RF cavity field amplitude(s) and phase(s).
 
-The two functions ``get_synch_phase_Veff`` and ``get_phase_emax`` allow the user to convert between the pair of inputs (``Veff, phase_synch``) and (``escale,phase``).  Here ``escale`` and ``phase`` are the documented ImpactX inputs in :py:class:`~impactx.elements.RFCavity`, while `Veff` (:math:`V_{\rm eff}`) and ``phase_synch`` (:math:`\phi_s`) denote the effective voltage and synchronous phase of the cavity, defined here such that:
+The two functions ``get_synch_phase_Veff`` and ``get_phase_emax`` allow the user to convert between the pair of inputs (``Veff, phase_synch``) and (``escale,phase``).  Here ``escale`` and ``phase`` are the documented ImpactX inputs in :py:class:`~impactx.elements.RFCavity`, while ``Veff`` (:math:`V_{\rm eff}`) and ``phase_synch`` (:math:`\phi_s`) denote the effective voltage and synchronous phase of the cavity, defined here such that:
 
 :math:`\Delta\gamma = V_{\rm eff}\cos(\phi_s).
 

@@ -228,12 +228,22 @@ def from_pals(self, pals_beamline, nslice=1):
                 )
             )
         elif isinstance(pals_element, Quadrupole):
+            if pals_element.MagneticMultipoleP.Bn1 is not None:
+                k_quad = pals_element.MagneticMultipoleP.Bn1
+                unit_quad = 1
+            elif pals_element.MagneticMultipoleP.Kn1 is not None:
+                k_quad = pals_element.MagneticMultipoleP.Kn1
+                unit_quad = 0
+            else:
+                raise RuntimeError(
+                    f"from_pals: No gradient input provided for element of kind {type(pals_element)}."
+                )
             ix_beamline.append(
                 elements.ChrQuad(
                     name=pals_element.name,
                     ds=pals_element.length,
-                    k=pals_element.MagneticMultipoleP.Bn1,
-                    unit=1,
+                    k=k_quad,
+                    unit=unit_quad,
                     nslice=nslice,
                 )
             )

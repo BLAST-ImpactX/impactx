@@ -233,7 +233,7 @@ def from_pals(self, pals_beamline, nslice=1):
                     name=pals_element.name,
                     ds=pals_element.length,
                     k=pals_element.MagneticMultipoleP.Bn1,
-                    unit=0,
+                    unit=1,
                     nslice=nslice,
                 )
             )

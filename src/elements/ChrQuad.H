@@ -375,6 +375,9 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
         }
 
 
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
         /** This function returns the linear transport map.
          *
          * @param[in] refpart reference particle
@@ -428,9 +431,6 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
 
             return R;
         }
-
-        /** This pushes the covariance matrix. */
-        using LinearTransport::operator();
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
         int m_unit; //! unit specification for quad strength

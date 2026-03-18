@@ -61,8 +61,8 @@ def get_effective_fourier_coeffs_AB(cos_coeffs, sin_coeffs, f, L, beta):
     )
     Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL
     Bcoeffs = 4.0 * Bbasearr * np.pi * L * beta**2 * sin_coeffs * sinkL
-    Asum = sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
-    Bsum = sum(Bcoeffs[1 : ncoef - 1])
+    Asum = np.sum(Acoeffs[1 : ncoef - 1]) + Acoeffs[0] / 2.0
+    Bsum = np.sum(Bcoeffs[1 : ncoef - 1])
 
     A = Asum
     B = Bsum

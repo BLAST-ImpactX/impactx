@@ -6,7 +6,7 @@ fodo_cell:
       length: 0.25
   - quad1:
       MagneticMultipoleP:
-        Bn1: 1.0
+        Kn1: 1.0
       kind: Quadrupole
       length: 1.0
   - drift2:
@@ -14,7 +14,7 @@ fodo_cell:
       length: 0.5
   - quad2:
       MagneticMultipoleP:
-        Bn1: -1.0
+        Kn1: -1.0
       kind: Quadrupole
       length: 1.0
   - drift3:

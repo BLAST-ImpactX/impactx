@@ -392,7 +392,7 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
 
             // access reference particle values to find beta*gamma^2
             amrex::ParticleReal const pt_ref = refpart.pt;
-            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
 
             // compute phase advance per unit length in s (in rad/m)
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));

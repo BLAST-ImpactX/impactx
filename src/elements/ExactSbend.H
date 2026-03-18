@@ -345,16 +345,15 @@ namespace impactx::elements
 
                // assign linear map matrix elements
                R(1,1) = cos_theta;
-               R(1,2) = m_rc*sin_theta;
-               R(1,6) = - (m_rc/bet)*(1.0_prt - cos_theta);
-               R(2,1) = -sin_theta/m_rc;
+               R(1,2) = m_rc * sin_theta;
+               R(1,6) = - ( m_rc / bet) * (1_prt - cos_theta);
+               R(2,1) = -sin_theta / m_rc;
                R(2,2) = cos_theta;
-               R(2,6) = - sin_theta/bet;
-               R(3,4) = m_rc*theta;
-               R(5,1) = sin_theta/bet;
-               R(5,2) = m_rc/bet*(1.0_prt - cos_theta);
-               R(5,6) = m_rc*(-theta+sin_theta/(bet*bet));
-
+               R(2,6) = - sin_theta / bet;
+               R(3,4) = m_rc * theta;
+               R(5,1) = sin_theta / bet;
+               R(5,2) = m_rc / bet * (1_prt - cos_theta);
+               R(5,6) = m_rc * (-theta + sin_theta / (bet * bet));
             }
 
             return R;

@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#
+# Copyright 2022-2026 ImpactX contributors
+# Authors: Eric G. Stern
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
 
 # Create and return a list of ImpactX elements from a
 # Synergia lattice
@@ -13,11 +19,13 @@ import synergia
 
 import impactx
 
-
 class Order(Enum):
     linear = 0
     chr = 1
     exact = 2
+
+# set the following switch overrides the model for dipedges
+force_linear_dipedges_for_bends = True
 
 
 ET = synergia.lattice.element_type
@@ -96,12 +104,12 @@ def cnv_sbend(elem, order):
     cf = (k1 != 0.0) or (k2 != 0.0) or (k1s != 0.0)
 
     # model for dipedges
-    de_model = " "
-    if order == Order.linear:
+    if force_linear_dipedges_for_bends:
+        de_model = "linear"
+    elif order == Order.linear:
         de_model = "linear"
     elif order == Order.exact or order == Order.chr:
         de_model = "nonlinear"
-        pass
 
     if e1 != 0.0:
         us_dipedge = impactx.elements.DipEdge(
@@ -110,9 +118,7 @@ def cnv_sbend(elem, order):
             2 * hgap,
             K2=fint,
             location="entry",
-            # model=de_model,
-            # use linear model dipedge
-            model="linear",
+            model=de_model,
             name=nm + "_usedge",
         )
         pass
@@ -123,9 +129,7 @@ def cnv_sbend(elem, order):
             2 * hgap,
             K2=fint,
             location="exit",
-            # model=de_model,
-            # use linear model dipedge
-            model="linear",
+            model=de_model,
             name=nm + "_dsedge",
         )
         pass
@@ -222,8 +226,9 @@ def cnv_rbend(elem, order):
         e2 = -e2 - bendangle / 2
 
     # model for dipedges
-    de_model = "foo"
-    if order == Order.linear:
+    if force_linear_dipedges_for_bends:
+        de_model = "linear"
+    elif order == Order.linear:
         de_model = "linear"
     elif order == Order.exact or order == Order.chr:
         de_model = "nonlinear"

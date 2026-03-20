@@ -112,7 +112,9 @@ This test is similar to the :ref:`test above <examples-rfcavity-ref-part>`, exce
 
 The two functions ``get_synch_phase_Veff`` and ``get_phase_emax`` allow the user to convert between the pair of inputs (``Veff, phase_synch``) and (``escale,phase``).  Here ``escale`` and ``phase`` are the documented ImpactX inputs in :py:class:`~impactx.elements.RFCavity`, while ``Veff`` (:math:`V_{\rm eff}`) and ``phase_synch`` (:math:`\phi_s`) denote the effective voltage and synchronous phase of the cavity, defined here such that:
 
-:math:`\Delta\gamma = V_{\rm eff}\cos(\phi_s).
+.. math::
+
+    \Delta\gamma = V_{\rm eff}\cos(\phi_s).
 
 The conversion is implemented under the approximation that the relativistic beta does not vary within the cavity.  (E.g., this is an excellent approximation for large values of gamma.)
 

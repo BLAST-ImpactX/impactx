@@ -44,10 +44,10 @@ def get_effective_fourier_coeffs_AB(cos_coeffs, sin_coeffs, f, L, beta):
     k = w / sconst.c
     sinkL = np.sin(k * L / (2.0 * beta))
 
-    j = np.arange(ncoef)                                                          
-    signs = (-1.0) ** j                                                           
-    denom = (k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta)       
-    Abasearr = signs / denom                                                      
+    j = np.arange(ncoef)
+    signs = (-1.0) ** j
+    denom = (k * L - 2 * j * np.pi * beta) * (k * L + 2 * j * np.pi * beta)
+    Abasearr = signs / denom
     Bbasearr = signs * j / denom
 
     Acoeffs = -2.0 * Abasearr * k * L**2 * beta * cos_coeffs * sinkL

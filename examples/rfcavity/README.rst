@@ -118,6 +118,13 @@ The two functions ``get_synch_phase_Veff`` and ``get_phase_emax`` allow the user
 
 The conversion is implemented under the approximation that the relativistic beta does not vary within the cavity.  (E.g., this is an excellent approximation for large values of gamma.)
 
+For the definition of effective voltage and synchronous phase, see:
+
+* T. Wangler, Principles of RF Linear Accelerators, John Wiley and Sons, Inc., New York, 1998, Sections 2.2 - 2.5
+* D. Uriot and N. Pichoff, TraceWin Manual, CEA/SACLAY - DRF/Irfu/DACM - Didiear URIOT, updated May 31, 2023, "Synchronous phase definitions"
+
+The equivalent voltage here is multiplied by the particle charge :math:`q` and divided by :math:`mc^2`, so this is a dimensionless quantity.
+
 For each of the four RF cavities, the equivalent voltage and synchronous phase are computed.  Those values are then converted back to the default phase and escale inputs, whose values are updated within the cavity.
 
 When implemented correctly, the dynamics of the reference particle within these cavities should be identical to the dynamics seen in :ref:`single reference particle tracking <examples-rfcavity-ref-part>`.

@@ -442,11 +442,11 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters (Yoshida)
-        amrex::ParticleReal const a = std::pow(2_prt,1_prt/5_prt);
-        amrex::ParticleReal const z0 = 1_prt / (2_prt - a);
-        amrex::ParticleReal const z1 = -a / (2_prt - a);
-        amrex::ParticleReal const tau1 = tau*z0;
-        amrex::ParticleReal const tau2 = tau*z1;
+        constexpr amrex::ParticleReal a = 1.148698354997035;  // C++26 std::pow(2_prt,1_prt/5_prt);
+        constexpr amrex::ParticleReal z0 = 1_prt / (2_prt - a);
+        constexpr amrex::ParticleReal z1 = -a / (2_prt - a);
+        constexpr amrex::ParticleReal tau1 = tau*z0;
+        constexpr amrex::ParticleReal tau2 = tau*z1;
 
         // a single sixth-order step
         symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
@@ -487,7 +487,7 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
 
         // initialize the value of the independent variable
         amrex::ParticleReal zeval = zin;

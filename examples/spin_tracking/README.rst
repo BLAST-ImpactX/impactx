@@ -359,7 +359,7 @@ The analysis can be run using:
 .. _examples-exact-quad-spin-scaling:
 
 Test of Thomas-BMT Spin Integration in a FODO Channel
-======================================================
+=====================================================
 
 This example tests the propagation of spin in a single period of a FODO channel that uses symplectic integration for tracking via the ExactQuad element.
 

@@ -89,7 +89,9 @@ namespace impactx::elements::mixin
             sz = szout;
         }
 
-        /** Evaluate the Thomas-BMT precession vector in a given field,
+        /** Evaluate the Thomas-BMT precession vector
+         *
+          * Evaluate in a given field,
          *  based on the instantaneous particle orbit variables.  The model
          *  below is evaluated in a Frenet-Serret coordinate system,
          *  assuming a reference trajectory of curvature h, with (possible)
@@ -110,9 +112,9 @@ namespace impactx::elements::mixin
          * @param[in] Ex electric field x-component [1/m, dynamic units]
          * @param[in] Ey electric field y-component [1/m, dynamic units]
          * @param[in] Ez electric field z-component [1/m, dynamic units]
-         * @param[inout] Omegax precession vector x-component
-         * @param[inout] Omegay precession vector y-component
-         * @param[inout] Omegaz precession vector z-component
+         * @param[out] Omegax precession vector x-component
+         * @param[out] Omegay precession vector y-component
+         * @param[out] Omegaz precession vector z-component
          */
         template<typename T_Real=amrex::ParticleReal>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -122,8 +124,6 @@ namespace impactx::elements::mixin
             T_Real const & AMREX_RESTRICT uy,
             T_Real const & AMREX_RESTRICT uz,
             T_Real const & AMREX_RESTRICT gamma,
-//            T_Real const & AMREX_RESTRICT h,
-//            T_Real const & AMREX_RESTRICT gyro_anomaly,
             amrex::ParticleReal const & AMREX_RESTRICT h,
             amrex::ParticleReal const & AMREX_RESTRICT gyro_anomaly,
             T_Real const & AMREX_RESTRICT Bx,

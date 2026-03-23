@@ -130,8 +130,6 @@ namespace impactx::elements
             // additional constants needed for spin push
             m_gamma_ref = refpart.gamma();
             m_gyro_anomaly = refpart.gyromagnetic_anomaly;
-
-
         }
 
         /** This is a quad functor, so that a variable of this type can be used like a quad function.
@@ -369,9 +367,9 @@ namespace impactx::elements
             T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:
-            T_Real const Ex = 0.0;
-            T_Real const Ey = 0.0;
-            T_Real const Ez = 0.0;
+            T_Real const Ex = 0.0_prt;
+            T_Real const Ey = 0.0_prt;
+            T_Real const Ez = 0.0_prt;
 
             // Quantities required to evaluate the full Thomas-BMT precession vector.
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);

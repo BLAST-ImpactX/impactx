@@ -326,7 +326,7 @@ def cnv_quadrupole(elem, order):
         )
     elif order == Order.chr:
         ix_elem = impactx.elements.ChrQuad(
-            ds, k1, nslice=nslice_by_elem_type["quadruple"], name=nm
+            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm
         )
     elif order == Order.exact:
         ix_elem = impactx.elements.ExactQuad(

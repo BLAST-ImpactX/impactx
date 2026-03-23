@@ -371,4 +371,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactSbend)
+
 #endif // IMPACTX_EXACTSBEND_H

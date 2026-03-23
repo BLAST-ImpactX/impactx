@@ -447,4 +447,6 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrQuad)
+
 #endif // IMPACTX_CHRQUAD_H

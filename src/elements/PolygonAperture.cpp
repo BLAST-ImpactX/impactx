@@ -25,3 +25,5 @@ impactx::elements::PolygonAperture::action_name (Action const & action)
             throw std::runtime_error("Unknown action");
     }
 }
+
+IMPACTX_PUSH_INSTANTIATE(impactx::elements::PolygonAperture)

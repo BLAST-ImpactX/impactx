@@ -228,4 +228,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SpinMap)
+
 #endif // IMPACTX_ELEMENT_SPIN_MAP_H

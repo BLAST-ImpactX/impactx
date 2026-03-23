@@ -275,4 +275,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ShortRF)
+
 #endif // IMPACTX_SHORTRF_H

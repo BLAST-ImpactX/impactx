@@ -435,4 +435,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactQuad)
+
 #endif // IMPACTX_EXACTQUAD_H

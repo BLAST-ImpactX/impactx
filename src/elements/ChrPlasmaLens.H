@@ -366,4 +366,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrPlasmaLens)
+
 #endif // IMPACTX_CHRPLASMALENS_H

@@ -19,10 +19,12 @@ import synergia
 
 import impactx
 
+
 class Order(Enum):
     linear = 0
     chr = 1
     exact = 2
+
 
 # set the following switch overrides the model for dipedges
 force_linear_dipedges_for_bends = True

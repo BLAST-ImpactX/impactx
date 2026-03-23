@@ -48,6 +48,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.SoftQuadrupole
     | impactx.impactx_pybind.elements.Sol
     | impactx.impactx_pybind.elements.Source
+    | impactx.impactx_pybind.elements.SpinMap
     | impactx.impactx_pybind.elements.TaperedPL
     | impactx.impactx_pybind.elements.ThinDipole,
 ) -> impactx.impactx_pybind.elements.KnownElementsList:

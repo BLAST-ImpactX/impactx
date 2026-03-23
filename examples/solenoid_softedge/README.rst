@@ -226,7 +226,7 @@ Run
 
 This example can be run as:
 
-* **Python** script: ``python3 run_solenoid_softedge.py``
+* **Python** script: ``python3 run_solenoid_softedge_solvable.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
@@ -234,7 +234,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_solenoid_softedge.py
+       .. literalinclude:: run_solenoid_softedge_solvable.py
           :language: python3
           :caption: You can copy this file from ``examples/solenoid_softedge/run_solenoid_softedge_solvable.py``.
 

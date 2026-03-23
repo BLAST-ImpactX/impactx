@@ -19,6 +19,8 @@ import typing
 
 import amrex.space3d.amrex_3d_pybind
 from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x1_F_SI1_double as Vector3
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x6_F_SI1_double as Map3x6
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 
 from . import distribution, elements, wakeconvolution
@@ -31,9 +33,11 @@ __all__: list[str] = [
     "ImpactXParConstIter",
     "ImpactXParIter",
     "ImpactXParticleContainer",
+    "Map3x6",
     "Map6x6",
     "RefPart",
     "UnorderedMap",
+    "Vector3",
     "amr",
     "coordinate_transformation",
     "create_envelope",
@@ -561,6 +565,7 @@ class ImpactX:
         | elements.SoftQuadrupole
         | elements.Sol
         | elements.Source
+        | elements.SpinMap
         | elements.TaperedPL
         | elements.ThinDipole
         | None
@@ -1018,6 +1023,7 @@ def push(
     | elements.SoftQuadrupole
     | elements.Sol
     | elements.Source
+    | elements.SpinMap
     | elements.TaperedPL
     | elements.ThinDipole,
     step: typing.SupportsInt = 0,
@@ -1065,6 +1071,7 @@ def push(
     | elements.SoftQuadrupole
     | elements.Sol
     | elements.Source
+    | elements.SpinMap
     | elements.TaperedPL
     | elements.ThinDipole,
 ) -> None:

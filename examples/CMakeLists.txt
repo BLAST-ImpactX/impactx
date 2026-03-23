@@ -709,6 +709,17 @@ add_impactx_test(rfcavity-ref-part.py
     OFF  # no plot script yet
 )
 
+# Acceleration by RF Cavities (using Callback Hook) ##########################
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part-hook.py)
+add_impactx_test(rfcavity-ref-part-hook.py
+    examples/rfcavity/run_rfcavity_ref_part_hook.py
+    OFF   # ImpactX MPI-parallel
+    examples/rfcavity/analysis_rfcavity_ref_part_hook.py
+    OFF  # no plot script yet
+)
+
 # Ideal, Hard-Edge Solenoid ###################################################
 #
 add_impactx_test(solenoid

@@ -3,13 +3,6 @@ Acknowledge ImpactX
 
 Please acknowledge the role that ImpactX played in your research.
 
-In presentations
-****************
-
-.. note::
-
-   TODO :-)
-
 In publications
 ***************
 

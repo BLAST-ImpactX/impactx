@@ -378,4 +378,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Sol)
+
 #endif // IMPACTX_SOL_H

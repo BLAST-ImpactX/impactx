@@ -385,10 +385,51 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
+
+            // compute phase advance per unit length in s (in rad/m)
+            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            if (m_k > 0.0) {
+                R(1,1) = std::cos(omega*slice_ds);
+                R(1,2) = std::sin(omega*slice_ds)/omega;
+                R(2,1) = -omega*std::sin(omega*slice_ds);
+                R(2,2) = std::cos(omega*slice_ds);
+                R(3,3) = std::cosh(omega*slice_ds);
+                R(3,4) = std::sinh(omega*slice_ds)/omega;
+                R(4,3) = omega*std::sinh(omega*slice_ds);
+                R(4,4) = std::cosh(omega*slice_ds);
+                R(5,6) = slice_ds/betgam2;
+            } else if (m_k < 0.0) {
+                R(1,1) = std::cosh(omega*slice_ds);
+                R(1,2) = std::sinh(omega*slice_ds)/omega;
+                R(2,1) = omega*std::sinh(omega*slice_ds);
+                R(2,2) = std::cosh(omega*slice_ds);
+                R(3,3) = std::cos(omega*slice_ds);
+                R(3,4) = std::sin(omega*slice_ds)/omega;
+                R(4,3) = -omega*std::sin(omega*slice_ds);
+                R(4,4) = std::cos(omega*slice_ds);
+                R(5,6) = slice_ds/betgam2;
+            } else {
+                R(1,2) = m_slice_ds;
+                R(3,4) = m_slice_ds;
+                R(5,6) = m_slice_ds / betgam2;
+            }
+
+            return R;
         }
 
         amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
@@ -405,5 +446,7 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrQuad)
 
 #endif // IMPACTX_CHRQUAD_H

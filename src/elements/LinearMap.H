@@ -245,4 +245,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::LinearMap)
+
 #endif // IMPACTX_ELEMENT_LINEAR_MAP_H

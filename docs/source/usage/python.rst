@@ -1368,12 +1368,12 @@ This module provides elements and methods for the accelerator lattice.
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A radiofrequency cavity.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
-   **or** raw on-axis field data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   **or** raw on-axis field data (``z``, ``field_on_axis``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
 
@@ -1385,7 +1385,7 @@ This module provides elements and methods for the accelerator lattice.
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis electric field Ez (optional); default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
-   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
+   :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -1453,12 +1453,12 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge solenoid.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
-   **or** raw on-axis field data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   **or** raw on-axis field data (``z``, ``field_on_axis``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
 
@@ -1471,7 +1471,7 @@ This module provides elements and methods for the accelerator lattice.
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis magnetic field Bz
             (optional); default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
-   :param field_or_gradient: array of on-axis field values, typically normalized to a peak absolute value of 1; multiplied by ``bscale`` (alternative to Fourier coefficients)
+   :param field_on_axis: array of on-axis magnetic Bz field values, typically normalized to a peak absolute value of 1; multiplied by ``bscale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param unit: specification of units for scaling of the on-axis longitudinal magnetic field
    :param dx: horizontal translation error in m
@@ -1571,23 +1571,23 @@ This module provides elements and methods for the accelerator lattice.
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_or_gradient=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
    A soft-edge quadrupole.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
-   **or** raw on-axis field/gradient data (``z``, ``field_or_gradient``, ``ncoef``), not both.
+   **or** raw on-axis field/gradient data (``z``, ``gradient_on_axis``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
 
    :param ds: Segment length in m.
    :param gscale: Scaling factor for on-axis field gradient in inverse meters
-   :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis field gradient
+   :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis field gradient dBy/dx
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
-   :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient
+   :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient dBy/dx
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
-   :param field_or_gradient: array of on-axis field gradient values, typically normalized to a peak absolute value of 1; multiplied by ``gscale`` (alternative to Fourier coefficients)
+   :param gradient_on_axis: array of on-axis field gradient dBy/dx values, typically normalized to a peak absolute value of 1; multiplied by ``gscale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

@@ -192,4 +192,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Kicker)
+
 #endif // IMPACTX_KICKER_H

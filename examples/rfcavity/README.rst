@@ -137,7 +137,7 @@ Run
 
 This example can be run as:
 
-* **Python** script: ``python3 run_rfcavity_ref_part_hook.py`
+* **Python** script: ``python3 run_rfcavity_ref_part_hook.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 

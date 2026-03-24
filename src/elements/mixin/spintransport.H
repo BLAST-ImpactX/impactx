@@ -143,15 +143,17 @@ namespace impactx::elements::mixin
             // Evaluation of the full Thomas-BMT precession vector in the Frenet-Serret frame.
             T_Real const beta_gamma = sqrt(gamma*gamma - 1_prt);
             T_Real const beta_gamma_z = uz * beta_gamma;
-            T_Real const leading_factor = (1_prt + h * x) / beta_gamma_z;
+            T_Real const leading_factor = -(1_prt + h * x) / beta_gamma_z;
             T_Real const udotB = ux*Bx + uy*By + uz*Bz;
             T_Real const ucrossE_x = uy*Ez - uz*Ey;
             T_Real const ucrossE_y = uz*Ex - ux*Ez;
             T_Real const ucrossE_z = ux*Ey - uy*Ex;
-            Omegax = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bx - gyro_anomaly*(gamma-1_prt)*udotB*ux - (gyro_anomaly + 1_prt/(1_prt+gamma))*beta_gamma*ucrossE_x);
-            Omegay = -leading_factor * ((1_prt + gyro_anomaly*gamma)*By - gyro_anomaly*(gamma-1_prt)*udotB*uy - (gyro_anomaly + 1_prt/(1_prt+gamma))*beta_gamma*ucrossE_y) + h;
-            Omegaz = -leading_factor * ((1_prt + gyro_anomaly*gamma)*Bz - gyro_anomaly*(gamma-1_prt)*udotB*uz - (gyro_anomaly + 1_prt/(1_prt+gamma))*beta_gamma*ucrossE_z);
-
+            T_Real const c1 = (1_prt + gyro_anomaly*gamma);
+            T_Real const c2 = gyro_anomaly * (gamma - 1_prt) * udotB;
+            T_Real const c3 = (gyro_anomaly + 1_prt / (1_prt + gamma)) * beta_gamma;
+            Omegax = leading_factor * (c1 * Bx - c2 * ux - c3 * ucrossE_x);
+            Omegay = leading_factor * (c1 * By - c2 * uy - c3 * ucrossE_y) + h;
+            Omegaz = leading_factor * (c1 * Bz - c2 * uz - c3 * ucrossE_z);
         }
 
     };

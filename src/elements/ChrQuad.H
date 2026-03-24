@@ -397,13 +397,16 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
 
+            // normalize quad units to MAD-X convention if needed
+            amrex::ParticleReal const g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
             // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+            amrex::ParticleReal const omega = std::sqrt(std::abs(g));
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            if (m_k > 0.0) {
+            if (g > 0.0) {
                 R(1,1) = std::cos(omega*slice_ds);
                 R(1,2) = std::sin(omega*slice_ds)/omega;
                 R(2,1) = -omega*std::sin(omega*slice_ds);
@@ -413,7 +416,7 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
                 R(4,3) = omega*std::sinh(omega*slice_ds);
                 R(4,4) = std::cosh(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
-            } else if (m_k < 0.0) {
+            } else if (g < 0.0) {
                 R(1,1) = std::cosh(omega*slice_ds);
                 R(1,2) = std::sinh(omega*slice_ds)/omega;
                 R(2,1) = omega*std::sinh(omega*slice_ds);

@@ -445,8 +445,8 @@ namespace impactx::integrators
         constexpr amrex::ParticleReal a = 1.148698354997035;  // C++26 std::pow(2_prt,1_prt/5_prt);
         constexpr amrex::ParticleReal z0 = 1_prt / (2_prt - a);
         constexpr amrex::ParticleReal z1 = -a / (2_prt - a);
-        constexpr amrex::ParticleReal tau1 = tau*z0;
-        constexpr amrex::ParticleReal tau2 = tau*z1;
+        amrex::ParticleReal const tau1 = tau * z0;
+        amrex::ParticleReal const tau2 = tau * z1;
 
         // a single sixth-order step
         symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);

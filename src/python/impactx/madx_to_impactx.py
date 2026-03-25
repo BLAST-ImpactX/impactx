@@ -42,6 +42,7 @@ def lattice(parsed_beamline, nslice=1):
     # mapping is "MAD-X": "ImpactX",
     madx_to_impactx_dict = {
         "MARKER": "None",
+        "BEAMBEAM": "None",  # beam-beam interaction, no ImpactX equivalent
         "DRIFT": "Drift",
         "SBEND": "Sbend",  # Sector Bending Magnet
         "RBEND": "Sbend",  # Rectangular Bending Magnet -> DipEdge + Sbend + DipEdge

@@ -1000,6 +1000,7 @@ class MADXParser:
             "stop",
             "quit",
             "exit",
+            "endsequence",
         ):
             # Skip these commands - just consume until semicolon
             self._skip_until_semicolon()
@@ -1028,6 +1029,8 @@ class MADXParser:
 
         if keyword == "line":
             self._parse_line_definition(name)
+        elif keyword == "sequence":
+            self._parse_sequence_definition(name)
         else:
             self._parse_element_definition(name, keyword)
 
@@ -1083,6 +1086,93 @@ class MADXParser:
 
         self._expect(TokenType.RPAREN)
         self._expect(TokenType.SEMICOLON)
+
+        line = Line(name, elements)
+        self.context.lines[name] = line
+
+    def _parse_sequence_definition(self, name: str):
+        """Parse a SEQUENCE definition.
+
+        Syntax:
+            name: SEQUENCE, L=length;
+              elem1: type, at=pos;   ! labeled placement
+              elem2, at=pos;         ! unlabeled placement (existing element)
+            ENDSEQUENCE;
+
+        Elements are collected and sorted by their 'at' position,
+        then stored as a Line for compatibility with getBeamline().
+        """
+        # Parse sequence-level attributes (L=..., REFER=..., etc.)
+        while self._current().type == TokenType.COMMA:
+            self._advance()
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+            attr_name = self._advance().value.lower()
+            if self._current().type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
+                self._advance()
+                self._parse_expression()  # consume but discard
+            # else: boolean flag, ignore
+
+        self._expect(TokenType.SEMICOLON)
+
+        # Parse sequence entries until ENDSEQUENCE
+        seq_entries = []  # list of (at_position, element_name)
+
+        while self._current().type != TokenType.EOF:
+            token = self._current()
+
+            if token.type == TokenType.SEMICOLON:
+                self._advance()
+                continue
+
+            if token.type != TokenType.IDENTIFIER:
+                break
+
+            entry_name = token.value.lower()
+
+            # Check for ENDSEQUENCE
+            if entry_name == "endsequence":
+                self._advance()
+                self._expect(TokenType.SEMICOLON)
+                break
+
+            # Two forms:
+            #   1) labeled:   entry_name : type, at=pos, ...;
+            #   2) unlabeled: entry_name, at=pos, ...;
+            if self._peek(1).type == TokenType.COLON:
+                # Labeled: parse as element definition first, then extract 'at'
+                self._parse_labeled_definition()
+                elem = self.context.elements.get(entry_name)
+                at_pos = 0.0
+                if elem and "at" in elem.attributes:
+                    at_pos = elem.attributes["at"]
+                seq_entries.append((at_pos, entry_name))
+            else:
+                # Unlabeled: element_name, at = expr ;
+                self._advance()  # consume element name
+                at_pos = 0.0
+                while self._current().type == TokenType.COMMA:
+                    self._advance()
+                    if self._current().type != TokenType.IDENTIFIER:
+                        break
+                    attr_name = self._advance().value.lower()
+                    if self._current().type in (
+                        TokenType.EQUALS,
+                        TokenType.COLON_EQUALS,
+                    ):
+                        self._advance()
+                        expr = self._parse_expression()
+                        if attr_name == "at":
+                            at_pos = self.context.evaluate(expr)
+                self._expect(TokenType.SEMICOLON)
+                seq_entries.append((at_pos, entry_name))
+
+        # Sort by position and build a Line
+        seq_entries.sort(key=lambda x: x[0])
+        elements = [
+            {"name": elem_name, "multiplier": 1, "reversed": False}
+            for _, elem_name in seq_entries
+        ]
 
         line = Line(name, elements)
         self.context.lines[name] = line

@@ -997,6 +997,10 @@ class MADXParser:
             self._skip_until_semicolon()
             raise _ReturnStatement()
 
+        if name == "if":
+            self._parse_if_statement()
+            return
+
         if name in (
             "title",
             "option",
@@ -1025,6 +1029,129 @@ class MADXParser:
         """Skip tokens until semicolon or EOF."""
         while self._current().type not in (TokenType.SEMICOLON, TokenType.EOF):
             self._advance()
+        if self._current().type == TokenType.SEMICOLON:
+            self._advance()
+
+    def _parse_if_condition(self) -> bool:
+        """Parse an IF/ELSEIF condition: ( expr op expr ) or ( expr ).
+
+        MAD-X comparison operators (from mad_eval.c):
+            ==   equal
+            <>   not equal
+            <    less than
+            >    greater than
+            <=   less than or equal
+            >=   greater than or equal
+        """
+        self._expect(TokenType.LPAREN)
+
+        # Scan for a comparison operator at paren depth 0
+        start = self.pos
+        paren_depth = 0
+        op_pos = None  # token index of first operator token
+        op_kind = None  # string label
+        op_len = 0  # how many tokens the operator spans
+
+        scan = self.pos
+        while scan < len(self.tokens) and self.tokens[scan].type != TokenType.EOF:
+            t = self.tokens[scan]
+            if t.type == TokenType.LPAREN:
+                paren_depth += 1
+            elif t.type == TokenType.RPAREN:
+                if paren_depth == 0:
+                    break
+                paren_depth -= 1
+            elif paren_depth == 0 and op_pos is None:
+                nt = self.tokens[scan + 1] if scan + 1 < len(self.tokens) else None
+                if t.type == TokenType.EQUALS and nt and nt.type == TokenType.EQUALS:
+                    op_pos, op_kind, op_len = scan, "==", 2
+                elif t.type == TokenType.LT:
+                    if nt and nt.type == TokenType.GT:
+                        op_pos, op_kind, op_len = scan, "<>", 2  # not equal
+                    elif nt and nt.type == TokenType.EQUALS:
+                        op_pos, op_kind, op_len = scan, "<=", 2
+                    else:
+                        op_pos, op_kind, op_len = scan, "<", 1
+                elif t.type == TokenType.GT:
+                    if nt and nt.type == TokenType.EQUALS:
+                        op_pos, op_kind, op_len = scan, ">=", 2
+                    else:
+                        op_pos, op_kind, op_len = scan, ">", 1
+            scan += 1
+
+        if op_pos is not None:
+            # Parse left expression (up to operator)
+            left_tokens = self.tokens[start:op_pos] + [Token(TokenType.EOF, None, 0, 0)]
+            left = MADXExpressionParser(left_tokens).parse_expression()
+            self.pos = op_pos + op_len
+            right = self._parse_expression()
+            lv = self.context.evaluate(left)
+            rv = self.context.evaluate(right)
+            _cmp = {
+                "==": lambda a, b: a == b,
+                "<>": lambda a, b: a != b,
+                "<": lambda a, b: a < b,
+                ">": lambda a, b: a > b,
+                "<=": lambda a, b: a <= b,
+                ">=": lambda a, b: a >= b,
+            }
+            condition = _cmp[op_kind](lv, rv)
+        else:
+            expr = self._parse_expression()
+            condition = bool(self.context.evaluate(expr))
+
+        self._expect(TokenType.RPAREN)
+        return condition
+
+    def _parse_if_statement(self):
+        """Parse a MAD-X IF statement.
+
+        Syntax:
+            IF ( condition ) { statements; };
+            IF ( condition ) { statements; } ELSEIF ( condition ) { statements; } ELSE { statements; };
+        """
+        self._advance()  # skip 'if'
+
+        condition = self._parse_if_condition()
+        self._execute_or_skip_brace_block(condition)
+
+        # Handle ELSEIF / ELSE
+        while (
+            self._current().type == TokenType.IDENTIFIER
+            and self._current().value == "elseif"
+        ):
+            self._advance()  # skip 'elseif'
+            elseif_cond = not condition and self._parse_if_condition()
+            if elseif_cond:
+                condition = True  # mark so subsequent branches are skipped
+            self._execute_or_skip_brace_block(elseif_cond)
+
+        # Handle ELSE
+        if (
+            self._current().type == TokenType.IDENTIFIER
+            and self._current().value == "else"
+        ):
+            self._advance()  # skip 'else'
+            self._execute_or_skip_brace_block(not condition)
+
+    def _execute_or_skip_brace_block(self, execute: bool):
+        """Execute or skip a { ... } block, then consume trailing semicolon."""
+        self._expect(TokenType.LBRACE)
+        if execute:
+            while self._current().type not in (TokenType.RBRACE, TokenType.EOF):
+                self._parse_statement()
+                self._skip_semicolons()
+        else:
+            depth = 1
+            while depth > 0 and self._current().type != TokenType.EOF:
+                if self._current().type == TokenType.LBRACE:
+                    depth += 1
+                elif self._current().type == TokenType.RBRACE:
+                    depth -= 1
+                    if depth == 0:
+                        break
+                self._advance()
+        self._expect(TokenType.RBRACE)
         if self._current().type == TokenType.SEMICOLON:
             self._advance()
 

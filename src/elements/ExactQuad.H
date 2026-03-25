@@ -163,10 +163,6 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // coordinates within the quad (not needed)
-            //amrex::ParticleReal const s = refpart.s;
-            //amrex::ParticleReal const sedge = refpart.sedge;
-
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
             amrex::ParticleReal const zout = m_slice_ds;
@@ -249,7 +245,7 @@ namespace impactx::elements
                 yout = cosh_omega_ds*y + sinh_omega_ds/m_omega*py;
                 pyout = m_omega*sinh_omega_ds*y + cosh_omega_ds*py;
 
-                tout = t + (slice_bg)*pt;
+                tout = t + slice_bg*pt;
                 // ptout = pt;
             } else if (m_g < 0.0_prt)
             {
@@ -381,7 +377,7 @@ namespace impactx::elements
             T_Real const uz = Ps * iPnorm;
 
             // Zero curvature in a quadrupole
-            amrex::ParticleReal const h = 0.0;
+            amrex::ParticleReal const h = 0.0_prt;
 
             // Evaluation of the full Thomas-BMT precession vector.
             tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
@@ -466,7 +462,7 @@ namespace impactx::elements
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            if (m_k > 0.0) {
+            if (m_k > 0.0_prt) {
                 R(1,1) = std::cos(omega*slice_ds);
                 R(1,2) = std::sin(omega*slice_ds)/omega;
                 R(2,1) = -omega*std::sin(omega*slice_ds);
@@ -476,7 +472,7 @@ namespace impactx::elements
                 R(4,3) = omega*std::sinh(omega*slice_ds);
                 R(4,4) = std::cosh(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
-            } else if (m_k < 0.0) {
+            } else if (m_k < 0.0_prt) {
                 R(1,1) = std::cosh(omega*slice_ds);
                 R(1,2) = std::sinh(omega*slice_ds)/omega;
                 R(2,1) = omega*std::sinh(omega*slice_ds);
@@ -498,31 +494,31 @@ namespace impactx::elements
 
         /** This operator pushes the particle spin.
          *
-         * @param x particle position in x
-         * @param y particle position in y
-         * @param t particle position in t
-         * @param px particle momentum in x
-         * @param py particle momentum in y
-         * @param pt particle momentum in t
-         * @param sx particle spin x-component
-         * @param sy particle spin y-component
-         * @param sz particle spin z-component
-         * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param[in,out] x particle position in x
+         * @param[in,out] y particle position in y
+         * @param[in,out] t particle position in t
+         * @param[in,out] px particle momentum in x
+         * @param[in,out] py particle momentum in y
+         * @param[in,out] pt particle momentum in t
+         * @param[in,out] sx particle spin x-component
+         * @param[in,out] sy particle spin y-component
+         * @param[in,out] sz particle spin z-component
+         * @param[in,out] idcpu particle global index
+         * @param[in] refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -530,10 +526,6 @@ namespace impactx::elements
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
-
-            // coordinates within the quad (not needed)
-            //amrex::ParticleReal const s = refpart.s;
-            //amrex::ParticleReal const sedge = refpart.sedge;
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;

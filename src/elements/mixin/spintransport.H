@@ -39,9 +39,9 @@ namespace impactx::elements::mixin
          * @param[in] lambdax generator x-component
          * @param[in] lambday generator y-component
          * @param[in] lambdaz generator z-component
-         * @param[inout] sx spin vector x-component
-         * @param[inout] sy spin vector y-component
-         * @param[inout] sz spin vector z-component
+         * @param[in,out] sx spin vector x-component
+         * @param[in,out] sy spin vector y-component
+         * @param[in,out] sz spin vector z-component
          */
         template<typename T_Real=amrex::ParticleReal>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -91,7 +91,7 @@ namespace impactx::elements::mixin
 
         /** Evaluate the Thomas-BMT precession vector
          *
-          * Evaluate in a given field,
+         * Evaluate in a given field,
          *  based on the instantaneous particle orbit variables.  The model
          *  below is evaluated in a Frenet-Serret coordinate system,
          *  assuming a reference trajectory of curvature h, with (possible)

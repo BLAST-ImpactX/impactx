@@ -44,8 +44,8 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        amrex::ParticleReal const tau1 = dz * 0.5_prt;
         amrex::ParticleReal const tau2 = dz;
 
         // initialize the value of the independent variable
@@ -87,9 +87,9 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
-        amrex::ParticleReal const tau2 = dz*0.5_prt;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        amrex::ParticleReal const tau1 = dz * 0.5_prt;
+        amrex::ParticleReal const tau2 = dz * 0.5_prt;
         amrex::ParticleReal const tau3 = dz;
 
         // initialize the value of the independent variable
@@ -136,9 +136,9 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
-        amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        constexpr amrex::ParticleReal alpha = -0.2599210498948732;  // C++26: 1_prt - std::pow(2_prt,1_prt/3_prt);
+        amrex::ParticleReal const tau2 = dz / (1_prt + alpha);
         amrex::ParticleReal const tau1 = tau2*0.5_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
         amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
@@ -186,8 +186,8 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        amrex::ParticleReal const tau1 = dz * 0.5_prt;
         amrex::ParticleReal const tau2 = dz;
 
         // initialize the value of the independent variable
@@ -233,8 +233,8 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        constexpr amrex::ParticleReal alpha = -0.2599210498948732;  // C++26: 1_prt - std::pow(2_prt,1_prt/3_prt);
         amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
         amrex::ParticleReal const tau1 = tau2*0.5_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
@@ -292,7 +292,7 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
         amrex::ParticleReal const w0 = 1.31518632068391121888424973;
         amrex::ParticleReal const w1 = -1.17767998417887100694641568;
         amrex::ParticleReal const w2 = 0.23557321335935813368479318;
@@ -400,9 +400,9 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters (Yoshida)
-        amrex::ParticleReal const a = std::pow(2_prt,1_prt/3_prt);
-        amrex::ParticleReal const z0 = 1_prt / (2_prt - a);
-        amrex::ParticleReal const z1 = -a / (2_prt - a);
+        constexpr amrex::ParticleReal a = 1.2599210498948732;  // C++26 std::pow(2_prt,1_prt/3_prt);
+        constexpr amrex::ParticleReal z0 = 1_prt / (2_prt - a);
+        constexpr amrex::ParticleReal z1 = -a / (2_prt - a);
         amrex::ParticleReal const tau1 = tau*z0;
         amrex::ParticleReal const tau2 = tau*z1;
 
@@ -419,7 +419,7 @@ namespace impactx::integrators
     *  corresponding to the update from the Thomas-BMT equation.  This results
     *  in a net 3-term splitting, where map3 applies the spin map.
     *
-    *  The algorithm is correct to fourth-order in the stepsize, with respect
+    *  The algorithm is correct to sixth-order in the stepsize, with respect
     *  to both orbit and spin data.  Currently, this is obtained by using the
     *  Yoshida method.
     *

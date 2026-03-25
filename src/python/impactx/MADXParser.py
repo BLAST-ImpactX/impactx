@@ -679,7 +679,7 @@ class Beam:
     pc: float = 0.0  # momentum
     mass: float = 0.0
     charge: float = 0.0
-    # Add other beam parameters as needed
+    freq0: float = 0.0  # revolution frequency [MHz]
 
 
 class EvaluationContext:
@@ -1393,6 +1393,9 @@ class MADXParser:
                 elif attr_name == "charge":
                     expr = self._parse_expression()
                     self.context.beam.charge = self.context.evaluate(expr)
+                elif attr_name == "freq0":
+                    expr = self._parse_expression()
+                    self.context.beam.freq0 = self.context.evaluate(expr)
                 else:
                     # Unknown attribute, skip the value
                     self._parse_expression()
@@ -1409,6 +1412,8 @@ class MADXParser:
                     self.context.beam.mass = self.context.evaluate(expr)
                 elif attr_name == "charge":
                     self.context.beam.charge = self.context.evaluate(expr)
+                elif attr_name == "freq0":
+                    self.context.beam.freq0 = self.context.evaluate(expr)
                 elif attr_name == "particle":
                     val = self.context.evaluate(expr)
                     if isinstance(val, str):
@@ -1674,6 +1679,10 @@ class MADXParser:
     def getEtot(self) -> float:
         """Get total energy in GeV."""
         return self.context.beam.energy
+
+    def getFreq0(self) -> float:
+        """Get revolution frequency in MHz."""
+        return self.context.beam.freq0
 
     def getVariable(self, name: str) -> Any:
         """Get a variable value."""

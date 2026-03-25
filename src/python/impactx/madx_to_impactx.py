@@ -31,11 +31,12 @@ class sc:
     m_u = 1.6605390666e-27
 
 
-def lattice(parsed_beamline, nslice=1):
+def lattice(parsed_beamline, nslice=1, freq0=0.0):
     """
     Function that converts a list of elements in the MADXParser format into ImpactX format
     :param parsed_beamline: list of dictionaries
     :param nslice: number of ds slices per element
+    :param freq0: revolution frequency in MHz (from BEAM command)
     :return: list of translated dictionaries
     """
 
@@ -62,6 +63,7 @@ def lattice(parsed_beamline, nslice=1):
         "MULTIPOLE": "Multipole",
         "SEXTUPOLE": "ExactMultipole",
         "OCTUPOLE": "ExactMultipole",
+        "RFCAVITY": "RFCavity",
         "NLLENS": "NonlinearLens",
         # TODO Figure out how to identify these
         "ShortRF": "ShortRF",
@@ -211,6 +213,42 @@ def lattice(parsed_beamline, nslice=1):
                         nslice=nslice,
                     )
                 )
+            elif d["type"] == "rfcavity":
+                # MAD-X: volt [MV], lag [2pi], harmon [1]
+                # ImpactX ShortRF: V [MV], freq [Hz], phase [deg]
+                # ImpactX RFCavity: escale [MV/m], freq [Hz], phase [deg]
+                volt = d.get("volt", 0.0)  # MV
+                lag = d.get("lag", 0.0)  # fraction of 2pi
+                harmon = d.get("harmon", 1.0)
+                phase = lag * 360.0  # convert to degrees
+                freq = harmon * freq0 * 1.0e6  # MHz -> Hz
+                ds = d.get("l", 0.0)
+
+                if ds > 0:
+                    # Thick cavity: use RFCavity with pillbox field profile
+                    escale = volt / ds  # MV/m
+                    impactx_beamline.append(
+                        elements.RFCavity(
+                            name=d["name"],
+                            ds=ds,
+                            escale=escale,
+                            freq=freq,
+                            phase=phase,
+                            cos_coefficients=[1.0],
+                            sin_coefficients=[0.0],
+                            nslice=nslice,
+                        )
+                    )
+                else:
+                    # Thin cavity: use ShortRF
+                    impactx_beamline.append(
+                        elements.ShortRF(
+                            name=d["name"],
+                            V=volt,
+                            freq=freq,
+                            phase=phase,
+                        )
+                    )
         else:
             raise NotImplementedError(
                 "The beamline element named ",
@@ -234,9 +272,9 @@ def read_lattice(madx_file, nslice=1):
     madx = MADXParser()
     madx.parse(madx_file)
     beamline = madx.getBeamline()
-    # print(madx)
+    freq0 = madx.getFreq0()
 
-    return lattice(beamline, nslice)
+    return lattice(beamline, nslice, freq0=freq0)
 
 
 def beam(particle, charge=None, mass=None, energy=None):

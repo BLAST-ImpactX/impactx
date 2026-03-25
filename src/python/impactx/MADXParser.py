@@ -770,7 +770,12 @@ class EvaluationContext:
         attr_name = attr_name.lower()
 
         if element_name not in self.elements:
-            raise MADXInputError(f"Unknown element: {element_name}")
+            warnings.warn(
+                f"Unknown element '{element_name}', using 0.0 for "
+                f"'{element_name}->{attr_name}'",
+                MADXInputWarning,
+            )
+            return 0.0
 
         element = self.elements[element_name]
 
@@ -781,7 +786,11 @@ class EvaluationContext:
         if attr_name in element.attributes:
             return element.attributes[attr_name]
 
-        raise MADXInputError(f"Element '{element_name}' has no attribute '{attr_name}'")
+        warnings.warn(
+            f"Element '{element_name}' has no attribute '{attr_name}', using 0.0",
+            MADXInputWarning,
+        )
+        return 0.0
 
     def evaluate(self, expr: Expression) -> Any:
         """Evaluate an expression."""
@@ -1062,7 +1071,8 @@ class MADXParser:
                 self._advance()
                 expr = self._parse_expression()
                 attribute_exprs[attr_name] = expr
-                attributes[attr_name] = self.context.evaluate(expr)
+                # := means deferred evaluation; don't evaluate now
+                attributes[attr_name] = None
             elif self._current().type == TokenType.EQUALS:
                 self._advance()
                 expr = self._parse_expression()
@@ -1302,10 +1312,10 @@ class MADXParser:
         expr = self._parse_expression()
         self._expect(TokenType.SEMICOLON)
 
-        if integer:
+        if integer and not deferred:
             value = int(self.context.evaluate(expr))
             self.context.set_variable(
-                name, value=value, expression=expr, deferred=deferred
+                name, value=value, expression=expr, deferred=False
             )
         else:
             self.context.set_variable(name, expression=expr, deferred=deferred)
@@ -1335,13 +1345,17 @@ class MADXParser:
         expr = self._parse_expression()
         self._expect(TokenType.SEMICOLON)
 
-        value = self.context.evaluate(expr)
-        if integer:
-            value = int(value)
-
-        self.context.set_variable(
-            name, value=value, expression=expr, deferred=deferred, constant=True
-        )
+        if deferred:
+            self.context.set_variable(
+                name, expression=expr, deferred=True, constant=True
+            )
+        else:
+            value = self.context.evaluate(expr)
+            if integer:
+                value = int(value)
+            self.context.set_variable(
+                name, value=value, expression=expr, deferred=False, constant=True
+            )
 
     def _parse_beam_command(self):
         """Parse the BEAM command."""
@@ -1384,10 +1398,17 @@ class MADXParser:
                     self._parse_expression()
             elif self._current().type == TokenType.COLON_EQUALS:
                 self._advance()
-                # Deferred expression - just evaluate immediately for now
+                # Deferred expression - evaluate immediately for BEAM
+                # (BEAM is typically defined early with literal values)
                 expr = self._parse_expression()
                 if attr_name == "energy":
                     self.context.beam.energy = self.context.evaluate(expr)
+                elif attr_name == "pc":
+                    self.context.beam.pc = self.context.evaluate(expr)
+                elif attr_name == "mass":
+                    self.context.beam.mass = self.context.evaluate(expr)
+                elif attr_name == "charge":
+                    self.context.beam.charge = self.context.evaluate(expr)
                 elif attr_name == "particle":
                     val = self.context.evaluate(expr)
                     if isinstance(val, str):

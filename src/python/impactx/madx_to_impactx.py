@@ -76,75 +76,111 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
         # print(d)
         if d["type"] in [k.casefold() for k in list(madx_to_impactx_dict.keys())]:
             if d["type"] == "drift":
-                impactx_beamline.append(
-                    elements.Drift(name=d["name"], ds=d["l"], nslice=nslice)
-                )
-            elif d["type"] == "quadrupole":
-                impactx_beamline.append(
-                    elements.Quad(name=d["name"], ds=d["l"], k=d["k1"], nslice=nslice)
-                )
-            elif d["type"] == "sbend":
-                impactx_beamline.append(
-                    elements.Sbend(
-                        name=d["name"], ds=d["l"], rc=d["l"] / d["angle"], nslice=nslice
+                ds = d.get("l", 0.0)
+                if ds > 0:
+                    impactx_beamline.append(
+                        elements.Drift(name=d["name"], ds=ds, nslice=nslice)
                     )
-                )
+            elif d["type"] == "quadrupole":
+                ds = d.get("l", 0.0)
+                k1 = d.get("k1", 0.0)
+                if ds > 0:
+                    impactx_beamline.append(
+                        elements.Quad(name=d["name"], ds=ds, k=k1, nslice=nslice)
+                    )
+                else:
+                    # Thin quad: integrated strength KL = k1 * l
+                    impactx_beamline.append(
+                        elements.Multipole(
+                            name=d["name"],
+                            multipole=1,
+                            K_normal=d.get("knl", [0.0, k1 * ds])[1]
+                            if "knl" in d
+                            else k1 * ds,
+                            K_skew=0.0,
+                        )
+                    )
+            elif d["type"] == "sbend":
+                ds = d.get("l", 0.0)
+                angle = d.get("angle", 0.0)
+                if ds > 0:
+                    rc = ds / angle if abs(angle) > 0 else 0.0
+                    impactx_beamline.append(
+                        elements.Sbend(name=d["name"], ds=ds, rc=rc, nslice=nslice)
+                    )
+                elif abs(angle) > 0:
+                    # Thin dipole kick
+                    impactx_beamline.append(
+                        elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
+                    )
             elif d["type"] == "rbend":
                 # RBEND: rectangular bending magnet
                 # Converts to DipEdge + SBend + DipEdge
                 # Reference: https://mad.web.cern.ch/mad/webguide/manual.html#Ch11.S3
-                angle = d["angle"]
-                l_chord = d["l"]
+                angle = d.get("angle", 0.0)
+                l_chord = d.get("l", 0.0)
 
-                # Convert chord length to arc length (RBARC=true is MAD-X default)
-                if abs(angle) > 0:
-                    l_arc = l_chord * angle / (2.0 * math.sin(angle / 2.0))
-                else:
-                    l_arc = l_chord
+                if l_chord > 0:
+                    # Convert chord length to arc length (RBARC=true is MAD-X default)
+                    if abs(angle) > 0:
+                        l_arc = l_chord * angle / (2.0 * math.sin(angle / 2.0))
+                    else:
+                        l_arc = l_chord
 
-                rc = l_arc / angle if abs(angle) > 0 else 0.0
+                    rc = l_arc / angle if abs(angle) > 0 else 0.0
 
-                # RBEND edge angles: effective = E1/E2 + ANGLE/2
-                e1 = d.get("e1", 0.0) + angle / 2.0
-                e2 = d.get("e2", 0.0) + angle / 2.0
+                    # RBEND edge angles: effective = E1/E2 + ANGLE/2
+                    e1 = d.get("e1", 0.0) + angle / 2.0
+                    e2 = d.get("e2", 0.0) + angle / 2.0
 
-                hgap = d.get("hgap", 0.0)
-                fint = d.get("fint", 0.0)
-                fintx = d.get("fintx", fint)
+                    hgap = d.get("hgap", 0.0)
+                    fint = d.get("fint", 0.0)
+                    fintx = d.get("fintx", fint)
 
-                # Entry DipEdge
-                impactx_beamline.append(
-                    elements.DipEdge(
-                        name=d["name"] + "_edge_entry",
-                        psi=e1,
-                        rc=rc,
-                        g=2.0 * hgap,
-                        K2=fint,
+                    # Entry DipEdge
+                    impactx_beamline.append(
+                        elements.DipEdge(
+                            name=d["name"] + "_edge_entry",
+                            psi=e1,
+                            rc=rc,
+                            g=2.0 * hgap,
+                            K2=fint,
+                        )
                     )
-                )
-                # SBend body
-                impactx_beamline.append(
-                    elements.Sbend(
-                        name=d["name"],
-                        ds=l_arc,
-                        rc=rc,
-                        nslice=nslice,
+                    # SBend body
+                    impactx_beamline.append(
+                        elements.Sbend(
+                            name=d["name"],
+                            ds=l_arc,
+                            rc=rc,
+                            nslice=nslice,
+                        )
                     )
-                )
-                # Exit DipEdge
-                impactx_beamline.append(
-                    elements.DipEdge(
-                        name=d["name"] + "_edge_exit",
-                        psi=e2,
-                        rc=rc,
-                        g=2.0 * hgap,
-                        K2=fintx,
+                    # Exit DipEdge
+                    impactx_beamline.append(
+                        elements.DipEdge(
+                            name=d["name"] + "_edge_exit",
+                            psi=e2,
+                            rc=rc,
+                            g=2.0 * hgap,
+                            K2=fintx,
+                        )
                     )
-                )
+                elif abs(angle) > 0:
+                    impactx_beamline.append(
+                        elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
+                    )
             elif d["type"] == "solenoid":
-                impactx_beamline.append(
-                    elements.Sol(name=d["name"], ds=d["l"], ks=d["ks"], nslice=nslice)
-                )
+                ds = d.get("l", 0.0)
+                if ds > 0:
+                    impactx_beamline.append(
+                        elements.Sol(
+                            name=d["name"],
+                            ds=ds,
+                            ks=d.get("ks", 0.0),
+                            nslice=nslice,
+                        )
+                    )
             elif d["type"] == "dipedge":
                 h = d.get("h", 0.0)
                 impactx_beamline.append(
@@ -182,7 +218,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                     )
                 )
             elif d["type"] == "monitor":
-                if d["l"] > 0:
+                if d.get("l", 0.0) > 0:
                     impactx_beamline.append(
                         elements.Drift(
                             name=d["name"] + "_drift", ds=d["l"], nslice=nslice
@@ -192,27 +228,49 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                     elements.BeamMonitor(name="monitor", backend="h5")
                 )  # TODO: use name=d["name"] ?
             elif d["type"] == "sextupole":
+                ds = d.get("l", 0.0)
                 k2 = d.get("k2", 0.0)
-                impactx_beamline.append(
-                    elements.ExactMultipole(
-                        name=d["name"],
-                        ds=d["l"],
-                        k_normal=[0.0, 0.0, k2],
-                        k_skew=[0.0, 0.0, 0.0],
-                        nslice=nslice,
+                if ds > 0:
+                    impactx_beamline.append(
+                        elements.ExactMultipole(
+                            name=d["name"],
+                            ds=ds,
+                            k_normal=[0.0, 0.0, k2],
+                            k_skew=[0.0, 0.0, 0.0],
+                            nslice=nslice,
+                        )
                     )
-                )
+                else:
+                    impactx_beamline.append(
+                        elements.Multipole(
+                            name=d["name"],
+                            multipole=2,
+                            K_normal=k2 * ds,
+                            K_skew=0.0,
+                        )
+                    )
             elif d["type"] == "octupole":
+                ds = d.get("l", 0.0)
                 k3 = d.get("k3", 0.0)
-                impactx_beamline.append(
-                    elements.ExactMultipole(
-                        name=d["name"],
-                        ds=d["l"],
-                        k_normal=[0.0, 0.0, 0.0, k3],
-                        k_skew=[0.0, 0.0, 0.0, 0.0],
-                        nslice=nslice,
+                if ds > 0:
+                    impactx_beamline.append(
+                        elements.ExactMultipole(
+                            name=d["name"],
+                            ds=ds,
+                            k_normal=[0.0, 0.0, 0.0, k3],
+                            k_skew=[0.0, 0.0, 0.0, 0.0],
+                            nslice=nslice,
+                        )
                     )
-                )
+                else:
+                    impactx_beamline.append(
+                        elements.Multipole(
+                            name=d["name"],
+                            multipole=3,
+                            K_normal=k3 * ds,
+                            K_skew=0.0,
+                        )
+                    )
             elif d["type"] == "rfcavity":
                 # MAD-X: volt [MV], lag [2pi], harmon [1]
                 # ImpactX ShortRF: V [MV], freq [Hz], phase [deg]

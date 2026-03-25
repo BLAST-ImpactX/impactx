@@ -144,14 +144,15 @@ def lattice(parsed_beamline, nslice=1):
                     elements.Sol(name=d["name"], ds=d["l"], ks=d["ks"], nslice=nslice)
                 )
             elif d["type"] == "dipedge":
+                h = d.get("h", 0.0)
                 impactx_beamline.append(
                     elements.DipEdge(
                         name=d["name"],
-                        psi=d["e1"],
-                        rc=1.0 / d["h"],
+                        psi=d.get("e1", 0.0),
+                        rc=1.0 / h if h != 0.0 else 0.0,
                         # MAD-X is using half the gap height
-                        g=2.0 * d["hgap"],
-                        K2=d["fint"],
+                        g=2.0 * d.get("hgap", 0.0),
+                        K2=d.get("fint", 0.0),
                     )
                 )
             elif d["type"] in ("kicker", "tkicker"):

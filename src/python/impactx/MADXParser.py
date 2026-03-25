@@ -1024,6 +1024,15 @@ class MADXParser:
         attributes = {}
         attribute_exprs = {}
 
+        # Check if element_type is actually a reference to a previously defined element
+        # (element inheritance in MAD-X, e.g., "fmagu01: fmag;")
+        parent = self.context.elements.get(element_type)
+        if parent is not None:
+            # Inherit type and attributes from parent element
+            element_type = parent.type
+            attributes.update(parent.attributes)
+            attribute_exprs.update(parent.attribute_exprs)
+
         # Parse attributes
         while self._current().type == TokenType.COMMA:
             self._advance()  # ,
@@ -1497,6 +1506,10 @@ class MADXParser:
                         )
                     else:
                         attrs[attr_name] = value
+
+                # Remove the MAD-X "type" attribute (a user annotation)
+                # so it doesn't overwrite the element's actual type
+                attrs.pop("type", None)
 
                 elem_dict = {
                     "name": elem.name,

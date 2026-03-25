@@ -59,6 +59,8 @@ def lattice(parsed_beamline, nslice=1):
         # "In addition it serves to record the beam position for closed orbit correction."
         "MONITOR": "BeamMonitor",  # drift + output diagnostics
         "MULTIPOLE": "Multipole",
+        "SEXTUPOLE": "ExactMultipole",
+        "OCTUPOLE": "ExactMultipole",
         "NLLENS": "NonlinearLens",
         # TODO Figure out how to identify these
         "ShortRF": "ShortRF",
@@ -185,6 +187,28 @@ def lattice(parsed_beamline, nslice=1):
                 impactx_beamline.append(
                     elements.BeamMonitor(name="monitor", backend="h5")
                 )  # TODO: use name=d["name"] ?
+            elif d["type"] == "sextupole":
+                k2 = d.get("k2", 0.0)
+                impactx_beamline.append(
+                    elements.ExactMultipole(
+                        name=d["name"],
+                        ds=d["l"],
+                        k_normal=[0.0, 0.0, k2],
+                        k_skew=[0.0, 0.0, 0.0],
+                        nslice=nslice,
+                    )
+                )
+            elif d["type"] == "octupole":
+                k3 = d.get("k3", 0.0)
+                impactx_beamline.append(
+                    elements.ExactMultipole(
+                        name=d["name"],
+                        ds=d["l"],
+                        k_normal=[0.0, 0.0, 0.0, k3],
+                        k_skew=[0.0, 0.0, 0.0, 0.0],
+                        nslice=nslice,
+                    )
+                )
         else:
             raise NotImplementedError(
                 "The beamline element named ",

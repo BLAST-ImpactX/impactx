@@ -619,6 +619,18 @@ class MADXExpressionParser:
             # Simple variable
             return VariableExpr(name)
 
+        # Array literal: {expr, expr, ...}
+        if token.type == TokenType.LBRACE:
+            self._advance()
+            elements = []
+            if self._current().type != TokenType.RBRACE:
+                elements.append(self._parse_additive())
+                while self._current().type == TokenType.COMMA:
+                    self._advance()
+                    elements.append(self._parse_additive())
+            self._expect(TokenType.RBRACE)
+            return ListExpr(elements)
+
         raise MADXInputError(
             f"Unexpected token in expression: {token.type.name}", token.line
         )
@@ -1151,18 +1163,24 @@ class MADXParser:
         """Parse an expression using the expression parser."""
         # Find the extent of the expression (until comma, semicolon, or rparen at depth 0)
         start = self.pos
-        depth = 0
+        paren_depth = 0
+        brace_depth = 0
 
         while self._current().type != TokenType.EOF:
             if self._current().type == TokenType.LPAREN:
-                depth += 1
+                paren_depth += 1
             elif self._current().type == TokenType.RPAREN:
-                if depth == 0:
+                if paren_depth == 0:
                     break
-                depth -= 1
+                paren_depth -= 1
+            elif self._current().type == TokenType.LBRACE:
+                brace_depth += 1
+            elif self._current().type == TokenType.RBRACE:
+                brace_depth -= 1
             elif (
                 self._current().type in (TokenType.COMMA, TokenType.SEMICOLON)
-                and depth == 0
+                and paren_depth == 0
+                and brace_depth == 0
             ):
                 break
             self.pos += 1

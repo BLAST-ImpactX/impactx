@@ -242,8 +242,10 @@ class MADXLexer:
         start_col = self.column
         chars = []
 
-        # First character must be a letter
-        if self._peek() is not None and (self._peek().isalpha() or self._peek() == "_"):
+        # First character must be a letter, underscore, or $ (macro argument)
+        if self._peek() is not None and (
+            self._peek().isalpha() or self._peek() in "_$"
+        ):
             chars.append(self._advance())
 
         # Subsequent characters: letters, digits, underscore, period
@@ -283,8 +285,8 @@ class MADXLexer:
             elif char in "\"'":
                 tokens.append(self._read_string())
 
-            # Identifier
-            elif char.isalpha() or char == "_":
+            # Identifier ($ prefix for macro arguments)
+            elif char.isalpha() or char in "_$":
                 tokens.append(self._read_identifier())
 
             # Two-character operators
@@ -715,6 +717,9 @@ class EvaluationContext:
         self.variables: dict[str, Variable] = {}
         self.elements: dict[str, Element] = {}
         self.lines: dict[str, Line] = {}
+        self.macros: dict[
+            str, tuple[list[str], str]
+        ] = {}  # name -> (params, body_text)
         self.beam = Beam()
         self.selected_sequence: Optional[str] = None
 
@@ -960,6 +965,21 @@ class MADXParser:
             self._parse_labeled_definition()
             return
 
+        # Check for macro definition: name(params): MACRO = { body };
+        if self._peek(1).type == TokenType.LPAREN:
+            # Scan ahead to see if this is name(...): MACRO
+            scan = self.pos + 2
+            depth = 1
+            while scan < len(self.tokens) and depth > 0:
+                if self.tokens[scan].type == TokenType.LPAREN:
+                    depth += 1
+                elif self.tokens[scan].type == TokenType.RPAREN:
+                    depth -= 1
+                scan += 1
+            if scan < len(self.tokens) and self.tokens[scan].type == TokenType.COLON:
+                self._parse_macro_definition()
+                return
+
         # Check for variable assignment
         if self._peek(1).type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
             self._parse_variable_assignment()
@@ -990,6 +1010,10 @@ class MADXParser:
 
         if name == "call":
             self._parse_call_command()
+            return
+
+        if name == "exec":
+            self._parse_exec_command()
             return
 
         if name == "return":
@@ -1154,6 +1178,119 @@ class MADXParser:
         self._expect(TokenType.RBRACE)
         if self._current().type == TokenType.SEMICOLON:
             self._advance()
+
+    def _parse_macro_definition(self):
+        """Parse a macro definition: name(params): MACRO = { body };"""
+        macro_name = self._advance().value  # name
+        self._expect(TokenType.LPAREN)
+
+        # Parse parameter names
+        params = []
+        if self._current().type == TokenType.IDENTIFIER:
+            params.append(self._advance().value)
+            while self._current().type == TokenType.COMMA:
+                self._advance()
+                params.append(self._expect(TokenType.IDENTIFIER).value)
+        self._expect(TokenType.RPAREN)
+        self._expect(TokenType.COLON)
+
+        keyword = self._expect(TokenType.IDENTIFIER).value.lower()
+        if keyword != "macro":
+            raise MADXInputError(
+                f"Expected MACRO, got '{keyword}'", self._current().line
+            )
+
+        self._expect(TokenType.EQUALS)
+        self._expect(TokenType.LBRACE)
+
+        # Capture body text between { and }
+        body_tokens = []
+        depth = 1
+        while depth > 0 and self._current().type != TokenType.EOF:
+            if self._current().type == TokenType.LBRACE:
+                depth += 1
+            elif self._current().type == TokenType.RBRACE:
+                depth -= 1
+                if depth == 0:
+                    break
+            body_tokens.append(self._current())
+            self._advance()
+
+        self._expect(TokenType.RBRACE)
+        self._expect(TokenType.SEMICOLON)
+
+        # Store the macro: params and body tokens
+        self.context.macros[macro_name] = (params, body_tokens)
+
+    def _parse_exec_command(self):
+        """Parse EXEC, MacroName($arg1, $arg2, ...);
+
+        Substitutes $argN with the corresponding variable value,
+        then parses the expanded macro body.
+        """
+        self._advance()  # skip 'exec'
+        self._expect(TokenType.COMMA)
+
+        macro_name = self._expect(TokenType.IDENTIFIER).value
+
+        # Parse arguments
+        args = []
+        if self._current().type == TokenType.LPAREN:
+            self._advance()
+            if self._current().type != TokenType.RPAREN:
+                # $var references - the $ is part of the identifier
+                args.append(self._expect(TokenType.IDENTIFIER).value)
+                while self._current().type == TokenType.COMMA:
+                    self._advance()
+                    args.append(self._expect(TokenType.IDENTIFIER).value)
+            self._expect(TokenType.RPAREN)
+
+        self._expect(TokenType.SEMICOLON)
+
+        if macro_name not in self.context.macros:
+            warnings.warn(
+                f"Unknown macro '{macro_name}', skipping EXEC", MADXInputWarning
+            )
+            return
+
+        params, body_tokens = self.context.macros[macro_name]
+
+        # Build substitution map: param_name -> arg value (as string)
+        subs = {}
+        for i, param in enumerate(params):
+            if i < len(args):
+                arg = args[i]
+                # Strip leading $ from argument name to get the variable name
+                var_name = arg.lstrip("$")
+                # Get the variable value and convert to substitution string
+                val = self.context.get_variable(var_name)
+                subs[param] = val
+
+        # Substitute parameter references in body tokens
+        expanded = []
+        for tok in body_tokens:
+            if tok.type == TokenType.IDENTIFIER and tok.value in subs:
+                val = subs[tok.value]
+                # Replace with a NUMBER token
+                expanded.append(
+                    Token(TokenType.NUMBER, float(val), tok.line, tok.column)
+                )
+            else:
+                expanded.append(tok)
+
+        # Parse the expanded body
+        expanded.append(Token(TokenType.EOF, None, 0, 0))
+        saved_tokens = self.tokens
+        saved_pos = self.pos
+        self.tokens = expanded
+        self.pos = 0
+
+        while self._current().type != TokenType.EOF:
+            self._parse_statement()
+            self._skip_semicolons()
+
+        self.tokens = saved_tokens
+        self.pos = saved_pos
 
     def _parse_labeled_definition(self):
         """Parse a labeled definition (element or line)."""
@@ -1363,7 +1500,7 @@ class MADXParser:
                 "reversed": reversed_flag,
             }
 
-        # Check for number * element
+        # Check for number * element or number * (group)
         if self._current().type == TokenType.NUMBER:
             num = self._advance().value
             if self._current().type == TokenType.STAR:
@@ -1374,6 +1511,17 @@ class MADXParser:
                 raise MADXInputError(
                     "Expected * after number in LINE", self._current().line
                 )
+
+        # Parenthesized group after multiplier: n * (elements)
+        if multiplier > 1 and self._current().type == TokenType.LPAREN:
+            self._advance()
+            inner_elements = self._parse_line_elements()
+            self._expect(TokenType.RPAREN)
+            return {
+                "multiplier": multiplier,
+                "elements": inner_elements,
+                "reversed": reversed_flag,
+            }
 
         # Now we should have an identifier
         if self._current().type == TokenType.IDENTIFIER:

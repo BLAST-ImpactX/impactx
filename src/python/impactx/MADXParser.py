@@ -876,7 +876,8 @@ class EvaluationContext:
                 return left * right
             if expr.operator == "/":
                 if right == 0:
-                    raise MADXInputError("Division by zero")
+                    self._warn("Division by zero, using 0.0")
+                    return 0.0
                 return left / right
             if expr.operator == "^":
                 return left**right

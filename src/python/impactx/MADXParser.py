@@ -31,16 +31,22 @@ class MADXParserError(Exception):
 class MADXInputError(MADXParserError):
     """Error in MAD-X input syntax or semantics."""
 
-    def __init__(self, message, line_number=None, context=None):
+    def __init__(self, message, line_number=None, context=None, file=None):
         self.message = message
         self.line_number = line_number
         self.context = context
+        self.file = file
         super().__init__(self._format_message())
 
     def _format_message(self):
         msg = self.message
+        loc = ""
+        if self.file:
+            loc = self.file
         if self.line_number is not None:
-            msg = f"Line {self.line_number}: {msg}"
+            loc = f"{loc}:{self.line_number}" if loc else f"Line {self.line_number}"
+        if loc:
+            msg = f"{loc}: {msg}"
         if self.context:
             msg = f"{msg}\n  Context: {self.context}"
         return msg
@@ -128,12 +134,13 @@ class MADXLexer:
     - Operators and delimiters
     """
 
-    def __init__(self, text: str):
+    def __init__(self, text: str, file: Optional[str] = None):
         self.text = text
         self.pos = 0
         self.line = 1
         self.column = 1
         self.length = len(text)
+        self.file = file
 
     def _peek(self, offset: int = 0) -> Optional[str]:
         """Look at character at current position + offset."""
@@ -184,7 +191,9 @@ class MADXLexer:
                     self._advance()  # /
                     return True
                 self._advance()
-            raise MADXInputError("Unterminated multi-line comment", self.line)
+            raise MADXInputError(
+                "Unterminated multi-line comment", self.line, file=self.file
+            )
 
         return False
 
@@ -217,7 +226,9 @@ class MADXLexer:
         try:
             value = float(value_str)
         except ValueError:
-            raise MADXInputError(f"Invalid number: {value_str}", start_line)
+            raise MADXInputError(
+                f"Invalid number: {value_str}", start_line, file=self.file
+            )
 
         return Token(TokenType.NUMBER, value, start_line, start_col)
 
@@ -230,11 +241,11 @@ class MADXLexer:
 
         while self._peek() is not None and self._peek() != quote:
             if self._peek() == "\n":
-                raise MADXInputError("Unterminated string", start_line)
+                raise MADXInputError("Unterminated string", start_line, file=self.file)
             chars.append(self._advance())
 
         if self._peek() is None:
-            raise MADXInputError("Unterminated string", start_line)
+            raise MADXInputError("Unterminated string", start_line, file=self.file)
 
         self._advance()  # closing quote
         return Token(TokenType.STRING, "".join(chars), start_line, start_col)
@@ -377,7 +388,9 @@ class MADXLexer:
                 tokens.append(Token(TokenType.OR, "||", start_line, start_col))
 
             else:
-                raise MADXInputError(f"Unexpected character: {char!r}", start_line)
+                raise MADXInputError(
+                    f"Unexpected character: {char!r}", start_line, file=self.file
+                )
 
         tokens.append(Token(TokenType.EOF, None, self.line, self.column))
         return tokens
@@ -508,9 +521,10 @@ class MADXExpressionParser:
         ),
     }
 
-    def __init__(self, tokens: list[Token]):
+    def __init__(self, tokens: list[Token], file: Optional[str] = None):
         self.tokens = tokens
         self.pos = 0
+        self.file = file
 
     def _current(self) -> Token:
         """Get current token."""
@@ -538,7 +552,9 @@ class MADXExpressionParser:
         if token.type not in types:
             expected = " or ".join(t.name for t in types)
             raise MADXInputError(
-                f"Expected {expected}, got {token.type.name}", token.line
+                f"Expected {expected}, got {token.type.name}",
+                token.line,
+                file=self.file,
             )
         return self._advance()
 
@@ -656,7 +672,9 @@ class MADXExpressionParser:
             return ListExpr(elements)
 
         raise MADXInputError(
-            f"Unexpected token in expression: {token.type.name}", token.line
+            f"Unexpected token in expression: {token.type.name}",
+            token.line,
+            file=self.file,
         )
 
 
@@ -745,6 +763,14 @@ class EvaluationContext:
         self.beams: dict[Optional[str], Beam] = {None: Beam()}  # key=sequence name
         self.selected_sequence: Optional[str] = None
 
+        # Tracking for warning messages (updated by the parser)
+        self.current_file: Optional[str] = None
+        self.current_line: Optional[int] = None
+
+        # Initialize predefined constants
+        for name, value in self.PREDEFINED_CONSTANTS.items():
+            self.variables[name] = Variable(name, value, constant=True)
+
     @property
     def beam(self) -> Beam:
         """Get the beam for the selected sequence, falling back to default."""
@@ -767,14 +793,6 @@ class EvaluationContext:
             )
         return self.beams[sequence_name]
 
-        # Tracking for warning messages (updated by the parser)
-        self.current_file: Optional[str] = None
-        self.current_line: Optional[int] = None
-
-        # Initialize predefined constants
-        for name, value in self.PREDEFINED_CONSTANTS.items():
-            self.variables[name] = Variable(name, value, constant=True)
-
     def _warn(self, message: str):
         """Emit a warning with current file and line context."""
         loc = ""
@@ -784,6 +802,12 @@ class EvaluationContext:
                 loc += f":{self.current_line}"
             loc += ": "
         warnings.warn(f"{loc}{message}", MADXInputWarning)
+
+    def _error(self, message: str) -> MADXInputError:
+        """Create a MADXInputError with current file and line context."""
+        return MADXInputError(
+            message, line_number=self.current_line, file=self.current_file
+        )
 
     def set_variable(
         self,
@@ -802,7 +826,7 @@ class EvaluationContext:
                 # Allow redefining constants
                 pass
             else:
-                raise MADXInputError(f"Cannot modify constant: {name}")
+                raise self._error(f"Cannot modify constant: {name}")
 
         if deferred and expression is not None:
             self.variables[name] = Variable(
@@ -891,7 +915,7 @@ class EvaluationContext:
             if expr.operator == "^":
                 return left**right
 
-            raise MADXInputError(f"Unknown operator: {expr.operator}")
+            raise self._error(f"Unknown operator: {expr.operator}")
 
         if isinstance(expr, FunctionExpr):
             name = expr.name.lower()
@@ -914,12 +938,13 @@ class EvaluationContext:
                 return None
 
             if name not in MADXExpressionParser.FUNCTIONS:
-                raise MADXInputError(f"Unknown function: {name}")
+                raise self._error(f"Unknown function: {name}")
 
             nargs, func = MADXExpressionParser.FUNCTIONS[name]
             if len(expr.arguments) != nargs:
-                raise MADXInputError(
-                    f"Function {name} expects {nargs} arguments, got {len(expr.arguments)}"
+                raise self._error(
+                    f"Function {name} expects {nargs} arguments, "
+                    f"got {len(expr.arguments)}"
                 )
 
             args = [self.evaluate(arg) for arg in expr.arguments]
@@ -928,7 +953,7 @@ class EvaluationContext:
         if isinstance(expr, ListExpr):
             return [self.evaluate(e) for e in expr.elements]
 
-        raise MADXInputError(f"Cannot evaluate expression type: {type(expr)}")
+        raise self._error(f"Cannot evaluate expression type: {type(expr)}")
 
 
 # =============================================================================
@@ -974,11 +999,15 @@ class MADXParser:
         token = self._current()
         if token.type not in types:
             expected = " or ".join(t.name for t in types)
-            raise MADXInputError(
+            raise self._error(
                 f"Expected {expected}, got {token.type.name} ({token.value!r})",
-                token.line,
             )
         return self._advance()
+
+    def _error(self, message: str) -> MADXInputError:
+        """Create a MADXInputError with current file and line context."""
+        line = self._current().line if self.tokens else None
+        return MADXInputError(message, line_number=line, file=self._current_file)
 
     def _update_context_location(self):
         """Update file/line on the evaluation context for warning messages."""
@@ -1020,7 +1049,7 @@ class MADXParser:
 
     def _parse_text(self, text: str):
         """Internal method to parse text."""
-        lexer = MADXLexer(text)
+        lexer = MADXLexer(text, file=self._current_file)
         self.tokens = lexer.tokenize()
         self.pos = 0
 
@@ -1041,9 +1070,7 @@ class MADXParser:
             return
 
         if token.type != TokenType.IDENTIFIER:
-            raise MADXInputError(
-                f"Expected identifier, got {token.type.name}", token.line
-            )
+            raise self._error(f"Expected identifier, got {token.type.name}")
 
         name = token.value.lower()
 
@@ -1366,9 +1393,7 @@ class MADXParser:
 
             self._execute_or_skip_brace_block(True)
         else:
-            raise MADXInputError(
-                f"WHILE loop exceeded {max_iterations} iterations", loop_start
-            )
+            raise self._error(f"WHILE loop exceeded {max_iterations} iterations")
 
     def _parse_macro_definition(self):
         """Parse a macro definition: name(params): MACRO = { body };"""
@@ -1387,9 +1412,7 @@ class MADXParser:
 
         keyword = self._expect(TokenType.IDENTIFIER).value.lower()
         if keyword != "macro":
-            raise MADXInputError(
-                f"Expected MACRO, got '{keyword}'", self._current().line
-            )
+            raise self._error(f"Expected MACRO, got '{keyword}'")
 
         self._expect(TokenType.EQUALS)
         self._expect(TokenType.LBRACE)
@@ -1809,9 +1832,7 @@ class MADXParser:
                 has_multiplier = True
             else:
                 # Shouldn't happen in valid MAD-X
-                raise MADXInputError(
-                    "Expected * after number in LINE", self._current().line
-                )
+                raise self._error("Expected * after number in LINE")
 
         # Parenthesized group after multiplier: n * (elements)
         if has_multiplier and self._current().type == TokenType.LPAREN:
@@ -1989,9 +2010,7 @@ class MADXParser:
                     elif self._current().type == TokenType.IDENTIFIER:
                         beam_attrs["particle"] = self._advance().value.lower()
                     else:
-                        raise MADXInputError(
-                            "Expected particle name", self._current().line
-                        )
+                        raise self._error("Expected particle name")
                 elif attr_name == "sequence":
                     if self._current().type in (
                         TokenType.STRING,
@@ -2071,9 +2090,7 @@ class MADXParser:
                     # Some MAD-X files use unquoted filenames
                     filename = self._advance().value
                 else:
-                    raise MADXInputError(
-                        "Expected filename after FILE=", self._current().line
-                    )
+                    raise self._error("Expected filename after FILE=")
             else:
                 # Unknown attribute, skip its value
                 if self._current().type == TokenType.EQUALS:
@@ -2083,7 +2100,7 @@ class MADXParser:
         self._expect(TokenType.SEMICOLON)
 
         if filename is None:
-            raise MADXInputError("CALL command requires FILE= or FILENAME= attribute")
+            raise self._error("CALL command requires FILE= or FILENAME= attribute")
 
         # Resolve the filename relative to the current file's directory
         if self._current_file and self._current_file != "<string>":
@@ -2093,7 +2110,7 @@ class MADXParser:
             resolved = filename
 
         if not os.path.isfile(resolved):
-            raise FileNotFoundError(
+            raise self._error(
                 f"CALL: File '{filename}' not found (resolved to '{resolved}')"
             )
 
@@ -2108,7 +2125,7 @@ class MADXParser:
             with open(resolved, "r") as f:
                 text = f.read()
 
-            lexer = MADXLexer(text)
+            lexer = MADXLexer(text, file=self._current_file)
             self.tokens = lexer.tokenize()
             self.pos = 0
 
@@ -2149,7 +2166,7 @@ class MADXParser:
             # It might be a direct element reference
             if line_name in self.context.elements:
                 return [line_name]
-            raise MADXInputError(f"Unknown line or element: {line_name}")
+            raise self._error(f"Unknown line or element: {line_name}")
 
         line = self.context.lines[line_name]
         result = []

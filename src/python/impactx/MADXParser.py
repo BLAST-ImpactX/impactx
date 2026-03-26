@@ -733,8 +733,30 @@ class EvaluationContext:
         self.macros: dict[
             str, tuple[list[str], str]
         ] = {}  # name -> (params, body_text)
-        self.beam = Beam()
+        self.beams: dict[Optional[str], Beam] = {None: Beam()}  # key=sequence name
         self.selected_sequence: Optional[str] = None
+
+    @property
+    def beam(self) -> Beam:
+        """Get the beam for the selected sequence, falling back to default."""
+        if self.selected_sequence and self.selected_sequence in self.beams:
+            return self.beams[self.selected_sequence]
+        return self.beams[None]
+
+    def get_beam_for_sequence(self, sequence_name: Optional[str] = None) -> Beam:
+        """Get or create a beam for a specific sequence."""
+        if sequence_name not in self.beams:
+            # New sequence beam inherits from the default beam
+            default = self.beams[None]
+            self.beams[sequence_name] = Beam(
+                particle=default.particle,
+                energy=default.energy,
+                pc=default.pc,
+                mass=default.mass,
+                charge=default.charge,
+                freq0=default.freq0,
+            )
+        return self.beams[sequence_name]
 
         # Tracking for warning messages (updated by the parser)
         self.current_file: Optional[str] = None
@@ -1907,8 +1929,17 @@ class MADXParser:
             )
 
     def _parse_beam_command(self):
-        """Parse the BEAM command."""
+        """Parse the BEAM command.
+
+        MAD-X allows multiple BEAM commands for different sequences via
+        BEAM, SEQUENCE=name, ...;  The beam is stored per-sequence.
+        A BEAM without SEQUENCE= updates the default beam.
+        """
         self._advance()  # skip 'beam'
+
+        # Collect all attributes first, then apply to the right beam
+        beam_attrs = {}
+        sequence_name = None
 
         while self._current().type == TokenType.COMMA:
             self._advance()
@@ -1918,57 +1949,39 @@ class MADXParser:
 
             attr_name = self._advance().value.lower()
 
-            if self._current().type == TokenType.EQUALS:
+            if self._current().type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
                 self._advance()
 
                 if attr_name == "particle":
                     if self._current().type == TokenType.STRING:
-                        self.context.beam.particle = self._advance().value.lower()
+                        beam_attrs["particle"] = self._advance().value.lower()
                     elif self._current().type == TokenType.IDENTIFIER:
-                        self.context.beam.particle = self._advance().value.lower()
+                        beam_attrs["particle"] = self._advance().value.lower()
                     else:
                         raise MADXInputError(
                             "Expected particle name", self._current().line
                         )
-                elif attr_name == "energy":
+                elif attr_name == "sequence":
+                    if self._current().type in (
+                        TokenType.STRING,
+                        TokenType.IDENTIFIER,
+                    ):
+                        sequence_name = self._advance().value.lower()
+                    else:
+                        self._parse_expression()  # consume
+                elif attr_name in ("energy", "pc", "mass", "charge", "freq0"):
                     expr = self._parse_expression()
-                    self.context.beam.energy = self.context.evaluate(expr)
-                elif attr_name == "pc":
-                    expr = self._parse_expression()
-                    self.context.beam.pc = self.context.evaluate(expr)
-                elif attr_name == "mass":
-                    expr = self._parse_expression()
-                    self.context.beam.mass = self.context.evaluate(expr)
-                elif attr_name == "charge":
-                    expr = self._parse_expression()
-                    self.context.beam.charge = self.context.evaluate(expr)
-                elif attr_name == "freq0":
-                    expr = self._parse_expression()
-                    self.context.beam.freq0 = self.context.evaluate(expr)
+                    beam_attrs[attr_name] = self.context.evaluate(expr)
                 else:
                     # Unknown attribute, skip the value
                     self._parse_expression()
-            elif self._current().type == TokenType.COLON_EQUALS:
-                self._advance()
-                # Deferred expression - evaluate immediately for BEAM
-                # (BEAM is typically defined early with literal values)
-                expr = self._parse_expression()
-                if attr_name == "energy":
-                    self.context.beam.energy = self.context.evaluate(expr)
-                elif attr_name == "pc":
-                    self.context.beam.pc = self.context.evaluate(expr)
-                elif attr_name == "mass":
-                    self.context.beam.mass = self.context.evaluate(expr)
-                elif attr_name == "charge":
-                    self.context.beam.charge = self.context.evaluate(expr)
-                elif attr_name == "freq0":
-                    self.context.beam.freq0 = self.context.evaluate(expr)
-                elif attr_name == "particle":
-                    val = self.context.evaluate(expr)
-                    if isinstance(val, str):
-                        self.context.beam.particle = val.lower()
 
         self._expect(TokenType.SEMICOLON)
+
+        # Apply to the appropriate beam
+        beam = self.context.get_beam_for_sequence(sequence_name)
+        for attr, value in beam_attrs.items():
+            setattr(beam, attr, value)
 
     def _parse_use_command(self):
         """Parse the USE command."""

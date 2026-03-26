@@ -1044,6 +1044,23 @@ class MADXParser:
             self._skip_until_semicolon()
             raise _ReturnStatement()
 
+        if name == "system":
+            warnings.warn(
+                "SYSTEM command is unsafe and not supported; skipping",
+                MADXInputWarning,
+            )
+            self._skip_until_semicolon()
+            return
+
+        if name in ("assign", "printf", "chdir"):
+            warnings.warn(
+                f"'{name.upper()}' I/O command is not supported; "
+                "use ImpactX commands for I/O. Skipping.",
+                MADXInputWarning,
+            )
+            self._skip_until_semicolon()
+            return
+
         if name == "if":
             self._parse_if_statement()
             return

@@ -861,6 +861,15 @@ class EvaluationContext:
                     return 1.0 if expr.arguments[0].name in self.variables else 0.0
                 return 0.0
 
+            # TABLE(): accesses MAD-X internal tables (TWISS, SURVEY, etc.)
+            if name == "table":
+                warnings.warn(
+                    "TABLE() is not supported. "
+                    "Use ImpactX diagnostics for beam moments.",
+                    MADXInputWarning,
+                )
+                return None
+
             if name not in MADXExpressionParser.FUNCTIONS:
                 raise MADXInputError(f"Unknown function: {name}")
 

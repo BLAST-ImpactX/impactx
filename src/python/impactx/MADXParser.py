@@ -11,6 +11,7 @@ A MAD-X parser that aims to be compliant with the upstream MAD-X format.
 References:
     - https://mad.web.cern.ch/mad/webguide/manual.html
     - https://github.com/MethodicalAcceleratorDesign/MAD-X/blob/master/doc/latexuguide/format.tex
+    - https://github.com/MethodicalAcceleratorDesign/MAD-X/blob/master/src/mad_parse.c (and related files)
 """
 
 import math

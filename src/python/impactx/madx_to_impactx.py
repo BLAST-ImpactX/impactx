@@ -290,6 +290,14 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                                 K_skew=ks,
                             )
                         )
+            elif d["type"] == "nllens":
+                impactx_beamline.append(
+                    elements.NonlinearLens(
+                        name=d["name"],
+                        knll=d.get("knll", 0.0),
+                        cnll=d.get("cnll", 0.0),
+                    )
+                )
             elif d["type"] == "rfcavity":
                 # MAD-X: volt [MV], lag [2pi], harmon [1]
                 # ImpactX ShortRF: V [MV], freq [Hz], phase [deg]

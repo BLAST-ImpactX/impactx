@@ -1025,6 +1025,10 @@ class MADXParser:
             self._parse_if_statement()
             return
 
+        if name == "while":
+            self._parse_while_statement()
+            return
+
         if name in (
             "title",
             "option",
@@ -1145,10 +1149,12 @@ class MADXParser:
             and self._current().value == "elseif"
         ):
             self._advance()  # skip 'elseif'
-            elseif_cond = not condition and self._parse_if_condition()
-            if elseif_cond:
+            # Always parse condition to consume tokens, even if a prior branch matched
+            this_cond = self._parse_if_condition()
+            execute = not condition and this_cond
+            if execute:
                 condition = True  # mark so subsequent branches are skipped
-            self._execute_or_skip_brace_block(elseif_cond)
+            self._execute_or_skip_brace_block(execute)
 
         # Handle ELSE
         if (
@@ -1178,6 +1184,32 @@ class MADXParser:
         self._expect(TokenType.RBRACE)
         if self._current().type == TokenType.SEMICOLON:
             self._advance()
+
+    def _parse_while_statement(self):
+        """Parse a MAD-X WHILE statement.
+
+        Syntax:
+            WHILE ( condition ) { statements; }
+        """
+        self._advance()  # skip 'while'
+
+        # Save token position before the condition so we can loop back
+        max_iterations = 100000  # safety limit
+        loop_start = self.pos
+
+        for _ in range(max_iterations):
+            self.pos = loop_start
+            condition = self._parse_if_condition()
+
+            if not condition:
+                self._execute_or_skip_brace_block(False)
+                break
+
+            self._execute_or_skip_brace_block(True)
+        else:
+            raise MADXInputError(
+                f"WHILE loop exceeded {max_iterations} iterations", loop_start
+            )
 
     def _parse_macro_definition(self):
         """Parse a macro definition: name(params): MACRO = { body };"""
@@ -1255,25 +1287,25 @@ class MADXParser:
 
         params, body_tokens = self.context.macros[macro_name]
 
-        # Build substitution map: param_name -> arg value (as string)
+        # Build substitution map: param_name -> arg identifier string
+        # MAD-X macros do textual substitution: the argument name replaces
+        # the formal parameter wherever it appears in the body tokens.
         subs = {}
         for i, param in enumerate(params):
             if i < len(args):
-                arg = args[i]
-                # Strip leading $ from argument name to get the variable name
-                var_name = arg.lstrip("$")
-                # Get the variable value and convert to substitution string
-                val = self.context.get_variable(var_name)
-                subs[param] = val
+                # Strip leading $ from argument name
+                subs[param] = args[i].lstrip("$")
 
         # Substitute parameter references in body tokens
         expanded = []
         for tok in body_tokens:
             if tok.type == TokenType.IDENTIFIER and tok.value in subs:
-                val = subs[tok.value]
-                # Replace with a NUMBER token
+                replacement = subs[tok.value]
+                # Textual substitution: replace with an identifier token
+                # (the identifier will be resolved as a variable, element
+                # name, or line reference during normal parsing)
                 expanded.append(
-                    Token(TokenType.NUMBER, float(val), tok.line, tok.column)
+                    Token(TokenType.IDENTIFIER, replacement, tok.line, tok.column)
                 )
             else:
                 expanded.append(tok)
@@ -1501,11 +1533,13 @@ class MADXParser:
             }
 
         # Check for number * element or number * (group)
+        has_multiplier = False
         if self._current().type == TokenType.NUMBER:
             num = self._advance().value
             if self._current().type == TokenType.STAR:
                 self._advance()
                 multiplier = int(num)
+                has_multiplier = True
             else:
                 # Shouldn't happen in valid MAD-X
                 raise MADXInputError(
@@ -1513,7 +1547,7 @@ class MADXParser:
                 )
 
         # Parenthesized group after multiplier: n * (elements)
-        if multiplier > 1 and self._current().type == TokenType.LPAREN:
+        if has_multiplier and self._current().type == TokenType.LPAREN:
             self._advance()
             inner_elements = self._parse_line_elements()
             self._expect(TokenType.RPAREN)
@@ -1525,9 +1559,35 @@ class MADXParser:
 
         # Now we should have an identifier
         if self._current().type == TokenType.IDENTIFIER:
-            elem_name = self._advance().value
+            name = self._advance().value
+
+            # Check for identifier used as multiplier: varname * element_or_group
+            if self._current().type == TokenType.STAR:
+                self._advance()
+                multiplier = int(self.context.get_variable(name))
+
+                # Parenthesized group: var * (elements)
+                if self._current().type == TokenType.LPAREN:
+                    self._advance()
+                    inner_elements = self._parse_line_elements()
+                    self._expect(TokenType.RPAREN)
+                    return {
+                        "multiplier": multiplier,
+                        "elements": inner_elements,
+                        "reversed": reversed_flag,
+                    }
+
+                # Single element: var * element
+                if self._current().type == TokenType.IDENTIFIER:
+                    elem_name = self._advance().value
+                    return {
+                        "name": elem_name,
+                        "multiplier": multiplier,
+                        "reversed": reversed_flag,
+                    }
+
             return {
-                "name": elem_name,
+                "name": name,
                 "multiplier": multiplier,
                 "reversed": reversed_flag,
             }

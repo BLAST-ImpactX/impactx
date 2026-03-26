@@ -1511,10 +1511,22 @@ class MADXParser:
             attribute_exprs.update(parent.attribute_exprs)
 
         # Parse attributes
-        while self._current().type == TokenType.COMMA:
-            self._advance()  # ,
+        # MAD-X allows commas between attributes but they are optional
+        while True:
+            has_comma = False
+            if self._current().type == TokenType.COMMA:
+                self._advance()  # ,
+                has_comma = True
 
             if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            # Without a comma, only continue if the identifier is followed
+            # by = or := (otherwise it's the start of a new statement)
+            if not has_comma and self._peek(1).type not in (
+                TokenType.EQUALS,
+                TokenType.COLON_EQUALS,
+            ):
                 break
 
             attr_name = self._advance().value.lower()
@@ -1738,9 +1750,18 @@ class MADXParser:
             if elem is not None:
                 elements.append(elem)
 
-            if self._current().type != TokenType.COMMA:
+            if self._current().type == TokenType.COMMA:
+                self._advance()  # ,
+            elif self._current().type in (
+                TokenType.IDENTIFIER,
+                TokenType.NUMBER,
+                TokenType.MINUS,
+                TokenType.LPAREN,
+            ):
+                # Missing comma — tolerate it (common in real MAD-X files)
+                pass
+            else:
                 break
-            self._advance()  # ,
 
         return elements
 

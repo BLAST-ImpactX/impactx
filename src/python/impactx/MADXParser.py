@@ -1464,15 +1464,22 @@ class MADXParser:
         """Parse a SEQUENCE definition.
 
         Syntax:
-            name: SEQUENCE, L=length;
+            name: SEQUENCE, L=length, REFER=centre;
               elem1: type, at=pos;   ! labeled placement
               elem2, at=pos;         ! unlabeled placement (existing element)
             ENDSEQUENCE;
 
-        Elements are collected and sorted by their 'at' position,
-        then stored as a Line for compatibility with getBeamline().
+        The REFER attribute controls how 'at' positions are interpreted:
+            centre (default) - 'at' is the element center
+            entry            - 'at' is the element entry point
+            exit             - 'at' is the element exit point
+
+        Elements are collected, positions adjusted for REFER, sorted,
+        and stored as a Line for compatibility with getBeamline().
         """
         # Parse sequence-level attributes (L=..., REFER=..., etc.)
+        refer = "centre"  # MAD-X default
+
         while self._current().type == TokenType.COMMA:
             self._advance()
             if self._current().type != TokenType.IDENTIFIER:
@@ -1480,7 +1487,14 @@ class MADXParser:
             attr_name = self._advance().value.lower()
             if self._current().type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
                 self._advance()
-                self._parse_expression()  # consume but discard
+                if attr_name == "refer":
+                    # REFER value is an identifier: centre, entry, or exit
+                    if self._current().type == TokenType.IDENTIFIER:
+                        refer = self._advance().value.lower()
+                    else:
+                        self._parse_expression()  # consume unexpected form
+                else:
+                    self._parse_expression()  # consume but discard
             # else: boolean flag, ignore
 
         self._expect(TokenType.SEMICOLON)
@@ -1537,7 +1551,25 @@ class MADXParser:
                 self._expect(TokenType.SEMICOLON)
                 seq_entries.append((at_pos, entry_name))
 
-        # Sort by position and build a Line
+        # Adjust positions based on REFER and sort
+        if refer != "centre":
+            adjusted = []
+            for at_pos, elem_name in seq_entries:
+                elem = self.context.elements.get(elem_name)
+                elem_len = 0.0
+                if elem:
+                    if "l" in elem.attribute_exprs:
+                        elem_len = self.context.evaluate(elem.attribute_exprs["l"])
+                    elif "l" in elem.attributes and elem.attributes["l"] is not None:
+                        elem_len = elem.attributes["l"]
+                if refer == "entry":
+                    # 'at' marks the entry; center is at + L/2
+                    adjusted.append((at_pos + elem_len / 2.0, elem_name))
+                elif refer == "exit":
+                    # 'at' marks the exit; center is at - L/2
+                    adjusted.append((at_pos - elem_len / 2.0, elem_name))
+            seq_entries = adjusted
+
         seq_entries.sort(key=lambda x: x[0])
         elements = [
             {"name": elem_name, "multiplier": 1, "reversed": False}

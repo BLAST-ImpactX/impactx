@@ -850,6 +850,16 @@ class EvaluationContext:
 
         if isinstance(expr, FunctionExpr):
             name = expr.name.lower()
+
+            # EXIST(var): returns 1 if variable is defined, 0 otherwise
+            # Special case: checks name existence without evaluating
+            if name == "exist":
+                if len(expr.arguments) == 1 and isinstance(
+                    expr.arguments[0], VariableExpr
+                ):
+                    return 1.0 if expr.arguments[0].name in self.variables else 0.0
+                return 0.0
+
             if name not in MADXExpressionParser.FUNCTIONS:
                 raise MADXInputError(f"Unknown function: {name}")
 

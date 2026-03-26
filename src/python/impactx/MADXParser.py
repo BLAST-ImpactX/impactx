@@ -15,6 +15,7 @@ References:
 
 import math
 import os
+import random
 import warnings
 from dataclasses import dataclass, field
 from enum import Enum, auto
@@ -497,6 +498,14 @@ class MADXExpressionParser:
         "max": (2, max),
         "min": (2, min),
         "mod": (2, math.fmod),
+        "ranf": (0, lambda: random.random()),
+        "gauss": (0, lambda: random.gauss(0, 1)),
+        "tgauss": (
+            1,
+            lambda cut: next(
+                s for s in iter(lambda: random.gauss(0, 1), None) if abs(s) < cut
+            ),
+        ),
     }
 
     def __init__(self, tokens: list[Token]):

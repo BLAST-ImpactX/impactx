@@ -736,9 +736,23 @@ class EvaluationContext:
         self.beam = Beam()
         self.selected_sequence: Optional[str] = None
 
+        # Tracking for warning messages (updated by the parser)
+        self.current_file: Optional[str] = None
+        self.current_line: Optional[int] = None
+
         # Initialize predefined constants
         for name, value in self.PREDEFINED_CONSTANTS.items():
             self.variables[name] = Variable(name, value, constant=True)
+
+    def _warn(self, message: str):
+        """Emit a warning with current file and line context."""
+        loc = ""
+        if self.current_file:
+            loc = self.current_file
+            if self.current_line is not None:
+                loc += f":{self.current_line}"
+            loc += ": "
+        warnings.warn(f"{loc}{message}", MADXInputWarning)
 
     def set_variable(
         self,
@@ -774,7 +788,7 @@ class EvaluationContext:
         """Get a variable value, evaluating deferred expressions."""
         name = name.lower()
         if name not in self.variables:
-            warnings.warn(f"Undefined variable '{name}', using 0.0", MADXInputWarning)
+            self._warn(f"Undefined variable '{name}', using 0.0")
             return 0.0
 
         var = self.variables[name]
@@ -788,10 +802,9 @@ class EvaluationContext:
         attr_name = attr_name.lower()
 
         if element_name not in self.elements:
-            warnings.warn(
+            self._warn(
                 f"Unknown element '{element_name}', using 0.0 for "
-                f"'{element_name}->{attr_name}'",
-                MADXInputWarning,
+                f"'{element_name}->{attr_name}'"
             )
             return 0.0
 
@@ -804,9 +817,8 @@ class EvaluationContext:
         if attr_name in element.attributes:
             return element.attributes[attr_name]
 
-        warnings.warn(
-            f"Element '{element_name}' has no attribute '{attr_name}', using 0.0",
-            MADXInputWarning,
+        self._warn(
+            f"Element '{element_name}' has no attribute '{attr_name}', using 0.0"
         )
         return 0.0
 
@@ -863,10 +875,9 @@ class EvaluationContext:
 
             # TABLE(): accesses MAD-X internal tables (TWISS, SURVEY, etc.)
             if name == "table":
-                warnings.warn(
+                self._warn(
                     "TABLE() is not supported. "
-                    "Use ImpactX diagnostics for beam moments.",
-                    MADXInputWarning,
+                    "Use ImpactX diagnostics for beam moments."
                 )
                 return None
 
@@ -937,6 +948,17 @@ class MADXParser:
             )
         return self._advance()
 
+    def _update_context_location(self):
+        """Update file/line on the evaluation context for warning messages."""
+        self.context.current_file = self._current_file
+        self.context.current_line = self._current().line if self.tokens else None
+
+    def _warn(self, message: str):
+        """Emit a warning with current file and line context."""
+        file_info = self._current_file or "<unknown>"
+        line_info = self._current().line if self.tokens else "?"
+        warnings.warn(f"{file_info}:{line_info}: {message}", MADXInputWarning)
+
     def _skip_semicolons(self):
         """Skip any semicolons."""
         while self._current().type == TokenType.SEMICOLON:
@@ -976,6 +998,7 @@ class MADXParser:
 
     def _parse_statement(self):
         """Parse a single statement."""
+        self._update_context_location()
         token = self._current()
 
         if token.type == TokenType.EOF:
@@ -1054,28 +1077,23 @@ class MADXParser:
             raise _ReturnStatement()
 
         if name == "system":
-            warnings.warn(
-                "SYSTEM command is unsafe and not supported; skipping",
-                MADXInputWarning,
-            )
+            self._warn("SYSTEM command is unsafe and not supported; skipping")
             self._skip_until_semicolon()
             return
 
         if name in ("seqedit", "endedit", "flatten", "install", "move", "remove"):
-            warnings.warn(
+            self._warn(
                 f"'{name.upper()}' sequence editing command is not supported. "
                 "Please open a GitHub issue if you need it: "
-                "https://github.com/BLAST-ImpactX/impactx/issues",
-                MADXInputWarning,
+                "https://github.com/BLAST-ImpactX/impactx/issues"
             )
             self._skip_until_semicolon()
             return
 
         if name in ("assign", "printf", "chdir"):
-            warnings.warn(
+            self._warn(
                 f"'{name.upper()}' I/O command is not supported; "
-                "use ImpactX commands for I/O. Skipping.",
-                MADXInputWarning,
+                "use ImpactX commands for I/O. Skipping."
             )
             self._skip_until_semicolon()
             return
@@ -1107,9 +1125,7 @@ class MADXParser:
             return
 
         # Unknown statement - skip it with a warning
-        warnings.warn(
-            f"Skipping unknown statement starting with '{name}'", MADXInputWarning
-        )
+        self._warn(f"Skipping unknown statement starting with '{name}'")
         self._skip_until_semicolon()
 
     def _skip_until_semicolon(self):
@@ -1391,9 +1407,7 @@ class MADXParser:
         self._expect(TokenType.SEMICOLON)
 
         if macro_name not in self.context.macros:
-            warnings.warn(
-                f"Unknown macro '{macro_name}', skipping EXEC", MADXInputWarning
-            )
+            self._warn(f"Unknown macro '{macro_name}', skipping EXEC")
             return
 
         params, body_tokens = self.context.macros[macro_name]
@@ -1672,10 +1686,9 @@ class MADXParser:
                     {"name": drift_name, "multiplier": 1, "reversed": False}
                 )
             elif gap < -1e-10:
-                warnings.warn(
+                self._warn(
                     f"SEQUENCE '{name}': elements overlap by {-gap:.6g} m "
-                    f"at '{elem_name}' (pos={center_pos})",
-                    MADXInputWarning,
+                    f"at '{elem_name}' (pos={center_pos})"
                 )
 
             elements.append({"name": elem_name, "multiplier": 1, "reversed": False})
@@ -2188,9 +2201,7 @@ class MADXParser:
                 }
                 beamline.append(elem_dict)
             else:
-                warnings.warn(
-                    f"Element '{name}' referenced but not defined", MADXInputWarning
-                )
+                self._warn(f"Element '{name}' referenced but not defined")
 
         return beamline
 
@@ -2208,7 +2219,7 @@ class MADXParser:
         ]
 
         if particle and particle not in known_particles:
-            warnings.warn(f"Unknown particle type '{particle}'", MADXInputWarning)
+            self._warn(f"Unknown particle type '{particle}'")
 
         return particle
 

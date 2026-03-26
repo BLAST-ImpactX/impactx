@@ -21,8 +21,7 @@ sim.slice_step_diagnostics = True
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# load a 2 GeV electron beam with an initial
-# unnormalized rms emittance of 2 nm
+# beam parameters
 kin_energy_MeV = 10.0e3  # reference energy
 gyromagnetic_anomaly = 0.00115965218062  # value for an electron
 bunch_charge_C = 1.0e-9  # used with space charge

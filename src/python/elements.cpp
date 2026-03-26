@@ -1117,7 +1117,8 @@ void init_elements(py::module& m)
                      std::make_pair("unit", exact_multipole.m_unit),
                      std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
                      std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
-                     std::make_pair("mapsteps", exact_multipole.m_mapsteps)
+                     std::make_pair("mapsteps", exact_multipole.m_mapsteps),
+                     std::make_pair("int_order", exact_multipole.m_int_order)
                  );
              }
         )
@@ -1186,7 +1187,8 @@ void init_elements(py::module& m)
                      std::make_pair("unit", exact_cfbend.m_unit),
                      std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
                      std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
-                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps)
+                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps),
+                     std::make_pair("int_order", exact_cfbend.m_int_order)
                  );
              }
         )
@@ -1258,7 +1260,9 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_quad,
                      std::make_pair("k", exact_quad.m_k),
-                     std::make_pair("unit", exact_quad.m_unit)
+                     std::make_pair("unit", exact_quad.m_unit),
+                     std::make_pair("mapsteps", exact_quad.m_mapsteps),
+                     std::make_pair("int_order", exact_quad.m_int_order)
                  );
              }
         )

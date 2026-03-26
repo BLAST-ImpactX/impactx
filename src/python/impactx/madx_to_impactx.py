@@ -271,6 +271,25 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                             K_skew=0.0,
                         )
                     )
+            elif d["type"] == "multipole":
+                # MAD-X MULTIPOLE is a thin element with KNL/KSL arrays
+                # KNL = integrated normal strengths, KSL = integrated skew strengths
+                knl = d.get("knl", [])
+                ksl = d.get("ksl", [])
+                max_order = max(len(knl), len(ksl)) - 1
+
+                for order in range(max_order + 1):
+                    kn = knl[order] if order < len(knl) else 0.0
+                    ks = ksl[order] if order < len(ksl) else 0.0
+                    if kn != 0.0 or ks != 0.0:
+                        impactx_beamline.append(
+                            elements.Multipole(
+                                name=d["name"],
+                                multipole=order,
+                                K_normal=kn,
+                                K_skew=ks,
+                            )
+                        )
             elif d["type"] == "rfcavity":
                 # MAD-X: volt [MV], lag [2pi], harmon [1]
                 # ImpactX ShortRF: V [MV], freq [Hz], phase [deg]

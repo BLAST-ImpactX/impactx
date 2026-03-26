@@ -1052,6 +1052,16 @@ class MADXParser:
             self._skip_until_semicolon()
             return
 
+        if name in ("seqedit", "endedit", "flatten", "install", "move", "remove"):
+            warnings.warn(
+                f"'{name.upper()}' sequence editing command is not supported. "
+                "Please open a GitHub issue if you need it: "
+                "https://github.com/BLAST-ImpactX/impactx/issues",
+                MADXInputWarning,
+            )
+            self._skip_until_semicolon()
+            return
+
         if name in ("assign", "printf", "chdir"):
             warnings.warn(
                 f"'{name.upper()}' I/O command is not supported; "

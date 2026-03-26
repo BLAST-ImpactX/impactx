@@ -258,10 +258,10 @@ namespace impactx
 
         // input validation
         bool const has_w = w.has_value();
-  //      if (!(bunch_charge.has_value() ^ has_w))
-  //      {
-  //          throw std::runtime_error("AddNParticles: Exactly one of bunch_charge or w must be provided!");
-  //      }
+        if (!(bunch_charge.has_value() ^ has_w))
+        {
+            throw std::runtime_error("AddNParticles: Exactly one of bunch_charge or w must be provided!");
+        }
 
         bool const has_spin = sx.has_value();
 

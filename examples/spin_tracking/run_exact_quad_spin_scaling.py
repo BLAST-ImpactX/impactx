@@ -104,7 +104,7 @@ if amr.ParallelDescriptor.IOProcessor():
         dpt_podv,
         qm_eev,
         bunch_charge_C,
-        dw_podv,
+        None,
         dsx_podv,
         dsy_podv,
         dsz_podv,

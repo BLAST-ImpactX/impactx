@@ -42,6 +42,9 @@ function(find_pyamrex)
         # safe compile time
         set(pyAMReX_CODES "ImpactX" CACHE INTERNAL "Fine-tune the pre-compiled particle containers for downstream codes")
 
+        # skip pyAMReX's own tests (e.g., pytest.AMReX) in the ImpactX superbuild
+        set(pyAMReX_BUILD_TESTING OFF CACHE BOOL "Run the pyAMReX tests" FORCE)
+
         if(ImpactX_pyamrex_src)
             add_subdirectory(${ImpactX_pyamrex_src} _deps/localpyamrex-build/)
         else()

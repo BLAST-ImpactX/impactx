@@ -1460,6 +1460,17 @@ class MADXParser:
         line = Line(name, elements)
         self.context.lines[name] = line
 
+    def _get_element_length(self, elem_name: str) -> float:
+        """Get an element's length, evaluating deferred expressions if needed."""
+        elem = self.context.elements.get(elem_name)
+        if elem is None:
+            return 0.0
+        if "l" in elem.attribute_exprs:
+            return self.context.evaluate(elem.attribute_exprs["l"])
+        if "l" in elem.attributes and elem.attributes["l"] is not None:
+            return elem.attributes["l"]
+        return 0.0
+
     def _parse_sequence_definition(self, name: str):
         """Parse a SEQUENCE definition.
 
@@ -1585,13 +1596,7 @@ class MADXParser:
         if refer != "centre":
             adjusted = []
             for at_pos, elem_name, _ in seq_entries:
-                elem = self.context.elements.get(elem_name)
-                elem_len = 0.0
-                if elem:
-                    if "l" in elem.attribute_exprs:
-                        elem_len = self.context.evaluate(elem.attribute_exprs["l"])
-                    elif "l" in elem.attributes and elem.attributes["l"] is not None:
-                        elem_len = elem.attributes["l"]
+                elem_len = self._get_element_length(elem_name)
                 if refer == "entry":
                     # 'at' marks the entry; center is at + L/2
                     adjusted.append((at_pos + elem_len / 2.0, elem_name, None))
@@ -1601,10 +1606,33 @@ class MADXParser:
             seq_entries = adjusted
 
         seq_entries.sort(key=lambda x: x[0])
-        elements = [
-            {"name": elem_name, "multiplier": 1, "reversed": False}
-            for _, elem_name, _ in seq_entries
-        ]
+
+        # Insert drifts between elements to fill gaps
+        elements = []
+        cursor = 0.0  # tracks the end of the last element
+
+        for center_pos, elem_name, _ in seq_entries:
+            elem_len = self._get_element_length(elem_name)
+            entry_pos = center_pos - elem_len / 2.0
+
+            gap = entry_pos - cursor
+            if gap > 1e-15:
+                drift_name = f"_drift_{name}_{len(elements)}"
+                self.context.elements[drift_name] = Element(
+                    drift_name, "drift", {"l": gap}
+                )
+                elements.append(
+                    {"name": drift_name, "multiplier": 1, "reversed": False}
+                )
+            elif gap < -1e-10:
+                warnings.warn(
+                    f"SEQUENCE '{name}': elements overlap by {-gap:.6g} m "
+                    f"at '{elem_name}' (pos={center_pos})",
+                    MADXInputWarning,
+                )
+
+            elements.append({"name": elem_name, "multiplier": 1, "reversed": False})
+            cursor = center_pos + elem_len / 2.0
 
         line = Line(name, elements)
         self.context.lines[name] = line

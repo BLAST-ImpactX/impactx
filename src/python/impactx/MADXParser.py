@@ -58,6 +58,19 @@ class MADXInputWarning(UserWarning):
     pass
 
 
+# Custom format for MADXInputWarning: omit the source line that Python prints by default
+_original_formatwarning = warnings.formatwarning
+
+
+def _madx_formatwarning(message, category, filename, lineno, line=None):
+    if issubclass(category, MADXInputWarning):
+        return f"[WARNING MADXParser] {str(message)}\n"
+    return _original_formatwarning(message, category, filename, lineno, line)
+
+
+warnings.formatwarning = _madx_formatwarning
+
+
 class _ReturnStatement(Exception):
     """Internal signal that a RETURN statement was encountered in a CALL'd file."""
 

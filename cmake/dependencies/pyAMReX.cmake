@@ -39,6 +39,9 @@ function(find_pyamrex)
     if(ImpactX_pyamrex_internal OR ImpactX_pyamrex_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+        # safe compile time
+        set(pyAMReX_CODES "ImpactX" CACHE INTERNAL "Fine-tune the pre-compiled particle containers for downstream codes")
+
         if(ImpactX_pyamrex_src)
             add_subdirectory(${ImpactX_pyamrex_src} _deps/localpyamrex-build/)
         else()
@@ -59,7 +62,7 @@ function(find_pyamrex)
         endif()
     elseif(NOT ImpactX_pyamrex_internal)
         # TODO: MPI control
-        find_package(pyAMReX 26.03 CONFIG REQUIRED)
+        find_package(pyAMReX 26.03 CONFIG REQUIRED COMPONENTS CODES_ImpactX)
         message(STATUS "pyAMReX: Found version '${pyAMReX_VERSION}'")
     endif()
 endfunction()

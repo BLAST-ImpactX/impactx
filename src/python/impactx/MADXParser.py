@@ -88,6 +88,8 @@ class TokenType(Enum):
     ARROW = auto()  # ->
     LT = auto()  # <
     GT = auto()  # >
+    AND = auto()  # &&
+    OR = auto()  # ||
 
     # Special
     EOF = auto()
@@ -362,6 +364,16 @@ class MADXLexer:
             elif char == ">":
                 self._advance()
                 tokens.append(Token(TokenType.GT, ">", start_line, start_col))
+
+            elif char == "&" and self._peek(1) == "&":
+                self._advance()
+                self._advance()
+                tokens.append(Token(TokenType.AND, "&&", start_line, start_col))
+
+            elif char == "|" and self._peek(1) == "|":
+                self._advance()
+                self._advance()
+                tokens.append(Token(TokenType.OR, "||", start_line, start_col))
 
             else:
                 raise MADXInputError(f"Unexpected character: {char!r}", start_line)
@@ -1061,75 +1073,127 @@ class MADXParser:
             self._advance()
 
     def _parse_if_condition(self) -> bool:
-        """Parse an IF/ELSEIF condition: ( expr op expr ) or ( expr ).
+        """Parse a condition: ( logical_expr ).
+
+        Supports compound conditions with && and ||, e.g.:
+            IF ( a > 0 && b < 1 )
+            IF ( x == 1 || y == 2 )
 
         MAD-X comparison operators (from mad_eval.c):
-            ==   equal
-            <>   not equal
-            <    less than
-            >    greater than
-            <=   less than or equal
-            >=   greater than or equal
+            ==, <>, <, >, <=, >=
         """
         self._expect(TokenType.LPAREN)
+        result = self._parse_logical_or()
+        self._expect(TokenType.RPAREN)
+        return result
 
-        # Scan for a comparison operator at paren depth 0
+    def _parse_logical_or(self) -> bool:
+        """Parse logical OR: expr || expr || ..."""
+        result = self._parse_logical_and()
+        while self._current().type == TokenType.OR:
+            self._advance()
+            right = self._parse_logical_and()
+            result = result or right
+        return result
+
+    def _parse_logical_and(self) -> bool:
+        """Parse logical AND: expr && expr && ..."""
+        result = self._parse_comparison()
+        while self._current().type == TokenType.AND:
+            self._advance()
+            right = self._parse_comparison()
+            result = result and right
+        return result
+
+    def _parse_comparison(self) -> bool:
+        """Parse a single comparison: arith_expr [op arith_expr]."""
+        left_expr = self._parse_condition_operand()
+        left_val = self.context.evaluate(left_expr)
+
+        op = self._try_parse_comparison_op()
+        if op is None:
+            return bool(left_val)
+
+        right_expr = self._parse_condition_operand()
+        right_val = self.context.evaluate(right_expr)
+
+        _cmp = {
+            "==": lambda a, b: a == b,
+            "<>": lambda a, b: a != b,
+            "<": lambda a, b: a < b,
+            ">": lambda a, b: a > b,
+            "<=": lambda a, b: a <= b,
+            ">=": lambda a, b: a >= b,
+        }
+        return _cmp[op](left_val, right_val)
+
+    def _try_parse_comparison_op(self) -> Optional[str]:
+        """Try to consume a comparison operator. Returns operator string or None."""
+        tok = self._current()
+        nt = self._peek(1)
+
+        if tok.type == TokenType.EQUALS and nt.type == TokenType.EQUALS:
+            self._advance()
+            self._advance()
+            return "=="
+        if tok.type == TokenType.LT:
+            if nt.type == TokenType.GT:
+                self._advance()
+                self._advance()
+                return "<>"
+            if nt.type == TokenType.EQUALS:
+                self._advance()
+                self._advance()
+                return "<="
+            self._advance()
+            return "<"
+        if tok.type == TokenType.GT:
+            if nt.type == TokenType.EQUALS:
+                self._advance()
+                self._advance()
+                return ">="
+            self._advance()
+            return ">"
+        return None
+
+    def _parse_condition_operand(self) -> Expression:
+        """Parse an arithmetic expression inside a condition.
+
+        Stops at comparison operators, logical operators, or closing paren.
+        """
         start = self.pos
         paren_depth = 0
-        op_pos = None  # token index of first operator token
-        op_kind = None  # string label
-        op_len = 0  # how many tokens the operator spans
 
-        scan = self.pos
-        while scan < len(self.tokens) and self.tokens[scan].type != TokenType.EOF:
-            t = self.tokens[scan]
-            if t.type == TokenType.LPAREN:
+        while self._current().type != TokenType.EOF:
+            tok = self._current()
+            if tok.type == TokenType.LPAREN:
                 paren_depth += 1
-            elif t.type == TokenType.RPAREN:
+            elif tok.type == TokenType.RPAREN:
                 if paren_depth == 0:
                     break
                 paren_depth -= 1
-            elif paren_depth == 0 and op_pos is None:
-                nt = self.tokens[scan + 1] if scan + 1 < len(self.tokens) else None
-                if t.type == TokenType.EQUALS and nt and nt.type == TokenType.EQUALS:
-                    op_pos, op_kind, op_len = scan, "==", 2
-                elif t.type == TokenType.LT:
-                    if nt and nt.type == TokenType.GT:
-                        op_pos, op_kind, op_len = scan, "<>", 2  # not equal
-                    elif nt and nt.type == TokenType.EQUALS:
-                        op_pos, op_kind, op_len = scan, "<=", 2
-                    else:
-                        op_pos, op_kind, op_len = scan, "<", 1
-                elif t.type == TokenType.GT:
-                    if nt and nt.type == TokenType.EQUALS:
-                        op_pos, op_kind, op_len = scan, ">=", 2
-                    else:
-                        op_pos, op_kind, op_len = scan, ">", 1
-            scan += 1
+            elif paren_depth == 0:
+                # Stop at logical operators
+                if tok.type in (TokenType.AND, TokenType.OR):
+                    break
+                # Stop at comparison operators: ==, <>, <, <=, >, >=
+                if tok.type == TokenType.LT or tok.type == TokenType.GT:
+                    break
+                if (
+                    tok.type == TokenType.EQUALS
+                    and self._peek(1).type == TokenType.EQUALS
+                ):
+                    break
+            self.pos += 1
 
-        if op_pos is not None:
-            # Parse left expression (up to operator)
-            left_tokens = self.tokens[start:op_pos] + [Token(TokenType.EOF, None, 0, 0)]
-            left = MADXExpressionParser(left_tokens).parse_expression()
-            self.pos = op_pos + op_len
-            right = self._parse_expression()
-            lv = self.context.evaluate(left)
-            rv = self.context.evaluate(right)
-            _cmp = {
-                "==": lambda a, b: a == b,
-                "<>": lambda a, b: a != b,
-                "<": lambda a, b: a < b,
-                ">": lambda a, b: a > b,
-                "<=": lambda a, b: a <= b,
-                ">=": lambda a, b: a >= b,
-            }
-            condition = _cmp[op_kind](lv, rv)
-        else:
-            expr = self._parse_expression()
-            condition = bool(self.context.evaluate(expr))
+        end = self.pos
+        self.pos = start
 
-        self._expect(TokenType.RPAREN)
-        return condition
+        expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
+        expr_parser = MADXExpressionParser(expr_tokens)
+        expr = expr_parser.parse_expression()
+        self.pos = end
+        return expr
 
     def _parse_if_statement(self):
         """Parse a MAD-X IF statement.

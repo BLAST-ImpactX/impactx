@@ -1500,7 +1500,8 @@ class MADXParser:
         self._expect(TokenType.SEMICOLON)
 
         # Parse sequence entries until ENDSEQUENCE
-        seq_entries = []  # list of (at_position, element_name)
+        # Each entry: (at_position, element_name, from_element_or_None)
+        seq_entries = []
 
         while self._current().type != TokenType.EOF:
             token = self._current()
@@ -1521,20 +1522,26 @@ class MADXParser:
                 break
 
             # Two forms:
-            #   1) labeled:   entry_name : type, at=pos, ...;
-            #   2) unlabeled: entry_name, at=pos, ...;
+            #   1) labeled:   entry_name : type, at=pos, from=ref;
+            #   2) unlabeled: entry_name, at=pos, from=ref;
             if self._peek(1).type == TokenType.COLON:
-                # Labeled: parse as element definition first, then extract 'at'
+                # Labeled: parse as element definition first, then extract 'at'/'from'
                 self._parse_labeled_definition()
                 elem = self.context.elements.get(entry_name)
                 at_pos = 0.0
-                if elem and "at" in elem.attributes:
-                    at_pos = elem.attributes["at"]
-                seq_entries.append((at_pos, entry_name))
+                from_elem = None
+                if elem:
+                    if "at" in elem.attributes and elem.attributes["at"] is not None:
+                        at_pos = elem.attributes["at"]
+                    from_val = elem.attributes.get("from")
+                    if isinstance(from_val, str):
+                        from_elem = from_val
+                seq_entries.append((at_pos, entry_name, from_elem))
             else:
-                # Unlabeled: element_name, at = expr ;
+                # Unlabeled: element_name, at = expr, from = name ;
                 self._advance()  # consume element name
                 at_pos = 0.0
+                from_elem = None
                 while self._current().type == TokenType.COMMA:
                     self._advance()
                     if self._current().type != TokenType.IDENTIFIER:
@@ -1545,16 +1552,39 @@ class MADXParser:
                         TokenType.COLON_EQUALS,
                     ):
                         self._advance()
-                        expr = self._parse_expression()
-                        if attr_name == "at":
-                            at_pos = self.context.evaluate(expr)
+                        if attr_name == "from":
+                            # FROM value is an element name (identifier)
+                            if self._current().type == TokenType.IDENTIFIER:
+                                from_elem = self._advance().value
+                            else:
+                                self._parse_expression()  # consume
+                        else:
+                            expr = self._parse_expression()
+                            if attr_name == "at":
+                                at_pos = self.context.evaluate(expr)
                 self._expect(TokenType.SEMICOLON)
-                seq_entries.append((at_pos, entry_name))
+                seq_entries.append((at_pos, entry_name, from_elem))
+
+        # Resolve FROM references: position is relative to the named element
+        if any(f is not None for _, _, f in seq_entries):
+            # Build map of element name -> absolute position (for entries without FROM)
+            abs_positions = {}
+            for at_pos, elem_name, from_elem in seq_entries:
+                if from_elem is None:
+                    abs_positions[elem_name] = at_pos
+
+            resolved = []
+            for at_pos, elem_name, from_elem in seq_entries:
+                if from_elem is not None and from_elem in abs_positions:
+                    resolved.append((at_pos + abs_positions[from_elem], elem_name))
+                else:
+                    resolved.append((at_pos, elem_name))
+            seq_entries = [(a, n, None) for a, n in resolved]
 
         # Adjust positions based on REFER and sort
         if refer != "centre":
             adjusted = []
-            for at_pos, elem_name in seq_entries:
+            for at_pos, elem_name, _ in seq_entries:
                 elem = self.context.elements.get(elem_name)
                 elem_len = 0.0
                 if elem:
@@ -1564,16 +1594,16 @@ class MADXParser:
                         elem_len = elem.attributes["l"]
                 if refer == "entry":
                     # 'at' marks the entry; center is at + L/2
-                    adjusted.append((at_pos + elem_len / 2.0, elem_name))
+                    adjusted.append((at_pos + elem_len / 2.0, elem_name, None))
                 elif refer == "exit":
                     # 'at' marks the exit; center is at - L/2
-                    adjusted.append((at_pos - elem_len / 2.0, elem_name))
+                    adjusted.append((at_pos - elem_len / 2.0, elem_name, None))
             seq_entries = adjusted
 
         seq_entries.sort(key=lambda x: x[0])
         elements = [
             {"name": elem_name, "multiplier": 1, "reversed": False}
-            for _, elem_name in seq_entries
+            for _, elem_name, _ in seq_entries
         ]
 
         line = Line(name, elements)

@@ -496,6 +496,7 @@ class MADXExpressionParser:
         "atan2": (2, math.atan2),
         "max": (2, max),
         "min": (2, min),
+        "mod": (2, math.fmod),
     }
 
     def __init__(self, tokens: list[Token]):

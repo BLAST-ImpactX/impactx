@@ -1182,6 +1182,10 @@ class MADXParser:
             self._parse_exec_command()
             return
 
+        if name == "add2expr":
+            self._parse_add2expr_command()
+            return
+
         if name == "return":
             # RETURN stops reading the current file (used in CALL'd files)
             self._skip_until_semicolon()
@@ -1295,6 +1299,76 @@ class MADXParser:
                     elem.attribute_exprs.pop(attr_name, None)
 
         self._expect(TokenType.SEMICOLON)
+
+    def _parse_add2expr_command(self):
+        """Parse ADD2EXPR command.
+
+        MAD-X:
+            ADD2EXPR, var=name, expr=<expression>;
+
+        Appends an expression term to an existing deferred expression.
+        """
+        self._advance()  # skip 'add2expr'
+
+        var_name = None
+        add_expr = None
+
+        while self._current().type == TokenType.COMMA:
+            self._advance()  # skip comma
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            attr_name = self._advance().value.lower()
+            if self._current().type != TokenType.EQUALS:
+                continue
+            self._advance()
+
+            if attr_name == "var":
+                if self._current().type == TokenType.IDENTIFIER:
+                    var_name = self._advance().value.lower()
+                else:
+                    expr = self._parse_expression()
+                    var_name = str(self.context.evaluate(expr)).lower()
+            elif attr_name == "expr":
+                # Accept both expression syntax and quoted expression text.
+                if self._current().type == TokenType.STRING:
+                    expr_text = self._advance().value
+                    expr_tokens = MADXLexer(
+                        expr_text + ";", file=self._current_file
+                    ).tokenize()
+                    add_expr = MADXExpressionParser(
+                        expr_tokens, file=self._current_file
+                    ).parse_expression()
+                else:
+                    add_expr = self._parse_expression()
+            else:
+                # Unknown attribute, consume expression and ignore.
+                self._parse_expression()
+
+        self._expect(TokenType.SEMICOLON)
+
+        if not var_name or add_expr is None:
+            self._warn("ADD2EXPR requires var= and expr= attributes; skipping")
+            return
+
+        # Compose onto existing expression/value.
+        existing = self.context.variables.get(var_name)
+        if existing is None:
+            self.context.set_variable(var_name, expression=add_expr, deferred=True)
+            self._warn(
+                f"ADD2EXPR target '{var_name}' was undefined; initializing deferred expression from expr."
+            )
+            return
+
+        if existing.deferred and existing.expression is not None:
+            base_expr = existing.expression
+        elif existing.value is not None:
+            base_expr = NumberExpr(float(existing.value))
+        else:
+            base_expr = NumberExpr(0.0)
+
+        combined = BinaryExpr("+", base_expr, add_expr)
+        self.context.set_variable(var_name, expression=combined, deferred=True)
 
     def _skip_until_semicolon(self):
         """Skip tokens until semicolon or EOF."""

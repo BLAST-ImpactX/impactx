@@ -221,6 +221,11 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 ds = d.get("l", 0.0)
                 angle = d.get("angle", 0.0)
                 k1 = d.get("k1", 0.0)
+                k1s = d.get("k1s", 0.0)
+                k2 = d.get("k2", 0.0)
+                k2s = d.get("k2s", 0.0)
+                k3 = d.get("k3", 0.0)
+                k3s = d.get("k3s", 0.0)
                 e1 = d.get("e1", 0.0)
                 e2 = d.get("e2", 0.0)
                 hgap = d.get("hgap", 0.0)
@@ -251,7 +256,25 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                                 )
                             )
 
-                        if abs(k1) > 0:
+                        use_exact_cfbend = any(
+                            abs(v) > 0.0 for v in (k1s, k2, k2s, k3, k3s)
+                        )
+                        if use_exact_cfbend:
+                            # ExactCFbend can represent curvilinear combined-function
+                            # bends including sextupole/octupole body terms.
+                            curvature = 1.0 / rc if rc != 0.0 else 0.0
+                            impactx_beamline.append(
+                                elements.ExactCFbend(
+                                    name=d["name"],
+                                    ds=ds,
+                                    k_normal=[curvature, k1, k2, k3],
+                                    k_skew=[0.0, k1s, k2s, k3s],
+                                    unit=0,
+                                    rotation=tilt_degree,
+                                    nslice=nslice,
+                                )
+                            )
+                        elif abs(k1) > 0:
                             impactx_beamline.append(
                                 elements.CFbend(
                                     name=d["name"],
@@ -308,7 +331,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                         )
                 elif abs(angle) > 0:
                     # Thin dipole kick
-                    if abs(k1) > 0 or abs(e1) > 0 or abs(e2) > 0:
+                    if any(abs(v) > 0.0 for v in (k1, k1s, k2, k2s, k3, k3s, e1, e2)):
                         # TODO(audit): Thin SBEND with combined-function/edge effects is
                         # currently approximated as a pure thin dipole in ImpactX.
                         _warn(
@@ -317,7 +340,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     impactx_beamline.append(
                         elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
                     )
-                for attr in ("k0", "k0s", "k1s", "k2", "k2s", "k3", "k3s", "h1", "h2"):
+                for attr in ("k0", "k0s", "h1", "h2"):
                     if abs(d.get(attr, 0.0)) > 0:
                         # TODO(audit): Map higher-order/extended SBEND attributes when
                         # ImpactX provides a direct equivalent in this translator path.
@@ -334,6 +357,11 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 angle = d.get("angle", 0.0)
                 l_chord = d.get("l", 0.0)
                 k1 = d.get("k1", 0.0)
+                k1s = d.get("k1s", 0.0)
+                k2 = d.get("k2", 0.0)
+                k2s = d.get("k2s", 0.0)
+                k3 = d.get("k3", 0.0)
+                k3s = d.get("k3s", 0.0)
                 tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
 
                 if l_chord > 0:
@@ -369,7 +397,23 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     )
 
                     # Body: prefer combined-function model if representable.
-                    if abs(k1) > 0:
+                    use_exact_cfbend = any(
+                        abs(v) > 0.0 for v in (k1s, k2, k2s, k3, k3s)
+                    )
+                    if use_exact_cfbend:
+                        curvature = 1.0 / rc if rc != 0.0 else 0.0
+                        impactx_beamline.append(
+                            elements.ExactCFbend(
+                                name=d["name"],
+                                ds=l_arc,
+                                k_normal=[curvature, k1, k2, k3],
+                                k_skew=[0.0, k1s, k2s, k3s],
+                                unit=0,
+                                rotation=tilt_degree,
+                                nslice=nslice,
+                            )
+                        )
+                    elif abs(k1) > 0:
                         impactx_beamline.append(
                             elements.CFbend(
                                 name=d["name"],
@@ -405,7 +449,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     )
                 elif abs(angle) > 0:
                     if (
-                        abs(k1) > 0
+                        any(abs(v) > 0.0 for v in (k1, k1s, k2, k2s, k3, k3s))
                         or abs(d.get("e1", 0.0)) > 0
                         or abs(d.get("e2", 0.0)) > 0
                     ):
@@ -417,7 +461,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     impactx_beamline.append(
                         elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
                     )
-                for attr in ("k0", "k0s", "k1s", "k2", "k2s", "k3", "k3s", "h1", "h2"):
+                for attr in ("k0", "k0s", "h1", "h2"):
                     if abs(d.get(attr, 0.0)) > 0:
                         # TODO(audit): Map higher-order/extended RBEND attributes when
                         # ImpactX provides a direct equivalent in this translator path.

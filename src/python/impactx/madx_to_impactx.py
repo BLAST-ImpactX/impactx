@@ -516,6 +516,9 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     )
             elif d["type"] == "dipedge":
                 h = d.get("h", 0.0)
+                # MAD-X stores an ENTRANCE logical on DIPEDGE (e.g., from MAKETHIN).
+                # Map directly to ImpactX DipEdge location.
+                location = "entry" if bool(d.get("entrance", False)) else "exit"
                 impactx_beamline.append(
                     elements.DipEdge(
                         name=d["name"],
@@ -524,6 +527,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                         # MAD-X is using half the gap height
                         g=2.0 * d.get("hgap", 0.0),
                         K2=d.get("fint", 0.0),
+                        location=location,
                         rotation=d.get("tilt", 0.0) * 180.0 / math.pi,
                     )
                 )

@@ -1002,6 +1002,7 @@ class MADXParser:
         self.tokens: list[Token] = []
         self.pos = 0
         self._current_file = None
+        self._root_dir: Optional[str] = None
         # Element attributes that are semantically string-valued in MAD-X.
         # These can appear as bare identifiers (unquoted), e.g. APERTYPE=ellipse.
         self._string_element_attributes = {
@@ -1074,6 +1075,7 @@ class MADXParser:
             raise FileNotFoundError(f"File '{fn}' not found!")
 
         self._current_file = fn
+        self._root_dir = os.path.dirname(os.path.abspath(fn))
 
         with open(fn, "r") as f:
             text = f.read()
@@ -1083,6 +1085,7 @@ class MADXParser:
     def parse_string(self, text: str):
         """Parse MAD-X input from a string."""
         self._current_file = "<string>"
+        self._root_dir = None
         self._parse_text(text)
 
     def _parse_text(self, text: str):
@@ -1135,6 +1138,13 @@ class MADXParser:
         # Check for variable assignment
         if self._peek(1).type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
             self._parse_variable_assignment()
+            return
+
+        # Check for top-level element attribute updates:
+        #   element_name, attr = expr, attr2 := expr2;
+        # This form is common in machine model files for magnet strengths.
+        if self._peek(1).type == TokenType.COMMA and name in self.context.elements:
+            self._parse_element_attribute_update()
             return
 
         # Check for commands
@@ -1227,6 +1237,64 @@ class MADXParser:
         # Unknown statement - skip it with a warning
         self._warn(f"Skipping unknown statement starting with '{name}'")
         self._skip_until_semicolon()
+
+    def _parse_element_attribute_update(self):
+        """Parse top-level element attribute update statements.
+
+        Example:
+            mqxa.1r1, k1 := kqx.r1+ktqx1.r1, polarity=+1;
+        """
+        element_name = self._expect(TokenType.IDENTIFIER).value.lower()
+
+        # If this element was not defined, consume statement and warn.
+        elem = self.context.elements.get(element_name)
+        if elem is None:
+            self._warn(
+                f"Element update references unknown element '{element_name}'; skipping"
+            )
+            self._skip_until_semicolon()
+            return
+
+        # Parse comma-separated attribute assignments.
+        while self._current().type == TokenType.COMMA:
+            self._advance()
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            attr_name = self._advance().value.lower()
+            if self._current().type not in (TokenType.EQUALS, TokenType.COLON_EQUALS):
+                # Boolean-style flag update
+                elem.attributes[attr_name] = True
+                elem.attribute_exprs.pop(attr_name, None)
+                continue
+
+            is_deferred = self._current().type == TokenType.COLON_EQUALS
+            self._advance()
+
+            if (
+                attr_name in self._string_element_attributes
+                and self._current().type == TokenType.IDENTIFIER
+            ):
+                value = self._advance().value
+                elem.attributes[attr_name] = value
+                elem.attribute_exprs.pop(attr_name, None)
+            elif (
+                attr_name in self._string_element_attributes
+                and self._current().type == TokenType.STRING
+            ):
+                value = self._advance().value
+                elem.attributes[attr_name] = value
+                elem.attribute_exprs.pop(attr_name, None)
+            else:
+                expr = self._parse_expression()
+                if is_deferred:
+                    elem.attribute_exprs[attr_name] = expr
+                    elem.attributes[attr_name] = None
+                else:
+                    elem.attributes[attr_name] = self.context.evaluate(expr)
+                    elem.attribute_exprs.pop(attr_name, None)
+
+        self._expect(TokenType.SEMICOLON)
 
     def _skip_until_semicolon(self):
         """Skip tokens until semicolon or EOF."""
@@ -2195,16 +2263,44 @@ class MADXParser:
         if filename is None:
             raise self._error("CALL command requires FILE= or FILENAME= attribute")
 
-        # Resolve the filename relative to the current file's directory
-        if self._current_file and self._current_file != "<string>":
-            base_dir = os.path.dirname(os.path.abspath(self._current_file))
-            resolved = os.path.join(base_dir, filename)
-        else:
+        # Resolve CALL path. MAD-X decks in the wild can mix styles:
+        # - include-file relative paths (current file directory)
+        # - top-level model relative paths (root parse directory)
+        # - process CWD relative paths
+        if os.path.isabs(filename):
             resolved = filename
+            attempted = [resolved]
+        else:
+            attempted = []
+            candidates = []
+            if self._current_file and self._current_file != "<string>":
+                candidates.append(
+                    os.path.join(
+                        os.path.dirname(os.path.abspath(self._current_file)), filename
+                    )
+                )
+            if self._root_dir:
+                candidates.append(os.path.join(self._root_dir, filename))
+            candidates.append(os.path.abspath(filename))
+
+            # Keep order, drop duplicates.
+            seen = set()
+            unique_candidates = []
+            for c in candidates:
+                if c not in seen:
+                    seen.add(c)
+                    unique_candidates.append(c)
+
+            resolved = unique_candidates[0]
+            attempted = unique_candidates
+            for c in unique_candidates:
+                if os.path.isfile(c):
+                    resolved = c
+                    break
 
         if not os.path.isfile(resolved):
             raise self._error(
-                f"CALL: File '{filename}' not found (resolved to '{resolved}')"
+                f"CALL: File '{filename}' not found (tried: {', '.join(attempted)})"
             )
 
         # Save parser state

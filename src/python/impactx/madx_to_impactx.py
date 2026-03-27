@@ -15,6 +15,15 @@ from .MADXParser import MADXParser
 
 WARN_PREFIX = "[WARNING MADX-ImpactX-Translator] "
 TRACKED_TRANSLATION_OPTIONS = ("rbarc", "thin_foc")
+# Centralized aperture shape mapping (MAD-X -> ImpactX Aperture.shape).
+# Edit this table first when adding support for new MAD-X aperture types.
+APERTURE_SHAPE_MAP = {
+    "rectangle": "rectangular",
+    "rectangular": "rectangular",
+    "lhcscreen": "rectangular",
+    "ellipse": "elliptical",
+    "circle": "elliptical",
+}
 
 
 class MADXImpactXTranslatorWarning(UserWarning):
@@ -174,6 +183,64 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
         else:
             impactx_beamline.append(thin_element)
 
+    def parse_aperture_half_axes(aperture):
+        """Extract (aperture_x, aperture_y) half-axes from MAD-X aperture data."""
+        ax = 0.0
+        ay = 0.0
+        if isinstance(aperture, (list, tuple)):
+            if len(aperture) >= 1:
+                ax = float(aperture[0])
+            if len(aperture) >= 2:
+                ay = float(aperture[1])
+        elif isinstance(aperture, (int, float)):
+            ax = float(aperture)
+            ay = float(aperture)
+        return ax, ay
+
+    def parse_aperture_offsets(aper_offset):
+        """Extract (dx, dy) aperture offsets from MAD-X aper_offset data."""
+        dx = 0.0
+        dy = 0.0
+        if isinstance(aper_offset, (list, tuple)):
+            if len(aper_offset) >= 1:
+                dx = float(aper_offset[0])
+            if len(aper_offset) >= 2:
+                dy = float(aper_offset[1])
+        return dx, dy
+
+    def marker_aperture_element(marker):
+        """Build an ImpactX Aperture element from MARKER aperture metadata.
+
+        Returns:
+            ImpactX Aperture element or None if unsupported/insufficient data.
+        """
+        apertype = str(marker.get("apertype", "")).lower()
+        aperture = marker.get("aperture", [])
+        aper_offset = marker.get("aper_offset", [0.0, 0.0])
+
+        if not (apertype or aperture):
+            return None
+
+        shape = APERTURE_SHAPE_MAP.get(apertype)
+        ax, ay = parse_aperture_half_axes(aperture)
+        dx, dy = parse_aperture_offsets(aper_offset)
+
+        # Circle in MAD-X uses one radius; mirror to y if only x is provided.
+        if apertype == "circle" and ay == 0.0:
+            ay = ax
+
+        if shape is None or ax <= 0.0 or ay <= 0.0:
+            return None
+
+        return elements.Aperture(
+            name=marker["name"] + "_aperture",
+            aperture_x=ax,
+            aperture_y=ay,
+            shape=shape,
+            dx=dx,
+            dy=dy,
+        )
+
     def make_bend_body_element(
         *,
         name,
@@ -227,7 +294,22 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
         d = _TrackedElement(d_raw)
         # print(d)
         if d["type"] in [k.casefold() for k in list(madx_to_impactx_dict.keys())]:
-            if d["type"] == "drift":
+            if d["type"] == "marker":
+                # Always preserve MARKER semantics as an explicit no-op element.
+                impactx_beamline.append(elements.Marker(name=d["name"]))
+
+                # MARKER can additionally carry aperture metadata in MAD-X.
+                # Map supported aperture descriptions to an explicit ImpactX Aperture element.
+                aperture_element = marker_aperture_element(d)
+                if aperture_element is not None:
+                    impactx_beamline.append(aperture_element)
+                elif d.get("apertype", "") or d.get("aperture", []):
+                    # TODO(audit): Add mapping for additional MAD-X aperture types
+                    # (e.g. rectellipse/racetrack/octagon and vertex-defined profiles).
+                    _warn(
+                        f"MARKER '{d['name']}' aperture metadata could not be mapped exactly (apertype='{d.get('apertype', '')}'); skipping aperture translation."
+                    )
+            elif d["type"] == "drift":
                 ds = d.get("l", 0.0)
                 if ds > 0:
                     impactx_beamline.append(

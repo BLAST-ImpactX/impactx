@@ -1002,6 +1002,15 @@ class MADXParser:
         self.tokens: list[Token] = []
         self.pos = 0
         self._current_file = None
+        # Element attributes that are semantically string-valued in MAD-X.
+        # These can appear as bare identifiers (unquoted), e.g. APERTYPE=ellipse.
+        self._string_element_attributes = {
+            "apertype",
+            "type",
+            "rbend_length",
+            "comments",
+            "from",
+        }
 
     def _current(self) -> Token:
         """Get current token."""
@@ -1595,8 +1604,21 @@ class MADXParser:
                 attributes[attr_name] = None
             elif self._current().type == TokenType.EQUALS:
                 self._advance()
-                expr = self._parse_expression()
-                attributes[attr_name] = self.context.evaluate(expr)
+                # MAD-X supports unquoted identifiers for string-like attributes,
+                # e.g. APERTYPE=ellipse. Treat such identifiers as string literals.
+                if (
+                    attr_name in self._string_element_attributes
+                    and self._current().type == TokenType.IDENTIFIER
+                ):
+                    attributes[attr_name] = self._advance().value
+                elif (
+                    attr_name in self._string_element_attributes
+                    and self._current().type == TokenType.STRING
+                ):
+                    attributes[attr_name] = self._advance().value
+                else:
+                    expr = self._parse_expression()
+                    attributes[attr_name] = self.context.evaluate(expr)
             else:
                 # Boolean flag
                 attributes[attr_name] = True

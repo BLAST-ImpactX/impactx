@@ -731,7 +731,7 @@ add_impactx_test(rfcavity-ref-part-opt.py
     OFF   # ImpactX MPI-parallel
     examples/rfcavity/analysis_rfcavity_ref_part_opt.py
     OFF  # no plot script yet
-)     
+)
 
 # Ideal, Hard-Edge Solenoid ###################################################
 #

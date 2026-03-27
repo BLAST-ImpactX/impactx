@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-from impactx import ImpactX, elements, push
+from impactx import push
 
 
 def objective(parameter, ref, element):
@@ -27,7 +27,7 @@ def objective(parameter, ref, element):
     ref_copy = ref.copy()
 
     # push the copy of the reference particle
-    push(ref_copy,element)
+    push(ref_copy, element)
     KE_fin = ref_copy.kin_energy_MeV
 
     # evaluate the objective
@@ -35,30 +35,27 @@ def objective(parameter, ref, element):
 
     if np.isnan(loss):
         loss = 1.0e99
-    
+
     return loss
 
-def optimize(ref,element):
+
+def optimize(ref, element):
 
     # optimizer specific options
-    options = {
-        "maxiter": 2000,
-        "disp": 1
-    }
-    
+    options = {"maxiter": 2000, "disp": 1}
+
     # Call the optimizer
     res = minimize_scalar(
         objective,
         method="bounded",
-        args=(ref,element),
+        args=(ref, element),
         tol=1.0e-8,
         options=options,
         bounds=(-180, 180),
     )
-    
+
     # Optimization result
     phase_opt = res.x
-    e_gain = -1.0*res.fun
+    e_gain = -1.0 * res.fun
 
-    return phase_opt, e_gain    
-
+    return phase_opt, e_gain

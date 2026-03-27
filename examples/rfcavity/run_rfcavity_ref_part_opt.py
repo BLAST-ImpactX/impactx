@@ -7,10 +7,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy import constants as sconst
-
-from impactx import ImpactX, elements, fourier_coefficients
 from phase_opt import optimize
+
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 
@@ -93,7 +92,7 @@ def hook_before_element(sim):
         phase_shift = element.phase
 
         # Find RF phase that maximizes energy gain:
-        phase_opt, e_gain = optimize(ref,element)
+        phase_opt, e_gain = optimize(ref, element)
 
         # Reset input RF phase to appropriate value for tracking:
         element.phase = phase_opt + phase_shift

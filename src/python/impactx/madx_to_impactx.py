@@ -109,6 +109,11 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
         "OCTUPOLE": "ExactMultipole",
         "RFCAVITY": "RFCavity",
         "NLLENS": "NonlinearLens",
+        "COLLIMATOR": "Aperture",  # fallback: geometry only (+ drift for length)
+        "RCOLLIMATOR": "Aperture",  # rectangular collimator alias
+        "ECOLLIMATOR": "Aperture",  # elliptical collimator alias
+        "PLACEHOLDER": "Marker",  # non-physical placement/device placeholder
+        "INSTRUMENT": "Marker",  # optically drift-like diagnostics placeholder
         # TODO Figure out how to identify these
         "ShortRF": "ShortRF",
         "ConstF": "ConstF",
@@ -208,15 +213,15 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 dy = float(aper_offset[1])
         return dx, dy
 
-    def marker_aperture_element(marker):
-        """Build an ImpactX Aperture element from MARKER aperture metadata.
+    def aperture_params_from_madx(elem):
+        """Build aperture parameter dict from MAD-X aperture metadata.
 
         Returns:
-            ImpactX Aperture element or None if unsupported/insufficient data.
+            dict with Aperture constructor kwargs or None if unsupported data.
         """
-        apertype = str(marker.get("apertype", "")).lower()
-        aperture = marker.get("aperture", [])
-        aper_offset = marker.get("aper_offset", [0.0, 0.0])
+        apertype = str(elem.get("apertype", "")).lower()
+        aperture = elem.get("aperture", [])
+        aper_offset = elem.get("aper_offset", [0.0, 0.0])
 
         if not (apertype or aperture):
             return None
@@ -232,14 +237,69 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
         if shape is None or ax <= 0.0 or ay <= 0.0:
             return None
 
-        return elements.Aperture(
-            name=marker["name"] + "_aperture",
-            aperture_x=ax,
-            aperture_y=ay,
-            shape=shape,
-            dx=dx,
-            dy=dy,
-        )
+        return {
+            "name": elem["name"] + "_aperture",
+            "aperture_x": ax,
+            "aperture_y": ay,
+            "shape": shape,
+            "dx": dx,
+            "dy": dy,
+        }
+
+    def aperture_element_from_madx(elem):
+        """Build an ImpactX Aperture element from MAD-X aperture metadata."""
+        params = aperture_params_from_madx(elem)
+        if params is None:
+            return None
+        return elements.Aperture(**params)
+
+    def marker_aperture_element(marker):
+        """Build an ImpactX Aperture element from MARKER aperture metadata."""
+        return aperture_element_from_madx(marker)
+
+    def append_collimator_equivalent(*, name, ds, aperture_params):
+        """Append a MAD-X collimator equivalent using current ImpactX primitives.
+
+        MAD-X semantics (manual 11.21):
+        - Optically behaves like a drift.
+        - Aperture checks are applied at entrance (and exit if L>0).
+
+        ImpactX has no dedicated collimator jaw-material model here, so we
+        preserve drift optics and approximate boundary checks with Aperture
+        elements at both ends for finite-length collimators.
+        """
+        if ds > 0.0 and aperture_params is not None:
+            # Create distinct aperture elements so entry/exit checks are explicit.
+            impactx_beamline.append(
+                elements.Aperture(
+                    name=name + "_aperture_entry",
+                    aperture_x=aperture_params["aperture_x"],
+                    aperture_y=aperture_params["aperture_y"],
+                    shape=aperture_params["shape"],
+                    dx=aperture_params["dx"],
+                    dy=aperture_params["dy"],
+                )
+            )
+            impactx_beamline.append(elements.Drift(name=name, ds=ds, nslice=nslice))
+            impactx_beamline.append(
+                elements.Aperture(
+                    name=name + "_aperture_exit",
+                    aperture_x=aperture_params["aperture_x"],
+                    aperture_y=aperture_params["aperture_y"],
+                    shape=aperture_params["shape"],
+                    dx=aperture_params["dx"],
+                    dy=aperture_params["dy"],
+                )
+            )
+            return "aperture_drift_aperture"
+        if ds > 0.0:
+            impactx_beamline.append(elements.Drift(name=name, ds=ds, nslice=nslice))
+            return "drift_only"
+        if aperture_params is not None:
+            impactx_beamline.append(elements.Aperture(**aperture_params))
+            return "aperture_only"
+        impactx_beamline.append(elements.Marker(name=name))
+        return "marker_fallback"
 
     def make_bend_body_element(
         *,
@@ -309,6 +369,57 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     _warn(
                         f"MARKER '{d['name']}' aperture metadata could not be mapped exactly (apertype='{d.get('apertype', '')}'); skipping aperture translation."
                     )
+            elif d["type"] in ("collimator", "rcollimator", "ecollimator"):
+                ds = d.get("l", 0.0)
+                aperture_params = aperture_params_from_madx(d)
+                # MAD-X legacy XSIZE/YSIZE are documented obsolete and not used.
+                # Read them explicitly so unread-attribute warnings stay meaningful.
+                _ = d.get("xsize", 0.0)
+                _ = d.get("ysize", 0.0)
+                mode = append_collimator_equivalent(
+                    name=d["name"], ds=ds, aperture_params=aperture_params
+                )
+
+                # TODO(audit): MAD-X collimator material/jaw interactions are not
+                # represented in ImpactX; we preserve only optics and aperture checks.
+                if mode == "aperture_drift_aperture":
+                    _warn(
+                        f"{d['type'].upper()} '{d['name']}' is approximated as aperture(entry)+drift+aperture(exit); jaw material interactions are not translated."
+                    )
+                elif mode == "drift_only":
+                    _warn(
+                        f"{d['type'].upper()} '{d['name']}' has no translatable aperture geometry; using Drift only."
+                    )
+                elif mode == "aperture_only":
+                    _warn(
+                        f"{d['type'].upper()} '{d['name']}' is modeled as a zero-length Aperture; jaw material interactions are not translated."
+                    )
+                else:
+                    _warn(
+                        f"{d['type'].upper()} '{d['name']}' has neither finite length nor translatable aperture geometry; using Marker fallback."
+                    )
+            elif d["type"] == "placeholder":
+                ds = d.get("l", d.get("lrad", 0.0))
+                if ds > 0.0:
+                    impactx_beamline.append(
+                        elements.Drift(name=d["name"], ds=ds, nslice=nslice)
+                    )
+                    _warn(
+                        f"PLACEHOLDER '{d['name']}' is approximated as Drift(L={ds})."
+                    )
+                else:
+                    impactx_beamline.append(elements.Marker(name=d["name"]))
+                    _warn(f"PLACEHOLDER '{d['name']}' has zero length; using Marker.")
+            elif d["type"] == "instrument":
+                # MAD-X manual 11.20: INSTRUMENT is optically drift-like.
+                ds = d.get("l", 0.0)
+                if ds > 0.0:
+                    impactx_beamline.append(
+                        elements.Drift(name=d["name"], ds=ds, nslice=nslice)
+                    )
+                else:
+                    impactx_beamline.append(elements.Marker(name=d["name"]))
+                    _warn(f"INSTRUMENT '{d['name']}' has zero length; using Marker.")
             elif d["type"] == "drift":
                 ds = d.get("l", 0.0)
                 if ds > 0:

@@ -863,7 +863,8 @@ class EvaluationContext:
         """Get a variable value, evaluating deferred expressions."""
         name = name.lower()
         if name not in self.variables:
-            self._warn(f"Undefined variable '{name}', using 0.0")
+            # Ok to not warn, very common assumption in MAD-X:
+            # self._warn(f"Undefined variable '{name}', using 0.0")
             return 0.0
 
         var = self.variables[name]

@@ -962,9 +962,9 @@ class EvaluationContext:
             if name == "table":
                 self._warn(
                     "TABLE() is not supported. "
-                    "Use ImpactX diagnostics for beam moments."
+                    "Use ImpactX diagnostics for beam moments; returning 0.0."
                 )
-                return None
+                return 0.0
 
             if name not in MADXExpressionParser.FUNCTIONS:
                 raise self._error(f"Unknown function: {name}")

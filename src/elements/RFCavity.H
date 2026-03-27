@@ -661,4 +661,6 @@ namespace RFCavityData
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::RFCavity)
+
 #endif // IMPACTX_RFCAVITY_H

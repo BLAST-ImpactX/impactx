@@ -31,7 +31,7 @@ void init_impactxparticlecontainer(py::module& m)
 
     py::class_<
         ParIterSoA,
-        amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     > py_pariter_soa(m, "ImpactXParIter");
     py_pariter_soa
         .def(py::init<ParIterSoA::ContainerType&, int>(),
@@ -42,7 +42,7 @@ void init_impactxparticlecontainer(py::module& m)
 
     py::class_<
         ParConstIterSoA,
-        amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     > py_parconstiter_soa(m, "ImpactXParConstIter");
     py_parconstiter_soa
         .def(py::init<ParConstIterSoA::ContainerType&, int>(),
@@ -53,7 +53,7 @@ void init_impactxparticlecontainer(py::module& m)
 
     py::class_<
         ImpactXParticleContainer,
-        amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>
+        amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     >(m, "ImpactXParticleContainer")
         //.def(py::init<>())
 

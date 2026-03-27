@@ -49,13 +49,13 @@ namespace impactx::diagnostics
          * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
          */
         // numbers of same type reduction operations in first concurrent batch
-        static constexpr std::size_t num_red_ops_1_sum = 7;  // summation
+        static constexpr std::size_t num_red_ops_1_sum = 10;  // summation
         static constexpr std::size_t num_red_ops_1_min = 6;  // minimum
         static constexpr std::size_t num_red_ops_1_max = 6;  // maximum
 
         // prepare reduction operations for calculation of mean and min/max values in 6D phase space
         amrex::TypeMultiplier<amrex::ReduceOps,
-            amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt
+            amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt, sx, sy, sz
             amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
             amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
         > reduce_ops_1;
@@ -76,6 +76,11 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_py = p.rdata(RealSoA::py);
                 const amrex::ParticleReal p_pt = p.rdata(RealSoA::pt);
 
+                // access particle spin data
+                const amrex::ParticleReal p_sx = p.rdata(RealSoA::sx);
+                const amrex::ParticleReal p_sy = p.rdata(RealSoA::sy);
+                const amrex::ParticleReal p_sz = p.rdata(RealSoA::sz);
+
                 // prepare mean position values
                 const amrex::ParticleReal p_x_mean = p_x * p_w;
                 const amrex::ParticleReal p_y_mean = p_y * p_w;
@@ -85,9 +90,14 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_py_mean = p_py * p_w;
                 const amrex::ParticleReal p_pt_mean = p_pt * p_w;
 
+                const amrex::ParticleReal p_sx_mean = p_sx * p_w;
+                const amrex::ParticleReal p_sy_mean = p_sy * p_w;
+                const amrex::ParticleReal p_sz_mean = p_sz * p_w;
+
                 return {p_w,
                         p_x_mean, p_y_mean, p_t_mean,
                         p_px_mean, p_py_mean, p_pt_mean,
+                        p_sx_mean, p_sy_mean, p_sz_mean,
                         p_x, p_y, p_t, p_px, p_py, p_pt,
                         p_x, p_y, p_t, p_px, p_py, p_pt};
             },
@@ -99,6 +109,7 @@ namespace impactx::diagnostics
         /* contains in this order:
          * w, x_mean, y_mean, t_mean
          * px_mean, py_mean, pt_mean
+         * sx_mean, sy_mean, sz_mean
          */
         amrex::constexpr_for<0, num_red_ops_1_sum> ([&](auto i) {
             values_per_rank_1st[i] = amrex::get<i>(r1);
@@ -118,6 +129,9 @@ namespace impactx::diagnostics
         amrex::ParticleReal const mean_px = values_per_rank_1st.at(4) /= w_sum;
         amrex::ParticleReal const mean_py = values_per_rank_1st.at(5) /= w_sum;
         amrex::ParticleReal const mean_pt = values_per_rank_1st.at(6) /= w_sum;
+        amrex::ParticleReal const mean_sx = values_per_rank_1st.at(7) /= w_sum;
+        amrex::ParticleReal const mean_sy = values_per_rank_1st.at(8) /= w_sum;
+        amrex::ParticleReal const mean_sz = values_per_rank_1st.at(9) /= w_sum;
 
         std::vector<amrex::ParticleReal> values_per_rank_min(num_red_ops_1_min);
 
@@ -159,7 +173,7 @@ namespace impactx::diagnostics
          * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
          */
         // number of reduction operations in second concurrent batch
-        static constexpr std::size_t num_red_ops_2 = 22;
+        static constexpr std::size_t num_red_ops_2 = 25;
         // prepare reduction operations for calculation of mean square and correlation values
         amrex::TypeMultiplier<amrex::ReduceOps, amrex::ReduceOpSum[num_red_ops_2]> reduce_ops_2;
         using ReducedDataT2 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_2]>;
@@ -178,6 +192,10 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_x = p.rdata(RealSoA::x);
                 const amrex::ParticleReal p_y = p.rdata(RealSoA::y);
                 const amrex::ParticleReal p_t = p.rdata(RealSoA::t);
+                // access spin data
+                const amrex::ParticleReal p_sx = p.rdata(RealSoA::sx);
+                const amrex::ParticleReal p_sy = p.rdata(RealSoA::sy);
+                const amrex::ParticleReal p_sz = p.rdata(RealSoA::sz);
                 // prepare mean square for positions
                 const amrex::ParticleReal p_x_ms = (p_x-mean_x)*(p_x-mean_x)*p_w;
                 const amrex::ParticleReal p_y_ms = (p_y-mean_y)*(p_y-mean_y)*p_w;
@@ -186,6 +204,10 @@ namespace impactx::diagnostics
                 const amrex::ParticleReal p_px_ms = (p_px-mean_px)*(p_px-mean_px)*p_w;
                 const amrex::ParticleReal p_py_ms = (p_py-mean_py)*(p_py-mean_py)*p_w;
                 const amrex::ParticleReal p_pt_ms = (p_pt-mean_pt)*(p_pt-mean_pt)*p_w;
+                // prepare mean square for spin
+                const amrex::ParticleReal p_sx_ms = (p_sx-mean_sx)*(p_sx-mean_sx)*p_w;
+                const amrex::ParticleReal p_sy_ms = (p_sy-mean_sy)*(p_sy-mean_sy)*p_w;
+                const amrex::ParticleReal p_sz_ms = (p_sz-mean_sz)*(p_sz-mean_sz)*p_w;
                 // prepare position-momentum correlations
                 const amrex::ParticleReal p_xpx = (p_x-mean_x)*(p_px-mean_px)*p_w;
                 const amrex::ParticleReal p_ypy = (p_y-mean_y)*(p_py-mean_py)*p_w;
@@ -212,7 +234,8 @@ namespace impactx::diagnostics
                         p_xpx, p_ypy, p_tpt,
                         p_xpt, p_pxpt, p_ypt, p_pypt,
                         p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
-                        p_charge};
+                        p_charge,
+                        p_sx_ms, p_sy_ms, p_sz_ms};
             },
                 reduce_ops_2
         );
@@ -225,7 +248,8 @@ namespace impactx::diagnostics
          * xpx, ypy, tpt,
          * p_xpt, p_pxpt, p_ypt, p_pypt,
          * p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
-         * charge
+         * charge,
+         * sx_ms, sy_ms, sz_ms
          */
         amrex::constexpr_for<0, num_red_ops_2> ([&](auto i) {
             values_per_rank_2nd[i] = amrex::get<i>(r2);
@@ -275,6 +299,9 @@ namespace impactx::diagnostics
         amrex::ParticleReal const yt     = values_per_rank_2nd.at(19) /= w_sum;
         amrex::ParticleReal const pyt    = values_per_rank_2nd.at(20) /= w_sum;
         amrex::ParticleReal const charge = values_per_rank_2nd.at(21);
+        amrex::ParticleReal const sx_ms  = values_per_rank_2nd.at(22) /= w_sum;
+        amrex::ParticleReal const sy_ms  = values_per_rank_2nd.at(23) /= w_sum;
+        amrex::ParticleReal const sz_ms  = values_per_rank_2nd.at(24) /= w_sum;
         // standard deviations of positions
         amrex::ParticleReal const sigma_x = std::sqrt(x_ms);
         amrex::ParticleReal const sigma_y = std::sqrt(y_ms);
@@ -283,6 +310,10 @@ namespace impactx::diagnostics
         amrex::ParticleReal const sigma_px = std::sqrt(px_ms);
         amrex::ParticleReal const sigma_py = std::sqrt(py_ms);
         amrex::ParticleReal const sigma_pt = std::sqrt(pt_ms);
+        // standard deviations of spin
+        amrex::ParticleReal const sigma_sx = std::sqrt(sx_ms);
+        amrex::ParticleReal const sigma_sy = std::sqrt(sy_ms);
+        amrex::ParticleReal const sigma_sz = std::sqrt(sz_ms);
         // RMS emittances
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
@@ -444,6 +475,12 @@ namespace impactx::diagnostics
            data["emittance_3"] = emittance_3;
         }
         data["charge_C"] = charge;
+        data["mean_sx"] = mean_sx;
+        data["mean_sy"] = mean_sy;
+        data["mean_sz"] = mean_sz;
+        data["sigma_sx"] = sigma_sx;
+        data["sigma_sy"] = sigma_sy;
+        data["sigma_sz"] = sigma_sz;
 
         return data;
     }
@@ -650,6 +687,12 @@ namespace impactx::diagnostics
            data["emittance_3"] = emittance_3;
         }
         data["charge_C"] = nan;  // TODO: with space charge
+        data["mean_sx"] = nan;
+        data["mean_sy"] = nan;
+        data["mean_sz"] = nan;
+        data["sigma_sx"] = nan;
+        data["sigma_sy"] = nan;
+        data["sigma_sz"] = nan;
 
         return data;
     }

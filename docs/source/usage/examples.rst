@@ -25,6 +25,7 @@ Single Particle Dynamics
    examples/solenoid/README.rst
    examples/solenoid_softedge/README.rst
    examples/quadrupole_softedge/README.rst
+   examples/fourier_coefficients/README.rst
    examples/cfbend/README.rst
    examples/compression/README.rst
    examples/kicker/README.rst
@@ -44,6 +45,14 @@ Single Particle Dynamics
    examples/symplectic_integration/README.rst
    examples/active_plasma_lens/README.rst
    examples/edge_effects/README.rst
+
+Spin and Polarization
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/spin_tracking/README.rst
 
 Collective Effects
 ------------------

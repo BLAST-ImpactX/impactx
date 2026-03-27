@@ -6,9 +6,11 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+import time
+
 import pytest
 
-from .utils import APPROX_TOL
+from .utils import APPROX_TOL, TIMEOUT
 
 
 def test_python_import(dashboard):
@@ -72,17 +74,24 @@ def test_python_import(dashboard):
     ):
         dashboard.assert_state(param_name, expected_value)
 
-    # Check input values
+    # Check input values using get_attribute (does not require element
+    # visibility, unlike get_value which fails for scrollable containers).
     for element_id, expected_value in DISTRIBUTION_VALUES + LATTICE_CONFIGURATION:
-        actual_value = dashboard.sb.get_value(element_id)
+        for i in range(TIMEOUT):
+            actual_value = dashboard.sb.get_attribute(element_id, "value")
+            if actual_value is not None and actual_value != "":
+                break
+            time.sleep(1)
+        else:
+            raise AssertionError(
+                f"{element_id}: value was still empty after {TIMEOUT} seconds"
+            )
 
         if isinstance(expected_value, str):
-            # Compare strings directly
             assert actual_value == expected_value, (
                 f"{element_id}: expected '{expected_value}', got '{actual_value}'"
             )
         else:
-            # Compare numbers with tolerance
             actual_value = float(actual_value)
             assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
                 f"{element_id}: expected {expected_value}, got {actual_value}"

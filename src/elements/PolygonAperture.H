@@ -17,7 +17,6 @@
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
-#include "mixin/nofinalize.H"
 
 #include <ablastr/constant.H>
 
@@ -63,8 +62,7 @@ namespace impactx::elements
       public mixin::BeamOptic<PolygonAperture>,
       public mixin::LinearTransport<PolygonAperture>,
       public mixin::Thin,
-      public mixin::Alignment,
-      public mixin::NoFinalize
+      public mixin::Alignment
       // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "PolygonAperture";
@@ -108,14 +106,13 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree = 0,
             std::optional<std::string> name = std::nullopt
         )
-    //
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
           m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y), m_shift_odd_x(shift_odd_x),
           m_id(PolygonApertureData::next_id),
-          m_min_radius2(min_radius2)        {
-
-        using namespace amrex::literals; // for _rt and _prt
+          m_min_radius2(min_radius2)
+        {
+            using namespace amrex::literals; // for _rt and _prt
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
                 throw std::runtime_error("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
@@ -156,7 +153,6 @@ namespace impactx::elements
             // low-level objects we can use on device
             m_vertices_x_d_data = PolygonApertureData::d_vertices_x[m_id].data();
             m_vertices_y_d_data = PolygonApertureData::d_vertices_y[m_id].data();
-
         }
 
         /** Push all particles */
@@ -306,8 +302,22 @@ namespace impactx::elements
             return Map6x6::Identity();
         }
 
-        ///////////////////////////////////////////////////////////////
-        // class data
+        /** Close and deallocate all data and handles.
+         */
+        void
+        finalize ()
+        {
+            // remove from unique data map
+            if (PolygonApertureData::h_vertices_x.count(m_id) != 0u)
+                PolygonApertureData::h_vertices_x.erase(m_id);
+            if (PolygonApertureData::h_vertices_y.count(m_id) != 0u)
+                PolygonApertureData::h_vertices_y.erase(m_id);
+
+            if (PolygonApertureData::d_vertices_x.count(m_id) != 0u)
+                PolygonApertureData::d_vertices_x.erase(m_id);
+            if (PolygonApertureData::d_vertices_y.count(m_id) != 0u)
+                PolygonApertureData::d_vertices_y.erase(m_id);
+        }
 
         Action m_action; //! action type (transmit, absorb)
         amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
@@ -327,5 +337,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PolygonAperture)
 
 #endif // IMPACTX_POLYGONAPERTURE_H

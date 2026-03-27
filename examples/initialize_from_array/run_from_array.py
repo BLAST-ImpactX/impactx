@@ -19,10 +19,12 @@ beam_radius = 2e-3
 sigr = 500e-6
 sigpx = 10
 sigpy = 10
-px = np.random.normal(0, sigpx, N_part)
-py = np.random.normal(0, sigpy, N_part)
-theta = 2 * np.pi * np.random.rand(N_part)
-r = abs(np.random.normal(beam_radius, sigr, N_part))
+# fixed seed for deterministic test results
+rng = np.random.default_rng()
+px = rng.normal(0, sigpx, N_part)
+py = rng.normal(0, sigpy, N_part)
+theta = 2 * np.pi * rng.random(N_part)
+r = np.abs(rng.normal(beam_radius, sigr, N_part))
 x = r * np.cos(theta)
 y = r * np.sin(theta)
 z_mean = 0
@@ -31,7 +33,7 @@ z_std = 1e-3
 pz_std = 2e2
 zpz_std = -0.18
 zpz_cov_list = [[z_std**2, zpz_std], [zpz_std, pz_std**2]]
-z, pz = np.random.default_rng().multivariate_normal([0, 0], zpz_cov_list, N_part).T
+z, pz = rng.multivariate_normal([0, 0], zpz_cov_list, N_part).T
 pz += pz_mean
 
 sim = ImpactX()
@@ -57,66 +59,6 @@ ref.z = 0
 
 pc = sim.particle_container()
 
-dx, dy, dz, dpx, dpy, dpz = pycoord.to_ref_part_t_from_global_t(
-    ref, x, y, z, px, py, pz
-)
-dx, dy, dt, dpx, dpy, dpt = pycoord.to_s_from_t(ref, dx, dy, dz, dpx, dpy, dpz)
-
-# here we use equal particle weighting, but you can assign any weight to each particle
-w = np.ones_like(dx) * (bunch_charge_C / q_e_C / N_part)
-
-if not Config.have_gpu:  # initialize using cpu-based PODVectors
-    dx_podv = amr.PODVector_real_std()
-    dy_podv = amr.PODVector_real_std()
-    dt_podv = amr.PODVector_real_std()
-    dpx_podv = amr.PODVector_real_std()
-    dpy_podv = amr.PODVector_real_std()
-    dpt_podv = amr.PODVector_real_std()
-    w_podv = amr.PODVector_real_std()
-else:  # initialize on device using arena/gpu-based PODVectors
-    dx_podv = amr.PODVector_real_arena()
-    dy_podv = amr.PODVector_real_arena()
-    dt_podv = amr.PODVector_real_arena()
-    dpx_podv = amr.PODVector_real_arena()
-    dpy_podv = amr.PODVector_real_arena()
-    dpt_podv = amr.PODVector_real_arena()
-    w_podv = amr.PODVector_real_arena()
-
-for p_dx in dx:
-    dx_podv.push_back(p_dx)
-for p_dy in dy:
-    dy_podv.push_back(p_dy)
-for p_dt in dt:
-    dt_podv.push_back(p_dt)
-for p_dpx in dpx:
-    dpx_podv.push_back(p_dpx)
-for p_dpy in dpy:
-    dpy_podv.push_back(p_dpy)
-for p_dpt in dpt:
-    dpt_podv.push_back(p_dpt)
-for p_w in w:
-    w_podv.push_back(p_w)
-
-# This call has two options:
-# A) reassign equal weighting according to bunch_charge_C
-# B) use the particle weighting from the input array w
-pc.add_n_particles(
-    dx_podv,
-    dy_podv,
-    dt_podv,
-    dpx_podv,
-    dpy_podv,
-    dpt_podv,
-    qm_eev,
-    bunch_charge=bunch_charge_C,
-)
-# ok, let's clear all particles and do option B
-pc.clear_particles()
-
-pc.add_n_particles(
-    dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, w=w_podv
-)
-
 # Note for MPI-parallel simulations:
 #   `pc.add_n_particles(...)` is local to the MPI rank, spatial
 #   locality does not matter. Thus, you can add particles at any
@@ -127,6 +69,70 @@ pc.add_n_particles(
 #
 #   When ImpactX needs to sort particles spatially, it will
 #   redistribute them over MPI ranks automatically during tracking.
+#
+#   In the example here, we add all particles from one MPI rank.
+#   This is simple but not scalable -- for many particles just
+#   add 1/N unique particles per MPI rank.
+if amr.ParallelDescriptor.IOProcessor():
+    dx, dy, dz, dpx, dpy, dpz = pycoord.to_ref_part_t_from_global_t(
+        ref, x, y, z, px, py, pz
+    )
+    dx, dy, dt, dpx, dpy, dpt = pycoord.to_s_from_t(ref, dx, dy, dz, dpx, dpy, dpz)
+
+    # here we use equal particle weighting, but you can assign any weight to each particle
+    w = np.ones_like(dx) * (bunch_charge_C / q_e_C / N_part)
+
+    if not Config.have_gpu:  # initialize using cpu-based PODVectors
+        dx_podv = amr.PODVector_real_std()
+        dy_podv = amr.PODVector_real_std()
+        dt_podv = amr.PODVector_real_std()
+        dpx_podv = amr.PODVector_real_std()
+        dpy_podv = amr.PODVector_real_std()
+        dpt_podv = amr.PODVector_real_std()
+        w_podv = amr.PODVector_real_std()
+    else:  # initialize on device using arena/gpu-based PODVectors
+        dx_podv = amr.PODVector_real_arena()
+        dy_podv = amr.PODVector_real_arena()
+        dt_podv = amr.PODVector_real_arena()
+        dpx_podv = amr.PODVector_real_arena()
+        dpy_podv = amr.PODVector_real_arena()
+        dpt_podv = amr.PODVector_real_arena()
+        w_podv = amr.PODVector_real_arena()
+
+    for p_dx in dx:
+        dx_podv.push_back(p_dx)
+    for p_dy in dy:
+        dy_podv.push_back(p_dy)
+    for p_dt in dt:
+        dt_podv.push_back(p_dt)
+    for p_dpx in dpx:
+        dpx_podv.push_back(p_dpx)
+    for p_dpy in dpy:
+        dpy_podv.push_back(p_dpy)
+    for p_dpt in dpt:
+        dpt_podv.push_back(p_dpt)
+    for p_w in w:
+        w_podv.push_back(p_w)
+
+    # This call has two options:
+    # A) reassign equal weighting according to bunch_charge_C
+    # B) use the particle weighting from the input array w
+    pc.add_n_particles(
+        dx_podv,
+        dy_podv,
+        dt_podv,
+        dpx_podv,
+        dpy_podv,
+        dpt_podv,
+        qm_eev,
+        bunch_charge=bunch_charge_C,
+    )
+    # ok, let's clear all particles and do option B
+    pc.clear_particles()
+
+    pc.add_n_particles(
+        dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, w=w_podv
+    )
 
 # build the accelerator lattice
 monitor = elements.BeamMonitor("monitor", backend="h5")

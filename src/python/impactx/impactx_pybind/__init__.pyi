@@ -19,6 +19,8 @@ import typing
 
 import amrex.space3d.amrex_3d_pybind
 from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x1_F_SI1_double as Vector3
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x6_F_SI1_double as Map3x6
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 
 from . import distribution, elements, wakeconvolution
@@ -31,9 +33,11 @@ __all__: list[str] = [
     "ImpactXParConstIter",
     "ImpactXParIter",
     "ImpactXParticleContainer",
+    "Map3x6",
     "Map6x6",
     "RefPart",
     "UnorderedMap",
+    "Vector3",
     "amr",
     "coordinate_transformation",
     "create_envelope",
@@ -561,6 +565,7 @@ class ImpactX:
         | elements.SoftQuadrupole
         | elements.Sol
         | elements.Source
+        | elements.SpinMap
         | elements.TaperedPL
         | elements.ThinDipole
         | None
@@ -591,45 +596,45 @@ class ImpactX:
     def verbose(self, arg1: typing.SupportsInt) -> None: ...
 
 class ImpactXParConstIter(
-    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_default
+    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_polymorphic
 ):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
 
-class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_default):
+class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_polymorphic):
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
         level: typing.SupportsInt,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
         self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default: ...
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
 
 class ImpactXParticleContainer(
-    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_default
+    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter
@@ -1018,6 +1023,7 @@ def push(
     | elements.SoftQuadrupole
     | elements.Sol
     | elements.Source
+    | elements.SpinMap
     | elements.TaperedPL
     | elements.ThinDipole,
     step: typing.SupportsInt = 0,
@@ -1065,6 +1071,7 @@ def push(
     | elements.SoftQuadrupole
     | elements.Sol
     | elements.Source
+    | elements.SpinMap
     | elements.TaperedPL
     | elements.ThinDipole,
 ) -> None:
@@ -1076,6 +1083,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.01"
+__version__: str = "26.03"
 s: CoordSystem  # value = <CoordSystem.s: 0>
 t: CoordSystem  # value = <CoordSystem.t: 1>

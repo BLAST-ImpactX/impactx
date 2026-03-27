@@ -44,10 +44,9 @@ jobs:
         path: |
           ~/.ccache
           ~/.cache/ccache
-        key: ccache-cuda-nvcc-${{ hashFiles('.github/workflows/cuda.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-cuda-nvcc-${{ hashFiles('.github/workflows/cuda.yml') }}-
-          ccache-cuda-nvcc-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
 
     - name: build ImpactX
       run: |
@@ -64,4 +63,4 @@ jobs:
           -DImpactX_PRECISION=SINGLE   \
           -DAMReX_CUDA_ERROR_CROSS_EXECUTION_SPACE_CALL=ON \
           -DAMReX_CUDA_ERROR_CAPTURE_THIS=ON
-        cmake --build build -j 3
+        cmake --build build -j 4

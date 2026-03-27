@@ -35,9 +35,9 @@ assert num_particles == len(initial)
 assert num_particles == len(final)
 
 # numerical parameters based on input file
-
+beam_initial = series.iterations[1].particles["beam"]
 gryo_anomaly = 0.001159652181644  # for electrons
-rel_gamma = 196.69511809100055  # for 100 MeV
+rel_gamma = beam_initial.get_attribute("gamma_ref")  # for 100 MeV
 quad_gradient = 100  # value in 1/m^2 from input
 sigma_y = 0.0003  # value in m = lambdaY from input
 sigma_py = 0.0002  # value in rad = lambdaPy from input

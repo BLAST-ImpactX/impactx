@@ -50,6 +50,7 @@ __all__: list[str] = [
     "SoftSolenoid",
     "Sol",
     "Source",
+    "SpinMap",
     "TaperedPL",
     "ThinDipole",
     "mixin",
@@ -75,6 +76,7 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         A short collimator element applying a transverse aperture boundary.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -106,6 +108,8 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -202,6 +206,8 @@ class BeamMonitor(mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -263,6 +269,7 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         A short linear RF cavity element at zero-crossing for bunching.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -294,6 +301,8 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -329,6 +338,7 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal combined function bend (sector bend with quadrupole component).
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -360,6 +370,8 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -395,6 +407,7 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         A region of Uniform Acceleration, with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -426,6 +439,8 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -459,6 +474,7 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Drift with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -490,6 +506,8 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -511,6 +529,7 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         An active Plasma Lens with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -542,6 +561,8 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -577,6 +598,7 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Quadrupole magnet with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -608,6 +630,8 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -644,6 +668,7 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A linear Constant Focusing element.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -675,6 +700,8 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -724,6 +751,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         Edge focusing associated with bend entry or exit.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -755,6 +783,8 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -865,6 +895,7 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A drift.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -896,6 +927,8 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -905,6 +938,7 @@ class Empty(mixin.Named, mixin.Thin):
         This element does nothing.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -936,6 +970,8 @@ class Empty(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -960,6 +996,7 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         A thick combined function bending magnet using the exact nonlinear Hamiltonian.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -991,6 +1028,8 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1031,6 +1070,7 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Drift using the exact nonlinear map.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1062,6 +1102,8 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -1086,6 +1128,7 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         A thick Multipole magnet using the exact nonlinear Hamiltonian.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1117,6 +1160,8 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1161,6 +1206,7 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Quadrupole magnet using the exact nonlinear Hamiltonian.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1192,6 +1238,8 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1241,6 +1289,7 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal sector bend using the exact nonlinear map.  When B = 0, the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1276,6 +1325,8 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1308,6 +1359,7 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         A thin transverse kicker element. Kicks are for unit "dimensionless" or in "T-m".
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1339,6 +1391,8 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1395,6 +1449,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole
     ): ...
@@ -1438,6 +1493,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole,
     ) -> None: ...
@@ -1481,6 +1537,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole
     ]: ...
@@ -1525,6 +1582,7 @@ class KnownElementsList:
         | impactx.impactx_pybind.elements.SoftQuadrupole
         | impactx.impactx_pybind.elements.Sol
         | impactx.impactx_pybind.elements.Source
+        | impactx.impactx_pybind.elements.SpinMap
         | impactx.impactx_pybind.elements.TaperedPL
         | impactx.impactx_pybind.elements.ThinDipole,
     ) -> None:
@@ -1738,6 +1796,7 @@ class LinearMap(mixin.Named, mixin.Alignment):
         (A user-provided linear map, represented as a 6x6 transport matrix.)
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1769,6 +1828,8 @@ class LinearMap(mixin.Named, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1799,6 +1860,7 @@ class Marker(mixin.Named, mixin.Thin):
         This named element does nothing.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1830,6 +1892,8 @@ class Marker(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -1848,6 +1912,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         A general thin multipole element.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1879,6 +1944,8 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1917,6 +1984,7 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         Single short segment of the nonlinear magnetic insert element.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -1948,6 +2016,8 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -1976,6 +2046,7 @@ class PRot(mixin.Named, mixin.Thin):
         An exact pole-face rotation in the x-z plane. Both angles are in degrees.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2007,6 +2078,8 @@ class PRot(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2037,6 +2110,7 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         A rotation in the x-y plane.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2068,6 +2142,8 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2097,6 +2173,7 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         A short collimator element described by a polygon with vertices given by their x and y coordinates.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2128,6 +2205,8 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2189,6 +2268,8 @@ class Programmable(mixin.Named):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2278,6 +2359,7 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Quadrupole magnet.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2309,6 +2391,8 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2334,6 +2418,7 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         A thin quadrupole fringe field element. Flag must be "entry" or "exit".
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2365,6 +2450,8 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2385,25 +2472,32 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        escale: typing.SupportsFloat,
-        freq: typing.SupportsFloat,
-        phase: typing.SupportsFloat,
-        cos_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        sin_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        mapsteps: typing.SupportsInt = 1,
-        nslice: typing.SupportsInt = 1,
-        name: str | None = None,
-    ) -> None:
+        *,
+        ds,
+        escale,
+        freq,
+        phase,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_on_axis=None,
+        ncoef=None,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
         """
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat, escale: typing.SupportsFloat, freq: typing.SupportsFloat, phase: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+
         An RF cavity.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2435,6 +2529,8 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2483,6 +2579,7 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal sector bend.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2518,6 +2615,8 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
 
@@ -2536,6 +2635,7 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         A short RF cavity element.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2567,6 +2667,8 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2594,23 +2696,30 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
 class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        gscale: typing.SupportsFloat,
-        cos_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        sin_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        mapsteps: typing.SupportsInt = 1,
-        nslice: typing.SupportsInt = 1,
-        name: str | None = None,
-    ) -> None:
+        *,
+        ds,
+        gscale,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        gradient_on_axis=None,
+        ncoef=None,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
         """
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat, gscale: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+
         A soft-edge quadrupole.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2642,6 +2751,8 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2662,24 +2773,31 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
 class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        bscale: typing.SupportsFloat,
-        cos_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        sin_coefficients: collections.abc.Sequence[typing.SupportsFloat],
-        unit: typing.SupportsFloat = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        mapsteps: typing.SupportsInt = 1,
-        nslice: typing.SupportsInt = 1,
-        name: str | None = None,
-    ) -> None:
+        *,
+        ds,
+        bscale,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_on_axis=None,
+        ncoef=None,
+        unit=0,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
         """
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat, bscale: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], unit: typing.SupportsFloat = 0, dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+
         A soft-edge solenoid.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2711,6 +2829,8 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2752,6 +2872,7 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal hard-edge Solenoid magnet.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2783,6 +2904,8 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2805,6 +2928,7 @@ class Source(mixin.Named, mixin.Thin):
         A particle source.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2836,6 +2960,8 @@ class Source(mixin.Named, mixin.Thin):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2860,6 +2986,72 @@ class Source(mixin.Named, mixin.Thin):
     @series_name.setter
     def series_name(self, arg1: str) -> None: ...
 
+class SpinMap(mixin.Named, mixin.Alignment):
+    def __init__(
+        self,
+        v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
+        A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
+        ds: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat = 0,
+        dy: typing.SupportsFloat = 0,
+        rotation: typing.SupportsFloat = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        (A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt = 0,
+        period: typing.SupportsInt = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    @property
+    def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        spin-orbit coupling generator of rotation as a 3x6 matrix
+        """
+    @A.setter
+    def A(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def ds(self) -> float:
+        """
+        segment length in m
+        """
+    @ds.setter
+    def ds(self, arg1: typing.SupportsFloat) -> None: ...
+    @property
+    def nslice(self) -> int:
+        """
+        one, because we do not support slicing of this element
+        """
+    @property
+    def v(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
+        """
+        design axis-angle generator of spin rotation as a 3x1 vector
+        """
+    @v.setter
+    def v(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+    ) -> None: ...
+
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
@@ -2881,6 +3073,7 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
                      where :math:`g` is the (linear) field gradient in T/m and :math:`D_x` is the targeted horizontal dispersion in m.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2912,6 +3105,8 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property
@@ -2950,6 +3145,7 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         A thin kick model of a dipole bend.
         """
     def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
     @typing.overload
     def push(
         self,
@@ -2981,6 +3177,8 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | list[int]
         | list[int]
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
     @property

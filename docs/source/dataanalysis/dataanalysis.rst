@@ -104,6 +104,10 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
     These three diagnostics are written optionally if the flag eigenemittances = True.
 * ``charge_C``
     Total beam charge (unit: Coulomb)
+* ``mean_sx``, ``mean_sy``, ``mean_sz``
+    Mean of the particle spin vector (unit: dimensionless).  This is also known as the polarization vector.  This diagnostic is written only if spin tracking is on (algo.spin = True).
+* ``sigma_sx``, ``sigma_sy``, ``sigma_sz``
+    Standard deviation of the three spin components (unit: dimensionless).  This diagnostic is written only if spin tracking is on (algo.spin = True).
 
 
 .. _dataanalysis-plot:

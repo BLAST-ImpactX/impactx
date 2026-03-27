@@ -1,0 +1,67 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 100000
+beam.units = static
+beam.kin_energy = 2.0e3  #2 GeV
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 5.0e-6            # 5 um
+beam.lambdaY = 8.0e-6            # 8 um
+beam.lambdaT = 0.0599584916      # 200 ps
+beam.lambdaPx = 2.5543422003e-9  # exn = 50 pm-rad
+beam.lambdaPy = 1.5964638752e-9  # eyn = 50 pm-rad
+beam.lambdaPt = 9.0e-4           # approximately dE/E
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+beam.polarization_x = 0.4
+beam.polarization_y = 0.9
+beam.polarization_z = 0.1
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor quad1 iquad1 sol1 isol1 quad2 iquad2 monitor
+
+lattice.nslice = 1
+
+iquad1.type = quad  #inverse quad
+iquad1.ds = -1.5
+iquad1.k = 60.0
+
+quad1.type = quad
+quad1.ds = 1.5
+quad1.k = 60.0
+
+isol1.type = solenoid  #inverse solenoid
+isol1.ds = -1.5
+isol1.ks = 1.0
+
+sol1.type = solenoid
+sol1.ds = 1.5
+sol1.ks = 1.0
+
+iquad2.type = quad_chromatic  #inverse quad
+iquad2.ds = -1.5
+iquad2.k = -60.0
+
+quad2.type = quad_chromatic
+quad2.ds = 1.5
+quad2.k = -60.0
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.spin = true
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = false

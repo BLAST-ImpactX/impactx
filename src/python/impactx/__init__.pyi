@@ -17,12 +17,18 @@ from __future__ import annotations
 import os as os
 
 from amrex import space3d as amr
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x1_F_SI1_double as Vector3
+from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x6_F_SI1_double as Map3x6
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 from impactx.distribution_input_helpers import twiss
 from impactx.extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
 from impactx.extensions.KnownElementsList import register_KnownElementsList_extension
+from impactx.extensions.RFCavity import register_RFCavity_extension
+from impactx.extensions.SoftQuadrupole import register_SoftQuadrupole_extension
+from impactx.extensions.SoftSolenoid import register_SoftSolenoid_extension
+from impactx.fourier import fourier_coefficients
 from impactx.impactx_pybind import (
     Config,
     CoordSystem,
@@ -50,6 +56,7 @@ from . import (
     MADXParser,
     distribution_input_helpers,
     extensions,
+    fourier,
     impactx_pybind,
     madx_to_impactx,
     plot,
@@ -66,10 +73,12 @@ __all__: list[str] = [
     "ItemsView",
     "KeysView",
     "MADXParser",
+    "Map3x6",
     "Map6x6",
     "RefPart",
     "UnorderedMap",
     "ValuesView",
+    "Vector3",
     "amr",
     "coordinate_transformation",
     "create_envelope",
@@ -78,6 +87,8 @@ __all__: list[str] = [
     "elements",
     "extensions",
     "flatten_charge_to_2D",
+    "fourier",
+    "fourier_coefficients",
     "impactx_pybind",
     "madx_to_impactx",
     "os",
@@ -86,6 +97,9 @@ __all__: list[str] = [
     "read_beam",
     "register_ImpactXParticleContainer_extension",
     "register_KnownElementsList_extension",
+    "register_RFCavity_extension",
+    "register_SoftQuadrupole_extension",
+    "register_SoftSolenoid_extension",
     "s",
     "t",
     "twiss",
@@ -95,6 +109,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.01"
+__version__: str = "26.03"
 s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
 t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>

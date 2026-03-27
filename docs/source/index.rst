@@ -101,6 +101,7 @@ Theory
    theory/concepts
    theory/coordinates_units
    theory/bending_elements
+   theory/softedge_elements
    theory/beam_distribution
    theory/assumptions
 

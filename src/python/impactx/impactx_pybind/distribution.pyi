@@ -47,6 +47,9 @@ class Gaussian:
         dispPx: typing.SupportsFloat = 0.0,
         dispY: typing.SupportsFloat = 0.0,
         dispPy: typing.SupportsFloat = 0.0,
+        cutX: typing.SupportsFloat = 0.0,
+        cutY: typing.SupportsFloat = 0.0,
+        cutT: typing.SupportsFloat = 0.0,
     ) -> None:
         """
         A 6D Gaussian distribution

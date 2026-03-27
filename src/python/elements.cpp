@@ -76,7 +76,9 @@ namespace
             },
             py::arg("pc"), py::arg("step")=0, py::arg("period")=0,
             "Push first the reference particle, then all other particles."
-        );
+        )
+        .def("finalize", &Element::finalize)
+        ;
     }
 
     /** Registers the mixin LinearTransport::operator method
@@ -187,6 +189,8 @@ namespace
         std::vector<int>,
         std::vector<long>,
         Map6x6,
+        Vector3,
+        Map3x6,
         py::none
     >;
 
@@ -233,6 +237,8 @@ void init_elements(py::module& m)
     using namespace elements;
 
     m.attr("Map6x6") = py::type::of<Map6x6>();
+    m.attr("Map3x6") = py::type::of<Map3x6>();
+    m.attr("Vector3") = py::type::of<Vector3>();
 
     py::module_ me = m.def_submodule(
         "elements",
@@ -396,7 +402,6 @@ void init_elements(py::module& m)
             },
             "Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I."
         )
-        .def("finalize", &diagnostics::BeamMonitor::finalize)
     ;
     register_push(py_BeamMonitor);
 
@@ -862,6 +867,9 @@ void init_elements(py::module& m)
             std::optional<std::string> name
             )
             {
+                 if (R <= 0.0)
+                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+
                 dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
                 dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
@@ -902,7 +910,11 @@ void init_elements(py::module& m)
         )
         .def_property("R",
             [](DipEdge & dip_edge) { return dip_edge.m_R; },
-            [](DipEdge & dip_edge, amrex::ParticleReal R) { dip_edge.m_R = R; },
+            [](DipEdge & dip_edge, amrex::ParticleReal R) {
+                if (R <= 0.0)
+                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+                dip_edge.m_R = R;
+            },
             "Length scale for field integrals in m"
         )
         .def_property("K0",
@@ -1105,7 +1117,8 @@ void init_elements(py::module& m)
                      std::make_pair("unit", exact_multipole.m_unit),
                      std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
                      std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
-                     std::make_pair("mapsteps", exact_multipole.m_mapsteps)
+                     std::make_pair("mapsteps", exact_multipole.m_mapsteps),
+                     std::make_pair("int_order", exact_multipole.m_int_order)
                  );
              }
         )
@@ -1174,7 +1187,8 @@ void init_elements(py::module& m)
                      std::make_pair("unit", exact_cfbend.m_unit),
                      std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
                      std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
-                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps)
+                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps),
+                     std::make_pair("int_order", exact_cfbend.m_int_order)
                  );
              }
         )
@@ -1246,7 +1260,9 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_quad,
                      std::make_pair("k", exact_quad.m_k),
-                     std::make_pair("unit", exact_quad.m_unit)
+                     std::make_pair("unit", exact_quad.m_unit),
+                     std::make_pair("mapsteps", exact_quad.m_mapsteps),
+                     std::make_pair("int_order", exact_quad.m_int_order)
                  );
              }
         )
@@ -2551,6 +2567,63 @@ void init_elements(py::module& m)
      ;
      register_push(py_LinearMap);
 
+    py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment> py_SpinMap(me, "SpinMap");
+    py_SpinMap
+        .def("__repr__",
+             [](SpinMap const & spinmap) {
+                 return element_name(spinmap);
+             }
+        )
+/*        .def("to_dict",
+            [](SpinMap const & spinmap) {
+                return element_dict(
+                    spinmap,
+                    std::make_pair("v", spinmap.m_spin_rotation_vector),
+                    std::make_pair("A", spinmap.m_spin_orbit_coupling)
+                );
+            }
+        ) */
+        .def(py::init<
+                Vector3,
+                Map3x6,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                std::optional<std::string>
+             >(),
+             py::arg("v"),
+             py::arg("A"),
+             py::arg("ds") = 0,
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("name") = py::none(),
+             "(A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)"
+        )
+        .def_property("v",
+            [](SpinMap & spinmap) { return spinmap.m_spin_rotation_vector; },
+            [](SpinMap & spinmap, Vector3 v) { spinmap.m_spin_rotation_vector = v; },
+            "design axis-angle generator of spin rotation as a 3x1 vector"
+        )
+        .def_property("A",
+            [](SpinMap & spinmap) { return spinmap.m_spin_orbit_coupling; },
+            [](SpinMap & spinmap, Map3x6 A) { spinmap.m_spin_orbit_coupling = A; },
+            "spin-orbit coupling generator of rotation as a 3x6 matrix"
+        )
+        .def_property("ds",
+            [](SpinMap & spinmap) { return spinmap.m_ds; },
+            [](SpinMap & spinmap, amrex::ParticleReal ds) { spinmap.m_ds = ds; },
+            "segment length in m"
+        )
+        .def_property_readonly("nslice",
+            [](SpinMap & spinmap) { return spinmap.nslice(); },
+            "one, because we do not support slicing of this element"
+        )
+     ;
+     register_push(py_SpinMap);
+
+
     // freestanding push function
     m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),
         py::arg("pc"), py::arg("element"), py::arg("step")=0, py::arg("period")=0,
@@ -2638,7 +2711,8 @@ void init_elements(py::module& m)
 
                     // extract element transport map, handle fallback
                     Map6x6 element_transport_map = Map6x6::Identity();
-                    std::visit([&ref, &fallback_identity_map, &element_transport_map](auto const & el) {
+                    int element_nslice;
+                    std::visit([&ref, &fallback_identity_map, &element_transport_map, &element_nslice](auto const & el) {
                         using Element = std::decay_t<decltype(el)>;
                         std::string not_impl_msg = "Undefined transfer map in lattice for element ";
                         if (el.has_name()) not_impl_msg += el.name() + " ";
@@ -2647,6 +2721,7 @@ void init_elements(py::module& m)
                         if constexpr (std::is_base_of_v<elements::mixin::LinearTransport<Element>, Element>) {
                             try {
                                 element_transport_map = el.transport_map(ref);
+                                element_nslice = el.nslice();
                             } catch (std::exception const &) {
                                 if (!fallback_identity_map) {
                                     throw std::runtime_error(not_impl_msg);
@@ -2660,7 +2735,9 @@ void init_elements(py::module& m)
                     }, el_v);
 
                     // advance linear transfer map
-                    linear_transfer_map = element_transport_map * linear_transfer_map;
+                    for (int n = 0; n < element_nslice; n++) {
+                        linear_transfer_map = element_transport_map * linear_transfer_map;
+                    }
                 }
                 return linear_transfer_map;
             },

@@ -10,12 +10,21 @@
 #SBATCH --ntasks-per-node=8
 #SBATCH --gpus-per-node=8
 
-# executable & inputs file or ...
-EXE=./impactx
-INPUTS=inputs
-# ... python interpreter & PICMI script here
-#EXE=python3
-#INPUTS=run_fodo.py
+# python interpreter & script here
+EXE=python3
+INPUTS=run_fodo.py
+# or executable & inputs file
+#EXE=./impactx
+#INPUTS=input_fodo.in
+
+# enviroment setup
+if [[ -z "${MY_PROFILE}" ]]; then
+    echo "WARNING: FORGOT TO"
+    echo "   source $HOME/lumi_gpu_impactx.profile"
+    echo "before submission. Doing that now."
+
+    source $HOME/lumi_gpu_impactx.profile
+fi
 
 date
 
@@ -72,7 +81,9 @@ CPU_BIND="${CPU_BIND},7e00000000,7e0000000000"
 
 export OMP_NUM_THREADS=6
 
+# GPU-aware MPI
 export MPICH_GPU_SUPPORT_ENABLED=1
+export AMREX_DEFAULT_INIT="amrex.use_gpu_aware_mpi=1"
 
 srun --cpu-bind=${CPU_BIND} ./select_gpu  \
   ${EXE} ${INPUTS}                        \

@@ -47,9 +47,9 @@ def test_wake(save_png=True):
         bin_max = t_max
         bin_size = (bin_max - bin_min) / (num_bins - 1)
 
-        # Create charge_distribution and slopes as PODVector_real_std
-        charge_distribution = amr.PODVector_real_std(num_bins + 1)
-        slopes = amr.PODVector_real_std(num_bins)
+        # Create charge_distribution and slopes as device-compatible PODVectors
+        charge_distribution = amr.PODVector_real_default(num_bins + 1)
+        slopes = amr.PODVector_real_default(num_bins)
 
         # Call deposit_charge with the correct type
         wakeconvolution.deposit_charge(
@@ -69,7 +69,7 @@ def test_wake(save_png=True):
         )
 
         # Convert charge distribution to numpy array and plot it
-        charge_distribution_np = charge_distribution.to_numpy()
+        charge_distribution_np = charge_distribution.to_numpy(copy=True)
         charge_distribution_s_values = np.linspace(
             bin_min, bin_max, len(charge_distribution_np)
         )
@@ -84,7 +84,7 @@ def test_wake(save_png=True):
             plt.show()
 
         # Convert slopes to numpy array and plot it
-        slopes_np = slopes.to_numpy()
+        slopes_np = slopes.to_numpy(copy=True)
         slopes_s_values = np.linspace(bin_min, bin_max, len(slopes_np))
         plt.figure()
         plt.plot(slopes_s_values, slopes_np)
@@ -96,8 +96,9 @@ def test_wake(save_png=True):
         else:
             plt.show()
 
-        # Create wake_function as PODVector_real_std with size 2 * len(slopes)
-        wake_function = amr.PODVector_real_std(2 * len(slopes))
+        # Create wake_function as device-compatible PODVector with size 2 * len(slopes)
+        wake_function = amr.PODVector_real_default(2 * len(slopes))
+        wake_function_xp = wake_function.to_xp()
         wake_s_values = np.linspace(bin_min, bin_max, 2 * len(slopes))
         for i in range(len(wake_function)):
             if i < num_bins:
@@ -105,10 +106,10 @@ def test_wake(save_png=True):
             else:
                 s = (i - 2 * num_bins) * bin_size
             wake_s_values[i] = s
-            wake_function[i] = wakeconvolution.w_l_csr(s, R, bin_size)
+            wake_function_xp[i] = wakeconvolution.w_l_csr(s, R, bin_size)
 
         # Convert wake_function to numpy array and plot it
-        wake_function_np = wake_function.to_numpy()
+        wake_function_np = wake_function.to_numpy(copy=True)
         plt.figure()
         plt.plot(wake_s_values, wake_function_np)
         plt.xlabel("Longitudinal Position s (m)")
@@ -125,7 +126,7 @@ def test_wake(save_png=True):
         )
 
         # Convert the result to numpy array
-        convolved_wakefield_np = convolved_wakefield.to_numpy()
+        convolved_wakefield_np = convolved_wakefield.to_numpy(copy=True)
 
         # Adjust the s_values to match the length of convolved_wakefield_np
         s_values = np.linspace(bin_min, bin_max, len(convolved_wakefield_np))

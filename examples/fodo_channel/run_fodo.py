@@ -13,7 +13,7 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
-sim.slice_step_diagnostics = True
+sim.slice_step_diagnostics = False
 
 # domain decomposition & space charge mesh
 sim.init_grids()

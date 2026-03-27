@@ -215,6 +215,10 @@ namespace detail
             pp_element.queryAdd("location", location_str);
             dipedge::Location const location = amrex::getEnum<dipedge::Location>(location_str);
 
+            if (R <= 0) {
+                throw std::runtime_error(element_name + ".R must be >0 but is: " + std::to_string(R));
+            }
+
             m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")
         {
@@ -685,6 +689,32 @@ element_name) );
 
             m_lattice.emplace_back(PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y,
                 shift_odd_x, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+
+        } else if (element_type == "spin_map")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal ds = 0.0;
+            pp_element.queryAdd("ds", ds);
+
+            Vector3 spin_rotation_vector = {};
+            Map3x6 spin_orbit_coupling = {};
+
+            // ParmParse inputs for spin rotation vector
+            for (int i=1; i<=3; ++i) {
+                 std::string name = "v" + std::to_string(i);
+                 pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), spin_rotation_vector(i, 1));
+            }
+
+            // ParmParse inputs for spin-orbit coupling matrix
+            for (int i=1; i<=3; ++i) {
+                for (int j=1; j<=6; ++j) {
+                    std::string name = "A" + std::to_string(i) + std::to_string(j);
+                    pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), spin_orbit_coupling(i, j));
+                }
+            }
+
+            m_lattice.emplace_back(SpinMap(spin_rotation_vector, spin_orbit_coupling, ds, a["dx"], a["dy"], a["rotation_degree"]) );
 
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);

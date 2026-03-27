@@ -641,4 +641,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactCFbend)
+
 #endif // IMPACTX_EXACTCFBEND_H

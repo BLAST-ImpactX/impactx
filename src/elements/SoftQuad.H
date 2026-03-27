@@ -529,4 +529,6 @@ namespace SoftQuadrupoleData
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SoftQuadrupole)
+
 #endif // IMPACTX_SOFTQUAD_H

@@ -192,4 +192,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PlaneXYRot)
+
 #endif // IMPACTX_PLANE_XYROT_H

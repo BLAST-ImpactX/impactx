@@ -1,0 +1,73 @@
+.. _examples-fourier-coeffs:
+
+Generation of Fourier coefficients from on-axis data
+====================================================
+
+This example illustrates the computation of Fourier coefficients that are used to represent on-axis field or gradient data for soft-edge elements.
+
+Given data in the file ``onaxis_data.in``, execution of the Python script ``python3 fcoef.py`` results in the following output:
+
+- ``fcoef.out``: a file containing a list of cosine and sine Fourier coefficients that can be used in ImpactX to define a soft-edge element
+- ``onaxis_data.out``: a file containing the reconstructed on-axis signal, together with its first and second derivatives
+
+.. dropdown:: Script ``fcoef.py``
+
+   .. literalinclude:: fcoef.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fourier_coefficients/fcoef.py``.
+
+The signal is represented in the form:
+
+.. math::
+
+   g(z) = \frac{c_0}{2}
+        + \sum_{j=1}^{n_{\max}} c_j \cos\!\left(\frac{2\pi j\,(z - z_{\mathrm{mid}})}{L}\right)
+        + \sum_{j=1}^{n_{\max}} s_j \sin\!\left(\frac{2\pi j\,(z - z_{\mathrm{mid}})}{L}\right),
+
+where :math:`z_{\mathrm{mid}} = (z_{\min} + z_{\max})/2` is the longitudinal location of the midpoint, and :math:`L = z_{\max} - z_{\min}` is the total length of the z-domain.
+
+The benchmark test uses these coefficients to define and track through a soft-edge quadrupole element.
+Note that in practice, the ImpactX :ref:`soft-edge elements <theory-softedge-elements>` also support specifying the on-axis z data as arguments directly as arguments, performing he Fourier coefficient calculation automatically.
+
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_quadrupole_fcoef.py`` or
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_quadrupole_fcoef.py
+          :language: python3
+          :caption: You can copy this file from ``examples/fourier_coefficients/run_quadrupole_fcoef.py``.
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_quadrupole_fcoef.py``
+
+   .. literalinclude:: analysis_quadrupole_fcoef.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fourier_coefficients/analysis_quadrupole_fcoef.py``.
+
+
+Visualize
+---------
+
+You can run the following script to visualize the reconstruction of the data on-axis:
+
+.. dropdown:: Script ``plot_fcoef.py``
+
+   .. literalinclude:: plot_fcoef.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fourier_coefficients/plot_fcoef.py``.

@@ -113,6 +113,10 @@ namespace impactx::elements
             m_cos_omega_ds = std::cos(m_omega*m_slice_ds);
             m_sinh_omega_ds = std::sinh(m_omega*m_slice_ds);
             m_cosh_omega_ds = std::cosh(m_omega*m_slice_ds);
+
+            // gyromagnetic constant (used during spin push)
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            m_gyro_const = 1_prt + G * refpart.gamma();
         }
 
         /** This is a quad functor, so that a variable of this type can be used like a quad function.
@@ -328,34 +332,19 @@ namespace impactx::elements
             T_Real lambday = 0_prt;
             T_Real lambdaz = 0_prt;
 
-            // access reference particle values
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal const gyro_const = 1_prt + G * refpart.gamma();
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
-
-            // compute trigonometric quantities
-            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*slice_ds);
-            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
-            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
-
             if (m_k > 0.0_prt)
             {
 
                 // horizontally focusing quad case
-                lambdax = -gyro_const * ( py*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
-                lambday = -gyro_const * ( px*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
+                lambdax = -m_gyro_const * ( py*(m_cosh_omega_ds - 1_prt) + y*m_omega*m_sinh_omega_ds );
+                lambday = -m_gyro_const * ( px*(1_prt - m_cos_omega_ds) + x*m_omega*m_sin_omega_ds );
 
             } else if (m_k < 0.0_prt)
             {
 
                 // horizontally defocusing quad case
-                lambdax = -gyro_const * ( px*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
-                lambday = -gyro_const * ( py*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+                lambdax = m_gyro_const * ( py*(1_prt - m_cos_omega_ds) + y*m_omega*m_sin_omega_ds );
+                lambday = m_gyro_const * ( px*(m_cosh_omega_ds - 1_prt) + x*m_omega*m_sinh_omega_ds );
 
             } else {
                 // treat as a drift
@@ -385,8 +374,12 @@ namespace impactx::elements
         amrex::ParticleReal m_cos_omega_ds;   //! std::cos(omega*slice_ds)
         amrex::ParticleReal m_sinh_omega_ds;  //! std::sinh(omega*slice_ds)
         amrex::ParticleReal m_cosh_omega_ds;  //! std::cosh(omega*slice_ds)
+        amrex::ParticleReal m_gyro_const;     //! (1 + G*gamma) for spin calculation
+
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Quad)
 
 #endif // IMPACTX_QUAD_H

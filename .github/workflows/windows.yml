@@ -25,10 +25,9 @@ jobs:
         path: |
           ~/.ccache
           ~/.cache/ccache
-        key: ccache-windows-winmsvc-${{ hashFiles('.github/workflows/windows.yml') }}-${{ hashFiles('cmake/dependencies/ABLASTR.cmake') }}
+        key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}
         restore-keys: |
-          ccache-windows-winmsvc-${{ hashFiles('.github/workflows/windows.yml') }}-
-          ccache-windows-winmsvc-
+             ccache-${{ github.workflow }}-${{ github.job }}-git-
     - name: Download Dependencies
       run: |
         Invoke-WebRequest http://fftw.org/fftw-3.3.10.tar.gz -OutFile fftw-3.3.10.tar.gz
@@ -168,7 +167,8 @@ jobs:
               -DBUILD_TESTS=OFF                 ^
               -DBUILD_SHARED_LIBS=OFF           ^
               -DCMAKE_BUILD_TYPE=Debug          ^
-              -DDISABLE_FORTRAN=ON
+              -DDISABLE_FORTRAN=ON              ^
+              -DENABLE_OPENMP=ON
         if errorlevel 1 exit 1
         cmake --build build_fftw --config Debug --target install --parallel 4
         if errorlevel 1 exit 1
@@ -179,7 +179,8 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF           ^
               -DCMAKE_BUILD_TYPE=Debug          ^
               -DDISABLE_FORTRAN=ON              ^
-              -DENABLE_FLOAT=ON
+              -DENABLE_FLOAT=ON                 ^
+              -DENABLE_OPENMP=ON
         if errorlevel 1 exit 1
         cmake --build build_fftwf --config Debug --target install --parallel 4
         if errorlevel 1 exit 1

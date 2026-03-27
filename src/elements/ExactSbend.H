@@ -316,10 +316,48 @@ namespace impactx::elements
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
+            amrex::ParticleReal const bet = refpart.beta();
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            // treat the special case of zero field
+            if (m_rc==0.0_prt) {
+               R(1,2) = slice_ds;
+               R(3,4) = slice_ds;
+               R(5,6) = slice_ds / betgam2;
+
+            } else {
+
+               // calculate expensive terms once
+               amrex::ParticleReal const theta = slice_ds/m_rc;
+               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+
+               // assign linear map matrix elements
+               R(1,1) = cos_theta;
+               R(1,2) = m_rc * sin_theta;
+               R(1,6) = - ( m_rc / bet) * (1_prt - cos_theta);
+               R(2,1) = -sin_theta / m_rc;
+               R(2,2) = cos_theta;
+               R(2,6) = - sin_theta / bet;
+               R(3,4) = m_rc * theta;
+               R(5,1) = sin_theta / bet;
+               R(5,2) = m_rc / bet * (1_prt - cos_theta);
+               R(5,6) = m_rc * (-theta + sin_theta / (bet * bet));
+            }
+
+            return R;
         }
 
         amrex::ParticleReal m_phi; //! bend angle in radians
@@ -332,5 +370,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactSbend)
 
 #endif // IMPACTX_EXACTSBEND_H

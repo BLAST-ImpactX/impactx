@@ -604,4 +604,6 @@ namespace SoftSolenoidData
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SoftSolenoid)
+
 #endif // IMPACTX_SOFTSOL_H

@@ -40,7 +40,7 @@ distr = distribution.Waterbag(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+monitor = elements.BeamMonitor("m1", backend="h5")
 
 # design the accelerator lattice
 kicklattice = [

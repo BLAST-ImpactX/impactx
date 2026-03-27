@@ -41,14 +41,14 @@ distr = distribution.Waterbag(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+m1 = elements.BeamMonitor("m1", backend="h5")
 
 # design the accelerator lattice
 sim.lattice.extend(
     [
-        monitor,
+        m1,
         elements.Sol(name="sol1", ds=3.820395, ks=0.8223219329893234),
-        monitor,
+        m1,
     ]
 )
 

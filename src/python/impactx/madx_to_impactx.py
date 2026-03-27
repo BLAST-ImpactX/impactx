@@ -14,6 +14,7 @@ from impactx import RefPart, elements
 from .MADXParser import MADXParser
 
 WARN_PREFIX = "[WARNING MADX-ImpactX-Translator] "
+TRACKED_TRANSLATION_OPTIONS = ("rbarc", "thin_foc")
 
 
 class MADXImpactXTranslatorWarning(UserWarning):
@@ -64,6 +65,12 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
     :param nslice: number of ds slices per element
     :param freq0: revolution frequency in MHz (from BEAM command)
     :return: list of translated dictionaries
+
+    Maintainer note (one-place-of-truth philosophy):
+    - Keep element-type mapping in one place (`madx_to_impactx_dict` below).
+    - Keep bend-body model choice in one place (`make_bend_body_element` below).
+    - Prefer composition from existing ImpactX elements over silent drops.
+    - Every physics fallback should `_warn(...)` and include a TODO comment.
     """
 
     # mapping is "MAD-X": "ImpactX",
@@ -104,6 +111,10 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
     # rbarc=true, thin_foc=true
     rbarc = bool(options.get("rbarc", True))
     thin_foc = bool(options.get("thin_foc", True))
+    rad_to_deg = 180.0 / math.pi
+    # MAD-X bend maps are driven by ANGLE/TILT; K0/K0S are obsolete for map construction.
+    # H1/H2 (pole-face curvature) still affect MAD-X fringe modeling and are not translated here.
+    unsupported_bend_attrs = ("k0", "k0s", "h1", "h2")
     warned_once = set()
 
     class _TrackedElement(dict):
@@ -163,6 +174,55 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
         else:
             impactx_beamline.append(thin_element)
 
+    def make_bend_body_element(
+        *,
+        name,
+        ds,
+        rc,
+        tilt_degree,
+        k1,
+        k1s,
+        k2,
+        k2s,
+        k3,
+        k3s,
+    ):
+        """Create the most faithful currently available ImpactX bend body model.
+
+        Priority:
+        1) ExactCFbend when skew or higher body multipoles are present
+        2) CFbend for pure dipole+quadrupole
+        3) Sbend for pure dipole geometry
+        """
+        use_exact_cfbend = any(abs(v) > 0.0 for v in (k1s, k2, k2s, k3, k3s))
+        if use_exact_cfbend:
+            curvature = 1.0 / rc if rc != 0.0 else 0.0
+            return elements.ExactCFbend(
+                name=name,
+                ds=ds,
+                k_normal=[curvature, k1, k2, k3],
+                k_skew=[0.0, k1s, k2s, k3s],
+                unit=0,
+                rotation=tilt_degree,
+                nslice=nslice,
+            )
+        if abs(k1) > 0.0:
+            return elements.CFbend(
+                name=name,
+                ds=ds,
+                rc=rc,
+                k=k1,
+                rotation=tilt_degree,
+                nslice=nslice,
+            )
+        return elements.Sbend(
+            name=name,
+            ds=ds,
+            rc=rc,
+            rotation=tilt_degree,
+            nslice=nslice,
+        )
+
     for d_raw in parsed_beamline:
         d = _TrackedElement(d_raw)
         # print(d)
@@ -177,7 +237,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 ds = d.get("l", 0.0)
                 k1 = d.get("k1", 0.0)
                 k1s = d.get("k1s", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if ds > 0:
                     if abs(k1s) > 0:
                         impactx_beamline.append(
@@ -231,7 +291,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 hgap = d.get("hgap", 0.0)
                 fint = d.get("fint", 0.0)
                 fintx = d.get("fintx", fint)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if ds > 0:
                     if abs(angle) > 0:
                         rc = ds / angle
@@ -256,45 +316,20 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                                 )
                             )
 
-                        use_exact_cfbend = any(
-                            abs(v) > 0.0 for v in (k1s, k2, k2s, k3, k3s)
+                        impactx_beamline.append(
+                            make_bend_body_element(
+                                name=d["name"],
+                                ds=ds,
+                                rc=rc,
+                                tilt_degree=tilt_degree,
+                                k1=k1,
+                                k1s=k1s,
+                                k2=k2,
+                                k2s=k2s,
+                                k3=k3,
+                                k3s=k3s,
+                            )
                         )
-                        if use_exact_cfbend:
-                            # ExactCFbend can represent curvilinear combined-function
-                            # bends including sextupole/octupole body terms.
-                            curvature = 1.0 / rc if rc != 0.0 else 0.0
-                            impactx_beamline.append(
-                                elements.ExactCFbend(
-                                    name=d["name"],
-                                    ds=ds,
-                                    k_normal=[curvature, k1, k2, k3],
-                                    k_skew=[0.0, k1s, k2s, k3s],
-                                    unit=0,
-                                    rotation=tilt_degree,
-                                    nslice=nslice,
-                                )
-                            )
-                        elif abs(k1) > 0:
-                            impactx_beamline.append(
-                                elements.CFbend(
-                                    name=d["name"],
-                                    ds=ds,
-                                    rc=rc,
-                                    k=k1,
-                                    rotation=tilt_degree,
-                                    nslice=nslice,
-                                )
-                            )
-                        else:
-                            impactx_beamline.append(
-                                elements.Sbend(
-                                    name=d["name"],
-                                    ds=ds,
-                                    rc=rc,
-                                    rotation=tilt_degree,
-                                    nslice=nslice,
-                                )
-                            )
 
                         if has_edges:
                             impactx_beamline.append(
@@ -340,7 +375,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     impactx_beamline.append(
                         elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
                     )
-                for attr in ("k0", "k0s", "h1", "h2"):
+                for attr in unsupported_bend_attrs:
                     if abs(d.get(attr, 0.0)) > 0:
                         # TODO(audit): Map higher-order/extended SBEND attributes when
                         # ImpactX provides a direct equivalent in this translator path.
@@ -362,7 +397,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 k2s = d.get("k2s", 0.0)
                 k3 = d.get("k3", 0.0)
                 k3s = d.get("k3s", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
 
                 if l_chord > 0:
                     # RBARC option controls how RBEND L is interpreted:
@@ -397,43 +432,20 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     )
 
                     # Body: prefer combined-function model if representable.
-                    use_exact_cfbend = any(
-                        abs(v) > 0.0 for v in (k1s, k2, k2s, k3, k3s)
+                    impactx_beamline.append(
+                        make_bend_body_element(
+                            name=d["name"],
+                            ds=l_arc,
+                            rc=rc,
+                            tilt_degree=tilt_degree,
+                            k1=k1,
+                            k1s=k1s,
+                            k2=k2,
+                            k2s=k2s,
+                            k3=k3,
+                            k3s=k3s,
+                        )
                     )
-                    if use_exact_cfbend:
-                        curvature = 1.0 / rc if rc != 0.0 else 0.0
-                        impactx_beamline.append(
-                            elements.ExactCFbend(
-                                name=d["name"],
-                                ds=l_arc,
-                                k_normal=[curvature, k1, k2, k3],
-                                k_skew=[0.0, k1s, k2s, k3s],
-                                unit=0,
-                                rotation=tilt_degree,
-                                nslice=nslice,
-                            )
-                        )
-                    elif abs(k1) > 0:
-                        impactx_beamline.append(
-                            elements.CFbend(
-                                name=d["name"],
-                                ds=l_arc,
-                                rc=rc,
-                                k=k1,
-                                rotation=tilt_degree,
-                                nslice=nslice,
-                            )
-                        )
-                    else:
-                        impactx_beamline.append(
-                            elements.Sbend(
-                                name=d["name"],
-                                ds=l_arc,
-                                rc=rc,
-                                rotation=tilt_degree,
-                                nslice=nslice,
-                            )
-                        )
                     # Exit DipEdge
                     # Exit DipEdge
                     impactx_beamline.append(
@@ -461,7 +473,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                     impactx_beamline.append(
                         elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
                     )
-                for attr in ("k0", "k0s", "h1", "h2"):
+                for attr in unsupported_bend_attrs:
                     if abs(d.get(attr, 0.0)) > 0:
                         # TODO(audit): Map higher-order/extended RBEND attributes when
                         # ImpactX provides a direct equivalent in this translator path.
@@ -473,7 +485,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 ks = d.get("ks", 0.0)
                 ksi = d.get("ksi", 0.0)
                 lrad = d.get("lrad", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if ds > 0:
                     impactx_beamline.append(
                         elements.Sol(
@@ -528,14 +540,14 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                         g=2.0 * d.get("hgap", 0.0),
                         K2=d.get("fint", 0.0),
                         location=location,
-                        rotation=d.get("tilt", 0.0) * 180.0 / math.pi,
+                        rotation=d.get("tilt", 0.0) * rad_to_deg,
                     )
                 )
             elif d["type"] in ("kicker", "tkicker"):
                 # Corner case: ImpactX Kicker is thin. For MAD-X finite L, we preserve
                 # placement/length with a drift-kick-drift composition.
                 ds = d.get("l", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if abs(d.get("sinkick", 0.0)) > 0:
                     # TODO(audit): Map sinusoidally driven kicker modes (SINKICK/SINPEAK/SINTUNE/SINPHASE).
                     _warn(
@@ -553,7 +565,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 )
             elif d["type"] == "hkicker":
                 ds = d.get("l", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if abs(d.get("sinkick", 0.0)) > 0:
                     # TODO(audit): Map sinusoidally driven kicker modes (SINKICK/SINPEAK/SINTUNE/SINPHASE).
                     _warn(
@@ -571,7 +583,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 )
             elif d["type"] == "vkicker":
                 ds = d.get("l", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if abs(d.get("sinkick", 0.0)) > 0:
                     # TODO(audit): Map sinusoidally driven kicker modes (SINKICK/SINPEAK/SINTUNE/SINPHASE).
                     _warn(
@@ -601,7 +613,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 ds = d.get("l", 0.0)
                 k2 = d.get("k2", 0.0)
                 k2s = d.get("k2s", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if ds > 0:
                     impactx_beamline.append(
                         elements.ExactMultipole(
@@ -633,7 +645,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 ds = d.get("l", 0.0)
                 k3 = d.get("k3", 0.0)
                 k3s = d.get("k3s", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if ds > 0:
                     impactx_beamline.append(
                         elements.ExactMultipole(
@@ -668,7 +680,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 ksl = d.get("ksl", [])
                 ds = d.get("l", 0.0)
                 lrad = d.get("lrad", 0.0)
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 max_order = max(len(knl), len(ksl)) - 1
 
                 if ds > 0.0:
@@ -746,7 +758,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                 lag = d.get("lag", 0.0)  # fraction of 2pi
                 harmon = d.get("harmon", 1.0)
                 phase = lag * 360.0  # convert to degrees
-                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                tilt_degree = d.get("tilt", 0.0) * rad_to_deg
                 if "freq" in d and d.get("freq", 0.0) > 0.0:
                     # MAD-X RFCAVITY frequency is specified in MHz.
                     freq = d.get("freq", 0.0) * 1.0e6

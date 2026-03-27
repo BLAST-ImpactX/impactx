@@ -13,12 +13,31 @@ from impactx import RefPart, elements
 
 from .MADXParser import MADXParser
 
-WARN_PREFIX = "MADX->ImpactX:"
+WARN_PREFIX = "[WARNING MADX-ImpactX-Translator] "
+
+
+class MADXImpactXTranslatorWarning(UserWarning):
+    """Warning category for MAD-X to ImpactX translation fallbacks."""
+
+    pass
+
+
+# Custom format for translator warnings: omit Python source-line echo.
+_translator_original_formatwarning = warnings.formatwarning
+
+
+def _translator_formatwarning(message, category, filename, lineno, line=None):
+    if issubclass(category, MADXImpactXTranslatorWarning):
+        return f"{WARN_PREFIX}{str(message)}\n"
+    return _translator_original_formatwarning(message, category, filename, lineno, line)
+
+
+warnings.formatwarning = _translator_formatwarning
 
 
 def _warn(message: str):
     """Emit a standardized translation warning."""
-    warnings.warn(f"{WARN_PREFIX} {message}", UserWarning)
+    warnings.warn(message, MADXImpactXTranslatorWarning)
 
 
 class sc:

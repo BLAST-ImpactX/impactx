@@ -106,11 +106,43 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
     thin_foc = bool(options.get("thin_foc", True))
     warned_once = set()
 
+    class _TrackedElement(dict):
+        """Dictionary wrapper that records accessed keys."""
+
+        def __init__(self, data):
+            super().__init__(data)
+            self.accessed = set()
+
+        def __getitem__(self, key):
+            self.accessed.add(key)
+            return super().__getitem__(key)
+
+        def get(self, key, default=None):
+            self.accessed.add(key)
+            return super().get(key, default)
+
+        def __contains__(self, key):
+            self.accessed.add(key)
+            return super().__contains__(key)
+
     def warn_once(key, message):
         """Emit a warning only once per lattice translation call."""
         if key not in warned_once:
             _warn(message)
             warned_once.add(key)
+
+    def warn_unread_element_attributes(elem):
+        """Warn if a MAD-X element attribute is present but not consumed."""
+        ignored_meta = {"name", "type", "at", "from"}
+        etype = elem.get("type", "")
+        for attr in elem.keys():
+            if attr in ignored_meta:
+                continue
+            if attr not in elem.accessed:
+                warn_once(
+                    f"unread_attr:{etype}:{attr}",
+                    f"{etype.upper()} attribute '{attr}' is present in MAD-X input but not consumed by translator.",
+                )
 
     def append_thin_with_length(thin_element, length, element_name):
         """Model finite-length thin-lens MAD-X elements as drift-kick-drift."""
@@ -131,7 +163,8 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
         else:
             impactx_beamline.append(thin_element)
 
-    for d in parsed_beamline:
+    for d_raw in parsed_beamline:
+        d = _TrackedElement(d_raw)
         # print(d)
         if d["type"] in [k.casefold() for k in list(madx_to_impactx_dict.keys())]:
             if d["type"] == "drift":
@@ -720,6 +753,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
                             rotation=tilt_degree,
                         )
                     )
+            warn_unread_element_attributes(d)
         else:
             raise NotImplementedError(
                 "The beamline element named ",
@@ -744,11 +778,17 @@ def read_lattice(madx_file, nslice=1):
     madx.parse(madx_file)
     beamline = madx.getBeamline()
     freq0 = madx.getFreq0()
+    all_options = madx.getOptions()
     options = {
         # MAD-X options are numeric in parser context; bool() captures 0/1 and expressions.
         "rbarc": bool(madx.getOption("rbarc", 1.0)),
         "thin_foc": bool(madx.getOption("thin_foc", 1.0)),
     }
+    for opt_name in sorted(all_options.keys()):
+        if opt_name not in options:
+            _warn(
+                f"OPTION '{opt_name}' was parsed but is not consumed by MAD-X->ImpactX translation."
+            )
 
     return lattice(beamline, nslice, freq0=freq0, options=options)
 

@@ -2366,6 +2366,10 @@ class MADXParser:
         """Get an OPTION value from the parsed MAD-X input."""
         return self.context.get_option(name, default)
 
+    def getOptions(self) -> dict[str, Any]:
+        """Get all parsed OPTION values."""
+        return dict(self.context.options)
+
     def getVariable(self, name: str) -> Any:
         """Get a variable value."""
         return self.context.get_variable(name)

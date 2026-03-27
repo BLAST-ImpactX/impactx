@@ -13,6 +13,13 @@ from impactx import RefPart, elements
 
 from .MADXParser import MADXParser
 
+WARN_PREFIX = "MADX->ImpactX:"
+
+
+def _warn(message: str):
+    """Emit a standardized translation warning."""
+    warnings.warn(f"{WARN_PREFIX} {message}", UserWarning)
+
 
 class sc:
     """
@@ -31,7 +38,7 @@ class sc:
     m_u = 1.6605390666e-27
 
 
-def lattice(parsed_beamline, nslice=1, freq0=0.0):
+def lattice(parsed_beamline, nslice=1, freq0=0.0, options=None):
     """
     Function that converts a list of elements in the MADXParser format into ImpactX format
     :param parsed_beamline: list of dictionaries
@@ -60,6 +67,8 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
         # note: in MAD-X, this keeps track only of the beam centroid,
         # "In addition it serves to record the beam position for closed orbit correction."
         "MONITOR": "BeamMonitor",  # drift + output diagnostics
+        "HMONITOR": "BeamMonitor",  # horizontal monitor
+        "VMONITOR": "BeamMonitor",  # vertical monitor
         "MULTIPOLE": "Multipole",
         "SEXTUPOLE": "ExactMultipole",
         "OCTUPOLE": "ExactMultipole",
@@ -71,6 +80,37 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
     }
 
     impactx_beamline = []
+    options = options or {}
+    # MAD-X defaults from OPTION command table:
+    # rbarc=true, thin_foc=true
+    rbarc = bool(options.get("rbarc", True))
+    thin_foc = bool(options.get("thin_foc", True))
+    warned_once = set()
+
+    def warn_once(key, message):
+        """Emit a warning only once per lattice translation call."""
+        if key not in warned_once:
+            _warn(message)
+            warned_once.add(key)
+
+    def append_thin_with_length(thin_element, length, element_name):
+        """Model finite-length thin-lens MAD-X elements as drift-kick-drift."""
+        if length > 0.0:
+            # TODO(audit): This is a paraxial length-preserving approximation.
+            # Replace with dedicated thick elements when available.
+            impactx_beamline.append(
+                elements.Drift(
+                    name=element_name + "_drift_in", ds=0.5 * length, nslice=nslice
+                )
+            )
+            impactx_beamline.append(thin_element)
+            impactx_beamline.append(
+                elements.Drift(
+                    name=element_name + "_drift_out", ds=0.5 * length, nslice=nslice
+                )
+            )
+        else:
+            impactx_beamline.append(thin_element)
 
     for d in parsed_beamline:
         # print(d)
@@ -84,45 +124,171 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
             elif d["type"] == "quadrupole":
                 ds = d.get("l", 0.0)
                 k1 = d.get("k1", 0.0)
+                k1s = d.get("k1s", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
                 if ds > 0:
-                    impactx_beamline.append(
-                        elements.Quad(name=d["name"], ds=ds, k=k1, nslice=nslice)
-                    )
+                    if abs(k1s) > 0:
+                        impactx_beamline.append(
+                            elements.ExactMultipole(
+                                name=d["name"],
+                                ds=ds,
+                                k_normal=[0.0, k1],
+                                k_skew=[0.0, k1s],
+                                rotation=tilt_degree,
+                                nslice=nslice,
+                            )
+                        )
+                    else:
+                        impactx_beamline.append(
+                            elements.Quad(
+                                name=d["name"],
+                                ds=ds,
+                                k=k1,
+                                rotation=tilt_degree,
+                                nslice=nslice,
+                            )
+                        )
                 else:
                     # Thin quad: integrated strength KL = k1 * l
+                    knl = d.get("knl", [])
+                    ksl = d.get("ksl", [])
+                    k1l = knl[1] if len(knl) > 1 else k1 * ds
+                    k1sl = ksl[1] if len(ksl) > 1 else k1s * ds
                     impactx_beamline.append(
                         elements.Multipole(
                             name=d["name"],
-                            multipole=1,
-                            K_normal=d.get("knl", [0.0, k1 * ds])[1]
-                            if "knl" in d
-                            else k1 * ds,
-                            K_skew=0.0,
+                            # MAD-X multipole order n maps to ImpactX multipole index n+1:
+                            # n=1 (quadrupole) -> multipole=2.
+                            multipole=2,
+                            K_normal=k1l,
+                            K_skew=k1sl,
+                            rotation=tilt_degree,
                         )
                     )
             elif d["type"] == "sbend":
                 ds = d.get("l", 0.0)
                 angle = d.get("angle", 0.0)
+                k1 = d.get("k1", 0.0)
+                e1 = d.get("e1", 0.0)
+                e2 = d.get("e2", 0.0)
+                hgap = d.get("hgap", 0.0)
+                fint = d.get("fint", 0.0)
+                fintx = d.get("fintx", fint)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
                 if ds > 0:
-                    rc = ds / angle if abs(angle) > 0 else 0.0
-                    impactx_beamline.append(
-                        elements.Sbend(name=d["name"], ds=ds, rc=rc, nslice=nslice)
-                    )
+                    if abs(angle) > 0:
+                        rc = ds / angle
+                        has_edges = (
+                            abs(e1) > 0
+                            or abs(e2) > 0
+                            or abs(hgap) > 0
+                            or abs(fint) > 0
+                            or abs(fintx) > 0
+                        )
+
+                        if has_edges:
+                            impactx_beamline.append(
+                                elements.DipEdge(
+                                    name=d["name"] + "_edge_entry",
+                                    psi=e1,
+                                    rc=rc,
+                                    g=2.0 * hgap,
+                                    K2=fint,
+                                    location="entry",
+                                    rotation=tilt_degree,
+                                )
+                            )
+
+                        if abs(k1) > 0:
+                            impactx_beamline.append(
+                                elements.CFbend(
+                                    name=d["name"],
+                                    ds=ds,
+                                    rc=rc,
+                                    k=k1,
+                                    rotation=tilt_degree,
+                                    nslice=nslice,
+                                )
+                            )
+                        else:
+                            impactx_beamline.append(
+                                elements.Sbend(
+                                    name=d["name"],
+                                    ds=ds,
+                                    rc=rc,
+                                    rotation=tilt_degree,
+                                    nslice=nslice,
+                                )
+                            )
+
+                        if has_edges:
+                            impactx_beamline.append(
+                                elements.DipEdge(
+                                    name=d["name"] + "_edge_exit",
+                                    psi=e2,
+                                    rc=rc,
+                                    g=2.0 * hgap,
+                                    K2=fintx,
+                                    location="exit",
+                                    rotation=tilt_degree,
+                                )
+                            )
+                    else:
+                        # TODO(audit): MAD-X allows ANGLE=0 SBEND with extra attributes.
+                        # ImpactX has no direct "straight CF bend" with all SBEND options.
+                        # Fallback to Quad or Drift and warn.
+                        if abs(k1) > 0:
+                            impactx_beamline.append(
+                                elements.Quad(
+                                    name=d["name"],
+                                    ds=ds,
+                                    k=k1,
+                                    rotation=tilt_degree,
+                                    nslice=nslice,
+                                )
+                            )
+                        else:
+                            impactx_beamline.append(
+                                elements.Drift(name=d["name"], ds=ds, nslice=nslice)
+                            )
+                        _warn(
+                            f"SBEND '{d['name']}' has ANGLE=0; using simplified straight-element fallback."
+                        )
                 elif abs(angle) > 0:
                     # Thin dipole kick
+                    if abs(k1) > 0 or abs(e1) > 0 or abs(e2) > 0:
+                        # TODO(audit): Thin SBEND with combined-function/edge effects is
+                        # currently approximated as a pure thin dipole in ImpactX.
+                        _warn(
+                            f"Thin SBEND '{d['name']}' has unsupported non-dipole features; using ThinDipole fallback."
+                        )
                     impactx_beamline.append(
                         elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
                     )
+                for attr in ("k0", "k0s", "k1s", "k2", "k2s", "k3", "k3s", "h1", "h2"):
+                    if abs(d.get(attr, 0.0)) > 0:
+                        # TODO(audit): Map higher-order/extended SBEND attributes when
+                        # ImpactX provides a direct equivalent in this translator path.
+                        _warn(
+                            f"SBEND '{d['name']}' attribute '{attr}' is not translated; using simplified model."
+                        )
             elif d["type"] == "rbend":
                 # RBEND: rectangular bending magnet
                 # Converts to DipEdge + SBend + DipEdge
                 # Reference: https://mad.web.cern.ch/mad/webguide/manual.html#Ch11.S3
+                # TODO(audit): Confirm this decomposition preserves MAD-X RBEND
+                # physics for all relevant options (RBARC, edge/fringe conventions,
+                # and possible combined-function strengths).
                 angle = d.get("angle", 0.0)
                 l_chord = d.get("l", 0.0)
+                k1 = d.get("k1", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
 
                 if l_chord > 0:
-                    # Convert chord length to arc length (RBARC=true is MAD-X default)
-                    if abs(angle) > 0:
+                    # RBARC option controls how RBEND L is interpreted:
+                    # - rbarc=true  (default): L is straight/chord length -> convert to arc
+                    # - rbarc=false: L is already arc length -> do not convert
+                    if abs(angle) > 0 and rbarc:
                         l_arc = l_chord * angle / (2.0 * math.sin(angle / 2.0))
                     else:
                         l_arc = l_chord
@@ -145,17 +311,34 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                             rc=rc,
                             g=2.0 * hgap,
                             K2=fint,
+                            location="entry",
+                            rotation=tilt_degree,
                         )
                     )
-                    # SBend body
-                    impactx_beamline.append(
-                        elements.Sbend(
-                            name=d["name"],
-                            ds=l_arc,
-                            rc=rc,
-                            nslice=nslice,
+
+                    # Body: prefer combined-function model if representable.
+                    if abs(k1) > 0:
+                        impactx_beamline.append(
+                            elements.CFbend(
+                                name=d["name"],
+                                ds=l_arc,
+                                rc=rc,
+                                k=k1,
+                                rotation=tilt_degree,
+                                nslice=nslice,
+                            )
                         )
-                    )
+                    else:
+                        impactx_beamline.append(
+                            elements.Sbend(
+                                name=d["name"],
+                                ds=l_arc,
+                                rc=rc,
+                                rotation=tilt_degree,
+                                nslice=nslice,
+                            )
+                        )
+                    # Exit DipEdge
                     # Exit DipEdge
                     impactx_beamline.append(
                         elements.DipEdge(
@@ -164,22 +347,76 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                             rc=rc,
                             g=2.0 * hgap,
                             K2=fintx,
+                            location="exit",
+                            rotation=tilt_degree,
                         )
                     )
                 elif abs(angle) > 0:
+                    if (
+                        abs(k1) > 0
+                        or abs(d.get("e1", 0.0)) > 0
+                        or abs(d.get("e2", 0.0)) > 0
+                    ):
+                        # TODO(audit): Thin RBEND with combined-function/edge effects is
+                        # currently approximated as a pure thin dipole in ImpactX.
+                        _warn(
+                            f"Thin RBEND '{d['name']}' has unsupported non-dipole features; using ThinDipole fallback."
+                        )
                     impactx_beamline.append(
                         elements.ThinDipole(name=d["name"], theta=angle, rc=0.0)
                     )
+                for attr in ("k0", "k0s", "k1s", "k2", "k2s", "k3", "k3s", "h1", "h2"):
+                    if abs(d.get(attr, 0.0)) > 0:
+                        # TODO(audit): Map higher-order/extended RBEND attributes when
+                        # ImpactX provides a direct equivalent in this translator path.
+                        _warn(
+                            f"RBEND '{d['name']}' attribute '{attr}' is not translated; using simplified model."
+                        )
             elif d["type"] == "solenoid":
                 ds = d.get("l", 0.0)
+                ks = d.get("ks", 0.0)
+                ksi = d.get("ksi", 0.0)
+                lrad = d.get("lrad", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
                 if ds > 0:
                     impactx_beamline.append(
                         elements.Sol(
                             name=d["name"],
                             ds=ds,
-                            ks=d.get("ks", 0.0),
+                            ks=ks,
+                            rotation=tilt_degree,
                             nslice=nslice,
                         )
+                    )
+                    if abs(ksi) > 0:
+                        # TODO(audit): Clarify precedence/combination rules for KS and KSI
+                        # in thick MAD-X SOLENOID beyond current direct KS mapping.
+                        _warn(
+                            f"SOLENOID '{d['name']}' provides KSI with L>0; using KS mapping only."
+                        )
+                elif abs(ksi) > 0 and lrad > 0 and abs(ks) == 0:
+                    # TODO(audit): MAD-X supports thin solenoid via KSI and LRAD.
+                    # ImpactX has no dedicated thin solenoid element in this path.
+                    # Approximate with an equivalent-thickness Sol over LRAD.
+                    _warn(
+                        f"SOLENOID '{d['name']}' thin model (L=0, KSI, LRAD) approximated as thick Sol over LRAD."
+                    )
+                    impactx_beamline.append(
+                        elements.Sol(
+                            name=d["name"],
+                            ds=lrad,
+                            ks=ksi / lrad,
+                            rotation=tilt_degree,
+                            nslice=nslice,
+                        )
+                    )
+                elif abs(ks) > 0 or abs(ksi) > 0:
+                    # TODO(audit): Add a dedicated thin-solenoid translation once
+                    # ImpactX representation is available in this converter.
+                    # Corner case: MAD-X thin-solenoid configurations without a usable LRAD
+                    # cannot preserve integrated rotation in the current ImpactX element set.
+                    _warn(
+                        f"SOLENOID '{d['name']}' has nonzero strength but no translatable finite-length model; skipping element."
                     )
             elif d["type"] == "dipedge":
                 h = d.get("h", 0.0)
@@ -191,33 +428,66 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                         # MAD-X is using half the gap height
                         g=2.0 * d.get("hgap", 0.0),
                         K2=d.get("fint", 0.0),
+                        rotation=d.get("tilt", 0.0) * 180.0 / math.pi,
                     )
                 )
             elif d["type"] in ("kicker", "tkicker"):
-                impactx_beamline.append(
+                # Corner case: ImpactX Kicker is thin. For MAD-X finite L, we preserve
+                # placement/length with a drift-kick-drift composition.
+                ds = d.get("l", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                if abs(d.get("sinkick", 0.0)) > 0:
+                    # TODO(audit): Map sinusoidally driven kicker modes (SINKICK/SINPEAK/SINTUNE/SINPHASE).
+                    _warn(
+                        f"KICKER '{d['name']}' uses sinusoidal kick options not translated; using static kick values."
+                    )
+                append_thin_with_length(
                     elements.Kicker(
                         name=d["name"],
                         xkick=d.get("hkick", 0.0),
                         ykick=d.get("vkick", 0.0),
-                    )
+                        rotation=tilt_degree,
+                    ),
+                    ds,
+                    d["name"],
                 )
             elif d["type"] == "hkicker":
-                impactx_beamline.append(
+                ds = d.get("l", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                if abs(d.get("sinkick", 0.0)) > 0:
+                    # TODO(audit): Map sinusoidally driven kicker modes (SINKICK/SINPEAK/SINTUNE/SINPHASE).
+                    _warn(
+                        f"HKICKER '{d['name']}' uses sinusoidal kick options not translated; using static kick values."
+                    )
+                append_thin_with_length(
                     elements.Kicker(
                         name=d["name"],
-                        xkick=d.get("hkick", 0.0),
+                        xkick=d.get("kick", d.get("hkick", 0.0)),
                         ykick=0.0,
-                    )
+                        rotation=tilt_degree,
+                    ),
+                    ds,
+                    d["name"],
                 )
             elif d["type"] == "vkicker":
-                impactx_beamline.append(
+                ds = d.get("l", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                if abs(d.get("sinkick", 0.0)) > 0:
+                    # TODO(audit): Map sinusoidally driven kicker modes (SINKICK/SINPEAK/SINTUNE/SINPHASE).
+                    _warn(
+                        f"VKICKER '{d['name']}' uses sinusoidal kick options not translated; using static kick values."
+                    )
+                append_thin_with_length(
                     elements.Kicker(
                         name=d["name"],
                         xkick=0.0,
-                        ykick=d.get("vkick", 0.0),
-                    )
+                        ykick=d.get("kick", d.get("vkick", 0.0)),
+                        rotation=tilt_degree,
+                    ),
+                    ds,
+                    d["name"],
                 )
-            elif d["type"] == "monitor":
+            elif d["type"] in ("monitor", "hmonitor", "vmonitor"):
                 if d.get("l", 0.0) > 0:
                     impactx_beamline.append(
                         elements.Drift(
@@ -225,50 +495,70 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                         )
                     )
                 impactx_beamline.append(
-                    elements.BeamMonitor(name="monitor", backend="h5")
-                )  # TODO: use name=d["name"] ?
+                    elements.BeamMonitor(name=d["name"], backend="h5")
+                )
             elif d["type"] == "sextupole":
                 ds = d.get("l", 0.0)
                 k2 = d.get("k2", 0.0)
+                k2s = d.get("k2s", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
                 if ds > 0:
                     impactx_beamline.append(
                         elements.ExactMultipole(
                             name=d["name"],
                             ds=ds,
                             k_normal=[0.0, 0.0, k2],
-                            k_skew=[0.0, 0.0, 0.0],
+                            k_skew=[0.0, 0.0, k2s],
+                            rotation=tilt_degree,
                             nslice=nslice,
                         )
                     )
                 else:
+                    # Thin branch: prefer integrated strengths from KNL/KSL arrays.
+                    knl = d.get("knl", [])
+                    ksl = d.get("ksl", [])
+                    k2l = knl[2] if len(knl) > 2 else k2 * ds
+                    k2sl = ksl[2] if len(ksl) > 2 else k2s * ds
                     impactx_beamline.append(
                         elements.Multipole(
                             name=d["name"],
-                            multipole=2,
-                            K_normal=k2 * ds,
-                            K_skew=0.0,
+                            # MAD-X n=2 (sextupole) -> ImpactX multipole=3.
+                            multipole=3,
+                            K_normal=k2l,
+                            K_skew=k2sl,
+                            rotation=tilt_degree,
                         )
                     )
             elif d["type"] == "octupole":
                 ds = d.get("l", 0.0)
                 k3 = d.get("k3", 0.0)
+                k3s = d.get("k3s", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
                 if ds > 0:
                     impactx_beamline.append(
                         elements.ExactMultipole(
                             name=d["name"],
                             ds=ds,
                             k_normal=[0.0, 0.0, 0.0, k3],
-                            k_skew=[0.0, 0.0, 0.0, 0.0],
+                            k_skew=[0.0, 0.0, 0.0, k3s],
+                            rotation=tilt_degree,
                             nslice=nslice,
                         )
                     )
                 else:
+                    # Thin branch: prefer integrated strengths from KNL/KSL arrays.
+                    knl = d.get("knl", [])
+                    ksl = d.get("ksl", [])
+                    k3l = knl[3] if len(knl) > 3 else k3 * ds
+                    k3sl = ksl[3] if len(ksl) > 3 else k3s * ds
                     impactx_beamline.append(
                         elements.Multipole(
                             name=d["name"],
-                            multipole=3,
-                            K_normal=k3 * ds,
-                            K_skew=0.0,
+                            # MAD-X n=3 (octupole) -> ImpactX multipole=4.
+                            multipole=4,
+                            K_normal=k3l,
+                            K_skew=k3sl,
+                            rotation=tilt_degree,
                         )
                     )
             elif d["type"] == "multipole":
@@ -276,21 +566,69 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                 # KNL = integrated normal strengths, KSL = integrated skew strengths
                 knl = d.get("knl", [])
                 ksl = d.get("ksl", [])
+                ds = d.get("l", 0.0)
+                lrad = d.get("lrad", 0.0)
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
                 max_order = max(len(knl), len(ksl)) - 1
 
-                for order in range(max_order + 1):
-                    kn = knl[order] if order < len(knl) else 0.0
-                    ks = ksl[order] if order < len(ksl) else 0.0
-                    if kn != 0.0 or ks != 0.0:
+                if ds > 0.0:
+                    # TODO(audit): MAD-X MULTIPOLE is conceptually thin. Finite length is often
+                    # used for weak-focusing/radiation modeling (e.g., via LRAD). We preserve
+                    # length with drift-kick-drift and warn.
+                    _warn(
+                        f"MULTIPOLE '{d['name']}' has finite L={ds}; using drift-kick-drift approximation."
+                    )
+
+                if lrad > 0.0:
+                    # TODO(audit): LRAD/thin_foc behavior has no direct translation path here.
+                    if thin_foc:
+                        _warn(
+                            f"MULTIPOLE '{d['name']}' uses LRAD={lrad} with OPTION,THIN_FOC=true; weak-focusing/radiation modeling is not translated."
+                        )
+                    else:
+                        _warn(
+                            f"MULTIPOLE '{d['name']}' uses LRAD={lrad}; LRAD-related modeling is not translated."
+                        )
+
+                if max_order >= 0:
+                    if ds > 0.0:
                         impactx_beamline.append(
-                            elements.Multipole(
-                                name=d["name"],
-                                multipole=order,
-                                K_normal=kn,
-                                K_skew=ks,
+                            elements.Drift(
+                                name=d["name"] + "_drift_in",
+                                ds=0.5 * ds,
+                                nslice=nslice,
+                            )
+                        )
+                    for order in range(max_order + 1):
+                        kn = knl[order] if order < len(knl) else 0.0
+                        ks = ksl[order] if order < len(ksl) else 0.0
+                        if kn != 0.0 or ks != 0.0:
+                            impactx_beamline.append(
+                                elements.Multipole(
+                                    name=d["name"],
+                                    # MAD-X MULTIPOLE arrays are 0-based in order:
+                                    # index 0=dipole, 1=quadrupole, ... ; ImpactX uses
+                                    # 1=dipole, 2=quadrupole, ... hence (order + 1).
+                                    multipole=order + 1,
+                                    K_normal=kn,
+                                    K_skew=ks,
+                                    rotation=tilt_degree,
+                                )
+                            )
+                    if ds > 0.0:
+                        impactx_beamline.append(
+                            elements.Drift(
+                                name=d["name"] + "_drift_out",
+                                ds=0.5 * ds,
+                                nslice=nslice,
                             )
                         )
             elif d["type"] == "nllens":
+                if abs(d.get("cnll", 0.0)) == 0.0:
+                    # TODO(audit): CNLL=0 is singular in MAD-X NLLENS model.
+                    _warn(
+                        f"NLLENS '{d['name']}' has CNLL=0; model may be singular/undefined."
+                    )
                 impactx_beamline.append(
                     elements.NonlinearLens(
                         name=d["name"],
@@ -302,12 +640,39 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                 # MAD-X: volt [MV], lag [2pi], harmon [1]
                 # ImpactX ShortRF: V [MV], freq [Hz], phase [deg]
                 # ImpactX RFCavity: escale [MV/m], freq [Hz], phase [deg]
+                # TODO(audit): Verify sign/unit conventions for LAG->phase conversion
+                # and dependency on BEAM FREQ0 in MAD-X implementation.
                 volt = d.get("volt", 0.0)  # MV
                 lag = d.get("lag", 0.0)  # fraction of 2pi
                 harmon = d.get("harmon", 1.0)
                 phase = lag * 360.0  # convert to degrees
-                freq = harmon * freq0 * 1.0e6  # MHz -> Hz
+                tilt_degree = d.get("tilt", 0.0) * 180.0 / math.pi
+                if "freq" in d and d.get("freq", 0.0) > 0.0:
+                    # MAD-X RFCAVITY frequency is specified in MHz.
+                    freq = d.get("freq", 0.0) * 1.0e6
+                else:
+                    freq = harmon * freq0 * 1.0e6  # MHz -> Hz
+                    if freq0 == 0.0:
+                        # Corner case: neither FREQ nor BEAM FREQ0 are usable.
+                        # We keep translation deterministic (freq=0) and warn.
+                        _warn(
+                            f"RFCAVITY '{d['name']}' has no explicit FREQ and BEAM FREQ0=0; resulting RF frequency is 0."
+                        )
                 ds = d.get("l", 0.0)
+
+                for attr in (
+                    "betrf",
+                    "pg",
+                    "shunt",
+                    "tfill",
+                    "n_bessel",
+                    "no_cavity_totalpath",
+                ):
+                    if attr in d and abs(d.get(attr, 0.0)) > 0:
+                        # TODO(audit): Extend translation for advanced MAD-X/PTC cavity attributes.
+                        _warn(
+                            f"RFCAVITY '{d['name']}' attribute '{attr}' is not translated; using simplified model."
+                        )
 
                 if ds > 0:
                     # Thick cavity: use RFCavity with pillbox field profile
@@ -321,6 +686,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                             phase=phase,
                             cos_coefficients=[1.0],
                             sin_coefficients=[0.0],
+                            rotation=tilt_degree,
                             nslice=nslice,
                         )
                     )
@@ -332,6 +698,7 @@ def lattice(parsed_beamline, nslice=1, freq0=0.0):
                             V=volt,
                             freq=freq,
                             phase=phase,
+                            rotation=tilt_degree,
                         )
                     )
         else:
@@ -358,8 +725,13 @@ def read_lattice(madx_file, nslice=1):
     madx.parse(madx_file)
     beamline = madx.getBeamline()
     freq0 = madx.getFreq0()
+    options = {
+        # MAD-X options are numeric in parser context; bool() captures 0/1 and expressions.
+        "rbarc": bool(madx.getOption("rbarc", 1.0)),
+        "thin_foc": bool(madx.getOption("thin_foc", 1.0)),
+    }
 
-    return lattice(beamline, nslice, freq0=freq0)
+    return lattice(beamline, nslice, freq0=freq0, options=options)
 
 
 def beam(particle, charge=None, mass=None, energy=None):
@@ -402,10 +774,7 @@ def beam(particle, charge=None, mass=None, energy=None):
     }
 
     if particle not in impactx_beam.keys():
-        warnings.warn(
-            f"Particle species name '{particle}' not in '{impactx_beam.keys()}'",
-            UserWarning,
-        )
+        _warn(f"Particle species name '{particle}' not in '{impactx_beam.keys()}'")
         print(
             "Choosing generic particle species, using provided `charge`, `mass` and `energy`."
         )

@@ -771,6 +771,12 @@ class EvaluationContext:
         self.variables: dict[str, Variable] = {}
         self.elements: dict[str, Element] = {}
         self.lines: dict[str, Line] = {}
+        # MAD-X global OPTION state (subset with defaults from user guide).
+        # Stored as numeric values for compatibility with MAD-X true/false handling.
+        self.options: dict[str, Any] = {
+            "rbarc": 1.0,
+            "thin_foc": 1.0,
+        }
         self.macros: dict[
             str, tuple[list[str], str]
         ] = {}  # name -> (params, body_text)
@@ -890,6 +896,14 @@ class EvaluationContext:
             f"Element '{element_name}' has no attribute '{attr_name}', using 0.0"
         )
         return 0.0
+
+    def set_option(self, name: str, value: Any):
+        """Set a MAD-X OPTION value."""
+        self.options[name.lower()] = value
+
+    def get_option(self, name: str, default: Any = 0.0) -> Any:
+        """Get a MAD-X OPTION value."""
+        return self.options.get(name.lower(), default)
 
     def evaluate(self, expr: Expression) -> Any:
         """Evaluate an expression."""
@@ -1122,6 +1136,10 @@ class MADXParser:
             self._parse_use_command()
             return
 
+        if name == "option":
+            self._parse_option_command()
+            return
+
         if name == "const":
             self._parse_const_declaration()
             return
@@ -1181,7 +1199,6 @@ class MADXParser:
 
         if name in (
             "title",
-            "option",
             "select",
             "twiss",
             "print",
@@ -2072,6 +2089,45 @@ class MADXParser:
 
         self._expect(TokenType.SEMICOLON)
 
+    def _parse_option_command(self):
+        """Parse the OPTION command and persist option values.
+
+        Supports forms such as:
+            OPTION, RBARC=true, THIN_FOC=false;
+            OPTION, ECHO;
+            OPTION, -WARN;
+        """
+        self._advance()  # skip 'option'
+
+        while self._current().type == TokenType.COMMA:
+            self._advance()
+
+            negate = False
+            if self._current().type == TokenType.MINUS:
+                negate = True
+                self._advance()
+
+            if self._current().type != TokenType.IDENTIFIER:
+                break
+
+            opt_name = self._advance().value.lower()
+
+            if self._current().type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
+                self._advance()
+                expr = self._parse_expression()
+                value = self.context.evaluate(expr)
+            else:
+                # Bare flag means "set true" unless explicitly negated.
+                value = 0.0 if negate else 1.0
+
+            # A leading "-" explicitly disables the option.
+            if negate:
+                value = 0.0
+
+            self.context.set_option(opt_name, value)
+
+        self._expect(TokenType.SEMICOLON)
+
     def _parse_call_command(self):
         """
         Parse the CALL command.
@@ -2305,6 +2361,10 @@ class MADXParser:
     def getFreq0(self) -> float:
         """Get revolution frequency in MHz."""
         return self.context.beam.freq0
+
+    def getOption(self, name: str, default: Any = 0.0) -> Any:
+        """Get an OPTION value from the parsed MAD-X input."""
+        return self.context.get_option(name, default)
 
     def getVariable(self, name: str) -> Any:
         """Get a variable value."""

@@ -160,3 +160,52 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_rfcavity_ref_part_hook.py
       :language: python3
       :caption: You can copy this file from ``examples/rfcavity/analysis_rfcavity_ref_part_hook.py``.
+
+
+
+.. _examples-rfcavity-ref-part-opt:
+
+Proton acceleration by RF Cavities (Using RF phase optimization)
+================================================================
+   
+This test is similar to the :ref:`test above <examples-rfcavity-ref-part-hook>`, except that the test is performed for protons (at the same energy).  As a result, there is a large variation of relativistic
+beta (in the first RF cavity), and the analytical methods of the previous example cannot be used.  
+
+To treat this case, the callback hook feature :py:attr:`~impactx.ImpactX.hook` is combined with an optimization loop (using scipy.minimize_scalar) to determine, for each RF cavity, the input phase setting
+that results in maximum energy gain.  The phase is reset to this value (for each cavity).
+
+The functions used for optimization of the RF phase are contained in the file ``phase_opt.py``.
+   
+In this test, the initial and final reference values of :math:`s` and :math:`\gamma` must agree with nominal values.
+          
+
+Run
+---       
+
+This example can be run as:
+
+* **Python** script: ``python3 run_rfcavity_ref_part_opt.py``
+          
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_rfcavity_ref_part_opt.py
+          :language: python3
+          :caption: You can copy this file from ``examples/rfcavity/run_rfcavity_ref_part_opt.py``.
+      
+   
+Analyze
+-------
+          
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_rfcavity_ref_part_opt.py``
+
+   .. literalinclude:: analysis_rfcavity_ref_part_opt.py
+      :language: python3
+      :caption: You can copy this file from ``examples/rfcavity/analysis_rfcavity_ref_part_opt.py``.
+
+

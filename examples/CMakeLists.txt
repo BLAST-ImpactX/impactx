@@ -720,6 +720,19 @@ add_impactx_test(rfcavity-ref-part-hook.py
     OFF  # no plot script yet
 )
 
+# Proton acceleration by RF Cavities (using phase optimization) #####################
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part-opt.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/phase_opt.py
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part-opt.py)
+add_impactx_test(rfcavity-ref-part-opt.py
+    examples/rfcavity/run_rfcavity_ref_part_opt.py
+    OFF   # ImpactX MPI-parallel
+    examples/rfcavity/analysis_rfcavity_ref_part_opt.py
+    OFF  # no plot script yet
+)     
+
 # Ideal, Hard-Edge Solenoid ###################################################
 #
 add_impactx_test(solenoid

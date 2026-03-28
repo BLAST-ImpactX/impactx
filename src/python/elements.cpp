@@ -1154,8 +1154,8 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_multipole,
                      std::make_pair("unit", exact_multipole.m_unit),
-                     std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
-                     std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
+                     std::make_pair("k_normal", ExactMultipole::DynamicData::get(exact_multipole.m_id)->k_normal.host_const()),
+                     std::make_pair("k_skew", ExactMultipole::DynamicData::get(exact_multipole.m_id)->k_skew.host_const()),
                      std::make_pair("mapsteps", exact_multipole.m_mapsteps),
                      std::make_pair("int_order", exact_multipole.m_int_order)
                  );
@@ -1224,8 +1224,8 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_cfbend,
                      std::make_pair("unit", exact_cfbend.m_unit),
-                     std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
-                     std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
+                     std::make_pair("k_normal", ExactCFbend::DynamicData::get(exact_cfbend.m_id)->k_normal.host_const()),
+                     std::make_pair("k_skew", ExactCFbend::DynamicData::get(exact_cfbend.m_id)->k_skew.host_const()),
                      std::make_pair("mapsteps", exact_cfbend.m_mapsteps),
                      std::make_pair("int_order", exact_cfbend.m_int_order)
                  );
@@ -1736,8 +1736,8 @@ void init_elements(py::module& m)
                 using namespace amrex::literals;
                 return element_dict(
                     polygon_aperture,
-                    std::make_pair("vertices_x", PolygonApertureData::h_vertices_x[polygon_aperture.m_id]),
-                    std::make_pair("vertices_y", PolygonApertureData::h_vertices_y[polygon_aperture.m_id]),
+                    std::make_pair("vertices_x", PolygonAperture::DynamicData::get(polygon_aperture.m_id)->x.host_const()),
+                    std::make_pair("vertices_y", PolygonAperture::DynamicData::get(polygon_aperture.m_id)->y.host_const()),
                     std::make_pair("min_radius2", polygon_aperture.m_min_radius2),
                     std::make_pair("action", polygon_aperture.action_name(polygon_aperture.m_action)),
                     std::make_pair("repeat_x", polygon_aperture.m_repeat_x),
@@ -1951,8 +1951,8 @@ void init_elements(py::module& m)
                     std::make_pair("escale", rfc.m_escale),
                     std::make_pair("freq", rfc.m_freq),
                     std::make_pair("phase", rfc.m_phase),
-                    std::make_pair("cos_coefficients", RFCavityData::h_cos_coef[rfc.m_id]),
-                    std::make_pair("sin_coefficients", RFCavityData::h_sin_coef[rfc.m_id]),
+                    std::make_pair("cos_coefficients", RFCavity::DynamicData::get(rfc.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", RFCavity::DynamicData::get(rfc.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", rfc.m_mapsteps)
                 );
             }
@@ -2513,8 +2513,8 @@ void init_elements(py::module& m)
                 return element_dict(
                     soft_quad,
                     std::make_pair("gscale", soft_quad.m_gscale),
-                    std::make_pair("cos_coefficients", SoftQuadrupoleData::h_cos_coef[soft_quad.m_id]),
-                    std::make_pair("sin_coefficients", SoftQuadrupoleData::h_sin_coef[soft_quad.m_id]),
+                    std::make_pair("cos_coefficients", SoftQuadrupole::DynamicData::get(soft_quad.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", SoftQuadrupole::DynamicData::get(soft_quad.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", soft_quad.m_mapsteps)
                 );
             }

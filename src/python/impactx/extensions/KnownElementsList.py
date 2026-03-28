@@ -8,8 +8,136 @@ License: BSD-3-Clause-LBNL
 
 import os
 import re
+import weakref
 
 from impactx import elements
+
+# All live FilteredElementsList views for a lattice (WeakKeyDictionary: key is KnownElementsList).
+_filtered_views_by_lattice: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+
+FILTERED_ELEMENTS_LIST_INVALID_MSG = (
+    "This lattice selection is no longer valid because the lattice was modified; "
+    "call select() again on the lattice."
+)
+
+# Drift implementation used by ``replace_with_drifts`` for ``model=`` (except ``"match"``).
+# ``model="match"`` picks the same key from the replaced element's class name (see
+# ``_model_key_from_element_typename``).
+_DRIFT_MODEL_CLASSES: dict[str, type] = {
+    "linear": elements.Drift,
+    "paraxial": elements.ChrDrift,
+    "exact": elements.ExactDrift,
+}
+
+
+def _model_key_from_element_typename(type_name: str) -> str:
+    """Return the drift-model key for an element class name (linear / paraxial / exact)."""
+    if type_name.startswith("Exact"):
+        return "exact"
+    if type_name.startswith("Chr"):
+        return "paraxial"
+    return "linear"
+
+
+def _drift_class_for_replace_with_drifts(model: str, old_el) -> type:
+    """Map ``model`` and ``old_el`` to the Drift / ChrDrift / ExactDrift class to insert.
+
+    For ``model=="match"``, the class follows ``_model_key_from_element_typename``; otherwise
+    ``model`` must already be validated against ``_DRIFT_MODEL_CLASSES``."""
+    if model == "match":
+        key = _model_key_from_element_typename(type(old_el).__name__)
+    else:
+        key = model
+    return _DRIFT_MODEL_CLASSES[key]
+
+
+def _commit_lattice_rebuild(original, new_elements) -> None:
+    """Replace lattice contents with ``new_elements`` and invalidate all FilteredElementsList views."""
+    original.clear()
+    original.extend(new_elements)
+    _invalidate_all_registered_views(original)
+
+
+def _registry_for(lattice):
+    """Return the WeakSet of FilteredElementsList instances for this lattice."""
+    rs = _filtered_views_by_lattice.get(lattice)
+    if rs is None:
+        rs = weakref.WeakSet()
+        _filtered_views_by_lattice[lattice] = rs
+    return rs
+
+
+def _invalidate_all_registered_views(lattice) -> None:
+    """Mark every registered FilteredElementsList for this lattice as invalid."""
+    rs = _filtered_views_by_lattice.get(lattice)
+    if rs is None:
+        return
+    for fel in list(rs):
+        fel._invalidated = True
+
+
+def _clone_element(template):
+    """Deep-clone a lattice element via ``to_dict`` (pybind elements are not copy.copy-able)."""
+    d = template.to_dict()
+    type_name = d.pop("type")
+    cls = getattr(elements, type_name)
+    return cls(**d)
+
+
+def _make_drift_from_old(
+    cls,
+    old_el,
+    *,
+    keep_name,
+    keep_ds,
+    keep_alignment,
+    keep_aperture,
+):
+    """Build a drift (``cls`` is Drift / ChrDrift / ExactDrift) from thick-element fields on ``old_el``.
+
+    When ``keep_ds`` is False, ``ds`` is set to 0. When ``keep_name`` is False, ``name`` is None.
+    If ``keep_ds`` is True but ``old_el`` has no ``ds`` attribute (thin element), ``ds`` defaults to 0.
+    When ``keep_alignment`` is True, copy dx/dy/rotation from the old element.
+    When ``keep_aperture`` is True, copy aperture_x/aperture_y from the old element.
+    """
+    nslice = getattr(old_el, "nslice", 1)
+
+    if keep_ds and hasattr(old_el, "ds"):
+        ds = old_el.ds
+    else:
+        ds = 0.0
+
+    name = None
+    if keep_name:
+        if hasattr(old_el, "has_name") and old_el.has_name:
+            name = old_el.name
+
+    if keep_alignment:
+        dx = getattr(old_el, "dx", 0.0)
+        dy = getattr(old_el, "dy", 0.0)
+        rotation = getattr(old_el, "rotation", 0.0)
+    else:
+        dx = 0.0
+        dy = 0.0
+        rotation = 0.0
+
+    if keep_aperture:
+        aperture_x = getattr(old_el, "aperture_x", 0.0)
+        aperture_y = getattr(old_el, "aperture_y", 0.0)
+    else:
+        aperture_x = 0.0
+        aperture_y = 0.0
+
+    return cls(
+        ds=ds,
+        dx=dx,
+        dy=dy,
+        rotation=rotation,
+        aperture_x=aperture_x,
+        aperture_y=aperture_y,
+        nslice=nslice,
+        name=name,
+    )
 
 
 def load_file(self, filename, nslice=1):
@@ -93,29 +221,43 @@ def from_pals(self, pals_beamline, nslice=1):
 
 
 class FilteredElementsList:
-    """A selection result class for ElementsList that maintains references to original elements.
+    """Result of ``KnownElementsList.select(...)`` or chained ``.select()`` calls: a filtered
+    view of the same underlying lattice.
 
-    References to the original elements in a lattice are needed to allow modification of the original elements.
+    Indexing (``self[i]``) returns elements from the original ``KnownElementsList``; changing
+    fields on those elements modifies the lattice in place. You can narrow the filter again with
+    ``.select(...)`` (AND logic between chained calls). After ``delete``, ``replace_each``, or
+    ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
+    not be used.
     """
 
     def __init__(self, original_list, indices):
         self._original_list = original_list
-        self._indices = indices
+        self._indices = list(indices) if not isinstance(indices, list) else indices
+        self._invalidated = False
+        _registry_for(original_list).add(self)
+
+    def _require_valid(self) -> None:
+        """Raise if this view was invalidated after a lattice mutation."""
+        if self._invalidated:
+            raise RuntimeError(FILTERED_ELEMENTS_LIST_INVALID_MSG)
 
     def __getitem__(self, key):
+        self._require_valid()
         if isinstance(key, int):
             return self._original_list[self._indices[key]]
         elif isinstance(key, slice):
-            # Return a new FilteredElementsList with sliced indices
             sliced_indices = self._indices[key]
             return FilteredElementsList(self._original_list, sliced_indices)
         else:
             raise TypeError(f"Invalid key type: {type(key)}")
 
     def __len__(self):
+        self._require_valid()
         return len(self._indices)
 
     def __iter__(self):
+        self._require_valid()
         for i in self._indices:
             yield self._original_list[i]
 
@@ -170,6 +312,7 @@ class FilteredElementsList:
                 name=r"quad\d+"
             )  # Filter quads by regex pattern
         """
+        self._require_valid()
         # Apply filtering directly to the indices we already have
         if kind is not None or name is not None:
             # Validate parameters
@@ -187,12 +330,107 @@ class FilteredElementsList:
         # If no filtering criteria provided, return all current elements
         return FilteredElementsList(self._original_list, self._indices)
 
+    def delete(self) -> None:
+        """Remove selected elements from the underlying lattice. Invalidates this and all other
+        live selections on the same lattice. Returns None."""
+        self._require_valid()
+        original = self._original_list
+        to_remove = set(self._indices)
+        if not to_remove:
+            _invalidate_all_registered_views(original)
+            return None
+        n = len(original)
+        # Clone kept elements before clear(); clear() destroys C++ objects in the list.
+        new_elems = [
+            _clone_element(original[i]) for i in range(n) if i not in to_remove
+        ]
+        _commit_lattice_rebuild(original, new_elems)
+        return None
+
+    def replace_each(self, element, *, keep_name=True, keep_ds=False):
+        """Replace each selected element with a copy of ``element``, optionally keeping name and
+        ``ds`` from the replaced element (``keep_ds`` defaults to False). Invalidates prior views;
+        returns a new selection over the same indices."""
+        self._require_valid()
+        original = self._original_list
+        indices = self._indices
+        if not indices:
+            _invalidate_all_registered_views(original)
+            return FilteredElementsList(original, [])
+
+        n = len(original)
+        idx_set = set(indices)
+        new_row = [None] * n
+        for i in range(n):
+            if i not in idx_set:
+                new_row[i] = _clone_element(original[i])
+                continue
+            old_el = original[i]
+            new_el = _clone_element(element)
+            if keep_name:
+                if hasattr(old_el, "has_name") and old_el.has_name:
+                    new_el.name = old_el.name
+            if keep_ds and hasattr(old_el, "ds"):
+                new_el.ds = old_el.ds
+            new_row[i] = new_el
+
+        _commit_lattice_rebuild(original, new_row)
+        return FilteredElementsList(original, list(indices))
+
+    def replace_with_drifts(
+        self, *, model="match", keep_alignment=True, keep_aperture=False
+    ):
+        """Replace each selected element with a drift of the matching physics family.
+
+        When ``model="match"``: ``Exact*`` elements become ``ExactDrift``, ``Chr*`` elements
+        become ``ChrDrift``, and all other (linear) elements become ``Drift``. When
+        ``model`` is ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses
+        that drift model. Names and segment length ``ds`` are always taken from the replaced
+        element.
+
+        By default, alignment errors (dx, dy, rotation) are preserved and apertures are
+        cleared. Use ``keep_alignment=False`` to zero alignment errors, or
+        ``keep_aperture=True`` to preserve aperture_x/aperture_y."""
+        self._require_valid()
+        original = self._original_list
+        indices = self._indices
+        if not indices:
+            _invalidate_all_registered_views(original)
+            return FilteredElementsList(original, [])
+
+        if model != "match" and model not in _DRIFT_MODEL_CLASSES:
+            raise ValueError(
+                f"model must be 'match' or one of {sorted(_DRIFT_MODEL_CLASSES)}, got {model!r}"
+            )
+
+        n = len(original)
+        idx_set = set(indices)
+        new_row = [None] * n
+        for i in range(n):
+            if i not in idx_set:
+                new_row[i] = _clone_element(original[i])
+                continue
+            old_el = original[i]
+            cls = _drift_class_for_replace_with_drifts(model, old_el)
+            new_row[i] = _make_drift_from_old(
+                cls,
+                old_el,
+                keep_name=True,
+                keep_ds=True,
+                keep_alignment=keep_alignment,
+                keep_aperture=keep_aperture,
+            )
+
+        _commit_lattice_rebuild(original, new_row)
+        return FilteredElementsList(original, list(indices))
+
     def get_kinds(self) -> list[type]:
         """Get all unique element kinds in the filtered list.
 
         Returns:
             list[type]: List of unique element types (sorted by name).
         """
+        self._require_valid()
         return get_kinds(self)
 
     def count_by_kind(self, kind_pattern) -> int:
@@ -207,6 +445,7 @@ class FilteredElementsList:
         Returns:
             int: Number of elements of the specified kind.
         """
+        self._require_valid()
         return count_by_kind(self, kind_pattern)
 
     def has_kind(self, kind_pattern) -> bool:
@@ -221,12 +460,15 @@ class FilteredElementsList:
         Returns:
             bool: True if at least one element of the specified kind exists.
         """
+        self._require_valid()
         return has_kind(self, kind_pattern)
 
     def __repr__(self):
+        self._require_valid()
         return f"FilteredElementsList({len(self)} elements)"
 
     def __str__(self):
+        self._require_valid()
         return f"FilteredElementsList({len(self)} elements)"
 
 

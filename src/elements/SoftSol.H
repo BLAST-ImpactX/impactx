@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -13,11 +13,14 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
-#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
+#include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
+#include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
+#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
@@ -29,6 +32,7 @@
 #include <AMReX_SmallMatrix.H>
 
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
@@ -96,28 +100,16 @@ namespace impactx::elements
             };
     };
 
-/** Dynamic data for the SoftSolenoid elements
- *
- * Since we copy the element to the device, we cannot store this data on the element itself.
- * But we can store pointers to this data with the element and keep a lookup table here,
- * which we clean up in the end.
- */
-namespace SoftSolenoidData
-{
-    //! last used id for a created soft solenoid
-    inline int next_id = 0;
-
-    //! host: cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, std::vector<amrex::ParticleReal>> h_cos_coef = {};
-    //! host: sine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, std::vector<amrex::ParticleReal>> h_sin_coef = {};
-
-    //! device: cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_cos_coef = {};
-    //! device: sine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_sin_coef = {};
-
-} // namespace SoftSolenoidData
+    /** Fourier coefficients for on-axis solenoid field Bz(z).
+     *
+     * Host data persists across simulations; device data is uploaded
+     * on-demand "lazily" on first use and released when AMReX shuts down.
+     */
+    struct SolenoidFourierCoefficients
+    {
+        mixin::TrackedVector<amrex::ParticleReal> cos;
+        mixin::TrackedVector<amrex::ParticleReal> sin;
+    };
 
     struct SoftSolenoid
     : public mixin::Named,
@@ -125,11 +117,14 @@ namespace SoftSolenoidData
       public mixin::LinearTransport<SoftSolenoid>,
       public mixin::Thick,
       public mixin::Alignment,
+      public mixin::NoFinalize,
       public mixin::PipeAperture,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        using DynamicData = mixin::GPUDataRegistry<SolenoidFourierCoefficients>;
 
         /** A soft-edge solenoid
          *
@@ -171,36 +166,20 @@ namespace SoftSolenoidData
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
             PipeAperture(aperture_x, aperture_y),
-            m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps), m_id(SoftSolenoidData::next_id)
-       {
-           // next created soft solenoid has another id for its data
-           SoftSolenoidData::next_id++;
+            m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps),
+            m_id(DynamicData::allocate_id())
+        {
+            m_ncoef = int(cos_coef.size());
+            if (m_ncoef != int(sin_coef.size()))
+                throw std::runtime_error("SoftSolenoid: cos and sin coefficients must have same length!");
 
-           // validate sin and cos coefficients are the same length
-           m_ncoef = int(cos_coef.size());
-           if (m_ncoef != int(sin_coef.size()))
-               throw std::runtime_error("SoftSolenoid: cos and sin coefficients must have same length!");
-
-           // host data
-           SoftSolenoidData::h_cos_coef[m_id] = cos_coef;
-           SoftSolenoidData::h_sin_coef[m_id] = sin_coef;
-           m_cos_h_data = SoftSolenoidData::h_cos_coef[m_id].data();
-           m_sin_h_data = SoftSolenoidData::h_sin_coef[m_id].data();
-
-           // device data
-           SoftSolenoidData::d_cos_coef.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
-           SoftSolenoidData::d_sin_coef.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
-           amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                 cos_coef.begin(), cos_coef.end(),
-                                 SoftSolenoidData::d_cos_coef[m_id].begin());
-           amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                 sin_coef.begin(), sin_coef.end(),
-                                 SoftSolenoidData::d_sin_coef[m_id].begin());
-           amrex::Gpu::streamSynchronize();
-
-           // low-level objects we can use on device
-           m_cos_d_data = SoftSolenoidData::d_cos_coef[m_id].data();
-           m_sin_d_data = SoftSolenoidData::d_sin_coef[m_id].data();
+            auto& coef = DynamicData::emplace(
+                m_id,
+                std::move(cos_coef),
+                std::move(sin_coef)
+            );
+            m_cos_h_data = coef.cos.host_const().data();
+            m_sin_h_data = coef.sin.host_const().data();
         }
 
         /** Push all particles */
@@ -218,6 +197,11 @@ namespace SoftSolenoidData
             using namespace amrex::literals; // for _rt and _prt
 
             Alignment::compute_constants(refpart);
+
+            // Ensure dynamic coefficient data is on GPU and we have fresh pointers to it
+            auto const & coef = *DynamicData::get(m_id);
+            m_cos_d_data = coef.cos.device_const().data();
+            m_sin_d_data = coef.sin.device_const().data();
         }
 
         /** This is a soft-edge solenoid functor, so that a variable of this type can be used
@@ -378,11 +362,11 @@ namespace SoftSolenoidData
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
 #if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* cos_data = m_cos_d_data;
-            amrex::ParticleReal* sin_data = m_sin_d_data;
+            amrex::ParticleReal const * cos_data = m_cos_d_data;
+            amrex::ParticleReal const * sin_data = m_sin_d_data;
 #else
-            amrex::ParticleReal* cos_data = m_cos_h_data;
-            amrex::ParticleReal* sin_data = m_sin_h_data;
+            amrex::ParticleReal const * cos_data = m_cos_h_data;
+            amrex::ParticleReal const * sin_data = m_sin_h_data;
 #endif
 
             // specify constants
@@ -573,37 +557,21 @@ namespace SoftSolenoidData
 
         }
 
-        /** Close and deallocate all data and handles.
-         */
-        void
-        finalize ()
-        {
-            // remove from unique data map
-            if (SoftSolenoidData::h_cos_coef.count(m_id) != 0u)
-                SoftSolenoidData::h_cos_coef.erase(m_id);
-            if (SoftSolenoidData::h_sin_coef.count(m_id) != 0u)
-                SoftSolenoidData::h_sin_coef.erase(m_id);
-
-            if (SoftSolenoidData::d_cos_coef.count(m_id) != 0u)
-                SoftSolenoidData::d_cos_coef.erase(m_id);
-            if (SoftSolenoidData::d_sin_coef.count(m_id) != 0u)
-                SoftSolenoidData::d_sin_coef.erase(m_id);
-        }
-
         amrex::ParticleReal m_bscale; //! scaling factor for solenoid Bz field
         int m_unit; //! unit specification for quad strength
         int m_mapsteps; //! number of map integration steps per slice
         int m_id; //! unique soft solenoid id used for data lookup map
 
         int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal* m_cos_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal* m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal* m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal* m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
+        amrex::ParticleReal const * m_cos_h_data = nullptr; //! non-owning pointer to host cosine coefficients
+        amrex::ParticleReal const * m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
+        amrex::ParticleReal const * m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
+        amrex::ParticleReal const * m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
     };
 
 } // namespace impactx
 
+IMPACTX_GPUDATA_EXTERN(impactx::elements::SoftSolenoid)
 IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SoftSolenoid)
 
 #endif // IMPACTX_SOFTSOL_H

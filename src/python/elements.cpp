@@ -2241,8 +2241,8 @@ void init_elements(py::module& m)
                     soft_sol,
                     std::make_pair("bscale", soft_sol.m_bscale),
                     std::make_pair("unit", soft_sol.m_unit),
-                    std::make_pair("cos_coefficients", SoftSolenoidData::h_cos_coef[soft_sol.m_id]),
-                    std::make_pair("sin_coefficients", SoftSolenoidData::h_sin_coef[soft_sol.m_id]),
+                    std::make_pair("cos_coefficients", SoftSolenoid::DynamicData::get(soft_sol.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", SoftSolenoid::DynamicData::get(soft_sol.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", soft_sol.m_mapsteps)
                 );
             }
@@ -2282,8 +2282,36 @@ void init_elements(py::module& m)
             [](SoftSolenoid & soft_sol, amrex::ParticleReal bscale) { soft_sol.m_bscale = bscale; },
             "Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0) or magnetic field Bz in T (SI units, if unit = 1)"
         )
-        // TODO cos_coefficients
-        // TODO sin_coefficients
+        /* TODO Before we can expose this we need to ensure that sim.lattice takes a list of shared pointers
+         *    and not copies of elements. Otherwise, users can invalidate their cached host pointers with
+         *      sol = SoftSolenoid(...)
+         *      sim.lattice.append(sol)  # copy in lattice has same m_id
+         *      sol.cos_coef = new_values  # updates data of m_id and sol.m_cos_h_data, but NOT the lattice copy
+        .def_property("cos_coefficients",
+            [](SoftSolenoid & soft_sol) {
+                return SoftSolenoid::DynamicData::get(soft_sol.m_id)->h_cos;
+            },
+            [](SoftSolenoid & soft_sol, std::vector<amrex::ParticleReal> v) {
+                auto & coef = *SoftSolenoid::DynamicData::get(soft_sol.m_id);
+                coef.h_cos = std::move(v);
+                coef.mark_dirty();
+                soft_sol.m_cos_h_data = coef.h_cos.data();
+            },
+            "cosine coefficients in Fourier expansion of on-axis magnetic field Bz"
+        )
+        .def_property("sin_coefficients",
+            [](SoftSolenoid & soft_sol) {
+                return SoftSolenoid::DynamicData::get(soft_sol.m_id)->h_sin;
+            },
+            [](SoftSolenoid & soft_sol, std::vector<amrex::ParticleReal> v) {
+                auto & coef = *SoftSolenoid::DynamicData::get(soft_sol.m_id);
+                coef.h_sin = std::move(v);
+                coef.mark_dirty();
+                soft_sol.m_sin_h_data = coef.h_sin.data();
+            },
+            "sine coefficients in Fourier expansion of on-axis magnetic field Bz"
+        )
+        */
         .def_property("unit",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_unit; },
             [](SoftSolenoid & soft_sol, amrex::ParticleReal unit) { soft_sol.m_unit = unit; },

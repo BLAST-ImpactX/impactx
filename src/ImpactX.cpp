@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "elements/mixin/dynamicdata.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"

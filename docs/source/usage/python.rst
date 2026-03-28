@@ -754,6 +754,7 @@ This module provides elements and methods for the accelerator lattice.
 
       :param kind: Element type(s) to filter by. Can be a string (e.g., ``"Drift"``), regex pattern (e.g., ``r".*Quad"``), element type (e.g., ``elements.Drift``), or list/tuple of these.
       :param name: Element name(s) to filter by. Can be a string, regex pattern, or ``list``/``tuple`` of these.
+      :rtype: :py:class:`impactx.elements.FilteredElementsList`
 
       **Examples:**
 
@@ -774,6 +775,12 @@ This module provides elements and methods for the accelerator lattice.
 
          # Modify original elements through references
          drift_elements[0].ds = 2.0  # modifies original lattice
+
+         # delete all drifts
+         lattice.select(kind=r".*Drift").delete()
+
+         # replace all Quads with drift equivalents
+         lattice.select(kind=r".*Quad").replace_with_drifts()
 
    .. py:method:: get_kinds()
 
@@ -828,6 +835,92 @@ This module provides elements and methods for the accelerator lattice.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.
       :param legend_ncols: Number of columns for lattice element types in the legend.
+
+.. py:class:: impactx.elements.FilteredElementsList
+
+   View returned by :py:meth:`~impactx.elements.KnownElementsList.select` on a
+   :py:class:`~impactx.elements.KnownElementsList` or by chained ``.select()`` on a filtered view.
+   Indexing returns the same element objects as the full lattice; assigning to fields updates the
+   underlying list.
+
+   All mutating operations (``delete``, ``replace_each``, ``replace_with_drifts``) rebuild the
+   lattice using cloned elements. Existing Python references to lattice elements will then point
+   to objects that are **no longer in the lattice**. If you cache element references, re-fetch
+   them from the lattice after any mutation.
+
+   If the selection is empty, ``delete`` is a no-op and ``replace_*`` return
+   an empty ``FilteredElementsList``.
+
+   .. py:method:: select(kind=None, name=None)
+
+      Narrow this view with an additional AND filter. OR logic within a single call matches
+      :py:meth:`~impactx.elements.KnownElementsList.select`.
+
+      :param kind: Same meaning as for :py:meth:`~impactx.elements.KnownElementsList.select`.
+      :param name: Same meaning as for :py:meth:`~impactx.elements.KnownElementsList.select`.
+      :rtype: :py:class:`impactx.elements.FilteredElementsList`
+
+   .. py:method:: delete()
+
+      Remove all elements in the current selection from the underlying lattice. Invalidates this
+      view **and** all other live selections on that lattice.
+      Call :py:meth:`~impactx.elements.KnownElementsList.select` on the underlying lattice again to obtain a new view.
+
+      :rtype: None
+
+   .. py:method:: replace_each(element, *, keep_name=True, keep_ds=False)
+
+      Replace each selected element with a copy of ``element``. Invalidates all **other** live
+      selections on the same lattice; returns a **new** filtered view over the same indices (the
+      returned view is valid).
+
+      :param element: Element to clone at each selected index (names and ``ds`` may be overridden;
+         see below).
+      :param keep_name: If true (default), copy ``name`` from each replaced element when present.
+      :param keep_ds: If true, copy segment length ``ds`` from each replaced element; otherwise
+         ``ds`` comes from the template (default false).
+      :rtype: :py:class:`impactx.elements.FilteredElementsList`
+
+      **Examples:**
+
+      .. code-block:: python
+
+         # Replace quadrupoles; names kept, ds and k from template
+         sim.lattice.select(kind="Quad").replace_each(
+             elements.Quad(name="tpl", ds=0.1, k=1.5)
+         )
+
+         # Same but keep ds from the replaced elements (only k from template)
+         sim.lattice.select(kind="Quad").replace_each(
+             elements.Quad(name="tpl", ds=0.1, k=1.5), keep_ds=True
+         )
+
+   .. py:method:: replace_with_drifts(*, model="match", keep_alignment=True, keep_aperture=False)
+
+      Replace each selected element with a drift of the chosen physics family. Names and ``ds``
+      are always taken from the replaced element. Invalidates all **other** live selections on the
+      same lattice; returns a **new** filtered view over the same indices (the returned view is
+      valid).
+
+      :param model: With ``"match"`` (default), linear elements become ``Drift``, class names
+         starting with ``Chr`` become ``ChrDrift``, and class names starting with ``Exact`` become
+         ``ExactDrift``. With ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot
+         uses that drift type.
+      :param keep_alignment: If true (default), copy ``dx``, ``dy``, and ``rotation`` from each
+         replaced element; otherwise zero them.
+      :param keep_aperture: If true, copy ``aperture_x`` and ``aperture_y`` from each replaced
+         element; otherwise zero them (default false).
+      :rtype: :py:class:`impactx.elements.FilteredElementsList`
+
+      **Examples:**
+
+      .. code-block:: python
+
+         # All Quads become drifts of the matching model
+         sim.lattice.select(kind=r".*Quad").replace_with_drifts()
+
+         # Clear alignment errors and apertures
+         sim.lattice.select(kind=r".*Quad").replace_with_drifts(keep_alignment=False)
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 

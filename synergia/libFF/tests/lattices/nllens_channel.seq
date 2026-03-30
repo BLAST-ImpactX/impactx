@@ -1,0 +1,8 @@
+arg_knll = 5.479576037e-06;
+arg_cnll = 0.008105461952;
+         
+nll: nllens, knll=arg_knll, cnll=arg_cnll;
+
+channel: sequence, l=1.0e-6, refer=entry;
+nll, at = 0.5e-6;
+endsequence;

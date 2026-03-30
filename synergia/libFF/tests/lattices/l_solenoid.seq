@@ -1,0 +1,5 @@
+q: solenoid, l=1.0, ks=0.001;
+
+machine: sequence, refer=entry,l=1.0;
+q, at=0.0;
+endsequence;

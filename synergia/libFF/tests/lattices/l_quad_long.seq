@@ -1,0 +1,5 @@
+q: quadrupole, l=1.0, k1=0.311, k1s=0.2, tilt=0.15;
+
+machine: sequence, refer=entry,l=1.0;
+q, at=0.0;
+endsequence;

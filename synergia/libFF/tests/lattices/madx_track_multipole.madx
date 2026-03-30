@@ -1,0 +1,41 @@
+call, file=mpole1.seq;
+
+set,format=22.16g;
+
+pc :=1.5;
+
+t_offset = 1.0e-3;
+s2o2 = sqrt(2.0)/2.0;
+s3o2 = sqrt(3.0)/2.0;
+
+e0 = sqrt(pc^ 2 + pmass^2);
+
+beam, particle=proton, pc=pc;
+use,sequence=machine;
+
+ptc_create_universe;
+ptc_create_layout,model=2,method=6,nst=10,time=true,exact;
+
+ptc_start, x=t_offset, y=0.0;
+ptc_start, x=t_offset*s3o2, y=t_offset*0.5;
+ptc_start, x=t_offset*s2o2, y=t_offset*s2o2;
+ptc_start, x=t_offset*0.5, y=t_offset*s3o2;
+
+ptc_start, x=0.0, y=t_offset;
+ptc_start, x=-t_offset*0.5, y=t_offset*s3o2;
+ptc_start, x=-t_offset*s2o2, y=t_offset*s2o2;
+ptc_start, x=-t_offset*s3o2, y=t_offset*0.5;
+
+ptc_start, x=-t_offset, y=0.0;
+ptc_start, x=-t_offset*s3o2, y=-t_offset*0.5;
+ptc_start, x=-t_offset*s2o2, y=-t_offset*s2o2;
+ptc_start, x=-t_offset*0.5, y=-t_offset*s3o2;
+
+ptc_start, x=0.0, y=-t_offset;
+ptc_start, x=t_offset*0.5, y=-t_offset*s3o2;
+ptc_start, x=t_offset*s2o2, y=-t_offset*s2o2;
+ptc_start, x=t_offset*s3o2, y=-t_offset*0.5;
+
+ptc_track, closed_orbit=false,icase=6,maxaper={10.0,10.0,10.0,10.0,10.0,10.0},file=madx_track_multipole.txt, onetable;
+ptc_track_end;
+ptc_end;

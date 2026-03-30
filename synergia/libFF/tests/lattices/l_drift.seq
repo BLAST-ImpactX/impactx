@@ -1,0 +1,6 @@
+mp_str = 0.1;
+q: drift, l=1.0;
+
+machine: sequence, refer=entry,l=1.0;
+q, at=0.0;
+endsequence;

@@ -1,0 +1,2 @@
+mpole: sbend, l=1.0, angle=0.2, k1=0.0, k1s=0.3;
+machine: line=(mpole);

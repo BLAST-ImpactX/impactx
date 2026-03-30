@@ -1,0 +1,5 @@
+q: vkicker, l=1.0, kick=0.07;
+
+machine: sequence, refer=entry,l=1.0;
+q, at=0.0;
+endsequence;

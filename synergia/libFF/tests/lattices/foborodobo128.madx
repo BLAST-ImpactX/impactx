@@ -1,0 +1,72 @@
+! File fobodobo_s.lat
+! 
+! Written for the January, 2007 USPAS.
+! To be used in conjunction with CHEF.
+! 
+! Send complaints to the author: Leo Michelotti
+! 
+! Add an RF cavity (EGS) 01/30/2009
+!
+! ------------------
+! Parameters
+! ------------------
+n           :=   128;                   !         : number of cells
+momentum    := 0.5;                   ! [GeV/c] : particle momentum; 
+                                     !         :   arbitrary number
+bendangle   := twopi/(2*n);           ! [rad]   : dipole bend angle
+focus       :=   7;                   ! [m]     : focal length of equivalent 
+                                     !         :   thin quad
+sepn        :=  10;                   ! [m]     : distance between quad centers
+quadlength  :=   2.0;                 ! [m]     : quadrupole length
+strength    := 1/(focus*quadlength);  ! [m**-2] : quadrupole strength
+                                     !         :   = B'/brho, where
+                                     !         :   brho = momentum/0.299792458
+pct         :=   0.5;                 !         : fraction of space between
+                                     !         :   quads occupied by dipole
+bendlength  := pct*(sepn-quadlength); ! [m]     : length of dipole
+! bendlength := 0.5*(10-2.0) = 4.0
+driftlength := (sepn-quadlength-bendlength)/2;
+! driftlenth := (10-2.0-4.0)/2 = 2.0
+! harmonic number = 80  harmonic number, yields 2 meter wavelength
+! the actual frequence is harmno following
+harmno:=1;
+lambda = (n*2*sepn)/harmno;
+
+!hvoltage = 12500
+hvoltage = 1.0e-4;
+
+cavlen = 0.0; ! rf cavity length 1 meter, (half bucket length)
+shortdlen = (driftlength - cavlen)/2.0;   ! 0.97 m
+! this lattice has 32 copies of a 20 m cell.
+
+! ------------------
+! Elements
+! ------------------
+
+o: drift,      l=driftlength;
+os: drift,      l=shortdlen;
+f: quadrupole, l=quadlength, k1=strength;
+d: quadrupole, l=quadlength, k1=(-strength);
+b: sbend,      l=bendlength, angle=bendangle;
+r: rfcavity,l=cavlen, volt=hvoltage, harmon=harmno, lag=0;
+hc1: hkicker, kick=0.0, l=0.0;
+hc2: hkicker, kick=0.0, l=0.0;
+hc3: hkicker, kick=0.0, l=0.0;
+vc1: vkicker, kick=0.0, l=0.0;
+vc2: vkicker, kick=0.0, l=0.0;
+vc3: vkicker, kick=0.0, l=0.0;
+m1: marker;
+m2: marker;
+m3: marker;
+! ------------------
+! Lattices
+! ------------------
+fobodobo:  line=( f, o, b, o, d, o, b, o );
+fobodobok1: line = (hc1, f, o, b, o, vc1, d, o, b, o);
+fobodobok2: line = (hc2, f, o, b, o, vc2, d, o, b, o);
+fobodobok3: line = (hc3, f, o, b, o, vc3, d, o, b, o);
+fobrdobo:  line=( f, o, b, os, r, os, d, o, b, o);
+model:     line=( fobrdobo,19*fobodobo, m1, fobodobo, fobodobok1, 2*fobodobo, m3, 2*fobodobo, fobodobok2, 6*fobodobo, fobodobok3, m2, 94*fobodobo );
+
+
+beam, particle=proton, pc=momentum;

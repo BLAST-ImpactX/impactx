@@ -1,0 +1,4320 @@
+! *******************************************************************************************
+! 05/05/2010 (EGS) Make all RF cavities 0 length.
+! *******************************************************************************************
+! 04/30/2010 (EGS) Double the length of the CAV: elements and change RFCAV
+! line to account for that.  No more split cavities.
+! *******************************************************************************************
+!
+! egs: set hkick and vkick strengths to 0 to match mi20_mad-F_for_chef.lat
+!      now the closed orbit is back at 0
+!
+! *******************************************************************************************
+! jfa: changed beam energy to 8.9
+! *******************************************************************************************
+! 
+! File: mi20_mad-F_for_chef.lat
+! Date: March 13, 2008
+! 
+! This is a modified version of Dave Johnson's mi20_mad-F.lat, 
+! uploaded from Fermilab's Accelerator Division Lattice Repository on
+! March 7, 2008.  The original file itself is dated October 1, 2004.
+! Changes were made to correct errors and to enable chef-mdi/chef to
+! read it and build a model of the Main Injector, specifically the line
+! RING_P_Q605.  Using this, the ring closes and lattice functions
+! can be calculated.
+! 
+! The following is a list of the changes I made to Dave Johnson's
+! original file.  I have tried not to forget any, but there is no
+! guarantee.  It is provided (a) to emphasize that the two files should
+! describe the same lattice, and (b) to record for others the sorts of
+! things that still need to be done to massage a MAD lattice file into
+! one that can be interpreted by MAD8Factory.
+! 
+! Even if you ignore everything else, please notice the warnings about
+! tunes in Item (12) and split cavities in Item (11).
+! 
+! - Leo Michelotti  (michelotti@fnal.gov)
+! - Thursday. March 13, 2008.
+! 
+! *******************************************************************************************
+! *******************************************************************************************
+! 
+! (1) A BEAM statement has been added at the top of the file. The
+! momentum was arbitrarily set to 120 GeV/c.
+! 
+! 
+! (2) The syntax of all parameter assignments have been changed
+! from "XXXXX = YYYYY" to "XXXXX := YYYYY".
+! 
+! 
+! (3) RBENDs have been changed to SBENDs with parallel faces.
+! This required changing the length attribute, because RBEND
+! length is along a straight line, while SBEND length is along
+! a circular arc.  (In agreement with pp.30-31 of the MAD manual.
+! Also necessary to get the ring to close, with survey coordinates
+! the same as MAD's.) That is, these lines
+!   --------------------------------------------------------
+!   IDA001:  RBEND, TYPE = IDA, L=LIDA_MAG, ANGLE = CIRBEND 
+!   ...
+!   IDB113:  RBEND, TYPE = IDB, L=LIDB_MAG, ANGLE = CIRBEND 
+!   IDC000:  RBEND, TYPE = IDC, L=LIDC_MAG, ANGLE = (2/3)*CIRBEND 
+!   ...
+!   IDD069:  RBEND, TYPE = IDD, L=LIDD_MAG, ANGLE = (2/3)*CIRBEND 
+!   --------------------------------------------------------
+! were replaced with these:
+!   --------------------------------------------------------
+!   XIDA_MAG := (LIDA_MAG*CIRBEND)/(2*SIN(CIRBEND/2))
+!   XIDB_MAG := (LIDB_MAG*CIRBEND)/(2*SIN(CIRBEND/2))
+!   XIDC_MAG := (LIDC_MAG*(2/3)*CIRBEND)/(2*SIN(CIRBEND/3))
+!   XIDD_MAG := (LIDD_MAG*(2/3)*CIRBEND)/(2*SIN(CIRBEND/3))
+!   
+!   IDA001:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+!   ...
+!   IDB000:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+!   IDB001:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+!   ...
+!   IDD069:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+!   --------------------------------------------------------
+! In principle this should not be necessary, but (a) this is a better
+! designation, esp. if random error fields are to be introduced later,
+! and (b) CHEF's most recent version is temporarily experiencing
+! difficulties with rbends.  (That will be fixed.)
+! 
+! 
+! (4) I have shifted the declaration of markers forward so that they
+! are defined before they are used.  This should not make a difference,
+! but it eliminates a lot of warnings from the parser/factory.
+! 
+! 
+! (5) Shortcut tokens HKICK and VKICK were expanded to HKICKER
+! and VKICKER.  That is, from this
+!   --------------------------------------------------------
+!   H100:   HKICK, TYPE = IDH, L=LMIHC , KICK = CIR_H100
+!   V101:   VKICK, TYPE = IDV, L=LMIVC , KICK = CIR_V101
+!   ...
+!   --------------------------------------------------------
+! to this:
+!   --------------------------------------------------------
+!   H100:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H100
+!   V101:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V101
+!   ...
+!   --------------------------------------------------------
+! 
+! 
+! (6) OCTUPOLE strength parameters were used but never declared
+! or assigned. Statements were added assigning their values.
+! Similarly, some kicker parameters were used but never set.
+! Those also were added.  E.g.
+!   --------------------------------------------------------
+!   CIR_O110 := 0
+!   CIR_O112 := 0
+!   CIR_O114 := 0
+!   ...
+!   CIR_O634 := 0
+!   CIR_O636 := 0
+!   ...
+!   K602ANG := 0
+!   --------------------------------------------------------
+! 
+! 
+! (7) Several typographical errors were corrected, for example:
+! from 
+!   --------------------------------------------------------
+!   LAM40AMP:   MULTIPOLE, K0L = LAM40A_K0L/2, K1L = LAM40A_L1K/2
+!   ...
+!   LAM52AMP:   MULTIPOLE, K0L = LAM52A_K0L/2, K1L = LAM52A_L1K/2
+!   ... etc.
+!   --------------------------------------------------------
+! to
+!   --------------------------------------------------------
+!   LAM40AMP:   MULTIPOLE, K0L = LAM40A_K0L/2, K1L = LAM40A_K1L/2
+!   ...
+!   LAM52AMP:   MULTIPOLE, K0L = LAM52A_K0L/2, K1L = LAM52A_K1L/2
+!   ... etc.
+!   --------------------------------------------------------
+! I did warn Dave Johnson of these particular mistakes some years ago,
+! when I was studying Fermilab lattices in more detail.
+! 
+! 
+! (8) Another typographical error appeared in the definition of
+! drift space D601E.  I changed this:
+!   --------------------------------------------------------
+!   D601E: DRIFT, L = LSS601- D601A[L]-LIQCD_END-LBPM-LDAMPERPU-D601B[L] &
+!                     -LDAMPERK-D601C[L]-LGRIFFEN-D601D[L]-LWBPU &
+!                     -LDAMPERK-D601F[L]-LDAMPERPU-D601G[L]-LMIHC_SLOT &
+!                     -D1IN[L]-LIQBU_END-LPING-LSCHOTTKY-3*D6IN[L]-LWBPU
+!   --------------------------------------------------------
+! to this:
+!   --------------------------------------------------------
+!   D601E: DRIFT, L = LSS601- D601A[L]-LIQCD_END-LBPM-LDAMPERPU-D601B[L] &
+!                     -LDAMPERK-D601C[L]-LGRIFFEN-D601D[L]-LWBPU &
+!                     -LDAMPERK-D601F[L]-LDAMPERPU-D601G[L]-LMIHC_SLOT &
+!                     -D1IN[L]-LIQBU_END-LPINGER-LSCHOTTKY-3*D6IN[L]-LWBPU
+!   --------------------------------------------------------
+! Can you spot the difference?
+! 
+! 
+! (9) Three markers were given an RFCAVITY type attribute:
+!   --------------------------------------------------------
+!   M_CAV: MARKER, TYPE=RFCAVITY
+!   ...
+!   M_HCAV: MARKER, TYPE=RFCAVITY
+!   ...
+!   M_CCAV: MARKER, TYPE=RFCAVITY
+!   --------------------------------------------------------
+! For some reason, MAD8Factory's parser was confused by this, presumably
+! because "RFCAVITY" also designates an element type.  Rather than
+! struggle with this, I just eliminated the TYPE attribute.
+!   --------------------------------------------------------
+!   M_CAV: MARKER
+!   ...
+!   M_HCAV: MARKER
+!   ...
+!   M_CCAV: MARKER
+!   --------------------------------------------------------
+! The parser was also confused by the parameter "CHARGE," so that
+! was changed to "XXXCHARGE."  From this:
+!   --------------------------------------------------------
+!   CHARGE  := 1.0   ! POSITIVE FOR PROTONS
+!   CIRBEND := -0.0208512786*CHARGE
+!   ...
+!   S108: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*CHARGE
+!   S109: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*CHARGE
+!   S110: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*CHARGE
+!   ... etc., etc., etc.
+!   --------------------------------------------------------
+! to this:
+!   --------------------------------------------------------
+!   XXXCHARGE  := 1.0   ! POSITIVE FOR PROTONS
+!   CIRBEND := -0.0208512786*XXXCHARGE
+!   ...
+!   S108: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+!   S109: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+!   S110: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+!   ... etc., etc., etc.
+!   --------------------------------------------------------
+! 
+! 
+! (10) A drift space, D602E, has negative length.
+!   --------------------------------------------------------
+!   D602D: DRIFT, L = 1.9177   !0.66294
+!   ...
+!   D602E: DRIFT, L = LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
+!                     -D602B[L]-LRWM-D602C[L]-D602D[L] &
+!                     -LWBPU-D602F[L]-LSCHOTTKY-LDAMPERPU-D602G[L] &
+!                     -LMIVC_SLOT-D1IN[L]-LIQBU_END
+!   SS602: LINE = (IQBDEND,D602A,K602_INS,D602B,RWM,D602C, &
+!                   D602D,D602E,WBPU,D602F,VSD,VDPU,D602G, &
+!                   VCEND,V603,VCEND,D1IN,IQBUEND)
+!   --------------------------------------------------------
+! Some parts of CHEF do not react well to negative space; neither do I.
+! The lattice did not close.  This is the only negative space, and it
+! appears only once, next to another drift.  The two were combined into
+! one of positive length.
+!   --------------------------------------------------------
+!   D602D: DRIFT, L = 1.9177   !0.66294
+!   ...
+!   D602E: DRIFT, L = LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
+!                     -D602B[L]-LRWM-D602C[L]-D602D[L] &
+!                     -LWBPU-D602F[L]-LSCHOTTKY-LDAMPERPU-D602G[L] &
+!                     -LMIVC_SLOT-D1IN[L]-LIQBU_END
+!   D602DE: DRIFT, L = D602D[L] + D602E[L]
+!   SS602: LINE = (IQBDEND,D602A,K602_INS,D602B,RWM,D602C, &
+!                   D602DE,WBPU,D602F,VSD,VDPU,D602G, &
+!                   VCEND,V603,VCEND,D1IN,IQBUEND)
+!   --------------------------------------------------------
+! 
+! 
+! There is also a mysterious drift that gets redefined before
+! use. It didn't seem to present a problem, so I left it as is.
+!   ---------------------------------------------------------
+!   D602A: DRIFT, L = 0.508 - LIQBD_END-LBPM
+!   ...
+!   D602A: DRIFT, L = 0.508 - LIQBD_END- 0.3
+!   ---------------------------------------------------------
+! One would think that LBPM's value was 0.3, but it is zero.
+! 
+! 
+! (11) Element named V100 was defined twice: first as a drift and
+! then as a kicker with non-zero horizontal and vertical strengths.
+! Both original definitions were replaced with a single kicker
+! definition but with strengths set to zero.
+! 
+! 
+! (12) EXTREME CAUTION: The cavities are split in this description.
+! For example,
+!   ---------------------------------------------------------
+!   CAV:    RFCAVITY, L = LRFC/2, VOLT = 0.0
+!   ...
+!   RFCAV:  LINE = (RFCU_END, CAV,M_CAV,CAV, RFCD_END)
+!   ...
+!   SS604: LINE = (IQBDEND,HP604,D604B,5*(DRFCIP,RFCAV), ... )
+!   ---------------------------------------------------------
+! Luckily, all voltages are set to zero, so it will not matter until and
+! unless they are turned on.  Also, these are "synchrotron" cavities, not
+! "linac" cavities.  Take special care to insure that the factory and
+! propagators are still handling the synchronous phase correctly.
+! 
+! I did not change these lines, but this will have to be revisited when
+! fully six-dimensional calculations are done on bunches.
+!     
+! 
+! (13) WARNING: I compared with MAD on four files: (1) Dave Johnson's
+! original, (2) this file with no RBEND->SBEND replacement, (3) this
+! file, but with the arclength of the sbends changed back to the
+! original rbend lengths, and (4) this file, as is.  The calculations
+! done by MAD were
+! 
+!   (1) ORIGINAL
+!   : total length = 3319.390644  Qx = 26.424996 Qy = 25.415003
+!   (2) MODIFIED (BUT RBEND, NOT SBEND)
+!   : total length = 3319.390644  Qx = 26.424996 Qy = 25.415003
+!   (3) MODIFIED (PARALLEL FACE SBEND BUT RBEND LENGTH ATTRIBUTE)
+!   : total length = 3319.390644  Qx = 26.097289 Qy = 25.744566
+!   (4) MODIFIED (PARALLEL FACE SBEND w/ ARCLENGTH ATTRIBUTE)
+!   : total length = 3319.418686  Qx = 26.097588 Qy = 25.744848
+! 
+! CHEF's length calculation (using this file) agrees with MAD's for
+! Case (4).  CHEF's tunes (using this file) agree closely with MAD's
+! when MAD uses the RBEND, Cases (1) (and (2)), the differences being
+! only about 0.003.
+! 
+! For whatever it is worth, using this file, CHEF's and MAD's site
+! coordinates agree exactly.
+! 
+! *******************************************************************************************
+! *******************************************************************************************
+! 
+! Lattice file: mi20 generated from: ~dej/MI20/revise_mi60_102699/make_mi20
+! Lattice generated by: dej
+! Lattice file created: Mon Sep 6 12:23:16 CDT 2004
+! 
+! -------------------------------------------------------------------------------------------- 
+! @#$ --- 
+! Table file: table_mad.g.parameter generated from: ~dej/MI20/Rev_lat_des_040904/bld_mi20.c
+! created: Mon Sep 6 12:23:16 CDT 2004
+! generated by: dej
+! -------------------------------------------------------------------------------------------- 
+
+BEAM, PARTICLE=PROTON, PC=8.9
+
+!
+! Lattice and Device Parameters 
+!
+!
+! Half-cell lengths
+!
+LARCELL         := 17.288418
+LSSCELL         := 17.288639
+LDSCELL         := 12.966414
+!
+! IQB: Quad
+     !83.37 inches magnetic length
+     !84    inches steel length
+!
+LHIQB_STEEL     := 1.0668
+LHIQB_EXCESS    := 0.008
+LHIQB_MAG       := LHIQB_STEEL-LHIQB_EXCESS
+LIQB_STEEL      := 2*LHIQB_STEEL
+LIQB_MAG        := 2*LHIQB_MAG
+LIQBU_END       := 0.0762   !3 inches
+LIQBD_END       := 0.0762   !3inches
+!
+! IQE: Quad 
+!
+LIQEU_END       := 0.0381   !1.5 inches
+LIQED_END       := 0.058674 !2.31 inches
+!
+! IQC: Quad
+     !99.315 inches magnetic length
+     !99.945 inches steel length
+!
+LHIQCA_STEEL   := 1.0662
+!Previous value used in MI-19
+!LHIQCA_STEEL   := 1.0668 
+LHIQCA_EXCESS  := 0.008
+LHIQCA_MAG     := LHIQCA_STEEL-LHIQCA_EXCESS
+LHIQCD_STEEL   := 1.4724
+!Previous value used in MI-19
+!LHIQCD_STEEL   := 1.47259
+LHIQCD_EXCESS  := 0.008
+LHIQCD_MAG     := LHIQCD_STEEL-LHIQCD_EXCESS
+LIQC_STEEL     := LHIQCA_STEEL+LHIQCD_STEEL
+LIQC_MAG       := LHIQCA_MAG+LHIQCD_MAG
+LIQCU_END      := 0.04445  !1.75 inches
+LIQCD_END      := 0.06045  !2.38 inches
+!
+! IQD: Quad
+     !115.37 inches magnetic length
+     !116    inches steel length
+!
+LHIQD_STEEL    :=  1.4732
+!Previous value used in MI-19
+!LHIQD_STEEL    :=  1.472590
+LHIQD_EXCESS   := 0.008
+LHIQD_MAG      := LHIQD_STEEL-LHIQD_EXCESS
+LIQD_STEEL     := 2*LHIQD_STEEL
+LIQD_MAG       := 2*LHIQD_MAG
+LIQDU_END      := 0.04445  !1.75 inches
+LIQDD_END      := 0.06045  !2.38 inches
+!
+! IDA and IDB Dipole
+!
+LIDA_MAG        := 6.096      !240 inches
+LIDB_MAG        := 6.096      !240 inches
+LIDA_STEEL      := 6.09981    !240.15 inches
+LIDB_STEEL      := 6.09981    !240.15 inches
+LIDA_EXCESS       := (LIDA_STEEL-LIDA_MAG)/2
+LIDB_EXCESS       := (LIDB_STEEL-LIDB_MAG)/2
+LDAU            := 0.169291   !6.665 inches
+LDAD            := 0.136525   !5.375 inches
+LDBU            := 0.136525   !5.375 inches
+LDBD            := 0.169291   !6.665 inches
+!
+! IDC and IDD Dipole
+!
+LIDC_MAG        := 4.064      !160 inches
+LIDD_MAG        := 4.064      !160 inches
+LIDC_STEEL      := 4.065016   !160.040 inches
+LIDD_STEEL      := 4.065016   !160.040 inches
+LIDC_EXCESS       := (LIDC_STEEL-LIDC_MAG)/2
+LIDD_EXCESS       := (LIDD_STEEL-LIDD_MAG)/2
+LDCU            := 0.171704   !6.760 inches
+LDCD            := 0.1381252  !5.438 inches
+LDDU            := 0.1381252
+LDDD            := 0.171704
+!
+! IHC: MI Horizontal dipole Corrector
+!
+LMIHC           := 0.3048
+LMIHC_END       := 0.0635
+LMIHC_SLOT      := 2*LMIHC_END+LMIHC
+!
+! IVC: MI Vertical dipole Corrector
+!
+LMIVC           := 0.3048
+LMIVC_END       := 0.0635
+LMIVC_SLOT      := 2*LMIVC_END+LMIVC
+
+!
+! MR Quad Corrector
+!
+LMRQC           := 0.3048
+LMRQC_END       := 0.02223
+LMRQC_SLOT      := 2*LMRQC_END+LMRQC
+!
+! MR Skew Quad Corrector
+!
+LMRSQ          := 0.1524
+LMRSQ_END      := 0.0254
+LMRSQ_SLOT     := 2*LMRSQ_END+LMRSQ
+
+!
+! ISA: MI Sextupole 
+!
+LMIS            := 0.4572
+LMIS_END        := 0.04206
+LMIS_SLOT       := 2*LMIS_END+LMIS
+
+!
+! MR Octupole
+!
+LMRO            := 0.1524
+LMRO_END        := 0.02223
+LMRO_SLOT       := 2*LMRO_END+LMRO
+
+!  QXR Magnet
+!
+LQXR_MAG       := 1.2968
+LQXR_END       := 0.1016
+LQXR_SLOT      := 2*LQXR_END+LQXR_MAG
+!
+!
+! LAM10: MI INJECTION LAmbertson
+!
+LLAM10_MAG        := 2.286
+LLAM10_END        := 0.2286
+LLAM10_SLOT       := 2*LLAM10_END+LLAM10_MAG
+!
+! ILA: MI LAmbertson
+!
+LILA_MAG        := 2.8
+LILA_END        := 0.23036
+LILA_SLOT       := 2*LILA_END+LILA_MAG
+!
+! IPL:  Permanent Magent LAmbertson
+!
+LIPL_MAG        := 4.064
+LIPL_END        := 0.3429 !0.3571
+LIPL_SLOT       := 2*LIPL_END+LIPL_MAG
+!
+! ICA: MI Cmagnet
+!
+LICA_MAG        := 3.3528
+LICA_END        := 0.2032
+LICA_SLOT       := 2*LICA_END+LICA_MAG
+!
+! K103 KICKER
+!
+LK103_MAG       := 1.0922
+LK103_END       := 0.0381
+LK103_SPOOL     := 0.228398
+LK103_SLOT      := 2*LK103_END+LK103_MAG
+LK103_INS       := 3*LK103_SLOT + 2*LK103_SPOOL
+!
+! K304 KICKER
+!
+LK304_MAG       := 1.956
+LK304_END       := 0.1016
+LK304_SLOT      := 2*LK304_END+LK304_MAG
+!
+! K400 KICKER
+!
+LK400_MAG       := 1.89
+LK400_CASE      := 0.0889
+LK400_FLANGE    := 0.0381
+LK400_SPOOL     := 0.2032
+LK400_END       := LK400_CASE + LK400_FLANGE + 0.0202
+LK400_SLOT      := 2*LK400_END + LK400_MAG
+!
+! K520 KICKER
+!
+LK520_MAG       := 1.9558
+LK520_CASE      := 0.0889
+LK520_FLANGE    := 0.0381
+LK520_SPOOL     := 0.2032
+LK520_END       := LK520_CASE + LK520_FLANGE
+LK520_SLOT      := 2*LK520_END + LK520_MAG
+!
+! K602 KICKER (flange-flange := 2.2098+.2032+2.2098 := 4.6228 m :=182)
+!   CASE+FLANGE := 0.127
+LK602_MAG       := 1.9558
+LK602_CASE      := 0.0889
+LK602_FLANGE    := 0.0381
+LK602_SPOOL     := 0.2032
+LK602_END       := LK602_CASE + LK602_FLANGE
+LK602_SLOT      := 2*LK602_END + LK602_MAG
+!
+! K622 KICKER (flange-flange 86.5 inches)
+!
+LK622_MAG       := 1.956
+LK622_END       := 0.1205522
+LK622_SPOOL     := 0.2032
+LK622_SLOT      := 2*LK622_END + LK622_MAG
+!
+! MI Electrostatic Septa
+!
+LES          := 3.6576 
+LES_END      := 0.0254
+LES_SLOT     := 2*LES_END+LES
+!
+!  RF Cavity Constants
+!
+HARMNO          := 588
+LAMBDA          := 3319.418686/HARMNO
+LAMBDAO2        := LAMBDA/2
+LRFC            := 0.0   ! make thin rf cavities
+LRFCIP          := 0.889 !35 inch
+LRFC_END        := 0.5*(LAMBDAO2-LRFC-LRFCIP)
+LRFC_SLOT       := 2*LRFC_END+LRFC !76.125 inch
+!
+!  Second Harmonic Cavity
+!
+!LHRFC_END        := 0.2032 !est. (original)
+LHRFC_SLOT       := 1.006477 !39.625 inch
+LHRFC_END        := LHRFC_SLOT/2.0 !est.
+!LHRFC            := LHRFC_SLOT-2*LHRFC_END  !est. (original)
+LHRFC            := 0.0
+!
+!  Coalescing Cavity
+!
+LCCAV_ORIG           := 1.019175    !40.125
+LCCAVU_END_ORIG      := 0.0815848   !3.212
+LCCAVD_END_ORIG      := 0.0333502   !1.313
+LCCAV_SPOOL     := 0.257175    !1.313
+LCCAV_SLOT       := LCCAVU_END_ORIG+LCCAV_ORIG+LCCAVD_END_ORIG
+LCCAVU_END	:= LCCAVU_END_ORIG + LCCAV_ORIG/2.0
+LCCAVD_END	:= LCCAVD_END_ORIG + LCCAV_ORIG/2.0
+LCCAV	:= 0.0
+!
+!  Beam Damper Pick-up
+!
+LDAMPERPU       := 0.51435
+!
+!  Beam Damper Kicker
+!
+LDAMPERK        := 1.22555
+!
+!  Horizontal/Vertical Schottky
+!
+LSCHOTTKY      := 0.6096
+!
+!  Resistive Wall Monitor (70.355 in flange-flange)
+!
+LRWM           := 1.787026
+!
+! Wide Band Pick Up (62.2 inches f-f) 
+!
+LWBPU          := 1.59004
+!
+!  Griffen Detector
+!
+LGRIFFEN       := 1.53035
+!
+!  RF Stripline
+!
+LSTRIPLINE     := 1.53035
+!
+!  DCCT
+!
+LDCCT          := 1.0668
+!
+!  Toroid
+!
+LTOROID         := 0.4064
+!
+!  Pinger
+!
+LPINGER        := 1.74625
+!
+!  SEMS used at MI10
+!
+LSEM           := 0.381  !15 inches
+!
+!  Flying Wires used at MI10
+!
+LFW           := 0.4572  !18 inches
+!
+!  Ionization Profile Monitor used at MI10
+!
+LIPM          := 0.4628  !18.22 inches
+!
+! Spool Pieces
+!
+LLLSPOOL        :=  0.1524
+LCCSPOOL        :=  0.127
+LQLSPOOL        :=  0.127
+!
+! Standard INCHES
+!
+LQTR_IN         := 0.00635
+LHALF_IN        := 0.0127
+LONE_IN         := 0.0254
+LTWO_IN         := 0.0508
+LTHRE_IN        := 0.0762
+LFOUR_IN        := 0.1016
+LFIVE_IN        := 0.1270
+LSIX_IN         := 0.1524
+LSEVN_IN        := 0.1778
+LEIGH_IN        := 0.2032
+LNINE_IN        := 0.2286
+LTEN_IN         := 0.254
+LELEVN_IN       := 0.2794
+LONE_FT         := 0.3048
+
+!
+! NON-MAGNETIC DEVICES
+!
+LBPM            := 0.0 !0.168275 - LIQBD_END  !6.625-QUAD_END
+LLGBPM          := 0.1222374 !0.168275 - LIQBD_END  !6.625-QUAD_END
+LBPM84          := 0.0 !0.168275 - LIQBD_END  !6.625-QUAD_END
+LBPM100         := 0.0 !0.168275 - LIQCD_END !6.625-QUAD_END
+LBPM116         := 0.0 !0.168275 - LIQDD_END !6.625-QUAD_END
+LBELLAB         := 0.08255               !3.25
+LBELLCD         := 0.0821436             !3.234
+LBELL           := 0.08255+0.0002123     !3.25+0.005458extension
+LVALVE          := 0.2921    ! ASSUME 11.5
+LIPPOP          := 0.130175  ! 34.625-29.5 
+!
+! Calculate lengths between magnetic ends of
+!   IDA-IDB and ICD-IDD dipoles
+!
+LBBDAB:=LIDA_EXCESS+LDAD+LBELLAB+LDBU+LIDB_EXCESS
+LBBDCD:=LIDC_EXCESS+LDCD+LBELLCD+LDDU+LIDD_EXCESS
+!
+! Calculate length of quad mini-straight lengths
+!  i.e. distance between magnetic end of quad and
+!       magnetic end of adjacent dipole
+!  ->this has to inclue quad_ends,bpms,valves,correctors,
+!  ->ion pumps,instrumentation, etc.
+!
+LD84U :=LARCELL/2-LIDB_MAG-LBBDAB/2-LHIQB_STEEL
+LD84D :=LARCELL/2-LIDA_MAG-LBBDAB/2-LHIQB_STEEL
+LD84S :=LSSCELL/2               -LHIQB_STEEL
+LD100U:=LARCELL/2-LIDB_MAG-LBBDAB/2-LHIQCA_STEEL
+LD100D:=LDSCELL/2-LIDC_MAG-LBBDCD/2-LHIQCD_STEEL
+LD100S:=LSSCELL/2               -LHIQCA_STEEL
+LD101U:=LDSCELL/2-LIDD_MAG-LBBDCD/2-LHIQCD_STEEL
+LD101D:=LARCELL/2-LIDA_MAG-LBBDAB/2-LHIQCA_STEEL
+LD101S:=LSSCELL/2               -LHIQCA_STEEL
+LD116U:=LDSCELL/2-LIDD_MAG-LBBDCD/2-LHIQD_STEEL
+LD116D:=LDSCELL/2-LIDC_MAG-LBBDCD/2-LHIQD_STEEL
+!
+! Straight Section Slot lengths
+!
+!
+! MI-10 straight section drift lengths
+!
+LSS100          := LD101S+LD84S
+LSS101          := 2*LD84S
+LSS102          := 2*LD84S
+LSS103          := LD84S+LD100S
+!
+! MI-22 straight section drift lengths
+!
+LSS220          := LD101S+LD84S
+LSS221          := 2*LD84S
+LSS222          := LD84S+LD100S
+!
+! MI-20 straight section drift lengths
+!
+LSS301          := LD101S+LD84S
+LSS302          := 2*LD84S
+LSS303          := 2*LD84S
+LSS304          := 2*LD84S
+LSS305          := 2*LD84S
+LSS306          := 2*LD84S
+LSS307          := 2*LD84S
+LSS308          := LD84S+LD100S
+!
+! MI-32 straight section drift lengths
+!
+LSS319          := LD101S+LD84S
+LSS320          := 2*LD84S
+LSS321          := LD84S+LD100S
+!
+! MI-40 straight section drift lengths
+!
+LSS400          := LD101S+LD84S
+LSS401          := 2*LD84S
+LSS402          := 2*LD84S
+LSS403          := LD84S+LD100S
+!
+! MI-52 straight section drift lengths
+!
+LSS520          := LD101S+LD84S
+LSS521          := 2*LD84S
+LSS522          := LD84S+LD100S
+!
+! MI-60 straight section drift lengths
+!
+LSS601          := LD101S+LD84S
+LSS602          := 2*LD84S
+LSS603          := 2*LD84S
+LSS604          := 2*LD84S
+LSS605          := 2*LD84S
+LSS606          := 2*LD84S
+LSS607          := 2*LD84S
+LSS608          := LD84S+LD100S
+!
+! MI-62 straight section drift lengths
+!
+LSS619          := LD101S+LD84S
+LSS620          := 2*LD84S
+LSS621          := LD84S+LD100S
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!     DEFINE ALL DRIFT ELEMENTS HERE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! Define Drifts between magnetic ends of IDA-IDB and ICD-IDD dipoles
+!  currently used in all lattices
+!
+DAB: DRIFT, L = LBBDAB
+DCD: DRIFT, L = LBBDCD
+!
+! Define quad mini-straight total drifts
+!   to be used in a reduced lattice
+!
+D84U:  DRIFT, L = LD84U
+D84D:  DRIFT, L = LD84D
+D84S:  DRIFT, L = LD84S
+D100U: DRIFT, L = LD100U
+D100D: DRIFT, L = LD100D
+D100S: DRIFT, L = LD100S
+D101U: DRIFT, L = LD101U
+D101D: DRIFT, L = LD101D
+D101S: DRIFT, L = LD101S
+D116U: DRIFT, L = LD116U
+D116D: DRIFT, L = LD116D
+!
+SVALVE: DRIFT, L = LVALVE
+BELL:  DRIFT, L = LBELL
+IPPOP: DRIFT, L = LIPPOP
+!
+DQTRIN: DRIFT, L = LQTR_IN
+D1IN:   DRIFT, L = LONE_IN
+D2IN:   DRIFT, L = LTWO_IN
+D6IN:   DRIFT, L = LSIX_IN
+D12IN:  DRIFT, L = LONE_FT
+!
+! Up and Downstream mini-straight DRIFT DEFINITIONS by TYPE
+!
+
+
+! Type 01 Insert Drifts
+D01U:  DRIFT, L = LD84U-LMIHC_SLOT-D1IN[L]-LIQBU_END
+D01D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-LMRO_SLOT-2*D1IN[L]
+
+! Type 02 Insert Drifts
+D02U:  DRIFT, L = LD84U-LMIVC_SLOT-D1IN[L]-LIQBU_END
+D02D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-D1IN[L]
+
+! Type 03 Insert Drifts
+D03U:  DRIFT, L = LD84U-LMIHC_SLOT-LMRQC_SLOT-2*D1IN[L]-LIQBU_END
+D03D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-LMRO_SLOT-2*D1IN[L]
+
+! Type 04 Insert Drifts
+D04U:  DRIFT, L = LD84U-LMIVC_SLOT-D1IN[L]-LIQBU_END
+D04D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-LMRO_SLOT-2*D1IN[L]
+
+! Type 05 Insert Drifts
+D05U:  DRIFT, L = LD84U-2*LMRSQ_SLOT-LMIHC_SLOT-3*D1IN[L]-LIQBU_END
+D05D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-LMRO_SLOT-2*D1IN[L]
+
+! Type 06 Insert Drifts
+D06U:  DRIFT, L = LD84U-LMRSQ_SLOT-LMIVC_SLOT-D1IN[L]-LIQBU_END
+D06D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-D1IN[L]
+
+! Type 07 Insert Drifts
+D07U:  DRIFT, L = LD84U-LVALVE-LMIVC_SLOT-D1IN[L]-LIQBU_END
+D07D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-LMRO_SLOT-2*D1IN[L]
+
+! Type 08 Insert Drifts
+D08U:  DRIFT, L = LD84U-LVALVE-LMIVC_SLOT-D1IN[L]-LIQBU_END
+D08D:  DRIFT, L = LD84D-LIQBD_END-LBPM-LMIS_SLOT-D1IN[L]
+
+! Type 21 Insert Drifts
+D21U:  DRIFT, L = LD101U-LMIHC_SLOT-D1IN[L]-LIQCU_END
+D21D:  DRIFT, L = LD101D-LIQCD_END-LBPM-LMIS_SLOT-D1IN[L]
+
+! Type 22 Insert Drifts
+D22U:  DRIFT, L = LD101U-LMIVC_SLOT-D1IN[L]-LIQCU_END
+D22D:  DRIFT, L = LD101D-LIQCD_END-LBPM-LMIS_SLOT-D1IN[L]
+
+! Type 23 Insert Drifts
+D23U:  DRIFT, L = LD100S-LMIHC_SLOT-DQTRIN[L]-LVALVE-LIQCU_END
+D23D:  DRIFT, L = LD100D-LIQCD_END-LBPM
+
+! Type 24 Insert Drifts
+D24U:  DRIFT, L = LD100S-LMIVC_SLOT-DQTRIN[L]-LVALVE-LIQCU_END
+D24D:  DRIFT, L = LD100D-LIQCD_END-LBPM
+
+! Type 25 Insert Drifts
+D25U:  DRIFT, L = LD100U-LMIHC_SLOT-D1IN[L]-LIQCU_END
+D25D:  DRIFT, L = LD100D-LIQCD_END-LBPM
+
+! Type 26 Insert Drifts
+D26U:  DRIFT, L = LD100U-LMIVC_SLOT-D1IN[L]-LIQCU_END
+D26D:  DRIFT, L = LD100D-LIQCD_END-LBPM
+
+! Type 27 Insert Drifts
+D27U:  DRIFT, L = LD101U-LMIHC_SLOT-D1IN[L]-LIQCU_END
+D27D:  DRIFT, L = LD101S-LIQCD_END-LBPM-LVALVE
+
+! Type 28 Insert Drifts
+D28U:  DRIFT, L = LD101U-LMIVC_SLOT-D1IN[L]-LIQCU_END
+D28D:  DRIFT, L = LD101S-LIQCD_END-LBPM-LVALVE
+
+! Type 29 Insert Drifts
+D29U:  DRIFT, L = LD100S-LMIVC_SLOT-D1IN[L]-LIQCU_END
+D29D:  DRIFT, L = LD100D-LIQCD_END-LBPM
+
+! Type 30 Insert Drifts
+D30U:  DRIFT, L = LD101U-LMIVC_SLOT-D1IN[L]-LIQCU_END
+D30D:  DRIFT, L = LD101S-LIQCD_END-LBPM
+
+! Type 41 Insert Drifts
+D41U:  DRIFT, L = LD116U-LMIVC_SLOT-D1IN[L]-LIQDU_END
+D41D:  DRIFT, L = LD116D-LIQDD_END
+
+! Type 42 Insert Drifts
+D42U:  DRIFT, L = LD116U-LMIHC_SLOT-D1IN[L]-LIQDU_END
+D42D:  DRIFT, L = LD116D-LIQDD_END
+
+! Type 43 Insert Drifts
+D43U:  DRIFT, L = LD116U-LMIVC_SLOT-D1IN[L]-LIQDU_END
+D43D:  DRIFT, L = LD116D-LIQDD_END
+! -------------------------------------------------------------------------------------------- 
+! @#$ --- 
+! Table file: table_mad.g.circuit generated from: ~dej/MI20/Rev_lat_des_040904/bld_mi20.c
+! created: Mon Sep 6 12:23:17 CDT 2004
+! generated by: dej
+! -------------------------------------------------------------------------------------------- 
+
+!
+! Circuit values 
+!
+XXXCHARGE  := 1.0   ! POSITIVE FOR PROTONS
+CIRBEND := -0.0208512786*XXXCHARGE
+DELQX   := 0.0
+DELQY   := 0.0
+K1QF    :=  4.068064E-02 + 0.001022*DELQX + 0.000185*DELQY
+K1QD    := -3.980730E-02 - 0.000196*DELQX - 0.001008*DELQY
+K1QFIQB   :=  (LIQB_MAG/LIQB_STEEL)*K1QF
+K1QDIQB   :=  (LIQB_MAG/LIQB_STEEL)*K1QD
+K1QFIQC   :=  (LIQC_MAG/LIQC_STEEL)*K1QF
+K1QDIQC   :=  (LIQC_MAG/LIQC_STEEL)*K1QD
+K1QFIQD   :=  (LIQD_MAG/LIQD_STEEL)*K1QF
+K1QDIQD   :=  (LIQD_MAG/LIQD_STEEL)*K1QD
+CIR_H100 := 0.0
+CIR_V101 := 0.0
+CIR_H102 := 0.0
+CIR_V103 := 0.0
+CIR_H104 := 0.0
+CIR_V105 := 0.0
+CIR_H106 := 0.0
+CIR_V107 := 0.0
+CIR_H108 := 0.0
+CIR_V109 := 0.0
+CIR_H110 := 0.0
+CIR_V111 := 0.0
+CIR_H112 := 0.0
+CIR_V113 := 0.0
+CIR_H114 := 0.0
+CIR_V115 := 0.0
+CIR_H116 := 0.0
+CIR_V117 := 0.0
+CIR_H118 := 0.0
+CIR_V119 := 0.0
+CIR_H120 := 0.0
+CIR_V121 := 0.0
+CIR_H122 := 0.0
+CIR_V123 := 0.0
+CIR_H124 := 0.0
+CIR_V125 := 0.0
+CIR_H126 := 0.0
+CIR_V127 := 0.0
+CIR_H128 := 0.0
+CIR_V129 := 0.0
+CIR_H130 := 0.0
+CIR_V201 := 0.0
+CIR_H202 := 0.0
+CIR_V203 := 0.0
+CIR_H204 := 0.0
+CIR_V205 := 0.0
+CIR_H206 := 0.0
+CIR_V207 := 0.0
+CIR_H208 := 0.0
+CIR_V209 := 0.0
+CIR_H210 := 0.0
+CIR_V211 := 0.0
+CIR_H212 := 0.0
+CIR_V213 := 0.0
+CIR_H214 := 0.0
+CIR_V215 := 0.0
+CIR_H216 := 0.0
+CIR_V217 := 0.0
+CIR_H218 := 0.0
+CIR_V219 := 0.0
+CIR_H220 := 0.0
+CIR_V221 := 0.0
+CIR_H222 := 0.0
+CIR_V223 := 0.0
+CIR_H224 := 0.0
+CIR_V225 := 0.0
+CIR_H226 := 0.0
+CIR_V227 := 0.0
+CIR_H228 := 0.0
+CIR_V229 := 0.0
+CIR_H230 := 0.0
+CIR_V231 := 0.0
+CIR_H232 := 0.0
+CIR_V301 := 0.0
+CIR_H302 := 0.0
+CIR_V303 := 0.0
+CIR_H304 := 0.0
+CIR_V305 := 0.0
+CIR_H306 := 0.0
+CIR_V307 := 0.0
+CIR_H308 := 0.0
+CIR_V309 := 0.0
+CIR_H310 := 0.0
+CIR_V311 := 0.0
+CIR_H312 := 0.0
+CIR_V313 := 0.0
+CIR_H314 := 0.0
+CIR_V315 := 0.0
+CIR_H316 := 0.0
+CIR_V317 := 0.0
+CIR_H318 := 0.0
+CIR_V319 := 0.0
+CIR_H320 := 0.0
+CIR_V321 := 0.0
+CIR_H322 := 0.0
+CIR_V323 := 0.0
+CIR_H324 := 0.0
+CIR_V325 := 0.0
+CIR_H326 := 0.0
+CIR_V327 := 0.0
+CIR_H328 := 0.0
+CIR_V329 := 0.0
+CIR_H330 := 0.0
+CIR_V331 := 0.0
+CIR_H332 := 0.0
+CIR_V333 := 0.0
+CIR_H334 := 0.0
+CIR_V335 := 0.0
+CIR_H336 := 0.0
+CIR_V337 := 0.0
+CIR_H338 := 0.0
+CIR_V339 := 0.0
+CIR_H340 := 0.0
+CIR_V341 := 0.0
+CIR_H400 := 0.0
+CIR_V401 := 0.0
+CIR_H402 := 0.0
+CIR_V403 := 0.0
+CIR_H404 := 0.0
+CIR_V405 := 0.0
+CIR_H406 := 0.0
+CIR_V407 := 0.0
+CIR_H408 := 0.0
+CIR_V409 := 0.0
+CIR_H410 := 0.0
+CIR_V411 := 0.0
+CIR_H412 := 0.0
+CIR_V413 := 0.0
+CIR_H414 := 0.0
+CIR_V415 := 0.0
+CIR_H416 := 0.0
+CIR_V417 := 0.0
+CIR_H418 := 0.0
+CIR_V419 := 0.0
+CIR_H420 := 0.0
+CIR_V421 := 0.0
+CIR_H422 := 0.0
+CIR_V423 := 0.0
+CIR_H424 := 0.0
+CIR_V425 := 0.0
+CIR_H426 := 0.0
+CIR_V427 := 0.0
+CIR_H428 := 0.0
+CIR_V429 := 0.0
+CIR_H430 := 0.0
+CIR_V501 := 0.0
+CIR_H502 := 0.0
+CIR_V503 := 0.0
+CIR_H504 := 0.0
+CIR_V505 := 0.0
+CIR_H506 := 0.0
+CIR_V507 := 0.0
+CIR_H508 := 0.0
+CIR_V509 := 0.0
+CIR_H510 := 0.0
+CIR_V511 := 0.0
+CIR_H512 := 0.0
+CIR_V513 := 0.0
+CIR_H514 := 0.0
+CIR_V515 := 0.0
+CIR_H516 := 0.0
+CIR_V517 := 0.0
+CIR_H518 := 0.0
+CIR_V519 := 0.0
+CIR_H520 := 0.0
+CIR_V521 := 0.0
+CIR_H522 := 0.0
+CIR_V523 := 0.0
+CIR_H524 := 0.0
+CIR_V525 := 0.0
+CIR_H526 := 0.0
+CIR_V527 := 0.0
+CIR_H528 := 0.0
+CIR_V529 := 0.0
+CIR_H530 := 0.0
+CIR_V531 := 0.0
+CIR_H532 := 0.0
+CIR_V601 := 0.0
+CIR_H602 := 0.0
+CIR_V603 := 0.0
+CIR_H604 := 0.0
+CIR_V605 := 0.0
+CIR_H606 := 0.0
+CIR_V607 := 0.0
+CIR_H608 := 0.0
+CIR_V609 := 0.0
+CIR_H610 := 0.0
+CIR_V611 := 0.0
+CIR_H612 := 0.0
+CIR_V613 := 0.0
+CIR_H614 := 0.0
+CIR_V615 := 0.0
+CIR_H616 := 0.0
+CIR_V617 := 0.0
+CIR_H618 := 0.0
+CIR_V619 := 0.0
+CIR_H620 := 0.0
+CIR_V621 := 0.0
+CIR_H622 := 0.0
+CIR_V623 := 0.0
+CIR_H624 := 0.0
+CIR_V625 := 0.0
+CIR_H626 := 0.0
+CIR_V627 := 0.0
+CIR_H628 := 0.0
+CIR_V629 := 0.0
+CIR_H630 := 0.0
+CIR_V631 := 0.0
+CIR_H632 := 0.0
+CIR_V633 := 0.0
+CIR_H634 := 0.0
+CIR_V635 := 0.0
+CIR_H636 := 0.0
+CIR_V637 := 0.0
+CIR_H638 := 0.0
+CIR_V639 := 0.0
+CIR_H640 := 0.0
+CIR_V641 := 0.0
+CIR_Q1    :=   0.0
+CIR_Q2    :=   0.0
+CIR_QC206  := CIR_Q2
+CIR_QC208  := CIR_Q2
+CIR_QC210  := CIR_Q2
+CIR_QC212  := CIR_Q2
+CIR_QC328  := CIR_Q1
+CIR_QC330  := CIR_Q1
+CIR_QC332  := CIR_Q1
+CIR_QC334  := CIR_Q1
+CIR_QC506  := CIR_Q2
+CIR_QC508  := CIR_Q2
+CIR_QC510  := CIR_Q2
+CIR_QC512  := CIR_Q2
+CIR_QC628  := CIR_Q1
+CIR_QC630  := CIR_Q1
+CIR_QC632  := CIR_Q1
+CIR_QC634  := CIR_Q1
+CIR_SQ1   :=   0.0
+CIR_SQ40  := CIR_SQ1
+CIR_SQ335 := CIR_SQ40
+CIR_SQ336 := CIR_SQ40
+CIR_SQ337 := CIR_SQ40
+CIR_SQ60  := CIR_SQ1
+CIR_SQ635 := CIR_SQ60
+CIR_SQ636 := CIR_SQ60
+CIR_SQ637 := CIR_SQ60
+CIR_SQ2   :=   0.0
+CIR_SQ20  := CIR_SQ2
+CIR_SQ213 := CIR_SQ20
+CIR_SQ214 := CIR_SQ20
+CIR_SQ215 := CIR_SQ20
+CIR_SQ50  := CIR_SQ2
+CIR_SQ513 := CIR_SQ50
+CIR_SQ514 := CIR_SQ50
+CIR_SQ515 := CIR_SQ50
+CIR_SF    :=  -0.1903328
+CIR_SD    :=   0.3536239
+CIR_OF    :=   0.0
+CIR_OD    :=   0.0
+HPING_ANG       := 0.0
+VPING_ANG       := 0.0
+K103ANG       := 0.0
+K304ANG       := 0.0
+K400ANG       := 0.0
+K520ANG       := 0.0
+K622ANG       := 0.0
+K1QXR         := 0.0
+ES52ANG     := 0.0
+LAM40A_K0L     := 0.0
+LAM40A_K1L     := 0.0
+LAM40B_K0L     := 0.0
+LAM40B_K1L     := 0.0
+LAM40C_K0L     := 0.0
+LAM40C_K1L     := 0.0
+LAM52A_K0L     := 0.0
+LAM52A_K1L     := 0.0
+LAM52B_K0L     := 0.0
+LAM52B_K1L     := 0.0
+LAM52C_K0L     := 0.0
+LAM52C_K1L     := 0.0
+LAM60A_K0L     := 0.0
+LAM60A_K1L     := 0.0
+LAM60B_K0L     := 0.0
+LAM60B_K1L     := 0.0
+LAM60C_K0L     := 0.0
+LAM60C_K1L     := 0.0
+LAM62A_K0L     := 0.0
+LAM62A_K1L     := 0.0
+LAM62B_K0L     := 0.0
+LAM62B_K1L     := 0.0
+LAM62C_K0L     := 0.0
+LAM62C_K1L     := 0.0
+LAM222_K0L     := 0.0
+LAM321_K0L     := 0.0
+LAM222_K1L     := 0.0
+LAM321_K1L     := 0.0
+LAM222_ANG       := 0.0
+LAM321_ANG       := 0.0
+!
+! MI dipole definitions
+!   use: magnetic length of IDA & IDB = 240 inches
+!        magnetic length of IDC & IDD = 160 inches
+!   steel length = mag length+0.15inches included in beamline
+!IDA000:  SBEND, TYPE = IDA, L=LIDA_MAG, ANGLE = CIRBEND
+XIDA_MAG := (LIDA_MAG*CIRBEND)/(2*SIN(CIRBEND/2))
+XIDB_MAG := (LIDB_MAG*CIRBEND)/(2*SIN(CIRBEND/2))
+XIDC_MAG := (LIDC_MAG*(2/3)*CIRBEND)/(2*SIN(CIRBEND/3))
+XIDD_MAG := (LIDD_MAG*(2/3)*CIRBEND)/(2*SIN(CIRBEND/3))
+
+IDA001:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA002:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA003:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA004:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA005:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA006:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA007:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA008:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA009:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA010:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA011:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA012:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA013:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA014:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA015:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA016:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA017:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA018:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA019:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA020:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA021:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA022:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA023:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA024:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA025:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA026:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA027:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA028:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA029:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA030:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA031:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA032:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA033:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA034:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA035:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA036:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA037:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA038:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA039:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA040:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA041:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA042:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA043:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA044:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA045:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA046:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA047:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA048:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA049:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA050:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA051:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA052:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA053:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA054:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA055:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA056:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA057:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA058:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA059:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA060:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA061:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA062:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA063:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA064:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA065:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA066:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA067:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA068:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA069:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA070:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA071:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA072:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA073:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA074:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA075:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA076:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA077:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA078:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA079:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA080:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA081:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA082:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA083:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA084:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA085:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA086:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA087:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA088:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA089:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA090:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA091:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA092:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA093:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA094:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA095:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA096:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA097:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA098:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA099:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA100:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA101:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA102:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA103:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA104:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA105:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA106:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA107:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA108:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA109:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA110:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA111:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA112:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA113:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA114:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDA115:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB000:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB001:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB002:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB003:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB004:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB005:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB006:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB007:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB008:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB009:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB010:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB011:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB012:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB013:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB014:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB015:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB016:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB017:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB018:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB019:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB020:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB021:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB022:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB023:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB024:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB025:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB026:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB027:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB028:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB029:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB030:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB031:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB032:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB033:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB034:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB035:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB036:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB037:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB038:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB039:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB040:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB041:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB042:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB043:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB044:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB045:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB046:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB047:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB048:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB049:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB050:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB051:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB052:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB053:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB054:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB055:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB056:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB057:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB058:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB059:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB060:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB061:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB062:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB063:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB064:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB065:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB066:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB067:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB068:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB069:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB070:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB071:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB072:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB073:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB074:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB075:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB076:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB077:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB078:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB079:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB080:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB081:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB082:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB083:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB084:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB085:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB086:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB087:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB088:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB089:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB090:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB091:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB092:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB093:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB094:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB095:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB096:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB097:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB098:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB099:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB100:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB101:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB102:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB103:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB104:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB105:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB106:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB107:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB108:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB109:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB110:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB111:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB112:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDB113:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
+IDC000:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC001:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC002:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC003:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC004:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC005:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC006:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC007:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC008:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC009:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC010:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC011:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC012:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC013:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC014:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC015:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC016:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC017:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC018:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC019:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC020:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC021:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC022:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC023:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC024:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC025:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC026:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC027:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC028:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC029:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC030:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC031:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC032:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC033:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC034:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC035:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC036:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC037:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC038:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC039:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC040:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC041:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC042:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC043:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC044:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC045:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC046:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC047:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC048:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC049:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC050:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC051:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC052:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC053:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC054:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC055:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC056:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC057:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC058:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC059:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC060:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC061:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC062:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC063:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC064:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC065:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC066:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC067:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC068:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDC069:  SBEND, TYPE = IDC, L=XIDC_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD000:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD001:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD002:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD003:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD004:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD005:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD006:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD007:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD008:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD009:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD010:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD011:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD012:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD013:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD014:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD015:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD016:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD017:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD018:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD019:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD020:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD021:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD022:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD023:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD024:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD025:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD026:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD027:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD028:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD029:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD030:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD031:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD032:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD033:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD034:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD035:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD036:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD037:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD038:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD039:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD040:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD041:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD042:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD043:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD044:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD045:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD046:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD047:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD048:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD049:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD050:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD051:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD052:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD053:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD054:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD055:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD056:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD057:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD058:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD059:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD060:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD061:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD062:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD063:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD064:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD065:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD066:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD067:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD068:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+IDD069:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
+!
+! Dipole Magnet Assignments 
+!
+D104: LINE = (IDC045 , DCD , IDD059)  !assigned     8/5/92    10/24/92
+D105: LINE = (IDC002 , DCD , IDD019)  !assigned    4/25/92      8/5/92
+D106: LINE = (IDC016 , DCD , IDD023)  !assigned    4/25/92     7/16/92
+D107: LINE = (IDC020 , DCD , IDD005)  !assigned    4/25/92     7/16/92
+D108: LINE = (IDA043 , DAB , IDB048)  !assigned    4/10/92     4/17/92
+D109: LINE = (IDA005 , DAB , IDB028)  !assigned    4/10/92     4/10/92
+D110: LINE = (IDA041 , DAB , IDB047)  !assigned    4/11/92     4/22/92
+D111: LINE = (IDA036 , DAB , IDB041)  !assigned    4/21/92     4/11/92
+D112: LINE = (IDA048 , DAB , IDB031)  !assigned    4/21/92     4/25/92
+D113: LINE = (IDA004 , DAB , IDB014)  !assigned    4/11/92     4/11/92
+D114: LINE = (IDA034 , DAB , IDB013)  !assigned    4/15/92     4/14/92
+D115: LINE = (IDA039 , DAB , IDB023)  !assigned    4/25/92     4/28/92
+D116: LINE = (IDA042 , DAB , IDB026)  !assigned    4/28/92     4/14/92
+D117: LINE = (IDA065 , DAB , IDB033)  !assigned   10/24/92     4/28/92
+D118: LINE = (IDA047 , DAB , IDB017)  !assigned    4/15/92     4/15/92
+D119: LINE = (IDA027 , DAB , IDB003)  !assigned    4/15/92     8/12/92
+D120: LINE = (IDA040 , DAB , IDB060)  !assigned    4/15/92     3/10/93
+D121: LINE = (IDA064 , DAB , IDB040)  !assigned   10/24/92     4/21/92
+D122: LINE = (IDA050 , DAB , IDB032)  !assigned   10/24/92     4/16/92
+D123: LINE = (IDA028 , DAB , IDB001)  !assigned    4/16/92     8/12/92
+D124: LINE = (IDA032 , DAB , IDB022)  !assigned    4/16/92     4/16/92
+D125: LINE = (IDA063 , DAB , IDB050)  !assigned   10/24/92    12/10/92
+D126: LINE = (IDA045 , DAB , IDB039)  !assigned    4/28/92     4/22/92
+D127: LINE = (IDA060 , DAB , IDB051)  !assigned   10/27/92    12/10/92
+D128: LINE = (IDA033 , DAB , IDB024)  !assigned    4/29/92     4/29/92
+D129: LINE = (IDA006 , DAB , IDB052)  !assigned    4/29/92    12/10/92
+D130: LINE = (IDA056 , DAB , IDB053)  !assigned   10/27/92    12/11/92
+D201: LINE = (IDA062 , DAB , IDB054)  !assigned   10/27/92    12/11/92
+D202: LINE = (IDA059 , DAB , IDB055)  !assigned   10/27/92    12/11/92
+D203: LINE = (IDA017 , DAB , IDB080)  !assigned    4/29/92     3/10/93
+D204: LINE = (IDA057 , DAB , IDB007)  !assigned   10/27/92     4/30/92
+D205: LINE = (IDA054 , DAB , IDB065)  !assigned   10/28/92     3/10/93
+D206: LINE = (IDA055 , DAB , IDB064)  !assigned   10/28/92     3/10/93
+D207: LINE = (IDA053 , DAB , IDB074)  !assigned   10/28/92     3/17/93
+D208: LINE = (IDA051 , DAB , IDB004)  !assigned   10/28/92     4/30/92
+D209: LINE = (IDA024 , DAB , IDB038)  !assigned    4/30/92    12/11/92
+D210: LINE = (IDA052 , DAB , IDB056)  !assigned   10/28/92     3/10/93
+D211: LINE = (IDA058 , DAB , IDB066)  !assigned   10/29/92     3/17/93
+D212: LINE = (IDA061 , DAB , IDB068)  !assigned   10/29/92     3/17/93
+D213: LINE = (IDA025 , DAB , IDB049)  !assigned    4/30/92    12/11/92
+D214: LINE = (IDA067 , DAB , IDB057)  !assigned   10/29/92     3/16/93
+D215: LINE = (IDA066 , DAB , IDB085)  !assigned   10/29/92      3/9/93
+D216: LINE = (IDC015 , DCD , IDD016)  !assigned    7/16/92     7/21/92
+D217: LINE = (IDC006 , DCD , IDD006)  !assigned    7/21/92     7/21/92
+D218: LINE = (IDC009 , DCD , IDD014)  !assigned    7/21/92     7/21/92
+D219: LINE = (IDC047 , DCD , IDD036)  !assigned    7/22/92     7/22/92
+D223: LINE = (IDC022 , DCD , IDD038)  !assigned    7/22/92     7/22/92
+D224: LINE = (IDC018 , DCD , IDD029)  !assigned    7/22/92     7/23/92
+D225: LINE = (IDC014 , DCD , IDD025)  !assigned    7/23/92     7/23/92
+D226: LINE = (IDC028 , DCD , IDD001)  !assigned    7/23/92     8/20/92
+D227: LINE = (IDA068 , DAB , IDB081)  !assigned   10/29/92      3/9/93
+D228: LINE = (IDA070 , DAB , IDB078)  !assigned    12/8/92      3/9/93
+D229: LINE = (IDC030 , DCD , IDD030)  !assigned    7/30/92     7/30/92
+D230: LINE = (IDC011 , DCD , IDD002)  !assigned    7/30/92     8/20/92
+D231: LINE = (IDC012 , DCD , IDD010)  !assigned    7/31/92     7/31/92
+D232: LINE = (IDC019 , DCD , IDD024)  !assigned    7/31/92     7/31/92
+D309: LINE = (IDC042 , DCD , IDD037)  !assigned    7/25/92     7/25/92
+D310: LINE = (IDC039 , DCD , IDD007)  !assigned    7/24/92     7/24/92
+D311: LINE = (IDC026 , DCD , IDD035)  !assigned    7/24/92     7/24/92
+D312: LINE = (IDC067 , DCD , IDD034)  !assigned    7/24/92     7/23/92
+D313: LINE = (IDA069 , DAB , IDB076)  !assigned    12/8/92     3/20/93
+D314: LINE = (IDA072 , DAB , IDB077)  !assigned    12/8/92     3/20/93
+D315: LINE = (IDC038 , DCD , IDD020)  !assigned    7/25/92     7/25/92
+D316: LINE = (IDC068 , DCD , IDD033)  !assigned    7/25/92     7/28/92
+D317: LINE = (IDC043 , DCD , IDD012)  !assigned    7/28/92     7/28/92
+D318: LINE = (IDC034 , DCD , IDD021)  !assigned    7/28/92     7/28/92
+D322: LINE = (IDC044 , DCD , IDD022)  !assigned    7/29/92     7/29/92
+D323: LINE = (IDC036 , DCD , IDD026)  !assigned    7/29/92     7/29/92
+D324: LINE = (IDC029 , DCD , IDD027)  !assigned    7/29/92     7/30/92
+D325: LINE = (IDC008 , DCD , IDD028)  !assigned    7/30/92     7/30/92
+D326: LINE = (IDA075 , DAB , IDB071)  !assigned    12/8/92     3/19/93
+D327: LINE = (IDA011 , DAB , IDB058)  !assigned    8/12/92     3/18/93
+D328: LINE = (IDA071 , DAB , IDB070)  !assigned    12/8/92     3/19/93
+D329: LINE = (IDA076 , DAB , IDB020)  !assigned    12/9/92     8/12/92
+D330: LINE = (IDA074 , DAB , IDB075)  !assigned    12/9/92     3/19/93
+D331: LINE = (IDA015 , DAB , IDB059)  !assigned    8/11/92     3/19/93
+D332: LINE = (IDA073 , DAB , IDB082)  !assigned    12/9/92     3/18/93
+D333: LINE = (IDA013 , DAB , IDB016)  !assigned    8/11/92      8/6/92
+D334: LINE = (IDA077 , DAB , IDB062)  !assigned   12/10/92     3/19/93
+D335: LINE = (IDA093 , DAB , IDB084)  !assigned    6/18/93     3/17/93
+D336: LINE = (IDA090 , DAB , IDB087)  !assigned    7/28/93     3/18/93
+D337: LINE = (IDA018 , DAB , IDB079)  !assigned    8/11/92     3/18/93
+D338: LINE = (IDC032 , DCD , IDD039)  !assigned    7/31/92     8/18/92
+D339: LINE = (IDC005 , DCD , IDD049)  !assigned     8/1/92     8/15/92
+D340: LINE = (IDC035 , DCD , IDD050)  !assigned     8/1/92     8/18/92
+D341: LINE = (IDC060 , DCD , IDD047)  !assigned     8/1/92     8/12/92
+D404: LINE = (IDC066 , DCD , IDD045)  !assigned   11/17/93    11/17/93
+D405: LINE = (IDC010 , DCD , IDD056)  !assigned    5/29/93     5/29/93
+D406: LINE = (IDC004 , DCD , IDD042)  !assigned     8/6/92      8/6/92
+D407: LINE = (IDC055 , DCD , IDD055)  !assigned     8/6/92    10/23/92
+D408: LINE = (IDA092 , DAB , IDB091)  !assigned    6/10/93     3/16/93
+D409: LINE = (IDA009 , DAB , IDB073)  !assigned   12/10/92     3/11/93
+D410: LINE = (IDA112 , DAB , IDB012)  !assigned    7/28/93      8/6/92
+D411: LINE = (IDA001 , DAB , IDB072)  !assigned    8/20/92     3/13/93
+D412: LINE = (IDA110 , DAB , IDB063)  !assigned    7/28/93     3/11/93
+D413: LINE = (IDA020 , DAB , IDB083)  !assigned     8/8/92     3/13/93
+D414: LINE = (IDA095 , DAB , IDB010)  !assigned    6/10/93      8/8/92
+D415: LINE = (IDA106 , DAB , IDB061)  !assigned    7/28/93     3/13/93
+D416: LINE = (IDA100 , DAB , IDB089)  !assigned    7/27/93     3/11/93
+D417: LINE = (IDA109 , DAB , IDB088)  !assigned    7/27/93     3/12/93
+D418: LINE = (IDA091 , DAB , IDB006)  !assigned    7/27/93      8/8/92
+D419: LINE = (IDA026 , DAB , IDB092)  !assigned     8/8/92     3/16/93
+D420: LINE = (IDA107 , DAB , IDB021)  !assigned    7/27/93      8/8/92
+D421: LINE = (IDA003 , DAB , IDB090)  !assigned    8/20/92     3/13/93
+D422: LINE = (IDA102 , DAB , IDB094)  !assigned    7/28/93     3/20/93
+D423: LINE = (IDA007 , DAB , IDB086)  !assigned    8/11/92     3/12/93
+D424: LINE = (IDA096 , DAB , IDB018)  !assigned    7/29/93     8/11/92
+D425: LINE = (IDA111 , DAB , IDB098)  !assigned    7/29/93     5/22/93
+D426: LINE = (IDA108 , DAB , IDB096)  !assigned    7/29/93     5/22/93
+D427: LINE = (IDA094 , DAB , IDB097)  !assigned    6/11/93     5/22/93
+D428: LINE = (IDA101 , DAB , IDB025)  !assigned    7/30/93      8/7/92
+D429: LINE = (IDA022 , DAB , IDB093)  !assigned     8/8/92     3/16/93
+D430: LINE = (IDA103 , DAB , IDB044)  !assigned    7/30/93      8/7/92
+D501: LINE = (IDA049 , DAB , IDB095)  !assigned    8/20/92     3/20/93
+D502: LINE = (IDA081 , DAB , IDB101)  !assigned    5/22/93     5/22/93
+D503: LINE = (IDA012 , DAB , IDB099)  !assigned    8/20/92     5/21/93
+D504: LINE = (IDA079 , DAB , IDB009)  !assigned    5/21/93     8/19/92
+D505: LINE = (IDA078 , DAB , IDB103)  !assigned    5/21/93     5/21/93
+D506: LINE = (IDA084 , DAB , IDB107)  !assigned    5/22/93     5/26/93
+D507: LINE = (IDA088 , DAB , IDB102)  !assigned    6/11/93     5/26/93
+D508: LINE = (IDA080 , DAB , IDB005)  !assigned    5/26/93     8/19/92
+D509: LINE = (IDA021 , DAB , IDB108)  !assigned    8/19/92     5/26/93
+D510: LINE = (IDA089 , DAB , IDB015)  !assigned    6/11/93     8/19/92
+D511: LINE = (IDA085 , DAB , IDB110)  !assigned    5/26/93     5/26/93
+D512: LINE = (IDA087 , DAB , IDB106)  !assigned    5/27/93     5/27/93
+D513: LINE = (IDA019 , DAB , IDB104)  !assigned    8/19/92     5/27/93
+D514: LINE = (IDA083 , DAB , IDB029)  !assigned    5/27/93     8/19/92
+D515: LINE = (IDA086 , DAB , IDB067)  !assigned    5/27/93     3/11/93
+D516: LINE = (IDC059 , DCD , IDD046)  !assigned    8/18/92    10/21/92
+D517: LINE = (IDC050 , DCD , IDD052)  !assigned    8/18/92    10/21/92
+D518: LINE = (IDC063 , DCD , IDD066)  !assigned    8/18/92    10/21/92
+D519: LINE = (IDC056 , DCD , IDD061)  !assigned    8/18/92    10/21/92
+D523: LINE = (IDC048 , DCD , IDD057)  !assigned     8/5/93      8/5/93
+D524: LINE = (IDC053 , DCD , IDD067)  !assigned   10/21/92    10/22/92
+D525: LINE = (IDC049 , DCD , IDD051)  !assigned   10/22/92    10/22/92
+D526: LINE = (IDC037 , DCD , IDD048)  !assigned    5/28/93     7/31/93
+D527: LINE = (IDA104 , DAB , IDB111)  !assigned    m/dd/yy     5/27/93
+D528: LINE = (IDA082 , DAB , IDB069)  !assigned    5/28/93     3/11/93
+D529: LINE = (IDC064 , DCD , IDD060)  !assigned   10/22/92    10/22/92
+D530: LINE = (IDC065 , DCD , IDD068)  !assigned   10/22/92    10/23/92
+D531: LINE = (IDC031 , DCD , IDD053)  !assigned   10/23/92    10/23/92
+D532: LINE = (IDC057 , DCD , IDD063)  !assigned   10/23/92    10/23/92
+D609: LINE = (IDC046 , DCD , IDD044)  !assigned     8/5/92      8/5/92
+D610: LINE = (IDC052 , DCD , IDD040)  !assigned     8/4/92      8/5/92
+D611: LINE = (IDC051 , DCD , IDD018)  !assigned     8/4/92      8/4/92
+D612: LINE = (IDC027 , DCD , IDD043)  !assigned     8/4/92      8/5/92
+D613: LINE = (IDA105 , DAB , IDB105)  !assigned    7/31/93     5/28/93
+D614: LINE = (IDA098 , DAB , IDB109)  !assigned    0/00/00     5/28/93
+D615: LINE = (IDC061 , DCD , IDD058)  !assigned     8/5/93     6/11/93
+D616: LINE = (IDC041 , DCD , IDD015)  !assigned     8/4/92      8/4/92
+D617: LINE = (IDC040 , DCD , IDD041)  !assigned     8/1/92      8/1/92
+D618: LINE = (IDC054 , DCD , IDD064)  !assigned    5/28/93     5/28/93
+D622: LINE = (IDC013 , DCD , IDD009)  !assigned    2/20/92     2/21/92
+D623: LINE = (IDC024 , DCD , IDD017)  !assigned    2/21/92     2/22/92
+D624: LINE = (IDC023 , DCD , IDD011)  !assigned    2/21/92     2/22/92
+D625: LINE = (IDC021 , DCD , IDD008)  !assigned    2/21/92     2/22/92
+D626: LINE = (IDA044 , DAB , IDB045)  !assigned    4/22/92     4/23/92
+D627: LINE = (IDA008 , DAB , IDB036)  !assigned     4/9/92     4/23/92
+D628: LINE = (IDA037 , DAB , IDB042)  !assigned    4/14/92      4/9/92
+D629: LINE = (IDA035 , DAB , IDB011)  !assigned     4/9/92     4/23/92
+D630: LINE = (IDA029 , DAB , IDB035)  !assigned     4/8/92     3/18/92
+D631: LINE = (IDA023 , DAB , IDB037)  !assigned     4/8/92     3/10/92
+D632: LINE = (IDA031 , DAB , IDB043)  !assigned    4/10/92      4/8/92
+D633: LINE = (IDA014 , DAB , IDB034)  !assigned    3/17/92     4/23/92
+D634: LINE = (IDA046 , DAB , IDB019)  !assigned     4/8/92      4/9/92
+D635: LINE = (IDA030 , DAB , IDB027)  !assigned     4/9/92     4/17/92
+D636: LINE = (IDA038 , DAB , IDB046)  !assigned    4/17/92     4/17/92
+D637: LINE = (IDA010 , DAB , IDB030)  !assigned    3/17/92     3/17/92
+D638: LINE = (IDC025 , DCD , IDD017)  !assigned    2/21/92     2/22/92
+D639: LINE = (IDC017 , DCD , IDD009)  !assigned    2/21/92     2/22/92
+D640: LINE = (IDC003 , DCD , IDD031)  !assigned   10/22/93    10/22/93
+D641: LINE = (IDC007 , DCD , IDD032)  !assigned   10/22/93    10/22/93
+
+!
+! Quadrupole Magnet Definitions 
+!
+M100: MARKER, TYPE = CELLBDY
+M101: MARKER, TYPE = CELLBDY
+M102: MARKER, TYPE = CELLBDY
+M103: MARKER, TYPE = CELLBDY
+M104: MARKER, TYPE = CELLBDY
+M105: MARKER, TYPE = CELLBDY
+M106: MARKER, TYPE = CELLBDY
+M107: MARKER, TYPE = CELLBDY
+M108: MARKER, TYPE = CELLBDY
+M109: MARKER, TYPE = CELLBDY
+M110: MARKER, TYPE = CELLBDY
+M111: MARKER, TYPE = CELLBDY
+M112: MARKER, TYPE = CELLBDY
+M113: MARKER, TYPE = CELLBDY
+M114: MARKER, TYPE = CELLBDY
+M115: MARKER, TYPE = CELLBDY
+M116: MARKER, TYPE = CELLBDY
+M117: MARKER, TYPE = CELLBDY
+M118: MARKER, TYPE = CELLBDY
+M119: MARKER, TYPE = CELLBDY
+M120: MARKER, TYPE = CELLBDY
+M121: MARKER, TYPE = CELLBDY
+M122: MARKER, TYPE = CELLBDY
+M123: MARKER, TYPE = CELLBDY
+M124: MARKER, TYPE = CELLBDY
+M125: MARKER, TYPE = CELLBDY
+M126: MARKER, TYPE = CELLBDY
+M127: MARKER, TYPE = CELLBDY
+M128: MARKER, TYPE = CELLBDY
+M129: MARKER, TYPE = CELLBDY
+M130: MARKER, TYPE = CELLBDY
+M201: MARKER, TYPE = CELLBDY
+M202: MARKER, TYPE = CELLBDY
+M203: MARKER, TYPE = CELLBDY
+M204: MARKER, TYPE = CELLBDY
+M205: MARKER, TYPE = CELLBDY
+M206: MARKER, TYPE = CELLBDY
+M207: MARKER, TYPE = CELLBDY
+M208: MARKER, TYPE = CELLBDY
+M209: MARKER, TYPE = CELLBDY
+M210: MARKER, TYPE = CELLBDY
+M211: MARKER, TYPE = CELLBDY
+M212: MARKER, TYPE = CELLBDY
+M213: MARKER, TYPE = CELLBDY
+M214: MARKER, TYPE = CELLBDY
+M215: MARKER, TYPE = CELLBDY
+M216: MARKER, TYPE = CELLBDY
+M217: MARKER, TYPE = CELLBDY
+M218: MARKER, TYPE = CELLBDY
+M219: MARKER, TYPE = CELLBDY
+M220: MARKER, TYPE = CELLBDY
+M221: MARKER, TYPE = CELLBDY
+M222: MARKER, TYPE = CELLBDY
+M223: MARKER, TYPE = CELLBDY
+M224: MARKER, TYPE = CELLBDY
+M225: MARKER, TYPE = CELLBDY
+M226: MARKER, TYPE = CELLBDY
+M227: MARKER, TYPE = CELLBDY
+M228: MARKER, TYPE = CELLBDY
+M229: MARKER, TYPE = CELLBDY
+M230: MARKER, TYPE = CELLBDY
+M231: MARKER, TYPE = CELLBDY
+M232: MARKER, TYPE = CELLBDY
+M301: MARKER, TYPE = CELLBDY
+M302: MARKER, TYPE = CELLBDY
+M303: MARKER, TYPE = CELLBDY
+M304: MARKER, TYPE = CELLBDY
+M305: MARKER, TYPE = CELLBDY
+M306: MARKER, TYPE = CELLBDY
+M307: MARKER, TYPE = CELLBDY
+M308: MARKER, TYPE = CELLBDY
+M309: MARKER, TYPE = CELLBDY
+M310: MARKER, TYPE = CELLBDY
+M311: MARKER, TYPE = CELLBDY
+M312: MARKER, TYPE = CELLBDY
+M313: MARKER, TYPE = CELLBDY
+M314: MARKER, TYPE = CELLBDY
+M315: MARKER, TYPE = CELLBDY
+M316: MARKER, TYPE = CELLBDY
+M317: MARKER, TYPE = CELLBDY
+M318: MARKER, TYPE = CELLBDY
+M319: MARKER, TYPE = CELLBDY
+M320: MARKER, TYPE = CELLBDY
+M321: MARKER, TYPE = CELLBDY
+M322: MARKER, TYPE = CELLBDY
+M323: MARKER, TYPE = CELLBDY
+M324: MARKER, TYPE = CELLBDY
+M325: MARKER, TYPE = CELLBDY
+M326: MARKER, TYPE = CELLBDY
+M327: MARKER, TYPE = CELLBDY
+M328: MARKER, TYPE = CELLBDY
+M329: MARKER, TYPE = CELLBDY
+M330: MARKER, TYPE = CELLBDY
+M331: MARKER, TYPE = CELLBDY
+M332: MARKER, TYPE = CELLBDY
+M333: MARKER, TYPE = CELLBDY
+M334: MARKER, TYPE = CELLBDY
+M335: MARKER, TYPE = CELLBDY
+M336: MARKER, TYPE = CELLBDY
+M337: MARKER, TYPE = CELLBDY
+M338: MARKER, TYPE = CELLBDY
+M339: MARKER, TYPE = CELLBDY
+M340: MARKER, TYPE = CELLBDY
+M341: MARKER, TYPE = CELLBDY
+M400: MARKER, TYPE = CELLBDY
+M401: MARKER, TYPE = CELLBDY
+M402: MARKER, TYPE = CELLBDY
+M403: MARKER, TYPE = CELLBDY
+M404: MARKER, TYPE = CELLBDY
+M405: MARKER, TYPE = CELLBDY
+M406: MARKER, TYPE = CELLBDY
+M407: MARKER, TYPE = CELLBDY
+M408: MARKER, TYPE = CELLBDY
+M409: MARKER, TYPE = CELLBDY
+M410: MARKER, TYPE = CELLBDY
+M411: MARKER, TYPE = CELLBDY
+M412: MARKER, TYPE = CELLBDY
+M413: MARKER, TYPE = CELLBDY
+M414: MARKER, TYPE = CELLBDY
+M415: MARKER, TYPE = CELLBDY
+M416: MARKER, TYPE = CELLBDY
+M417: MARKER, TYPE = CELLBDY
+M418: MARKER, TYPE = CELLBDY
+M419: MARKER, TYPE = CELLBDY
+M420: MARKER, TYPE = CELLBDY
+M421: MARKER, TYPE = CELLBDY
+M422: MARKER, TYPE = CELLBDY
+M423: MARKER, TYPE = CELLBDY
+M424: MARKER, TYPE = CELLBDY
+M425: MARKER, TYPE = CELLBDY
+M426: MARKER, TYPE = CELLBDY
+M427: MARKER, TYPE = CELLBDY
+M428: MARKER, TYPE = CELLBDY
+M429: MARKER, TYPE = CELLBDY
+M430: MARKER, TYPE = CELLBDY
+M501: MARKER, TYPE = CELLBDY
+M502: MARKER, TYPE = CELLBDY
+M503: MARKER, TYPE = CELLBDY
+M504: MARKER, TYPE = CELLBDY
+M505: MARKER, TYPE = CELLBDY
+M506: MARKER, TYPE = CELLBDY
+M507: MARKER, TYPE = CELLBDY
+M508: MARKER, TYPE = CELLBDY
+M509: MARKER, TYPE = CELLBDY
+M510: MARKER, TYPE = CELLBDY
+M511: MARKER, TYPE = CELLBDY
+M512: MARKER, TYPE = CELLBDY
+M513: MARKER, TYPE = CELLBDY
+M514: MARKER, TYPE = CELLBDY
+M515: MARKER, TYPE = CELLBDY
+M516: MARKER, TYPE = CELLBDY
+M517: MARKER, TYPE = CELLBDY
+M518: MARKER, TYPE = CELLBDY
+M519: MARKER, TYPE = CELLBDY
+M520: MARKER, TYPE = CELLBDY
+M521: MARKER, TYPE = CELLBDY
+M522: MARKER, TYPE = CELLBDY
+M523: MARKER, TYPE = CELLBDY
+M524: MARKER, TYPE = CELLBDY
+M525: MARKER, TYPE = CELLBDY
+M526: MARKER, TYPE = CELLBDY
+M527: MARKER, TYPE = CELLBDY
+M528: MARKER, TYPE = CELLBDY
+M529: MARKER, TYPE = CELLBDY
+M530: MARKER, TYPE = CELLBDY
+M531: MARKER, TYPE = CELLBDY
+M532: MARKER, TYPE = CELLBDY
+M601: MARKER, TYPE = CELLBDY
+M602: MARKER, TYPE = CELLBDY
+M603: MARKER, TYPE = CELLBDY
+M604: MARKER, TYPE = CELLBDY
+M605: MARKER, TYPE = CELLBDY
+M606: MARKER, TYPE = CELLBDY
+M607: MARKER, TYPE = CELLBDY
+M608: MARKER, TYPE = CELLBDY
+M609: MARKER, TYPE = CELLBDY
+M610: MARKER, TYPE = CELLBDY
+M611: MARKER, TYPE = CELLBDY
+M612: MARKER, TYPE = CELLBDY
+M613: MARKER, TYPE = CELLBDY
+M614: MARKER, TYPE = CELLBDY
+M615: MARKER, TYPE = CELLBDY
+M616: MARKER, TYPE = CELLBDY
+M617: MARKER, TYPE = CELLBDY
+M618: MARKER, TYPE = CELLBDY
+M619: MARKER, TYPE = CELLBDY
+M620: MARKER, TYPE = CELLBDY
+M621: MARKER, TYPE = CELLBDY
+M622: MARKER, TYPE = CELLBDY
+M623: MARKER, TYPE = CELLBDY
+M624: MARKER, TYPE = CELLBDY
+M625: MARKER, TYPE = CELLBDY
+M626: MARKER, TYPE = CELLBDY
+M627: MARKER, TYPE = CELLBDY
+M628: MARKER, TYPE = CELLBDY
+M629: MARKER, TYPE = CELLBDY
+M630: MARKER, TYPE = CELLBDY
+M631: MARKER, TYPE = CELLBDY
+M632: MARKER, TYPE = CELLBDY
+M633: MARKER, TYPE = CELLBDY
+M634: MARKER, TYPE = CELLBDY
+M635: MARKER, TYPE = CELLBDY
+M636: MARKER, TYPE = CELLBDY
+M637: MARKER, TYPE = CELLBDY
+M638: MARKER, TYPE = CELLBDY
+M639: MARKER, TYPE = CELLBDY
+M640: MARKER, TYPE = CELLBDY
+M641: MARKER, TYPE = CELLBDY
+
+QFFAKE:    MULTIPOLE , k1L =  0.00
+QDFAKE:    MULTIPOLE , k1L =  0.00
+
+IQBUEND:   DRIFT, L = LIQBU_END
+IQBDEND:   DRIFT, L = LIQBD_END
+IQEUEND:   DRIFT, L = LIQEU_END
+IQEDEND:   DRIFT, L = LIQED_END
+IQCUEND:   DRIFT, L = LIQCU_END
+IQCDEND:  DRIFT, L = LIQCD_END
+IQDUEND:  DRIFT, L = LIQDU_END
+IQDDEND:  DRIFT, L = LIQDD_END
+IQC025:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q100:  LINE = (M100, QFFAKE, IQC025, QFFAKE )  !assiged   1/19/94
+
+IQG333:  QUADRUPOLE, TYPE = IQG, L = LIQB_STEEL, K1 = K1QDIQB
+Q101:  LINE = (M101, QDFAKE, IQG333, QDFAKE )  !assiged   m/dd/yy
+
+IQE068:  QUADRUPOLE, TYPE = IQE, L = LIQB_STEEL, K1 = K1QFIQB
+Q102:  LINE = (M102, QFFAKE, IQE068, QFFAKE )  !assiged   4/22/94
+
+IQB176:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q103:  LINE = (M103, QDFAKE, IQB176, QDFAKE )  !assiged    4/9/94
+
+IQC021:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q104:  LINE = (M104, QFFAKE, IQC021, QFFAKE )  !assiged   6/16/93
+
+IQD051:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q105:  LINE = (M105, QDFAKE, IQD051, QDFAKE )  !assiged   6/15/93
+
+IQD013:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q106:  LINE = (M106, QFFAKE, IQD013, QFFAKE )  !assiged    6/8/93
+
+IQD031:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q107:  LINE = (M107, QDFAKE, IQD031, QDFAKE )  !assiged    6/8/93
+
+IQC030:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q108:  LINE = (M108, QFFAKE, IQC030, QFFAKE )  !assiged    6/3/93
+
+IQB183:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q109:  LINE = (M109, QDFAKE, IQB183, QDFAKE )  !assiged    3/9/94
+
+IQB110:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q110:  LINE = (M110, QFFAKE, IQB110, QFFAKE )  !assiged    3/9/94
+
+IQB173:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q111:  LINE = (M111, QDFAKE, IQB173, QDFAKE )  !assiged    3/9/94
+
+IQB200:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q112:  LINE = (M112, QFFAKE, IQB200, QFFAKE )  !assiged   3/10/94
+
+IQB171:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q113:  LINE = (M113, QDFAKE, IQB171, QDFAKE )  !assiged   3/10/94
+
+IQB086:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q114:  LINE = (M114, QFFAKE, IQB086, QFFAKE )  !assiged   3/10/94
+
+IQB049:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q115:  LINE = (M115, QDFAKE, IQB049, QDFAKE )  !assiged   3/10/94
+
+IQB223:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q116:  LINE = (M116, QFFAKE, IQB223, QFFAKE )  !assiged   3/10/94
+
+IQB208:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q117:  LINE = (M117, QDFAKE, IQB208, QDFAKE )  !assiged   3/10/94
+
+IQB160:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q118:  LINE = (M118, QFFAKE, IQB160, QFFAKE )  !assiged   3/10/94
+
+IQB103:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q119:  LINE = (M119, QDFAKE, IQB103, QDFAKE )  !assiged   3/11/94
+
+IQB182:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q120:  LINE = (M120, QFFAKE, IQB182, QFFAKE )  !assiged   3/11/94
+
+IQB174:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q121:  LINE = (M121, QDFAKE, IQB174, QDFAKE )  !assiged   3/11/94
+
+IQB188:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q122:  LINE = (M122, QFFAKE, IQB188, QFFAKE )  !assiged   3/11/94
+
+IQB186:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q123:  LINE = (M123, QDFAKE, IQB186, QDFAKE )  !assiged   3/11/94
+
+IQB243:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q124:  LINE = (M124, QFFAKE, IQB243, QFFAKE )  !assiged   3/11/94
+
+IQB056:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q125:  LINE = (M125, QDFAKE, IQB056, QDFAKE )  !assiged   3/11/94
+
+IQB203:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q126:  LINE = (M126, QFFAKE, IQB203, QFFAKE )  !assiged    4/9/94
+
+IQB229:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q127:  LINE = (M127, QDFAKE, IQB229, QDFAKE )  !assiged   3/16/94
+
+IQB069:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q128:  LINE = (M128, QFFAKE, IQB069, QFFAKE )  !assiged   3/16/94
+
+IQB298:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q129:  LINE = (M129, QDFAKE, IQB298, QDFAKE )  !assiged   3/12/94
+
+IQB194:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q130:  LINE = (M130, QFFAKE, IQB194, QFFAKE )  !assiged   3/12/94
+
+IQB196:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q201:  LINE = (M201, QDFAKE, IQB196, QDFAKE )  !assiged   3/16/94
+
+IQB236:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q202:  LINE = (M202, QFFAKE, IQB236, QFFAKE )  !assiged    4/9/94
+
+IQB262:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q203:  LINE = (M203, QDFAKE, IQB262, QDFAKE )  !assiged   3/12/94
+
+IQB206:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q204:  LINE = (M204, QFFAKE, IQB206, QFFAKE )  !assiged   3/12/94
+
+IQB269:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q205:  LINE = (M205, QDFAKE, IQB269, QDFAKE )  !assiged   3/12/94
+
+IQB169:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q206:  LINE = (M206, QFFAKE, IQB169, QFFAKE )  !assiged   3/16/94
+
+IQB129:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q207:  LINE = (M207, QDFAKE, IQB129, QDFAKE )  !assiged   3/16/94
+
+IQB201:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q208:  LINE = (M208, QFFAKE, IQB201, QFFAKE )  !assiged   3/22/94
+
+IQB167:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q209:  LINE = (M209, QDFAKE, IQB167, QDFAKE )  !assiged    4/1/94
+
+IQB073:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q210:  LINE = (M210, QFFAKE, IQB073, QFFAKE )  !assiged   3/31/94
+
+IQB180:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q211:  LINE = (M211, QDFAKE, IQB180, QDFAKE )  !assiged   3/31/94
+
+IQB085:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q212:  LINE = (M212, QFFAKE, IQB085, QFFAKE )  !assiged   3/22/94
+
+IQB130:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q213:  LINE = (M213, QDFAKE, IQB130, QDFAKE )  !assiged   3/31/94
+
+IQB125:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q214:  LINE = (M214, QFFAKE, IQB125, QFFAKE )  !assiged   3/31/94
+
+IQB296:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q215:  LINE = (M215, QDFAKE, IQB296, QDFAKE )  !assiged   3/22/94
+
+IQC028:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q216:  LINE = (M216, QFFAKE, IQC028, QFFAKE )  !assiged   6/15/93
+
+IQD005:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q217:  LINE = (M217, QDFAKE, IQD005, QDFAKE )  !assiged   5/29/93
+
+IQD010:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q218:  LINE = (M218, QFFAKE, IQD010, QFFAKE )  !assiged   6/15/93
+
+IQD042:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q219:  LINE = (M219, QDFAKE, IQD042, QDFAKE )  !assiged    6/1/93
+
+IQC023:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q220:  LINE = (M220, QFFAKE, IQC023, QFFAKE )  !assiged   8/12/93
+
+IQB106:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q221:  LINE = (M221, QDFAKE, IQB106, QDFAKE )  !assiged   3/23/94
+
+IQB045:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q222:  LINE = (M222, QFFAKE, IQB045, QFFAKE )  !assiged   3/22/94
+
+IQC037:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q223:  LINE = (M223, QDFAKE, IQC037, QDFAKE )  !assiged   8/12/93
+
+IQD038:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q224:  LINE = (M224, QFFAKE, IQD038, QFFAKE )  !assiged   8/12/93
+
+IQD002:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q225:  LINE = (M225, QDFAKE, IQD002, QDFAKE )  !assiged   8/13/93
+
+IQD030:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q226:  LINE = (M226, QFFAKE, IQD030, QFFAKE )  !assiged    6/1/93
+
+IQC031:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q227:  LINE = (M227, QDFAKE, IQC031, QDFAKE )  !assiged    6/3/93
+
+IQB214:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q228:  LINE = (M228, QFFAKE, IQB214, QFFAKE )  !assiged   8/17/93
+
+IQC001:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q229:  LINE = (M229, QDFAKE, IQC001, QDFAKE )  !assiged   6/15/93
+
+IQD027:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q230:  LINE = (M230, QFFAKE, IQD027, QFFAKE )  !assiged   8/13/93
+
+IQD001:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q231:  LINE = (M231, QDFAKE, IQD001, QDFAKE )  !assiged   6/16/93
+
+IQD019:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q232:  LINE = (M232, QFFAKE, IQD019, QFFAKE )  !assiged    6/2/93
+
+IQC008:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q301:  LINE = (M301, QDFAKE, IQC008, QDFAKE )  !assiged   8/18/93
+
+IQB146:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q302:  LINE = (M302, QFFAKE, IQB146, QFFAKE )  !assiged    4/9/94
+
+IQB082:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q303:  LINE = (M303, QDFAKE, IQB082, QDFAKE )  !assiged    4/8/94
+
+IQB058:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q304:  LINE = (M304, QFFAKE, IQB058, QFFAKE )  !assiged    4/8/94
+
+IQB055:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q305:  LINE = (M305, QDFAKE, IQB055, QDFAKE )  !assiged    4/8/94
+
+IQB116:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q306:  LINE = (M306, QFFAKE, IQB116, QFFAKE )  !assiged    4/8/94
+
+IQB216:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q307:  LINE = (M307, QDFAKE, IQB216, QDFAKE )  !assiged    4/9/94
+
+IQB064:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q308:  LINE = (M308, QFFAKE, IQB064, QFFAKE )  !assiged    4/8/94
+
+IQC004:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q309:  LINE = (M309, QDFAKE, IQC004, QDFAKE )  !assiged   8/17/93
+
+IQD022:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q310:  LINE = (M310, QFFAKE, IQD022, QFFAKE )  !assiged   6/18/93
+
+IQD011:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q311:  LINE = (M311, QDFAKE, IQD011, QDFAKE )  !assiged    6/1/93
+
+IQD020:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q312:  LINE = (M312, QFFAKE, IQD020, QFFAKE )  !assiged    6/2/93
+
+IQC005:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q313:  LINE = (M313, QDFAKE, IQC005, QDFAKE )  !assiged   6/18/93
+
+IQB100:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q314:  LINE = (M314, QFFAKE, IQB100, QFFAKE )  !assiged   1/19/94
+
+IQC007:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q315:  LINE = (M315, QDFAKE, IQC007, QDFAKE )  !assiged   8/17/93
+
+IQD023:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q316:  LINE = (M316, QFFAKE, IQD023, QFFAKE )  !assiged    6/2/93
+
+IQD047:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q317:  LINE = (M317, QDFAKE, IQD047, QDFAKE )  !assiged    6/8/93
+
+IQD028:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q318:  LINE = (M318, QFFAKE, IQD028, QFFAKE )  !assiged   8/13/93
+
+IQC009:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q319:  LINE = (M319, QDFAKE, IQC009, QDFAKE )  !assiged   6/16/93
+
+IQB179:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q320:  LINE = (M320, QFFAKE, IQB179, QFFAKE )  !assiged    2/5/94
+
+IQB071:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q321:  LINE = (M321, QDFAKE, IQB071, QDFAKE )  !assiged    2/5/94
+
+IQC027:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q322:  LINE = (M322, QFFAKE, IQC027, QFFAKE )  !assiged   8/13/93
+
+IQD037:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q323:  LINE = (M323, QDFAKE, IQD037, QDFAKE )  !assiged   8/13/93
+
+IQD025:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q324:  LINE = (M324, QFFAKE, IQD025, QFFAKE )  !assiged   6/17/93
+
+IQD012:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q325:  LINE = (M325, QDFAKE, IQD012, QDFAKE )  !assiged   8/13/93
+
+IQC019:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q326:  LINE = (M326, QFFAKE, IQC019, QFFAKE )  !assiged   8/18/93
+
+IQB312:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q327:  LINE = (M327, QDFAKE, IQB312, QDFAKE )  !assiged   3/13/94
+
+IQB151:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q328:  LINE = (M328, QFFAKE, IQB151, QFFAKE )  !assiged    2/5/94
+
+IQB219:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q329:  LINE = (M329, QDFAKE, IQB219, QDFAKE )  !assiged    2/5/94
+
+IQB079:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q330:  LINE = (M330, QFFAKE, IQB079, QFFAKE )  !assiged   3/13/94
+
+IQB267:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q331:  LINE = (M331, QDFAKE, IQB267, QDFAKE )  !assiged    2/8/94
+
+IQB293:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q332:  LINE = (M332, QFFAKE, IQB293, QFFAKE )  !assiged   3/13/94
+
+IQB295:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q333:  LINE = (M333, QDFAKE, IQB295, QDFAKE )  !assiged    2/8/94
+
+IQB317:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q334:  LINE = (M334, QFFAKE, IQB317, QFFAKE )  !assiged    2/9/94
+
+IQB170:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q335:  LINE = (M335, QDFAKE, IQB170, QDFAKE )  !assiged    2/9/94
+
+IQB059:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q336:  LINE = (M336, QFFAKE, IQB059, QFFAKE )  !assiged   2/10/94
+
+IQB135:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q337:  LINE = (M337, QDFAKE, IQB135, QDFAKE )  !assiged   3/13/94
+
+IQC015:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q338:  LINE = (M338, QFFAKE, IQC015, QFFAKE )  !assiged   8/17/93
+
+IQD040:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q339:  LINE = (M339, QDFAKE, IQD040, QDFAKE )  !assiged   6/17/93
+
+IQD015:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q340:  LINE = (M340, QFFAKE, IQD015, QFFAKE )  !assiged    6/3/93
+
+IQD046:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q341:  LINE = (M341, QDFAKE, IQD046, QDFAKE )  !assiged   6/17/93
+
+IQC035:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q400:  LINE = (M400, QFFAKE, IQC035, QFFAKE )  !assiged   6/18/93
+
+IQB093:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q401:  LINE = (M401, QDFAKE, IQB093, QDFAKE )  !assiged    4/9/94
+
+IQE065:  QUADRUPOLE, TYPE = IQE, L = LIQB_STEEL, K1 = K1QFIQB
+Q402:  LINE = (M402, QFFAKE, IQE065, QFFAKE )  !assiged   m/dd/yy
+
+IQF278:  QUADRUPOLE, TYPE = IQF, L = LIQB_STEEL, K1 = K1QDIQB
+Q403:  LINE = (M403, QDFAKE, IQF278, QDFAKE )  !assiged   5/12/94
+
+IQC036:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q404:  LINE = (M404, QFFAKE, IQC036, QFFAKE )  !assiged   4/12/94
+
+IQD004:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q405:  LINE = (M405, QDFAKE, IQD004, QDFAKE )  !assiged   1/19/94
+
+IQD043:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q406:  LINE = (M406, QFFAKE, IQD043, QFFAKE )  !assiged    9/8/93
+
+IQD033:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q407:  LINE = (M407, QDFAKE, IQD033, QDFAKE )  !assiged   6/16/93
+
+IQC026:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q408:  LINE = (M408, QFFAKE, IQC026, QFFAKE )  !assiged   8/17/93
+
+IQB202:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q409:  LINE = (M409, QDFAKE, IQB202, QDFAKE )  !assiged   4/21/94
+
+IQB057:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q410:  LINE = (M410, QFFAKE, IQB057, QFFAKE )  !assiged   4/20/94
+
+IQB107:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q411:  LINE = (M411, QDFAKE, IQB107, QDFAKE )  !assiged   4/20/94
+
+IQB105:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q412:  LINE = (M412, QFFAKE, IQB105, QFFAKE )  !assiged   4/19/94
+
+IQB114:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q413:  LINE = (M413, QDFAKE, IQB114, QDFAKE )  !assiged   4/19/94
+
+IQB136:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q414:  LINE = (M414, QFFAKE, IQB136, QFFAKE )  !assiged   4/20/94
+
+IQB080:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q415:  LINE = (M415, QDFAKE, IQB080, QDFAKE )  !assiged   4/20/94
+
+IQB141:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q416:  LINE = (M416, QFFAKE, IQB141, QFFAKE )  !assiged   4/19/94
+
+IQB172:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q417:  LINE = (M417, QDFAKE, IQB172, QDFAKE )  !assiged   4/19/94
+
+IQB309:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q418:  LINE = (M418, QFFAKE, IQB309, QFFAKE )  !assiged   4/20/94
+
+IQB215:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q419:  LINE = (M419, QDFAKE, IQB215, QDFAKE )  !assiged   4/19/94
+
+IQB150:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q420:  LINE = (M420, QFFAKE, IQB150, QFFAKE )  !assiged   5/12/94
+
+IQB051:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q421:  LINE = (M421, QDFAKE, IQB051, QDFAKE )  !assiged   5/12/94
+
+IQB149:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q422:  LINE = (M422, QFFAKE, IQB149, QFFAKE )  !assiged   5/12/94
+
+IQB227:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q423:  LINE = (M423, QDFAKE, IQB227, QDFAKE )  !assiged   5/12/94
+
+IQB139:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q424:  LINE = (M424, QFFAKE, IQB139, QFFAKE )  !assiged   5/12/94
+
+IQB054:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q425:  LINE = (M425, QDFAKE, IQB054, QDFAKE )  !assiged   5/12/94
+
+IQB207:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q426:  LINE = (M426, QFFAKE, IQB207, QFFAKE )  !assiged   5/12/94
+
+IQB090:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q427:  LINE = (M427, QDFAKE, IQB090, QDFAKE )  !assiged   5/12/94
+
+IQB132:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q428:  LINE = (M428, QFFAKE, IQB132, QFFAKE )  !assiged   5/12/94
+
+IQB087:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q429:  LINE = (M429, QDFAKE, IQB087, QDFAKE )  !assiged   5/12/94
+
+IQB063:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q430:  LINE = (M430, QFFAKE, IQB063, QFFAKE )  !assiged   5/12/94
+
+IQB279:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q501:  LINE = (M501, QDFAKE, IQB279, QDFAKE )  !assiged    7/6/98
+
+IQB244:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q502:  LINE = (M502, QFFAKE, IQB244, QFFAKE )  !assiged    7/6/98
+
+IQB094:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q503:  LINE = (M503, QDFAKE, IQB094, QDFAKE )  !assiged    7/6/98
+
+IQB334:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q504:  LINE = (M504, QFFAKE, IQB334, QFFAKE )  !assiged    7/6/98
+
+IQB274:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q505:  LINE = (M505, QDFAKE, IQB274, QDFAKE )  !assiged    7/6/98
+
+IQB348:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q506:  LINE = (M506, QFFAKE, IQB348, QFFAKE )  !assiged    7/6/98
+
+IQB349:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q507:  LINE = (M507, QDFAKE, IQB349, QDFAKE )  !assiged    7/6/98
+
+IQB322:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q508:  LINE = (M508, QFFAKE, IQB322, QFFAKE )  !assiged    7/6/98
+
+IQB263:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q509:  LINE = (M509, QDFAKE, IQB263, QDFAKE )  !assiged   6/16/98
+
+IQB315:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q510:  LINE = (M510, QFFAKE, IQB315, QFFAKE )  !assiged   6/16/98
+
+IQB264:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q511:  LINE = (M511, QDFAKE, IQB264, QDFAKE )  !assiged   6/16/98
+
+IQB242:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q512:  LINE = (M512, QFFAKE, IQB242, QFFAKE )  !assiged   5/28/98
+
+IQB282:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q513:  LINE = (M513, QDFAKE, IQB282, QDFAKE )  !assiged   5/27/98
+
+IQB286:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q514:  LINE = (M514, QFFAKE, IQB286, QFFAKE )  !assiged   5/28/98
+
+IQB053:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q515:  LINE = (M515, QDFAKE, IQB053, QDFAKE )  !assiged   5/28/98
+
+IQC029:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q516:  LINE = (M516, QFFAKE, IQC029, QFFAKE )  !assiged   8/12/93
+
+IQD036:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q517:  LINE = (M517, QDFAKE, IQD036, QDFAKE )  !assiged   6/12/93
+
+IQD016:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q518:  LINE = (M518, QFFAKE, IQD016, QFFAKE )  !assiged    6/3/93
+
+IQD035:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q519:  LINE = (M519, QDFAKE, IQD035, QDFAKE )  !assiged   8/14/93
+
+IQC022:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q520:  LINE = (M520, QFFAKE, IQC022, QFFAKE )  !assiged    9/9/93
+
+IQB111:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q521:  LINE = (M521, QDFAKE, IQB111, QDFAKE )  !assiged   m/dd/yy
+
+IQE072:  QUADRUPOLE, TYPE = IQE, L = LIQB_STEEL, K1 = K1QFIQB
+Q522:  LINE = (M522, QFFAKE, IQE072, QFFAKE )  !assiged   6/16/98
+
+IQC006:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q523:  LINE = (M523, QDFAKE, IQC006, QDFAKE )  !assiged   9/11/93
+
+IQD024:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q524:  LINE = (M524, QFFAKE, IQD024, QFFAKE )  !assiged    9/9/93
+
+IQD048:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q525:  LINE = (M525, QDFAKE, IQD048, QDFAKE )  !assiged    9/9/93
+
+IQD018:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q526:  LINE = (M526, QFFAKE, IQD018, QFFAKE )  !assiged    9/9/93
+
+IQC010:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q527:  LINE = (M527, QDFAKE, IQC010, QDFAKE )  !assiged   9/10/93
+
+IQB332:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q528:  LINE = (M528, QFFAKE, IQB332, QFFAKE )  !assiged   m/dd/yy
+
+IQC016:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q529:  LINE = (M529, QDFAKE, IQC016, QDFAKE )  !assiged   9/10/93
+
+IQD021:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q530:  LINE = (M530, QFFAKE, IQD021, QFFAKE )  !assiged   8/14/93
+
+IQD003:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q531:  LINE = (M531, QDFAKE, IQD003, QDFAKE )  !assiged   6/12/93
+
+IQD014:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q532:  LINE = (M532, QFFAKE, IQD014, QFFAKE )  !assiged   9/10/93
+
+IQC018:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q601:  LINE = (M601, QDFAKE, IQC018, QDFAKE )  !assiged   8/14/93
+
+IQB210:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q602:  LINE = (M602, QFFAKE, IQB210, QFFAKE )  !assiged   6/12/98
+
+IQB067:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q603:  LINE = (M603, QDFAKE, IQB067, QDFAKE )  !assiged   6/12/98
+
+IQB076:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q604:  LINE = (M604, QFFAKE, IQB076, QFFAKE )  !assiged   6/12/98
+
+IQB323:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q605:  LINE = (M605, QDFAKE, IQB323, QDFAKE )  !assiged   6/12/98
+
+IQB075:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q606:  LINE = (M606, QFFAKE, IQB075, QFFAKE )  !assiged   6/12/98
+
+IQB162:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q607:  LINE = (M607, QDFAKE, IQB162, QDFAKE )  !assiged   6/12/98
+
+IQE225:  QUADRUPOLE, TYPE = IQE, L = LIQB_STEEL, K1 = K1QFIQB
+Q608:  LINE = (M608, QFFAKE, IQE225, QFFAKE )  !assiged    7/7/98
+
+IQC013:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q609:  LINE = (M609, QDFAKE, IQC013, QDFAKE )  !assiged   9/11/93
+
+IQD026:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q610:  LINE = (M610, QFFAKE, IQD026, QFFAKE )  !assiged   9/11/93
+
+IQD039:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q611:  LINE = (M611, QDFAKE, IQD039, QDFAKE )  !assiged   8/12/93
+
+IQD041:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q612:  LINE = (M612, QFFAKE, IQD041, QFFAKE )  !assiged    9/9/93
+
+IQC032:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q613:  LINE = (M613, QDFAKE, IQC032, QDFAKE )  !assiged    9/7/93
+
+IQB046:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q614:  LINE = (M614, QFFAKE, IQB046, QFFAKE )  !assiged    2/2/94
+
+IQC011:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q615:  LINE = (M615, QDFAKE, IQC011, QDFAKE )  !assiged    9/8/93
+
+IQD049:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q616:  LINE = (M616, QFFAKE, IQD049, QFFAKE )  !assiged   9/11/93
+
+IQD052:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q617:  LINE = (M617, QDFAKE, IQD052, QDFAKE )  !assiged   9/10/93
+
+IQD029:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q618:  LINE = (M618, QFFAKE, IQD029, QFFAKE )  !assiged    9/7/93
+
+IQC014:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QDIQC
+Q619:  LINE = (M619, QDFAKE, IQC014, QDFAKE )  !assiged    9/7/93
+
+IQE134:  QUADRUPOLE, TYPE = IQE, L = LIQB_STEEL, K1 = K1QFIQB
+Q620:  LINE = (M620, QFFAKE, IQE134, QFFAKE )  !assiged   m/dd/yy
+
+IQB124:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q621:  LINE = (M621, QDFAKE, IQB124, QDFAKE )  !assiged   1/28/94
+
+IQC024:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q622:  LINE = (M622, QFFAKE, IQC024, QFFAKE )  !assiged    9/8/93
+
+IQD034:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q623:  LINE = (M623, QDFAKE, IQD034, QDFAKE )  !assiged    9/8/93
+
+IQD032:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q624:  LINE = (M624, QFFAKE, IQD032, QFFAKE )  !assiged   8/12/93
+
+IQD044:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q625:  LINE = (M625, QDFAKE, IQD044, QDFAKE )  !assiged    9/7/93
+
+IQC017:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q626:  LINE = (M626, QFFAKE, IQC017, QFFAKE )  !assiged    6/8/93
+
+IQB109:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q627:  LINE = (M627, QDFAKE, IQB109, QDFAKE )  !assiged    2/1/94
+
+IQB097:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q628:  LINE = (M628, QFFAKE, IQB097, QFFAKE )  !assiged   1/28/94
+
+IQB112:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q629:  LINE = (M629, QDFAKE, IQB112, QDFAKE )  !assiged   1/29/94
+
+IQB084:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q630:  LINE = (M630, QFFAKE, IQB084, QFFAKE )  !assiged    2/1/94
+
+IQB310:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q631:  LINE = (M631, QDFAKE, IQB310, QDFAKE )  !assiged    2/6/94
+
+IQB070:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q632:  LINE = (M632, QFFAKE, IQB070, QFFAKE )  !assiged    2/2/94
+
+IQB096:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q633:  LINE = (M633, QDFAKE, IQB096, QDFAKE )  !assiged    2/1/94
+
+IQB062:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q634:  LINE = (M634, QFFAKE, IQB062, QFFAKE )  !assiged    2/1/94
+
+IQB271:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q635:  LINE = (M635, QDFAKE, IQB271, QDFAKE )  !assiged    2/6/94
+
+IQB133:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QFIQB
+Q636:  LINE = (M636, QFFAKE, IQB133, QFFAKE )  !assiged    2/3/94
+
+IQB153:  QUADRUPOLE, TYPE = IQB, L = LIQB_STEEL, K1 = K1QDIQB
+Q637:  LINE = (M637, QDFAKE, IQB153, QDFAKE )  !assiged    2/1/94
+
+IQC033:  QUADRUPOLE, TYPE = IQC, L = LIQC_STEEL, K1 = K1QFIQC
+Q638:  LINE = (M638, QFFAKE, IQC033, QFFAKE )  !assiged   6/11/93
+
+IQD008:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q639:  LINE = (M639, QDFAKE, IQD008, QDFAKE )  !assiged   6/12/93
+
+IQD007:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QFIQD
+Q640:  LINE = (M640, QFFAKE, IQD007, QFFAKE )  !assiged   9/10/93
+
+IQD006:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
+Q641:  LINE = (M641, QDFAKE, IQD006, QDFAKE )  !assiged   1/19/94
+
+!
+! Dipole CORRECTOR Definitions 
+!
+HCEND:  DRIFT, L = LMIHC_END
+VCEND:  DRIFT, L = LMIVC_END
+H100:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H100
+V101:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V101
+H102:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H102
+V103:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V103
+H104:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H104
+V105:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V105
+H106:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H106
+V107:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V107
+H108:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H108
+V109:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V109
+H110:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H110
+V111:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V111
+H112:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H112
+V113:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V113
+H114:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H114
+V115:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V115
+H116:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H116
+V117:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V117
+H118:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H118
+V119:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V119
+H120:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H120
+V121:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V121
+H122:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H122
+V123:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V123
+H124:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H124
+V125:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V125
+H126:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H126
+V127:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V127
+H128:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H128
+V129:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V129
+H130:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H130
+V201:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V201
+H202:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H202
+V203:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V203
+H204:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H204
+V205:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V205
+H206:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H206
+V207:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V207
+H208:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H208
+V209:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V209
+H210:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H210
+V211:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V211
+H212:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H212
+V213:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V213
+H214:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H214
+V215:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V215
+H216:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H216
+V217:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V217
+H218:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H218
+V219:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V219
+H220:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H220
+V221:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V221
+H222:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H222
+V223:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V223
+H224:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H224
+V225:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V225
+H226:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H226
+V227:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V227
+H228:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H228
+V229:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V229
+H230:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H230
+V231:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V231
+H232:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H232
+V301:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V301
+H302:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H302
+V303:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V303
+H304:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H304
+V305:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V305
+H306:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H306
+V307:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V307
+H308:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H308
+V309:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V309
+H310:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H310
+V311:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V311
+H312:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H312
+V313:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V313
+H314:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H314
+V315:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V315
+H316:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H316
+V317:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V317
+H318:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H318
+V319:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V319
+H320:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H320
+V321:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V321
+H322:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H322
+V323:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V323
+H324:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H324
+V325:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V325
+H326:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H326
+V327:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V327
+H328:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H328
+V329:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V329
+H330:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H330
+V331:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V331
+H332:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H332
+V333:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V333
+H334:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H334
+V335:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V335
+H336:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H336
+V337:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V337
+H338:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H338
+V339:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V339
+H340:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H340
+V341:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V341
+H400:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H400
+V401:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V401
+H402:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H402
+V403:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V403
+H404:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H404
+V405:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V405
+H406:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H406
+V407:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V407
+H408:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H408
+V409:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V409
+H410:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H410
+V411:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V411
+H412:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H412
+V413:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V413
+H414:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H414
+V415:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V415
+H416:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H416
+V417:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V417
+H418:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H418
+V419:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V419
+H420:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H420
+V421:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V421
+H422:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H422
+V423:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V423
+H424:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H424
+V425:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V425
+H426:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H426
+V427:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V427
+H428:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H428
+V429:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V429
+H430:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H430
+V501:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V501
+H502:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H502
+V503:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V503
+H504:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H504
+V505:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V505
+H506:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H506
+V507:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V507
+H508:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H508
+V509:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V509
+H510:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H510
+V511:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V511
+H512:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H512
+V513:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V513
+H514:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H514
+V515:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V515
+H516:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H516
+V517:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V517
+H518:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H518
+V519:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V519
+H520:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H520
+V521:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V521
+H522:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H522
+V523:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V523
+H524:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H524
+V525:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V525
+H526:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H526
+V527:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V527
+H528:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H528
+V529:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V529
+H530:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H530
+V531:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V531
+H532:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H532
+V601:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V601
+H602:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H602
+V603:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V603
+H604:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H604
+V605:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V605
+H606:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H606
+V607:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V607
+H608:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H608
+V609:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V609
+H610:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H610
+V611:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V611
+H612:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H612
+V613:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V613
+H614:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H614
+V615:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V615
+H616:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H616
+V617:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V617
+H618:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H618
+V619:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V619
+H620:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H620
+V621:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V621
+H622:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H622
+V623:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V623
+H624:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H624
+V625:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V625
+H626:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H626
+V627:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V627
+H628:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H628
+V629:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V629
+H630:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H630
+V631:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V631
+H632:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H632
+V633:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V633
+H634:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H634
+V635:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V635
+H636:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H636
+V637:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V637
+H638:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H638
+V639:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V639
+H640:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H640
+V641:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V641
+!
+! QUAD CORRECTOR Definitions 
+!
+QCEND:  DRIFT, L = LMRQC_END
+QC206: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC206
+QC208: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC208
+QC210: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC210
+QC212: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC212
+QC328: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC328
+QC330: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC330
+QC332: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC332
+QC334: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC334
+QC506: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC506
+QC508: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC508
+QC510: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC510
+QC512: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC512
+QC628: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC628
+QC630: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC630
+QC632: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC632
+QC634: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC634
+!
+! SKEW QUAD CORRECTOR Definitions 
+!
+SQEND:  DRIFT, L = LMRSQ_END
+SQ213: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ213, TILT
+SQ214: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ214, TILT
+SQ215: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ215, TILT
+SQ335: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ335, TILT
+SQ336: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ336, TILT
+SQ337: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ337, TILT
+SQ513: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ513, TILT
+SQ514: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ514, TILT
+SQ515: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ515, TILT
+SQ635: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ635, TILT
+SQ636: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ636, TILT
+SQ637: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ637, TILT
+!
+! SEXTUPOLE CORRECTOR Definitions 
+!
+SEND:  DRIFT, L = LMIS_END
+S108: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S109: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S110: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S111: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S112: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S113: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S114: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S115: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S116: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S117: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S118: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S119: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S120: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S121: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S122: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S123: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S124: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S125: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S126: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S127: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S128: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S129: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S130: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S201: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S202: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S203: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S204: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S205: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S206: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S207: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S208: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S209: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S210: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S211: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S212: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S213: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S214: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S215: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S227: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S228: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S313: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S314: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S326: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S327: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S328: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S329: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S330: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S331: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S332: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S333: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S334: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S335: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S336: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S337: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S408: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S409: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S410: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S411: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S412: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S413: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S414: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S415: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S416: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S417: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S418: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S419: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S420: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S421: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S422: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S423: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S424: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S425: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S426: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S427: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S428: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S429: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S430: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S501: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S502: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S503: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S504: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S505: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S506: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S507: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S508: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S509: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S510: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S511: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S512: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S513: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S514: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S515: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S527: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S528: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S613: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S614: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S626: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S627: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S628: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S629: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S630: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S631: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S632: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S633: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S634: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S635: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+S636: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
+S637: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
+!
+! OCTUPOLE CORRECTOR Definitions 
+!
+CIR_O110 := 0
+CIR_O112 := 0
+CIR_O114 := 0
+CIR_O116 := 0
+CIR_O118 := 0
+CIR_O120 := 0
+CIR_O122 := 0
+CIR_O124 := 0
+CIR_O126 := 0
+CIR_O128 := 0
+CIR_O130 := 0
+CIR_O202 := 0
+CIR_O204 := 0
+CIR_O205 := 0
+CIR_O206 := 0
+CIR_O207 := 0
+CIR_O208 := 0
+CIR_O209 := 0
+CIR_O210 := 0
+CIR_O211 := 0
+CIR_O212 := 0
+CIR_O214 := 0
+CIR_O228 := 0
+CIR_O314 := 0
+CIR_O327 := 0
+CIR_O328 := 0
+CIR_O329 := 0
+CIR_O330 := 0
+CIR_O331 := 0
+CIR_O332 := 0
+CIR_O333 := 0
+CIR_O334 := 0
+CIR_O336 := 0
+CIR_O410 := 0
+CIR_O412 := 0
+CIR_O414 := 0
+CIR_O416 := 0
+CIR_O418 := 0
+CIR_O420 := 0
+CIR_O422 := 0
+CIR_O424 := 0
+CIR_O426 := 0
+CIR_O428 := 0
+CIR_O430 := 0
+CIR_O502 := 0
+CIR_O504 := 0
+CIR_O505 := 0
+CIR_O506 := 0
+CIR_O507 := 0
+CIR_O508 := 0
+CIR_O509 := 0
+CIR_O510 := 0
+CIR_O511 := 0
+CIR_O512 := 0
+CIR_O514 := 0
+CIR_O528 := 0
+CIR_O614 := 0
+CIR_O627 := 0
+CIR_O628 := 0
+CIR_O629 := 0
+CIR_O630 := 0
+CIR_O631 := 0
+CIR_O632 := 0
+CIR_O633 := 0
+CIR_O634 := 0
+CIR_O636 := 0
+
+OEND:  DRIFT, L = LMRO_END
+
+O110: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O110
+O112: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O112
+O114: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O114
+O116: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O116
+O118: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O118
+O120: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O120
+O122: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O122
+O124: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O124
+O126: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O126
+O128: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O128
+O130: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O130
+O202: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O202
+O204: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O204
+O205: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O205
+O206: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O206
+O207: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O207
+O208: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O208
+O209: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O209
+O210: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O210
+O211: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O211
+O212: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O212
+O214: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O214
+O228: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O228
+O314: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O314
+O327: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O327
+O328: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O328
+O329: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O329
+O330: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O330
+O331: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O331
+O332: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O332
+O333: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O333
+O334: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O334
+O336: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O336
+O410: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O410
+O412: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O412
+O414: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O414
+O416: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O416
+O418: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O418
+O420: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O420
+O422: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O422
+O424: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O424
+O426: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O426
+O428: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O428
+O430: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O430
+O502: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O502
+O504: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O504
+O505: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O505
+O506: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O506
+O507: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O507
+O508: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O508
+O509: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O509
+O510: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O510
+O511: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O511
+O512: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O512
+O514: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O514
+O528: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O528
+O614: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O614
+O627: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O627
+O628: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O628
+O629: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O629
+O630: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O630
+O631: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O631
+O632: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O632
+O633: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O633
+O634: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O634
+O636: OCTUPOLE, TYPE = MRO, L=LMRO , K3 = CIR_O636
+!
+! Construct instrumentation
+!
+HDPU:    MONITOR, TYPE = INST, L = LDAMPERPU
+VDPU:    MONITOR, TYPE = INST, L = LDAMPERPU
+HSD:     MONITOR, TYPE = INST, L = LSCHOTTKY
+VSD:     MONITOR, TYPE = INST, L = LSCHOTTKY
+RWM:     MONITOR, TYPE = INST, L = LRWM
+GRIF:    MONITOR, TYPE = INST, L = LGRIFFEN
+WBPU:    MONITOR, TYPE = INST, L = LWBPU
+RFSL:    MONITOR, TYPE = INST, L = LSTRIPLINE
+DCCT:    MONITOR, TYPE = INST, L = LDCCT
+TOR521:  MONITOR, TYPE = INST, L = LTOROID
+TOR103:  MONITOR, TYPE = INST, L = LTOROID
+MW101:   MONITOR, TYPE = INST, L = LSEM
+MW102:   MONITOR, TYPE = INST, L = LSEM
+MW103:   MONITOR, TYPE = INST, L = LSEM
+MW104:   MONITOR, TYPE = INST, L = LSEM
+FW102:   MONITOR, TYPE = INST, L = LFW
+FW103:   MONITOR, TYPE = INST, L = LFW
+IPM102:  MONITOR, TYPE = INST, L = LIPM
+IPM103:  MONITOR, TYPE = INST, L = LIPM
+HP100:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP101:   VMONITOR, TYPE = LGBPM, L=LLGBPM
+HP102:   HMONITOR, TYPE = LGBPM, L=LLGBPM
+VP103:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP104:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP105:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP106:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP107:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP108:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP109:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP110:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP111:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP112:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP113:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP114:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP115:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP116:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP117:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP118:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP119:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP120:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP121:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP122:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP123:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP124:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP125:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP126:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP127:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP128:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP129:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP130:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP201:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP202:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP203:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP204:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP205:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP206:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP207:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP208:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP209:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP210:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP211:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP212:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP213:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP214:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP215:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP216:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP217:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP218:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP219:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP220:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP221:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP222:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP223:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP224:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP225:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP226:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP227:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP228:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP229:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP230:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP231:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP232:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP301:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP302:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP303:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP304:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP305:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP306:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP307:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP308:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP309:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP310:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP311:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP312:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP313:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP314:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP315:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP316:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP317:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP318:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP319:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP320:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP321:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP322:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP323:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP324:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP325:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP326:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP327:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP328:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP329:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP330:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP331:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP332:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP333:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP334:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP335:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP336:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP337:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP338:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP339:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP340:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP341:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP400:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP401:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP402:   HMONITOR, TYPE = LGBPM, L=LLGBPM
+VP403:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP404:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP405:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP406:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP407:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP408:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP409:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP410:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP411:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP412:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP413:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP414:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP415:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP416:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP417:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP418:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP419:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP420:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP421:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP422:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP423:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP424:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP425:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP426:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP427:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP428:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP429:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP430:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP501:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP502:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP503:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP504:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP505:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP506:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP507:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP508:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP509:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP510:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP511:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP512:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP513:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP514:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP515:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP516:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP517:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP518:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP519:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP520:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP521:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP522:   HMONITOR, TYPE = LGBPM, L=LLGBPM
+VP523:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP524:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP525:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP526:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP527:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP528:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP529:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP530:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP531:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP532:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP601:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP602:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP603:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP604:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP605:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP606:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP607:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP608:   HMONITOR, TYPE = LGBPM, L=LLGBPM
+VP609:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP610:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP611:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP612:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP613:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP614:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP615:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP616:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP617:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP618:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP619:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP620:   HMONITOR, TYPE = LGBPM, L=LLGBPM
+VP621:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP622:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP623:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP624:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP625:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP626:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP627:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP628:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP629:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP630:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP631:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP632:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP633:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP634:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP635:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP636:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP637:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP638:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP639:   VMONITOR, TYPE = MIBPM, L=LBPM
+HP640:   HMONITOR, TYPE = MIBPM, L=LBPM
+VP641:   VMONITOR, TYPE = MIBPM, L=LBPM
+!
+!Construct special INSERTS for kickers,QXR,septa,
+! Lambertsons, c-magnets, RF cavities, etc. . The length
+! of these devices are defined in the Parameters section.
+!
+!
+HPING:       HKICKER,   L = LPINGER/2, KICK = HPING_ANG
+VPING:       VKICKER,   L = LPINGER/2, KICK = VPING_ANG
+PING:        LINE = (HPING,VPING)
+HDK:         HKICKER,   L = LDAMPERK, KICK = 0.0
+VDK:         VKICKER,   L = LDAMPERK, KICK = 0.0
+!
+K103A:        VKICKER,    L = LK103_MAG, KICK = K103ANG
+K103B:        VKICKER,    L = LK103_MAG, KICK = K103ANG
+K103C:        VKICKER,    L = LK103_MAG, KICK = K103ANG
+K103_END:     DRIFT, L = LK103_END
+K103_SPOOL:   DRIFT, L = LK103_SPOOL
+K103A_INS:    LINE = (K103_END, K103A, K103_END)
+K103B_INS:    LINE = (K103_END, K103B, K103_END)
+K103C_INS:    LINE = (K103_END, K103C, K103_END)
+K103_INS:     LINE = (K103A_INS,K103_SPOOL, K103B_INS,K103_SPOOL,K103C_INS)
+!
+K304:        VKICKER,    L = LK304_MAG, KICK = K304ANG
+K304_END:    DRIFT, L = LK304_END
+K304_INS:    LINE = (K304_END, K304, K304_END)
+!
+K400:        VKICKER,    L = LK400_MAG, KICK = K400ANG
+K400_END:    DRIFT, L = LK400_END
+K400_SPOOL:  DRIFT, L = LK400_SPOOL
+K400_INS:    LINE = (K400_END, K400, K400_END,K400_SPOOL,&)
+                     K400_END, K400, K400_END)
+!
+K520:        VKICKER,    L = LK520_MAG, KICK = K520ANG
+K520_END:    DRIFT, L = LK520_END
+K520_SPOOL:  DRIFT, L = LK520_SPOOL
+K520_INS:    LINE = (K520_END, K520, K520_END,K520_SPOOL, &
+                     K520_END, K520, K520_END)
+!
+K602ANG := 0
+K602A:        HKICKER,    L = LK602_MAG, KICK = K602ANG
+K602B:        HKICKER,    L = LK602_MAG, KICK = K602ANG
+K602C:        HKICKER,    L = LK602_MAG, KICK = K602ANG
+K602_END:    DRIFT, L = LK602_END
+K602_SPOOL:  DRIFT, L = LK602_SPOOL
+! 3 kicker insert 10/10/02 created
+K602_INS:    LINE = (K602_END, K602A, K602_END,K602_SPOOL, &
+                     K602_END, K602B, K602_END,K602_SPOOL, &
+                     K602_END, K602C, K602_END)
+!
+K622A:        VKICKER,   L = LK622_MAG, KICK = K622ANG
+K622B:        VKICKER,   L = LK622_MAG, KICK = 0 
+K622_END:    DRIFT, L = LK622_END
+K622_SPOOL:    DRIFT, L = LK622_SPOOL
+K622A_INS:    LINE = (K622_END, K622A, K622_END)
+K622B_INS:    LINE = (K622_END, K622B, K622_END)
+!
+QXR:         QUADRUPOLE, TYPE = QXR, L = LQXR_MAG, K1 = K1QXR
+QXR_END:     DRIFT,  L = LQXR_END
+QXR_INS:     LINE = (QXR_END, QXR, QXR_END)
+!
+!
+!
+ES520A:    HKICKER, TYPE = SEPTA,  L = LES , KICK = ES52ANG
+ES520B:    HKICKER, TYPE = SEPTA,  L = LES , KICK = ES52ANG
+ES_END:    DRIFT, L = LES_END
+ESSPOOL:   DRIFT, L = 0.4  ! WILL NEED TO CHANGE THIS
+ES520_INS: LINE = (ES_END, ES520A, ES_END, ESSPOOL, ES_END, ES520A, ES_END)
+!
+!
+!
+LAM10_END:        DRIFT, L = LLAM10_END
+LAM10:      DRIFT, TYPE= IL10 , L = LLAM10_MAG
+LAM10_INS: LINE=(LAM10_END, LAM10, LAM10_END)
+!
+!MI Abort Lambertson at Q402 
+!
+LAM_END:        DRIFT, L = LILA_END
+LAM40:      DRIFT, TYPE= ILA , L = LILA_MAG
+LAM40AMP:   MULTIPOLE, K0L = LAM40A_K0L/2, K1L = LAM40A_K1L/2
+LAM40BMP:   MULTIPOLE, K0L = LAM40B_K0L/2, K1L = LAM40B_K1L/2 
+LAM40CMP:   MULTIPOLE, K0L = LAM40C_K0L/2, K1L = LAM40C_K1L/2 
+LAM40A_INS: LINE = (LAM_END, LAM40AMP, LAM40, LAM40AMP, LAM_END)
+LAM40B_INS: LINE = (LAM_END, LAM40BMP, LAM40, LAM40BMP, LAM_END)
+LAM40C_INS: LINE = (LAM_END, LAM40CMP, LAM40, LAM40CMP, LAM_END)
+!
+!Proton Extraction Lambertson at Q522
+!
+LAM52:      DRIFT, TYPE= ILA , L = LILA_MAG
+LAM52AMP:   MULTIPOLE, K0L = LAM52A_K0L/2, K1L = LAM52A_K1L/2
+LAM52BMP:   MULTIPOLE, K0L = LAM52B_K0L/2, K1L = LAM52B_K1L/2 
+LAM52CMP:   MULTIPOLE, K0L = LAM52C_K0L/2, K1L = LAM52C_K1L/2 
+LAM52A_INS: LINE = (LAM_END, LAM52AMP, LAM52, LAM52AMP, LAM_END)
+LAM52B_INS: LINE = (LAM_END, LAM52BMP, LAM52, LAM52BMP, LAM_END)
+LAM52C_INS: LINE = (LAM_END, LAM52CMP, LAM52, LAM52CMP, LAM_END)
+!
+! NuMI Extraction Lambertson at MI-608
+!
+LAM60:      DRIFT, TYPE= ILA , L = LILA_MAG
+LAM60AMP:   MULTIPOLE, K0L = LAM60A_K0L/2, K1L = LAM60A_K1L/2
+LAM60BMP:   MULTIPOLE, K0L = LAM60B_K0L/2, K1L = LAM60B_K1L/2 
+LAM60CMP:   MULTIPOLE, K0L = LAM60C_K0L/2, K1L = LAM60C_K1L/2 
+LAM60A_INS: LINE = (LAM_END, LAM60AMP, LAM60, LAM60AMP, LAM_END)
+LAM60B_INS: LINE = (LAM_END, LAM60BMP, LAM60, LAM60BMP, LAM_END)
+LAM60C_INS: LINE = (LAM_END, LAM60CMP, LAM60, LAM60CMP, LAM_END)
+!
+! Pbar extraction Lambertson at MI62
+!
+LAM62:      DRIFT, TYPE= ILA , L = LILA_MAG
+LAM62AMP:   MULTIPOLE, K0L = LAM62A_K0L/2, K1L = LAM62A_K1L/2
+LAM62BMP:   MULTIPOLE, K0L = LAM62B_K0L/2, K1L = LAM62B_K1L/2 
+LAM62CMP:   MULTIPOLE, K0L = LAM62C_K0L/2, K1L = LAM62C_K1L/2 
+LAM62A_INS: LINE = (LAM_END, LAM62AMP, LAM62, LAM62AMP, LAM_END)
+LAM62B_INS: LINE = (LAM_END, LAM62BMP, LAM62, LAM62BMP, LAM_END)
+LAM62C_INS: LINE = (LAM_END, LAM62CMP, LAM62, LAM62CMP, LAM_END)
+!
+!
+!
+LAM222MP:   MULTIPOLE, K0L = LAM222_K0L/2, K1L = LAM222_K1L/2
+LAM321MP:   MULTIPOLE, K0L = LAM321_K0L/2, K1L = LAM321_K1L/2
+PMLAM_END:      DRIFT, L = LIPL_END
+LAM222:         HKICKER, TYPE = IPL, L =LIPL_MAG, KICK = LAM222_ANG
+LAM321:         HKICKER, TYPE = IPL, L =LIPL_MAG, KICK = LAM321_ANG
+LAM222_INS:  LINE = (PMLAM_END, LAM222MP,LAM222,LAM222MP, PMLAM_END)
+LAM321_INS:  LINE = (PMLAM_END, LAM321MP,LAM321,LAM321MP, PMLAM_END)
+V700:       DRIFT, TYPE= ICA , L = LICA_MAG
+V700_END:   DRIFT, L = LICA_END
+V700_INS:   LINE = (V700_END, V700, V700_END)
+V900:       DRIFT, TYPE= ICA , L = LICA_MAG
+V900_END:   DRIFT, L = LICA_END
+V900_INS:   LINE = (V900_END, V900, V900_END)
+!---------------------------------------------------
+!  V100:       DRIFT, TYPE= ICA , L = LICA_MAG
+!  V100:       KICKER, TYPE= ICA , L = LICA_MAG, HKICK = 0.1E-9*SIN(-.199),&
+!                                                 VKICK = 0.1E-9*COS(-.199)
+!---------------------------------------------------
+V100:       KICKER, TYPE= ICA , L = LICA_MAG, HKICK = 0, VKICK = 0
+!---------------------------------------------------
+V100_END:   DRIFT, L = LICA_END
+V100_INS:   LINE = (V100_END, V100, V100_END)
+V001:       DRIFT, TYPE= ICA , L = LICA_MAG
+V001_END:   DRIFT, L = LICA_END
+V001_INS:   LINE = (V001_END, V001, V001_END)
+CAV:    RFCAVITY, L = LRFC, VOLT = 0
+RFCU_END: DRIFT, L = LRFC_END
+RFCD_END: DRIFT, L = LRFC_END
+DRFCIP:   DRIFT, L = LRFCIP
+M_CAV: MARKER
+RFCAV:  LINE = (RFCU_END, CAV, RFCD_END)
+HRFCU_END: DRIFT, L = LHRFC_END
+HRFCD_END: DRIFT, L = LHRFC_END
+M_HCAV: MARKER
+HRFCAV:  LINE = (HRFCU_END, M_HCAV, HRFCD_END)
+CCCU_END: DRIFT, L = LCCAVU_END
+CCCD_END: DRIFT, L = LCCAVD_END
+CCAV_SPOOL:   DRIFT, L = LCCAV_SPOOL 
+M_CCAV: MARKER
+CCCAV:  LINE = (CCCU_END, M_CCAV, CCCD_END)
+IN100U: LINE=(D27U,HCEND,H100,HCEND,D1IN,IQCUEND)
+IN100D: LINE=(IQCDEND,HP100,SVALVE,D27D)
+IN104U: LINE=(SVALVE,D23U,HCEND,H104,HCEND,DQTRIN,IQCUEND)
+IN104D: LINE=(IQCDEND,HP104,D23D)
+IN105U: LINE=(D42U,VCEND,V105,VCEND,D1IN,IQDUEND)
+IN105D: LINE=(IQDDEND,VP105,D42D)
+IN106U: LINE=(D41U,HCEND,H106,HCEND,D1IN,IQDUEND)
+IN106D: LINE=(IQDDEND,HP106,D41D)
+IN107U: LINE=(D42U,VCEND,V107,VCEND,D1IN,IQDUEND)
+IN107D: LINE=(IQDDEND,VP107,D42D)
+IN108U: LINE=(D21U,HCEND,H108,HCEND,D1IN,IQCUEND)
+IN108D: LINE=(IQCDEND,HP108,D1IN,SEND,S108,SEND,D21D)
+IN109U: LINE=(D02U,VCEND,V109,VCEND,D1IN,IQBUEND)
+IN109D: LINE=(IQBDEND,VP109,D1IN,SEND,S109,SEND,D02D)
+IN110U: LINE=(D01U,HCEND,H110,HCEND,D1IN,IQBUEND)
+IN110D: LINE=(IQBDEND,HP110,D1IN,SEND,S110,SEND,D1IN,OEND,O110,OEND,D01D)
+IN111U: LINE=(D02U,VCEND,V111,VCEND,D1IN,IQBUEND)
+IN111D: LINE=(IQBDEND,VP111,D1IN,SEND,S111,SEND,D02D)
+IN112U: LINE=(D01U,HCEND,H112,HCEND,D1IN,IQBUEND)
+IN112D: LINE=(IQBDEND,HP112,D1IN,SEND,S112,SEND,D1IN,OEND,O112,OEND,D01D)
+IN113U: LINE=(D02U,VCEND,V113,VCEND,D1IN,IQBUEND)
+IN113D: LINE=(IQBDEND,VP113,D1IN,SEND,S113,SEND,D02D)
+IN114U: LINE=(D01U,HCEND,H114,HCEND,D1IN,IQBUEND)
+IN114D: LINE=(IQBDEND,HP114,D1IN,SEND,S114,SEND,D1IN,OEND,O114,OEND,D01D)
+IN115U: LINE=(D02U,VCEND,V115,VCEND,D1IN,IQBUEND)
+IN115D: LINE=(IQBDEND,VP115,D1IN,SEND,S115,SEND,D02D)
+IN116U: LINE=(D01U,HCEND,H116,HCEND,D1IN,IQBUEND)
+IN116D: LINE=(IQBDEND,HP116,D1IN,SEND,S116,SEND,D1IN,OEND,O116,OEND,D01D)
+IN117U: LINE=(D02U,VCEND,V117,VCEND,D1IN,IQBUEND)
+IN117D: LINE=(IQBDEND,VP117,D1IN,SEND,S117,SEND,D02D)
+IN118U: LINE=(D01U,HCEND,H118,HCEND,D1IN,IQBUEND)
+IN118D: LINE=(IQBDEND,HP118,D1IN,SEND,S118,SEND,D1IN,OEND,O118,OEND,D01D)
+IN119U: LINE=(D02U,VCEND,V119,VCEND,D1IN,IQBUEND)
+IN119D: LINE=(IQBDEND,VP119,D1IN,SEND,S119,SEND,D02D)
+IN120U: LINE=(D01U,HCEND,H120,HCEND,D1IN,IQBUEND)
+IN120D: LINE=(IQBDEND,HP120,D1IN,SEND,S120,SEND,D1IN,OEND,O120,OEND,D01D)
+IN121U: LINE=(SVALVE,D08U,VCEND,V121,VCEND,D1IN,IQBUEND)
+IN121D: LINE=(IQBDEND,VP121,D1IN,SEND,S121,SEND,D08D)
+IN122U: LINE=(D01U,HCEND,H122,HCEND,D1IN,IQBUEND)
+IN122D: LINE=(IQBDEND,HP122,D1IN,SEND,S122,SEND,D1IN,OEND,O122,OEND,D01D)
+IN123U: LINE=(D02U,VCEND,V123,VCEND,D1IN,IQBUEND)
+IN123D: LINE=(IQBDEND,VP123,D1IN,SEND,S123,SEND,D02D)
+IN124U: LINE=(D01U,HCEND,H124,HCEND,D1IN,IQBUEND)
+IN124D: LINE=(IQBDEND,HP124,D1IN,SEND,S124,SEND,D1IN,OEND,O124,OEND,D01D)
+IN125U: LINE=(D02U,VCEND,V125,VCEND,D1IN,IQBUEND)
+IN125D: LINE=(IQBDEND,VP125,D1IN,SEND,S125,SEND,D02D)
+IN126U: LINE=(D01U,HCEND,H126,HCEND,D1IN,IQBUEND)
+IN126D: LINE=(IQBDEND,HP126,D1IN,SEND,S126,SEND,D1IN,OEND,O126,OEND,D01D)
+IN127U: LINE=(D02U,VCEND,V127,VCEND,D1IN,IQBUEND)
+IN127D: LINE=(IQBDEND,VP127,D1IN,SEND,S127,SEND,D02D)
+IN128U: LINE=(D01U,HCEND,H128,HCEND,D1IN,IQBUEND)
+IN128D: LINE=(IQBDEND,HP128,D1IN,SEND,S128,SEND,D1IN,OEND,O128,OEND,D01D)
+IN129U: LINE=(D02U,VCEND,V129,VCEND,D1IN,IQBUEND)
+IN129D: LINE=(IQBDEND,VP129,D1IN,SEND,S129,SEND,D02D)
+IN130U: LINE=(D01U,HCEND,H130,HCEND,D1IN,IQBUEND)
+IN130D: LINE=(IQBDEND,HP130,D1IN,SEND,S130,SEND,D1IN,OEND,O130,OEND,D01D)
+IN201U: LINE=(D02U,VCEND,V201,VCEND,D1IN,IQBUEND)
+IN201D: LINE=(IQBDEND,VP201,D1IN,SEND,S201,SEND,D02D)
+IN202U: LINE=(D01U,HCEND,H202,HCEND,D1IN,IQBUEND)
+IN202D: LINE=(IQBDEND,HP202,D1IN,SEND,S202,SEND,D1IN,OEND,O202,OEND,D01D)
+IN203U: LINE=(D02U,VCEND,V203,VCEND,D1IN,IQBUEND)
+IN203D: LINE=(IQBDEND,VP203,D1IN,SEND,S203,SEND,D02D)
+IN204U: LINE=(D01U,HCEND,H204,HCEND,D1IN,IQBUEND)
+IN204D: LINE=(IQBDEND,HP204,D1IN,SEND,S204,SEND,D1IN,OEND,O204,OEND,D01D)
+IN205U: LINE=(SVALVE,D07U,VCEND,V205,VCEND,D1IN,IQBUEND)
+IN205D: LINE=(IQBDEND,VP205,D1IN,SEND,S205,SEND,D1IN,OEND,O205,OEND,D07D)
+IN206U: LINE=(D03U,QCEND,QC206,QCEND,D1IN,HCEND,H206,HCEND,D1IN,IQBUEND)
+IN206D: LINE=(IQBDEND,HP206,D1IN,SEND,S206,SEND,D1IN,OEND,O206,OEND,D03D)
+IN207U: LINE=(D04U,VCEND,V207,VCEND,D1IN,IQBUEND)
+IN207D: LINE=(IQBDEND,VP207,D1IN,SEND,S207,SEND,D1IN,OEND,O207,OEND,D04D)
+IN208U: LINE=(D03U,QCEND,QC208,QCEND,D1IN,HCEND,H208,HCEND,D1IN,IQBUEND)
+IN208D: LINE=(IQBDEND,HP208,D1IN,SEND,S208,SEND,D1IN,OEND,O208,OEND,D03D)
+IN209U: LINE=(D04U,VCEND,V209,VCEND,D1IN,IQBUEND)
+IN209D: LINE=(IQBDEND,VP209,D1IN,SEND,S209,SEND,D1IN,OEND,O209,OEND,D04D)
+IN210U: LINE=(D03U,QCEND,QC210,QCEND,D1IN,HCEND,H210,HCEND,D1IN,IQBUEND)
+IN210D: LINE=(IQBDEND,HP210,D1IN,SEND,S210,SEND,D1IN,OEND,O210,OEND,D03D)
+IN211U: LINE=(D04U,VCEND,V211,VCEND,D1IN,IQBUEND)
+IN211D: LINE=(IQBDEND,VP211,D1IN,SEND,S211,SEND,D1IN,OEND,O211,OEND,D04D)
+IN212U: LINE=(D03U,QCEND,QC212,QCEND,D1IN,HCEND,H212,HCEND,D1IN,IQBUEND)
+IN212D: LINE=(IQBDEND,HP212,D1IN,SEND,S212,SEND,D1IN,OEND,O212,OEND,D03D)
+IN213U: LINE=(D06U,SQEND,SQ213,SQEND,D1IN,VCEND,V213,VCEND,IQBUEND)
+IN213D: LINE=(IQBDEND,VP213,D1IN,SEND,S213,SEND,D06D)
+IN214U: LINE=(D05U,2*(SQEND,SQ214,SQEND,D1IN),HCEND,H214,HCEND,D1IN,IQBUEND)
+IN214D: LINE=(IQBDEND,HP214,D1IN,SEND,S214,SEND,D1IN,OEND,O214,OEND,D05D)
+IN215U: LINE=(D06U,SQEND,SQ215,SQEND,D1IN,VCEND,V215,VCEND,IQBUEND)
+IN215D: LINE=(IQBDEND,VP215,D1IN,SEND,S215,SEND,D06D)
+IN216U: LINE=(D25U,HCEND,H216,HCEND,D1IN,IQCUEND)
+IN216D: LINE=(IQCDEND,HP216,D25D)
+IN217U: LINE=(D42U,VCEND,V217,VCEND,D1IN,IQDUEND)
+IN217D: LINE=(IQDDEND,VP217,D42D)
+IN218U: LINE=(D41U,HCEND,H218,HCEND,D1IN,IQDUEND)
+IN218D: LINE=(IQDDEND,HP218,D41D)
+IN219U: LINE=(D42U,VCEND,V219,VCEND,D1IN,IQDUEND)
+IN219D: LINE=(IQDDEND,VP219,D42D)
+IN220U: LINE=(D27U,HCEND,H220,HCEND,D1IN,IQCUEND)
+IN220D: LINE=(IQCDEND,HP220,SVALVE,D27D)
+IN223U: LINE=(D29U,VCEND,V223,VCEND,D1IN,IQCUEND)
+IN223D: LINE=(IQCDEND,VP223,D29D)
+IN224U: LINE=(D41U,HCEND,H224,HCEND,D1IN,IQDUEND)
+IN224D: LINE=(IQDDEND,HP224,D41D)
+IN225U: LINE=(D42U,VCEND,V225,VCEND,D1IN,IQDUEND)
+IN225D: LINE=(IQDDEND,VP225,D42D)
+IN226U: LINE=(D41U,HCEND,H226,HCEND,D1IN,IQDUEND)
+IN226D: LINE=(IQDDEND,HP226,D41D)
+IN227U: LINE=(D22U,VCEND,V227,VCEND,D1IN,IQCUEND)
+IN227D: LINE=(IQCDEND,VP227,D1IN,SEND,S227,SEND,D22D)
+IN228U: LINE=(D01U,HCEND,H228,HCEND,D1IN,IQBUEND)
+IN228D: LINE=(IQBDEND,HP228,D1IN,SEND,S228,SEND,D1IN,OEND,O228,OEND,D01D)
+IN229U: LINE=(D26U,VCEND,V229,VCEND,D1IN,IQCUEND)
+IN229D: LINE=(IQCDEND,VP229,D26D)
+IN230U: LINE=(D41U,HCEND,H230,HCEND,D1IN,IQDUEND)
+IN230D: LINE=(IQDDEND,HP230,D41D)
+IN231U: LINE=(D42U,VCEND,V231,VCEND,D1IN,IQDUEND)
+IN231D: LINE=(IQDDEND,VP231,D42D)
+IN232U: LINE=(D41U,HCEND,H232,HCEND,D1IN,IQDUEND)
+IN232D: LINE=(IQDDEND,HP232,D41D)
+IN301U: LINE=(D28U,VCEND,V301,VCEND,D1IN,IQCUEND)
+IN301D: LINE=(IQCDEND,VP301,SVALVE,D28D)
+IN309U: LINE=(SVALVE,D24U,VCEND,V309,VCEND,DQTRIN,IQCUEND)
+IN309D: LINE=(IQCDEND,VP309,D24D)
+IN310U: LINE=(D41U,HCEND,H310,HCEND,D1IN,IQDUEND)
+IN310D: LINE=(IQDDEND,HP310,D41D)
+IN311U: LINE=(D42U,VCEND,V311,VCEND,D1IN,IQDUEND)
+IN311D: LINE=(IQDDEND,VP311,D42D)
+IN312U: LINE=(D41U,HCEND,H312,HCEND,D1IN,IQDUEND)
+IN312D: LINE=(IQDDEND,HP312,D41D)
+IN313U: LINE=(D22U,VCEND,V313,VCEND,D1IN,IQCUEND)
+IN313D: LINE=(IQCDEND,VP313,D1IN,SEND,S313,SEND,D22D)
+IN314U: LINE=(D01U,HCEND,H314,HCEND,D1IN,IQBUEND)
+IN314D: LINE=(IQBDEND,HP314,D1IN,SEND,S314,SEND,D1IN,OEND,O314,OEND,D01D)
+IN315U: LINE=(D26U,VCEND,V315,VCEND,D1IN,IQCUEND)
+IN315D: LINE=(IQCDEND,VP315,D26D)
+IN316U: LINE=(D41U,HCEND,H316,HCEND,D1IN,IQDUEND)
+IN316D: LINE=(IQDDEND,HP316,D41D)
+IN317U: LINE=(D42U,VCEND,V317,VCEND,D1IN,IQDUEND)
+IN317D: LINE=(IQDDEND,VP317,D42D)
+IN318U: LINE=(D41U,HCEND,H318,HCEND,D1IN,IQDUEND)
+IN318D: LINE=(IQDDEND,HP318,D41D)
+IN319U: LINE=(D30U,VCEND,V319,VCEND,D1IN,IQCUEND)
+IN319D: LINE=(IQCDEND,VP319,D30D)
+IN322U: LINE=(SVALVE,D23U,HCEND,H322,HCEND,DQTRIN,IQCUEND)
+IN322D: LINE=(IQCDEND,HP322,D23D)
+IN323U: LINE=(D42U,VCEND,V323,VCEND,D1IN,IQDUEND)
+IN323D: LINE=(IQDDEND,VP323,D42D)
+IN324U: LINE=(D41U,HCEND,H324,HCEND,D1IN,IQDUEND)
+IN324D: LINE=(IQDDEND,HP324,D41D)
+IN325U: LINE=(D42U,VCEND,V325,VCEND,D1IN,IQDUEND)
+IN325D: LINE=(IQDDEND,VP325,D42D)
+IN326U: LINE=(D21U,HCEND,H326,HCEND,D1IN,IQCUEND)
+IN326D: LINE=(IQCDEND,HP326,D1IN,SEND,S326,SEND,D21D)
+IN327U: LINE=(D04U,VCEND,V327,VCEND,D1IN,IQBUEND)
+IN327D: LINE=(IQBDEND,VP327,D1IN,SEND,S327,SEND,D1IN,OEND,O327,OEND,D04D)
+IN328U: LINE=(D03U,QCEND,QC328,QCEND,D1IN,HCEND,H328,HCEND,D1IN,IQBUEND)
+IN328D: LINE=(IQBDEND,HP328,D1IN,SEND,S328,SEND,D1IN,OEND,O328,OEND,D03D)
+IN329U: LINE=(D04U,VCEND,V329,VCEND,D1IN,IQBUEND)
+IN329D: LINE=(IQBDEND,VP329,D1IN,SEND,S329,SEND,D1IN,OEND,O329,OEND,D04D)
+IN330U: LINE=(D03U,QCEND,QC330,QCEND,D1IN,HCEND,H330,HCEND,D1IN,IQBUEND)
+IN330D: LINE=(IQBDEND,HP330,D1IN,SEND,S330,SEND,D1IN,OEND,O330,OEND,D03D)
+IN331U: LINE=(D04U,VCEND,V331,VCEND,D1IN,IQBUEND)
+IN331D: LINE=(IQBDEND,VP331,D1IN,SEND,S331,SEND,D1IN,OEND,O331,OEND,D04D)
+IN332U: LINE=(D03U,QCEND,QC332,QCEND,D1IN,HCEND,H332,HCEND,D1IN,IQBUEND)
+IN332D: LINE=(IQBDEND,HP332,D1IN,SEND,S332,SEND,D1IN,OEND,O332,OEND,D03D)
+IN333U: LINE=(D04U,VCEND,V333,VCEND,D1IN,IQBUEND)
+IN333D: LINE=(IQBDEND,VP333,D1IN,SEND,S333,SEND,D1IN,OEND,O333,OEND,D04D)
+IN334U: LINE=(D03U,QCEND,QC334,QCEND,D1IN,HCEND,H334,HCEND,D1IN,IQBUEND)
+IN334D: LINE=(IQBDEND,HP334,D1IN,SEND,S334,SEND,D1IN,OEND,O334,OEND,D03D)
+IN335U: LINE=(D06U,SQEND,SQ335,SQEND,D1IN,VCEND,V335,VCEND,IQBUEND)
+IN335D: LINE=(IQBDEND,VP335,D1IN,SEND,S335,SEND,D06D)
+IN336U: LINE=(D05U,2*(SQEND,SQ336,SQEND,D1IN),HCEND,H336,HCEND,D1IN,IQBUEND)
+IN336D: LINE=(IQBDEND,HP336,D1IN,SEND,S336,SEND,D1IN,OEND,O336,OEND,D05D)
+IN337U: LINE=(D06U,SQEND,SQ337,SQEND,D1IN,VCEND,V337,VCEND,IQBUEND)
+IN337D: LINE=(IQBDEND,VP337,D1IN,SEND,S337,SEND,D06D)
+IN338U: LINE=(D25U,HCEND,H338,HCEND,D1IN,IQCUEND)
+IN338D: LINE=(IQCDEND,HP338,D25D)
+IN339U: LINE=(D42U,VCEND,V339,VCEND,D1IN,IQDUEND)
+IN339D: LINE=(IQDDEND,VP339,D42D)
+IN340U: LINE=(D41U,HCEND,H340,HCEND,D1IN,IQDUEND)
+IN340D: LINE=(IQDDEND,HP340,D41D)
+IN341U: LINE=(D42U,VCEND,V341,VCEND,D1IN,IQDUEND)
+IN341D: LINE=(IQDDEND,VP341,D42D)
+IN400U: LINE=(D27U,HCEND,H400,HCEND,D1IN,IQCUEND)
+IN400D: LINE=(IQCDEND,HP400,SVALVE,D27D)
+IN404U: LINE=(SVALVE,D23U,HCEND,H404,HCEND,DQTRIN,IQCUEND)
+IN404D: LINE=(IQCDEND,HP404,D23D)
+IN405U: LINE=(D42U,VCEND,V405,VCEND,D1IN,IQDUEND)
+IN405D: LINE=(IQDDEND,VP405,D42D)
+IN406U: LINE=(D41U,HCEND,H406,HCEND,D1IN,IQDUEND)
+IN406D: LINE=(IQDDEND,HP406,D41D)
+IN407U: LINE=(D42U,VCEND,V407,VCEND,D1IN,IQDUEND)
+IN407D: LINE=(IQDDEND,VP407,D42D)
+IN408U: LINE=(D21U,HCEND,H408,HCEND,D1IN,IQCUEND)
+IN408D: LINE=(IQCDEND,HP408,D1IN,SEND,S408,SEND,D21D)
+IN409U: LINE=(D02U,VCEND,V409,VCEND,D1IN,IQBUEND)
+IN409D: LINE=(IQBDEND,VP409,D1IN,SEND,S409,SEND,D02D)
+IN410U: LINE=(D01U,HCEND,H410,HCEND,D1IN,IQBUEND)
+IN410D: LINE=(IQBDEND,HP410,D1IN,SEND,S410,SEND,D1IN,OEND,O410,OEND,D01D)
+IN411U: LINE=(D02U,VCEND,V411,VCEND,D1IN,IQBUEND)
+IN411D: LINE=(IQBDEND,VP411,D1IN,SEND,S411,SEND,D02D)
+IN412U: LINE=(D01U,HCEND,H412,HCEND,D1IN,IQBUEND)
+IN412D: LINE=(IQBDEND,HP412,D1IN,SEND,S412,SEND,D1IN,OEND,O412,OEND,D01D)
+IN413U: LINE=(D02U,VCEND,V413,VCEND,D1IN,IQBUEND)
+IN413D: LINE=(IQBDEND,VP413,D1IN,SEND,S413,SEND,D02D)
+IN414U: LINE=(D01U,HCEND,H414,HCEND,D1IN,IQBUEND)
+IN414D: LINE=(IQBDEND,HP414,D1IN,SEND,S414,SEND,D1IN,OEND,O414,OEND,D01D)
+IN415U: LINE=(D02U,VCEND,V415,VCEND,D1IN,IQBUEND)
+IN415D: LINE=(IQBDEND,VP415,D1IN,SEND,S415,SEND,D02D)
+IN416U: LINE=(D01U,HCEND,H416,HCEND,D1IN,IQBUEND)
+IN416D: LINE=(IQBDEND,HP416,D1IN,SEND,S416,SEND,D1IN,OEND,O416,OEND,D01D)
+IN417U: LINE=(D02U,VCEND,V417,VCEND,D1IN,IQBUEND)
+IN417D: LINE=(IQBDEND,VP417,D1IN,SEND,S417,SEND,D02D)
+IN418U: LINE=(D01U,HCEND,H418,HCEND,D1IN,IQBUEND)
+IN418D: LINE=(IQBDEND,HP418,D1IN,SEND,S418,SEND,D1IN,OEND,O418,OEND,D01D)
+IN419U: LINE=(D02U,VCEND,V419,VCEND,D1IN,IQBUEND)
+IN419D: LINE=(IQBDEND,VP419,D1IN,SEND,S419,SEND,D02D)
+IN420U: LINE=(D01U,HCEND,H420,HCEND,D1IN,IQBUEND)
+IN420D: LINE=(IQBDEND,HP420,D1IN,SEND,S420,SEND,D1IN,OEND,O420,OEND,D01D)
+IN421U: LINE=(SVALVE,D08U,VCEND,V421,VCEND,D1IN,IQBUEND)
+IN421D: LINE=(IQBDEND,VP421,D1IN,SEND,S421,SEND,D08D)
+IN422U: LINE=(D01U,HCEND,H422,HCEND,D1IN,IQBUEND)
+IN422D: LINE=(IQBDEND,HP422,D1IN,SEND,S422,SEND,D1IN,OEND,O422,OEND,D01D)
+IN423U: LINE=(D02U,VCEND,V423,VCEND,D1IN,IQBUEND)
+IN423D: LINE=(IQBDEND,VP423,D1IN,SEND,S423,SEND,D02D)
+IN424U: LINE=(D01U,HCEND,H424,HCEND,D1IN,IQBUEND)
+IN424D: LINE=(IQBDEND,HP424,D1IN,SEND,S424,SEND,D1IN,OEND,O424,OEND,D01D)
+IN425U: LINE=(D02U,VCEND,V425,VCEND,D1IN,IQBUEND)
+IN425D: LINE=(IQBDEND,VP425,D1IN,SEND,S425,SEND,D02D)
+IN426U: LINE=(D01U,HCEND,H426,HCEND,D1IN,IQBUEND)
+IN426D: LINE=(IQBDEND,HP426,D1IN,SEND,S426,SEND,D1IN,OEND,O426,OEND,D01D)
+IN427U: LINE=(D02U,VCEND,V427,VCEND,D1IN,IQBUEND)
+IN427D: LINE=(IQBDEND,VP427,D1IN,SEND,S427,SEND,D02D)
+IN428U: LINE=(D01U,HCEND,H428,HCEND,D1IN,IQBUEND)
+IN428D: LINE=(IQBDEND,HP428,D1IN,SEND,S428,SEND,D1IN,OEND,O428,OEND,D01D)
+IN429U: LINE=(D02U,VCEND,V429,VCEND,D1IN,IQBUEND)
+IN429D: LINE=(IQBDEND,VP429,D1IN,SEND,S429,SEND,D02D)
+IN430U: LINE=(D01U,HCEND,H430,HCEND,D1IN,IQBUEND)
+IN430D: LINE=(IQBDEND,HP430,D1IN,SEND,S430,SEND,D1IN,OEND,O430,OEND,D01D)
+IN501U: LINE=(D02U,VCEND,V501,VCEND,D1IN,IQBUEND)
+IN501D: LINE=(IQBDEND,VP501,D1IN,SEND,S501,SEND,D02D)
+IN502U: LINE=(D01U,HCEND,H502,HCEND,D1IN,IQBUEND)
+IN502D: LINE=(IQBDEND,HP502,D1IN,SEND,S502,SEND,D1IN,OEND,O502,OEND,D01D)
+IN503U: LINE=(D02U,VCEND,V503,VCEND,D1IN,IQBUEND)
+IN503D: LINE=(IQBDEND,VP503,D1IN,SEND,S503,SEND,D02D)
+IN504U: LINE=(D01U,HCEND,H504,HCEND,D1IN,IQBUEND)
+IN504D: LINE=(IQBDEND,HP504,D1IN,SEND,S504,SEND,D1IN,OEND,O504,OEND,D01D)
+IN505U: LINE=(SVALVE,D07U,VCEND,V505,VCEND,D1IN,IQBUEND)
+IN505D: LINE=(IQBDEND,VP505,D1IN,SEND,S505,SEND,D1IN,OEND,O505,OEND,D07D)
+IN506U: LINE=(D03U,QCEND,QC506,QCEND,D1IN,HCEND,H506,HCEND,D1IN,IQBUEND)
+IN506D: LINE=(IQBDEND,HP506,D1IN,SEND,S506,SEND,D1IN,OEND,O506,OEND,D03D)
+IN507U: LINE=(D04U,VCEND,V507,VCEND,D1IN,IQBUEND)
+IN507D: LINE=(IQBDEND,VP507,D1IN,SEND,S507,SEND,D1IN,OEND,O507,OEND,D04D)
+IN508U: LINE=(D03U,QCEND,QC508,QCEND,D1IN,HCEND,H508,HCEND,D1IN,IQBUEND)
+IN508D: LINE=(IQBDEND,HP508,D1IN,SEND,S508,SEND,D1IN,OEND,O508,OEND,D03D)
+IN509U: LINE=(D04U,VCEND,V509,VCEND,D1IN,IQBUEND)
+IN509D: LINE=(IQBDEND,VP509,D1IN,SEND,S509,SEND,D1IN,OEND,O509,OEND,D04D)
+IN510U: LINE=(D03U,QCEND,QC510,QCEND,D1IN,HCEND,H510,HCEND,D1IN,IQBUEND)
+IN510D: LINE=(IQBDEND,HP510,D1IN,SEND,S510,SEND,D1IN,OEND,O510,OEND,D03D)
+IN511U: LINE=(D04U,VCEND,V511,VCEND,D1IN,IQBUEND)
+IN511D: LINE=(IQBDEND,VP511,D1IN,SEND,S511,SEND,D1IN,OEND,O511,OEND,D04D)
+IN512U: LINE=(D03U,QCEND,QC512,QCEND,D1IN,HCEND,H512,HCEND,D1IN,IQBUEND)
+IN512D: LINE=(IQBDEND,HP512,D1IN,SEND,S512,SEND,D1IN,OEND,O512,OEND,D03D)
+IN513U: LINE=(D06U,SQEND,SQ513,SQEND,D1IN,VCEND,V513,VCEND,IQBUEND)
+IN513D: LINE=(IQBDEND,VP513,D1IN,SEND,S513,SEND,D06D)
+IN514U: LINE=(D05U,2*(SQEND,SQ514,SQEND,D1IN),HCEND,H514,HCEND,D1IN,IQBUEND)
+IN514D: LINE=(IQBDEND,HP514,D1IN,SEND,S514,SEND,D1IN,OEND,O514,OEND,D05D)
+IN515U: LINE=(D06U,SQEND,SQ515,SQEND,D1IN,VCEND,V515,VCEND,IQBUEND)
+IN515D: LINE=(IQBDEND,VP515,D1IN,SEND,S515,SEND,D06D)
+IN516U: LINE=(D25U,HCEND,H516,HCEND,D1IN,IQCUEND)
+IN516D: LINE=(IQCDEND,HP516,D25D)
+IN517U: LINE=(D42U,VCEND,V517,VCEND,D1IN,IQDUEND)
+IN517D: LINE=(IQDDEND,VP517,D42D)
+IN518U: LINE=(D41U,HCEND,H518,HCEND,D1IN,IQDUEND)
+IN518D: LINE=(IQDDEND,HP518,D41D)
+IN519U: LINE=(D42U,VCEND,V519,VCEND,D1IN,IQDUEND)
+IN519D: LINE=(IQDDEND,VP519,D42D)
+IN520U: LINE=(D27U,HCEND,H520,HCEND,D1IN,IQCUEND)
+IN520D: LINE=(IQCDEND,HP520,SVALVE,D27D)
+IN523U: LINE=(SVALVE,D24U,VCEND,V523,VCEND,DQTRIN,IQCUEND)
+IN523D: LINE=(IQCDEND,VP523,D24D)
+IN524U: LINE=(D41U,HCEND,H524,HCEND,D1IN,IQDUEND)
+IN524D: LINE=(IQDDEND,HP524,D41D)
+IN525U: LINE=(D42U,VCEND,V525,VCEND,D1IN,IQDUEND)
+IN525D: LINE=(IQDDEND,VP525,D42D)
+IN526U: LINE=(D41U,HCEND,H526,HCEND,D1IN,IQDUEND)
+IN526D: LINE=(IQDDEND,HP526,D41D)
+IN527U: LINE=(D22U,VCEND,V527,VCEND,D1IN,IQCUEND)
+IN527D: LINE=(IQCDEND,VP527,D1IN,SEND,S527,SEND,D22D)
+IN528U: LINE=(D01U,HCEND,H528,HCEND,D1IN,IQBUEND)
+IN528D: LINE=(IQBDEND,HP528,D1IN,SEND,S528,SEND,D1IN,OEND,O528,OEND,D01D)
+IN529U: LINE=(D26U,VCEND,V529,VCEND,D1IN,IQCUEND)
+IN529D: LINE=(IQCDEND,VP529,D26D)
+IN530U: LINE=(D41U,HCEND,H530,HCEND,D1IN,IQDUEND)
+IN530D: LINE=(IQDDEND,HP530,D41D)
+IN531U: LINE=(D42U,VCEND,V531,VCEND,D1IN,IQDUEND)
+IN531D: LINE=(IQDDEND,VP531,D42D)
+IN532U: LINE=(D41U,HCEND,H532,HCEND,D1IN,IQDUEND)
+IN532D: LINE=(IQDDEND,HP532,D41D)
+IN601U: LINE=(D30U,VCEND,V601,VCEND,D1IN,IQCUEND)
+IN601D: LINE=(IQCDEND,VP601,D30D)
+IN609U: LINE=(SVALVE,D24U,VCEND,V609,VCEND,DQTRIN,IQCUEND)
+IN609D: LINE=(IQCDEND,VP609,D24D)
+IN610U: LINE=(D41U,HCEND,H610,HCEND,D1IN,IQDUEND)
+IN610D: LINE=(IQDDEND,HP610,D41D)
+IN611U: LINE=(D42U,VCEND,V611,VCEND,D1IN,IQDUEND)
+IN611D: LINE=(IQDDEND,VP611,D42D)
+IN612U: LINE=(D41U,HCEND,H612,HCEND,D1IN,IQDUEND)
+IN612D: LINE=(IQDDEND,HP612,D41D)
+IN613U: LINE=(D22U,VCEND,V613,VCEND,D1IN,IQCUEND)
+IN613D: LINE=(IQCDEND,VP613,D1IN,SEND,S613,SEND,D22D)
+IN614U: LINE=(D01U,HCEND,H614,HCEND,D1IN,IQBUEND)
+IN614D: LINE=(IQBDEND,HP614,D1IN,SEND,S614,SEND,D1IN,OEND,O614,OEND,D01D)
+IN615U: LINE=(D26U,VCEND,V615,VCEND,D1IN,IQCUEND)
+IN615D: LINE=(IQCDEND,VP615,D26D)
+IN616U: LINE=(D41U,HCEND,H616,HCEND,D1IN,IQDUEND)
+IN616D: LINE=(IQDDEND,HP616,D41D)
+IN617U: LINE=(D42U,VCEND,V617,VCEND,D1IN,IQDUEND)
+IN617D: LINE=(IQDDEND,VP617,D42D)
+IN618U: LINE=(D41U,HCEND,H618,HCEND,D1IN,IQDUEND)
+IN618D: LINE=(IQDDEND,HP618,D41D)
+IN619U: LINE=(D28U,VCEND,V619,VCEND,D1IN,IQCUEND)
+IN619D: LINE=(IQCDEND,VP619,SVALVE,D28D)
+IN622U: LINE=(SVALVE,D23U,HCEND,H622,HCEND,DQTRIN,IQCUEND)
+IN622D: LINE=(IQCDEND,HP622,D23D)
+IN623U: LINE=(D42U,VCEND,V623,VCEND,D1IN,IQDUEND)
+IN623D: LINE=(IQDDEND,VP623,D42D)
+IN624U: LINE=(D41U,HCEND,H624,HCEND,D1IN,IQDUEND)
+IN624D: LINE=(IQDDEND,HP624,D41D)
+IN625U: LINE=(D42U,VCEND,V625,VCEND,D1IN,IQDUEND)
+IN625D: LINE=(IQDDEND,VP625,D42D)
+IN626U: LINE=(D21U,HCEND,H626,HCEND,D1IN,IQCUEND)
+IN626D: LINE=(IQCDEND,HP626,D1IN,SEND,S626,SEND,D21D)
+IN627U: LINE=(D04U,VCEND,V627,VCEND,D1IN,IQBUEND)
+IN627D: LINE=(IQBDEND,VP627,D1IN,SEND,S627,SEND,D1IN,OEND,O627,OEND,D04D)
+IN628U: LINE=(D03U,QCEND,QC628,QCEND,D1IN,HCEND,H628,HCEND,D1IN,IQBUEND)
+IN628D: LINE=(IQBDEND,HP628,D1IN,SEND,S628,SEND,D1IN,OEND,O628,OEND,D03D)
+IN629U: LINE=(D04U,VCEND,V629,VCEND,D1IN,IQBUEND)
+IN629D: LINE=(IQBDEND,VP629,D1IN,SEND,S629,SEND,D1IN,OEND,O629,OEND,D04D)
+IN630U: LINE=(D03U,QCEND,QC630,QCEND,D1IN,HCEND,H630,HCEND,D1IN,IQBUEND)
+IN630D: LINE=(IQBDEND,HP630,D1IN,SEND,S630,SEND,D1IN,OEND,O630,OEND,D03D)
+IN631U: LINE=(D04U,VCEND,V631,VCEND,D1IN,IQBUEND)
+IN631D: LINE=(IQBDEND,VP631,D1IN,SEND,S631,SEND,D1IN,OEND,O631,OEND,D04D)
+IN632U: LINE=(D03U,QCEND,QC632,QCEND,D1IN,HCEND,H632,HCEND,D1IN,IQBUEND)
+IN632D: LINE=(IQBDEND,HP632,D1IN,SEND,S632,SEND,D1IN,OEND,O632,OEND,D03D)
+IN633U: LINE=(D04U,VCEND,V633,VCEND,D1IN,IQBUEND)
+IN633D: LINE=(IQBDEND,VP633,D1IN,SEND,S633,SEND,D1IN,OEND,O633,OEND,D04D)
+IN634U: LINE=(D03U,QCEND,QC634,QCEND,D1IN,HCEND,H634,HCEND,D1IN,IQBUEND)
+IN634D: LINE=(IQBDEND,HP634,D1IN,SEND,S634,SEND,D1IN,OEND,O634,OEND,D03D)
+IN635U: LINE=(D06U,SQEND,SQ635,SQEND,D1IN,VCEND,V635,VCEND,IQBUEND)
+IN635D: LINE=(IQBDEND,VP635,D1IN,SEND,S635,SEND,D06D)
+IN636U: LINE=(D05U,2*(SQEND,SQ636,SQEND,D1IN),HCEND,H636,HCEND,D1IN,IQBUEND)
+IN636D: LINE=(IQBDEND,HP636,D1IN,SEND,S636,SEND,D1IN,OEND,O636,OEND,D05D)
+IN637U: LINE=(D06U,SQEND,SQ637,SQEND,D1IN,VCEND,V637,VCEND,IQBUEND)
+IN637D: LINE=(IQBDEND,VP637,D1IN,SEND,S637,SEND,D06D)
+IN638U: LINE=(D25U,HCEND,H638,HCEND,D1IN,IQCUEND)
+IN638D: LINE=(IQCDEND,HP638,D25D)
+IN639U: LINE=(D42U,VCEND,V639,VCEND,D1IN,IQDUEND)
+IN639D: LINE=(IQDDEND,VP639,D42D)
+IN640U: LINE=(D41U,HCEND,H640,HCEND,D1IN,IQDUEND)
+IN640D: LINE=(IQDDEND,HP640,D41D)
+IN641U: LINE=(D42U,VCEND,V641,VCEND,D1IN,IQDUEND)
+IN641D: LINE=(IQDDEND,VP641,D42D)
+!
+!  MI10 Straight Section
+!
+D100C: DRIFT, L = 0.139113
+D100B: DRIFT, L = 0.095606
+D100A: DRIFT, L = LSS100-LIQCD_END-LLAM10_SLOT-LMIVC_SLOT-D100B[L] &
+                  -D100C[L]-LIQBU_END
+D101A: DRIFT, L = 0.344487-LLGBPM-LIQBD_END
+D101C: DRIFT, L = 0.305232
+D101B: DRIFT, L = LSS101-LIQBD_END-LLGBPM-D101A[L]-LSEM-LMIHC_SLOT &
+                  -D101C[L]-LIQBU_END
+D102A: DRIFT, L = 0.347789-LIQBD_END-LLGBPM
+D102B: DRIFT, L = 0.14605
+D102C: DRIFT, L = 0.14605
+D102E: DRIFT, L = 0.14605
+D102F: DRIFT, L = 0.174125
+D102G: DRIFT, L = 0.45948
+D102D: DRIFT, L = LSS102-LIQBD_END-LLGBPM-D102A[L]-LIPM-D102B[L]-LFW &
+                  -D102C[L]-LSEM-LTOROID-D102E[L]-LMIVC_SLOT-D102F[L] &
+                  -LK103_INS-D102G[L]-LIQBU_END
+D103A: DRIFT, L = 0.48587-LIQBD_END
+D103B: DRIFT, L = 0.14605
+D103C: DRIFT, L = 0.14605
+D103E: DRIFT, L = 0.14605
+D103F: DRIFT, L = 0.14605
+D103D: DRIFT, L = LSS103-LIQBD_END-LBPM-D103A[L]-LIPM-D103B[L]-LFW &
+                  -D103C[L]-2*LSEM-D103E[L]-LMIHC_SLOT-D103F[L]-LIQCU_END
+
+SS100: LINE=(IQCDEND,D100A,LAM10_INS,D100B,VCEND,V101,VCEND,D100C,IQBUEND)
+SS101: LINE=(IQBDEND,VP101,D101A,MW101,D101B,HCEND,H102,HCEND,D101C,IQBUEND)
+SS102: LINE=(IQBDEND,HP102,D102A,IPM102,D102B,FW102,D102C,MW102,D102D,&
+             TOR103,D102E,VCEND,V103,VCEND,D102F,K103_INS,D102G,IQBUEND)
+SS103: LINE=(IQBDEND,VP103,D103A,IPM103,D103B,FW103,D103C,MW103,D103D,&
+             MW104,D103E,HCEND,H104,HCEND,D103F,IQCUEND)
+!
+!  MI22 Straight Section
+!
+D220A: DRIFT, L = LSS220 - LIQCD_END-LBPM-LMIVC_SLOT-D1IN[L]-LIQBU_END
+SS220: LINE = (IQCDEND,HP220,D220A,VCEND,V221,VCEND,D1IN,IQBUEND)
+D221B: DRIFT, L = 0.9 - LIQBU_END-LMIHC_SLOT-LIPL_END-D1IN[L]
+D221A: DRIFT, L = LSS221 - LIQBU_END-LBPM-LIPL_SLOT-D221B[L] &
+                         -LMIHC_SLOT-D1IN[L]-LIQBU_END
+SS221: LINE = (IQBDEND,VP221,D221A,LAM222_INS,D221B, &
+               HCEND,H222,HCEND,D1IN,IQBUEND) 
+D222A: DRIFT, L = LSS222 - LIQBD_END-LBPM-LMIVC_SLOT-D1IN[L]-LIQCU_END
+SS222: LINE = (IQBDEND,HP222,D222A,VCEND,V223,VCEND,D1IN,IQCUEND)
+!
+!  MI32 Straight Section
+!
+D319A: DRIFT, L = LSS319 - LIQCD_END-LBPM-LMIVC_SLOT-D1IN[L]-LIQBU_END
+SS319: LINE = (IQCDEND,VP319,D319A,HCEND,H320,HCEND,D1IN,IQBUEND)
+D320A: DRIFT, L = LSS320 - LIQBU_END-LBPM-LMIHC_SLOT-D1IN[L]-LIQBU_END
+SS320: LINE = (IQBDEND,HP320,D320A,VCEND,V321,VCEND,D1IN,IQBUEND) 
+D321A: DRIFT, L = 1.9746-LIPL_END-LIQBD_END-LBPM
+D321B: DRIFT, L = LSS321 - LIQBD_END-LBPM-LIPL_SLOT-D321A[L] &
+                  -LMIHC_SLOT-D1IN[L]-LIQCU_END
+SS321: LINE = (IQBDEND,VP321,D321A,LAM321_INS,D321B, &
+               HCEND,H322,HCEND,D1IN,IQCUEND)
+!
+!  MI30 Straight Section
+!
+D301A: DRIFT, L = LSS301 - LIQCD_END-LBPM-LMIHC_SLOT-D1IN[L]-LIQBU_END
+SS301: LINE = (IQCDEND,VP301,D301A,HCEND,H302,HCEND,D1IN,IQBUEND) 
+D302A: DRIFT, L = LSS302 - LIQBD_END-LBPM-D6IN[L]-LQXR_SLOT & 
+                 -LMIVC_SLOT-D1IN[L]-LIQBU_END 
+SS302: LINE = (IQBDEND,HP302,D6IN,QXR_INS,D302A,&
+               VCEND,V303,VCEND,D1IN,IQBUEND)
+D303D: DRIFT, L = 1.0-LIQBU_END-LONE_IN-LMIHC_SLOT
+D303C: DRIFT, L = 5.34-LHIQB_STEEL-1.0-LK304_SLOT
+D303B: DRIFT, L = 6.52-5.34
+D303A: DRIFT, L = LSS303-LIQBD_END-LBPM-(6.52-LHIQB_STEEL)
+SS303: LINE = (IQBDEND,VP303,D303A,D303B,D303C,&
+                K304_INS,D303D,HCEND,H304,HCEND,D1IN,IQBUEND)
+D304C: DRIFT, L = 5.34-LHIQB_STEEL-LIQBU_END-D1IN[L]-LMIVC_SLOT
+D304B: DRIFT, L = 6.52-5.34
+D304A: DRIFT, L = LSS304-(6.52-LHIQB_STEEL)-LIQBD_END-LBPM  &
+                  -D6IN[L]-LQXR_SLOT
+SS304: LINE = (IQBDEND,HP304,D6IN,QXR_INS,D304A,D304B,D304C,&
+               VCEND,V305,VCEND,D1IN,IQBUEND)
+D305A: DRIFT, L = 8.9 - LIQBD_END-LBPM
+D305B: DRIFT, L = LSS305-8.9-LMIHC_SLOT-D1IN[L]-LIQBU_END
+SS305: LINE = (IQBDEND,VP305,D305A,D305B,&
+               HCEND,H306,HCEND,D1IN,IQBUEND)
+D306A: DRIFT, L = 5.34 -LHIQB_STEEL-LIQBD_END-LBPM
+D306B: DRIFT, L = LSS306-(5.34-LHIQB_STEEL) &
+                 -LMIVC_SLOT-D1IN[L]-LIQBU_END
+SS306: LINE = (IQBDEND,HP306,D306A,D306B,&
+               VCEND,V307,VCEND,D1IN,IQBUEND)
+D307A: DRIFT, L = 6.52 -LHIQB_STEEL-LIQBD_END-LBPM
+D307B: DRIFT, L = LSS307-(6.52-LHIQB_STEEL) &
+                 -LMIHC_SLOT-D1IN[L]-LIQBU_END
+SS307: LINE = (IQBDEND,VP307,D307A,D307B,&
+               HCEND,H308,HCEND,D1IN,IQBUEND)
+D308A: DRIFT, L = LSS308 - LIQBD_END-LBPM-LMIVC_SLOT-D1IN[L]-LIQCU_END
+SS308: LINE = (IQBDEND,HP308,D308A,VCEND,V309,VCEND,D1IN,IQCUEND)
+!
+!  MI40 Straight Section
+!
+D400A: DRIFT, L = 1.5783854 
+D400B: DRIFT, L = LSS400-LIQCD_END-D400A[L]-2*LK400_SLOT-LK400_SPOOL & 
+                  -LMIVC_SLOT-D1IN[L]-LIQBU_END
+SS400: LINE = (IQCDEND,HP400,D400A,K400_INS,D400B, &
+               VCEND,V401,VCEND,D1IN,IQBUEND)
+D401C: DRIFT, L = 0.127
+D401B: DRIFT, L = 0.127
+D401A: DRIFT, L = LSS401-LIQBD_END-LBPM-LMIHC_SLOT-D1IN[L] & 
+                 -D401B[L]-LILA_SLOT-D401C[L]-LIQEU_END
+SS401: LINE = (IQBDEND,VP521,D401A,HCEND,H402,HCEND,D1IN, &
+               D401B,LAM40A_INS,D401C,IQEUEND)
+D402A: DRIFT, L = 0.134874
+D402B: DRIFT, L = 0.1524
+D402C: DRIFT, L = 0.29736
+D402D: DRIFT, L = LSS402-LIQED_END-LLGBPM-D402A[L]-2*LILA_SLOT-D402B[L] &
+                  -D402C[L]-LICA_SLOT-LMIVC_SLOT-D1IN[L]-LIQBU_END
+SS402: LINE = (IQEDEND,HP402,D402A,LAM40B_INS,D402B,LAM40C_INS,D402C, &
+               V001_INS,D402D,VCEND,V403,VCEND,D1IN,IQBUEND)
+D403A: DRIFT, L = LSS403-LIQBD_END-LBPM-LMIHC_SLOT-D1IN[L]-LIQCU_END
+SS403: LINE = (IQBDEND,VP403,D403A,HCEND,H404,HCEND,D1IN,IQCUEND)
+!
+!  MI52 Straight Section
+!
+D520A: DRIFT, L = 0.3689604
+D520B: DRIFT, L = 1.1096625
+D520C: DRIFT, L = LSS520-LIQCD_END-LBPM-D520A[L]-2*LK520_SLOT-LK520_SPOOL &
+                  -D520B[L]-2*LES_SLOT-ESSPOOL[L]-LMIVC_SLOT-D1IN[L]-LIQBU_END
+SS520: LINE = (IQCDEND,HP520,D520A,K520_INS,D520B,ES520_INS,D520C, &
+               VCEND,V521,VCEND,D1IN,IQBUEND)
+D521B: DRIFT, L = 0.127
+D521C: DRIFT, L = 0.089
+D521A: DRIFT, L = LSS521-LIQBD_END-LBPM-2*LMIHC_SLOT-D1IN[L]-D521B[L] &
+                  -LILA_SLOT-D521C[L]-LIQBU_END
+SS521: LINE = (IQBDEND,VP521,D521A,HCEND,H522,HCEND,D1IN,HCEND,H522,HCEND, &
+               D521B,LAM52A_INS,D521C,IQBUEND)
+D522A: DRIFT, L = 0.0762
+D522B: DRIFT, L = 0.1524
+D522C: DRIFT, L = 0.127
+D522D: DRIFT, L = LSS522-LIQED_END-LLGBPM-D522A[L]-2*LILA_SLOT-D522B[L] &
+                  -D522C[L]-LICA_SLOT-LMIVC_SLOT-D1IN[L]-LIQCU_END
+SS522: LINE = (IQEDEND,HP522,D522A,LAM52B_INS,D522B,LAM52C_INS,D522C, &
+               V700_INS,D522D,VCEND,V523,VCEND,D1IN,IQCUEND)
+!
+!  MI62 Straight Section
+!
+D619D: DRIFT, L = 0.33804-LIQEU_END-LLGBPM
+D619C: DRIFT, L = 0.1524 
+D619B: DRIFT, L = 0.127
+D619A: DRIFT, L = LSS619-LIQCD_END-LBPM-LICA_SLOT-D619B[L]-LILA_SLOT &
+                  -D619C[L]-LILA_SLOT-D619D[L]-LLGBPM-LIQEU_END
+SS619: LINE = (IQCDEND,VP619,D619A,V900_INS,D619B,LAM62C_INS,D619C,&
+               LAM62B_INS,D619D,HP620,IQEUEND)
+D620A: DRIFT, L = 0.19685 - LIQED_END
+D620B: DRIFT, L = 0.1524
+D620C: DRIFT, L = LSS620 - LIQBD_END-D620A[L]-LILA_SLOT-D620B[L] &
+                   -LMIHC_SLOT-LMIVC_SLOT-D1IN[L]-LIQBU_END 
+SS620: LINE = (IQBDEND,D620A,LAM62A_INS,D620B,HCEND,H620,HCEND,D620C,&
+               VCEND,V621,VCEND,D1IN,IQBUEND)
+D621B: DRIFT, L = 0.7439
+D621A: DRIFT, L = LSS621 - LIQBD_END-LBPM-2*LK622_SLOT-LK622_SPOOL &
+                  -D621B[L]-LMIHC_SLOT-D1IN[L]-LIQCU_END
+SS621: LINE = (IQBDEND,VP621,D621A,K622B_INS,K622_SPOOL,K622A_INS,D621B, &
+              HCEND,H622,HCEND,D1IN,IQCUEND)
+!
+!  MI60 Straight Section
+!MODIFIED  straight section 601 to include NuMI kickers 01/10/2000
+!
+D601A: DRIFT, L = 0.81915 - LIQCD_END - LBPM
+D601B: DRIFT, L = 1.53035
+D601C: DRIFT, L = 0.13335
+D601D: DRIFT, L = 0.11430
+D601F: DRIFT, L = 0.53035
+D601G: DRIFT, L = 0.81280 - LIQBU_END - LMIHC_SLOT-D1IN[L]
+D601E: DRIFT, L = LSS601- D601A[L]-LIQCD_END-LBPM-LDAMPERPU-D601B[L] &
+                  -LDAMPERK-D601C[L]-LGRIFFEN-D601D[L]-LWBPU &
+                  -LDAMPERK-D601F[L]-LDAMPERPU-D601G[L]-LMIHC_SLOT &
+                  -D1IN[L]-LIQBU_END-LPINGER-LSCHOTTKY-3*D6IN[L]-LWBPU
+SS601: LINE = (IQCDEND,VP601,D601A,VDPU,D601B,VDK,D601C,GRIF,D601D,WBPU, &
+               D6IN,PING,D601E,WBPU,D6IN,HDK,D601F,D6IN,HSD,HDPU,D601G,&
+               HCEND,H602,HCEND,D1IN,IQBUEND)
+!
+! Modified straight section 602 to include NuMI kickers
+!
+D602A: DRIFT, L = 0.508 - LIQBD_END-LBPM
+D602B: DRIFT, L = 0.254  
+D602C: DRIFT, L = 0.62484  !0.13335+1.74625
+D602D: DRIFT, L = 1.9177   !0.66294
+D602F: DRIFT, L = 0.1397
+D602G: DRIFT, L = 0.81915 - LIQBU_END-LMIVC_SLOT-D1IN[L]
+! 3 kicker layout inserted 10/10/02 by 
+D602A: DRIFT, L = 0.508 - LIQBD_END- 0.3
+D602E: DRIFT, L = LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
+                  -D602B[L]-LRWM-D602C[L]-D602D[L] &
+                  -LWBPU-D602F[L]-LSCHOTTKY-LDAMPERPU-D602G[L] &
+                  -LMIVC_SLOT-D1IN[L]-LIQBU_END
+D602DE: DRIFT, L = D602D[L] + D602E[L]
+SS602: LINE = (IQBDEND,D602A,K602_INS,D602B,RWM,D602C, &
+                D602DE,WBPU,D602F,VSD,VDPU,D602G, &
+                VCEND,V603,VCEND,D1IN,IQBUEND)
+!
+!  Rest of styraight section
+!
+D605A: DRIFT, L = LAMBDAO2 - LHIQB_STEEL-LIQBU_END-LMIVC_SLOT-D1IN[L] &
+                  - LRFC_SLOT/2 
+D604B: DRIFT, L = LSS604 - LIQBD_END-D1IN[L]-LMIVC_SLOT-D605A[L] &
+                  -5*LRFC_SLOT-5*LRFCIP-LBPM-LIQBD_END
+SS604: LINE = (IQBDEND,HP604,D604B,5*(DRFCIP,RFCAV), &
+                    D605A,VCEND,V605,VCEND,D1IN,IQBUEND)
+D604A: DRIFT, L = 3*LAMBDAO2 -LIQB_STEEL-2*LIQBU_END-LBPM-LMIHC_SLOT-D1IN[L] &
+                  -LRFC_SLOT-D604B[L]-2*LRFCIP-LDAMPERPU-LONE_FT
+D603B: DRIFT, L = LSS603 - LIQBU_END-D1IN[L]-LMIHC_SLOT-LRFCIP-D604A[L] &
+                  -4*LRFC_SLOT-4*LRFCIP-LBPM-LIQBD_END-LDAMPERPU-LONE_FT
+SS603: LINE = (IQBDEND,VP603,D603B,4*(DRFCIP,RFCAV),DRFCIP, &
+                      D604A,HDPU,D12IN,HCEND,H604,HCEND,D1IN,IQBUEND)
+D605B: DRIFT, L = LAMBDAO2-LHIQB_STEEL-LIQBD_END-LBPM &
+                  -LRFC_SLOT/2 
+D606A: DRIFT, L = LSS605 - LIQBD_END-D605B[L]-5*LRFC_SLOT-4*LRFCIP &
+                  -LMIHC_SLOT-D1IN[L]-LIQBU_END
+H606D: MARKER
+SS605: LINE = (IQBDEND,VP605,D605B,4*(RFCAV,DRFCIP), &
+                     RFCAV,D606A,HCEND,H606,H606D,HCEND,D1IN,IQBUEND)
+D606B: DRIFT, L = 2.9535 -LHIQB_STEEL-LBPM-LHRFC_SLOT/2
+D606C: DRIFT, L = 3*LAMBDAO2-LIQB_STEEL-2*LIQBD_END-LBPM-D606A[L] &
+                  -D606B[L]-LHRFC_SLOT-LRFC_SLOT-D1IN[L]-LMIHC_SLOT
+D607A: DRIFT, L = LSS606-LIQBD_END-D606B[L]-4*LRFC_SLOT-4*LRFCIP &
+                  -LMIVC_SLOT-D1IN[L]-LIQBU_END-D606C[L]-LHRFC_SLOT
+SS606: LINE = (IQBDEND,HP606,D606B,HRFCAV,D606C,4*(RFCAV,DRFCIP), &
+                 D607A,VCEND,V607,VCEND,D1IN,IQBUEND)
+D607D: DRIFT, L = 0.127
+D607C: DRIFT, L = 0.0889
+D607B:  DRIFT, L = 0.9927336
+D608A: DRIFT , L = LSS607 - LIQBD_END-LBPM-D607B[L]-6*LCCAV_SLOT &
+                   -5*LCCAV_SPOOL-LMIHC_SLOT &
+                   -D607D[L]-LILA_SLOT-D607C[L] -LIQEU_END
+SS607: LINE = (IQBDEND,VP607,D607B,5*(CCCAV,CCAV_SPOOL),CCCAV,D608A,&
+               HCEND,H608,HCEND,D607D,LAM60A_INS,D607C,IQEUEND)
+D608B: DRIFT, L = 0.0762
+D608C: DRIFT, L = 0.1524
+D608D: DRIFT, L = 0.127
+D608E: DRIFT, L = LSS608-LIQED_END-LLGBPM-D608B[L]-2*LILA_SLOT-D608C[L] &
+                  -D608D[L]-LICA_SLOT-LMIVC_SLOT-D1IN[L]-LIQCU_END
+SS608: LINE = (IQEDEND,HP608,D608B,LAM60B_INS,D608C,LAM60C_INS,D608D, &
+              V100_INS,D608E,VCEND,V609,VCEND,D1IN,IQCUEND)
+! 
+! 
+! Half Cell description using FULL Quad
+! 
+ HC_100: LINE = (Q100,SS100)
+ HC_101: LINE = (Q101,SS101)
+ HC_102: LINE = (Q102,SS102)
+ HC_103: LINE = (Q103,SS103)
+ HC_104: LINE = (Q104,IN104D,D104,IN105U)
+ HC_105: LINE = (Q105,IN105D,D105,IN106U)
+ HC_106: LINE = (Q106,IN106D,D106,IN107U)
+ HC_107: LINE = (Q107,IN107D,D107,IN108U)
+ HC_108: LINE = (Q108,IN108D,D108,IN109U)
+ HC_109: LINE = (Q109,IN109D,D109,IN110U)
+ HC_110: LINE = (Q110,IN110D,D110,IN111U)
+ HC_111: LINE = (Q111,IN111D,D111,IN112U)
+ HC_112: LINE = (Q112,IN112D,D112,IN113U)
+ HC_113: LINE = (Q113,IN113D,D113,IN114U)
+ HC_114: LINE = (Q114,IN114D,D114,IN115U)
+ HC_115: LINE = (Q115,IN115D,D115,IN116U)
+ HC_116: LINE = (Q116,IN116D,D116,IN117U)
+ HC_117: LINE = (Q117,IN117D,D117,IN118U)
+ HC_118: LINE = (Q118,IN118D,D118,IN119U)
+ HC_119: LINE = (Q119,IN119D,D119,IN120U)
+ HC_120: LINE = (Q120,IN120D,D120,IN121U)
+ HC_121: LINE = (Q121,IN121D,D121,IN122U)
+ HC_122: LINE = (Q122,IN122D,D122,IN123U)
+ HC_123: LINE = (Q123,IN123D,D123,IN124U)
+ HC_124: LINE = (Q124,IN124D,D124,IN125U)
+ HC_125: LINE = (Q125,IN125D,D125,IN126U)
+ HC_126: LINE = (Q126,IN126D,D126,IN127U)
+ HC_127: LINE = (Q127,IN127D,D127,IN128U)
+ HC_128: LINE = (Q128,IN128D,D128,IN129U)
+ HC_129: LINE = (Q129,IN129D,D129,IN130U)
+ HC_130: LINE = (Q130,IN130D,D130,IN201U)
+ HC_201: LINE = (Q201,IN201D,D201,IN202U)
+ HC_202: LINE = (Q202,IN202D,D202,IN203U)
+ HC_203: LINE = (Q203,IN203D,D203,IN204U)
+ HC_204: LINE = (Q204,IN204D,D204,IN205U)
+ HC_205: LINE = (Q205,IN205D,D205,IN206U)
+ HC_206: LINE = (Q206,IN206D,D206,IN207U)
+ HC_207: LINE = (Q207,IN207D,D207,IN208U)
+ HC_208: LINE = (Q208,IN208D,D208,IN209U)
+ HC_209: LINE = (Q209,IN209D,D209,IN210U)
+ HC_210: LINE = (Q210,IN210D,D210,IN211U)
+ HC_211: LINE = (Q211,IN211D,D211,IN212U)
+ HC_212: LINE = (Q212,IN212D,D212,IN213U)
+ HC_213: LINE = (Q213,IN213D,D213,IN214U)
+ HC_214: LINE = (Q214,IN214D,D214,IN215U)
+ HC_215: LINE = (Q215,IN215D,D215,IN216U)
+ HC_216: LINE = (Q216,IN216D,D216,IN217U)
+ HC_217: LINE = (Q217,IN217D,D217,IN218U)
+ HC_218: LINE = (Q218,IN218D,D218,IN219U)
+ HC_219: LINE = (Q219,IN219D,D219,IN220U)
+ HC_220: LINE = (Q220,SS220)
+ HC_221: LINE = (Q221,SS221)
+ HC_222: LINE = (Q222,SS222)
+ HC_223: LINE = (Q223,IN223D,D223,IN224U)
+ HC_224: LINE = (Q224,IN224D,D224,IN225U)
+ HC_225: LINE = (Q225,IN225D,D225,IN226U)
+ HC_226: LINE = (Q226,IN226D,D226,IN227U)
+ HC_227: LINE = (Q227,IN227D,D227,IN228U)
+ HC_228: LINE = (Q228,IN228D,D228,IN229U)
+ HC_229: LINE = (Q229,IN229D,D229,IN230U)
+ HC_230: LINE = (Q230,IN230D,D230,IN231U)
+ HC_231: LINE = (Q231,IN231D,D231,IN232U)
+ HC_232: LINE = (Q232,IN232D,D232,IN301U)
+ HC_301: LINE = (Q301,SS301)
+ HC_302: LINE = (Q302,SS302)
+ HC_303: LINE = (Q303,SS303)
+ HC_304: LINE = (Q304,SS304)
+ HC_305: LINE = (Q305,SS305)
+ HC_306: LINE = (Q306,SS306)
+ HC_307: LINE = (Q307,SS307)
+ HC_308: LINE = (Q308,SS308)
+ HC_309: LINE = (Q309,IN309D,D309,IN310U)
+ HC_310: LINE = (Q310,IN310D,D310,IN311U)
+ HC_311: LINE = (Q311,IN311D,D311,IN312U)
+ HC_312: LINE = (Q312,IN312D,D312,IN313U)
+ HC_313: LINE = (Q313,IN313D,D313,IN314U)
+ HC_314: LINE = (Q314,IN314D,D314,IN315U)
+ HC_315: LINE = (Q315,IN315D,D315,IN316U)
+ HC_316: LINE = (Q316,IN316D,D316,IN317U)
+ HC_317: LINE = (Q317,IN317D,D317,IN318U)
+ HC_318: LINE = (Q318,IN318D,D318,IN319U)
+ HC_319: LINE = (Q319,SS319)
+ HC_320: LINE = (Q320,SS320)
+ HC_321: LINE = (Q321,SS321)
+ HC_322: LINE = (Q322,IN322D,D322,IN323U)
+ HC_323: LINE = (Q323,IN323D,D323,IN324U)
+ HC_324: LINE = (Q324,IN324D,D324,IN325U)
+ HC_325: LINE = (Q325,IN325D,D325,IN326U)
+ HC_326: LINE = (Q326,IN326D,D326,IN327U)
+ HC_327: LINE = (Q327,IN327D,D327,IN328U)
+ HC_328: LINE = (Q328,IN328D,D328,IN329U)
+ HC_329: LINE = (Q329,IN329D,D329,IN330U)
+ HC_330: LINE = (Q330,IN330D,D330,IN331U)
+ HC_331: LINE = (Q331,IN331D,D331,IN332U)
+ HC_332: LINE = (Q332,IN332D,D332,IN333U)
+ HC_333: LINE = (Q333,IN333D,D333,IN334U)
+ HC_334: LINE = (Q334,IN334D,D334,IN335U)
+ HC_335: LINE = (Q335,IN335D,D335,IN336U)
+ HC_336: LINE = (Q336,IN336D,D336,IN337U)
+ HC_337: LINE = (Q337,IN337D,D337,IN338U)
+ HC_338: LINE = (Q338,IN338D,D338,IN339U)
+ HC_339: LINE = (Q339,IN339D,D339,IN340U)
+ HC_340: LINE = (Q340,IN340D,D340,IN341U)
+ HC_341: LINE = (Q341,IN341D,D341,IN400U)
+ HC_400: LINE = (Q400,SS400)
+ HC_401: LINE = (Q401,SS401)
+ HC_402: LINE = (Q402,SS402)
+ HC_403: LINE = (Q403,SS403)
+ HC_404: LINE = (Q404,IN404D,D404,IN405U)
+ HC_405: LINE = (Q405,IN405D,D405,IN406U)
+ HC_406: LINE = (Q406,IN406D,D406,IN407U)
+ HC_407: LINE = (Q407,IN407D,D407,IN408U)
+ HC_408: LINE = (Q408,IN408D,D408,IN409U)
+ HC_409: LINE = (Q409,IN409D,D409,IN410U)
+ HC_410: LINE = (Q410,IN410D,D410,IN411U)
+ HC_411: LINE = (Q411,IN411D,D411,IN412U)
+ HC_412: LINE = (Q412,IN412D,D412,IN413U)
+ HC_413: LINE = (Q413,IN413D,D413,IN414U)
+ HC_414: LINE = (Q414,IN414D,D414,IN415U)
+ HC_415: LINE = (Q415,IN415D,D415,IN416U)
+ HC_416: LINE = (Q416,IN416D,D416,IN417U)
+ HC_417: LINE = (Q417,IN417D,D417,IN418U)
+ HC_418: LINE = (Q418,IN418D,D418,IN419U)
+ HC_419: LINE = (Q419,IN419D,D419,IN420U)
+ HC_420: LINE = (Q420,IN420D,D420,IN421U)
+ HC_421: LINE = (Q421,IN421D,D421,IN422U)
+ HC_422: LINE = (Q422,IN422D,D422,IN423U)
+ HC_423: LINE = (Q423,IN423D,D423,IN424U)
+ HC_424: LINE = (Q424,IN424D,D424,IN425U)
+ HC_425: LINE = (Q425,IN425D,D425,IN426U)
+ HC_426: LINE = (Q426,IN426D,D426,IN427U)
+ HC_427: LINE = (Q427,IN427D,D427,IN428U)
+ HC_428: LINE = (Q428,IN428D,D428,IN429U)
+ HC_429: LINE = (Q429,IN429D,D429,IN430U)
+ HC_430: LINE = (Q430,IN430D,D430,IN501U)
+ HC_501: LINE = (Q501,IN501D,D501,IN502U)
+ HC_502: LINE = (Q502,IN502D,D502,IN503U)
+ HC_503: LINE = (Q503,IN503D,D503,IN504U)
+ HC_504: LINE = (Q504,IN504D,D504,IN505U)
+ HC_505: LINE = (Q505,IN505D,D505,IN506U)
+ HC_506: LINE = (Q506,IN506D,D506,IN507U)
+ HC_507: LINE = (Q507,IN507D,D507,IN508U)
+ HC_508: LINE = (Q508,IN508D,D508,IN509U)
+ HC_509: LINE = (Q509,IN509D,D509,IN510U)
+ HC_510: LINE = (Q510,IN510D,D510,IN511U)
+ HC_511: LINE = (Q511,IN511D,D511,IN512U)
+ HC_512: LINE = (Q512,IN512D,D512,IN513U)
+ HC_513: LINE = (Q513,IN513D,D513,IN514U)
+ HC_514: LINE = (Q514,IN514D,D514,IN515U)
+ HC_515: LINE = (Q515,IN515D,D515,IN516U)
+ HC_516: LINE = (Q516,IN516D,D516,IN517U)
+ HC_517: LINE = (Q517,IN517D,D517,IN518U)
+ HC_518: LINE = (Q518,IN518D,D518,IN519U)
+ HC_519: LINE = (Q519,IN519D,D519,IN520U)
+ HC_520: LINE = (Q520,SS520)
+ HC_521: LINE = (Q521,SS521)
+ HC_522: LINE = (Q522,SS522)
+ HC_523: LINE = (Q523,IN523D,D523,IN524U)
+ HC_524: LINE = (Q524,IN524D,D524,IN525U)
+ HC_525: LINE = (Q525,IN525D,D525,IN526U)
+ HC_526: LINE = (Q526,IN526D,D526,IN527U)
+ HC_527: LINE = (Q527,IN527D,D527,IN528U)
+ HC_528: LINE = (Q528,IN528D,D528,IN529U)
+ HC_529: LINE = (Q529,IN529D,D529,IN530U)
+ HC_530: LINE = (Q530,IN530D,D530,IN531U)
+ HC_531: LINE = (Q531,IN531D,D531,IN532U)
+ HC_532: LINE = (Q532,IN532D,D532,IN601U)
+ HC_601: LINE = (Q601,SS601)
+ HC_602: LINE = (Q602,SS602)
+ HC_603: LINE = (Q603,SS603)
+ HC_604: LINE = (Q604,SS604)
+ HC_605: LINE = (Q605,SS605)
+ HC_606: LINE = (Q606,SS606)
+ HC_607: LINE = (Q607,SS607)
+ HC_608: LINE = (Q608,SS608)
+ HC_609: LINE = (Q609,IN609D,D609,IN610U)
+ HC_610: LINE = (Q610,IN610D,D610,IN611U)
+ HC_611: LINE = (Q611,IN611D,D611,IN612U)
+ HC_612: LINE = (Q612,IN612D,D612,IN613U)
+ HC_613: LINE = (Q613,IN613D,D613,IN614U)
+ HC_614: LINE = (Q614,IN614D,D614,IN615U)
+ HC_615: LINE = (Q615,IN615D,D615,IN616U)
+ HC_616: LINE = (Q616,IN616D,D616,IN617U)
+ HC_617: LINE = (Q617,IN617D,D617,IN618U)
+ HC_618: LINE = (Q618,IN618D,D618,IN619U)
+ HC_619: LINE = (Q619,SS619)
+ HC_620: LINE = (Q620,SS620)
+ HC_621: LINE = (Q621,SS621)
+ HC_622: LINE = (Q622,IN622D,D622,IN623U)
+ HC_623: LINE = (Q623,IN623D,D623,IN624U)
+ HC_624: LINE = (Q624,IN624D,D624,IN625U)
+ HC_625: LINE = (Q625,IN625D,D625,IN626U)
+ HC_626: LINE = (Q626,IN626D,D626,IN627U)
+ HC_627: LINE = (Q627,IN627D,D627,IN628U)
+ HC_628: LINE = (Q628,IN628D,D628,IN629U)
+ HC_629: LINE = (Q629,IN629D,D629,IN630U)
+ HC_630: LINE = (Q630,IN630D,D630,IN631U)
+ HC_631: LINE = (Q631,IN631D,D631,IN632U)
+ HC_632: LINE = (Q632,IN632D,D632,IN633U)
+ HC_633: LINE = (Q633,IN633D,D633,IN634U)
+ HC_634: LINE = (Q634,IN634D,D634,IN635U)
+ HC_635: LINE = (Q635,IN635D,D635,IN636U)
+ HC_636: LINE = (Q636,IN636D,D636,IN637U)
+ HC_637: LINE = (Q637,IN637D,D637,IN638U)
+ HC_638: LINE = (Q638,IN638D,D638,IN639U)
+ HC_639: LINE = (Q639,IN639D,D639,IN640U)
+ HC_640: LINE = (Q640,IN640D,D640,IN641U)
+ HC_641: LINE = (Q641,IN641D,D641,IN100U)
+!
+! Construct RING Definition 
+!
+! 
+! 
+! Sector 1 description 
+! 
+SEC_1A: LINE=(HC_100, HC_101, HC_102, HC_103, HC_104, HC_105, HC_106) 
+SEC_1B: LINE=(HC_107, HC_108, HC_109, HC_110, HC_111, HC_112, HC_113) 
+SEC_1C: LINE=(HC_114, HC_115, HC_116, HC_117, HC_118, HC_119, HC_120) 
+SEC_1D: LINE=(HC_121, HC_122, HC_123, HC_124, HC_125, HC_126, HC_127) 
+SEC_1E: LINE=(HC_128, HC_129, HC_130) 
+SEC_1:  LINE=(SEC_1A, SEC_1B, SEC_1C, SEC_1D, SEC_1E) 
+! 
+! Sector 2 description 
+! 
+SEC_2A: LINE=(HC_201, HC_202, HC_203, HC_204, HC_205, HC_206, HC_207) 
+SEC_2B: LINE=(HC_208, HC_209, HC_210, HC_211, HC_212, HC_213, HC_214) 
+SEC_2C: LINE=(HC_215, HC_216, HC_217, HC_218, HC_219, HC_220, HC_221) 
+SEC_2D: LINE=(HC_222, HC_223, HC_224, HC_225, HC_226, HC_227, HC_228) 
+SEC_2E: LINE=(HC_229, HC_230, HC_231, HC_232) 
+SEC_2:  LINE=(SEC_2A, SEC_2B, SEC_2C, SEC_2D, SEC_2E) 
+! 
+! Sector 3 description 
+! 
+SEC_3A: LINE=(HC_301, HC_302, HC_303, HC_304, HC_305, HC_306, HC_307) 
+SEC_3B: LINE=(HC_308, HC_309, HC_310, HC_311, HC_312, HC_313, HC_314) 
+SEC_3C: LINE=(HC_315, HC_316, HC_317, HC_318, HC_319, HC_320, HC_321) 
+SEC_3D: LINE=(HC_322, HC_323, HC_324, HC_325, HC_326, HC_327, HC_328) 
+SEC_3E: LINE=(HC_329, HC_330, HC_331, HC_332, HC_333, HC_334, HC_335) 
+SEC_3F: LINE=(HC_336, HC_337, HC_338, HC_339, HC_340, HC_341) 
+SEC_3:  LINE=(SEC_3A, SEC_3B, SEC_3C, SEC_3D, SEC_3E, SEC_3F) 
+! 
+! Sector 4 description 
+! 
+SEC_4A: LINE=(HC_400, HC_401, HC_402, HC_403, HC_404, HC_405, HC_406) 
+SEC_4B: LINE=(HC_407, HC_408, HC_409, HC_410, HC_411, HC_412, HC_413) 
+SEC_4C: LINE=(HC_414, HC_415, HC_416, HC_417, HC_418, HC_419, HC_420) 
+SEC_4D: LINE=(HC_421, HC_422, HC_423, HC_424, HC_425, HC_426, HC_427) 
+SEC_4E: LINE=(HC_428, HC_429, HC_430) 
+SEC_4:  LINE=(SEC_4A, SEC_4B, SEC_4C, SEC_4D, SEC_4E) 
+! 
+! Sector 5 description 
+! 
+SEC_5A: LINE=(HC_501, HC_502, HC_503, HC_504, HC_505, HC_506, HC_507) 
+SEC_5B: LINE=(HC_508, HC_509, HC_510, HC_511, HC_512, HC_513, HC_514) 
+SEC_5C: LINE=(HC_515, HC_516, HC_517, HC_518, HC_519, HC_520, HC_521) 
+SEC_5D: LINE=(HC_522, HC_523, HC_524, HC_525, HC_526, HC_527, HC_528) 
+SEC_5E: LINE=(HC_529, HC_530, HC_531, HC_532) 
+SEC_5:  LINE=(SEC_5A, SEC_5B, SEC_5C, SEC_5D, SEC_5E) 
+! 
+! Sector 3 description 
+! 
+SEC_6A: LINE=(HC_601, HC_602, HC_603, HC_604) 
+SEC_6B: LINE=(HC_605, HC_606, HC_607) 
+SEC_6C: LINE=(HC_608, HC_609, HC_610, HC_611, HC_612, HC_613, HC_614) 
+SEC_6D: LINE=(HC_615, HC_616, HC_617, HC_618, HC_619, HC_620, HC_621) 
+SEC_6E: LINE=(HC_622, HC_623, HC_624, HC_625, HC_626, HC_627, HC_628) 
+SEC_6F: LINE=(HC_629, HC_630, HC_631, HC_632, HC_633, HC_634, HC_635) 
+SEC_6G: LINE=(HC_636, HC_637, HC_638, HC_639, HC_640, HC_641) 
+SEC_6:  LINE=(SEC_6B, SEC_6C, SEC_6D, SEC_6E, SEC_6F, SEC_6G) 
+! 
+!  FULL RING from MI-10 (Q100) in PROTON DIRECTION 
+! 
+RING_P_Q100: LINE=(SEC_1, SEC_2, SEC_3, SEC_4, SEC_5, SEC_6A, SEC_6) 
+! 
+!  FULL RING from MI-60 in PROTON DIRECTION 
+! 
+RING_P_Q605: LINE=(SEC_6, SEC_1, SEC_2, SEC_3, SEC_4, SEC_5, SEC_6A) 
+! 
+!  FULL RING from MI-60 in PBAR DIRECTION 
+! 
+RING_A_Q605: LINE=(-RING_P_Q605) 

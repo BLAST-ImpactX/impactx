@@ -1,0 +1,17 @@
+__version__ = "${SYNERGIA3_VERSION_YEAR}.${SYNERGIA3_VERSION_MONTH}.${SYNERGIA3_VERSION_DAY}-${SYNERGIA3_GIT_HASH}"
+version_major = int("${SYNERGIA3_VERSION_YEAR}")
+version_minor = int("${SYNERGIA3_VERSION_MONTH}")
+version_patch = int("${SYNERGIA3_VERSION_DAY}")
+version_git_hash = str("${SYNERGIA3_GIT_HASH}")
+
+python_version_major = int("${Python_VERSION_MAJOR}")
+python_version_minor = int("${Python_VERSION_MINOR}")
+python_version_micro = int("${Python_VERSION_PATCH}")
+python_interp_version = (
+    f"{python_version_major}.{python_version_minor}.{python_version_micro}"
+)
+
+mpi_library_version = "${SYNERGIA_MPI_LIBRARY_VERSION}"
+
+hdf5_library_version = "${HDF5_VERSION}"
+hdf5_library_version_tuple = tuple(int(i.split("-")[0]) for i in hdf5_library_version.split(".")) 

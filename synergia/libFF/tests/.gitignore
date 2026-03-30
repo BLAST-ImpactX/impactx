@@ -1,0 +1,14 @@
+test_acceleration_libff
+test_beamline_element_dynamics_libff
+test_libff_acceleration
+test_libff_drift
+test_libff_kicker_on_chef
+test_libff_mem_align
+test_libff_on_chef
+test_libff_rfcavities
+test_sis18
+test_libff_elens
+test_libff_on_iota
+#lattices/
+
+

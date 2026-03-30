@@ -1,0 +1,27 @@
+
+qd0:   drift, l=0.0;
+qd1:   drift, l=0.0;
+sol:   solenoid, l=1.0, ks=0.1;
+
+
+machine: sequence, refer=entry,l=1.0;
+ssol0: qd0, at=0.0;
+ssol1: sol, at=0.0;
+ssol2: qd1, at=1.0;
+endsequence;
+
+set,format=22.16g;
+
+e0 = sqrt(pc^ 2 + pmass^2);
+
+beam, particle=proton, pc=3.0;
+use,sequence=machine;
+
+ptc_create_universe;
+ptc_create_layout,model=2,method=6,nst=10,time=true,exact;
+
+ptc_start, x=0.1, px=0.1, y=0.1, py=0.1, t=0.0, pt=0.0;
+
+ptc_track, closed_orbit=false,icase=6,maxaper={10.0,10.0,10.0,10.0,10.0,10.0},file=madx_track_multipole.txt, onetable;
+ptc_track_end;
+ptc_end;

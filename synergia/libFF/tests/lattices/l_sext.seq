@@ -1,0 +1,6 @@
+mp_str = 0.1;
+q: sextupole, l=0.0, k2=0.3, k2s=0.1, tilt=0.15;
+
+machine: sequence, refer=entry,l=1.0e-6;
+q, at=0.0;
+endsequence;

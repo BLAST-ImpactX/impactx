@@ -1368,14 +1368,31 @@ void init_elements(py::module& m)
              }
         )
         .def("to_dict",
-            [](ExactSbend const & exact_sbend) {
-                return element_dict(
-                    exact_sbend,
-                    std::make_pair("phi", exact_sbend.m_phi),  // BUG: needs / ExactSbend::degree2rad),
-                                                                 // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                    std::make_pair("B", exact_sbend.m_B)
-                );
-            }
+            [](ExactSbend const & exact_sbend, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        exact_sbend,
+                        std::make_pair("phi", exact_sbend.m_phi / ExactSbend::degree2rad),
+                                                                   // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                        std::make_pair("B", exact_sbend.m_B)
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: ExactSbend.to_dict() has a known bug, "
+                        "returning phi in radians than degrees. "
+                        "Please use ExactSbend.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        exact_sbend,
+                        std::make_pair("phi", exact_sbend.m_phi),  // BUG: constructor is in degrees
+                        std::make_pair("B", exact_sbend.m_B)
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -1649,13 +1666,29 @@ void init_elements(py::module& m)
              }
         )
         .def("to_dict",
-            [](PlaneXYRot const & plane_xyrot) {
-                return element_dict(
-                    plane_xyrot,
-                    std::make_pair("angle", plane_xyrot.m_phi)  // BUG: / PlaneXYRot::degree2rad)
-                                                                  // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                );
-            }
+            [](PlaneXYRot const & plane_xyrot, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        plane_xyrot,
+                        std::make_pair("angle", plane_xyrot.m_phi / PlaneXYRot::degree2rad)
+                                                                      // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: PlaneXYRot.to_dict() has a known bug, "
+                        "returning angle in radians than degrees. "
+                        "Please use PlaneXYRot.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        plane_xyrot,
+                        std::make_pair("angle", plane_xyrot.m_phi)  // BUG: constructor is in degrees
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -2376,14 +2409,31 @@ void init_elements(py::module& m)
              }
         )
         .def("to_dict",
-            [](PRot const & prot) {
-                return element_dict(
-                    prot,
-                    std::make_pair("phi_in", prot.m_phi_in),   // BUG: needs / PRot::degree2rad),
-                    std::make_pair("phi_out", prot.m_phi_out)  // BUG: needs / PRot::degree2rad)
-                                                                 // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                );
-            }
+            [](PRot const & prot, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        prot,
+                        std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                                                                     // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                        std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: PRot.to_dict() has a known bug, "
+                        "returning phi_in and phi_out in radians than degrees. "
+                        "Please use PRot.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        prot,
+                        std::make_pair("phi_in", prot.m_phi_in),   // BUG: constructor is in degrees
+                        std::make_pair("phi_out", prot.m_phi_out)  // BUG: constructor is in degrees
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -2496,14 +2546,31 @@ void init_elements(py::module& m)
              }
         )
         .def("to_dict",
-            [](ThinDipole const & thin_dp) {
-                return element_dict(
-                    thin_dp,
-                    std::make_pair("theta", thin_dp.m_theta),  // BUG: needs / ThinDipole::degree2rad),
-                                                                 // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                    std::make_pair("rc", thin_dp.m_rc)
-                );
-            }
+            [](ThinDipole const & thin_dp, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        thin_dp,
+                        std::make_pair("theta", thin_dp.m_theta / ThinDipole::degree2rad),
+                                                                     // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                        std::make_pair("rc", thin_dp.m_rc)
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: ThinDipole.to_dict() has a known bug, "
+                        "returning theta in radians than degrees. "
+                        "Please use ThinDipole.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        thin_dp,
+                        std::make_pair("theta", thin_dp.m_theta),  // BUG: constructor is in degrees
+                        std::make_pair("rc", thin_dp.m_rc)
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,

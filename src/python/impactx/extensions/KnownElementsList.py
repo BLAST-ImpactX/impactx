@@ -544,21 +544,18 @@ def _rad2deg(radians: float) -> float:
     return radians * 180.0 / math.pi
 
 
-def _element_from_dict(d: dict):
-    """Create an element from its to_dict() representation.
+def _prepare_kwargs(d: dict) -> tuple[str, dict]:
+    """Prepare constructor kwargs from a to_dict() result.
+
+    Applies workarounds for known radian/degree mismatches.
 
     Args:
         d: Dictionary from element.to_dict(), must include 'type' key
 
     Returns:
-        Element instance of the appropriate type
-
-    Raises:
-        KeyError: If 'type' key is missing
-        AttributeError: If element type is not found in elements module
+        tuple[str, dict]: (element_type, kwargs) ready for construction
     """
     element_type = d["type"]
-    element_class = getattr(elements, element_type)
     kwargs = _filter_kwargs(d)
 
     # Workaround: some elements output angles in radians but expect degrees
@@ -575,6 +572,24 @@ def _element_from_dict(d: dict):
     elif element_type == "ThinDipole" and "theta" in kwargs:
         kwargs["theta"] = _rad2deg(kwargs["theta"])
 
+    return element_type, kwargs
+
+
+def _element_from_dict(d: dict):
+    """Create an element from its to_dict() representation.
+
+    Args:
+        d: Dictionary from element.to_dict(), must include 'type' key
+
+    Returns:
+        Element instance of the appropriate type
+
+    Raises:
+        KeyError: If 'type' key is missing
+        AttributeError: If element type is not found in elements module
+    """
+    element_type, kwargs = _prepare_kwargs(d)
+    element_class = getattr(elements, element_type)
     return element_class(**kwargs)
 
 
@@ -612,6 +627,108 @@ def to_dicts(self) -> list[dict]:
         of such elements.
     """
     return [el.to_dict() for el in self]
+
+
+def _format_value(v):
+    """Format a value for Python code generation.
+
+    Converts AMReX SmallMatrix objects to lists.
+    Returns a tuple of (formatted_value, matrix_dims) where matrix_dims
+    is (rows, cols) from the SmallMatrix type, or None otherwise.
+    """
+    if hasattr(v, "to_numpy") and hasattr(v, "row_size"):
+        rows = v.row_size
+        cols = v.column_size
+        arr = v.to_numpy()
+        # Column vectors (Nx1) use flat list, matrices use nested list
+        if cols == 1:
+            return arr.flatten().tolist(), (rows, cols)
+        else:
+            return arr.T.tolist(), (rows, cols)
+    return v, None
+
+
+def to_py(self) -> str:
+    """Generate Python code that recreates this lattice.
+
+    Returns a string containing a complete Python script with imports
+    and a ``get_lattice()`` function that returns a KnownElementsList
+    with all elements.
+
+    Returns:
+        str: Python source code
+
+    Example:
+        .. code-block:: python
+
+            from impactx import elements
+
+            lattice = elements.KnownElementsList(
+                [
+                    elements.Drift(ds=1.0, name="d1"),
+                    elements.Quad(ds=0.5, k=2.0, name="q1"),
+                ]
+            )
+
+            # Generate Python code
+            code = lattice.to_py()
+            print(code)
+
+            # Save to file
+            with open("my_lattice.py", "w") as f:
+                f.write(code)
+
+            # Later, use the generated file:
+            # from my_lattice import get_lattice
+            # lattice = get_lattice()
+    """
+    # Check if we need amrex import for matrix types
+    needs_amrex = False
+    for d in self.to_dicts():
+        _, kwargs = _prepare_kwargs(d)
+        for v in kwargs.values():
+            if hasattr(v, "to_numpy") and hasattr(v, "row_size"):
+                needs_amrex = True
+                break
+        if needs_amrex:
+            break
+
+    lines = ["from impactx import elements"]
+    if needs_amrex:
+        lines.append("import amrex.space3d as amr")
+
+    lines.extend(
+        [
+            "",
+            "",
+            "def get_lattice():",
+            '    """Return the lattice as a KnownElementsList."""',
+            "    lattice = elements.KnownElementsList()",
+            "    lattice.extend([",
+        ]
+    )
+
+    for d in self.to_dicts():
+        element_type, kwargs = _prepare_kwargs(d)
+        formatted_parts = []
+
+        for k, v in kwargs.items():
+            formatted_v, matrix_dims = _format_value(v)
+            if matrix_dims:
+                rows, cols = matrix_dims
+                matrix_cls = f"amr.SmallMatrix_{rows}x{cols}_F_SI1_double"
+                formatted_parts.append(f"{k}={matrix_cls}({repr(formatted_v)})")
+            else:
+                formatted_parts.append(f"{k}={repr(formatted_v)}")
+
+        args_str = ", ".join(formatted_parts)
+        lines.append(f"        elements.{element_type}({args_str}),")
+
+    lines.append("    ])")
+    lines.append("    return lattice")
+    lines.append("")
+
+    return "\n".join(lines)
 
 
 def from_dicts(self, dicts: list[dict]):
@@ -656,6 +773,7 @@ def register_KnownElementsList_extension(kel):
 
     # Serialization methods
     kel.to_dicts = to_dicts
+    kel.to_py = to_py
     kel.from_dicts = from_dicts
 
     # Enhanced element selection methods

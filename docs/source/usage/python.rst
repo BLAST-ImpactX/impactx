@@ -851,8 +851,8 @@ This module provides elements and methods for the accelerator lattice.
 
       .. note::
 
-         This transforms the dict keys of `ExactSbend`, `PlanXYRot`,
-         `PRot` and `ThinDipole` to degrees, which by accident are written
+         This transforms the dict keys of ``ExactSbend``, ``PlaneXYRot``,
+         ``PRot`` and ``ThinDipole`` to degrees, which by accident are written
          in radians. See this comment in
          `issue #1367 <https://github.com/BLAST-ImpactX/impactx/issues/1367#issuecomment-4160236826>`__.
 
@@ -872,6 +872,45 @@ This module provides elements and methods for the accelerator lattice.
 
          lattice = elements.KnownElementsList()
          lattice.from_dicts(data)
+
+   .. py:method:: to_py()
+
+      Generate Python code that recreates this lattice.
+
+      Returns a string containing a complete Python script with imports
+      and a ``get_lattice()`` function that returns a KnownElementsList
+      with all elements.
+
+      .. note::
+
+         Like ``from_dicts()``, this transforms the dict keys of ``ExactSbend``,
+         ``PlaneXYRot``, ``PRot`` and ``ThinDipole`` angles from radians to degrees.
+
+      :return: Python source code
+      :rtype: str
+
+      **Example:**
+
+      .. code-block:: python
+
+         from impactx import elements
+
+         lattice = elements.KnownElementsList([
+             elements.Drift(ds=1.0, name="d1"),
+             elements.Quad(ds=0.5, k=2.0, name="q1"),
+         ])
+
+         # Generate Python code
+         code = lattice.to_py()
+         print(code)
+
+         # Save to file
+         with open("my_lattice.py", "w") as f:
+             f.write(code)
+
+         # Later, use the generated file:
+         # from my_lattice import get_lattice
+         # lattice = get_lattice()
 
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 

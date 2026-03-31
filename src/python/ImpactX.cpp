@@ -166,7 +166,8 @@ void init_ImpactX (py::module& m)
 
                 pp_geometry.add("dynamic_size", false);
 
-                ix.ResizeMesh();
+                if (ix.initialized())
+                    ix.ResizeMesh();
             },
             "The physical extent of the full simulation domain, relative to the reference particle position, in meters."
         )

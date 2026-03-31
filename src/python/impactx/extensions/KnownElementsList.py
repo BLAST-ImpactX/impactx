@@ -521,6 +521,130 @@ def has_kind(self, kind_pattern) -> bool:
     return False
 
 
+import math
+
+
+def _filter_kwargs(d: dict) -> dict:
+    """Filter a to_dict() result into valid constructor kwargs.
+
+    Removes 'type' (not a constructor argument) and 'ds' when zero
+    (thin elements don't accept ds).
+
+    Args:
+        d: Dictionary from element.to_dict()
+
+    Returns:
+        dict: Filtered dictionary suitable for element constructor
+    """
+    return {k: v for k, v in d.items() if k != "type" and (k != "ds" or v != 0.0)}
+
+
+def _rad2deg(radians: float) -> float:
+    """Convert radians to degrees."""
+    return radians * 180.0 / math.pi
+
+
+def _element_from_dict(d: dict):
+    """Create an element from its to_dict() representation.
+
+    Args:
+        d: Dictionary from element.to_dict(), must include 'type' key
+
+    Returns:
+        Element instance of the appropriate type
+
+    Raises:
+        KeyError: If 'type' key is missing
+        AttributeError: If element type is not found in elements module
+    """
+    element_type = d["type"]
+    element_class = getattr(elements, element_type)
+    kwargs = _filter_kwargs(d)
+
+    # Workaround: some elements output angles in radians but expect degrees
+    # BUG: fix these in elements.cpp: to_dict() and remove these workarounds
+    if element_type == "ExactSbend" and "phi" in kwargs:
+        kwargs["phi"] = _rad2deg(kwargs["phi"])
+    elif element_type == "PlaneXYRot" and "angle" in kwargs:
+        kwargs["angle"] = _rad2deg(kwargs["angle"])
+    elif element_type == "PRot":
+        if "phi_in" in kwargs:
+            kwargs["phi_in"] = _rad2deg(kwargs["phi_in"])
+        if "phi_out" in kwargs:
+            kwargs["phi_out"] = _rad2deg(kwargs["phi_out"])
+    elif element_type == "ThinDipole" and "theta" in kwargs:
+        kwargs["theta"] = _rad2deg(kwargs["theta"])
+
+    return element_class(**kwargs)
+
+
+def to_dicts(self) -> list[dict]:
+    """Serialize the lattice to a list of dictionaries.
+
+    Each element is converted to a dictionary using its to_dict() method.
+    The resulting list can be serialized to JSON, YAML, or other formats.
+
+    Returns:
+        list[dict]: List of element dictionaries
+
+    Example:
+        .. code-block:: python
+
+            import json
+            from impactx import elements
+
+            lattice = elements.KnownElementsList(
+                [
+                    elements.Drift(ds=1.0, name="d1"),
+                    elements.Quad(ds=0.5, k=2.0, name="q1"),
+                ]
+            )
+
+            # Serialize to JSON
+            data = lattice.to_dicts()
+            with open("lattice.impactx.json", "w") as f:
+                json.dump(data, f, indent=2)
+
+    Note:
+        Elements with matrix parameters (LinearMap, SpinMap) contain
+        AMReX SmallMatrix objects that require custom JSON encoding.
+        Use :func:`impactx.extensions.ImpactXEncoder` for JSON serialization
+        of such elements.
+    """
+    return [el.to_dict() for el in self]
+
+
+def from_dicts(self, dicts: list[dict]):
+    """Load and append elements from a list of dictionaries.
+
+    Each dictionary should be in the format produced by element.to_dict(),
+    containing at minimum a 'type' key identifying the element class.
+
+    Args:
+        dicts: List of element dictionaries
+
+    Example:
+        .. code-block:: python
+
+            import json
+            from impactx import elements
+
+            # Load from JSON
+            with open("lattice.impactx.json") as f:
+                data = json.load(f)
+
+            lattice = elements.KnownElementsList()
+            lattice.from_dicts(data)
+
+    Note:
+        Elements with matrix parameters (LinearMap, SpinMap) require
+        the matrices to be AMReX SmallMatrix objects. Use
+        :func:`impactx.extensions.matrix_hook` as a JSON object_hook
+        when loading such elements.
+    """
+    self.extend([_element_from_dict(d) for d in dicts])
+
+
 def register_KnownElementsList_extension(kel):
     """KnownElementsList helper methods"""
     from ..plot.Survey import plot_survey
@@ -529,6 +653,10 @@ def register_KnownElementsList_extension(kel):
     kel.from_pals = from_pals
     kel.load_file = load_file
     kel.plot_survey = plot_survey
+
+    # Serialization methods
+    kel.to_dicts = to_dicts
+    kel.from_dicts = from_dicts
 
     # Enhanced element selection methods
     kel.select = select

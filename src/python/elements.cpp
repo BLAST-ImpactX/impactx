@@ -1372,6 +1372,7 @@ void init_elements(py::module& m)
                 return element_dict(
                     exact_sbend,
                     std::make_pair("phi", exact_sbend.m_phi),  // BUG: needs / ExactSbend::degree2rad),
+                                                                 // once fixed, update src/python/impactx/extensions/KnownElementsList.py
                     std::make_pair("B", exact_sbend.m_B)
                 );
             }
@@ -1652,6 +1653,7 @@ void init_elements(py::module& m)
                 return element_dict(
                     plane_xyrot,
                     std::make_pair("angle", plane_xyrot.m_phi)  // BUG: / PlaneXYRot::degree2rad)
+                                                                  // once fixed, update src/python/impactx/extensions/KnownElementsList.py
                 );
             }
         )
@@ -2379,6 +2381,7 @@ void init_elements(py::module& m)
                     prot,
                     std::make_pair("phi_in", prot.m_phi_in),   // BUG: needs / PRot::degree2rad),
                     std::make_pair("phi_out", prot.m_phi_out)  // BUG: needs / PRot::degree2rad)
+                                                                 // once fixed, update src/python/impactx/extensions/KnownElementsList.py
                 );
             }
         )
@@ -2497,6 +2500,7 @@ void init_elements(py::module& m)
                 return element_dict(
                     thin_dp,
                     std::make_pair("theta", thin_dp.m_theta),  // BUG: needs / ThinDipole::degree2rad),
+                                                                 // once fixed, update src/python/impactx/extensions/KnownElementsList.py
                     std::make_pair("rc", thin_dp.m_rc)
                 );
             }

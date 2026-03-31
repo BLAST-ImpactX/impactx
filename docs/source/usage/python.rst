@@ -816,6 +816,63 @@ This module provides elements and methods for the accelerator lattice.
       :return: The transfer map of all elements in the list.
       :rtype: Map6x6
 
+   .. py:method:: to_dicts()
+
+      Serialize the lattice to a list of dictionaries.
+
+      Each element is converted to a dictionary using its ``to_dict()`` method.
+      The resulting list can be serialized to JSON, YAML, or other formats.
+
+      :return: List of element dictionaries
+      :rtype: list[dict]
+
+      **Example:**
+
+      .. code-block:: python
+
+         import json
+         from impactx import elements
+
+         lattice = elements.KnownElementsList([
+             elements.Drift(ds=1.0, name="d1"),
+             elements.Quad(ds=0.5, k=2.0, name="q1"),
+         ])
+
+         # Serialize to JSON
+         with open("lattice.impactx.json", "w") as f:
+             json.dump(lattice.to_dicts(), f, indent=2)
+
+   .. py:method:: from_dicts(dicts)
+
+      Load and append elements from a list of dictionaries.
+
+      Each dictionary should be in the format produced by ``to_dict()``,
+      containing at minimum a ``type`` key identifying the element class.
+
+      .. note::
+
+         This transforms the dict keys of `ExactSbend`, `PlanXYRot`,
+         `PRot` and `ThinDipole` to degrees, which by accident are written
+         in radians. See this comment in
+         `issue #1367 <https://github.com/BLAST-ImpactX/impactx/issues/1367#issuecomment-4160236826>`__.
+
+      :param dicts: List of element dictionaries
+      :type dicts: list[dict]
+
+      **Example:**
+
+      .. code-block:: python
+
+         import json
+         from impactx import elements
+
+         # Load from JSON
+         with open("lattice.impactx.json") as f:
+             data = json.load(f)
+
+         lattice = elements.KnownElementsList()
+         lattice.from_dicts(data)
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.

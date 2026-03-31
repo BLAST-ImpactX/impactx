@@ -1362,7 +1362,7 @@ void init_elements(py::module& m)
              [](ExactSbend const & exact_sbend) {
                  return element_name(
                      exact_sbend,
-                     std::make_pair("phi", exact_sbend.m_phi),  // BUG: needs / ExactSbend::degree2rad),
+                     std::make_pair("phi", exact_sbend.m_phi / ExactSbend::degree2rad),
                      std::make_pair("B", exact_sbend.m_B)
                  );
              }
@@ -1644,7 +1644,7 @@ void init_elements(py::module& m)
              [](PlaneXYRot const & plane_xyrot) {
                  return element_name(
                      plane_xyrot,
-                     std::make_pair("angle", plane_xyrot.m_phi)  // BUG: needs / PlaneXYRot::degree2rad)
+                     std::make_pair("angle", plane_xyrot.m_phi / PlaneXYRot::degree2rad)
                  );
              }
         )
@@ -2370,8 +2370,8 @@ void init_elements(py::module& m)
              [](PRot const & prot) {
                  return element_name(
                      prot,
-                     std::make_pair("phi_in", prot.m_phi_in),   // BUG: needs / PRot::degree2rad),
-                     std::make_pair("phi_out", prot.m_phi_out)  // BUG needs / PRot::degree2rad)
+                     std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                     std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
                  );
              }
         )
@@ -2490,7 +2490,7 @@ void init_elements(py::module& m)
              [](ThinDipole const & thin_dp) {
                  return element_name(
                      thin_dp,
-                     std::make_pair("theta", thin_dp.m_theta),  // BUG: needs / ThinDipole::degree2rad),
+                     std::make_pair("theta", thin_dp.m_theta / ThinDipole::degree2rad),
                      std::make_pair("rc", thin_dp.m_rc)
                  );
              }

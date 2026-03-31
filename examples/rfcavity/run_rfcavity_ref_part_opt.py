@@ -80,7 +80,7 @@ sim.lattice.extend(
 
 def hook_before_element(sim):
     element = sim.tracking_element
-    if element.name == "rf":
+    if type(element) is elements.RFCavity:
         beam = sim.particle_container()
         ref = beam.ref_particle()
         print(

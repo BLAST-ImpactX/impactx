@@ -445,7 +445,7 @@ class ImpactX:
     @poisson_solver.setter
     def poisson_solver(self, arg1: str) -> None: ...
     @property
-    def prob_relative(self) -> float:
+    def prob_relative(self) -> list[float]:
         """
         The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
         """

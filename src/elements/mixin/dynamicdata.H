@@ -10,6 +10,8 @@
 #ifndef IMPACTX_ELEMENTS_MIXIN_DYNAMICDATA_H
 #define IMPACTX_ELEMENTS_MIXIN_DYNAMICDATA_H
 
+#include "impactx_export.H"
+
 #include <AMReX_Gpu.H>
 
 #include <map>
@@ -48,12 +50,12 @@ namespace impactx::elements::mixin
     {
         using DataType = T;  //!< The coefficient/data type stored in this registry
 
-        static int& next_id () {
+        IMPACTX_EXPORT static int& next_id () {
             static int id = 0;
             return id;
         }
 
-        static std::map<int, std::shared_ptr<T>>& registry () {
+        IMPACTX_EXPORT static std::map<int, std::shared_ptr<T>>& registry () {
             static std::map<int, std::shared_ptr<T>> reg;
             return reg;
         }

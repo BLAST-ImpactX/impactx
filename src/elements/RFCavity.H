@@ -533,7 +533,7 @@ namespace RFCavityData
             amrex::ParticleReal cos_term = std::cos(k*t+phi);
             amrex::ParticleReal sin_term = std::sin(k*t+phi);
             dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / std::sqrt(1_prt + powi<2>(pt)) + cos_term * (G + 1_prt/(1_prt - pt)) * ezp);
-            dA(1,4) = E0 * tau / std::sqrt(1_prt + powi<2>(pt)) * cos_term * (G + 1_prt/(1_prt - pt)); 
+            dA(1,4) = E0 * tau / std::sqrt(1_prt + powi<2>(pt)) * cos_term * (G + 1_prt/(1_prt - pt));
             dA(2,1) = -dA(1,3);
             dA(2,2) = -dA(1,4);
 

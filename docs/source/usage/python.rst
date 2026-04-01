@@ -823,6 +823,14 @@ This module provides elements and methods for the accelerator lattice.
       Each element is converted to a dictionary using its ``to_dict()`` method.
       The resulting list can be serialized to JSON, YAML, or other formats.
 
+      .. note::
+
+         This transforms the buggy ``.to_dict()`` keys of
+         ``ExactSbend``, ``PlaneXYRot``, ``PRot`` and ``ThinDipole``
+         to degrees, which by accident are written in radians.
+         See this comment in
+         `issue #1367 <https://github.com/BLAST-ImpactX/impactx/issues/1367#issuecomment-4160236826>`__.
+
       :return: List of element dictionaries
       :rtype: list[dict]
 
@@ -848,13 +856,6 @@ This module provides elements and methods for the accelerator lattice.
 
       Each dictionary should be in the format produced by ``to_dict()``,
       containing at minimum a ``type`` key identifying the element class.
-
-      .. note::
-
-         This transforms the dict keys of ``ExactSbend``, ``PlaneXYRot``,
-         ``PRot`` and ``ThinDipole`` to degrees, which by accident are written
-         in radians. See this comment in
-         `issue #1367 <https://github.com/BLAST-ImpactX/impactx/issues/1367#issuecomment-4160236826>`__.
 
       :param dicts: List of element dictionaries
       :type dicts: list[dict]
@@ -883,8 +884,9 @@ This module provides elements and methods for the accelerator lattice.
 
       .. note::
 
-         Like ``from_dicts()``, this transforms the dict keys of ``ExactSbend``,
-         ``PlaneXYRot``, ``PRot`` and ``ThinDipole`` angles from radians to degrees.
+         Like ``to_dicts()``, this transforms the buggy ``.to_dict()`` keys of
+         ``ExactSbend``, ``PlaneXYRot``, ``PRot`` and ``ThinDipole``
+         from radians to degrees.
 
       :return: Python source code
       :rtype: str

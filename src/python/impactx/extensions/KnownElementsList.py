@@ -544,37 +544,6 @@ def _rad2deg(radians: float) -> float:
     return radians * 180.0 / math.pi
 
 
-def _prepare_kwargs(d: dict) -> tuple[str, dict]:
-    """Prepare constructor kwargs from a to_dict() result.
-
-    Applies workarounds for known radian/degree mismatches.
-
-    Args:
-        d: Dictionary from element.to_dict(), must include 'type' key
-
-    Returns:
-        tuple[str, dict]: (element_type, kwargs) ready for construction
-    """
-    element_type = d["type"]
-    kwargs = _filter_kwargs(d)
-
-    # Workaround: some elements output angles in radians but expect degrees
-    # BUG: fix these in elements.cpp: to_dict() and remove these workarounds
-    if element_type == "ExactSbend" and "phi" in kwargs:
-        kwargs["phi"] = _rad2deg(kwargs["phi"])
-    elif element_type == "PlaneXYRot" and "angle" in kwargs:
-        kwargs["angle"] = _rad2deg(kwargs["angle"])
-    elif element_type == "PRot":
-        if "phi_in" in kwargs:
-            kwargs["phi_in"] = _rad2deg(kwargs["phi_in"])
-        if "phi_out" in kwargs:
-            kwargs["phi_out"] = _rad2deg(kwargs["phi_out"])
-    elif element_type == "ThinDipole" and "theta" in kwargs:
-        kwargs["theta"] = _rad2deg(kwargs["theta"])
-
-    return element_type, kwargs
-
-
 def _element_from_dict(d: dict):
     """Create an element from its to_dict() representation.
 
@@ -588,7 +557,8 @@ def _element_from_dict(d: dict):
         KeyError: If 'type' key is missing
         AttributeError: If element type is not found in elements module
     """
-    element_type, kwargs = _prepare_kwargs(d)
+    element_type = d["type"]
+    kwargs = _filter_kwargs(d)
     element_class = getattr(elements, element_type)
     return element_class(**kwargs)
 
@@ -626,7 +596,22 @@ def to_dicts(self) -> list[dict]:
         Use :func:`impactx.extensions.ImpactXEncoder` for JSON serialization
         of such elements.
     """
-    return [el.to_dict() for el in self]
+    # simple implementation:
+    # return [el.to_dict() for el in self]
+
+    # work-around for ExactSbend, PlaneXYRot, PRot, ThinDipole .to_dict() returning radians not degrees
+    results = []
+    for el in self:
+        if type(el) in [
+            elements.ExactSbend,
+            elements.PlaneXYRot,
+            elements.PRot,
+            elements.ThinDipole,
+        ]:
+            results.append(el.to_dict(in_degrees=True))
+        else:
+            results.append(el.to_dict())
+    return results
 
 
 def _format_value(v):
@@ -685,7 +670,7 @@ def to_py(self) -> str:
     # Check if we need amrex import for matrix types
     needs_amrex = False
     for d in self.to_dicts():
-        _, kwargs = _prepare_kwargs(d)
+        kwargs = _filter_kwargs(d)
         for v in kwargs.values():
             if hasattr(v, "to_numpy") and hasattr(v, "row_size"):
                 needs_amrex = True
@@ -709,7 +694,8 @@ def to_py(self) -> str:
     )
 
     for d in self.to_dicts():
-        element_type, kwargs = _prepare_kwargs(d)
+        element_type = d["type"]
+        kwargs = _filter_kwargs(d)
         formatted_parts = []
 
         for k, v in kwargs.items():

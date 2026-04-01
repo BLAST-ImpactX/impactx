@@ -16,6 +16,7 @@ add_subdirectory(particles)
 add_subdirectory(envelope)
 add_subdirectory(tracking)
 
+add_subdirectory(synmadx)
 
 ###############################################################################
 # This builds Python bindings for classes and functions

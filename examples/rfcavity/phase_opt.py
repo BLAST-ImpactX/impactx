@@ -41,6 +41,10 @@ def objective(parameter, ref, element):
 
 def optimize(ref, element):
 
+    # This function is designed to maximize the energy gain of a reference particle
+    #  (ref) in an RFCavity (element).  Optimization is performed by minimizing 
+    #  -(change in kinetic energy in MeV).
+    
     # optimizer specific options
     options = {"maxiter": 2000, "disp": 1}
 

@@ -8,7 +8,6 @@ import collections.abc
 import typing
 
 import amrex.space3d.amrex_3d_pybind
-import impactx.extensions.KnownElementsList
 import impactx.impactx_pybind
 
 from . import mixin, transformation
@@ -31,6 +30,7 @@ __all__: list[str] = [
     "ExactMultipole",
     "ExactQuad",
     "ExactSbend",
+    "FilteredElementsList",
     "Kicker",
     "KnownElementsList",
     "LinearMap",
@@ -1344,6 +1344,135 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @phi.setter
     def phi(self, arg1: typing.SupportsFloat) -> None: ...
 
+class FilteredElementsList:
+    """
+    Result of ``KnownElementsList.select(...)`` or chained ``.select()`` calls: a filtered
+    view of the same underlying lattice.
+
+    Indexing (``self[i]``) returns elements from the original ``KnownElementsList``; changing
+    fields on those elements modifies the lattice in place. You can narrow the filter again with
+    ``.select(...)`` (AND logic between chained calls). After ``delete``, ``replace_each``, or
+    ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
+    not be used.
+    """
+    def __getitem__(self, key): ...
+    def __init__(self, original_list, indices): ...
+    def __iter__(self): ...
+    def __len__(self): ...
+    def __repr__(self): ...
+    def __str__(self): ...
+    def _require_valid(self) -> None:
+        """
+        Raise if this view was invalidated after a lattice mutation.
+        """
+    def count_by_kind(self, kind_pattern) -> int:
+        """
+        Count elements of a specific kind in the filtered list.
+
+        Args:
+            kind_pattern: The element kind to count. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
+
+        Returns:
+            int: Number of elements of the specified kind.
+        """
+    def delete(self) -> None:
+        """
+        Remove selected elements from the underlying lattice. Invalidates this and all other
+        live selections on the same lattice. Returns None.
+        """
+    def get_kinds(self) -> list[type]:
+        """
+        Get all unique element kinds in the filtered list.
+
+        Returns:
+            list[type]: List of unique element types (sorted by name).
+        """
+    def has_kind(self, kind_pattern) -> bool:
+        """
+        Check if filtered list contains elements of a specific kind.
+
+        Args:
+            kind_pattern: The element kind to check for. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
+
+        Returns:
+            bool: True if at least one element of the specified kind exists.
+        """
+    def replace_each(self, element, *, keep_name=True, keep_ds=False):
+        """
+        Replace each selected element with a copy of ``element``, optionally keeping name and
+        ``ds`` from the replaced element (``keep_ds`` defaults to False). Invalidates prior views;
+        returns a new selection over the same indices.
+        """
+    def replace_with_drifts(
+        self, *, model="match", keep_alignment=True, keep_aperture=False
+    ):
+        """
+        Replace each selected element with a drift of the matching physics family.
+
+        When ``model="match"``: ``Exact*`` elements become ``ExactDrift``, ``Chr*`` elements
+        become ``ChrDrift``, and all other (linear) elements become ``Drift``. When
+        ``model`` is ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses
+        that drift model. Names and segment length ``ds`` are always taken from the replaced
+        element.
+
+        By default, alignment errors (dx, dy, rotation) are preserved and apertures are
+        cleared. Use ``keep_alignment=False`` to zero alignment errors, or
+        ``keep_aperture=True`` to preserve aperture_x/aperture_y.
+        """
+    def select(self, *, kind=None, name=None):
+        """
+        Apply filtering to this filtered list.
+
+        This method applies additional filtering to an already filtered list,
+        maintaining references to the original elements and enabling chaining.
+
+        **Filtering Logic:**
+
+        - **Within a single filter**: OR logic (e.g., ``kind=["Drift", "Quad"]`` matches Drift OR Quad)
+        - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1"`` matches Quad OR named "quad1")
+        - **Chaining filters**: AND logic (e.g., ``lattice.select(kind="Drift").select(name="drift1")`` matches Drift AND named "drift1")
+
+        :param kind: Element type(s) to filter by. Can be a single string/type or a list/tuple
+                     of strings/types for OR-based filtering. String values support exact matches
+                     and regex patterns. Examples: "Drift", r".*Quad", elements.Drift, ["Drift", r".*Quad"], [elements.Drift, elements.Quad]
+        :type kind: str or type or list[str | type] or tuple[str | type, ...] or None, optional
+
+        :param name: Element name(s) to filter by. Can be a single string, regex pattern string, or
+                     a list/tuple of strings and/or regex pattern strings for OR-based filtering.
+                     Examples: "quad1", r"quad\\d+", ["quad1", "quad2"], [r"quad\\d+", "bend1"]
+        :type name: str or list[str] or tuple[str, ...] or None, optional
+
+        :return: FilteredElementsList containing references to original elements
+        :rtype: FilteredElementsList
+
+        :raises TypeError: If kind/name parameters have wrong types
+
+        **Examples:**
+
+        Additional filtering on already filtered results:
+
+        .. code-block:: python
+
+            drift_elements = lattice.select(
+                kind="Drift"
+            )  # or lattice.select(kind=elements.Drift)
+            first_drift = drift_elements.select(
+                name="drift1"
+            )  # Further filter drifts by name
+            quad_elements = lattice.select(
+                kind="Quad"
+            )  # or lattice.select(kind=elements.Quad)
+            strong_quads = quad_elements.select(
+                name=r"quad\\d+"
+            )  # Filter quads by regex pattern
+        """
+
 class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
@@ -1678,9 +1807,7 @@ class KnownElementsList:
         """
         Return and remove the last element of the list.
         """
-    def select(
-        self, *, kind=None, name=None
-    ) -> impactx.extensions.KnownElementsList.FilteredElementsList:
+    def select(self, *, kind=None, name=None) -> FilteredElementsList:
         """
         Filter elements by type and name with OR-based logic.
 

@@ -196,6 +196,15 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
           :language: python3
           :caption: You can copy this file from ``examples/rfcavity/run_rfcavity_ref_part_opt.py``.
 
+This script makes use of functions defined in the script ``phase_opt.py`` below, which can be re-used by the user:
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: phase_opt.py
+          :language: python3
+          :caption: You can copy this file from ``examples/rfcavity/phase_opt.py``.
 
 Analyze
 -------

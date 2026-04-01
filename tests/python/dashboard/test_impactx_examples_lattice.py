@@ -6,7 +6,9 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
-from .utils import DashboardTester
+import time
+
+from .utils import TIMEOUT, DashboardTester
 
 
 class DashboardExamples:
@@ -27,10 +29,20 @@ class DashboardExamples:
         print(f"Successfully ending {example_name} test.")
 
     def _test_lattice(self, inputs: list):
+        # Use get_attribute (does not require element visibility, unlike
+        # get_value which fails for scrollable containers) with a retry
+        # loop to wait for async file-import state propagation.
         for element_id, expected_value in inputs:
-            actual_value = self.sb.get_value(element_id)
+            for _ in range(TIMEOUT):
+                actual_value = self.sb.get_attribute(element_id, "value")
+                if actual_value is not None and actual_value != "":
+                    break
+                time.sleep(1)
+            else:
+                raise AssertionError(
+                    f"{element_id}: value was still empty after {TIMEOUT} seconds"
+                )
 
-            # Try numeric comparison if expected_value is a number
             if isinstance(expected_value, (int, float)):
                 actual_value = float(actual_value)
                 assert actual_value == expected_value, (

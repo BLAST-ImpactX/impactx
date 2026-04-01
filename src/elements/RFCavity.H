@@ -512,13 +512,33 @@ namespace RFCavityData
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
             amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
             refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
             refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
 
-            // TODO: update spin-orbit coupling matrix here
-            refpart.spin_coupling = A;
+            // BELOW: if spin is needed only:
+            // Define parameters and intermediate constants
+            using ablastr::constant::math::pi;
+            using ablastr::constant::SI::c;
+            amrex::ParticleReal const k = (2_prt*pi/c)*m_freq;
+            amrex::ParticleReal const phi = m_phase*(pi/180_prt);
+            amrex::ParticleReal const E0 = m_escale;
+            auto [ez, ezp, ezint] = RF_Efield(zeval);
+            amrex::ignore_unused(ezint);
+
+            // Update spin-orbit coupling matrix here
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal cos_term = std::cos(k*t+phi);
+            amrex::ParticleReal sin_term = std::sin(k*t+phi);
+            dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / std::sqrt(1_prt + powi<2>(pt)) + cos_term * (G + 1_prt/(1_prt - pt)) * ezp);
+            dA(1,4) = E0 * tau / std::sqrt(1_prt + powi<2>(pt)) * cos_term * (G + 1_prt/(1_prt - pt)); 
+            dA(2,1) = -dA(1,3);
+            dA(2,2) = -dA(1,4);
+
+            // update the spin-orbit coupling matrix here
+            refpart.spin_coupling = A + dA*R;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -556,7 +576,6 @@ namespace RFCavityData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
             amrex::ParticleReal const s = tau/refpart.beta_gamma();
             amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2_prt*k);
 
@@ -570,8 +589,6 @@ namespace RFCavityData
             refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
             refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
 
-            // TODO: update spin-orbit coupling matrix here
-            refpart.spin_coupling = A;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -612,7 +629,6 @@ namespace RFCavityData
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
             amrex::ParticleReal const M = E0*(ezintf-ezint)*k * std::sin(k*t+phi);
             amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2_prt*k)+M*0.5_prt;
 
@@ -625,8 +641,6 @@ namespace RFCavityData
             refpart.map(6,5) = M*R(5,5) + R(6,5);
             refpart.map(6,6) = M*R(5,6) + R(6,6);
 
-            // TODO: update spin-orbit coupling matrix here
-            refpart.spin_coupling = A;
         }
 
         /** Close and deallocate all data and handles.

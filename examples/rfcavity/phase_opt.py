@@ -45,6 +45,17 @@ def optimize(ref, element):
 
     Using (ref) in an RFCavity (element): the optimization is performed by minimizing
     -(change in kinetic energy in MeV).
+
+    Parameters
+    ----------
+    ref:
+      the reference particle at RF entry
+    element:
+      the RF cavity element
+
+    Returns
+    -------
+    The optimized phase and energy gain at that phase (phase_opt, e_gain).
     """
 
     # optimizer specific options

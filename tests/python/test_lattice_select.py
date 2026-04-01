@@ -20,6 +20,14 @@ This module tests the select method that supports:
 import pytest
 
 from impactx import elements
+from impactx.extensions.KnownElementsList import (
+    FilteredElementsList as _FilteredElementsList,
+)
+
+
+def test_filtered_elements_list_exported_on_elements_module():
+    assert elements.FilteredElementsList is _FilteredElementsList
+    assert elements.FilteredElementsList.__module__ == elements.__name__
 
 
 def test_basic_indexing():
@@ -811,3 +819,318 @@ def test_select_no_arguments():
     all_then_drift = lattice.select().select(kind="Drift")
     assert len(all_then_drift) == 2
     assert [el.name for el in all_then_drift] == ["drift1", "drift2"]
+
+
+def test_delete_removes_and_returns_none():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="drift1", ds=1.0),
+            elements.Quad(name="quad1", ds=0.5, k=1.0),
+            elements.Drift(name="drift2", ds=2.0),
+        ]
+    )
+    sel = lattice.select(kind="Drift")
+    ret = sel.delete()
+    assert ret is None
+    assert len(lattice) == 1
+    assert type(lattice[0]) is elements.Quad
+    assert lattice[0].name == "quad1"
+
+
+def test_delete_invalidates_chained_filtered_views():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="drift1", ds=1.0),
+            elements.Quad(name="quad1", ds=0.5, k=1.0),
+            elements.Drift(name="drift2", ds=2.0),
+        ]
+    )
+    outer = lattice.select(kind="Drift")
+    inner = outer.select(name="drift1")
+    inner.delete()
+    with pytest.raises(RuntimeError, match="no longer valid"):
+        _ = len(outer)
+    with pytest.raises(RuntimeError, match="no longer valid"):
+        _ = len(inner)
+    assert len(lattice) == 2
+    assert lattice[0].name == "quad1"
+    assert lattice[1].name == "drift2"
+
+
+def test_delete_invalidates_sibling_filtered_views():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="drift1", ds=1.0),
+            elements.Drift(name="drift2", ds=2.0),
+            elements.Quad(name="quad1", ds=0.5, k=1.0),
+        ]
+    )
+    drifts = lattice.select(kind="Drift")
+    branch_a = drifts.select(name="drift1")
+    branch_b = drifts.select(name="drift2")
+    branch_a.delete()
+    with pytest.raises(RuntimeError, match="no longer valid"):
+        _ = len(drifts)
+    with pytest.raises(RuntimeError, match="no longer valid"):
+        _ = len(branch_b)
+    assert len(lattice) == 2
+
+
+def test_replace_each_default_keep_name_not_ds():
+    """Default: keep_name=True, keep_ds=False
+
+    names from replaced elements, ds from template."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="drift1", ds=1.0),
+            elements.Quad(name="qf1", ds=0.5, k=1.0),
+            elements.Quad(name="qd1", ds=0.25, k=-1.0),
+        ]
+    )
+    template = elements.Quad(name="tpl", ds=0.01, k=99.0)
+    sel = lattice.select(kind="Quad")
+    new_sel = sel.replace_each(template)
+    assert type(lattice[1]) is elements.Quad
+    assert lattice[1].name == "qf1"
+    assert lattice[1].ds == 0.01
+    assert lattice[1].k == 99.0
+    assert lattice[2].name == "qd1"
+    assert lattice[2].ds == 0.01
+    assert len(new_sel) == 2
+    assert new_sel[0].name == "qf1"
+    with pytest.raises(RuntimeError, match="no longer valid"):
+        _ = len(sel)
+
+
+def test_replace_each_keep_ds_true():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Quad(name="qf1", ds=0.5, k=1.0),
+            elements.Quad(name="qd1", ds=0.25, k=-1.0),
+        ]
+    )
+    template = elements.Quad(name="tpl", ds=0.01, k=99.0)
+    lattice.select(kind="Quad").replace_each(template, keep_ds=True)
+    assert lattice[0].ds == 0.5
+    assert lattice[1].ds == 0.25
+    assert lattice[0].k == 99.0
+
+
+def test_replace_each_keep_name_and_ds_false():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Quad(name="qf1", ds=0.5, k=1.0),
+        ]
+    )
+    template = elements.Quad(name="tpl", ds=0.01, k=7.0)
+    lattice.select(kind="Quad").replace_each(template, keep_name=False)
+    assert lattice[0].name == "tpl"
+    assert lattice[0].ds == 0.01
+    assert lattice[0].k == 7.0
+
+
+def test_replace_with_drifts_model_match():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Quad(name="lq", ds=1.0, k=1.0, nslice=2),
+            elements.ChrQuad(name="cq", ds=0.5, k=1.0, nslice=3),
+            elements.ExactQuad(name="eq", ds=0.25, k=1.0, nslice=4),
+        ]
+    )
+    sel = lattice.select(kind=r".*Quad")
+    sel.replace_with_drifts()
+    assert type(lattice[0]) is elements.Drift
+    assert type(lattice[1]) is elements.ChrDrift
+    assert type(lattice[2]) is elements.ExactDrift
+    assert lattice[0].name == "lq"
+    assert lattice[1].name == "cq"
+    assert lattice[2].name == "eq"
+    assert lattice[0].ds == 1.0
+    assert lattice[1].ds == 0.5
+    assert lattice[2].ds == 0.25
+    assert lattice[0].nslice == 2
+    assert lattice[1].nslice == 3
+    assert lattice[2].nslice == 4
+
+
+def test_replace_with_drifts_explicit_model():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Quad(name="lq", ds=1.0, k=1.0),
+            elements.ExactQuad(name="eq", ds=0.25, k=1.0),
+        ]
+    )
+    lattice.select(kind=r".*Quad").replace_with_drifts(model="paraxial")
+    assert type(lattice[0]) is elements.ChrDrift
+    assert type(lattice[1]) is elements.ChrDrift
+    assert lattice[0].ds == 1.0
+    assert lattice[1].ds == 0.25
+
+    lattice.select(kind=r".*Drift").replace_with_drifts(model="exact")
+    assert type(lattice[0]) is elements.ExactDrift
+    assert type(lattice[1]) is elements.ExactDrift
+
+
+def test_replace_invalid_model_string():
+    lattice = elements.KnownElementsList()
+    lattice.extend([elements.Drift(name="d1", ds=1.0)])
+    sel = lattice.select(kind="Drift")
+    with pytest.raises(ValueError, match="model"):
+        sel.replace_with_drifts(model="not_a_model")
+
+
+def test_replace_with_drifts_keep_alignment():
+    """Test keep_alignment parameter."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [elements.Quad(name="q1", ds=0.5, k=1.0, dx=0.01, dy=0.02, rotation=0.5)]
+    )
+
+    # Default: keep_alignment=True
+    lattice.select(kind="Quad").replace_with_drifts()
+    assert lattice[0].dx == 0.01
+    assert lattice[0].dy == 0.02
+    assert lattice[0].rotation == 0.5
+
+    # Reset and test keep_alignment=False
+    lattice.clear()
+    lattice.extend(
+        [elements.Quad(name="q1", ds=0.5, k=1.0, dx=0.01, dy=0.02, rotation=0.5)]
+    )
+    lattice.select(kind="Quad").replace_with_drifts(keep_alignment=False)
+    assert lattice[0].dx == 0.0
+    assert lattice[0].dy == 0.0
+    assert lattice[0].rotation == 0.0
+
+
+def test_replace_with_drifts_keep_aperture():
+    """Test keep_aperture parameter."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [elements.Quad(name="q1", ds=0.5, k=1.0, aperture_x=0.05, aperture_y=0.03)]
+    )
+
+    # Default: keep_aperture=False
+    lattice.select(kind="Quad").replace_with_drifts()
+    assert lattice[0].aperture_x == 0.0
+    assert lattice[0].aperture_y == 0.0
+
+    # Reset and test keep_aperture=True
+    lattice.clear()
+    lattice.extend(
+        [elements.Quad(name="q1", ds=0.5, k=1.0, aperture_x=0.05, aperture_y=0.03)]
+    )
+    lattice.select(kind="Quad").replace_with_drifts(keep_aperture=True)
+    assert lattice[0].aperture_x == 0.05
+    assert lattice[0].aperture_y == 0.03
+
+
+def test_chained_replace_each():
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Quad(name="qf1", ds=0.5, k=1.0),
+            elements.Quad(name="qd1", ds=0.25, k=-1.0),
+        ]
+    )
+    q2 = elements.Quad(name="tpl", ds=0.1, k=2.0)
+    new_sel = (
+        lattice.select(kind="Quad")
+        .replace_each(q2)
+        .replace_each(elements.Quad(name="tpl2", ds=0.2, k=3.0))
+    )
+    assert lattice[0].k == 3.0
+    assert lattice[1].k == 3.0
+    assert len(new_sel) == 2
+
+
+def test_delete_empty_selection():
+    """delete() on empty selection is a no-op, returns None."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="d1", ds=1.0),
+            elements.Quad(name="q1", ds=0.5, k=1.0),
+        ]
+    )
+    sel = lattice.select(name="nonexistent")
+    assert len(sel) == 0
+    ret = sel.delete()
+    assert ret is None
+    assert len(lattice) == 2
+
+
+def test_replace_each_empty_selection():
+    """replace_each on empty selection returns empty FilteredElementsList."""
+    lattice = elements.KnownElementsList()
+    lattice.extend([elements.Drift(name="d1", ds=1.0)])
+    sel = lattice.select(name="nonexistent")
+    new_sel = sel.replace_each(elements.Quad(name="tpl", ds=0.1, k=1.0))
+    assert len(new_sel) == 0
+    assert len(lattice) == 1
+    assert lattice[0].name == "d1"
+
+
+def test_replace_with_drifts_empty_selection():
+    """replace_with_drifts on empty selection returns empty FilteredElementsList."""
+    lattice = elements.KnownElementsList()
+    lattice.extend([elements.Drift(name="d1", ds=1.0)])
+    sel = lattice.select(name="nonexistent")
+    new_sel = sel.replace_with_drifts()
+    assert len(new_sel) == 0
+    assert len(lattice) == 1
+
+
+def test_replace_each_thin_element():
+    """replace_each with keep_ds=True on thin element (Marker has ds=0)."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Marker(name="m1"),
+            elements.Drift(name="d1", ds=1.0),
+        ]
+    )
+    # Marker is a thin element with ds=0; keep_ds=True should preserve that
+    sel = lattice.select(kind="Marker")
+    new_sel = sel.replace_each(elements.Drift(name="tpl", ds=0.5), keep_ds=True)
+    assert len(new_sel) == 1
+    assert type(lattice[0]) is elements.Drift
+    assert lattice[0].name == "m1"
+    # Marker has ds=0.0, so with keep_ds=True, the new element gets ds=0.0
+    assert lattice[0].ds == 0.0
+
+    # Now test keep_ds=False: template's ds should be used
+    lattice2 = elements.KnownElementsList()
+    lattice2.extend([elements.Marker(name="m2")])
+    lattice2.select(kind="Marker").replace_each(
+        elements.Drift(name="tpl", ds=0.5), keep_ds=False
+    )
+    assert lattice2[0].ds == 0.5
+
+
+def test_replace_with_drifts_thin_element():
+    """replace_with_drifts on thin element (Marker with ds=0)."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Marker(name="m1"),
+            elements.Drift(name="d1", ds=1.0),
+        ]
+    )
+    sel = lattice.select(kind="Marker")
+    new_sel = sel.replace_with_drifts()
+    assert len(new_sel) == 1
+    assert type(lattice[0]) is elements.Drift
+    assert lattice[0].name == "m1"
+    # Marker has ds=0.0 (thin element), so drift gets ds=0.0
+    assert lattice[0].ds == 0.0
+    assert lattice[1].name == "d1"
+    assert lattice[1].ds == 1.0

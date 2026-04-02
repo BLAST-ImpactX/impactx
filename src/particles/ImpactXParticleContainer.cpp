@@ -123,6 +123,17 @@ namespace impactx
         SetParticleShape(v);
     }
 
+    void ImpactXParticleContainer::SetBucketLength (amrex::ParticleReal bucket_length)
+    {
+        m_bucket_length = bucket_length;
+    }
+
+    amrex::ParticleReal &
+    ImpactXParticleContainer::GetBucketLength ()
+    {
+        return m_bucket_length;
+    }
+
     void
     ImpactXParticleContainer::prepare ()
     {

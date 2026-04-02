@@ -305,6 +305,19 @@ namespace impactx
         void
         SetCoordSystem (CoordSystem coord_system);
 
+        /** Set the bucket length used for periodic particle BCs in this container
+         *
+         * @param bucket_length the length of the RF bucket in m
+         */
+        void SetBucketLength (amrex::ParticleReal bucket_length);
+
+        /** Get the bucket length used for periodic particle BCs in this container
+         *
+         * @returns bucket_length
+         */
+        amrex::ParticleReal &
+        GetBucketLength ();
+
         /** In situ calculate and store the beam moments for every simulation step */
         bool store_beam_moments = false;
 
@@ -340,6 +353,9 @@ namespace impactx
 
         //! history of the beam moments over s
         std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
+
+        //! the RF bucket length for particles in the particle container
+        amrex::ParticleReal m_bucket_length;
 
     }; // ImpactXParticleContainer
 

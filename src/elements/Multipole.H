@@ -237,10 +237,10 @@ namespace impactx::elements
 
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
-         
+
             // assign complex position and complex multipole strength
             Complex const zeta(x, y);
-        
+
             // compute multipole magnetic field normalized by q/mc:
             int const m = m_multipole - 1;
             Complex const kick = amrex::pow(zeta, m) * m_alpha;

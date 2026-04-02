@@ -14,6 +14,9 @@ from impactx import elements
 
 # All live FilteredElementsList views for a lattice (WeakKeyDictionary: key is KnownElementsList).
 _filtered_views_by_lattice: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+_filtered_views_by_lattice.__repr__ = lambda: (
+    "WeakKeyDictionary()"
+)  # stable repr for .pyi stub generation
 
 FILTERED_ELEMENTS_LIST_INVALID_MSG = (
     "This lattice selection is no longer valid because the lattice was modified; "

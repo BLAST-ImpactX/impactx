@@ -70,7 +70,7 @@ namespace impactx::particles
 
                     } else if (particle_bc == "cut") {
                         // Check particle against the boundary:
-                        bool inside_aperture = (std::abs(t) < bucket_half_duration);
+                        [[maybe_unused]] bool inside_aperture = (std::abs(t) < bucket_half_duration);
 
                         // TODO: Need to access the particle ID here...
                         // Mark particle as invalid (lost):

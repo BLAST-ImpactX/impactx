@@ -22,7 +22,6 @@ class MADXInputWarning(UserWarning):
 
 class MADXParser:
     """
-
     Simple MADX parser.
     It expects a single line per element.
     """
@@ -30,7 +29,6 @@ class MADXParser:
     def __str__(self): ...
     def _combine(self, lattice):
         """
-
         Combine to one list of all basic
         elements.
 
@@ -38,13 +36,11 @@ class MADXParser:
         """
     def _flatten(self, line):
         """
-
         Find sublines.
 
         """
     def _noWhitespace(self, string):
         """
-
         Remove white space from a string.
 
         14. Oct. 2017,
@@ -57,7 +53,6 @@ class MADXParser:
     def nonblank_lines_to_lowercase(self, f): ...
     def parse(self, fn):
         """
-
         fn (str)    filename
 
         """

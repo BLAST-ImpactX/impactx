@@ -103,6 +103,7 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -201,6 +202,7 @@ class BeamMonitor(mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -219,6 +221,11 @@ class BeamMonitor(mixin.Thin):
     @alpha.setter
     def alpha(self, arg1: typing.SupportsFloat) -> None: ...
     @property
+    def backend(self) -> str:
+        """
+        openPMD file backend (e.g. default, bp4, h5)
+        """
+    @property
     def beta(self) -> float:
         """
         Twiss beta (in meters) of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
@@ -234,6 +241,11 @@ class BeamMonitor(mixin.Thin):
     @cn.setter
     def cn(self, arg1: typing.SupportsFloat) -> None: ...
     @property
+    def encoding(self) -> str:
+        """
+        openPMD iteration encoding: "v" variable-based, "f" file-based, "g" group-based
+        """
+    @property
     def has_name(self) -> bool: ...
     @property
     def name(self) -> str:
@@ -247,6 +259,11 @@ class BeamMonitor(mixin.Thin):
         """
     @nonlinear_lens_invariants.setter
     def nonlinear_lens_invariants(self, arg1: bool) -> None: ...
+    @property
+    def period_sample_intervals(self) -> int:
+        """
+        for periodic lattices, only output every Nth period (turn or cycle)
+        """
     @property
     def tn(self) -> float:
         """
@@ -296,6 +313,7 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -365,6 +383,7 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -434,6 +453,7 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -501,6 +521,7 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -556,6 +577,7 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -625,6 +647,7 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -695,6 +718,7 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -778,6 +802,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -922,6 +947,7 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -965,6 +991,7 @@ class Empty(mixin.Named, mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1023,6 +1050,7 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1097,6 +1125,7 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1155,6 +1184,7 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1233,6 +1263,7 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1314,12 +1345,13 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         Radius of curvature in m
         """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1339,7 +1371,7 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @property
     def phi(self) -> float:
         """
-        Bend angle in degrees
+        Bend angle in radian
         """
     @phi.setter
     def phi(self, arg1: typing.SupportsFloat) -> None: ...
@@ -1515,6 +1547,7 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1745,6 +1778,35 @@ class KnownElementsList:
         """
         Add a list of elements to the list.
         """
+    def from_dicts(self, dicts: list[dict]):
+        """
+        Load and append elements from a list of dictionaries.
+
+        Each dictionary should be in the format produced by element.to_dict(),
+        containing at minimum a 'type' key identifying the element class.
+
+        Args:
+            dicts: List of element dictionaries
+
+        Example:
+            .. code-block:: python
+
+                import json
+                from impactx import elements
+
+                # Load from JSON
+                with open("lattice.impactx.json") as f:
+                    data = json.load(f)
+
+                lattice = elements.KnownElementsList()
+                lattice.from_dicts(data)
+
+        Note:
+            Elements with matrix parameters (LinearMap, SpinMap) require
+            the matrices to be AMReX SmallMatrix objects. Use
+            :func:`impactx.extensions.matrix_hook` as a JSON object_hook
+            when loading such elements.
+        """
     def from_pals(self, pals_beamline, nslice=1):
         """
         Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
@@ -1899,6 +1961,75 @@ class KnownElementsList:
             # All modifications affect the original lattice elements
         """
     def size(self) -> int: ...
+    def to_dicts(self) -> list[dict]:
+        """
+        Serialize the lattice to a list of dictionaries.
+
+        Each element is converted to a dictionary using its to_dict() method.
+        The resulting list can be serialized to JSON, YAML, or other formats.
+
+        Returns:
+            list[dict]: List of element dictionaries
+
+        Example:
+            .. code-block:: python
+
+                import json
+                from impactx import elements
+
+                lattice = elements.KnownElementsList(
+                    [
+                        elements.Drift(ds=1.0, name="d1"),
+                        elements.Quad(ds=0.5, k=2.0, name="q1"),
+                    ]
+                )
+
+                # Serialize to JSON
+                data = lattice.to_dicts()
+                with open("lattice.impactx.json", "w") as f:
+                    json.dump(data, f, indent=2)
+
+        Note:
+            Elements with matrix parameters (LinearMap, SpinMap) contain
+            AMReX SmallMatrix objects that require custom JSON encoding.
+            Use :func:`impactx.extensions.ImpactXEncoder` for JSON serialization
+            of such elements.
+        """
+    def to_py(self) -> str:
+        """
+        Generate Python code that recreates this lattice.
+
+        Returns a string containing a complete Python script with imports
+        and a ``get_lattice()`` function that returns a KnownElementsList
+        with all elements.
+
+        Returns:
+            str: Python source code
+
+        Example:
+            .. code-block:: python
+
+                from impactx import elements
+
+                lattice = elements.KnownElementsList(
+                    [
+                        elements.Drift(ds=1.0, name="d1"),
+                        elements.Quad(ds=0.5, k=2.0, name="q1"),
+                    ]
+                )
+
+                # Generate Python code
+                code = lattice.to_py()
+                print(code)
+
+                # Save to file
+                with open("my_lattice.py", "w") as f:
+                    f.write(code)
+
+                # Later, use the generated file:
+                # from my_lattice import get_lattice
+                # lattice = get_lattice()
+        """
     def transfer_map(
         self,
         ref: impactx.impactx_pybind.RefPart,
@@ -1950,6 +2081,7 @@ class LinearMap(mixin.Named, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2014,6 +2146,7 @@ class Marker(mixin.Named, mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2066,6 +2199,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2138,6 +2272,7 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2194,12 +2329,13 @@ class PRot(mixin.Named, mixin.Thin):
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2212,14 +2348,14 @@ class PRot(mixin.Named, mixin.Thin):
     @property
     def phi_in(self) -> float:
         """
-        angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees
+        angle of the reference particle with respect to the longitudinal (z) axis in the original frame in radian
         """
     @phi_in.setter
     def phi_in(self, arg1: typing.SupportsFloat) -> None: ...
     @property
     def phi_out(self) -> float:
         """
-        angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
+        angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in radian
         """
     @phi_out.setter
     def phi_out(self, arg1: typing.SupportsFloat) -> None: ...
@@ -2258,12 +2394,13 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2327,6 +2464,7 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2390,6 +2528,7 @@ class Programmable(mixin.Named):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2513,6 +2652,7 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2572,6 +2712,7 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2651,6 +2792,7 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2737,6 +2879,7 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2789,6 +2932,7 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2873,6 +3017,7 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2951,6 +3096,7 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3026,6 +3172,7 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3082,6 +3229,7 @@ class Source(mixin.Named, mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3148,6 +3296,23 @@ class SpinMap(mixin.Named, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
         """
@@ -3227,6 +3392,7 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3293,12 +3459,13 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3309,16 +3476,9 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | None,
     ]: ...
     @property
-    def rc(self) -> float:
-        """
-        Effective curvature radius (meters)
-        """
-    @rc.setter
-    def rc(self, arg1: typing.SupportsFloat) -> None: ...
-    @property
     def theta(self) -> float:
         """
-        Bend angle (degrees)
+        Bend angle (radian)
         """
     @theta.setter
     def theta(self, arg1: typing.SupportsFloat) -> None: ...

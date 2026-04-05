@@ -18,7 +18,7 @@ def test_lattice_linear_map():
 
     # Create reference particle
     ref = RefPart()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(1.0e3)
+    ref.set_species("electron").set_kin_energy_MeV(1.0e3)
 
     # Create a valid test lattice (all elements define a linear transfer map)
     lattice = elements.KnownElementsList()

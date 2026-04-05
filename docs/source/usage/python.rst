@@ -578,6 +578,36 @@ Particles
       :param keep_mass: do not reset the reference particle mass
       :param keep_charge: do not reset the reference particle charge
 
+   .. py:method:: set_species(species_name)
+
+      Set reference particle species by name.
+      Sets charge, mass, and gyromagnetic anomaly for a known particle species.
+      Returns the reference particle for chaining.
+
+      Known species: ``electron``, ``positron``, ``proton``, ``Hminus``.
+      For other species, set charge, mass, and gyromagnetic anomaly individually via
+      :py:meth:`set_charge_qe`, :py:meth:`set_mass_MeV`, and :py:meth:`set_gyromagnetic_anomaly`.
+
+      .. dropdown:: Species Constants
+         :color: light
+         :icon: info
+         :animate: fade-in-slide-down
+
+         .. literalinclude:: ../../../src/particles/ReferenceParticle.H
+            :language: cpp
+            :dedent: 12
+            :start-after: // [known_species]
+            :end-before: // [/known_species]
+
+      :param str species_name: particle species name
+
+      Example usage:
+
+      .. code-block:: python
+
+         ref = sim.particle_container().ref_particle()
+         ref.set_species("electron").set_kin_energy_MeV(2.0e3)
+
    .. py:method:: set_charge_qe(charge_qe)
 
       Write-only: Set reference particle charge in (positive) elementary charges.

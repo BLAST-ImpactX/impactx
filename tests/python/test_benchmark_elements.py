@@ -103,6 +103,7 @@ def sim(request):
             return self.sim
 
         def __exit__(self, exc_type, exc_value, traceback):
+            self.sim.backup_beam.clear_particles()
             self.sim.finalize()
             del self.sim
 

@@ -1005,6 +1005,8 @@ add_impactx_test(bithermal.py
     examples/epac2004_benchmarks/analysis_bithermal.py
     examples/epac2004_benchmarks/plot_bithermal.py
 )
+label_impactx_test(bithermal slow)
+label_impactx_test(bithermal.py slow)
 
 
 # IOTA s-dependent nonlinear lens test ########################################

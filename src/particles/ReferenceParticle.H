@@ -20,6 +20,8 @@
 #include <AMReX_SmallMatrix.H>
 
 #include <cmath>
+#include <stdexcept>
+#include <string>
 
 
 namespace impactx
@@ -72,6 +74,59 @@ namespace impactx
 
             if (keep_mass) { mass = old_mass; }
             if (keep_charge) { charge = old_charge; }
+        }
+
+        /** Set reference particle species by name
+         *
+         * Sets charge, mass, and gyromagnetic anomaly for a known particle species.
+         *
+         * @param species_name particle species name
+         * @returns reference to this RefPart for chaining
+         */
+        RefPart &
+        set_species (std::string const & species_name)
+        {
+            constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
+            constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
+            constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
+
+            amrex::ParticleReal qe;
+            amrex::ParticleReal massE;
+            amrex::ParticleReal g_anomaly;
+
+            // [known_species]
+            if (species_name == "electron") {
+                qe = -1.0;
+                massE = m_e / MeV_inv_c2;
+                g_anomaly = 0.00115965218062;
+            } else if (species_name == "positron") {
+                qe = 1.0;
+                massE = m_e / MeV_inv_c2;
+                g_anomaly = 0.00115965218062;
+            } else if (species_name == "proton") {
+                qe = 1.0;
+                massE = m_p / MeV_inv_c2;
+                g_anomaly = 1.7928473446;
+            } else if (species_name == "Hminus") {
+                qe = -1.0;
+                massE = (m_p + 2.0 * m_e) / MeV_inv_c2;  // neglect ~14 eV/c^2 binding energy
+                g_anomaly = 1.7928473446;
+            }
+            // [/known_species]
+            else {
+                throw std::runtime_error(
+                    "Unknown species: '" + species_name +
+                    "'. Known species: electron, positron, proton, Hminus. "
+                    "For other species, set charge, mass, and gyromagnetic anomaly "
+                    "individually via set_charge_qe(), set_mass_MeV(), and "
+                    "set_gyromagnetic_anomaly()."
+                );
+            }
+
+            set_charge_qe(qe);
+            set_mass_MeV(massE);
+            set_gyromagnetic_anomaly(g_anomaly);
+            return *this;
         }
 
         /** Get reference particle relativistic gamma

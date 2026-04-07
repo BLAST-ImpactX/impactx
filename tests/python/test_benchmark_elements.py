@@ -103,6 +103,9 @@ def sim(request):
             return self.sim
 
         def __exit__(self, exc_type, exc_value, traceback):
+            # Work-around for https://github.com/AMReX-Codes/amrex/pull/5270
+            self.sim.backup_beam.clear_particles()
+
             self.sim.finalize()
             del self.sim
 

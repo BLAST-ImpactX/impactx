@@ -1,5 +1,4 @@
 """
-
 This file is part of ImpactX
 
 Copyright 2022-2025 ImpactX contributors

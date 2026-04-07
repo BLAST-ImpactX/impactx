@@ -7,7 +7,7 @@
 breathe
 docutils>=0.17.1
 
-pybind11-stubgen  # type hints in pyi files
+git+https://github.com/ax3l/pybind11-stubgen@fix-weakkeydict  # type hints in pyi files
 pybtex
 pygments
 recommonmark

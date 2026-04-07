@@ -1,5 +1,4 @@
 """
-
 impactx_pybind
 --------------
 .. currentmodule:: impactx_pybind

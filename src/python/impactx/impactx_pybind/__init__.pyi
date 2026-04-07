@@ -1,5 +1,4 @@
 """
-
 impactx_pybind
 --------------
 .. currentmodule:: impactx_pybind
@@ -680,7 +679,6 @@ class ImpactXParticleContainer(
         """
     def beam_moments_history(self):
         """
-
         Return the history of the beam as calculated by the reduced beam characteristics on every step.
         """
     def beam_moments_history_list(self) -> list[dict[str, float]]:
@@ -705,7 +703,6 @@ class ImpactXParticleContainer(
         """
     def plot_phasespace(self, num_bins=50, root_rank=0):
         """
-
         Plot the longitudinal and transverse phase space projections with matplotlib.
 
         Parameters
@@ -759,7 +756,6 @@ class RefPart:
     @staticmethod
     def load_file(ref: RefPart, madx_file):
         """
-
         Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
         :param RefPart ref: ImpactX reference particle (passed by reference)
         :param madx_file: file name to MAD-X file with beamline elements

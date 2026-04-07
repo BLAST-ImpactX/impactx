@@ -11,12 +11,12 @@ from impactx import ImpactX, distribution, elements
 sim = ImpactX()
 
 # set numerical parameters and IO control
-# sim.n_cell = [128, 128, 128]  # full resolution
 sim.n_cell = [64, 64, 64]
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
+sim.poisson_solver = "fft"
 sim.dynamic_size = True
-sim.prob_relative = [3.0]
+sim.prob_relative = [1.1]
 
 # beam diagnostics
 sim.slice_step_diagnostics = False
@@ -27,8 +27,8 @@ sim.init_grids()
 # beam parameters
 kin_energy_MeV = 0.1  # reference energy
 bunch_charge_C = 1.4285714285714285714e-10  # used with space charge
-# npart = 100000000  # full resolution
-npart = 10000  # number of macro particles
+# npart = 1000000  # full resolution
+npart = 10000
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
@@ -58,7 +58,7 @@ constf = elements.ConstF(
     ky=6.283185307179586,
     kt=6.283185307179586,
     # nslice=400,  # full resolution
-    nslice=50,
+    nslice=120,
 )
 
 sim.lattice.append(constf)

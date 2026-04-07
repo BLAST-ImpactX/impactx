@@ -792,6 +792,13 @@ class RefPart:
         """
         Set reference particle rest mass * c^2, expressed as an energy [MeV]
         """
+    def set_species(self, species_name: str) -> RefPart:
+        """
+        Set reference particle species by name.
+
+        Sets charge, mass, and gyromagnetic anomaly for a known particle species.
+        Returns self for chaining, e.g.: ref.set_species("electron").set_kin_energy_MeV(2.0e3)
+        """
     @property
     def beta(self) -> float:
         """

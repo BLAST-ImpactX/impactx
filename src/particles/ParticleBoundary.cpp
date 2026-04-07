@@ -63,6 +63,7 @@ namespace impactx::particles
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
 
                 amrex::ParticleReal* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+                uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
                 // Gather particles and apply boundary condition
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
@@ -79,9 +80,9 @@ namespace impactx::particles
                     } else if (particle_bc_int==2) {
 
                         // Check particle against the boundary:
-                        [[maybe_unused]] bool inside_aperture = (std::abs(t) < bucket_half_duration);
-                        // TODO: Access the particle ID and mark particle as invalid (lost):
-                        // amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(!inside_aperture);
+                        bool inside_aperture = (std::abs(t) < bucket_half_duration);
+                        amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
+
                     }
 
                 });

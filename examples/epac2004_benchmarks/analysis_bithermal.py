@@ -80,7 +80,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 6000 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 0.07  # dominated by space-charge modeling, not particle sampling
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

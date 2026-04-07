@@ -451,7 +451,7 @@ namespace impactx::elements
             // Initialization of magnetic field variables:
             T_Real Bx = 0_prt;
             T_Real By = 0_prt;
-            T_Real Bz = 0_prt;                         
+            T_Real Bz = 0_prt;
 
             int factorial = 1;
 
@@ -467,11 +467,11 @@ namespace impactx::elements
                Complex kick = amrex::pow(zeta, m) * alpha;
                Bx = kick.m_imag / factorial * m_beta * m_gamma_ref;
                By = kick.m_real / factorial * m_beta * m_gamma_ref;
-            
+
                factorial *= m+1;
 
             }
-            
+
             // Electric field normalized by q/mc^2:
             T_Real const Ex = 0.0_prt;
             T_Real const Ey = 0.0_prt;

@@ -36,14 +36,10 @@ ns = 25  # default number of slices per element
 # beam reference parameters
 kin_energy_MeV = 2.1226695  # reference energy
 bunch_charge_C = 2.9824923076852509e-11  # used with space charge
-rest_mass_MeV = 939.294308  # particle rest energy
-charge_qe = -1.0  # particle charge
 
 # reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(charge_qe).set_mass_MeV(rest_mass_MeV).set_kin_energy_MeV(
-    kin_energy_MeV
-)
+ref.set_species("Hminus").set_kin_energy_MeV(kin_energy_MeV)
 
 # particle bunch
 distr = distribution.Gaussian(

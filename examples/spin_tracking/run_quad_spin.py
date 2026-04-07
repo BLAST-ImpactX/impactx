@@ -22,16 +22,12 @@ sim.init_grids()
 
 # basic beam parameters
 kin_energy_MeV = 100.0  # reference energy (kinetic)
-mass_MeV = 0.510998950  # particle mass
 bunch_charge_C = 25.0e-12  # used with space charge
-gyromagnetic_anomaly = 0.00115965218062  # value for an electron
 npart = 100000  # number of macro particles
 
 # set reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(
-    kin_energy_MeV
-).set_gyromagnetic_anomaly(gyromagnetic_anomaly)
+ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Gaussian(

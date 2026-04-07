@@ -53,7 +53,7 @@ q_e_C = 1.60217663e-19
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(energy_MeV)
+ref.set_species("electron").set_kin_energy_MeV(energy_MeV)
 qm_eev = -1.0 / 0.510998950 / 1e6  # electron charge/mass in e / eV
 ref.z = 0
 

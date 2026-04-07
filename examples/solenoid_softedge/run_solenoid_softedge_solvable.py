@@ -29,7 +29,7 @@ bunch_charge_C = 1.0e-9  # used with space charge
 
 #   reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 qm_eev = 1.0 / 938.27208816 / 1e6  # electron charge/mass in e / eV
 
 #   particle bunch

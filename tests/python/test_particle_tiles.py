@@ -30,7 +30,7 @@ def test_particle_tiles():
     #   reference particle
     pc = sim.particle_container()
     ref = pc.ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
     distr = distribution.Waterbag(

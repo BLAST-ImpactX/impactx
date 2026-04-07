@@ -27,9 +27,16 @@ namespace impactx::particles
         amrex::ParmParse pp_algo("algo");
         std::string particle_bc = "open";
         pp_algo.queryAdd("particle_bc", particle_bc);
+        int particle_bc_int;
 
         if(particle_bc == "open") {
             return;
+        } else if (particle_bc == "periodic") {
+            particle_bc_int = 1;
+        } else if (particle_bc == "cut") {
+            particle_bc_int = 2;
+        } else {
+            particle_bc_int = 0;
         }
 
         // Loop over refinement levels
@@ -63,19 +70,18 @@ namespace impactx::particles
                     // Access SoA Real data
                     amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
 
-                    if(particle_bc == "periodic") {
+                    if (particle_bc_int==1) {
+
                         // Apply phase wrapping in t (modulo bucket_duration):
                         amrex::ParticleReal ttest = std::fmod(t+bucket_half_duration, bucket_duration);
                         t = (bucket_duration != 0.0)? std::fmod(ttest+bucket_duration, bucket_duration)-bucket_half_duration : t;
 
-                    } else if (particle_bc == "cut") {
+                    } else if (particle_bc_int==2) {
+
                         // Check particle against the boundary:
                         [[maybe_unused]] bool inside_aperture = (std::abs(t) < bucket_half_duration);
-
-                        // TODO: Need to access the particle ID here...
-                        // Mark particle as invalid (lost):
+                        // TODO: Access the particle ID and mark particle as invalid (lost):
                         // amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(!inside_aperture);
-
                     }
 
                 });

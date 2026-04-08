@@ -42,22 +42,21 @@ class DashboardExamplesLoader:
                 populate_impactx_simulation_file_to_ui(example_script)
 
     @staticmethod
-    def get_impactx_path() -> Path:
+    def get_examples_directory() -> Path:
         """
-        Helper method to find the impactx/examples parent directory.
-        For now, just utilized to load the file names of the impactx examples
-        and retrieve the script in string format.
-        Potentially, this could be used to locate other impactx directories.
+        Return the packaged examples directory when available, otherwise fall
+        back to the repo-root examples tree for source-tree development.
         """
 
-        current_directory = Path(__file__).resolve()
+        packaged_examples = IMPACTX_PYTHON_ROOT / "examples"
+        if packaged_examples.is_dir():
+            return packaged_examples
 
-        for parent in current_directory.parents:
-            desired_path = parent / "examples"
-            if parent.name == "impactx" and desired_path.is_dir():
-                return parent
+        repo_examples = IMPACTX_PYTHON_ROOT.parents[2] / "examples"
+        if repo_examples.is_dir():
+            return repo_examples
 
-        return None
+        raise FileNotFoundError("Unable to locate ImpactX examples directory")
 
     @staticmethod
     def _get_example_content(file_name: str) -> dict:
@@ -65,8 +64,9 @@ class DashboardExamplesLoader:
         Retrieve the selected ImpactX example file and populate the UI with its values.
         """
 
-        impactx_directory = IMPACTX_PYTHON_ROOT
-        impactx_example_file_path = impactx_directory / "examples" / file_name
+        impactx_example_file_path = (
+            DashboardExamplesLoader.get_examples_directory() / file_name
+        )
 
         file_content_as_str = impactx_example_file_path.read_text()
         file_dict = {"content": file_content_as_str.encode("utf-8")}
@@ -82,8 +82,7 @@ class DashboardExamplesLoader:
 
         state.impactx_example_list.clear()
 
-        impactx_directory = DashboardExamplesLoader.get_impactx_path()
-        impactx_examples_directory = impactx_directory / "examples"
+        impactx_examples_directory = DashboardExamplesLoader.get_examples_directory()
 
         for path in impactx_examples_directory.glob("**/run*"):
             relative_path = path.relative_to(impactx_examples_directory)

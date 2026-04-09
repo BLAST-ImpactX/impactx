@@ -567,8 +567,8 @@ namespace SoftQuadrupoleData
             amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
 
             // Update spin-orbit coupling matrix here
-            dA(1,3) = -(1_prt + G*gamma) * G0 * bzint;
-            dA(2,1) = -(1_prt + G*gamma) * G0 * bzint;
+            dA(1,3) = -(1_prt + G*gamma) * tau * alpha;
+            dA(2,1) = -(1_prt + G*gamma) * tau * alpha;
 
             // update the spin-orbit coupling matrix here
             refpart.spin_coupling = A + dA*R;

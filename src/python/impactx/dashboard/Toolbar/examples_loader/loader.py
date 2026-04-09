@@ -48,10 +48,12 @@ class DashboardExamplesLoader:
         back to the repo-root examples tree for source-tree development.
         """
 
+        # in wheel-installed packages, go to examples/
         packaged_examples = IMPACTX_PYTHON_ROOT / "examples"
         if packaged_examples.is_dir():
             return packaged_examples
 
+        # in the repo, go to two up: src/python/../../examples
         repo_examples = IMPACTX_PYTHON_ROOT.parents[2] / "examples"
         if repo_examples.is_dir():
             return repo_examples

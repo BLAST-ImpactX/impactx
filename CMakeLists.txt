@@ -493,11 +493,21 @@ if(ImpactX_PYTHON)
             ${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
     )
 
-    # copy Python wrapper library to build directory
-    add_custom_command(TARGET pyImpactX POST_BUILD
+    # populate the build-tree Python package for ctest and direct build-tree imports
+    add_custom_target(pyImpactX_python_sources ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${ImpactX_SOURCE_DIR}/src/python/impactx
-            $<TARGET_FILE_DIR:pyImpactX>
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ImpactX_SOURCE_DIR}/examples
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx/examples
+        VERBATIM
+    )
+    add_dependencies(pyImpactX_python_sources pyImpactX)
+    add_dependencies(${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
+        pyImpactX_python_sources
     )
 endif()
 

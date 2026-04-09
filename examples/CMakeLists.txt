@@ -289,8 +289,8 @@ add_impactx_test(FODO-exact.py
 add_impactx_test(FODO.programmable.py
     examples/fodo_programmable/run_fodo_programmable.py
     OFF  # ImpactX MPI-parallel
-    examples/fodo_programmable/analysis_fodo.py
-    examples/fodo_programmable/plot_fodo.py
+    examples/fodo/analysis_fodo.py
+    examples/fodo/plot_fodo.py
 )
 
 # Python: Change Elements Per Turn ############################################
@@ -321,14 +321,14 @@ add_impactx_test(FODO.MADX.py
 add_impactx_test(FODO.userdef
     examples/fodo_userdef/input_fodo_userdef.in
     ON   # ImpactX MPI-parallel
-    examples/fodo_userdef/analysis_fodo.py
-    examples/fodo_userdef/plot_fodo.py
+    examples/fodo/analysis_fodo.py
+    examples/fodo/plot_fodo.py
 )
 add_impactx_test(FODO.userdef.py
     examples/fodo_userdef/run_fodo_userdef.py
     OFF  # ImpactX MPI-parallel
-    examples/fodo_userdef/analysis_fodo.py
-    examples/fodo_userdef/plot_fodo.py
+    examples/fodo/analysis_fodo.py
+    examples/fodo/plot_fodo.py
 )
 
 

@@ -35,6 +35,8 @@ namespace impactx::particles
             particle_bc_int = 1;
         } else if (particle_bc == "cut") {
             particle_bc_int = 2;
+        } else if (particle_bc == "reflection") {
+            particle_bc_int = 3;
         } else {
             particle_bc_int = 0;
         }
@@ -63,6 +65,7 @@ namespace impactx::particles
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
 
                 amrex::ParticleReal* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+                amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::t].dataPtr();
                 uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
                 // Gather particles and apply boundary condition
@@ -70,6 +73,7 @@ namespace impactx::particles
                 {
                     // Access SoA Real data
                     amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
+                    amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
 
                     if (particle_bc_int==1) {
 
@@ -82,6 +86,19 @@ namespace impactx::particles
                         // Check particle against the boundary:
                         bool inside_aperture = (std::abs(t) < bucket_half_duration);
                         amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
+
+                    } else if (particle_bc_int==3) {
+
+                        // TODO:  Transform (t,pt) to (z,pz) using z-to-t transformation.
+                        // The implementation below works through linear order in the phase space variables.
+                        // If particle falls outside the bondary, reflect:
+                        if (t > bucket_half_duration) {
+                            t = bucket_duration - t;
+                            pt = -pt;
+                        } else if (t < -bucket_half_duration) {
+                            t = -bucket_duration - t;
+                            pt = -pt;
+                        }
 
                     }
 

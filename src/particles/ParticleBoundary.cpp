@@ -33,9 +33,9 @@ namespace impactx::particles
             return;
         } else if (particle_bc == "periodic") {
             particle_bc_int = 1;
-        } else if (particle_bc == "cut") {
+        } else if (particle_bc == "absorbing") {
             particle_bc_int = 2;
-        } else if (particle_bc == "reflection") {
+        } else if (particle_bc == "reflecting") {
             particle_bc_int = 3;
         } else {
             particle_bc_int = 0;
@@ -77,21 +77,23 @@ namespace impactx::particles
 
                     if (particle_bc_int==1) {
 
-                        // Apply phase wrapping in t (modulo bucket_duration):
+                        // Periodic particle boundary condition:  apply phase wrapping in t (modulo bucket_duration):
                         amrex::ParticleReal ttest = std::fmod(t+bucket_half_duration, bucket_duration);
                         t = (bucket_duration != 0.0)? std::fmod(ttest+bucket_duration, bucket_duration)-bucket_half_duration : t;
 
                     } else if (particle_bc_int==2) {
 
-                        // Check particle against the boundary:
+                        // Absorbing particle boundary condition:  check particle against the boundary:
                         bool inside_aperture = (std::abs(t) < bucket_half_duration);
+                        // Mark particles as lost if appropriate
                         amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
 
                     } else if (particle_bc_int==3) {
 
+                        // Reflecting particle boundary condition.
                         // TODO:  Transform (t,pt) to (z,pz) using z-to-t transformation.
                         // The implementation below works through linear order in the phase space variables.
-                        // If particle falls outside the bondary, reflect:
+                        // If particle falls outside the boundary, reflect:
                         if (t > bucket_half_duration) {
                             t = bucket_duration - t;
                             pt = -pt;

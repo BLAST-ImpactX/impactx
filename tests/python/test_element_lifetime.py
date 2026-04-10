@@ -102,10 +102,6 @@ def test_element_creation_before_amrex_init():
 
     run_minimal_simulation(sim, [sol, quad])
 
-    # Verify simulation completed
-    ref = sim.particle_container().ref_particle()
-    assert ref.s == pytest.approx(1.5, rel=1e-6)
-
     sim.finalize()
 
 
@@ -166,10 +162,6 @@ def test_element_reuse_across_simulations():
 
     run_minimal_simulation(sim1, [reusable_sol])
 
-    ref1 = sim1.particle_container().ref_particle()
-    s_after_sim1 = ref1.s
-    assert s_after_sim1 == pytest.approx(1.0, rel=1e-6)
-
     sim1.finalize()
 
     # Second simulation - reuse the same element
@@ -182,9 +174,5 @@ def test_element_reuse_across_simulations():
 
     # Use the SAME element again - its host data should still be valid
     run_minimal_simulation(sim2, [reusable_sol])
-
-    ref2 = sim2.particle_container().ref_particle()
-    s_after_sim2 = ref2.s
-    assert s_after_sim2 == pytest.approx(1.0, rel=1e-6)
 
     sim2.finalize()

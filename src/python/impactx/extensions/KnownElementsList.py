@@ -13,7 +13,26 @@ from impactx import elements
 
 
 def load_file(self, filename, nslice=1):
-    """Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats."""
+    """Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+    .. warning::
+
+       Our MAD-X and PALS parsers are under active development
+       and provided as a preview. Please check any loaded lattice
+       files very carefully. Please report your experience and bugs
+       on our `issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+    """
+
+    import warnings
+
+    warnings.warn(
+        "Our MAD-X and PALS parsers are under active development and provided as a "
+        "preview. Please check any loaded lattice files very carefully. Please "
+        "report your experience and bugs on our issue tracker: "
+        "https://github.com/BLAST-ImpactX/impactx/issues",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
     # Attempt to strip two levels of file extensions to determine the schema.
     #   Examples: fodo.madx, fodo.pals.yaml, fodo.pals.json, ...

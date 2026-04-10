@@ -1106,10 +1106,28 @@ def beam(particle, charge=None, mass=None, energy=None):
 def read_beam(ref: RefPart, madx_file):
     """
     Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
+
+    .. warning::
+
+       Our MAD-X parser is under active development and provided
+       as a preview. Please check any loaded MAD-X beams very
+       carefully. Please report your experience and bugs on our
+       `issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+
     :param RefPart ref: ImpactX reference particle (passed by reference)
     :param madx_file: file name to MAD-X file with beamline elements
     :return: list of ImpactX.KnownElements
     """
+
+    warnings.warn(
+        "Our MAD-X parser is under active development and provided as a preview. "
+        "Please check any loaded MAD-X beams very carefully. Please report your "
+        "experience and bugs on our issue tracker: "
+        "https://github.com/BLAST-ImpactX/impactx/issues",
+        RuntimeWarning,
+        stacklevel=2,
+    )
+
     madx = MADXParser()
     madx.parse(madx_file)
 

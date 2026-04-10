@@ -443,7 +443,7 @@ if(ImpactX_PYTHON)
         WORKING_DIRECTORY
             ${ImpactX_BINARY_DIR}
         DEPENDS
-            pyImpactX
+            pyImpactX pysynmadx
     )
 
     # this will also upgrade/downgrade dependencies, e.g., when the version of numpy changes

@@ -1154,8 +1154,8 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_multipole,
                      std::make_pair("unit", exact_multipole.m_unit),
-                     std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
-                     std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
+                     std::make_pair("k_normal", ExactMultipole::DynamicData::get(exact_multipole.m_id)->k_normal.host_const()),
+                     std::make_pair("k_skew", ExactMultipole::DynamicData::get(exact_multipole.m_id)->k_skew.host_const()),
                      std::make_pair("mapsteps", exact_multipole.m_mapsteps),
                      std::make_pair("int_order", exact_multipole.m_int_order)
                  );
@@ -1224,8 +1224,8 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_cfbend,
                      std::make_pair("unit", exact_cfbend.m_unit),
-                     std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
-                     std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
+                     std::make_pair("k_normal", ExactCFbend::DynamicData::get(exact_cfbend.m_id)->k_normal.host_const()),
+                     std::make_pair("k_skew", ExactCFbend::DynamicData::get(exact_cfbend.m_id)->k_skew.host_const()),
                      std::make_pair("mapsteps", exact_cfbend.m_mapsteps),
                      std::make_pair("int_order", exact_cfbend.m_int_order)
                  );
@@ -1736,8 +1736,8 @@ void init_elements(py::module& m)
                 using namespace amrex::literals;
                 return element_dict(
                     polygon_aperture,
-                    std::make_pair("vertices_x", PolygonApertureData::h_vertices_x[polygon_aperture.m_id]),
-                    std::make_pair("vertices_y", PolygonApertureData::h_vertices_y[polygon_aperture.m_id]),
+                    std::make_pair("vertices_x", PolygonAperture::DynamicData::get(polygon_aperture.m_id)->x.host_const()),
+                    std::make_pair("vertices_y", PolygonAperture::DynamicData::get(polygon_aperture.m_id)->y.host_const()),
                     std::make_pair("min_radius2", polygon_aperture.m_min_radius2),
                     std::make_pair("action", polygon_aperture.action_name(polygon_aperture.m_action)),
                     std::make_pair("repeat_x", polygon_aperture.m_repeat_x),
@@ -1951,8 +1951,8 @@ void init_elements(py::module& m)
                     std::make_pair("escale", rfc.m_escale),
                     std::make_pair("freq", rfc.m_freq),
                     std::make_pair("phase", rfc.m_phase),
-                    std::make_pair("cos_coefficients", RFCavityData::h_cos_coef[rfc.m_id]),
-                    std::make_pair("sin_coefficients", RFCavityData::h_sin_coef[rfc.m_id]),
+                    std::make_pair("cos_coefficients", RFCavity::DynamicData::get(rfc.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", RFCavity::DynamicData::get(rfc.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", rfc.m_mapsteps)
                 );
             }
@@ -2241,8 +2241,8 @@ void init_elements(py::module& m)
                     soft_sol,
                     std::make_pair("bscale", soft_sol.m_bscale),
                     std::make_pair("unit", soft_sol.m_unit),
-                    std::make_pair("cos_coefficients", SoftSolenoidData::h_cos_coef[soft_sol.m_id]),
-                    std::make_pair("sin_coefficients", SoftSolenoidData::h_sin_coef[soft_sol.m_id]),
+                    std::make_pair("cos_coefficients", SoftSolenoid::DynamicData::get(soft_sol.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", SoftSolenoid::DynamicData::get(soft_sol.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", soft_sol.m_mapsteps)
                 );
             }
@@ -2282,8 +2282,36 @@ void init_elements(py::module& m)
             [](SoftSolenoid & soft_sol, amrex::ParticleReal bscale) { soft_sol.m_bscale = bscale; },
             "Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0) or magnetic field Bz in T (SI units, if unit = 1)"
         )
-        // TODO cos_coefficients
-        // TODO sin_coefficients
+        /* TODO Before we can expose this we need to ensure that sim.lattice takes a list of shared pointers
+         *    and not copies of elements. Otherwise, users can invalidate their cached host pointers with
+         *      sol = SoftSolenoid(...)
+         *      sim.lattice.append(sol)  # copy in lattice has same m_id
+         *      sol.cos_coef = new_values  # updates data of m_id and sol.m_cos_h_data, but NOT the lattice copy
+        .def_property("cos_coefficients",
+            [](SoftSolenoid & soft_sol) {
+                return SoftSolenoid::DynamicData::get(soft_sol.m_id)->h_cos;
+            },
+            [](SoftSolenoid & soft_sol, std::vector<amrex::ParticleReal> v) {
+                auto & coef = *SoftSolenoid::DynamicData::get(soft_sol.m_id);
+                coef.h_cos = std::move(v);
+                coef.mark_dirty();
+                soft_sol.m_cos_h_data = coef.h_cos.data();
+            },
+            "cosine coefficients in Fourier expansion of on-axis magnetic field Bz"
+        )
+        .def_property("sin_coefficients",
+            [](SoftSolenoid & soft_sol) {
+                return SoftSolenoid::DynamicData::get(soft_sol.m_id)->h_sin;
+            },
+            [](SoftSolenoid & soft_sol, std::vector<amrex::ParticleReal> v) {
+                auto & coef = *SoftSolenoid::DynamicData::get(soft_sol.m_id);
+                coef.h_sin = std::move(v);
+                coef.mark_dirty();
+                soft_sol.m_sin_h_data = coef.h_sin.data();
+            },
+            "sine coefficients in Fourier expansion of on-axis magnetic field Bz"
+        )
+        */
         .def_property("unit",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_unit; },
             [](SoftSolenoid & soft_sol, amrex::ParticleReal unit) { soft_sol.m_unit = unit; },
@@ -2485,8 +2513,8 @@ void init_elements(py::module& m)
                 return element_dict(
                     soft_quad,
                     std::make_pair("gscale", soft_quad.m_gscale),
-                    std::make_pair("cos_coefficients", SoftQuadrupoleData::h_cos_coef[soft_quad.m_id]),
-                    std::make_pair("sin_coefficients", SoftQuadrupoleData::h_sin_coef[soft_quad.m_id]),
+                    std::make_pair("cos_coefficients", SoftQuadrupole::DynamicData::get(soft_quad.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", SoftQuadrupole::DynamicData::get(soft_quad.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", soft_quad.m_mapsteps)
                 );
             }

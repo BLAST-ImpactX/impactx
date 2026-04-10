@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <string>
 
+IMPACTX_GPUDATA_INSTANTIATE(impactx::elements::PolygonAperture)
+
 std::string
 impactx::elements::PolygonAperture::action_name (Action const & action)
 {

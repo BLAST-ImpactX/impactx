@@ -444,6 +444,20 @@ void init_ImpactX (py::module& m)
               "Currently MLMG solver looks for verbosity levels from 0-5. "
               "A higher number results in more verbose output."
         )
+        .def_property("particle_bc",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<std::string>("algo", "particle_bc");
+            },
+            [](ImpactX & /* ix */, std::string const particle_bc) {
+                if (particle_bc != "open" && particle_bc != "periodic" && particle_bc != "absorbing" && particle_bc != "reflecting") {
+                    throw std::runtime_error("Particle boundary condition must be open, periodic, absorbing, or reflecting but is: " + particle_bc);
+                }
+
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("particle_bc", particle_bc);
+            },
+            "Optional methods to apply a longitudinal particle boundary condition."
+        )
         .def_property("diagnostics",
              [](ImpactX & /* ix */) {
                  return detail::get_or_throw<bool>("diag", "enable");

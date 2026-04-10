@@ -585,10 +585,10 @@ namespace impactx::elements
         int m_id; //! unique ExactMultipole id used for data lookup map
 
         int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal const * m_k_normal_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal const * m_k_skew_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal const * m_k_normal_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal const * m_k_skew_d_data = nullptr; //! non-owning pointer to device sine coefficients
+        amrex::ParticleReal const * m_k_normal_h_data = nullptr; //! non-owning pointer to host normal coefficients
+        amrex::ParticleReal const * m_k_skew_h_data = nullptr; //! non-owning pointer to host skew coefficients
+        amrex::ParticleReal const * m_k_normal_d_data = nullptr; //! non-owning pointer to device normal coefficients
+        amrex::ParticleReal const * m_k_skew_d_data = nullptr; //! non-owning pointer to device skew coefficients
 
     private:
         // constants that are independent of the individually tracked particle,

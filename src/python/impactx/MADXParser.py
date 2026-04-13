@@ -14,11 +14,7 @@ import re
 import warnings
 
 
-class MADXParserError(Exception):
-    pass
-
-
-class MADXInputError(MADXParserError):
+class MADXInputError(Exception):
     def __init__(self, args, with_traceback):
         self.args = args
         self.with_traceback = with_traceback

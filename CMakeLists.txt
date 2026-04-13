@@ -453,6 +453,7 @@ if(ImpactX_PYTHON)
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX
+            pyImpactX_python_sources
     )
 
     # this will also upgrade/downgrade dependencies, e.g., when the version of numpy changes
@@ -515,9 +516,6 @@ if(ImpactX_PYTHON)
         VERBATIM
     )
     add_dependencies(pyImpactX_python_sources pyImpactX)
-    add_dependencies(${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
-        pyImpactX_python_sources
-    )
 endif()
 
 

@@ -1,5 +1,4 @@
 """
-
 This file is part of ImpactX
 
 Copyright 2023 ImpactX contributors
@@ -17,13 +16,11 @@ __all__: list[str] = [
 
 def ix_beam_moments_history(self):
     """
-
     Return the history of the beam as calculated by the reduced beam characteristics on every step.
     """
 
 def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     """
-
     Plot the longitudinal and transverse phase space projections with matplotlib.
 
     Parameters

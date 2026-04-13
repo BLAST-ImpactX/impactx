@@ -42,7 +42,7 @@ npart = 10000  # number of macro particles
 
 # set reference particle
 ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV)
+ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 # factors converting the beam distribution to ImpactX input
 gamma = total_energy_MeV_nominal / mass_MeV

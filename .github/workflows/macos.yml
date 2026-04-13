@@ -77,7 +77,7 @@ jobs:
           -DImpactX_PYTHON=ON          \
           -DImpactX_SIMD=ON            \
           -DImpactX_TEST_CLEANUP=ON
-        cmake --build build -j 3
+        cmake --build build -j 4
 
         du -hs ~/Library/Caches/ccache
         ccache -s

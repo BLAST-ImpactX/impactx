@@ -1,5 +1,4 @@
 """
-
 impactx_pybind
 --------------
 .. currentmodule:: impactx_pybind
@@ -50,6 +49,7 @@ from impactx.impactx_pybind import (
     push,
     wakeconvolution,
 )
+from impactx.impactx_pybind.elements import FilteredElementsList
 from impactx.madx_to_impactx import read_beam
 
 from . import (
@@ -66,6 +66,7 @@ __all__: list[str] = [
     "Config",
     "CoordSystem",
     "Envelope",
+    "FilteredElementsList",
     "ImpactX",
     "ImpactXParConstIter",
     "ImpactXParIter",
@@ -109,6 +110,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.02"
+__version__: str = "26.03"
 s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
 t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>

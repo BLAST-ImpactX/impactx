@@ -310,4 +310,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrAcc)
+
 #endif // IMPACTX_CHRACC_H

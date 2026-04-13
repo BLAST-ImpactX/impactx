@@ -365,4 +365,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ConstF)
+
 #endif // IMPACTX_CONSTF_H

@@ -1,1 +1,0 @@
-../../tests/python/test_xopt.py

@@ -46,7 +46,19 @@ Initial Beam Distributions
   beam current, used only if ``algo.space_charge = "2D"``
 
 * ``beam.particle`` (``string``)
-  particle type: currently either ``electron``, ``positron`` or ``proton``
+  particle type: ``electron``, ``positron``, ``proton``, or ``Hminus``.
+  For other species, please use the :ref:`Python API <usage-python>` or `open an issue <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+
+  .. dropdown:: Species Constants
+     :color: light
+     :icon: info
+     :animate: fade-in-slide-down
+
+     .. literalinclude:: ../../../src/particles/ReferenceParticle.H
+        :language: cpp
+        :dedent: 12
+        :start-after: // [known_species]
+        :end-before: // [/known_species]
 
 * ``beam.distribution`` (``string``)
   Indicates the initial distribution type.

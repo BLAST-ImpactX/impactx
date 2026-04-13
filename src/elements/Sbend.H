@@ -414,4 +414,6 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Sbend)
+
 #endif // IMPACTX_SBEND_H

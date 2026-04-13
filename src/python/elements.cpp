@@ -184,6 +184,7 @@ namespace
         amrex::ParticleReal,
         int,
         long,
+        bool,
         std::string,
         std::vector<amrex::ParticleReal>,
         std::vector<int>,
@@ -194,7 +195,22 @@ namespace
         py::none
     >;
 
-    /** Create a map (for a Python dictionary) of properties of an element */
+    /** Create a map (for a Python dictionary) of properties of an element
+     *
+     * The values are meant to align with the element type's Python constructor keyword
+     * arguments where possible, used internally for copies and (de)serialization.
+     *
+     * The dict always includes a ``type`` string (the element class name) for dispatch;
+     * we also include ``ds`` as 0.0 for thin elements for simplicity (plots, etc.);
+     * ``type`` is not a constructor argument and neither is ``ds`` for thin elements,
+     * and must be omitted when unpacking, e.g.:
+     * ```py
+     * dr = elements.Drift(name="drift1", ds=1.0)
+     * d = dr.to_dict()
+     * kwargs = {k: v for k, v in d.items() if k != "type" and (k != "ds" or v != 0.0)}
+     * dr2 = elements.Drift(**kwargs)
+     * ```
+     */
     template<typename T_Element, typename... ExtraArgs>
     std::map<std::string, ElementPropertyTypes>
     element_dict (T_Element const & el, std::pair<char const *, ExtraArgs> const &... args)
@@ -210,11 +226,15 @@ namespace
             {"type", type},
             {"name", name},
             // Thin / Thick properties
-            {"ds", el.ds()},
-            {"nslice", el.nslice()}
+            {"ds", el.ds()}
         };
 
         // properties of mixin classes
+        if (el.nslice() != 1) {
+            // for thick elements, nslice default is 1 and can be omitted
+            // for thin elements, nslice is 1 by definition and not a constructor argument
+            ret.insert(std::make_pair("nslice", el.nslice()));
+        }
         if constexpr (std::is_base_of_v<elements::mixin::Alignment, std::decay_t<T_Element>>) {
             ret.insert(std::make_pair("dx", el.dx()));
             ret.insert(std::make_pair("dy", el.dy()));
@@ -345,7 +365,12 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
              [](diagnostics::BeamMonitor const & bm) {
-                 return element_dict(bm);
+                 return element_dict(
+                     bm,
+                     std::make_pair("backend", bm.backend()),
+                     std::make_pair("encoding", bm.encoding()),
+                     std::make_pair("period_sample_intervals", bm.period_sample_intervals())
+                 );
              }
         )
         .def(py::init<std::string, std::string, std::string, int>(),
@@ -360,6 +385,18 @@ void init_elements(py::module& m)
             "name of the series"
         )
         .def_property_readonly("has_name", &diagnostics::BeamMonitor::has_name)
+        .def_property_readonly("backend",
+            &diagnostics::BeamMonitor::backend,
+            "openPMD file backend (e.g. default, bp4, h5)"
+        )
+        .def_property_readonly("encoding",
+            &diagnostics::BeamMonitor::encoding,
+            R"(openPMD iteration encoding: "v" variable-based, "f" file-based, "g" group-based)"
+        )
+        .def_property_readonly("period_sample_intervals",
+            &diagnostics::BeamMonitor::period_sample_intervals,
+            "for periodic lattices, only output every Nth period (turn or cycle)"
+        )
         .def_property("nonlinear_lens_invariants",
             [](diagnostics::BeamMonitor & bm) { return detail::get_or_throw<bool>(bm.name(), "nonlinear_lens_invariants"); },
             [](diagnostics::BeamMonitor & bm, bool nonlinear_lens_invariants) {
@@ -423,8 +460,8 @@ void init_elements(py::module& m)
                 using namespace amrex::literals;
                 return element_dict(
                     ap,
-                    std::make_pair("shape", ap.m_shape),
-                    std::make_pair("action", ap.m_action),
+                    std::make_pair("shape", ap.shape_name(ap.m_shape)),
+                    std::make_pair("action", ap.action_name(ap.m_action)),
                     std::make_pair("aperture_x", 1_prt / ap.m_inv_aperture_x),
                     std::make_pair("aperture_y", 1_prt / ap.m_inv_aperture_y),
                     std::make_pair("repeat_x", ap.m_repeat_x),
@@ -982,11 +1019,13 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](QuadEdge const & quadedge) {
+                std::string const flag_str = quadedge.m_flag == QuadEdge::Location::entry ?
+                    "entry" : "exit";
                 return element_dict(
                     quadedge,
                     std::make_pair("k", quadedge.m_k),
                     std::make_pair("unit", quadedge.m_unit),
-                    std::make_pair("flag", quadedge.m_flag)
+                    std::make_pair("flag", flag_str)
                 );
             }
         )
@@ -1115,9 +1154,10 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_multipole,
                      std::make_pair("unit", exact_multipole.m_unit),
-                     std::make_pair("k_normal", MultipoleData::h_k_normal[exact_multipole.m_id]),
-                     std::make_pair("k_skew", MultipoleData::h_k_skew[exact_multipole.m_id]),
-                     std::make_pair("mapsteps", exact_multipole.m_mapsteps)
+                     std::make_pair("k_normal", ExactMultipole::DynamicData::get(exact_multipole.m_id)->k_normal.host_const()),
+                     std::make_pair("k_skew", ExactMultipole::DynamicData::get(exact_multipole.m_id)->k_skew.host_const()),
+                     std::make_pair("mapsteps", exact_multipole.m_mapsteps),
+                     std::make_pair("int_order", exact_multipole.m_int_order)
                  );
              }
         )
@@ -1184,9 +1224,10 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_cfbend,
                      std::make_pair("unit", exact_cfbend.m_unit),
-                     std::make_pair("k_normal", ExactCFbendData::h_k_normal[exact_cfbend.m_id]),
-                     std::make_pair("k_skew", ExactCFbendData::h_k_skew[exact_cfbend.m_id]),
-                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps)
+                     std::make_pair("k_normal", ExactCFbend::DynamicData::get(exact_cfbend.m_id)->k_normal.host_const()),
+                     std::make_pair("k_skew", ExactCFbend::DynamicData::get(exact_cfbend.m_id)->k_skew.host_const()),
+                     std::make_pair("mapsteps", exact_cfbend.m_mapsteps),
+                     std::make_pair("int_order", exact_cfbend.m_int_order)
                  );
              }
         )
@@ -1258,7 +1299,9 @@ void init_elements(py::module& m)
                  return element_dict(
                      exact_quad,
                      std::make_pair("k", exact_quad.m_k),
-                     std::make_pair("unit", exact_quad.m_unit)
+                     std::make_pair("unit", exact_quad.m_unit),
+                     std::make_pair("mapsteps", exact_quad.m_mapsteps),
+                     std::make_pair("int_order", exact_quad.m_int_order)
                  );
              }
         )
@@ -1319,19 +1362,37 @@ void init_elements(py::module& m)
              [](ExactSbend const & exact_sbend) {
                  return element_name(
                      exact_sbend,
-                     std::make_pair("phi", exact_sbend.m_phi),
+                     std::make_pair("phi", exact_sbend.m_phi / ExactSbend::degree2rad),
                      std::make_pair("B", exact_sbend.m_B)
                  );
              }
         )
         .def("to_dict",
-            [](ExactSbend const & exact_sbend) {
-                return element_dict(
-                    exact_sbend,
-                    std::make_pair("phi", exact_sbend.m_phi),
-                    std::make_pair("B", exact_sbend.m_B)
-                );
-            }
+            [](ExactSbend const & exact_sbend, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        exact_sbend,
+                        std::make_pair("phi", exact_sbend.m_phi / ExactSbend::degree2rad),
+                                                                   // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                        std::make_pair("B", exact_sbend.m_B)
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: ExactSbend.to_dict() has a known bug, "
+                        "returning phi in radians than degrees. "
+                        "Please use ExactSbend.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        exact_sbend,
+                        std::make_pair("phi", exact_sbend.m_phi),  // BUG: constructor is in degrees
+                        std::make_pair("B", exact_sbend.m_B)
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -1364,8 +1425,17 @@ void init_elements(py::module& m)
         .def_property("phi",
             [](ExactSbend & exact_sbend) { return exact_sbend.m_phi; },
             [](ExactSbend & exact_sbend, amrex::ParticleReal phi) { exact_sbend.m_phi = phi; },
+            "Bend angle in radian"
+        )
+        /* BUG, should be in degrees like this:
+        .def_property("phi",
+            [](ExactSbend & exact_sbend) { return exact_sbend.m_phi / ExactSbend::degree2rad; },
+            [](ExactSbend & exact_sbend, amrex::ParticleReal phi_deg) {
+                exact_sbend.m_phi = phi_deg * ExactSbend::degree2rad;
+            },
             "Bend angle in degrees"
         )
+        */
         .def_property("B",
             [](ExactSbend & exact_sbend) { return exact_sbend.m_B; },
             [](ExactSbend & exact_sbend, amrex::ParticleReal B) { exact_sbend.m_B = B; },
@@ -1387,11 +1457,13 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](Kicker const & kicker) {
+                std::string const unit_str = kicker.m_unit == Kicker::UnitSystem::Tm ?
+                    "T-m" : "dimensionless";
                 return element_dict(
                     kicker,
                     std::make_pair("xkick", kicker.m_xkick),
                     std::make_pair("ykick", kicker.m_ykick),
-                    std::make_pair("unit", kicker.m_unit)
+                    std::make_pair("unit", unit_str)
                 );
             }
         )
@@ -1589,17 +1661,34 @@ void init_elements(py::module& m)
              [](PlaneXYRot const & plane_xyrot) {
                  return element_name(
                      plane_xyrot,
-                     std::make_pair("angle", plane_xyrot.m_phi)
+                     std::make_pair("angle", plane_xyrot.m_phi / PlaneXYRot::degree2rad)
                  );
              }
         )
         .def("to_dict",
-            [](PlaneXYRot const & plane_xyrot) {
-                return element_dict(
-                    plane_xyrot,
-                    std::make_pair("angle", plane_xyrot.m_phi)
-                );
-            }
+            [](PlaneXYRot const & plane_xyrot, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        plane_xyrot,
+                        std::make_pair("angle", plane_xyrot.m_phi / PlaneXYRot::degree2rad)
+                                                                      // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: PlaneXYRot.to_dict() has a known bug, "
+                        "returning angle in radians than degrees. "
+                        "Please use PlaneXYRot.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        plane_xyrot,
+                        std::make_pair("angle", plane_xyrot.m_phi)  // BUG: constructor is in degrees
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -1620,6 +1709,15 @@ void init_elements(py::module& m)
             [](PlaneXYRot & plane_xyrot, amrex::ParticleReal phi) { plane_xyrot.m_phi = phi; },
             "Rotation angle (rad)."
         )
+        /* BUG: should be in degrees
+        .def_property("angle",
+            [](PlaneXYRot & plane_xyrot) { return plane_xyrot.m_phi / PlaneXYRot::degree2rad; },
+            [](PlaneXYRot & plane_xyrot, amrex::ParticleReal phi_deg) {
+                plane_xyrot.m_phi = phi_deg * PlaneXYRot::degree2rad;
+            },
+            "Rotation angle in degrees (in the x-y plane about the reference trajectory)."
+        )
+        */
     ;
     register_push(py_PlaneXYRot);
 
@@ -1638,10 +1736,10 @@ void init_elements(py::module& m)
                 using namespace amrex::literals;
                 return element_dict(
                     polygon_aperture,
-                    std::make_pair("vertices_x", PolygonApertureData::h_vertices_x[polygon_aperture.m_id]),
-                    std::make_pair("vertices_y", PolygonApertureData::h_vertices_y[polygon_aperture.m_id]),
+                    std::make_pair("vertices_x", PolygonAperture::DynamicData::get(polygon_aperture.m_id)->x.host_const()),
+                    std::make_pair("vertices_y", PolygonAperture::DynamicData::get(polygon_aperture.m_id)->y.host_const()),
                     std::make_pair("min_radius2", polygon_aperture.m_min_radius2),
-                    std::make_pair("action", polygon_aperture.m_action),
+                    std::make_pair("action", polygon_aperture.action_name(polygon_aperture.m_action)),
                     std::make_pair("repeat_x", polygon_aperture.m_repeat_x),
                     std::make_pair("repeat_y", polygon_aperture.m_repeat_y),
                     std::make_pair("shift_odd_x", polygon_aperture.m_shift_odd_x)
@@ -1733,7 +1831,11 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](Programmable const & prg) {
-                return element_dict(prg);
+                return element_dict(
+                    prg,
+                    std::make_pair("ds", prg.m_ds),
+                    std::make_pair("nslice", prg.m_nslice)
+                );
             }
         )
         .def(py::init<
@@ -1849,8 +1951,8 @@ void init_elements(py::module& m)
                     std::make_pair("escale", rfc.m_escale),
                     std::make_pair("freq", rfc.m_freq),
                     std::make_pair("phase", rfc.m_phase),
-                    std::make_pair("cos_coef", RFCavityData::h_cos_coef[rfc.m_id]),
-                    std::make_pair("sin_coef", RFCavityData::h_sin_coef[rfc.m_id]),
+                    std::make_pair("cos_coefficients", RFCavity::DynamicData::get(rfc.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", RFCavity::DynamicData::get(rfc.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", rfc.m_mapsteps)
                 );
             }
@@ -2139,8 +2241,8 @@ void init_elements(py::module& m)
                     soft_sol,
                     std::make_pair("bscale", soft_sol.m_bscale),
                     std::make_pair("unit", soft_sol.m_unit),
-                    std::make_pair("cos_coef", SoftSolenoidData::h_cos_coef[soft_sol.m_id]),
-                    std::make_pair("sin_coef", SoftSolenoidData::h_sin_coef[soft_sol.m_id]),
+                    std::make_pair("cos_coefficients", SoftSolenoid::DynamicData::get(soft_sol.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", SoftSolenoid::DynamicData::get(soft_sol.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", soft_sol.m_mapsteps)
                 );
             }
@@ -2180,8 +2282,36 @@ void init_elements(py::module& m)
             [](SoftSolenoid & soft_sol, amrex::ParticleReal bscale) { soft_sol.m_bscale = bscale; },
             "Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0) or magnetic field Bz in T (SI units, if unit = 1)"
         )
-        // TODO cos_coefficients
-        // TODO sin_coefficients
+        /* TODO Before we can expose this we need to ensure that sim.lattice takes a list of shared pointers
+         *    and not copies of elements. Otherwise, users can invalidate their cached host pointers with
+         *      sol = SoftSolenoid(...)
+         *      sim.lattice.append(sol)  # copy in lattice has same m_id
+         *      sol.cos_coef = new_values  # updates data of m_id and sol.m_cos_h_data, but NOT the lattice copy
+        .def_property("cos_coefficients",
+            [](SoftSolenoid & soft_sol) {
+                return SoftSolenoid::DynamicData::get(soft_sol.m_id)->h_cos;
+            },
+            [](SoftSolenoid & soft_sol, std::vector<amrex::ParticleReal> v) {
+                auto & coef = *SoftSolenoid::DynamicData::get(soft_sol.m_id);
+                coef.h_cos = std::move(v);
+                coef.mark_dirty();
+                soft_sol.m_cos_h_data = coef.h_cos.data();
+            },
+            "cosine coefficients in Fourier expansion of on-axis magnetic field Bz"
+        )
+        .def_property("sin_coefficients",
+            [](SoftSolenoid & soft_sol) {
+                return SoftSolenoid::DynamicData::get(soft_sol.m_id)->h_sin;
+            },
+            [](SoftSolenoid & soft_sol, std::vector<amrex::ParticleReal> v) {
+                auto & coef = *SoftSolenoid::DynamicData::get(soft_sol.m_id);
+                coef.h_sin = std::move(v);
+                coef.mark_dirty();
+                soft_sol.m_sin_h_data = coef.h_sin.data();
+            },
+            "sine coefficients in Fourier expansion of on-axis magnetic field Bz"
+        )
+        */
         .def_property("unit",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_unit; },
             [](SoftSolenoid & soft_sol, amrex::ParticleReal unit) { soft_sol.m_unit = unit; },
@@ -2202,7 +2332,7 @@ void init_elements(py::module& m)
                  return element_name(
                      src,
                      std::make_pair("distribution", src.m_distribution),
-                     std::make_pair("path", src.m_series_name),
+                     std::make_pair("openpmd_path", src.m_series_name),
                      std::make_pair("active_once", src.m_active_once)
                  );
              }
@@ -2212,7 +2342,7 @@ void init_elements(py::module& m)
                 return element_dict(
                     src,
                     std::make_pair("distribution", src.m_distribution),
-                    std::make_pair("path", src.m_series_name),
+                    std::make_pair("openpmd_path", src.m_series_name),
                     std::make_pair("active_once", src.m_active_once)
                 );
             }
@@ -2301,19 +2431,37 @@ void init_elements(py::module& m)
              [](PRot const & prot) {
                  return element_name(
                      prot,
-                     std::make_pair("phi_in", prot.m_phi_in),
-                     std::make_pair("phi_out", prot.m_phi_out)
+                     std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                     std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
                  );
              }
         )
         .def("to_dict",
-            [](PRot const & prot) {
-                return element_dict(
-                    prot,
-                    std::make_pair("phi_in", prot.m_phi_in),
-                    std::make_pair("phi_out", prot.m_phi_out)
-                );
-            }
+            [](PRot const & prot, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        prot,
+                        std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                                                                     // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                        std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: PRot.to_dict() has a known bug, "
+                        "returning phi_in and phi_out in radians than degrees. "
+                        "Please use PRot.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        prot,
+                        std::make_pair("phi_in", prot.m_phi_in),   // BUG: constructor is in degrees
+                        std::make_pair("phi_out", prot.m_phi_out)  // BUG: constructor is in degrees
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -2328,13 +2476,25 @@ void init_elements(py::module& m)
         .def_property("phi_in",
             [](PRot & prot) { return prot.m_phi_in; },
             [](PRot & prot, amrex::ParticleReal phi_in) { prot.m_phi_in = phi_in; },
-            "angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees"
+            "angle of the reference particle with respect to the longitudinal (z) axis in the original frame in radian"
         )
         .def_property("phi_out",
             [](PRot & prot) { return prot.m_phi_out; },
             [](PRot & prot, amrex::ParticleReal phi_out) { prot.m_phi_out = phi_out; },
+            "angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in radian"
+        )
+        /* BUG: this should be in degree
+        .def_property("phi_in",
+            [](PRot & prot) { return prot.m_phi_in / PRot::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * PRot::degree2rad; },
+            "angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees"
+        )
+        .def_property("phi_out",
+            [](PRot & prot) { return prot.m_phi_out / PRot::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * PRot::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees"
         )
+        */
     ;
     register_push(py_PRot);
 
@@ -2353,8 +2513,8 @@ void init_elements(py::module& m)
                 return element_dict(
                     soft_quad,
                     std::make_pair("gscale", soft_quad.m_gscale),
-                    std::make_pair("cos_coef", SoftQuadrupoleData::h_cos_coef[soft_quad.m_id]),
-                    std::make_pair("sin_coef", SoftQuadrupoleData::h_sin_coef[soft_quad.m_id]),
+                    std::make_pair("cos_coefficients", SoftQuadrupole::DynamicData::get(soft_quad.m_id)->cos.host_const()),
+                    std::make_pair("sin_coefficients", SoftQuadrupole::DynamicData::get(soft_quad.m_id)->sin.host_const()),
                     std::make_pair("mapsteps", soft_quad.m_mapsteps)
                 );
             }
@@ -2408,19 +2568,37 @@ void init_elements(py::module& m)
              [](ThinDipole const & thin_dp) {
                  return element_name(
                      thin_dp,
-                     std::make_pair("theta", thin_dp.m_theta),
+                     std::make_pair("theta", thin_dp.m_theta / ThinDipole::degree2rad),
                      std::make_pair("rc", thin_dp.m_rc)
                  );
              }
         )
         .def("to_dict",
-            [](ThinDipole const & thin_dp) {
-                return element_dict(
-                    thin_dp,
-                    std::make_pair("theta", thin_dp.m_theta),
-                    std::make_pair("rc", thin_dp.m_rc)
-                );
-            }
+            [](ThinDipole const & thin_dp, bool in_degrees) {
+                if (in_degrees) {
+                    return element_dict(
+                        thin_dp,
+                        std::make_pair("theta", thin_dp.m_theta / ThinDipole::degree2rad),
+                                                                     // once fixed, update src/python/impactx/extensions/KnownElementsList.py
+                        std::make_pair("rc", thin_dp.m_rc)
+                    );
+                } else {
+                    // legacy: buggy radians instead of degrees
+                    py::warnings::warn(
+                        "Warning: ThinDipole.to_dict() has a known bug, "
+                        "returning theta in radians than degrees. "
+                        "Please use ThinDipole.to_dict(in_degrees=True) instead.",
+                        PyExc_RuntimeWarning,
+                        2
+                    );
+                    return element_dict(
+                        thin_dp,
+                        std::make_pair("theta", thin_dp.m_theta),  // BUG: constructor is in degrees
+                        std::make_pair("rc", thin_dp.m_rc)
+                    );
+                }
+            },
+            py::arg("in_degrees") = false
         )
         .def(py::init<
                 amrex::ParticleReal,
@@ -2441,6 +2619,14 @@ void init_elements(py::module& m)
         .def_property("theta",
             [](ThinDipole & thin_dp) { return thin_dp.m_theta; },
             [](ThinDipole & thin_dp, amrex::ParticleReal theta) { thin_dp.m_theta = theta; },
+            "Bend angle (radian)"
+        )
+        /* BUG: this should be in degree
+        .def_property("theta",
+            [](ThinDipole & thin_dp) { return thin_dp.m_theta / ThinDipole::degree2rad; },
+            [](ThinDipole & thin_dp, amrex::ParticleReal theta_deg) {
+                thin_dp.m_theta = theta_deg * ThinDipole::degree2rad;
+            },
             "Bend angle (degrees)"
         )
         .def_property("rc",
@@ -2448,6 +2634,7 @@ void init_elements(py::module& m)
             [](ThinDipole & thin_dp, amrex::ParticleReal rc) { thin_dp.m_rc = rc; },
             "Effective curvature radius (meters)"
         )
+        */
     ;
     register_push(py_ThinDipole);
 
@@ -2526,7 +2713,8 @@ void init_elements(py::module& m)
             [](LinearMap const & linearmap) {
                 return element_dict(
                     linearmap,
-                    std::make_pair("transport_map", linearmap.m_transport_map)
+                    std::make_pair("ds", linearmap.m_ds),
+                    std::make_pair("R", linearmap.m_transport_map)
                 );
             }
         )
@@ -2570,15 +2758,16 @@ void init_elements(py::module& m)
                  return element_name(spinmap);
              }
         )
-/*        .def("to_dict",
+        .def("to_dict",
             [](SpinMap const & spinmap) {
                 return element_dict(
                     spinmap,
+                    std::make_pair("ds", spinmap.m_ds),
                     std::make_pair("v", spinmap.m_spin_rotation_vector),
                     std::make_pair("A", spinmap.m_spin_orbit_coupling)
                 );
             }
-        ) */
+        )
         .def(py::init<
                 Vector3,
                 Map3x6,

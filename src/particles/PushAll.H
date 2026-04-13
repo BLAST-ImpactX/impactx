@@ -74,4 +74,18 @@ namespace impactx
 
 } // namespace impactx
 
+/** Suppress implicit instantiation of push_all<T> — use in element headers. */
+#define IMPACTX_PUSH_EXTERN_TEMPLATE(ElementType) \
+    extern template void impactx::push_all<ElementType>( \
+        impactx::ImpactXParticleContainer &, \
+        ElementType &, \
+        int, int, bool);
+
+/** Explicit instantiation of push_all<T> — use in element .cpp files. */
+#define IMPACTX_PUSH_INSTANTIATE(ElementType) \
+    template void impactx::push_all<ElementType>( \
+        impactx::ImpactXParticleContainer &, \
+        ElementType &, \
+        int, int, bool);
+
 #endif // IMPACTX_PUSH_ALL_H

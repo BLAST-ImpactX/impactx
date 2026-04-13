@@ -44,8 +44,8 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        amrex::ParticleReal const tau1 = dz * 0.5_prt;
         amrex::ParticleReal const tau2 = dz;
 
         // initialize the value of the independent variable
@@ -87,9 +87,9 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
-        amrex::ParticleReal const tau2 = dz*0.5_prt;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        amrex::ParticleReal const tau1 = dz * 0.5_prt;
+        amrex::ParticleReal const tau2 = dz * 0.5_prt;
         amrex::ParticleReal const tau3 = dz;
 
         // initialize the value of the independent variable
@@ -136,9 +136,9 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
-        amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        constexpr amrex::ParticleReal alpha = -0.2599210498948732;  // C++26: 1_prt - std::pow(2_prt,1_prt/3_prt);
+        amrex::ParticleReal const tau2 = dz / (1_prt + alpha);
         amrex::ParticleReal const tau1 = tau2*0.5_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
         amrex::ParticleReal const tau4 = (alpha - 1_prt)*tau2;
@@ -186,8 +186,8 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const tau1 = dz*0.5_prt;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        amrex::ParticleReal const tau1 = dz * 0.5_prt;
         amrex::ParticleReal const tau2 = dz;
 
         // initialize the value of the independent variable
@@ -233,8 +233,8 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
-        amrex::ParticleReal const alpha = 1_prt - std::pow(2_prt,1_prt/3_prt);
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+        constexpr amrex::ParticleReal alpha = -0.2599210498948732;  // C++26: 1_prt - std::pow(2_prt,1_prt/3_prt);
         amrex::ParticleReal const tau2 = dz/(1_prt + alpha);
         amrex::ParticleReal const tau1 = tau2*0.5_prt;
         amrex::ParticleReal const tau3 = alpha*tau1;
@@ -292,7 +292,7 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // initialize numerical integration parameters
-        amrex::ParticleReal const dz = (zout-zin)/nsteps;
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
         amrex::ParticleReal const w0 = 1.31518632068391121888424973;
         amrex::ParticleReal const w1 = -1.17767998417887100694641568;
         amrex::ParticleReal const w2 = 0.23557321335935813368479318;
@@ -328,6 +328,182 @@ namespace impactx::integrators
             element.map1(tau3,particle,zeval);
             element.map2(tau2,particle,zeval);
             element.map1(tau1,particle,zeval);
+        }
+    }
+
+   /** A second-order symplectic integration step based on a Hamiltonian
+    *  splitting H = H_1 + H_2, with spin included.  The effect of spin
+    *  is included by adding a third term in the splitting of the vector field,
+    *  corresponding to the update from the Thomas-BMT equation.  This results
+    *  in a net 3-term splitting, where map3 applies the spin map.
+    *
+    *  The algorithm is correct to second-order in the stepsize, with respect
+    *  to both orbit and spin data.
+    *
+    * @param particle  Particle phase space data in a 6-vector
+    * @param particle_spin  Particle spin data in a 3-vector
+    * @param tau  Size of the step in s
+    * @param zeval  Evaluation point in s
+    * @param element  Element defining the maps associated with H_1, H_2, and spin.
+    */
+    template <typename T_Real, typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void symp2_integrate_particle_spin_step (
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 3, 1> & particle_spin,
+        amrex::ParticleReal const tau,
+        amrex::ParticleReal & zeval,
+        T_Element const & element
+    )
+    {
+        using namespace amrex::literals; // for _rt and _prt
+
+        // initialize numerical integration parameters
+        amrex::ParticleReal const tau1 = tau*0.5_prt;
+        amrex::ParticleReal const tau2 = tau*0.5_prt;
+        amrex::ParticleReal const tau3 = tau;
+
+        // a single second-order step
+        element.map1(tau1,particle,zeval);
+        element.map2(tau2,particle,zeval);
+        element.map3(tau3,particle,particle_spin,zeval);
+        element.map2(tau2,particle,zeval);
+        element.map1(tau1,particle,zeval);
+    }
+
+   /** A fourth-order symplectic integration step based on a Hamiltonian
+    *  splitting H = H_1 + H_2, with spin included.  The effect of spin
+    *  is included by adding a third term in the splitting of the vector field,
+    *  corresponding to the update from the Thomas-BMT equation.  This results
+    *  in a net 3-term splitting, where map3 applies the spin map.
+    *
+    *  The algorithm is correct to fourth-order in the stepsize, with respect
+    *  to both orbit and spin data.  Currently, this is obtained by using the
+    *  Yoshida method.
+    *
+    * @param particle  Particle phase space data in a 6-vector
+    * @param particle_spin  Particle spin data in a 3-vector
+    * @param tau  Size of the step in s
+    * @param zeval  Evaluation point in s
+    * @param element  Element defining the maps associated with H_1, H_2, and spin.
+    */
+    template <typename T_Real, typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void symp4_integrate_particle_spin_step (
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 3, 1> & particle_spin,
+        amrex::ParticleReal const tau,
+        amrex::ParticleReal & zeval,
+        T_Element const & element
+    )
+    {
+        using namespace amrex::literals; // for _rt and _prt
+
+        // initialize numerical integration parameters (Yoshida)
+        constexpr amrex::ParticleReal a = 1.2599210498948732;  // C++26 std::pow(2_prt,1_prt/3_prt);
+        constexpr amrex::ParticleReal z0 = 1_prt / (2_prt - a);
+        constexpr amrex::ParticleReal z1 = -a / (2_prt - a);
+        amrex::ParticleReal const tau1 = tau*z0;
+        amrex::ParticleReal const tau2 = tau*z1;
+
+        // a single fourth-order step
+        symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
+        symp2_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,element);
+        symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
+    }
+
+
+   /** A sixth-order symplectic integration step based on a Hamiltonian
+    *  splitting H = H_1 + H_2, with spin included.  The effect of spin
+    *  is included by adding a third term in the splitting of the vector field,
+    *  corresponding to the update from the Thomas-BMT equation.  This results
+    *  in a net 3-term splitting, where map3 applies the spin map.
+    *
+    *  The algorithm is correct to sixth-order in the stepsize, with respect
+    *  to both orbit and spin data.  Currently, this is obtained by using the
+    *  Yoshida method.
+    *
+    * @param particle  Particle phase space data in a 6-vector
+    * @param particle_spin  Particle spin data in a 3-vector
+    * @param tau  Size of the step in s
+    * @param zeval  Evaluation point in s
+    * @param element  Element defining the maps associated with H_1, H_2, and spin.
+    */
+    template <typename T_Real, typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void symp6_integrate_particle_spin_step (
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 3, 1> & particle_spin,
+        amrex::ParticleReal const tau,
+        amrex::ParticleReal & zeval,
+        T_Element const & element
+    )
+    {
+        using namespace amrex::literals; // for _rt and _prt
+
+        // initialize numerical integration parameters (Yoshida)
+        constexpr amrex::ParticleReal a = 1.148698354997035;  // C++26 std::pow(2_prt,1_prt/5_prt);
+        constexpr amrex::ParticleReal z0 = 1_prt / (2_prt - a);
+        constexpr amrex::ParticleReal z1 = -a / (2_prt - a);
+        amrex::ParticleReal const tau1 = tau * z0;
+        amrex::ParticleReal const tau2 = tau * z1;
+
+        // a single sixth-order step
+        symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
+        symp4_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,element);
+        symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
+    }
+
+
+   /** A symplectic integrator based on a Hamiltonian
+    *  splitting H = H_1 + H_2, with spin included.  The effect of spin
+    *  is included by adding a third term in the splitting of the vector field,
+    *  corresponding to the update from the Thomas-BMT equation.  This results
+    *  in a net 3-term splitting, where map3 applies the spin map.
+    *
+    *  The algorithm is correct to second-order in the stepsize, with respect
+    *  to both orbit and spin data.
+    *
+    * @param particle  Particle phase space data in a 6-vector
+    * @param particle_spin  Particle spin data in a 3-vector
+    * @param zin  Initial value of independent variable (z-location)
+    * @param zout  Final value of independent variable (z-location)
+    * @param nsteps  Number of integration steps
+    * @param int_order Order of numerical integration (2, 4, or 6)
+    * @param element  Element defining the maps associated with H_1, H_2, and spin.
+    */
+    template <typename T_Real, typename T_Element>
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void symp_integrate_particle_spin (
+        amrex::SmallVector<T_Real, 6, 1> & particle,
+        amrex::SmallVector<T_Real, 3, 1> & particle_spin,
+        amrex::ParticleReal const zin,
+        amrex::ParticleReal const zout,
+        int const nsteps,
+        int int_order,
+        T_Element const & element
+    )
+    {
+        using namespace amrex::literals; // for _rt and _prt
+
+        // initialize numerical integration parameters
+        amrex::ParticleReal const dz = (zout - zin) / static_cast<amrex::ParticleReal>(nsteps);
+
+        // initialize the value of the independent variable
+        amrex::ParticleReal zeval = zin;
+
+        // loop over integration steps
+        for(int j=0; j < nsteps; ++j)
+        {
+            if (int_order == 2) {
+                symp2_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+            } else if (int_order == 4) {
+                symp4_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+            } else if (int_order == 6) {
+                symp6_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+            } else {
+                symp2_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+            }
         }
     }
 

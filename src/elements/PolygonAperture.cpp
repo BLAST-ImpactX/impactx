@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <string>
 
+IMPACTX_GPUDATA_INSTANTIATE(impactx::elements::PolygonAperture)
+
 std::string
 impactx::elements::PolygonAperture::action_name (Action const & action)
 {
@@ -25,3 +27,5 @@ impactx::elements::PolygonAperture::action_name (Action const & action)
             throw std::runtime_error("Unknown action");
     }
 }
+
+IMPACTX_PUSH_INSTANTIATE(impactx::elements::PolygonAperture)

@@ -29,6 +29,7 @@ __author__ = impactx_pybind.__author__
 from .distribution_input_helpers import twiss  # noqa
 from .fourier import fourier_coefficients  # noqa
 from .extensions.KnownElementsList import (
+    FilteredElementsList,
     register_KnownElementsList_extension,
 )
 from .extensions.ImpactXParticleContainer import (
@@ -49,6 +50,10 @@ from .extensions.SoftSolenoid import (
 
 # MAD-X file reader for beamline lattice elements
 register_KnownElementsList_extension(impactx_pybind.elements.KnownElementsList)
+
+# Public alias on the elements submodule (same class object as in extensions)
+impactx_pybind.elements.FilteredElementsList = FilteredElementsList
+FilteredElementsList.__module__ = impactx_pybind.elements.__name__
 
 # MAD-X file reader for reference particle
 RefPart.load_file = read_beam  # noqa

@@ -15,8 +15,8 @@ namespace impactx::elements::mixin
 {
     /** This is a helper class for lattice elements that need no finalize function.
      *
-     * Finalize helpers are used to clean up static/shared data, usually dynamic
-     * memory from parameters or state from external libraries.
+     * Finalize helpers are used to clean up static/shared data, usually
+     * state from external libraries.
      */
     struct NoFinalize
     {

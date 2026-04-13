@@ -52,7 +52,7 @@ Run
 
       This example can be run as a **Python** script: ``python3 tests/python/test_xopt.py``.
 
-      .. literalinclude:: test_xopt.py
+      .. literalinclude:: ../../tests/python/test_xopt.py
          :language: python3
          :caption: You can copy this file from ``tests/python/test_xopt.py``.
 

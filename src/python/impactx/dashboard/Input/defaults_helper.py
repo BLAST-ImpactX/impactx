@@ -97,8 +97,13 @@ class InputDefaultsHelper:
         :return: A list of tuples containing class names.
         """
 
+        # Container / utility classes that are not user-selectable elements.
+        _SKIP_CLASSES = {"KnownElementsList", "FilteredElementsList"}
+
         results = []
         for name in dir(module_name):
+            if name in _SKIP_CLASSES:
+                continue
             attr = getattr(module_name, name)
             if inspect.isclass(attr):
                 results.append((name, attr))
@@ -120,7 +125,8 @@ class InputDefaultsHelper:
             init_method = getattr(cls, "__init__", None)
             if init_method:
                 docstring = cls.__init__.__doc__
-                docstrings[name] = docstring
+                if docstring is not None:
+                    docstrings[name] = docstring
         return docstrings
 
     @staticmethod

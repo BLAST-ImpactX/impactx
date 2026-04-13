@@ -175,6 +175,15 @@ set_target_properties(lib PROPERTIES
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
+include(GenerateExportHeader)
+generate_export_header(lib
+    BASE_NAME impactx
+    EXPORT_FILE_NAME src/impactx_export.H
+)
+if(NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(lib PUBLIC IMPACTX_STATIC_DEFINE)
+endif()
+
 # Optional: build only a single TU
 if(ImpactX_UNITY_BUILD)
     set_target_properties(lib PROPERTIES
@@ -493,11 +502,21 @@ if(ImpactX_PYTHON)
             ${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
     )
 
-    # copy Python wrapper library to build directory
-    add_custom_command(TARGET pyImpactX POST_BUILD
+    # populate the build-tree Python package for ctest and direct build-tree imports
+    add_custom_target(pyImpactX_python_sources ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${ImpactX_SOURCE_DIR}/src/python/impactx
-            $<TARGET_FILE_DIR:pyImpactX>
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ImpactX_SOURCE_DIR}/examples
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx/examples
+        VERBATIM
+    )
+    add_dependencies(pyImpactX_python_sources pyImpactX)
+    add_dependencies(${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
+        pyImpactX_python_sources
     )
 endif()
 

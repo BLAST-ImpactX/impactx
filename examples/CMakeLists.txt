@@ -289,8 +289,8 @@ add_impactx_test(FODO-exact.py
 add_impactx_test(FODO.programmable.py
     examples/fodo_programmable/run_fodo_programmable.py
     OFF  # ImpactX MPI-parallel
-    examples/fodo_programmable/analysis_fodo.py
-    examples/fodo_programmable/plot_fodo.py
+    examples/fodo/analysis_fodo.py
+    examples/fodo/plot_fodo.py
 )
 
 # Python: Change Elements Per Turn ############################################
@@ -321,14 +321,14 @@ add_impactx_test(FODO.MADX.py
 add_impactx_test(FODO.userdef
     examples/fodo_userdef/input_fodo_userdef.in
     ON   # ImpactX MPI-parallel
-    examples/fodo_userdef/analysis_fodo.py
-    examples/fodo_userdef/plot_fodo.py
+    examples/fodo/analysis_fodo.py
+    examples/fodo/plot_fodo.py
 )
 add_impactx_test(FODO.userdef.py
     examples/fodo_userdef/run_fodo_userdef.py
     OFF  # ImpactX MPI-parallel
-    examples/fodo_userdef/analysis_fodo.py
-    examples/fodo_userdef/plot_fodo.py
+    examples/fodo/analysis_fodo.py
+    examples/fodo/plot_fodo.py
 )
 
 
@@ -720,6 +720,19 @@ add_impactx_test(rfcavity-ref-part-hook.py
     OFF  # no plot script yet
 )
 
+# Proton acceleration by RF Cavities (using phase optimization) #####################
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part-opt.py)
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/phase_opt.py
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-ref-part-opt.py)
+add_impactx_test(rfcavity-ref-part-opt.py
+    examples/rfcavity/run_rfcavity_ref_part_opt.py
+    OFF   # ImpactX MPI-parallel
+    examples/rfcavity/analysis_rfcavity_ref_part_opt.py
+    OFF  # no plot script yet
+)
+
 # Ideal, Hard-Edge Solenoid ###################################################
 #
 add_impactx_test(solenoid
@@ -992,6 +1005,8 @@ add_impactx_test(bithermal.py
     examples/epac2004_benchmarks/analysis_bithermal.py
     examples/epac2004_benchmarks/plot_bithermal.py
 )
+label_impactx_test(bithermal slow)
+label_impactx_test(bithermal.py slow)
 
 
 # IOTA s-dependent nonlinear lens test ########################################

@@ -21,7 +21,6 @@ __all__: list[str] = [
 
 class sc:
     """
-
     This class is used in lieu of scipy.constants
     to avoid a direct dependency on it.
     At the time of writing, this file was the only
@@ -40,7 +39,6 @@ class sc:
 
 def beam(particle, charge=None, mass=None, energy=None):
     """
-
     Function that converts a list of beam parameter dictionaries in the MADXParser format into ImpactX format
 
     Rules following https://mad.web.cern.ch/mad/releases/5.02.08/madxuguide.pdf pages 55f.
@@ -55,7 +53,6 @@ def beam(particle, charge=None, mass=None, energy=None):
 
 def lattice(parsed_beamline, nslice=1):
     """
-
     Function that converts a list of elements in the MADXParser format into ImpactX format
     :param parsed_beamline: list of dictionaries
     :param nslice: number of ds slices per element
@@ -64,7 +61,6 @@ def lattice(parsed_beamline, nslice=1):
 
 def read_beam(ref: impactx.impactx_pybind.RefPart, madx_file):
     """
-
     Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
     :param RefPart ref: ImpactX reference particle (passed by reference)
     :param madx_file: file name to MAD-X file with beamline elements
@@ -73,7 +69,6 @@ def read_beam(ref: impactx.impactx_pybind.RefPart, madx_file):
 
 def read_lattice(madx_file, nslice=1):
     """
-
     Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
     :param madx_file: file name to MAD-X file with beamline elements
     :param nslice: number of ds slices per element

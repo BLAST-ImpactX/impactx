@@ -1,5 +1,4 @@
 """
-
 impactx_pybind
 --------------
 .. currentmodule:: impactx_pybind
@@ -50,6 +49,7 @@ from impactx.impactx_pybind import (
     push,
     wakeconvolution,
 )
+from impactx.impactx_pybind.elements import FilteredElementsList
 from impactx.madx_to_impactx import read_beam
 
 from . import (
@@ -66,6 +66,7 @@ __all__: list[str] = [
     "Config",
     "CoordSystem",
     "Envelope",
+    "FilteredElementsList",
     "ImpactX",
     "ImpactXParConstIter",
     "ImpactXParIter",

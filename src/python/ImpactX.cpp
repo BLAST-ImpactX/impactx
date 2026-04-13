@@ -166,14 +166,18 @@ void init_ImpactX (py::module& m)
 
                 pp_geometry.add("dynamic_size", false);
 
-                ix.ResizeMesh();
+                if (ix.initialized())
+                    ix.ResizeMesh();
             },
             "The physical extent of the full simulation domain, relative to the reference particle position, in meters."
         )
 
         .def_property("prob_relative",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<amrex::Real>("geometry", "prob_relative");
+                  amrex::ParmParse const pp_geometry("geometry");
+                  std::vector<amrex::Real> frac;
+                  pp_geometry.getarr("prob_relative", frac);
+                  return frac;
               },
               [](ImpactX & /* ix */, std::vector<amrex::Real> frac) {
                   amrex::ParmParse pp_geometry("geometry");

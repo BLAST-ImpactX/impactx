@@ -1,5 +1,4 @@
 """
-
 impactx_pybind
 --------------
 .. currentmodule:: impactx_pybind
@@ -445,7 +444,7 @@ class ImpactX:
     @poisson_solver.setter
     def poisson_solver(self, arg1: str) -> None: ...
     @property
-    def prob_relative(self) -> float:
+    def prob_relative(self) -> list[float]:
         """
         The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
         """
@@ -680,7 +679,6 @@ class ImpactXParticleContainer(
         """
     def beam_moments_history(self):
         """
-
         Return the history of the beam as calculated by the reduced beam characteristics on every step.
         """
     def beam_moments_history_list(self) -> list[dict[str, float]]:
@@ -705,7 +703,6 @@ class ImpactXParticleContainer(
         """
     def plot_phasespace(self, num_bins=50, root_rank=0):
         """
-
         Plot the longitudinal and transverse phase space projections with matplotlib.
 
         Parameters
@@ -759,7 +756,6 @@ class RefPart:
     @staticmethod
     def load_file(ref: RefPart, madx_file):
         """
-
         Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
         :param RefPart ref: ImpactX reference particle (passed by reference)
         :param madx_file: file name to MAD-X file with beamline elements
@@ -795,6 +791,13 @@ class RefPart:
     def set_mass_MeV(self, mass_MeV: typing.SupportsFloat) -> RefPart:
         """
         Set reference particle rest mass * c^2, expressed as an energy [MeV]
+        """
+    def set_species(self, species_name: str) -> RefPart:
+        """
+        Set reference particle species by name.
+
+        Sets charge, mass, and gyromagnetic anomaly for a known particle species.
+        Returns self for chaining, e.g.: ref.set_species("electron").set_kin_energy_MeV(2.0e3)
         """
     @property
     def beta(self) -> float:

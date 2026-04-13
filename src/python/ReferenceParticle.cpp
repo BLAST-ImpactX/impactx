@@ -62,5 +62,11 @@ void init_refparticle(py::module& m)
         .def("set_gyromagnetic_anomaly", &RefPart::set_gyromagnetic_anomaly,
              py::return_value_policy::reference_internal,
              "Set reference particle gyromagnetic anomaly value (for spin tracking)", py::arg("gyromagnetic_anomaly"))
+        .def("set_species", &RefPart::set_species,
+             py::return_value_policy::reference_internal,
+             "Set reference particle species by name.\n\n"
+             "Sets charge, mass, and gyromagnetic anomaly for a known particle species.\n"
+             "Returns self for chaining, e.g.: ref.set_species(\"electron\").set_kin_energy_MeV(2.0e3)",
+             py::arg("species_name"))
     ;
 }

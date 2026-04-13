@@ -69,6 +69,7 @@ def plot_survey(
     for i, element in enumerate(self):
         el_dict = element.to_dict()
         el_type = el_dict["type"]
+        el_ds = el_dict["ds"]
         if el_type in skip_names:
             continue
 
@@ -89,7 +90,7 @@ def plot_survey(
             else:  # guess
                 if el_type == "Sbend":
                     el_dict["phi"] = (
-                        el_dict["ds"] / (2 * np.pi * el_dict["rc"]) * 360
+                        el_ds / (2 * np.pi * el_dict["rc"]) * 360
                     )  # calculate bending angle (in degrees) and add to dict
                 height = copysign(0.8, el_dict["phi"])
         # TODO: sign dependent, read m_p_scale

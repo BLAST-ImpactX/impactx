@@ -58,9 +58,9 @@ We run the following script to analyze correctness:
 
 .. dropdown:: Script ``analysis_fodo.py``
 
-   .. literalinclude:: analysis_fodo.py
+   .. literalinclude:: ../fodo/analysis_fodo.py
       :language: python3
-      :caption: You can copy this file from ``examples/fodo_userdef/analysis_fodo.py``.
+      :caption: You can copy this shared file from ``examples/fodo/analysis_fodo.py``.
 
 
 Visualize
@@ -70,9 +70,9 @@ You can run the following script to visualize the beam evolution over time:
 
 .. dropdown:: Script ``plot_fodo.py``
 
-   .. literalinclude:: plot_fodo.py
+   .. literalinclude:: ../fodo/plot_fodo.py
       :language: python3
-      :caption: You can copy this file from ``examples/fodo_userdef/plot_fodo.py``.
+      :caption: You can copy this shared file from ``examples/fodo/plot_fodo.py``.
 
 .. figure:: https://user-images.githubusercontent.com/1353258/180287840-8561f6fd-278f-4856-abd8-04fbdb78c8ff.png
    :alt: focusing, defocusing and preserved emittance in our FODO cell benchmark.

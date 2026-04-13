@@ -8,8 +8,139 @@ License: BSD-3-Clause-LBNL
 
 import os
 import re
+import weakref
 
 from impactx import elements
+
+# All live FilteredElementsList views for a lattice (WeakKeyDictionary: key is KnownElementsList).
+_filtered_views_by_lattice: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+_filtered_views_by_lattice.__repr__ = lambda: (
+    "WeakKeyDictionary()"
+)  # stable repr for .pyi stub generation
+
+FILTERED_ELEMENTS_LIST_INVALID_MSG = (
+    "This lattice selection is no longer valid because the lattice was modified; "
+    "call select() again on the lattice."
+)
+
+# Drift implementation used by ``replace_with_drifts`` for ``model=`` (except ``"match"``).
+# ``model="match"`` picks the same key from the replaced element's class name (see
+# ``_model_key_from_element_typename``).
+_DRIFT_MODEL_CLASSES: dict[str, type] = {
+    "linear": elements.Drift,
+    "paraxial": elements.ChrDrift,
+    "exact": elements.ExactDrift,
+}
+
+
+def _model_key_from_element_typename(type_name: str) -> str:
+    """Return the drift-model key for an element class name (linear / paraxial / exact)."""
+    if type_name.startswith("Exact"):
+        return "exact"
+    if type_name.startswith("Chr"):
+        return "paraxial"
+    return "linear"
+
+
+def _drift_class_for_replace_with_drifts(model: str, old_el) -> type:
+    """Map ``model`` and ``old_el`` to the Drift / ChrDrift / ExactDrift class to insert.
+
+    For ``model=="match"``, the class follows ``_model_key_from_element_typename``; otherwise
+    ``model`` must already be validated against ``_DRIFT_MODEL_CLASSES``."""
+    if model == "match":
+        key = _model_key_from_element_typename(type(old_el).__name__)
+    else:
+        key = model
+    return _DRIFT_MODEL_CLASSES[key]
+
+
+def _commit_lattice_rebuild(original, new_elements) -> None:
+    """Replace lattice contents with ``new_elements`` and invalidate all FilteredElementsList views."""
+    original.clear()
+    original.extend(new_elements)
+    _invalidate_all_registered_views(original)
+
+
+def _registry_for(lattice):
+    """Return the WeakSet of FilteredElementsList instances for this lattice."""
+    rs = _filtered_views_by_lattice.get(lattice)
+    if rs is None:
+        rs = weakref.WeakSet()
+        _filtered_views_by_lattice[lattice] = rs
+    return rs
+
+
+def _invalidate_all_registered_views(lattice) -> None:
+    """Mark every registered FilteredElementsList for this lattice as invalid."""
+    rs = _filtered_views_by_lattice.get(lattice)
+    if rs is None:
+        return
+    for fel in list(rs):
+        fel._invalidated = True
+
+
+def _clone_element(template):
+    """Deep-clone a lattice element via ``to_dict`` (pybind elements are not copy.copy-able)."""
+    d = template.to_dict()
+    type_name = d.pop("type")
+    cls = getattr(elements, type_name)
+    return cls(**d)
+
+
+def _make_drift_from_old(
+    cls,
+    old_el,
+    *,
+    keep_name,
+    keep_ds,
+    keep_alignment,
+    keep_aperture,
+):
+    """Build a drift (``cls`` is Drift / ChrDrift / ExactDrift) from thick-element fields on ``old_el``.
+
+    When ``keep_ds`` is False, ``ds`` is set to 0. When ``keep_name`` is False, ``name`` is None.
+    If ``keep_ds`` is True but ``old_el`` has no ``ds`` attribute (thin element), ``ds`` defaults to 0.
+    When ``keep_alignment`` is True, copy dx/dy/rotation from the old element.
+    When ``keep_aperture`` is True, copy aperture_x/aperture_y from the old element.
+    """
+    nslice = getattr(old_el, "nslice", 1)
+
+    if keep_ds and hasattr(old_el, "ds"):
+        ds = old_el.ds
+    else:
+        ds = 0.0
+
+    name = None
+    if keep_name:
+        if hasattr(old_el, "has_name") and old_el.has_name:
+            name = old_el.name
+
+    if keep_alignment:
+        dx = getattr(old_el, "dx", 0.0)
+        dy = getattr(old_el, "dy", 0.0)
+        rotation = getattr(old_el, "rotation", 0.0)
+    else:
+        dx = 0.0
+        dy = 0.0
+        rotation = 0.0
+
+    if keep_aperture:
+        aperture_x = getattr(old_el, "aperture_x", 0.0)
+        aperture_y = getattr(old_el, "aperture_y", 0.0)
+    else:
+        aperture_x = 0.0
+        aperture_y = 0.0
+
+    return cls(
+        ds=ds,
+        dx=dx,
+        dy=dy,
+        rotation=rotation,
+        aperture_x=aperture_x,
+        aperture_y=aperture_y,
+        nslice=nslice,
+        name=name,
+    )
 
 
 def load_file(self, filename, nslice=1):
@@ -93,29 +224,43 @@ def from_pals(self, pals_beamline, nslice=1):
 
 
 class FilteredElementsList:
-    """A selection result class for ElementsList that maintains references to original elements.
+    """Result of ``KnownElementsList.select(...)`` or chained ``.select()`` calls: a filtered
+    view of the same underlying lattice.
 
-    References to the original elements in a lattice are needed to allow modification of the original elements.
+    Indexing (``self[i]``) returns elements from the original ``KnownElementsList``; changing
+    fields on those elements modifies the lattice in place. You can narrow the filter again with
+    ``.select(...)`` (AND logic between chained calls). After ``delete``, ``replace_each``, or
+    ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
+    not be used.
     """
 
     def __init__(self, original_list, indices):
         self._original_list = original_list
-        self._indices = indices
+        self._indices = list(indices) if not isinstance(indices, list) else indices
+        self._invalidated = False
+        _registry_for(original_list).add(self)
+
+    def _require_valid(self) -> None:
+        """Raise if this view was invalidated after a lattice mutation."""
+        if self._invalidated:
+            raise RuntimeError(FILTERED_ELEMENTS_LIST_INVALID_MSG)
 
     def __getitem__(self, key):
+        self._require_valid()
         if isinstance(key, int):
             return self._original_list[self._indices[key]]
         elif isinstance(key, slice):
-            # Return a new FilteredElementsList with sliced indices
             sliced_indices = self._indices[key]
             return FilteredElementsList(self._original_list, sliced_indices)
         else:
             raise TypeError(f"Invalid key type: {type(key)}")
 
     def __len__(self):
+        self._require_valid()
         return len(self._indices)
 
     def __iter__(self):
+        self._require_valid()
         for i in self._indices:
             yield self._original_list[i]
 
@@ -170,6 +315,7 @@ class FilteredElementsList:
                 name=r"quad\d+"
             )  # Filter quads by regex pattern
         """
+        self._require_valid()
         # Apply filtering directly to the indices we already have
         if kind is not None or name is not None:
             # Validate parameters
@@ -187,12 +333,107 @@ class FilteredElementsList:
         # If no filtering criteria provided, return all current elements
         return FilteredElementsList(self._original_list, self._indices)
 
+    def delete(self) -> None:
+        """Remove selected elements from the underlying lattice. Invalidates this and all other
+        live selections on the same lattice. Returns None."""
+        self._require_valid()
+        original = self._original_list
+        to_remove = set(self._indices)
+        if not to_remove:
+            _invalidate_all_registered_views(original)
+            return None
+        n = len(original)
+        # Clone kept elements before clear(); clear() destroys C++ objects in the list.
+        new_elems = [
+            _clone_element(original[i]) for i in range(n) if i not in to_remove
+        ]
+        _commit_lattice_rebuild(original, new_elems)
+        return None
+
+    def replace_each(self, element, *, keep_name=True, keep_ds=False):
+        """Replace each selected element with a copy of ``element``, optionally keeping name and
+        ``ds`` from the replaced element (``keep_ds`` defaults to False). Invalidates prior views;
+        returns a new selection over the same indices."""
+        self._require_valid()
+        original = self._original_list
+        indices = self._indices
+        if not indices:
+            _invalidate_all_registered_views(original)
+            return FilteredElementsList(original, [])
+
+        n = len(original)
+        idx_set = set(indices)
+        new_row = [None] * n
+        for i in range(n):
+            if i not in idx_set:
+                new_row[i] = _clone_element(original[i])
+                continue
+            old_el = original[i]
+            new_el = _clone_element(element)
+            if keep_name:
+                if hasattr(old_el, "has_name") and old_el.has_name:
+                    new_el.name = old_el.name
+            if keep_ds and hasattr(old_el, "ds"):
+                new_el.ds = old_el.ds
+            new_row[i] = new_el
+
+        _commit_lattice_rebuild(original, new_row)
+        return FilteredElementsList(original, list(indices))
+
+    def replace_with_drifts(
+        self, *, model="match", keep_alignment=True, keep_aperture=False
+    ):
+        """Replace each selected element with a drift of the matching physics family.
+
+        When ``model="match"``: ``Exact*`` elements become ``ExactDrift``, ``Chr*`` elements
+        become ``ChrDrift``, and all other (linear) elements become ``Drift``. When
+        ``model`` is ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses
+        that drift model. Names and segment length ``ds`` are always taken from the replaced
+        element.
+
+        By default, alignment errors (dx, dy, rotation) are preserved and apertures are
+        cleared. Use ``keep_alignment=False`` to zero alignment errors, or
+        ``keep_aperture=True`` to preserve aperture_x/aperture_y."""
+        self._require_valid()
+        original = self._original_list
+        indices = self._indices
+        if not indices:
+            _invalidate_all_registered_views(original)
+            return FilteredElementsList(original, [])
+
+        if model != "match" and model not in _DRIFT_MODEL_CLASSES:
+            raise ValueError(
+                f"model must be 'match' or one of {sorted(_DRIFT_MODEL_CLASSES)}, got {model!r}"
+            )
+
+        n = len(original)
+        idx_set = set(indices)
+        new_row = [None] * n
+        for i in range(n):
+            if i not in idx_set:
+                new_row[i] = _clone_element(original[i])
+                continue
+            old_el = original[i]
+            cls = _drift_class_for_replace_with_drifts(model, old_el)
+            new_row[i] = _make_drift_from_old(
+                cls,
+                old_el,
+                keep_name=True,
+                keep_ds=True,
+                keep_alignment=keep_alignment,
+                keep_aperture=keep_aperture,
+            )
+
+        _commit_lattice_rebuild(original, new_row)
+        return FilteredElementsList(original, list(indices))
+
     def get_kinds(self) -> list[type]:
         """Get all unique element kinds in the filtered list.
 
         Returns:
             list[type]: List of unique element types (sorted by name).
         """
+        self._require_valid()
         return get_kinds(self)
 
     def count_by_kind(self, kind_pattern) -> int:
@@ -207,6 +448,7 @@ class FilteredElementsList:
         Returns:
             int: Number of elements of the specified kind.
         """
+        self._require_valid()
         return count_by_kind(self, kind_pattern)
 
     def has_kind(self, kind_pattern) -> bool:
@@ -221,12 +463,15 @@ class FilteredElementsList:
         Returns:
             bool: True if at least one element of the specified kind exists.
         """
+        self._require_valid()
         return has_kind(self, kind_pattern)
 
     def __repr__(self):
+        self._require_valid()
         return f"FilteredElementsList({len(self)} elements)"
 
     def __str__(self):
+        self._require_valid()
         return f"FilteredElementsList({len(self)} elements)"
 
 
@@ -521,6 +766,233 @@ def has_kind(self, kind_pattern) -> bool:
     return False
 
 
+import math
+
+
+def _filter_kwargs(d: dict) -> dict:
+    """Filter a to_dict() result into valid constructor kwargs.
+
+    Removes 'type' (not a constructor argument) and 'ds' when zero
+    (thin elements don't accept ds).
+
+    Args:
+        d: Dictionary from element.to_dict()
+
+    Returns:
+        dict: Filtered dictionary suitable for element constructor
+    """
+    return {k: v for k, v in d.items() if k != "type" and (k != "ds" or v != 0.0)}
+
+
+def _rad2deg(radians: float) -> float:
+    """Convert radians to degrees."""
+    return radians * 180.0 / math.pi
+
+
+def _element_from_dict(d: dict):
+    """Create an element from its to_dict() representation.
+
+    Args:
+        d: Dictionary from element.to_dict(), must include 'type' key
+
+    Returns:
+        Element instance of the appropriate type
+
+    Raises:
+        KeyError: If 'type' key is missing
+        AttributeError: If element type is not found in elements module
+    """
+    element_type = d["type"]
+    kwargs = _filter_kwargs(d)
+    element_class = getattr(elements, element_type)
+    return element_class(**kwargs)
+
+
+def to_dicts(self) -> list[dict]:
+    """Serialize the lattice to a list of dictionaries.
+
+    Each element is converted to a dictionary using its to_dict() method.
+    The resulting list can be serialized to JSON, YAML, or other formats.
+
+    Returns:
+        list[dict]: List of element dictionaries
+
+    Example:
+        .. code-block:: python
+
+            import json
+            from impactx import elements
+
+            lattice = elements.KnownElementsList(
+                [
+                    elements.Drift(ds=1.0, name="d1"),
+                    elements.Quad(ds=0.5, k=2.0, name="q1"),
+                ]
+            )
+
+            # Serialize to JSON
+            data = lattice.to_dicts()
+            with open("lattice.impactx.json", "w") as f:
+                json.dump(data, f, indent=2)
+
+    Note:
+        Elements with matrix parameters (LinearMap, SpinMap) contain
+        AMReX SmallMatrix objects that require custom JSON encoding.
+        Use :func:`impactx.extensions.ImpactXEncoder` for JSON serialization
+        of such elements.
+    """
+    # simple implementation:
+    # return [el.to_dict() for el in self]
+
+    # work-around for ExactSbend, PlaneXYRot, PRot, ThinDipole .to_dict() returning radians not degrees
+    results = []
+    for el in self:
+        if type(el) in [
+            elements.ExactSbend,
+            elements.PlaneXYRot,
+            elements.PRot,
+            elements.ThinDipole,
+        ]:
+            results.append(el.to_dict(in_degrees=True))
+        else:
+            results.append(el.to_dict())
+    return results
+
+
+def _format_value(v):
+    """Format a value for Python code generation.
+
+    Converts AMReX SmallMatrix objects to lists.
+    Returns a tuple of (formatted_value, matrix_dims) where matrix_dims
+    is (rows, cols) from the SmallMatrix type, or None otherwise.
+    """
+    if hasattr(v, "to_numpy") and hasattr(v, "row_size"):
+        rows = v.row_size
+        cols = v.column_size
+        arr = v.to_numpy()
+        # Column vectors (Nx1) use flat list, matrices use nested list
+        if cols == 1:
+            return arr.flatten().tolist(), (rows, cols)
+        else:
+            return arr.T.tolist(), (rows, cols)
+    return v, None
+
+
+def to_py(self) -> str:
+    """Generate Python code that recreates this lattice.
+
+    Returns a string containing a complete Python script with imports
+    and a ``get_lattice()`` function that returns a KnownElementsList
+    with all elements.
+
+    Returns:
+        str: Python source code
+
+    Example:
+        .. code-block:: python
+
+            from impactx import elements
+
+            lattice = elements.KnownElementsList(
+                [
+                    elements.Drift(ds=1.0, name="d1"),
+                    elements.Quad(ds=0.5, k=2.0, name="q1"),
+                ]
+            )
+
+            # Generate Python code
+            code = lattice.to_py()
+            print(code)
+
+            # Save to file
+            with open("my_lattice.py", "w") as f:
+                f.write(code)
+
+            # Later, use the generated file:
+            # from my_lattice import get_lattice
+            # lattice = get_lattice()
+    """
+    # Check if we need amrex import for matrix types
+    needs_amrex = False
+    for d in self.to_dicts():
+        kwargs = _filter_kwargs(d)
+        for v in kwargs.values():
+            if hasattr(v, "to_numpy") and hasattr(v, "row_size"):
+                needs_amrex = True
+                break
+        if needs_amrex:
+            break
+
+    lines = ["from impactx import elements"]
+    if needs_amrex:
+        lines.append("import amrex.space3d as amr")
+
+    lines.extend(
+        [
+            "",
+            "",
+            "def get_lattice():",
+            '    """Return the lattice as a KnownElementsList."""',
+            "    lattice = elements.KnownElementsList()",
+            "    lattice.extend([",
+        ]
+    )
+
+    for d in self.to_dicts():
+        element_type = d["type"]
+        kwargs = _filter_kwargs(d)
+        formatted_parts = []
+
+        for k, v in kwargs.items():
+            formatted_v, matrix_dims = _format_value(v)
+            if matrix_dims:
+                rows, cols = matrix_dims
+                matrix_cls = f"amr.SmallMatrix_{rows}x{cols}_F_SI1_double"
+                formatted_parts.append(f"{k}={matrix_cls}({repr(formatted_v)})")
+            else:
+                formatted_parts.append(f"{k}={repr(formatted_v)}")
+
+        args_str = ", ".join(formatted_parts)
+        lines.append(f"        elements.{element_type}({args_str}),")
+
+    lines.append("    ])")
+    lines.append("    return lattice")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+def from_dicts(self, dicts: list[dict]):
+    """Load and append elements from a list of dictionaries.
+
+    Each dictionary should be in the format produced by element.to_dict(),
+    containing at minimum a 'type' key identifying the element class.
+
+    Args:
+        dicts: List of element dictionaries
+
+    Example:
+        .. code-block:: python
+
+            import json
+            from impactx import elements
+
+            # Load from JSON
+            with open("lattice.impactx.json") as f:
+                data = json.load(f)
+
+            lattice = elements.KnownElementsList()
+            lattice.from_dicts(data)
+
+    Note:
+        Elements with matrix parameters (LinearMap, SpinMap) require
+        the matrices to be AMReX SmallMatrix objects. Use
+        :func:`impactx.extensions.matrix_hook` as a JSON object_hook
+        when loading such elements.
+    """
+    self.extend([_element_from_dict(d) for d in dicts])
+
+
 def register_KnownElementsList_extension(kel):
     """KnownElementsList helper methods"""
     from ..plot.Survey import plot_survey
@@ -529,6 +1001,11 @@ def register_KnownElementsList_extension(kel):
     kel.from_pals = from_pals
     kel.load_file = load_file
     kel.plot_survey = plot_survey
+
+    # Serialization methods
+    kel.to_dicts = to_dicts
+    kel.to_py = to_py
+    kel.from_dicts = from_dicts
 
     # Enhanced element selection methods
     kel.select = select

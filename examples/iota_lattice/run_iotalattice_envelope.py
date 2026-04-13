@@ -22,7 +22,7 @@ sim.init_grids()
 kin_energy_MeV = 2.5
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch

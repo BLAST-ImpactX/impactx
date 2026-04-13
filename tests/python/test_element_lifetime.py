@@ -37,7 +37,7 @@ def run_minimal_simulation(sim, lattice_elements):
     bunch_charge_C = 1.0e-9
     npart = 100
 
-    ref = sim.particle_container().ref_particle()
+    ref = sim.particle_container().push_ref_particle()
     ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
 
     distr = distribution.Waterbag(

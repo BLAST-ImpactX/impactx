@@ -25,7 +25,7 @@ kin_energy_MeV = 250.0  # reference energy
 
 #   reference particle
 pc = sim.particle_container()
-ref = pc.ref_particle()
+ref = pc.push_ref_particle()
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   load particle bunch from file

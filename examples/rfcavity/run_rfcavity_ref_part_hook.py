@@ -25,7 +25,7 @@ sim.init_grids()
 kin_energy_MeV = 230.0  # reference energy
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 # design the accelerator lattice
@@ -152,7 +152,7 @@ def hook_before_element(sim):
     element = sim.tracking_element
     if element.name == "rf":
         beam = sim.particle_container()
-        ref = beam.ref_particle()
+        ref = beam.push_ref_particle()
         beta = ref.beta
         f = element.freq
         L = element.ds

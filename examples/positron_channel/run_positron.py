@@ -25,7 +25,7 @@ bunch_charge_C = 190.0e-12  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("positron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch

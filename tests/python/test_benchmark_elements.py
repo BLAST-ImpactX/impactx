@@ -61,7 +61,7 @@ def sim(request):
             bunch_charge_C = 1.0e-9  # used with space charge
 
             #   reference particle
-            ref = self.sim.particle_container().ref_particle()
+            ref = self.sim.particle_container().push_ref_particle()
             ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
             #   particle bunch

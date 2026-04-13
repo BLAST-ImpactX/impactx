@@ -28,7 +28,7 @@ gyromagnetic_anomaly = 0.00115965218062  # value for an electron
 npart = 100000  # number of macro particles
 
 # set reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch

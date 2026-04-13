@@ -26,7 +26,7 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
@@ -113,16 +113,16 @@ def my_ref_drift(pge, refpart):
 
 pge1 = elements.Programmable(name="d1")
 pge1.nslice = ns
-pge1.beam_particles = lambda pti, refpart: my_drift(pge1, pti, refpart)
-pge1.ref_particle = lambda refpart: my_ref_drift(pge1, refpart)
+pge1.push_beam_particles = lambda pti, refpart: my_drift(pge1, pti, refpart)
+pge1.push_ref_particle = lambda refpart: my_ref_drift(pge1, refpart)
 pge1.ds = 0.25
 
 # attention: assignment is a reference for pge2 = pge1
 
 pge2 = elements.Programmable(name="d2")
 pge2.nslice = ns
-pge2.beam_particles = lambda pti, refpart: my_drift(pge2, pti, refpart)
-pge2.ref_particle = lambda refpart: my_ref_drift(pge2, refpart)
+pge2.push_beam_particles = lambda pti, refpart: my_drift(pge2, pti, refpart)
+pge2.push_ref_particle = lambda refpart: my_ref_drift(pge2, refpart)
 pge2.ds = 0.5
 
 # add beam diagnostics

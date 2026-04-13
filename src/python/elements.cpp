@@ -1868,19 +1868,54 @@ void init_elements(py::module& m)
               ) { p.m_push = std::move(new_hook); },
               "hook for push of whole container (pc, step, period)"
         )
-        .def_property("beam_particles",
-              [](Programmable & p) { return p.m_beam_particles; },
-              [](Programmable & p,
-                 std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> new_hook
-              ) { p.m_beam_particles = std::move(new_hook); },
-              "hook for beam particles (pti, RefPart)"
+        .def_property("push_beam_particles",
+            [](Programmable & p) { return p.m_beam_particles; },
+            [](Programmable & p,
+            std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> new_hook
+            ) { p.m_beam_particles = std::move(new_hook); },
+            "hook for pushing beam particles, called per tile (pti, RefPart).\n"
+            "Note: this is called multiple times per element pass (once per AMReX tile).\n"
+            "To access the full beam for diagnostics, use sim.particle_container() instead."
         )
+        // Deprecated alias for backward compatibility
+        .def_property("beam_particles",
+            [](Programmable & p) {
+                PyErr_WarnEx(PyExc_DeprecationWarning,
+                    "beam_particles is deprecated, use push_beam_particles instead.", 1);
+                return p.m_beam_particles;
+            },
+            [](Programmable & p,
+            std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> new_hook
+            ) {
+                PyErr_WarnEx(PyExc_DeprecationWarning,
+                    "beam_particles is deprecated, use push_beam_particles instead.", 1);
+                p.m_beam_particles = std::move(new_hook);
+            },
+            "Deprecated: use push_beam_particles instead."
+        )
+        .def_property("push_ref_particle",
+            [](Programmable & p) { return p.m_ref_particle; },
+            [](Programmable & p,
+            std::function<void(RefPart &)> new_hook
+            ) { p.m_ref_particle = std::move(new_hook); },
+            "hook for pushing the reference particle (RefPart).\n"
+            "Note: this is called once per element pass, before beam_particles."
+        )
+        // Deprecated alias for backward compatibility
         .def_property("ref_particle",
-              [](Programmable & p) { return p.m_ref_particle; },
-              [](Programmable & p,
-                 std::function<void(RefPart &)> new_hook
-              ) { p.m_ref_particle = std::move(new_hook); },
-              "hook for reference particle (RefPart)"
+            [](Programmable & p) {
+                PyErr_WarnEx(PyExc_DeprecationWarning,
+                    "ref_particle is deprecated, use push_ref_particle instead.", 1);
+                return p.m_ref_particle;
+            },
+            [](Programmable & p,
+            std::function<void(RefPart &)> new_hook
+            ) {
+                PyErr_WarnEx(PyExc_DeprecationWarning,
+                    "ref_particle is deprecated, use push_ref_particle instead.", 1);
+                p.m_ref_particle = std::move(new_hook);
+            },
+            "Deprecated: use push_ref_particle instead."
         )
     ;
 

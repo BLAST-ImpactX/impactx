@@ -39,7 +39,7 @@ def validate_fodo(beam):
 
     # in situ calculate the reduced beam characteristics
     rbc = beam.beam_moments()
-    ref = beam.ref_particle()
+    ref = beam.push_ref_particle()
 
     print("charge=", rbc["charge_C"])
     assert np.allclose(
@@ -110,7 +110,7 @@ def test_impactx_nofile():
     npart = 10000
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
+    ref = sim.particle_container().push_ref_particle()
     ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
@@ -188,7 +188,7 @@ def test_impactx_noparticles():
     kin_energy_MeV = 2.0e3
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
+    ref = sim.particle_container().push_ref_particle()
     ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
     #   particle bunch: init intentionally missing
 

@@ -36,7 +36,7 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 100000
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   problem parameters

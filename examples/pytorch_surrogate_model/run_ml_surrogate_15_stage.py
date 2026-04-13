@@ -137,7 +137,7 @@ bunch_charge_C = 10.0e-15  # used with space charge
 
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.particle_container().push_ref_particle()
 ref.set_species("electron").set_kin_energy_MeV(energy_MeV)
 ref.z = ebeam_lpa_z0
 
@@ -170,7 +170,7 @@ class LPASurrogateStage(elements.Programmable):
         self.ds = surrogate_length
 
     def surrogate_push(self, pc, step, period):
-        ref_part = pc.ref_particle()
+        ref_part = pc.push_ref_particle()
         ref_z_i = ref_part.z
         ref_z_i_LPA = ref_z_i - self.stage_start
         ref_z_f = ref_z_i + self.surrogate_length

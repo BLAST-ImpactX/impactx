@@ -1,0 +1,5 @@
+q: hkicker, l=0.0, kick=0.07;
+
+machine: sequence, refer=entry,l=1.0e-6;
+q, at=0.0;
+endsequence;

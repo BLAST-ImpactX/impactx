@@ -1,0 +1,6 @@
+!q: rfcavity, l=2.998, volt=3.38965e-07, lag=0.0, freq=55.43860156259074;
+q: rfcavity, l=0, volt=3.38965e-07, lag=0.0, freq=55.43860156259074;
+
+machine: sequence, refer=entry,l=1.0e-6;
+q, at=0.0;
+endsequence;

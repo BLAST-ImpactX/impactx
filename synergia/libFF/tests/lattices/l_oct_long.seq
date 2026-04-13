@@ -1,0 +1,5 @@
+q: octupole, l=1.0, k3=0.3, k3s=0.1, tilt=0.15;
+
+machine: sequence, refer=entry,l=1.0;
+q, at=0.0;
+endsequence;

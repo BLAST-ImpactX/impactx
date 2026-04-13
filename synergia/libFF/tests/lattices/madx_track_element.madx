@@ -1,0 +1,46 @@
+call, file=element.seq;
+
+set,format=22.16g;
+
+pc :=1.5;
+
+t_offset = 1.0e-3;
+s2o2 = sqrt(2.0)/2.0;
+s3o2 = sqrt(3.0)/2.0;
+
+dp = 0.05;
+xp = 0.01;
+yp = 0.015;
+cdt = 0.01;
+
+e0 = sqrt(pc^ 2 + pmass^2);
+
+beam, particle=proton, pc=pc;
+use,sequence=machine;
+
+ptc_create_universe;
+ptc_create_layout,model=1,method=6,nst=10,time=true,exact;
+
+ptc_start, x=t_offset, y=0.0, px=xp, py=yp, t=cdt, pt=dp;
+ptc_start, x=t_offset*s3o2, y=t_offset*0.5, px=xp, py=yp, t=cdt, pt=dp;
+ptc_start, x=t_offset*s2o2, y=t_offset*s2o2, px=xp, py=yp, t=cdt, pt=dp;
+ptc_start, x=t_offset*0.5, y=t_offset*s3o2, px=xp, py=yp, t=cdt, pt=dp;
+
+ptc_start, x=0.0, y=t_offset, pt=0.00;
+ptc_start, x=-t_offset*0.5, y=t_offset*s3o2, pt=0.00;
+ptc_start, x=-t_offset*s2o2, y=t_offset*s2o2, pt=0.00;
+ptc_start, x=-t_offset*s3o2, y=t_offset*0.5, pt=0.00;
+
+ptc_start, x=-t_offset, y=0.0, pt=0.00;
+ptc_start, x=-t_offset*s3o2, y=-t_offset*0.5, pt=0.00;
+ptc_start, x=-t_offset*s2o2, y=-t_offset*s2o2, pt=0.00;
+ptc_start, x=-t_offset*0.5, y=-t_offset*s3o2, pt=0.00;
+
+ptc_start, x=0.0, y=-t_offset, pt=0.00;
+ptc_start, x=t_offset*0.5, y=-t_offset*s3o2, pt=0.00;
+ptc_start, x=t_offset*s2o2, y=-t_offset*s2o2, pt=0.00;
+ptc_start, x=t_offset*s3o2, y=-t_offset*0.5, pt=0.00;
+
+ptc_track, closed_orbit=false,icase=6,maxaper={10.0,10.0,10.0,10.0,10.0,10.0},file=madx_track_element.txt, onetable;
+ptc_track_end;
+ptc_end;

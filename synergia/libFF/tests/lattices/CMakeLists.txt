@@ -1,0 +1,83 @@
+copy_file(mpole_k1.seq test_madx_multipoles)
+copy_file(mpole_k1_tilt.seq test_madx_multipoles)
+copy_file(mpole_k1s.seq test_madx_multipoles)
+
+copy_file(mpole_k2.seq test_madx_multipoles)
+copy_file(mpole_k2_tilt.seq test_madx_multipoles)
+copy_file(mpole_k2s.seq test_madx_multipoles)
+
+copy_file(mpole_k3.seq test_madx_multipoles)
+copy_file(mpole_k3_tilt.seq test_madx_multipoles)
+copy_file(mpole_k3s.seq test_madx_multipoles)
+
+copy_file(mpole_k4.seq test_madx_multipoles)
+copy_file(mpole_k4_tilt.seq test_madx_multipoles)
+copy_file(mpole_k4s.seq test_madx_multipoles)
+
+copy_file(mpole_k5.seq test_madx_multipoles)
+copy_file(mpole_k5_tilt.seq test_madx_multipoles)
+copy_file(mpole_k5s.seq test_madx_multipoles)
+
+copy_file(cfsbend_dipole.seq test_madx_multipoles)
+copy_file(cfsbend_dipole_skew.seq test_madx_multipoles)
+
+copy_file(cfsbend_sext.seq test_madx_multipoles)
+copy_file(cfsbend_sext_skew.seq test_madx_multipoles)
+
+copy_file(madx_mpole_k1.out test_madx_multipoles)
+copy_file(madx_mpole_k1_tilt.out test_madx_multipoles)
+copy_file(madx_mpole_k1s.out test_madx_multipoles)
+
+copy_file(madx_mpole_k2.out test_madx_multipoles)
+copy_file(madx_mpole_k2_tilt.out test_madx_multipoles)
+copy_file(madx_mpole_k2s.out test_madx_multipoles)
+
+copy_file(madx_mpole_k3.out test_madx_multipoles)
+copy_file(madx_mpole_k3_tilt.out test_madx_multipoles)
+copy_file(madx_mpole_k3s.out test_madx_multipoles)
+
+copy_file(madx_mpole_k4.out test_madx_multipoles)
+copy_file(madx_mpole_k4_tilt.out test_madx_multipoles)
+copy_file(madx_mpole_k4s.out test_madx_multipoles)
+
+copy_file(madx_mpole_k5.out test_madx_multipoles)
+copy_file(madx_mpole_k5_tilt.out test_madx_multipoles)
+copy_file(madx_mpole_k5s.out test_madx_multipoles)
+
+copy_file(madx_cfsbend_dipole.out test_madx_multipoles)
+copy_file(madx_cfsbend_dipole_skew.out test_madx_multipoles)
+
+copy_file(madx_cfsbend_sext.out test_madx_multipoles)
+copy_file(madx_cfsbend_sext_skew.out test_madx_multipoles)
+
+copy_file(l_drift.seq test_madx_elements)
+copy_file(l_rfc.seq test_madx_elements)
+copy_file(l_quad.seq test_madx_elements)
+copy_file(l_sext.seq test_madx_elements)
+copy_file(l_oct.seq test_madx_elements)
+copy_file(l_quad_long.seq test_madx_elements)
+copy_file(l_sext_long.seq test_madx_elements)
+copy_file(l_oct_long.seq test_madx_elements)
+copy_file(l_kicker.seq test_madx_elements)
+copy_file(l_hkicker.seq test_madx_elements)
+copy_file(l_vkicker.seq test_madx_elements)
+copy_file(l_kicker_long.seq test_madx_elements)
+copy_file(l_hkicker_long.seq test_madx_elements)
+copy_file(l_vkicker_long.seq test_madx_elements)
+copy_file(l_solenoid.seq test_madx_elements)
+
+copy_file(madx_drift.out test_madx_elements)
+copy_file(madx_rfc.out test_madx_elements)
+copy_file(madx_quad.out test_madx_elements)
+copy_file(madx_sext.out test_madx_elements)
+copy_file(madx_oct.out test_madx_elements)
+copy_file(madx_quad_long.out test_madx_elements)
+copy_file(madx_sext_long.out test_madx_elements)
+copy_file(madx_oct_long.out test_madx_elements)
+copy_file(madx_kicker.out test_madx_elements)
+copy_file(madx_hkicker.out test_madx_elements)
+copy_file(madx_vkicker.out test_madx_elements)
+copy_file(madx_kicker_long.out test_madx_elements)
+copy_file(madx_hkicker_long.out test_madx_elements)
+copy_file(madx_vkicker_long.out test_madx_elements)
+copy_file(madx_solenoid.out test_madx_elements)

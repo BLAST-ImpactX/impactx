@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# If CLANG_FORMAT_EXE exists in the environment,
+# it is used instead of 'clang-format'.
+CLANG_FORMAT_EXECUTABLE=${CLANG_FORMAT_EXE:-clang-format}
+
+if ! [ -x "$(command -v ${CLANG_FORMAT_EXECUTABLE})" ]; then
+  echo "***   ${CLANG_FORMAT_EXECUTABLE} could not be found."
+  exit 1
+fi
+
+CLANG_FORMAT_VERSION="$(${CLANG_FORMAT_EXECUTABLE} --version)"
+CLANG_FORMAT_MAJOR_VERSION=$(echo "${CLANG_FORMAT_VERSION}" | sed 's/^[^0-9]*\([0-9]*\).*$/\1/g')
+CLANG_FORMAT_MINOR_VERSION=$(echo "${CLANG_FORMAT_VERSION}" | sed 's/^[^0-9]*[0-9]*\.\([0-9]*\).*$/\1/g')
+
+if [ "${CLANG_FORMAT_MAJOR_VERSION}" -ne 16 ] || [ "${CLANG_FORMAT_MINOR_VERSION}" -ne 0 ]; then
+  echo "***   This indent script requires clang-format version 16.0,"
+  echo "***   but version ${CLANG_FORMAT_MAJOR_VERSION}.${CLANG_FORMAT_MINOR_VERSION} was found instead."
+  exit 1
+fi
+
+BASE_DIR="$(git rev-parse --show-toplevel)"
+cd $BASE_DIR
+if [ ! -f "scripts/apply-clang-format" ]; then
+  echo "***   The indenting script must be executed from within the Kokkos clone!"
+  exit 1
+fi
+
+echo "***   Running clang-format"
+git ls-files | grep "\.\(hpp\|cpp\|cppm\|h\|cc\)$" | xargs ${CLANG_FORMAT_EXECUTABLE} -i
+echo "***   Running clang-format - done"
+
+echo "***   Running trailing whitespaces check"
+# BSD sed does not have a --version flag, while GNU sed does.
+if sed --version >/dev/null 2>&1; then
+  # GNU
+  git ls-files | grep "\.\(md\)$" | xargs sed -i -r 's/[[:blank:]]+$//g'
+else
+  # BSD
+  git ls-files | grep "\.\(md\)$" | xargs sed -i '' -r 's/[[:blank:]]+$//g'
+fi
+echo "***   Running trailing whitespaces check - done"
+
+# Check that we do not introduce any file with the old copyright
+echo "***   Running copyright"
+./scripts/check-copyright
+echo "***   Running copyright - done"

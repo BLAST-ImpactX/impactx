@@ -1,0 +1,22 @@
+#ifndef SYNERGIA3_VERSION_H_
+#define SYNERGIA3_VERSION_H_
+
+#include <string>
+
+#cmakedefine SYNERGIA3_VERSION_YEAR @SYNERGIA3_VERSION_YEAR@
+#cmakedefine SYNERGIA3_VERSION_MONTH @SYNERGIA3_VERSION_MONTH@
+#cmakedefine SYNERGIA3_VERSION_DAY @SYNERGIA3_VERSION_DAY@
+#cmakedefine SYNERGIA3_GIT_HASH "@SYNERGIA3_GIT_HASH@"
+
+namespace synergia_version {
+
+    constexpr uint16_t synergia_version_year = SYNERGIA3_VERSION_YEAR;
+
+    constexpr uint16_t synergia_version_month = SYNERGIA3_VERSION_MONTH;
+
+    constexpr uint16_t synergia_version_day = SYNERGIA3_VERSION_DAY;
+
+    // constexpr std::string is a C++20 feature!
+    const std::string synergia_git_hash = SYNERGIA3_GIT_HASH;
+}
+#endif /* SYNERGIA3_VERSION_H_ */

@@ -1,0 +1,35 @@
+! use madx to print the map of the dipedge.
+
+set, format=22.16g;
+! print map
+
+dr1: drift, l=1.0;
+
+qf1: multipole, knl={0, 1/7};
+qd1: multipole, knl={0, -1/7};
+dedge30: dipedge,e1:= 0,h:= 1.216203238,hgap:= 0.029,fint:= 0.5;
+
+channel: sequence, l=1.0;
+elem1: dr1, at=0.5;
+endsequence;
+
+fodo: sequence, l=20;
+dedge30, at=0.0;
+f1: qf1, at=0.0;
+f2: qd1, at=10.0;
+endsequence;
+
+beam, particle=proton, energy=0.00250+pmass;
+
+use, sequence=fodo;
+select, flag=twiss, clear;
+
+select, flag=twiss, column=name, pos, betx, bety;
+twiss, file=twiss.out;
+
+select, flag=mymap, clear;
+select, flag=mymap, class=dipedge, column=name, r11, r12, r13, r14, r21, r22, r23, r24, r31,r32, r33, r34, r41, r42, r43, r44;
+!select, flag=mymap, column=name, r11, r12, r13, r14, r21, r22, r23, r24, r31,r32, r33, r34, r41, r42, r43, r44;
+twiss, sectormap, sectortable=mymap, sectorfile=mymap.out;
+
+stop;

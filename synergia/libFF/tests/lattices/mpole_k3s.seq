@@ -1,0 +1,6 @@
+mp_str = 0.1;
+mpole: multipole, ksl={0.0, 0.0, 0.0, mp_str};
+
+machine: sequence, refer=entry,l=1.0e-6;
+mpole, at=0.0;
+endsequence;

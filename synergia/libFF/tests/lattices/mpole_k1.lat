@@ -1,0 +1,3 @@
+mp_str = 0.1;
+mpole: multipole, k1l=mp_str;
+machine: line=(mpole);

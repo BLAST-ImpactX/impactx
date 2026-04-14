@@ -22,10 +22,13 @@ namespace impactx
     /** this is the 6x6 covariance matrix */
     using CovarianceMatrix = Map6x6;
 
-    /** Return the 6x6 skew-symmetric matrix Omega (symplectic form)
+    /** Return the 6x6 skew-symmetric symplectic form
      *
-     * Omega = diag([[0,1],[-1,0]], [[0,1],[-1,0]], [[0,1],[-1,0]])
+     * diag([[0,1],[-1,0]], [[0,1],[-1,0]], [[0,1],[-1,0]])
      * for the phase space ordering (x, px, y, py, t, pt).
+     *
+     * Note: commonly referred to as J in accelerator physics, but
+     * properly called Omega to avoid confusion with complex structures.
      *
      * @see https://en.wikipedia.org/wiki/Symplectic_matrix
      */

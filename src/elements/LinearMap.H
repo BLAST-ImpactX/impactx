@@ -81,13 +81,13 @@ namespace impactx::elements
         {
             using namespace amrex::literals;
 
-            Map6x6 const Omega = impactx::symplectic_form();
+            Map6x6 const J = impactx::symplectic_form();
             Map6x6 const RT = m_transport_map.transpose();
-            Map6x6 const check = RT * Omega * m_transport_map;
+            Map6x6 const check = RT * J * m_transport_map;
             amrex::ParticleReal max_err = 0_prt;
             for (int i = 1; i <= 6; ++i) {
                 for (int j = 1; j <= 6; ++j) {
-                    amrex::ParticleReal const err = std::abs(check(i,j) - Omega(i,j));
+                    amrex::ParticleReal const err = std::abs(check(i,j) - J(i,j));
                     max_err = std::max(max_err, err);
                 }
             }

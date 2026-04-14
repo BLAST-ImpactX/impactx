@@ -2750,8 +2750,8 @@ void init_elements(py::module& m)
         )
         .def_property_readonly("symplectic", &LinearMap::symplectic,
             "Check if the transport map is symplectic.\n\n"
-            "A matrix R is symplectic if R^T Omega R = Omega,\n"
-            "where Omega is the standard 6x6 symplectic form."
+            "A matrix R is symplectic if R^T J R = J, where J is the\n"
+            "standard 6x6 skew-symmetric symplectic form (also called Omega)."
         )
      ;
      register_push(py_LinearMap);

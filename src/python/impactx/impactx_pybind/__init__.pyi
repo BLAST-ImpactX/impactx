@@ -77,11 +77,13 @@ class CoordSystem:
     def __getstate__(self) -> int: ...
     def __hash__(self) -> int: ...
     def __index__(self) -> int: ...
-    def __init__(self, value: typing.SupportsInt) -> None: ...
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     def __int__(self) -> int: ...
     def __ne__(self, other: typing.Any) -> bool: ...
     def __repr__(self) -> str: ...
-    def __setstate__(self, state: typing.SupportsInt) -> None: ...
+    def __setstate__(
+        self, state: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     def __str__(self) -> str: ...
     @property
     def name(self) -> str: ...
@@ -96,24 +98,26 @@ class Envelope:
     def __init__(
         self,
         arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        arg1: typing.SupportsFloat,
+        arg1: typing.SupportsFloat | typing.SupportsIndex,
     ) -> None: ...
     @property
     def beam_intensity(self) -> float: ...
     @beam_intensity.setter
-    def beam_intensity(self, arg1: typing.SupportsFloat) -> Envelope: ...
+    def beam_intensity(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> Envelope: ...
 
 class ImpactX:
     def DistributionMap(
-        self, lev: typing.SupportsInt
+        self, lev: typing.SupportsInt | typing.SupportsIndex
     ) -> amrex.space3d.amrex_3d_pybind.DistributionMapping: ...
     def Geom(
-        self, lev: typing.SupportsInt
+        self, lev: typing.SupportsInt | typing.SupportsIndex
     ) -> amrex.space3d.amrex_3d_pybind.Geometry: ...
     def __init__(self) -> None: ...
     def add_particles(
         self,
-        bunch_charge: typing.SupportsFloat,
+        bunch_charge: typing.SupportsFloat | typing.SupportsIndex,
         distr: distribution.Empty
         | distribution.Gaussian
         | distribution.Kurth4D
@@ -123,7 +127,7 @@ class ImpactX:
         | distribution.Triangle
         | distribution.Semigaussian
         | distribution.Waterbag,
-        npart: typing.SupportsInt,
+        npart: typing.SupportsInt | typing.SupportsIndex,
         spin_distr: distribution.SpinvMF | None = None,
     ) -> None:
         """
@@ -134,7 +138,7 @@ class ImpactX:
         AMReX grid boxes.
         """
     def boxArray(
-        self, lev: typing.SupportsInt
+        self, lev: typing.SupportsInt | typing.SupportsIndex
     ) -> amrex.space3d.amrex_3d_pybind.BoxArray: ...
     def deposit_charge(self) -> None:
         """
@@ -161,7 +165,7 @@ class ImpactX:
         | distribution.Triangle
         | distribution.Semigaussian
         | distribution.Waterbag,
-        intensity: typing.SupportsFloat | None = None,
+        intensity: typing.SupportsFloat | typing.SupportsIndex | None = None,
     ) -> None:
         """
         Envelope tracking mode:Create a 6x6 covariance matrix from a distribution and then initialize the simulation for envelope tracking relative to a reference particle.
@@ -178,7 +182,9 @@ class ImpactX:
         """
         Access the beam particle container.
         """
-    def phi(self, lev: typing.SupportsInt) -> amrex.space3d.amrex_3d_pybind.MultiFab:
+    def phi(
+        self, lev: typing.SupportsInt | typing.SupportsIndex
+    ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
         """
         scalar potential per level
         """
@@ -186,12 +192,14 @@ class ImpactX:
         """
         Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
         """
-    def rho(self, lev: typing.SupportsInt) -> amrex.space3d.amrex_3d_pybind.MultiFab:
+    def rho(
+        self, lev: typing.SupportsInt | typing.SupportsIndex
+    ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
         """
         charge density per level
         """
     def space_charge_field(
-        self, lev: typing.SupportsInt, comp: str
+        self, lev: typing.SupportsInt | typing.SupportsIndex, comp: str
     ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
         """
         space charge force (vector: x,y,z) per level
@@ -215,7 +223,9 @@ class ImpactX:
         if there are unused parameters in the input.
         """
     @abort_on_unused_inputs.setter
-    def abort_on_unused_inputs(self, arg1: typing.SupportsInt) -> None: ...
+    def abort_on_unused_inputs(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def abort_on_warning_threshold(self) -> str:
         """
@@ -232,7 +242,9 @@ class ImpactX:
          as soon as it is generated.
         """
     @always_warn_immediately.setter
-    def always_warn_immediately(self, arg1: typing.SupportsInt) -> None: ...
+    def always_warn_immediately(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def blocking_factor_x(self) -> list[int]:
         """
@@ -240,7 +252,7 @@ class ImpactX:
         """
     @blocking_factor_x.setter
     def blocking_factor_x(
-        self, arg1: collections.abc.Sequence[typing.SupportsInt]
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
     ) -> None: ...
     @property
     def blocking_factor_y(self) -> list[int]:
@@ -249,7 +261,7 @@ class ImpactX:
         """
     @blocking_factor_y.setter
     def blocking_factor_y(
-        self, arg1: collections.abc.Sequence[typing.SupportsInt]
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
     ) -> None: ...
     @property
     def blocking_factor_z(self) -> list[int]:
@@ -258,7 +270,7 @@ class ImpactX:
         """
     @blocking_factor_z.setter
     def blocking_factor_z(
-        self, arg1: collections.abc.Sequence[typing.SupportsInt]
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
     ) -> None: ...
     @property
     def csr(self) -> bool:
@@ -273,7 +285,7 @@ class ImpactX:
         Number of longitudinal bins used for CSR calculations (default: 150).
         """
     @csr_bins.setter
-    def csr_bins(self, arg1: typing.SupportsInt) -> None: ...
+    def csr_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def diag_file_min_digits(self) -> int:
         """
@@ -281,7 +293,9 @@ class ImpactX:
         number appended to the diagnostic file names.
         """
     @diag_file_min_digits.setter
-    def diag_file_min_digits(self, arg1: typing.SupportsInt) -> None: ...
+    def diag_file_min_digits(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def diagnostics(self) -> bool:
         """
@@ -343,7 +357,7 @@ class ImpactX:
         Number of terms in the Taylor series retained for quantum effects (default: 1).
         """
     @isr_order.setter
-    def isr_order(self, arg1: typing.SupportsInt) -> None: ...
+    def isr_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def lattice(self) -> elements.KnownElementsList:
         """
@@ -357,7 +371,7 @@ class ImpactX:
         The maximum mesh-refinement level for the simulation.
         """
     @max_level.setter
-    def max_level(self, arg1: typing.SupportsInt) -> None: ...
+    def max_level(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def memory_profiler(self) -> bool:
         """
@@ -371,28 +385,36 @@ class ImpactX:
         The absolute tolerance with which the space-charge fields should be calculated in units of V/m^2. More specifically, the acceptable residual with which the solution can be considered converged. In general this should be left as the default, but in cases where the simulation state changes very little between steps it can occur that the initial guess for the MLMG solver is so close to the converged value that it fails to improve that solution sufficiently to reach the mlmg_relative_tolerance value.
         """
     @mlmg_absolute_tolerance.setter
-    def mlmg_absolute_tolerance(self, arg1: typing.SupportsFloat) -> None: ...
+    def mlmg_absolute_tolerance(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
     @property
     def mlmg_max_iters(self) -> bool:
         """
         Maximum number of iterations used for MLMG solver for space-charge fields calculation. In case if MLMG converges but fails to reach the desired self_fields_required_precision, this parameter may be increased.
         """
     @mlmg_max_iters.setter
-    def mlmg_max_iters(self, arg1: typing.SupportsInt) -> None: ...
+    def mlmg_max_iters(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def mlmg_relative_tolerance(self) -> bool:
         """
         The relative precision with which the electrostatic space-charge fields should be calculated. More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver. This solver can fail to reach the default precision within a reasonable time.
         """
     @mlmg_relative_tolerance.setter
-    def mlmg_relative_tolerance(self, arg1: typing.SupportsFloat) -> None: ...
+    def mlmg_relative_tolerance(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
     @property
     def mlmg_verbosity(self) -> bool:
         """
         The verbosity used for MLMG solver for space-charge fields calculation. Currently MLMG solver looks for verbosity levels from 0-5. A higher number results in more verbose output.
         """
     @mlmg_verbosity.setter
-    def mlmg_verbosity(self, arg1: typing.SupportsInt) -> None: ...
+    def mlmg_verbosity(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def n_cell(self) -> list[int]:
         """
@@ -402,7 +424,8 @@ class ImpactX:
     def n_cell(
         self,
         arg1: typing.Annotated[
-            collections.abc.Sequence[typing.SupportsInt], "FixedSize(3)"
+            collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex],
+            "FixedSize(3)",
         ],
     ) -> None: ...
     @property
@@ -412,7 +435,9 @@ class ImpactX:
         https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html.
         """
     @omp_threads.setter
-    def omp_threads(self, arg1: typing.SupportsInt | str) -> None: ...
+    def omp_threads(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex | str
+    ) -> None: ...
     @property
     def particle_lost_diagnostics_backend(self) -> str:
         """
@@ -428,14 +453,16 @@ class ImpactX:
         Whether to calculate space charge effects.
         """
     @particle_shape.setter
-    def particle_shape(self, arg1: typing.SupportsInt) -> None: ...
+    def particle_shape(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def periods(self) -> int:
         """
         The number of periods to repeat the lattice.
         """
     @periods.setter
-    def periods(self, arg1: typing.SupportsInt) -> None: ...
+    def periods(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def poisson_solver(self) -> str:
         """
@@ -450,7 +477,8 @@ class ImpactX:
         """
     @prob_relative.setter
     def prob_relative(
-        self, arg1: collections.abc.Sequence[typing.SupportsFloat]
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
     ) -> None: ...
     @property
     def slice_step_diagnostics(self) -> bool:
@@ -482,28 +510,36 @@ class ImpactX:
         Number of longitudinal bins for computing the linear charge density (default: ``129``).
         """
     @space_charge_gauss_charge_z_bins.setter
-    def space_charge_gauss_charge_z_bins(self, arg1: typing.SupportsInt) -> None: ...
+    def space_charge_gauss_charge_z_bins(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def space_charge_gauss_nint(self) -> int:
         """
         Number of steps for computing the integrals (default: ``101``).
         """
     @space_charge_gauss_nint.setter
-    def space_charge_gauss_nint(self, arg1: typing.SupportsInt) -> None: ...
+    def space_charge_gauss_nint(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def space_charge_gauss_taylor_delta(self) -> int:
         """
         Initial region for computing the integrals (default: ``0.01``).
         """
     @space_charge_gauss_taylor_delta.setter
-    def space_charge_gauss_taylor_delta(self, arg1: typing.SupportsFloat) -> None: ...
+    def space_charge_gauss_taylor_delta(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
     @property
     def space_charge_num_longitudinal_bins(self) -> int:
         """
         Number of longitudinal bins for 2.5D space charge calculation (default: ``100``).
         """
     @space_charge_num_longitudinal_bins.setter
-    def space_charge_num_longitudinal_bins(self, arg1: typing.SupportsInt) -> None: ...
+    def space_charge_num_longitudinal_bins(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
     @property
     def spin(self) -> bool:
         """
@@ -592,7 +628,7 @@ class ImpactX:
         ``0`` for silent, higher is more verbose. Default is ``1``.
         """
     @verbose.setter
-    def verbose(self, arg1: typing.SupportsInt) -> None: ...
+    def verbose(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ImpactXParConstIter(
     amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_polymorphic
@@ -601,13 +637,13 @@ class ImpactXParConstIter(
     def __init__(
         self,
         particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt,
+        level: typing.SupportsInt | typing.SupportsIndex,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
         particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt,
+        level: typing.SupportsInt | typing.SupportsIndex,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
@@ -619,13 +655,13 @@ class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_polymorp
     def __init__(
         self,
         particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt,
+        level: typing.SupportsInt | typing.SupportsIndex,
     ) -> None: ...
     @typing.overload
     def __init__(
         self,
         particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt,
+        level: typing.SupportsInt | typing.SupportsIndex,
         info: amrex.space3d.amrex_3d_pybind.MFItInfo,
     ) -> None: ...
     def pc(
@@ -645,8 +681,8 @@ class ImpactXParticleContainer(
         px: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         py: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         pt: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        qm: typing.SupportsFloat,
-        bunch_charge: typing.SupportsFloat | None = None,
+        qm: typing.SupportsFloat | typing.SupportsIndex,
+        bunch_charge: typing.SupportsFloat | typing.SupportsIndex | None = None,
         w: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
         sx: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
         sy: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
@@ -774,21 +810,27 @@ class RefPart:
         """
         Reset the reference particle
         """
-    def set_charge_qe(self, charge_qe: typing.SupportsFloat) -> RefPart:
+    def set_charge_qe(
+        self, charge_qe: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
         """
         Set reference particle charge (positive elementary charge) [q_e]
         """
     def set_gyromagnetic_anomaly(
-        self, gyromagnetic_anomaly: typing.SupportsFloat
+        self, gyromagnetic_anomaly: typing.SupportsFloat | typing.SupportsIndex
     ) -> RefPart:
         """
         Set reference particle gyromagnetic anomaly value (for spin tracking)
         """
-    def set_kin_energy_MeV(self, kin_energy_MeV: typing.SupportsFloat) -> RefPart:
+    def set_kin_energy_MeV(
+        self, kin_energy_MeV: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
         """
         Set reference particle kinetic energy [MeV]
         """
-    def set_mass_MeV(self, mass_MeV: typing.SupportsFloat) -> RefPart:
+    def set_mass_MeV(
+        self, mass_MeV: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
         """
         Set reference particle rest mass * c^2, expressed as an energy [MeV]
         """
@@ -815,7 +857,7 @@ class RefPart:
         reference charge [C]
         """
     @charge.setter
-    def charge(self, arg0: typing.SupportsFloat) -> None: ...
+    def charge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def charge_qe(self) -> float:
         """
@@ -832,7 +874,9 @@ class RefPart:
         reference particle gyromagnetic anomaly [unitless]
         """
     @gyromagnetic_anomaly.setter
-    def gyromagnetic_anomaly(self, arg0: typing.SupportsFloat) -> None: ...
+    def gyromagnetic_anomaly(
+        self, arg0: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
     @property
     def kin_energy_MeV(self) -> float:
         """
@@ -853,7 +897,7 @@ class RefPart:
         reference rest mass [kg]
         """
     @mass.setter
-    def mass(self, arg0: typing.SupportsFloat) -> None: ...
+    def mass(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def mass_MeV(self) -> float:
         """
@@ -865,28 +909,28 @@ class RefPart:
         energy deviation, normalized by rest energy
         """
     @pt.setter
-    def pt(self, arg0: typing.SupportsFloat) -> None: ...
+    def pt(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def px(self) -> float:
         """
         momentum in x divided by m*c = beta_x*gamma [unitless]
         """
     @px.setter
-    def px(self, arg0: typing.SupportsFloat) -> None: ...
+    def px(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def py(self) -> float:
         """
         momentum in y divided by m*c = beta_y*gamma [unitless]
         """
     @py.setter
-    def py(self, arg0: typing.SupportsFloat) -> None: ...
+    def py(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def pz(self) -> float:
         """
         momentum in z divided by m*c = beta_z*gamma [unitless]
         """
     @pz.setter
-    def pz(self, arg0: typing.SupportsFloat) -> None: ...
+    def pz(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def qm_ratio_SI(self) -> float:
         """
@@ -903,42 +947,42 @@ class RefPart:
         integrated orbit path length [m]
         """
     @s.setter
-    def s(self, arg0: typing.SupportsFloat) -> None: ...
+    def s(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def sedge(self) -> float:
         """
         value of s at entrance of the current beamline element
         """
     @sedge.setter
-    def sedge(self, arg0: typing.SupportsFloat) -> None: ...
+    def sedge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def t(self) -> float:
         """
         clock time * c [m]
         """
     @t.setter
-    def t(self, arg0: typing.SupportsFloat) -> None: ...
+    def t(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def x(self) -> float:
         """
         horizontal position x [m]
         """
     @x.setter
-    def x(self, arg0: typing.SupportsFloat) -> None: ...
+    def x(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def y(self) -> float:
         """
         vertical position y [m]
         """
     @y.setter
-    def y(self, arg0: typing.SupportsFloat) -> None: ...
+    def y(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def z(self) -> float:
         """
         longitudinal position y [m]
         """
     @z.setter
-    def z(self, arg0: typing.SupportsFloat) -> None: ...
+    def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class UnorderedMap:
     def __bool__(self) -> bool:
@@ -978,7 +1022,7 @@ def create_envelope(
     | distribution.Triangle
     | distribution.Semigaussian
     | distribution.Waterbag,
-    arg1: typing.SupportsFloat | None,
+    arg1: typing.SupportsFloat | typing.SupportsIndex | None,
 ) -> Envelope: ...
 def flatten_charge_to_2D(
     arg0: ImpactX,
@@ -1029,8 +1073,8 @@ def push(
     | elements.SpinMap
     | elements.TaperedPL
     | elements.ThinDipole,
-    step: typing.SupportsInt = 0,
-    period: typing.SupportsInt = 0,
+    step: typing.SupportsInt | typing.SupportsIndex = 0,
+    period: typing.SupportsInt | typing.SupportsIndex = 0,
 ) -> None:
     """
     Push a whole particle beam (incl. reference particle) through an element

@@ -305,7 +305,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v3.0.0/tools/pybind11Common.cmake#L420-L426
+            # https://github.com/pybind/pybind11/blob/v3.0.3/tools/pybind11Common.cmake#L436-L442
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()

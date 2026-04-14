@@ -15,21 +15,21 @@ class Alignment:
         horizontal translation error in m
         """
     @dx.setter
-    def dx(self, arg1: typing.SupportsFloat) -> None: ...
+    def dx(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def dy(self) -> float:
         """
         vertical translation error in m
         """
     @dy.setter
-    def dy(self, arg1: typing.SupportsFloat) -> None: ...
+    def dy(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def rotation(self) -> float:
         """
         rotation error in the transverse plane in degree
         """
     @rotation.setter
-    def rotation(self, arg1: typing.SupportsFloat) -> None: ...
+    def rotation(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Named:
     @property
@@ -61,14 +61,14 @@ class Thick:
         segment length in m
         """
     @ds.setter
-    def ds(self, arg1: typing.SupportsFloat) -> None: ...
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def nslice(self) -> int:
         """
         number of slices used for the application of space charge
         """
     @nslice.setter
-    def nslice(self, arg1: typing.SupportsInt) -> None: ...
+    def nslice(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class Thin:
     @property

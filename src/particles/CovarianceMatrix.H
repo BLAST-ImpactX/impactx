@@ -22,6 +22,23 @@ namespace impactx
     /** this is the 6x6 covariance matrix */
     using CovarianceMatrix = Map6x6;
 
+    /** Return the 6x6 skew-symmetric matrix Omega (symplectic form)
+     *
+     * Omega = diag([[0,1],[-1,0]], [[0,1],[-1,0]], [[0,1],[-1,0]])
+     * for the phase space ordering (x, px, y, py, t, pt).
+     *
+     * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+     */
+    inline Map6x6 symplectic_form ()
+    {
+        Map6x6 Omega = Map6x6::Zero();
+        for (int i = 0; i < 3; ++i) {
+            Omega(2*i+1, 2*i+2) =  1;
+            Omega(2*i+2, 2*i+1) = -1;
+        }
+        return Omega;
+    }
+
 
     /** This struct stores the beam envelope attributes, including the 6x6 beam
      *  covariance matrix.  Used during envelope tracking mode.

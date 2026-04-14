@@ -86,9 +86,12 @@ Rmat[6, 5] = -np.sin(phi_t) / beta_star_t
 Rmat[6, 6] = np.cos(phi_t)
 
 # design the accelerator lattice
+linear_map = elements.LinearMap(R=Rmat)
+assert linear_map.symplectic
+
 map = [
     monitor,
-    elements.LinearMap(R=Rmat),
+    linear_map,
 ]
 
 sim.lattice.extend(map)

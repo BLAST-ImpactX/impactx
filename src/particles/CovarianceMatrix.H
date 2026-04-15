@@ -27,8 +27,8 @@ namespace impactx
      * diag([[0,1],[-1,0]], [[0,1],[-1,0]], [[0,1],[-1,0]])
      * for the phase space ordering (x, px, y, py, t, pt).
      *
-     * Note: commonly referred to as J in accelerator physics, but
-     * properly called Omega to avoid confusion with complex structures.
+     * Note: commonly referred to as J (especially in accelerator physics), but
+     * sometimes called Omega to avoid confusion with complex structures.
      *
      * @see https://en.wikipedia.org/wiki/Symplectic_matrix
      * Refs.:

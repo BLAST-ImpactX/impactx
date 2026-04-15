@@ -355,7 +355,7 @@ namespace impactx
         std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
 
         //! the RF bucket length for particles in the particle container
-        std::optional<amrex::ParticleReal> m_bucket_length;
+        amrex::ParticleReal m_bucket_length;
 
     }; // ImpactXParticleContainer
 

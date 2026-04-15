@@ -9,15 +9,14 @@
 
 import mpi4py.MPI as MPI
 import numpy as np
-import synergia
 from scipy import constants
+from impactx import ImpactX, elements, synmadx
 from syn2_to_impactx import syn2_to_impactx, unroll_impactx_lattice
 
-from impactx import ImpactX, elements
 
 c = constants.c
-e = constants.e
-mp = synergia.foundation.pconstants.mp
+eV = constants.eV
+mp = 1.0e-9 * constants.m_p * c**2/eV # proton mass in GeV
 
 sim = ImpactX()
 
@@ -27,13 +26,13 @@ harmonic_number = 84  # harmonic number
 enable_rf = True
 rf_volt = 200.0e-6  # 200 KV
 
-turns = 100
+turns = 1
 
 DEBUG = True
 
 total_booster_charge = 6.7e12
 filled_buckets = 81
-bunch_charge_C = e * total_booster_charge / filled_buckets
+bunch_charge_C = eV * total_booster_charge / filled_buckets
 
 myrank = MPI.COMM_WORLD.rank
 
@@ -72,25 +71,32 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
     # count RF cavities
     cavities = 0
     for elem in lattice.get_elements():
-        if elem.get_type() == synergia.lattice.element_type.rfcavity:
+        if elem.get_type() == synmadx.element_type.rfcavity:
             cavities = cavities + 1
     if DEBUG and myrank == 0:
         print(" for ", cavities, " cavities")
 
-    # Set the RF cavity voltage
+    # set RF frequency assuming the closed orbit length matches the lattice lengh
+    # First I need the velocity
+    beta = lattice.get_reference_particle().get_beta()
+
+    lattice_length = lattice.get_length()
+    rf_freq = harmno * beta * c/lattice_length
+
+    # Set the RF cavity voltage distributing over all RF cavities
+
     for elem in lattice.get_elements():
-        if elem.get_type() == synergia.lattice.element_type.rfcavity:
+        if elem.get_type() == synmadx.element_type.rfcavity:
             elem.set_double_attribute("volt", 1000 * voltage / cavities)
             elem.set_double_attribute("lag", phase_set / (2 * np.pi))
             elem.set_double_attribute("harmon", harmno)
-
-    synergia.simulation.Lattice_simulator.tune_circular_lattice(lattice)
+            elem.set_double_attribute("freq", rf_freq*1.0e-6) # MAD-X convention frequency in MHz
 
     for elem in lattice.get_elements():
         if (
             DEBUG
             and myrank == 0
-            and elem.get_type() == synergia.lattice.element_type.rfcavity
+            and elem.get_type() == synmadx.element_type.rfcavity
         ):
             print("set_rf: ", elem)
             break
@@ -103,8 +109,7 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
 
 def get_lattice():
     # read the lattice in from a MadX sequence file
-    lattice_raw = synergia.lattice.MadX_reader().get_lattice(lattice_line, lattice_file)
-    lattice_raw.set_all_string_attribute("extractor_type", "libff")
+    lattice_raw = synmadx.MadX_reader().get_lattice(lattice_line, lattice_file)
 
     if enable_rf:
         lattice_with_rf = set_rf(
@@ -116,28 +121,21 @@ def get_lattice():
             above_transition=False,
         )
 
-    else:
-        # tune the lattice (set frequency)
-        synergia.simulation.Lattice_simulator.tune_circular_lattice(lattice_raw)
-
     return lattice_raw
 
-
 # ========================================================================
-
-
-# ========================================================================
-
 
 def main():
 
     # Read the lattice
     lattice = get_lattice()
-    print(
-        "Read lattice, length = {}, {} elements".format(
-            lattice.get_length(), len(lattice.get_elements())
+
+    if myrank == 0:
+        print(
+            "Read lattice, length = {}, {} elements".format(
+                lattice.get_length(), len(lattice.get_elements())
+            )
         )
-    )
 
     # Assume the lattice sets the reference particle
     refpart = lattice.get_reference_particle()
@@ -155,51 +153,6 @@ def main():
         print("beta: ", beta)
         print()
 
-    # Get original tunes and chromaticities
-    rf_freq = synergia.simulation.Lattice_simulator.get_rf_frequency(lattice)
-    (orig_xtune, orig_ytune, orig_orbit_cdt) = (
-        synergia.simulation.Lattice_simulator.calculate_tune_and_cdt(lattice)
-    )
-
-    chrom = synergia.simulation.Lattice_simulator.get_chromaticities(lattice)
-    orig_hchrom = chrom.horizontal_chromaticity
-    orig_vchrom = chrom.vertical_chromaticity
-    if myrank == 0:
-        print("Orbit length: ", beta * orig_orbit_cdt, "m")
-        print("RF frequency: ", rf_freq, "Hz")
-        print("original horizontal tune: ", orig_xtune)
-        print("original vertical tune: ", orig_ytune)
-        print("original horizontal chromaticity: ", orig_hchrom)
-        print("original vertical chromaticity: ", orig_vchrom)
-        print()
-
-    # calculate lattice functions to calculate initial bunch population
-    synergia.simulation.Lattice_simulator.CourantSnyderLatticeFunctions(lattice)
-    synergia.simulation.Lattice_simulator.calc_dispersions(lattice)
-
-    # lattice functions at the last element gives the
-    # values for the overall ring
-    lf = lattice.get_elements()[-1].lf
-    beta_x = lf.beta.hor
-    alpha_x = lf.alpha.hor
-    beta_y = lf.beta.ver
-    alpha_y = lf.alpha.ver
-    psi_x = lf.psi.hor
-    psi_y = lf.psi.ver
-    disp_x = lf.dispersion.hor
-    dprime_x = lf.dPrime.hor
-
-    if myrank == 0:
-        print("lattice functions after adjustment")
-        print("beta_x: ", beta_x)
-        print("alpha_x", alpha_x)
-        print("beta_y: ", beta_y)
-        print("alpha_y: ", alpha_y)
-        print("dispersion_x: ", disp_x)
-        print("dispersion prime_x: ", dprime_x)
-        print()
-
-    # The rest of this is standard ImpactX
 
     # set numerical parameters and IO control
     sim.particle_shape = 2  # B-spline order

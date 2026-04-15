@@ -72,7 +72,7 @@ option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)
 option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
-option(ImpactX_SYNMADX       "Standalone MAD-X lattice parser (synmadx)"    ON)
+option(ImpactX_SYNMADX       "Standalone MAD-X lattice parser (synmadx)"    OFF)
 
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
 set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")

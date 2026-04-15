@@ -15,10 +15,9 @@
 from enum import Enum
 
 import numpy as np
-import synergia
 
 import impactx
-
+import impactx.synmadx
 
 class Order(Enum):
     linear = 0
@@ -30,7 +29,7 @@ class Order(Enum):
 force_linear_dipedges_for_bends = True
 
 
-ET = synergia.lattice.element_type
+ET = impactx.synmadx.element_type
 
 # nslice_by_elem_type = {
 #     "drift": 1,
@@ -651,9 +650,11 @@ def unroll_impactx_lattice(lattice):
             edict["phi"] = edict["phi"] * 180 / np.pi
 
         if etype == "DipEdge" or etype == "ShortRF" or etype == "BeamMonitor":
-            # remove extra attributes
-            del edict["nslice"]
-            del edict["ds"]
+            # remove extra attributes if present
+            if hasattr(edict, "nslice"):
+                del edict["nslice"]
+            if hasattr(edict, "ds"):
+                del edict["ds"]
 
         # skipping BeamMonitors for now. They seem to cause trouble
         if etype == "BeamMonitor":
@@ -1403,9 +1404,10 @@ beam, particle=proton, energy=pmass+0.0025;
 
 
 def test_linear(lattice, line):
-    import synergia
+    import impactx
+    import impactx.synmadx
 
-    reader = synergia.lattice.MadX_reader()
+    reader = synmadx.MadX_reader()
     reader.parse(lattice)
 
     lattice = reader.get_lattice(line)
@@ -1425,9 +1427,10 @@ def test_linear(lattice, line):
 
 
 def test_exact(lattice, line):
-    import synergia
+    import impactx
+    import impactx.synmadx
 
-    reader = synergia.lattice.MadX_reader()
+    reader = synmadx.MadX_reader()
     reader.parse(lattice)
 
     lattice = reader.get_lattice(line)

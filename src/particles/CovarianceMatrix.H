@@ -31,6 +31,9 @@ namespace impactx
      * properly called Omega to avoid confusion with complex structures.
      *
      * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+     * Refs.:
+     * - K. R. Meyer and D. C. Offin, Introduction to Hamiltonian Dynamical Systems and the N-Body Problem, Springer-Verlag NY, 2009.
+     * - A. J. Dragt, Lie Methods for Nonlinear Dynamics with Applications to Accelerator Physics, University of Maryland, 2020, http://www.physics.umd.edu/dsat/
      */
     inline Map6x6 symplectic_form ()
     {

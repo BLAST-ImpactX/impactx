@@ -388,8 +388,8 @@ namespace impactx::elements
             amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const lambda = refpart.spin_rotation_vector;
             lambdax = lambda(1);
             lambday = lambda(2);
-            lambdaz = lambda(3); 
-           
+            lambdaz = lambda(3);
+
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
@@ -575,7 +575,7 @@ namespace impactx::elements
             amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
             amrex::ParticleReal Gfactor = (gamma - 1_prt) * G;
             amrex::ParticleReal const cs = std::cos(v(3));
-            amrex::ParticleReal const sn = std::sin(v(3));  
+            amrex::ParticleReal const sn = std::sin(v(3));
 
             // Update spin-orbit coupling matrix here
             dA(1,1) = Gfactor * tau * alpha2 * (-2_prt*sn + tau*cs*alpha);
@@ -654,11 +654,11 @@ namespace impactx::elements
             // BELOW: if spin is needed only:
             amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const v = refpart.spin_rotation_vector;
             amrex::ParticleReal dv_z = 0_prt;
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;  
-            
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+
             // Update reference spin rotation vector here
             dv_z = -(1_prt + G) * tau * B0 * bz;
-            refpart.spin_rotation_vector(3) = v(3) + dv_z; 
+            refpart.spin_rotation_vector(3) = v(3) + dv_z;
 
         }
 

@@ -313,9 +313,9 @@ namespace impactx
 
         /** Get the bucket length used for periodic particle BCs in this container
          *
-         * @returns bucket_length
+         * @returns bucket length in m
          */
-        amrex::ParticleReal &
+        amrex::ParticleReal
         GetBucketLength ();
 
         /** In situ calculate and store the beam moments for every simulation step */
@@ -355,7 +355,7 @@ namespace impactx
         std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
 
         //! the RF bucket length for particles in the particle container
-        amrex::ParticleReal m_bucket_length;
+        std::optional<amrex::ParticleReal> m_bucket_length;
 
     }; // ImpactXParticleContainer
 

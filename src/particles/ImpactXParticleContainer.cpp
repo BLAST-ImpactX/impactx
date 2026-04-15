@@ -128,7 +128,7 @@ namespace impactx
         m_bucket_length = bucket_length;
     }
 
-    amrex::ParticleReal &
+    amrex::ParticleReal
     ImpactXParticleContainer::GetBucketLength ()
     {
         return m_bucket_length;

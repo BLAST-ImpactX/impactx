@@ -22,7 +22,6 @@ beam.bucket_length = 0.23
 # Beamline: lattice elements and segments
 ###############################################################################
 lattice.periods = 10
-#lattice.elements = monitor drift1 monitor
 lattice.elements = monitor drift1 shortrf1 drift1 monitor
 lattice.nslice = 10
 

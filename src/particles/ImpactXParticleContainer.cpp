@@ -131,11 +131,7 @@ namespace impactx
     amrex::ParticleReal
     ImpactXParticleContainer::GetBucketLength ()
     {
-        if (m_bucket_length.has_value()) {
-            return m_bucket_length;
-        } else {
-            return 0.0;
-        }
+        return (m_bucket_length.has_value()?) m_bucket_length : 0.0;
     }
 
     void

@@ -40,14 +40,8 @@ Using the :ref:`ImpactX Python interface <usage-python>`, a custom element named
 The Programmable element can implement a custom element in two ways:
 
 * Push the whole container, by assigning a ``push`` function or
-* Push the reference particle and beam particles in two individual functions (``push_beam_particles`` and ``push_ref_particle``).
 
-.. note::
-
-   **Trying to read or inspect particle data?** The ``push_beam_particles``
-   hook is called *multiple times per element pass* (once per AMReX tile/block).
-   It is intended for implementing custom element maps, not data access.
-   To read the full beam, use ``sim.particle_container()`` in a callback hook instead.
+* Push the reference particle and beam particles in two individual functions (``beam_particles`` and ``ref_particle``). Note: these are push callbacks, not data accessors. To read the full beam, use ``sim.particle_container()`` in a callback hook instead. See the note in the :py:class:`~impactx.elements.Programmable` API docs for details.
 
 Per ImpactX convention, the reference particle is updated *before* the beam particles are pushed.
 

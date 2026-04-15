@@ -1427,6 +1427,17 @@ This module provides elements and methods for the accelerator lattice.
          This function is called for the reference particle as it passes through the element.
          The reference particle is updated *before* the beam particles are pushed.
 
+   .. note::
+
+      **Are you trying to access particle data?**
+
+      Use a callback hook and :py:meth:`~impactx.ImpactX.particle_container` instead.
+      The ``beam_particles`` and ``ref_particle`` hooks are push callbacks that are
+      called repeatedly for each particle block as it passes through the element —
+      they are not data accessors.
+      For particle data access, see :py:meth:`~impactx.ImpactX.particle_container`
+      and :py:class:`~impactx.elements.BeamMonitor`.
+
 .. py:class:: impactx.elements.Quad(ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet.

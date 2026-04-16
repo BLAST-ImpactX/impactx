@@ -100,8 +100,8 @@ namespace impactx::elements
         /** Reverse the element (compute symplectic inverse of transport map)
          *
          * For a symplectic matrix R, the inverse is
-         *   R^{-1} = Omega^T R^T Omega = -Omega R^T Omega
-         * where Omega is the standard 6x6 symplectic form.
+         *   R^{-1} = J^T R^T J = -J R^T J
+         * where J is the standard 6x6 symplectic form.
          *
          * @see https://en.wikipedia.org/wiki/Symplectic_matrix
          * Throws if the transport map is not symplectic.

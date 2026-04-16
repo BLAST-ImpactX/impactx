@@ -182,7 +182,7 @@ namespace impactx::elements
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
-            if (m_ds > 0)  // Drift
+            if (m_ds != 0)  // Drift forward or backward
             {
                 using namespace amrex::literals; // for _rt and _prt
                 using amrex::Math::powi;

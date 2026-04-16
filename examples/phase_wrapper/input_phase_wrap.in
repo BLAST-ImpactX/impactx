@@ -41,4 +41,3 @@ algo.particle_bc = periodic
 # Diagnostics
 ###############################################################################
 diag.slice_step_diagnostics = true
-diag.backend = h5

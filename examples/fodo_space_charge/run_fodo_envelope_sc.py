@@ -23,7 +23,7 @@ sim.init_grids()
 kin_energy_MeV = 6.7  # reference energy
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #  beam current in A

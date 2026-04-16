@@ -28,8 +28,8 @@ def test_particle_tiles():
     npart = 10000
 
     #   reference particle
-    pc = sim.particle_container()
-    ref = pc.ref_particle()
+    beam = sim.beam
+    ref = beam.ref
     ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
@@ -46,7 +46,7 @@ def test_particle_tiles():
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    assert pc.total_number_of_particles() == npart
+    assert beam.total_number_of_particles() == npart
 
     # init accelerator lattice
     fodo = [
@@ -62,8 +62,8 @@ def test_particle_tiles():
     sim.track_particles()
 
     # access local particles
-    for lvl in range(pc.finest_level + 1):
-        for pti in ImpactXParIter(pc, level=lvl):
+    for lvl in range(beam.finest_level + 1):
+        for pti in ImpactXParIter(beam, level=lvl):
             soa = pti.soa()
             real_arrays = soa.get_real_data()
             print(real_arrays)

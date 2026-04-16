@@ -2016,14 +2016,14 @@ add_impactx_test(exact-quad-on-reference.py
 # Test of Periodic Phase-Wrapper ###################
 # without space charge
 add_impactx_test(phase-wrap
-    examples/phase_wrapper/input_drift_phase_wrap.in
+    examples/phase_wrapper/input_phase_wrap.in
     ON   # ImpactX MPI-parallel
-    examples/phase_wrapper/analysis_drift_phase_wrap.py
+    examples/phase_wrapper/analysis_phase_wrap.py
     OFF  # no plot script yet
 )
 add_impactx_test(phase-wrap.py
-    examples/phase_wrapper/run_drift_phase_wrap.py
+    examples/phase_wrapper/run_phase_wrap.py
     ON    # ImpactX MPI-parallel
-    examples/phase_wrapper/analysis_drift_phase_wrap.py
+    examples/phase_wrapper/analysis_phase_wrap.py
     OFF  # no plot script yet
 )

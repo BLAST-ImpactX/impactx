@@ -6,13 +6,13 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements
-import impactx
-from scipy.constants import m_p, c, eV
+from scipy.constants import c, eV, m_p
 
-mp_mev = 1.0e-6 * m_p * c**2/eV
-total_Booster_charge = 6.7e12 # PIP-II full Booster
-active_buckets = 81 # 81 out of 84 buckets full
+from impactx import ImpactX, distribution, elements
+
+mp_mev = 1.0e-6 * m_p * c**2 / eV
+total_Booster_charge = 6.7e12  # PIP-II full Booster
+active_buckets = 81  # 81 out of 84 buckets full
 
 turns = 1
 
@@ -29,7 +29,7 @@ sim.init_grids()
 # load a 800 MeV proton beam
 
 kin_energy_MeV = 800.0  # reference energy 800 MeV
-bunch_charge_C = eV * total_Booster_charge/active_buckets  # used with space charge
+bunch_charge_C = eV * total_Booster_charge / active_buckets  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle

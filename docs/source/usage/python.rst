@@ -476,7 +476,7 @@ Particles
 
    .. py:property:: ref
 
-      Access the beam reference particle (:py:class:`impactx.RefPart`).
+      Access the reference particle (:py:class:`impactx.RefPart`).
 
    .. py:method:: set_ref_particle(refpart)
 

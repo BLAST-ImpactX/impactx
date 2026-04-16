@@ -112,7 +112,7 @@ void init_impactxparticlecontainer(py::module& m)
             [](ImpactXParticleContainer & pc) -> RefPart & {
                 return pc.GetRefParticle();
             },
-            "Access the beam reference particle."
+            "Access the reference particle."
         )
         .def("ref_particle",
             [](ImpactXParticleContainer & pc) -> RefPart & {

@@ -2748,6 +2748,11 @@ void init_elements(py::module& m)
             [](LinearMap & linearmap) { return linearmap.nslice(); },
             "one, because we do not support slicing of this element"
         )
+        .def_property_readonly("symplectic", &LinearMap::symplectic,
+            "Check if the transport map is symplectic.\n\n"
+            "A matrix R is symplectic if R^T J R = J, where J is the\n"
+            "standard 6x6 skew-symmetric symplectic form (also called Omega)."
+        )
      ;
      register_push(py_LinearMap);
 

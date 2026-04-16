@@ -74,6 +74,7 @@ drift1 = elements.Drift(
     nslice=40,
 )
 map1 = elements.LinearMap(R=Rmat)
+assert map1.symplectic
 
 # design the accelerator lattice
 sim.lattice.extend([monitor, map1, drift1, monitor])

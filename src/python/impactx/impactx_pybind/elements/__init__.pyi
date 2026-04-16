@@ -2112,6 +2112,14 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
         one, because we do not support slicing of this element
         """
+    @property
+    def symplectic(self) -> bool:
+        """
+        Check if the transport map is symplectic.
+
+        A matrix R is symplectic if R^T J R = J, where J is the
+        standard 6x6 skew-symmetric symplectic form (also called Omega).
+        """
 
 class Marker(mixin.Named, mixin.Thin):
     def __init__(self, name: str) -> None:

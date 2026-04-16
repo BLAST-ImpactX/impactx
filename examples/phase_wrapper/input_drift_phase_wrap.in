@@ -16,12 +16,12 @@ beam.lambdaPt = 0.0
 beam.muxpx = 0.0
 beam.muypy = 0.0
 beam.mutpt = 0.0
-beam.bucket_length = 0.23
+beam.bucket_length = 0.2
 
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.elements = monitor drift1 monitor
+lattice.elements = monitor monitor
 lattice.nslice = 1
 
 monitor.type = beam_monitor

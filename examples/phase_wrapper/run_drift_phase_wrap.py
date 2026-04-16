@@ -14,9 +14,9 @@ sim = ImpactX()
 sim.space_charge = False
 sim.slice_step_diagnostics = True
 # sim.particle_bc = "open"
-# sim.particle_bc = "periodic"
+sim.particle_bc = "periodic"
 # sim.particle_bc = "absorbing"
-sim.particle_bc = "reflecting"
+# sim.particle_bc = "reflecting"
 
 # domain decomposition & space charge mesh
 sim.init_grids()
@@ -31,7 +31,7 @@ ref = sim.particle_container().ref_particle()
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   set bunch bucket length
-sim.particle_container().set_bucket_length(0.23)
+sim.particle_container().set_bucket_length(0.2)
 
 #   particle bunch
 distr = distribution.Gaussian(
@@ -54,7 +54,6 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 ns = 1  # number of slices per ds in the element
 line = [
     monitor,
-    elements.Drift(name="drift1", ds=0.0, nslice=ns),
     monitor,
 ]
 # assign the lattice

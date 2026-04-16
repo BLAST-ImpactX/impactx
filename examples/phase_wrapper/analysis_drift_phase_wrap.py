@@ -20,7 +20,7 @@ assert num_particles == len(initial)
 assert num_particles == len(final)
 
 # numerical parameters
-bucket_length = 0.23
+bucket_length = 0.2
 half_bucket_length = bucket_length / 2.0
 
 # join tables on particle ID, so we can compare the same particle initial->final

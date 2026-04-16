@@ -2021,7 +2021,7 @@ add_impactx_test(phase-wrap
     examples/phase_wrapper/analysis_drift_phase_wrap.py
     OFF  # no plot script yet
 )
-add_impactx_test(spin-map.py
+add_impactx_test(phase-wrap.py
     examples/phase_wrapper/run_drift_phase_wrap.py
     ON    # ImpactX MPI-parallel
     examples/phase_wrapper/analysis_drift_phase_wrap.py

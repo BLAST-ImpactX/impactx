@@ -29,6 +29,9 @@ npart = 1_000
 nslice = 1
 mapsteps = 4
 
+ALIGNMENT_KWARGS = dict(dx=1.0e-3, dy=-2.0e-3, rotation=0.5)
+PIPE_KWARGS = dict(ALIGNMENT_KWARGS, aperture_x=0.03, aperture_y=0.04)
+
 if Config.precision == "SINGLE":
     phase_atol = 2.0e-6
     spin_atol = 3.0e-7
@@ -220,7 +223,13 @@ def roundtrip(
 
 def test_CFbend(sim):
     roundtrip(
-        elements.CFbend(ds=0.5, rc=7.613657587094493, k=-7.057403, nslice=nslice),
+        elements.CFbend(
+            ds=0.5,
+            rc=7.613657587094493,
+            k=-7.057403,
+            nslice=nslice,
+            **PIPE_KWARGS,
+        ),
         sim,
     )
 
@@ -228,25 +237,52 @@ def test_CFbend(sim):
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrDrift(sim):
     roundtrip(
-        elements.ChrDrift(ds=0.25, nslice=nslice),
+        elements.ChrDrift(ds=0.25, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
 
 
-def test_ChrPlasmaLens(sim):
+@pytest.mark.parametrize(
+    ("unit", "k"),
+    [(0, 2.98636067687944129), (1, 5.0)],
+    ids=["madx", "si"],
+)
+def test_ChrPlasmaLens(sim, unit, k):
     roundtrip(
         elements.ChrPlasmaLens(
-            ds=0.331817852986604588, k=2.98636067687944129, unit=0, nslice=nslice
+            ds=0.331817852986604588,
+            k=k,
+            unit=unit,
+            nslice=nslice,
+            **PIPE_KWARGS,
         ),
         sim,
+        phase_atol=2e-6 if unit == 1 else phase_atol,
     )
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad(sim):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, nslice=nslice),
+        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **kwargs),
+        sim,
+        spin=sim.spin,
+    )
+
+
+def test_ChrQuad_marylie_unit(sim):
+    roundtrip(
+        elements.ChrQuad(ds=1.0, k=3.5, unit=1, nslice=nslice, **PIPE_KWARGS),
+        sim,
+    )
+
+
+@pytest.mark.parametrize("sim", [True], indirect=True, ids=["spin"])
+def test_ChrQuad_marylie_unit_spin(sim):
+    roundtrip(
+        elements.ChrQuad(ds=1.0, k=1.0, unit=1, nslice=nslice),
         sim,
         spin=sim.spin,
     )
@@ -254,14 +290,20 @@ def test_ChrQuad(sim):
 
 def test_ChrAcc(sim):
     roundtrip(
-        elements.ChrAcc(ds=1.8, ez=10871.950994502130424, bz=1.0e-12, nslice=nslice),
+        elements.ChrAcc(
+            ds=1.8,
+            ez=10871.950994502130424,
+            bz=250.0,
+            nslice=nslice,
+            **PIPE_KWARGS,
+        ),
         sim,
     )
 
 
 def test_ConstF(sim):
     roundtrip(
-        elements.ConstF(ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice),
+        elements.ConstF(ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice, **PIPE_KWARGS),
         sim,
         # ConstF's longitudinal (t, pt) block is the SP-sensitive outlier in this file.
         phase_atol=1.0e-3 if Config.precision == "SINGLE" else phase_atol,
@@ -271,7 +313,7 @@ def test_ConstF(sim):
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Drift(sim):
     roundtrip(
-        elements.Drift(ds=0.25, nslice=nslice),
+        elements.Drift(ds=0.25, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -280,47 +322,73 @@ def test_Drift(sim):
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactDrift(sim):
     roundtrip(
-        elements.ExactDrift(ds=0.25, nslice=nslice),
+        elements.ExactDrift(ds=0.25, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
 
 
-def test_ExactMultipole(sim):
+@pytest.mark.parametrize(
+    ("unit", "k_normal", "k_skew"),
+    [
+        (0, [0.0, 1.0, 0.15], [0.0, 0.35, -0.05]),
+        (1, [0.0, 3.5, 0.45], [0.0, 0.8, -0.12]),
+    ],
+    ids=["madx", "si"],
+)
+def test_ExactMultipole(sim, unit, k_normal, k_skew):
     roundtrip(
         elements.ExactMultipole(
             ds=1.0,
-            k_normal=[0.0, 1.0],
-            k_skew=[0.0, 0.0],
-            unit=0,
+            k_normal=k_normal,
+            k_skew=k_skew,
+            unit=unit,
             mapsteps=mapsteps,
             nslice=nslice,
+            int_order=4,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=1e-8,
     )
 
 
-def test_ExactCFbend(sim):
+@pytest.mark.parametrize(
+    ("unit", "k_normal", "k_skew"),
+    [
+        (0, [0.12, 0.015, -0.002], [0.0, 0.01, 0.001]),
+        (1, [0.4, 0.05, -0.008], [0.0, 0.03, 0.004]),
+    ],
+    ids=["madx", "si"],
+)
+def test_ExactCFbend(sim, unit, k_normal, k_skew):
     roundtrip(
         elements.ExactCFbend(
             ds=1.0,
-            k_normal=[0.1, 0.0],
-            k_skew=[0.0, 0.0],
-            unit=0,
-            int_order=2,
+            k_normal=k_normal,
+            k_skew=k_skew,
+            unit=unit,
+            int_order=4,
             mapsteps=mapsteps,
             nslice=nslice,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=1e-8,
     )
 
 
-def test_ExactQuad(sim):
+@pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
+def test_ExactQuad(sim, unit, k):
     roundtrip(
         elements.ExactQuad(
-            ds=1.0, k=1.0, int_order=4, nslice=nslice, mapsteps=mapsteps
+            ds=1.0,
+            k=k,
+            unit=unit,
+            int_order=4,
+            nslice=nslice,
+            mapsteps=mapsteps,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=1e-8,
@@ -329,15 +397,16 @@ def test_ExactQuad(sim):
 
 def test_ExactSbend(sim):
     roundtrip(
-        elements.ExactSbend(ds=1.0, phi=10.0, B=0.0, nslice=nslice),
+        elements.ExactSbend(ds=1.0, phi=10.0, B=0.45, nslice=nslice, **PIPE_KWARGS),
         sim,
     )
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(sim):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Quad(ds=1.0, k=1.0, nslice=nslice),
+        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **kwargs),
         sim,
         spin=sim.spin,
     )
@@ -345,8 +414,9 @@ def test_Quad(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(sim):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice),
+        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **kwargs),
         sim,
         spin=sim.spin,
     )
@@ -357,21 +427,27 @@ def test_SoftQuadrupole(sim):
         elements.SoftQuadrupole(
             ds=1.0,
             gscale=1.0,
-            cos_coefficients=[2],
-            sin_coefficients=[0.1],
+            cos_coefficients=[2.0, 0.3, -0.2, 0.05],
+            sin_coefficients=[0.0, 0.25, -0.1, 0.04],
             mapsteps=mapsteps,
             nslice=nslice,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=1e-8,
     )
 
 
-def test_SoftSolenoid(sim):
+@pytest.mark.parametrize(
+    ("unit", "bscale"),
+    [(0, 1.233482899483985), (1, 2.0)],
+    ids=["madx", "si"],
+)
+def test_SoftSolenoid(sim, unit, bscale):
     roundtrip(
         elements.SoftSolenoid(
             ds=6.0,
-            bscale=1.233482899483985,
+            bscale=bscale,
             cos_coefficients=[
                 0.350807812299706,
                 0.323554693720069,
@@ -409,9 +485,11 @@ def test_SoftSolenoid(sim):
                 -2.044590946652016e-004,
                 -1.468242784844341e-004,
             ],
-            sin_coefficients=[0.0, 0.1] + [0.0] * 33,
+            sin_coefficients=[0.0, 0.1, -0.03, 0.02, -0.01, 0.006] + [0.0] * 29,
+            unit=unit,
             mapsteps=mapsteps,
             nslice=nslice,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=1e-8,
@@ -420,8 +498,9 @@ def test_SoftSolenoid(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(sim):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sol(ds=3.820395, ks=0.8223219329893234),
+        elements.Sol(ds=3.820395, ks=0.8223219329893234, **kwargs),
         sim,
         spin=sim.spin,
     )
@@ -433,33 +512,50 @@ def test_Sol(sim):
 
 
 def test_Buncher(sim):
-    roundtrip(elements.Buncher(V=0.01, k=15.0), sim)
+    roundtrip(elements.Buncher(V=0.01, k=15.0, **ALIGNMENT_KWARGS), sim)
 
 
-def test_Kicker(sim):
+@pytest.mark.parametrize(
+    ("unit", "xkick", "ykick"),
+    [
+        ("dimensionless", 2.0e-3, 3.0e-3),
+        ("T-m", 7.0e-3, -4.0e-3),
+    ],
+    ids=["dimensionless", "tm"],
+)
+def test_Kicker(sim, unit, xkick, ykick):
     roundtrip(
-        elements.Kicker(xkick=2.0e-3, ykick=3.0e-3, unit="dimensionless"),
+        elements.Kicker(xkick=xkick, ykick=ykick, unit=unit, **ALIGNMENT_KWARGS),
         sim,
     )
 
 
 def test_Multipole(sim):
     roundtrip(
-        elements.Multipole(multipole=4, K_normal=65.0, K_skew=6.0),
+        elements.Multipole(multipole=4, K_normal=65.0, K_skew=6.0, **ALIGNMENT_KWARGS),
         sim,
     )
 
 
 def test_NonlinearLens(sim):
-    roundtrip(elements.NonlinearLens(knll=4.0e-6, cnll=0.01), sim)
+    roundtrip(elements.NonlinearLens(knll=4.0e-6, cnll=0.01, **ALIGNMENT_KWARGS), sim)
 
 
-def test_TaperedPL(sim):
-    roundtrip(elements.TaperedPL(k=1.0 / 0.5, taper=11.488289081903567, unit=0), sim)
+@pytest.mark.parametrize(("unit", "k"), [(0, 1.0 / 0.5), (1, 6.0)], ids=["madx", "si"])
+def test_TaperedPL(sim, unit, k):
+    roundtrip(
+        elements.TaperedPL(
+            k=k,
+            taper=11.488289081903567,
+            unit=unit,
+            **ALIGNMENT_KWARGS,
+        ),
+        sim,
+    )
 
 
 def test_ThinDipole(sim):
-    roundtrip(elements.ThinDipole(theta=0.45, rc=1.0), sim)
+    roundtrip(elements.ThinDipole(theta=0.45, rc=1.0, **ALIGNMENT_KWARGS), sim)
 
 
 # =============================================================================
@@ -468,7 +564,7 @@ def test_ThinDipole(sim):
 
 
 def test_PlaneXYRot(sim):
-    roundtrip(elements.PlaneXYRot(angle=90.0), sim)
+    roundtrip(elements.PlaneXYRot(angle=90.0, **ALIGNMENT_KWARGS), sim)
 
 
 def test_PRot(sim):
@@ -481,7 +577,9 @@ def test_PRot(sim):
 
 
 def test_ShortRF(sim):
-    roundtrip(elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5), sim)
+    roundtrip(
+        elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5, **ALIGNMENT_KWARGS), sim
+    )
 
 
 def test_RFCavity(sim):
@@ -518,9 +616,10 @@ def test_RFCavity(sim):
                 -1.4997753525697276e-003,
                 1.8685171825676386e-004,
             ],
-            sin_coefficients=[0.0, 0.1] + [0.0] * 23,
+            sin_coefficients=[0.0, 0.1, -0.03, 0.02, -0.01] + [0.0] * 20,
             mapsteps=mapsteps,
             nslice=nslice,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=5e-4,  # energy-changing element: finite mapsteps limit roundtrip precision
@@ -533,19 +632,38 @@ def test_RFCavity(sim):
 
 
 @pytest.mark.parametrize(
-    ("g", "K2"),
-    [(0.0, 0.0), (0.058, 0.5)],
-    ids=["zero-gap", "finite-gap"],
+    ("model", "g", "K2"),
+    [
+        ("linear", 0.0, 0.0),
+        ("linear", 0.058, 0.5),
+        ("nonlinear", 0.058, 0.5),
+    ],
+    ids=["linear-zero-gap", "linear-finite-gap", "nonlinear-finite-gap"],
 )
-def test_DipEdge(sim, g, K2):
+def test_DipEdge(sim, model, g, K2):
     rc = 10.3462283686195526
     psi = 0.048345620280243
-    roundtrip(elements.DipEdge(psi=-psi, rc=-rc, g=g, K2=K2, model="linear"), sim)
+    roundtrip(
+        elements.DipEdge(
+            psi=-psi,
+            rc=-rc,
+            g=g,
+            K2=K2,
+            model=model,
+            **ALIGNMENT_KWARGS,
+        ),
+        sim,
+        phase_atol=2e-9 if model == "nonlinear" else phase_atol,
+    )
 
 
+@pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 @pytest.mark.parametrize("flag", ["entry", "exit"])
-def test_QuadEdge(sim, flag):
-    roundtrip(elements.QuadEdge(k=1.0, unit=0, flag=flag), sim)
+def test_QuadEdge(sim, flag, unit, k):
+    roundtrip(
+        elements.QuadEdge(k=k, unit=unit, flag=flag, **ALIGNMENT_KWARGS),
+        sim,
+    )
 
 
 # =============================================================================
@@ -556,10 +674,29 @@ def test_QuadEdge(sim, flag):
 def test_LinearMap(sim):
     R1 = Map6x6.identity()
     ds1 = 0.25
-    R1[1, 2] = ds1
-    R1[3, 4] = ds1
-    R1[5, 6] = ds1 / 16.6464  # ds / (beta*gamma^2)
-    el = elements.LinearMap(R=R1, ds=ds1)
+    ct = np.cos(0.31)
+    st = np.sin(0.31)
+    lt = ds1 / 16.6464  # ds / (beta*gamma^2)
+
+    R1[1, 1] = ct
+    R1[1, 2] = ct * ds1
+    R1[1, 3] = st
+    R1[1, 4] = st * ds1
+    R1[2, 1] = 0.0
+    R1[2, 2] = ct
+    R1[2, 3] = 0.0
+    R1[2, 4] = st
+    R1[3, 1] = -st
+    R1[3, 2] = -st * ds1
+    R1[3, 3] = ct
+    R1[3, 4] = ct * ds1
+    R1[4, 1] = 0.0
+    R1[4, 2] = -st
+    R1[4, 3] = 0.0
+    R1[4, 4] = ct
+    R1[5, 6] = lt
+
+    el = elements.LinearMap(R=R1, ds=ds1, **ALIGNMENT_KWARGS)
     assert el.symplectic
     roundtrip(el, sim)
 

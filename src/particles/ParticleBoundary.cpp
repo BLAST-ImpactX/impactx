@@ -27,18 +27,17 @@ namespace impactx::particles
         amrex::ParmParse pp_algo("algo");
         std::string particle_bc = "open";
         pp_algo.queryAdd("particle_bc", particle_bc);
-        int particle_bc_int;
 
-        if(particle_bc == "open") {
-            return;
-        } else if (particle_bc == "periodic") {
+        int particle_bc_int = 0;
+
+        if (particle_bc == "periodic") {
             particle_bc_int = 1;
         } else if (particle_bc == "absorbing") {
             particle_bc_int = 2;
         } else if (particle_bc == "reflecting") {
             particle_bc_int = 3;
         } else {
-            particle_bc_int = 0;
+            return;
         }
 
         // Loop over refinement levels
@@ -68,43 +67,63 @@ namespace impactx::particles
                 amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::t].dataPtr();
                 uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
-                // Gather particles and apply boundary condition
-                amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
-                {
-                    // Access SoA Real data
-                    amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
-                    amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
+                switch (particle_bc_int) {
+                    case 1:
 
-                    if (particle_bc_int==1) {
+                        // Gather particles and apply boundary condition
+                        amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
+                        {
+                            // Access SoA Real data
+                            amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
 
-                        // Periodic particle boundary condition:  apply phase wrapping in t (modulo bucket_duration):
-                        amrex::ParticleReal ttest = std::fmod(t+bucket_half_duration, bucket_duration);
-                        t = (bucket_duration != 0.0)? std::fmod(ttest+bucket_duration, bucket_duration)-bucket_half_duration : t;
+                            // Periodic particle boundary condition:  apply phase wrapping in t (modulo bucket_duration):
+                            amrex::ParticleReal ttest = std::fmod(t+bucket_half_duration, bucket_duration);
+                            t = (bucket_duration != 0.0)? std::fmod(ttest+bucket_duration, bucket_duration)-bucket_half_duration : t;
+                        });
+                        break;
 
-                    } else if (particle_bc_int==2) {
+                    case 2:
 
-                        // Absorbing particle boundary condition:  check particle against the boundary:
-                        bool inside_aperture = (std::abs(t) < bucket_half_duration);
-                        // Mark particles as lost if appropriate
-                        amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
+                        // Gather particles and apply boundary condition
+                        amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
+                        {
+                            // Access SoA Real data
+                            amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
 
-                    } else if (particle_bc_int==3) {
+                            // Absorbing particle boundary condition:  check particle against the boundary:
+                            bool inside_aperture = (std::abs(t) < bucket_half_duration);
+                            // Mark particles as lost if appropriate
+                            amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
+                        });
+                        break;
 
-                        // Reflecting particle boundary condition.
-                        // TODO:  Transform (t,pt) to (z,pz) using z-to-t transformation.
-                        // The implementation below works through linear order in the phase space variables.
-                        // If particle falls outside the boundary, reflect:
-                        if (t > bucket_half_duration) {
-                            t = bucket_duration - t;
-                            pt = -pt;
-                        } else if (t < -bucket_half_duration) {
-                            t = -bucket_duration - t;
-                            pt = -pt;
-                        }
+                    case 3:
 
-                    }
+                        // Gather particles and apply boundary condition
+                        amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
+                        {
+                            // Access SoA Real data
+                            amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
+                            amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
 
-                });
+                            // Reflecting particle boundary condition.
+                            // TODO:  Transform (t,pt) to (z,pz) using z-to-t transformation.
+                            // The implementation below works through linear order in the phase space variables.
+                            // If particle falls outside the boundary, reflect:
+                            if (t > bucket_half_duration) {
+                                t = bucket_duration - t;
+                                pt = -pt;
+                            } else if (t < -bucket_half_duration) {
+                                t = -bucket_duration - t;
+                                pt = -pt;
+                            }
+                        });
+                        break;
+
+                    default:
+                        throw std::runtime_error("ParticleBoundary: Particle boundary condition must be open, periodic, absorbing, or reflecting.");
+
+                 }
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
     }

@@ -63,6 +63,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (swap phi_in and phi_out) */
+        void reverse () { std::swap(m_phi_in, m_phi_out); }
+
         /** Push all particles */
         using BeamOptic::operator();
 

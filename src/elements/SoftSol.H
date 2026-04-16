@@ -182,6 +182,13 @@ namespace impactx::elements
             m_sin_h_data = coef.sin.host_const().data();
         }
 
+        /** Reverse the element (negate ds) */
+        void reverse () {
+            // Reversing ds traverses the Fourier profile in the opposite z direction,
+            // so the odd sine terms change sign implicitly via sin(-kz) = -sin(kz).
+            Thick::reverse();
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 

@@ -74,6 +74,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate kicks) */
+        void reverse () { m_xkick = -m_xkick; m_ykick = -m_ykick; }
+
         /** Push all particles */
         using BeamOptic::operator();
 

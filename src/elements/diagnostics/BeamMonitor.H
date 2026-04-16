@@ -88,6 +88,9 @@ namespace detail
         BeamMonitor& operator= (BeamMonitor const & other) = default;
         BeamMonitor& operator= (BeamMonitor && other) = default;
 
+        /** Reverse the element (no-op for diagnostics) */
+        void reverse () { }
+
         /** Prepare entering the element before starting push logic.
          *
          * And write reference particle.

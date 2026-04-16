@@ -84,6 +84,9 @@ namespace impactx::elements
             compute_factorial();
         }
 
+        /** Reverse the element (negate strengths) */
+        void reverse () { m_Kn = -m_Kn; m_Ks = -m_Ks; }
+
         /** Push all particles */
         using BeamOptic::operator();
 

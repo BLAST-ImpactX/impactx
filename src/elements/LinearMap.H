@@ -97,6 +97,31 @@ namespace impactx::elements
             return max_err <= tol;
         }
 
+        /** Reverse the element (compute symplectic inverse of transport map)
+         *
+         * For a symplectic matrix R, the inverse is
+         *   R^{-1} = Omega^T R^T Omega = -Omega R^T Omega
+         * where Omega is the standard 6x6 symplectic form.
+         *
+         * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+         * Throws if the transport map is not symplectic.
+         */
+        void reverse ()
+        {
+            if (!symplectic()) {
+                throw std::runtime_error(
+                    "LinearMap::reverse: transport map is not symplectic.");
+            }
+
+            Map6x6 const Omega = impactx::symplectic_form();
+
+            // R_inv = Omega^T * R^T * Omega = -Omega * R^T * Omega
+            Map6x6 const RT = m_transport_map.transpose();
+            Map6x6 const R_inv = (-Omega) * RT * Omega;
+            m_transport_map = R_inv;
+            m_ds = -m_ds;
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 

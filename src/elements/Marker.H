@@ -42,6 +42,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (no-op) */
+        void reverse () { }
+
         /** Push all particles - nothing to do here */
         void operator() (
             ImpactXParticleContainer & /* pc */,

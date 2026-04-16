@@ -651,9 +651,9 @@ def unroll_impactx_lattice(lattice):
 
         if etype == "DipEdge" or etype == "ShortRF" or etype == "BeamMonitor":
             # remove extra attributes if present
-            if hasattr(edict, "nslice"):
+            if "nslice" in edict:
                 del edict["nslice"]
-            if hasattr(edict, "ds"):
+            if "ds" in edict:
                 del edict["ds"]
 
         # skipping BeamMonitors for now. They seem to cause trouble

@@ -61,7 +61,7 @@ def sim(request):
 
             self.sim.init_grids()
 
-            beam = self.sim.particle_container()
+            beam = self.sim.beam
             beam.clear_particles()
 
             # load a 1 GeV electron beam with an initial
@@ -69,9 +69,7 @@ def sim(request):
             kin_energy_MeV = 1.0e3  # reference energy
             bunch_charge_C = 1.0e-9  # used with space charge
 
-            #   reference particle
-            ref = beam.ref_particle()
-            ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
+            beam.ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
             #   particle bunch
             distr = distribution.Waterbag(
@@ -96,7 +94,7 @@ def sim(request):
                 self.sim.add_particles(bunch_charge_C, distr, npart, spin_vectors)
             else:
                 self.sim.add_particles(bunch_charge_C, distr, npart)
-            assert self.sim.particle_container().total_number_of_particles() == npart
+            assert self.sim.beam.total_number_of_particles() == npart
 
             return self.sim
 
@@ -120,21 +118,21 @@ SPIN_COLS = ["spin_x", "spin_y", "spin_z"]
 REF_COLS = ["x", "y", "z", "t", "px", "py", "pz", "pt", "s"]
 
 
-def save_state(pc, spin=False):
+def save_state(beam, spin=False):
     """Save a copy of particle phase space (and optionally spin) arrays."""
-    df = pc.to_df()
+    df = beam.to_df()
     cols = PHASE_COLS + (SPIN_COLS if spin else [])
     return {c: df[c].to_numpy().copy() for c in cols}
 
 
-def save_ref_state(pc):
+def save_ref_state(beam):
     """Save a copy of the reference particle state."""
-    return pc.ref_particle().copy()
+    return beam.ref.copy()
 
 
-def check_changed(pc, initial, spin=False):
+def check_changed(beam, initial, spin=False):
     """Assert that at least one coordinate changed meaningfully."""
-    df = pc.to_df()
+    df = beam.to_df()
     cols = PHASE_COLS + (SPIN_COLS if spin else [])
     any_changed = False
     for c in cols:
@@ -145,10 +143,16 @@ def check_changed(pc, initial, spin=False):
 
 
 def check_roundtrip(
-    pc, initial, phase_atol=phase_atol, spin_atol=spin_atol, spin=False
+    beam,
+    initial,
+    initial_ref,
+    phase_atol=phase_atol,
+    spin_atol=spin_atol,
+    ref_atol=ref_atol,
+    spin=False,
 ):
-    """Assert all particles returned to initial state."""
-    df = pc.to_df()
+    """Assert particles and the reference particle returned to initial state."""
+    df = beam.to_df()
     for c in PHASE_COLS:
         np.testing.assert_allclose(
             df[c].to_numpy(),
@@ -166,16 +170,11 @@ def check_roundtrip(
                 rtol=0,
                 err_msg=f"Roundtrip mismatch in {c}",
             )
-
-
-def check_ref_roundtrip(pc, initial_ref, atol=ref_atol):
-    """Assert the reference particle returned to its initial state."""
-    ref = pc.ref_particle()
     for c in REF_COLS:
         np.testing.assert_allclose(
-            getattr(ref, c),
+            getattr(beam.ref, c),
             getattr(initial_ref, c),
-            atol=atol,
+            atol=ref_atol,
             rtol=0,
             err_msg=f"Reference-particle roundtrip mismatch in {c}",
         )
@@ -190,7 +189,7 @@ def roundtrip(
     spin=False,
 ):
     """Run forward + reverse + forward and verify roundtrip."""
-    beam = sim.particle_container()
+    beam = sim.beam
 
     initial = save_state(beam, spin=spin)
     initial_ref = save_ref_state(beam)
@@ -209,11 +208,12 @@ def roundtrip(
     check_roundtrip(
         beam,
         initial,
+        initial_ref=initial_ref,
         phase_atol=phase_atol,
         spin_atol=spin_atol,
+        ref_atol=ref_atol,
         spin=spin,
     )
-    check_ref_roundtrip(beam, initial_ref, atol=ref_atol)
 
 
 # =============================================================================

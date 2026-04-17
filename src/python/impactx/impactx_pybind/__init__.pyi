@@ -181,6 +181,8 @@ class ImpactX:
     def particle_container(self) -> ImpactXParticleContainer:
         """
         Access the beam particle container.
+
+        Deprecated: use ``sim.beam``.
         """
     def phi(
         self, lev: typing.SupportsInt | typing.SupportsIndex
@@ -245,6 +247,11 @@ class ImpactX:
     def always_warn_immediately(
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
+    @property
+    def beam(self) -> ImpactXParticleContainer:
+        """
+        Access the beam particle container.
+        """
     @property
     def blocking_factor_x(self) -> list[int]:
         """
@@ -766,6 +773,8 @@ class ImpactXParticleContainer(
     def ref_particle(self) -> RefPart:
         """
         Access the reference particle.
+
+        Deprecated: use ``beam.ref``.
         """
     def reset_beam_moments_history(self) -> None:
         """
@@ -779,6 +788,11 @@ class ImpactXParticleContainer(
     def coord_system(self) -> CoordSystem:
         """
         Get the current coordinate system of particles in this container
+        """
+    @property
+    def ref(self) -> RefPart:
+        """
+        Access the reference particle.
         """
     @property
     def store_beam_moments(self) -> bool:

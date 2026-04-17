@@ -26,7 +26,7 @@ bunch_charge_C = 1.0e-8  # used with space charge
 npart = 10000  # number of macro particles; use 1e5 for increased precision
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch

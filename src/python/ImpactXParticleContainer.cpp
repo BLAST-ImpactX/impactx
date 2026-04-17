@@ -104,10 +104,28 @@ void init_impactxparticlecontainer(py::module& m)
              ":param sy: spin component in y\n"
              ":param sz: spin component in z\n"
         )
-        .def("ref_particle",
-            py::overload_cast<>(&ImpactXParticleContainer::GetRefParticle),
-            py::return_value_policy::reference_internal,
+        // Getter-only property is intentional: it returns the live mutable
+        // RefPart by reference.
+        // A writable property (with assignment) would be ambiguous:
+        // alias (Pythonic) or copy-in (safe) for the simulation-owned RefPart.
+        .def_property_readonly("ref",
+            [](ImpactXParticleContainer & pc) -> RefPart & {
+                return pc.GetRefParticle();
+            },
             "Access the reference particle."
+        )
+        .def("ref_particle",
+            [](ImpactXParticleContainer & pc) -> RefPart & {
+                py::warnings::warn(
+                    "ref_particle() is deprecated. Use beam.ref instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
+                return pc.GetRefParticle();
+            },
+            py::return_value_policy::reference_internal,
+            "Access the reference particle.\n\n"
+            "Deprecated: use ``beam.ref``."
         )
         .def("set_ref_particle",
              &ImpactXParticleContainer::SetRefParticle,

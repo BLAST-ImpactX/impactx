@@ -24,7 +24,7 @@ sim.init_grids()
 kin_energy_MeV = 230.0  # reference energy
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 # design the accelerator lattice
@@ -81,8 +81,8 @@ sim.lattice.extend(
 def hook_before_element(sim):
     element = sim.tracking_element
     if type(element) is elements.RFCavity:
-        beam = sim.particle_container()
-        ref = beam.ref_particle()
+        beam = sim.beam
+        ref = beam.ref
         print(
             f"  Beam at s={ref.s:.2f}m, t={ref.t:.2f}s, gamma at entry={ref.gamma:.2f}",
             flush=True,

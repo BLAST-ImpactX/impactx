@@ -269,6 +269,11 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: particle_container()
 
       Access the beam particle container (:py:class:`impactx.ParticleContainer`).
+      Deprecated: use :py:attr:`beam`.
+
+   .. py:property:: beam
+
+      Access the beam particle container (:py:class:`impactx.ParticleContainer`).
 
    .. py:property:: lattice
 
@@ -356,7 +361,7 @@ Collective Effects & Overall Simulation Parameters
       .. code-block:: python3
 
          def hook_before_period(sim):
-             beam = sim.particle_container()
+             beam = sim.beam
              turn = sim.tracking_period
              # Example: you could now manipulate elements in sim.lattice
              #          for the next turn.
@@ -464,9 +469,14 @@ Particles
    .. py:method:: ref_particle()
 
       Access the reference particle (:py:class:`impactx.RefPart`).
+      Deprecated: use :py:attr:`ref`.
 
       :return: return a data reference to the reference particle
       :rtype: impactx.RefPart
+
+   .. py:property:: ref
+
+      Access the reference particle (:py:class:`impactx.RefPart`).
 
    .. py:method:: set_ref_particle(refpart)
 
@@ -605,7 +615,7 @@ Particles
 
       .. code-block:: python
 
-         ref = sim.particle_container().ref_particle()
+         ref = sim.beam.ref
          ref.set_species("electron").set_kin_energy_MeV(2.0e3)
 
    .. py:method:: set_charge_qe(charge_qe)

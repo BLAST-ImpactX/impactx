@@ -36,8 +36,8 @@ def test_wake(save_png=True):
     sigma_t = 1.9975134930563207e-05
 
     if element_has_csr:
-        pc = sim.particle_container()
-        x_min, y_min, t_min, x_max, y_max, t_max = pc.min_and_max_positions()
+        beam = sim.beam
+        x_min, y_min, t_min, x_max, y_max, t_max = beam.min_and_max_positions()
 
         is_unity_particle_weight = False
         GetNumberDensity = True
@@ -53,7 +53,7 @@ def test_wake(save_png=True):
 
         # Call deposit_charge with the correct type
         wakeconvolution.deposit_charge(
-            pc,
+            beam,
             charge_distribution,
             bin_min,
             bin_size,

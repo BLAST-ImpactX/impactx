@@ -24,12 +24,12 @@ sim.init_grids()
 kin_energy_MeV = 250.0  # reference energy
 
 #   reference particle
-pc = sim.particle_container()
-ref = pc.ref_particle()
+beam = sim.beam
+ref = beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   load particle bunch from file
-push(pc, elements.Source("openPMD", "../solenoid.py/diags/openPMD/monitor.h5"))
+push(beam, elements.Source("openPMD", "../solenoid.py/diags/openPMD/monitor.h5"))
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")

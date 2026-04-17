@@ -44,6 +44,7 @@ __all__: list[str] = [
     "elements",
     "flatten_charge_to_2D",
     "push",
+    "reverse",
     "s",
     "t",
     "wakeconvolution",
@@ -1138,6 +1139,51 @@ def push(
 ) -> None:
     """
     Push the reference particle through an element
+    """
+
+def reverse(
+    element: elements.Empty
+    | elements.Aperture
+    | elements.Buncher
+    | elements.CFbend
+    | elements.ChrAcc
+    | elements.ChrDrift
+    | elements.ChrPlasmaLens
+    | elements.ChrQuad
+    | elements.ConstF
+    | elements.BeamMonitor
+    | elements.DipEdge
+    | elements.Drift
+    | elements.ExactCFbend
+    | elements.ExactDrift
+    | elements.ExactMultipole
+    | elements.ExactQuad
+    | elements.ExactSbend
+    | elements.Kicker
+    | elements.LinearMap
+    | elements.Marker
+    | elements.Multipole
+    | elements.NonlinearLens
+    | elements.PlaneXYRot
+    | elements.PolygonAperture
+    | elements.Programmable
+    | elements.PRot
+    | elements.Quad
+    | elements.QuadEdge
+    | elements.RFCavity
+    | elements.Sbend
+    | elements.ShortRF
+    | elements.SoftSolenoid
+    | elements.SoftQuadrupole
+    | elements.Sol
+    | elements.Source
+    | elements.SpinMap
+    | elements.TaperedPL
+    | elements.ThinDipole,
+) -> None:
+    """
+    Reverse an element in-place so that pushing particles through
+    it reverses the effect of the original element.
     """
 
 __author__: str = (

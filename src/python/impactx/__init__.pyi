@@ -47,6 +47,7 @@ from impactx.impactx_pybind import (
     elements,
     flatten_charge_to_2D,
     push,
+    reverse,
     wakeconvolution,
 )
 from impactx.impactx_pybind.elements import FilteredElementsList
@@ -101,6 +102,7 @@ __all__: list[str] = [
     "register_RFCavity_extension",
     "register_SoftQuadrupole_extension",
     "register_SoftSolenoid_extension",
+    "reverse",
     "s",
     "t",
     "twiss",

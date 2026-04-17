@@ -96,6 +96,11 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -194,6 +199,11 @@ class BeamMonitor(mixin.Thin):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -306,6 +316,11 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -375,6 +390,11 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -446,6 +466,11 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -514,6 +539,11 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -569,6 +599,11 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -640,6 +675,11 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -710,6 +750,11 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -794,6 +839,11 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -940,6 +990,11 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -983,6 +1038,11 @@ class Empty(mixin.Named, mixin.Thin):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1042,6 +1102,11 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1118,6 +1183,11 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1176,6 +1246,11 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1255,6 +1330,11 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1343,6 +1423,11 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def rc(self, ref: impactx.impactx_pybind.RefPart) -> float:
         """
         Radius of curvature in m
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self, in_degrees: bool = False
@@ -1539,6 +1624,11 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -2074,6 +2164,11 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2147,6 +2242,11 @@ class Marker(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2199,6 +2299,11 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -2273,6 +2378,11 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2335,6 +2445,11 @@ class PRot(mixin.Named, mixin.Thin):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self, in_degrees: bool = False
@@ -2400,6 +2515,11 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self, in_degrees: bool = False
@@ -2468,6 +2588,11 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -2659,6 +2784,11 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2718,6 +2848,11 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -2798,6 +2933,11 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -2886,6 +3026,11 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Radius of curvature in m
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2938,6 +3083,11 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -3024,6 +3174,11 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3103,6 +3258,11 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3179,6 +3339,11 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3235,6 +3400,11 @@ class Source(mixin.Named, mixin.Thin):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -3309,6 +3479,11 @@ class SpinMap(mixin.Named, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -3399,6 +3574,11 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3471,6 +3651,11 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self, in_degrees: bool = False

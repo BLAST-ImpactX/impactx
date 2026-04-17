@@ -72,6 +72,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate bending angle) */
+        void reverse () { m_theta = -m_theta; }
+
         /** Push all particles */
         using BeamOptic::operator();
 

@@ -132,6 +132,9 @@ namespace impactx::elements
             m_vertices_y_h_data = vert.y.host_const().data();
         }
 
+        /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
+        void reverse () { /* no-op */ }
+
         /** Push all particles */
         using BeamOptic::operator();
 

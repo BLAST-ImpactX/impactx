@@ -111,6 +111,9 @@ namespace impactx::elements
             }
         }
 
+        /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
+        void reverse () { /* no-op */ }
+
         /** Push all particles */
         using BeamOptic::operator();
 

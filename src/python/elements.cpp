@@ -105,6 +105,18 @@ namespace
         register_envelope_push(cl);
     }
 
+    /** Register reverse() method */
+    template<typename T_PyClass>
+    void register_reverse (T_PyClass & cl)
+    {
+        using Element = typename T_PyClass::type;
+
+        cl.def("reverse", &Element::reverse,
+            "Reverse the element in-place so that pushing particles through\n"
+            "it reverses the effect of the original element."
+        );
+    }
+
     /** Helper to format {key, value} pairs
      *
      * Expected outcome is ", key=value" with key as a string and appropriate formatting for value.
@@ -441,6 +453,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_BeamMonitor);
+    register_reverse(py_BeamMonitor);
 
     // beam optics
 
@@ -571,6 +584,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Aperture);
+    register_reverse(py_Aperture);
 
     py::class_<ChrDrift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrDrift(me, "ChrDrift");
     py_ChrDrift
@@ -606,6 +620,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrDrift);
+    register_reverse(py_ChrDrift);
 
     py::class_<ChrQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrQuad(me, "ChrQuad");
     py_ChrQuad
@@ -662,6 +677,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrQuad);
+    register_reverse(py_ChrQuad);
 
     py::class_<ChrPlasmaLens, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrPlasmaLens(me, "ChrPlasmaLens");
     py_ChrPlasmaLens
@@ -718,6 +734,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrPlasmaLens);
+    register_reverse(py_ChrPlasmaLens);
 
     py::class_<ChrAcc, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment> py_ChrAcc(me, "ChrAcc");
     py_ChrAcc
@@ -775,6 +792,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrAcc);
+    register_reverse(py_ChrAcc);
 
     py::class_<ConstF, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ConstF(me, "ConstF");
     py_ConstF
@@ -841,6 +859,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ConstF);
+    register_reverse(py_ConstF);
 
     py::class_<DipEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_DipEdge(me, "DipEdge");
     py_DipEdge
@@ -1006,6 +1025,7 @@ void init_elements(py::module& m)
 
     ;
     register_push(py_DipEdge);
+    register_reverse(py_DipEdge);
 
     py::class_<QuadEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_QuadEdge(me, "QuadEdge");
     py_QuadEdge
@@ -1068,6 +1088,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_QuadEdge);
+    register_reverse(py_QuadEdge);
 
     py::class_<Drift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Drift(me, "Drift");
     py_Drift
@@ -1103,6 +1124,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Drift);
+    register_reverse(py_Drift);
 
     py::class_<ExactDrift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactDrift(me, "ExactDrift");
     py_ExactDrift
@@ -1138,6 +1160,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactDrift);
+    register_reverse(py_ExactDrift);
 
     py::class_<ExactMultipole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactMultipole(me, "ExactMultipole");
     py_ExactMultipole
@@ -1208,6 +1231,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactMultipole);
+    register_reverse(py_ExactMultipole);
 
     py::class_<ExactCFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactCFbend(me, "ExactCFbend");
     py_ExactCFbend
@@ -1282,6 +1306,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactCFbend);
+    register_reverse(py_ExactCFbend);
 
     py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
     py_ExactQuad
@@ -1355,6 +1380,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactQuad);
+    register_reverse(py_ExactQuad);
 
     py::class_<ExactSbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactSbend(me, "ExactSbend");
     py_ExactSbend
@@ -1443,6 +1469,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactSbend);
+    register_reverse(py_ExactSbend);
 
     py::class_<Kicker, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Kicker(me, "Kicker");
     py_Kicker
@@ -1507,6 +1534,7 @@ void init_elements(py::module& m)
         // TODO unit
     ;
     register_push(py_Kicker);
+    register_reverse(py_Kicker);
 
     py::class_<Multipole, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Multipole(me, "Multipole");
     py_Multipole
@@ -1568,6 +1596,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Multipole);
+    register_reverse(py_Multipole);
 
     py::class_<Empty, elements::mixin::Named, elements::mixin::Thin> py_Empty(me, "Empty");
     py_Empty
@@ -1586,6 +1615,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Empty);
+    register_reverse(py_Empty);
 
     py::class_<Marker, elements::mixin::Named, elements::mixin::Thin> py_Marker(me, "Marker");
     py_Marker
@@ -1605,6 +1635,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Marker);
+    register_reverse(py_Marker);
 
     py::class_<NonlinearLens, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_NonlinearLens(me, "NonlinearLens");
     py_NonlinearLens
@@ -1654,6 +1685,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_NonlinearLens);
+    register_reverse(py_NonlinearLens);
 
     py::class_<PlaneXYRot, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
     py_PlaneXYRot
@@ -1720,6 +1752,7 @@ void init_elements(py::module& m)
         */
     ;
     register_push(py_PlaneXYRot);
+    register_reverse(py_PlaneXYRot);
 
     py::class_<PolygonAperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PolygonAperture(me, "PolygonAperture");
     py_PolygonAperture
@@ -1822,6 +1855,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_PolygonAperture);
+    register_reverse(py_PolygonAperture);
 
     py::class_<Programmable, elements::mixin::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",
@@ -1931,6 +1965,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Quad);
+    register_reverse(py_Quad);
 
     py::class_<RFCavity, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_RFCavity(me, "RFCavity");
     py_RFCavity
@@ -2013,6 +2048,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_RFCavity);
+    register_reverse(py_RFCavity);
 
     py::class_<Sbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sbend(me, "Sbend");
     py_Sbend
@@ -2060,6 +2096,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Sbend);
+    register_reverse(py_Sbend);
 
     py::class_<CFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_CFbend(me, "CFbend");
     py_CFbend
@@ -2117,6 +2154,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_CFbend);
+    register_reverse(py_CFbend);
 
     py::class_<Buncher, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Buncher(me, "Buncher");
     py_Buncher
@@ -2166,6 +2204,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Buncher);
+    register_reverse(py_Buncher);
 
     py::class_<ShortRF, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_ShortRF(me, "ShortRF");
     py_ShortRF
@@ -2224,6 +2263,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ShortRF);
+    register_reverse(py_ShortRF);
 
     py::class_<SoftSolenoid, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SoftSolenoid(me, "SoftSolenoid");
     py_SoftSolenoid
@@ -2324,6 +2364,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_SoftSolenoid);
+    register_reverse(py_SoftSolenoid);
 
     py::class_<Source, elements::mixin::Named, elements::mixin::Thin> py_Source(me, "Source");
     py_Source
@@ -2376,6 +2417,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Source);
+    register_reverse(py_Source);
 
     py::class_<Sol, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sol(me, "Sol");
     py_Sol
@@ -2424,6 +2466,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Sol);
+    register_reverse(py_Sol);
 
     py::class_<PRot, elements::mixin::Named, elements::mixin::Thin> py_PRot(me, "PRot");
     py_PRot
@@ -2497,6 +2540,7 @@ void init_elements(py::module& m)
         */
     ;
     register_push(py_PRot);
+    register_reverse(py_PRot);
 
     py::class_<SoftQuadrupole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SoftQuadrupole(me, "SoftQuadrupole");
     py_SoftQuadrupole
@@ -2561,6 +2605,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_SoftQuadrupole);
+    register_reverse(py_SoftQuadrupole);
 
     py::class_<ThinDipole, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_ThinDipole(me, "ThinDipole");
     py_ThinDipole
@@ -2637,6 +2682,7 @@ void init_elements(py::module& m)
         */
     ;
     register_push(py_ThinDipole);
+    register_reverse(py_ThinDipole);
 
     py::class_<TaperedPL, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_TaperedPL(me, "TaperedPL");
     py_TaperedPL
@@ -2701,6 +2747,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_TaperedPL);
+    register_reverse(py_TaperedPL);
 
     py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment> py_LinearMap(me, "LinearMap");
     py_LinearMap
@@ -2755,6 +2802,7 @@ void init_elements(py::module& m)
         )
      ;
      register_push(py_LinearMap);
+     register_reverse(py_LinearMap);
 
     py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment> py_SpinMap(me, "SpinMap");
     py_SpinMap
@@ -2812,6 +2860,7 @@ void init_elements(py::module& m)
         )
      ;
      register_push(py_SpinMap);
+     register_reverse(py_SpinMap);
 
 
     // freestanding push function
@@ -2822,6 +2871,14 @@ void init_elements(py::module& m)
     m.def("push", py::overload_cast<RefPart &, elements::KnownElements &>(&push),
         py::arg("ref"), py::arg("element"),
         "Push the reference particle through an element"
+    );
+
+    m.def("reverse", [](elements::KnownElements & el) {
+            std::visit([](auto && e) { e.reverse(); }, el);
+        },
+        py::arg("element"),
+        "Reverse an element in-place so that pushing particles through\n"
+        "it reverses the effect of the original element."
     );
 
 

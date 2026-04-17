@@ -50,6 +50,12 @@ namespace impactx::elements
           : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
         {}
 
+        /** Reverse the element (not supported for Programmable) */
+        void reverse ()
+        {
+            throw std::runtime_error("Programmable: reverse() is not supported.");
+        }
+
         /** Push all particles relative to the reference particle
          *
          * @param[in,out] pc particle container to push

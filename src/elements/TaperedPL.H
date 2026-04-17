@@ -73,6 +73,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate strength) */
+        void reverse () { m_k = -m_k; }
+
         /** Push all particles */
         using BeamOptic::operator();
 

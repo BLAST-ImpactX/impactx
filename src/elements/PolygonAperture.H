@@ -52,7 +52,7 @@ namespace impactx::elements
     struct PolygonAperture
     : public mixin::Named,
       public mixin::BeamOptic<PolygonAperture>,
-      public mixin::LinearTransport<PolygonAperture, false>,
+      public mixin::LinearTransport<PolygonAperture>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize
@@ -276,14 +276,17 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * A polygon aperture (potentially) removes particles; it does not
+         * deflect or drift the beam, so the linear transport map is the
+         * identity.
+         *
+         * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
             return Map6x6::Identity();
         }
 

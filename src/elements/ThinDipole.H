@@ -32,7 +32,7 @@ namespace impactx::elements
     struct ThinDipole
     : public mixin::Named,
       public mixin::BeamOptic<ThinDipole>,
-      public mixin::LinearTransport<ThinDipole>,
+      public mixin::LinearTransport<ThinDipole, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize,

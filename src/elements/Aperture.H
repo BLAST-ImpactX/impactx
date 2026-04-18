@@ -33,7 +33,7 @@ namespace impactx::elements
     struct Aperture
     : public mixin::Named,
       public mixin::BeamOptic<Aperture>,
-      public mixin::LinearTransport<Aperture>,
+      public mixin::LinearTransport<Aperture, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize,

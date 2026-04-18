@@ -32,7 +32,7 @@ namespace impactx::elements
     struct Multipole
     : public mixin::Named,
       public mixin::BeamOptic<Multipole>,
-      public mixin::LinearTransport<Multipole>,
+      public mixin::LinearTransport<Multipole, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize

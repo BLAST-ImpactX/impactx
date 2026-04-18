@@ -52,7 +52,7 @@ namespace impactx::elements
     struct PolygonAperture
     : public mixin::Named,
       public mixin::BeamOptic<PolygonAperture>,
-      public mixin::LinearTransport<PolygonAperture>,
+      public mixin::LinearTransport<PolygonAperture, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize

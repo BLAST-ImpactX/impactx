@@ -33,7 +33,7 @@ namespace impactx::elements
     struct PRot
     : public mixin::Named,
       public mixin::BeamOptic<PRot>,
-      public mixin::LinearTransport<PRot>,
+      public mixin::LinearTransport<PRot, false>,
       public mixin::Thin,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>

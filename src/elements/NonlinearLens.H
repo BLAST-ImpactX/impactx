@@ -35,7 +35,7 @@ namespace impactx::elements
     struct NonlinearLens
     : public mixin::Named,
       public mixin::BeamOptic<NonlinearLens>,
-      public mixin::LinearTransport<NonlinearLens>,
+      public mixin::LinearTransport<NonlinearLens, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize

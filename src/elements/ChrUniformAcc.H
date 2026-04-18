@@ -33,7 +33,7 @@ namespace impactx::elements
     struct ChrAcc
     : public mixin::Named,
       public mixin::BeamOptic<ChrAcc>,
-      public mixin::LinearTransport<ChrAcc>,
+      public mixin::LinearTransport<ChrAcc, false>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,

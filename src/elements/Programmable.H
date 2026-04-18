@@ -30,7 +30,7 @@ namespace impactx::elements
 {
     struct Programmable
     : public mixin::Named,
-      public mixin::LinearTransport<Programmable>
+      public mixin::LinearTransport<Programmable, false>
       // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Programmable";

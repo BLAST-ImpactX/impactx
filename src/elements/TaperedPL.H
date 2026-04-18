@@ -32,7 +32,7 @@ namespace impactx::elements
     struct TaperedPL
     : public mixin::Named,
       public mixin::BeamOptic<TaperedPL>,
-      public mixin::LinearTransport<TaperedPL>,
+      public mixin::LinearTransport<TaperedPL, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize

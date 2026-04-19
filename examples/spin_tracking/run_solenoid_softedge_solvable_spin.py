@@ -9,7 +9,7 @@
 import numpy as np
 
 import amrex.space3d as amr
-from impactx import Config, ImpactX, elements, Map6x6, Map3x6, Vector3 
+from impactx import Config, ImpactX, Map3x6, Map6x6, Vector3, elements
 
 sim = ImpactX()
 
@@ -120,20 +120,20 @@ Amat = ref.spin_coupling
 
 print()
 print("Linear map:")
-for i in range(1,7):
-    for j in range(1,7):
-        print(i,j,Rmat[i,j])
+for i in range(1, 7):
+    for j in range(1, 7):
+        print(i, j, Rmat[i, j])
 
 print()
 print("Reference spin rotation vector:")
-for i in range(1,4):
-    print(i,vmat[i])
+for i in range(1, 4):
+    print(i, vmat[i])
 
 print()
 print("Spin-orbit coupling matrix:")
-for i in range(1,4):
-    for j in range(1,7):
-        print(i,j,Amat[i,j])
+for i in range(1, 4):
+    for j in range(1, 7):
+        print(i, j, Amat[i, j])
 
 # clean shutdown
 sim.finalize()

@@ -48,3 +48,9 @@ See the `AMReX debugger section <https://amrex-codes.github.io/amrex/docs_html/B
 * avoid AMReX-level signal handling
 
 You will need to set those runtime options to work directly with debuggers.
+
+For Python runs, you can use ``gdb`` to catch C++ exceptions and get a backtrace:
+
+.. code-block:: bash
+
+   gdb -ex 'catch throw' -ex run -ex bt --args python run_impactx.py

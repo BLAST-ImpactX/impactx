@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -13,11 +13,14 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
-#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
-#include "mixin/thick.H"
-#include "mixin/named.H"
+#include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
+#include "mixin/named.H"
+#include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
+#include "mixin/thick.H"
+#include "mixin/TrackedVector.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuComplex.H>
@@ -26,6 +29,7 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
@@ -33,29 +37,16 @@
 namespace impactx::elements
 {
 
-    /** Dynamic data for the ExactMultipole elements
+    /** Multipole coefficients for magnetic field.
      *
-     * Since we copy the element to the device, we cannot store this data on the element itself.
-     * But we can store pointers to this data with the element and keep a lookup table here,
-     * which we clean up in the end.
+     * Host data persists across simulations; device data is uploaded
+     * on-demand "lazily" on first use and released when AMReX shuts down.
      */
-    namespace MultipoleData
+    struct MultipoleCoefficients
     {
-        //! last used id for a created ExactMultipole
-        inline int next_id = 0;
-
-        //! host: normal multipole coefficients of the magnetic field
-        inline std::map<int, std::vector<amrex::ParticleReal>> h_k_normal = {};
-        //! host: skew multipole coefficients of the magnetic field
-        inline std::map<int, std::vector<amrex::ParticleReal>> h_k_skew = {};
-
-        //! device: normal multipole coefficients of the magnetic field
-        inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_k_normal = {};
-        //! device: skew multipole coefficients of the magnetic field
-        inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_k_skew = {};
-
-    } // namespace MultipoleData
-
+        mixin::TrackedVector<amrex::ParticleReal> k_normal;
+        mixin::TrackedVector<amrex::ParticleReal> k_skew;
+    };
 
     struct ExactMultipole
     : public mixin::Named,
@@ -63,6 +54,7 @@ namespace impactx::elements
       public mixin::LinearTransport<ExactMultipole>,
       public mixin::Thick,
       public mixin::Alignment,
+      public mixin::NoFinalize,
       public mixin::PipeAperture
 #ifndef _WIN32
       // https://github.com/AMReX-Codes/amrex/issues/4609
@@ -71,6 +63,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "ExactMultipole";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        using DynamicData = mixin::GPUDataRegistry<MultipoleCoefficients>;
 
         /** A general (thick) straight-axis magnetic element whose field consists
          *  of a superposition of ideal hard-edge multipoles.  Like the element
@@ -117,37 +111,23 @@ namespace impactx::elements
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps),
-          m_id(MultipoleData::next_id)
+          m_id(DynamicData::allocate_id())
         {
-            // next created ExactMultipole has another id for its data
-            MultipoleData::next_id++;
-
-            // validate normal and skew coefficients are the same length
             m_ncoef = int(k_normal.size());
             if (m_ncoef != int(k_skew.size()))
                 throw std::runtime_error("ExactMultipole: normal and skew coefficient arrays must have same length!");
 
-            // host data
-            MultipoleData::h_k_normal[m_id] = k_normal;
-            MultipoleData::h_k_skew[m_id] = k_skew;
-            m_k_normal_h_data = MultipoleData::h_k_normal[m_id].data();
-            m_k_skew_h_data = MultipoleData::h_k_skew[m_id].data();
-
-            // device data
-            MultipoleData::d_k_normal.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
-            MultipoleData::d_k_skew.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
-            amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  k_normal.begin(), k_normal.end(),
-                                  MultipoleData::d_k_normal[m_id].begin());
-            amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  k_skew.begin(), k_skew.end(),
-                                  MultipoleData::d_k_skew[m_id].begin());
-            amrex::Gpu::streamSynchronize();
-
-            // low-level objects we can use on device
-            m_k_normal_d_data = MultipoleData::d_k_normal[m_id].data();
-            m_k_skew_d_data = MultipoleData::d_k_skew[m_id].data();
+            auto& coef = DynamicData::emplace(
+                m_id,
+                std::move(k_normal),
+                std::move(k_skew)
+            );
+            m_k_normal_h_data = coef.k_normal.host_const().data();
+            m_k_skew_h_data = coef.k_skew.host_const().data();
         }
+
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -165,6 +145,11 @@ namespace impactx::elements
             using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
+
+            // Ensure dynamic coefficient data is on GPU and we have fresh pointers to it
+            auto const & coef = *DynamicData::get(m_id);
+            m_k_normal_d_data = coef.k_normal.device_const().data();
+            m_k_skew_d_data = coef.k_skew.device_const().data();
 
             // length of the current slice
             m_slice_ds = m_ds / nslice();
@@ -342,11 +327,11 @@ namespace impactx::elements
             T_Real ptout = pt;
 
 #if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* k_normal = m_k_normal_d_data;
-            amrex::ParticleReal* k_skew = m_k_skew_d_data;
+            amrex::ParticleReal const * k_normal = m_k_normal_d_data;
+            amrex::ParticleReal const * k_skew = m_k_skew_d_data;
 #else
-            amrex::ParticleReal* k_normal = m_k_normal_h_data;
-            amrex::ParticleReal* k_skew = m_k_skew_h_data;
+            amrex::ParticleReal const * k_normal = m_k_normal_h_data;
+            amrex::ParticleReal const * k_skew = m_k_skew_h_data;
 #endif
 
             // a complex type with two T_Real
@@ -451,11 +436,11 @@ namespace impactx::elements
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
 #if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* k_normal = m_k_normal_d_data;
-            amrex::ParticleReal* k_skew = m_k_skew_d_data;
+            amrex::ParticleReal const * k_normal = m_k_normal_d_data;
+            amrex::ParticleReal const * k_skew = m_k_skew_d_data;
 #else
-            amrex::ParticleReal* k_normal = m_k_normal_h_data;
-            amrex::ParticleReal* k_skew = m_k_skew_h_data;
+            amrex::ParticleReal const * k_normal = m_k_normal_h_data;
+            amrex::ParticleReal const * k_skew = m_k_skew_h_data;
 #endif
 
             // normalize quad units to MAD-X convention if needed
@@ -509,33 +494,16 @@ namespace impactx::elements
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
-        /** Close and deallocate all data and handles.
-         */
-        void
-        finalize ()
-        {
-            // remove from unique data map
-            if (MultipoleData::h_k_normal.count(m_id) != 0u)
-                MultipoleData::h_k_normal.erase(m_id);
-            if (MultipoleData::h_k_skew.count(m_id) != 0u)
-                MultipoleData::h_k_skew.erase(m_id);
-
-            if (MultipoleData::d_k_normal.count(m_id) != 0u)
-                MultipoleData::d_k_normal.erase(m_id);
-            if (MultipoleData::d_k_skew.count(m_id) != 0u)
-                MultipoleData::d_k_skew.erase(m_id);
-        }
-
         int m_unit; //! unit specification for Multipole strength
         int m_int_order; //! order used for the symplectic integration (2 or 4)
         int m_mapsteps; //! number of integration steps per slice
         int m_id; //! unique ExactMultipole id used for data lookup map
 
         int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal* m_k_normal_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal* m_k_skew_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal* m_k_normal_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal* m_k_skew_d_data = nullptr; //! non-owning pointer to device sine coefficients
+        amrex::ParticleReal const * m_k_normal_h_data = nullptr; //! non-owning pointer to host normal coefficients
+        amrex::ParticleReal const * m_k_skew_h_data = nullptr; //! non-owning pointer to host skew coefficients
+        amrex::ParticleReal const * m_k_normal_d_data = nullptr; //! non-owning pointer to device normal coefficients
+        amrex::ParticleReal const * m_k_skew_d_data = nullptr; //! non-owning pointer to device skew coefficients
 
     private:
         // constants that are independent of the individually tracked particle,
@@ -550,6 +518,7 @@ namespace impactx::elements
 
 } // namespace impactx
 
+IMPACTX_GPUDATA_EXTERN(impactx::elements::ExactMultipole)
 IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactMultipole)
 
 #endif // IMPACTX_EXACTMULTIPOLE_H

@@ -166,14 +166,18 @@ void init_ImpactX (py::module& m)
 
                 pp_geometry.add("dynamic_size", false);
 
-                ix.ResizeMesh();
+                if (ix.initialized())
+                    ix.ResizeMesh();
             },
             "The physical extent of the full simulation domain, relative to the reference particle position, in meters."
         )
 
         .def_property("prob_relative",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<amrex::Real>("geometry", "prob_relative");
+                  amrex::ParmParse const pp_geometry("geometry");
+                  std::vector<amrex::Real> frac;
+                  pp_geometry.getarr("prob_relative", frac);
+                  return frac;
               },
               [](ImpactX & /* ix */, std::vector<amrex::Real> frac) {
                   amrex::ParmParse pp_geometry("geometry");
@@ -696,10 +700,26 @@ void init_ImpactX (py::module& m)
 
         .def("particle_container",
              [](ImpactX & ix) -> ImpactXParticleContainer & {
+                py::warnings::warn(
+                    "particle_container() is deprecated. Use sim.beam instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
                 return *ix.amr_data->track_particles.m_particle_container;
              },
              py::return_value_policy::reference_internal,
-             "Access the beam particle container."
+             "Access the beam particle container.\n\n"
+             "Deprecated: use ``sim.beam``."
+        )
+        // Getter-only property is intentional: it returns the live mutable
+        // ImpactXParticleContainer by reference.
+        // A writable property (with assignment) would be ambiguous:
+        // alias (Pythonic) or copy-in (safe) for the simulation-owned particle container.
+        .def_property_readonly("beam",
+            [](ImpactX & ix) -> ImpactXParticleContainer & {
+                return *ix.amr_data->track_particles.m_particle_container;
+            },
+            "Access the beam particle container."
         )
         .def(
             "rho",

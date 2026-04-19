@@ -26,7 +26,6 @@ def twiss(
     dispersion_py: numpy.float64 = 0.0,
 ):
     """
-
     Helper function to convert Courant-Snyder / Twiss input into phase space ellipse input.
 
     :param beta_x: Beta function value (unit: meter) in the x dimension, must be a non-zero positive value.

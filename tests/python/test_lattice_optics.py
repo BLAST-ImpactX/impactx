@@ -10,7 +10,7 @@
 import numpy as np
 import pytest
 
-from impactx import RefPart, elements
+from impactx import Config, RefPart, elements
 
 
 def test_lattice_linear_map():
@@ -18,7 +18,7 @@ def test_lattice_linear_map():
 
     # Create reference particle
     ref = RefPart()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(1.0e3)
+    ref.set_species("electron").set_kin_energy_MeV(1.0e3)
 
     # Create a valid test lattice (all elements define a linear transfer map)
     lattice = elements.KnownElementsList()
@@ -43,9 +43,16 @@ def test_lattice_linear_map():
         ]
     )
 
+    if Config.precision == "SINGLE":
+        atol = 1.0e-7
+        rtol = 5.0e-5
+    else:
+        atol = 0.0
+        rtol = 1.0e-8
+
     # Calculate Linear Transfer Map
     R = lattice.transfer_map(ref)
-    assert np.allclose(R.to_numpy(), R_expected)
+    assert np.allclose(R.to_numpy(), R_expected, rtol=rtol, atol=atol)
 
     # Check unexpected/unsupported options
     with pytest.raises(RuntimeError):
@@ -60,4 +67,4 @@ def test_lattice_linear_map():
 
     # Now the user explicitly assumes that undefined maps are identity maps
     R = lattice.transfer_map(ref, fallback_identity_map=True)
-    assert np.allclose(R.to_numpy(), R_expected)
+    assert np.allclose(R.to_numpy(), R_expected, rtol=rtol, atol=atol)

@@ -8,7 +8,6 @@ import collections.abc
 import typing
 
 import amrex.space3d.amrex_3d_pybind
-import impactx.extensions.KnownElementsList
 import impactx.impactx_pybind
 
 from . import mixin, transformation
@@ -31,6 +30,7 @@ __all__: list[str] = [
     "ExactMultipole",
     "ExactQuad",
     "ExactSbend",
+    "FilteredElementsList",
     "Kicker",
     "KnownElementsList",
     "LinearMap",
@@ -60,16 +60,16 @@ __all__: list[str] = [
 class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        aperture_x: typing.SupportsFloat,
-        aperture_y: typing.SupportsFloat,
-        repeat_x: typing.SupportsFloat = 0,
-        repeat_y: typing.SupportsFloat = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
         shift_odd_x: bool = False,
         shape: str = "rectangular",
         action: str = "transmit",
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -81,8 +81,8 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -96,6 +96,11 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -103,6 +108,7 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -125,28 +131,28 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         maximum horizontal coordinate
         """
     @aperture_x.setter
-    def aperture_x(self, arg1: typing.SupportsFloat) -> None: ...
+    def aperture_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def aperture_y(self) -> float:
         """
         maximum vertical coordinate
         """
     @aperture_y.setter
-    def aperture_y(self, arg1: typing.SupportsFloat) -> None: ...
+    def aperture_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def repeat_x(self) -> float:
         """
         horizontal period for repeated aperture masking
         """
     @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat) -> None: ...
+    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def repeat_y(self) -> float:
         """
         vertical period for repeated aperture masking
         """
     @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat) -> None: ...
+    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def shape(self) -> str:
         """
@@ -168,7 +174,7 @@ class BeamMonitor(mixin.Thin):
         name: str,
         backend: str = "default",
         encoding: str = "g",
-        period_sample_intervals: typing.SupportsInt = 1,
+        period_sample_intervals: typing.SupportsInt | typing.SupportsIndex = 1,
     ) -> None:
         """
         This element writes the particle beam out to openPMD data.
@@ -179,8 +185,8 @@ class BeamMonitor(mixin.Thin):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -194,6 +200,11 @@ class BeamMonitor(mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -201,6 +212,7 @@ class BeamMonitor(mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -217,7 +229,12 @@ class BeamMonitor(mixin.Thin):
         Horizontal and vertical values must be equal.
         """
     @alpha.setter
-    def alpha(self, arg1: typing.SupportsFloat) -> None: ...
+    def alpha(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def backend(self) -> str:
+        """
+        openPMD file backend (e.g. default, bp4, h5)
+        """
     @property
     def beta(self) -> float:
         """
@@ -225,14 +242,19 @@ class BeamMonitor(mixin.Thin):
         Horizontal and vertical values must be equal.
         """
     @beta.setter
-    def beta(self, arg1: typing.SupportsFloat) -> None: ...
+    def beta(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def cn(self) -> float:
         """
         Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
         """
     @cn.setter
-    def cn(self, arg1: typing.SupportsFloat) -> None: ...
+    def cn(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def encoding(self) -> str:
+        """
+        openPMD iteration encoding: "v" variable-based, "f" file-based, "g" group-based
+        """
     @property
     def has_name(self) -> bool: ...
     @property
@@ -248,21 +270,26 @@ class BeamMonitor(mixin.Thin):
     @nonlinear_lens_invariants.setter
     def nonlinear_lens_invariants(self, arg1: bool) -> None: ...
     @property
+    def period_sample_intervals(self) -> int:
+        """
+        for periodic lattices, only output every Nth period (turn or cycle)
+        """
+    @property
     def tn(self) -> float:
         """
         Dimensionless strength of the IOTA nonlinear magnetic insert element used for computing H and I.
         """
     @tn.setter
-    def tn(self, arg1: typing.SupportsFloat) -> None: ...
+    def tn(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        V: typing.SupportsFloat,
-        k: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        V: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -274,8 +301,8 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -289,6 +316,11 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -296,6 +328,7 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -311,27 +344,27 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         Normalized RF voltage drop V = Emax*L/(c*Brho)
         """
     @V.setter
-    def V(self, arg1: typing.SupportsFloat) -> None: ...
+    def V(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def k(self) -> float:
         """
         Wavenumber of RF in 1/m
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        rc: typing.SupportsFloat,
-        k: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -343,8 +376,8 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -358,6 +391,11 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -365,6 +403,7 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -380,27 +419,27 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         Quadrupole strength in m^(-2) (MADX convention) = (gradient in T/m) / (rigidity in T-m) k > 0 horizontal focusing k < 0 horizontal defocusing
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def rc(self) -> float:
         """
         Radius of curvature in m
         """
     @rc.setter
-    def rc(self, arg1: typing.SupportsFloat) -> None: ...
+    def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        ez: typing.SupportsFloat,
-        bz: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        ez: typing.SupportsFloat | typing.SupportsIndex,
+        bz: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -412,8 +451,8 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -427,6 +466,11 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -434,6 +478,7 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -449,25 +494,25 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         magnetic field strength in 1/m
         """
     @bz.setter
-    def bz(self, arg1: typing.SupportsFloat) -> None: ...
+    def bz(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def ez(self) -> float:
         """
         electric field strength in 1/m
         """
     @ez.setter
-    def ez(self, arg1: typing.SupportsFloat) -> None: ...
+    def ez(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -479,8 +524,8 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -494,6 +539,11 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -501,6 +551,7 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -514,15 +565,15 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        k: typing.SupportsFloat,
-        unit: typing.SupportsInt = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -534,8 +585,8 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -549,6 +600,11 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -556,6 +612,7 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -571,27 +628,27 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         focusing strength in 1/m^2 (or T/m)
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         unit specification for focusing strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        k: typing.SupportsFloat,
-        unit: typing.SupportsInt = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -603,8 +660,8 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -618,6 +675,11 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -625,6 +687,7 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -640,28 +703,28 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         quadrupole strength in 1/m^2 (or T/m)
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         unit specification for quad strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        kx: typing.SupportsFloat,
-        ky: typing.SupportsFloat,
-        kt: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        kx: typing.SupportsFloat | typing.SupportsIndex,
+        ky: typing.SupportsFloat | typing.SupportsIndex,
+        kt: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -673,8 +736,8 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -688,6 +751,11 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -695,6 +763,7 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -710,41 +779,41 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         focusing t strength in 1/m
         """
     @kt.setter
-    def kt(self, arg1: typing.SupportsFloat) -> None: ...
+    def kt(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def kx(self) -> float:
         """
         focusing x strength in 1/m
         """
     @kx.setter
-    def kx(self, arg1: typing.SupportsFloat) -> None: ...
+    def kx(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def ky(self) -> float:
         """
         focusing y strength in 1/m
         """
     @ky.setter
-    def ky(self, arg1: typing.SupportsFloat) -> None: ...
+    def ky(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        psi: typing.SupportsFloat,
-        rc: typing.SupportsFloat,
-        g: typing.SupportsFloat,
-        R: typing.SupportsFloat = 1,
-        K0: typing.SupportsFloat = 1.6449340668482264,
-        K1: typing.SupportsFloat = 0,
-        K2: typing.SupportsFloat = 1.0,
-        K3: typing.SupportsFloat = 0.16666666666666666,
-        K4: typing.SupportsFloat = 0,
-        K5: typing.SupportsFloat = 0,
-        K6: typing.SupportsFloat = 0,
+        psi: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        g: typing.SupportsFloat | typing.SupportsIndex,
+        R: typing.SupportsFloat | typing.SupportsIndex = 1,
+        K0: typing.SupportsFloat | typing.SupportsIndex = 1.6449340668482264,
+        K1: typing.SupportsFloat | typing.SupportsIndex = 0,
+        K2: typing.SupportsFloat | typing.SupportsIndex = 1.0,
+        K3: typing.SupportsFloat | typing.SupportsIndex = 0.16666666666666666,
+        K4: typing.SupportsFloat | typing.SupportsIndex = 0,
+        K5: typing.SupportsFloat | typing.SupportsIndex = 0,
+        K6: typing.SupportsFloat | typing.SupportsIndex = 0,
         model: str = "linear",
         location: str = "entry",
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -756,8 +825,8 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -771,6 +840,11 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -778,6 +852,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -793,63 +868,63 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         Fringe field integral (unitless)
         """
     @K0.setter
-    def K0(self, arg1: typing.SupportsFloat) -> None: ...
+    def K0(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K1(self) -> float:
         """
         Fringe field integral (unitless)
         """
     @K1.setter
-    def K1(self, arg1: typing.SupportsFloat) -> None: ...
+    def K1(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K2(self) -> float:
         """
         Fringe field integral (unitless)
         """
     @K2.setter
-    def K2(self, arg1: typing.SupportsFloat) -> None: ...
+    def K2(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K3(self) -> float:
         """
         Fringe field integral (unitless)
         """
     @K3.setter
-    def K3(self, arg1: typing.SupportsFloat) -> None: ...
+    def K3(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K4(self) -> float:
         """
         Fringe field integral (unitless)
         """
     @K4.setter
-    def K4(self, arg1: typing.SupportsFloat) -> None: ...
+    def K4(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K5(self) -> float:
         """
         Fringe field integral (unitless)
         """
     @K5.setter
-    def K5(self, arg1: typing.SupportsFloat) -> None: ...
+    def K5(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K6(self) -> float:
         """
         Fringe field integral (unitless)
         """
     @K6.setter
-    def K6(self, arg1: typing.SupportsFloat) -> None: ...
+    def K6(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def R(self) -> float:
         """
         Length scale for field integrals in m
         """
     @R.setter
-    def R(self, arg1: typing.SupportsFloat) -> None: ...
+    def R(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def g(self) -> float:
         """
         Gap parameter in m
         """
     @g.setter
-    def g(self, arg1: typing.SupportsFloat) -> None: ...
+    def g(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def location(self) -> str:
         """
@@ -870,25 +945,25 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         Pole face angle in rad
         """
     @psi.setter
-    def psi(self, arg1: typing.SupportsFloat) -> None: ...
+    def psi(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def rc(self) -> float:
         """
         Radius of curvature in m
         """
     @rc.setter
-    def rc(self, arg1: typing.SupportsFloat) -> None: ...
+    def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -900,8 +975,8 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -915,6 +990,11 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -922,6 +1002,7 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -943,8 +1024,8 @@ class Empty(mixin.Named, mixin.Thin):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -958,6 +1039,11 @@ class Empty(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -965,6 +1051,7 @@ class Empty(mixin.Named, mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -978,18 +1065,18 @@ class Empty(mixin.Named, mixin.Thin):
 class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        k_normal: collections.abc.Sequence[typing.SupportsFloat],
-        k_skew: collections.abc.Sequence[typing.SupportsFloat],
-        unit: typing.SupportsInt = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        int_order: typing.SupportsInt = 2,
-        mapsteps: typing.SupportsInt = 5,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        int_order: typing.SupportsInt | typing.SupportsIndex = 2,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -1001,8 +1088,8 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1016,6 +1103,11 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1023,6 +1115,7 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1038,32 +1131,32 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         order of symplectic integration used for particle push in applied fields
         """
     @int_order.setter
-    def int_order(self, arg1: typing.SupportsInt) -> None: ...
+    def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for particle push in the applied fields
         """
     @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt) -> None: ...
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         unit specification for multipole strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -1075,8 +1168,8 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1090,6 +1183,11 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1097,6 +1195,7 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1110,18 +1209,18 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        k_normal: collections.abc.Sequence[typing.SupportsFloat],
-        k_skew: collections.abc.Sequence[typing.SupportsFloat],
-        unit: typing.SupportsInt = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        int_order: typing.SupportsInt = 2,
-        mapsteps: typing.SupportsInt = 5,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        int_order: typing.SupportsInt | typing.SupportsIndex = 2,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -1133,8 +1232,8 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1148,6 +1247,11 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1155,6 +1259,7 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1170,36 +1275,36 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         order of symplectic integration used for particle push in applied fields
         """
     @int_order.setter
-    def int_order(self, arg1: typing.SupportsInt) -> None: ...
+    def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for particle push in the applied fields
         """
     @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt) -> None: ...
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         unit specification for multipole strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        k: typing.SupportsFloat,
-        unit: typing.SupportsInt = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        int_order: typing.SupportsInt = 2,
-        mapsteps: typing.SupportsInt = 5,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        int_order: typing.SupportsInt | typing.SupportsIndex = 2,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -1211,8 +1316,8 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1226,6 +1331,11 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1233,6 +1343,7 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1248,41 +1359,41 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         order of symplectic integration used for particle push in applied fields
         """
     @int_order.setter
-    def int_order(self, arg1: typing.SupportsInt) -> None: ...
+    def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def k(self) -> float:
         """
         quadrupole strength in 1/m^2 (or T/m)
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for particle push in the applied fields
         """
     @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt) -> None: ...
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         unit specification for quad strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        phi: typing.SupportsFloat,
-        B: typing.SupportsFloat = 0.0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        phi: typing.SupportsFloat | typing.SupportsIndex,
+        B: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -1294,8 +1405,8 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1313,13 +1424,19 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Radius of curvature in m
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1335,24 +1452,153 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         Magnetic field in Tesla; when B = 0 (default), the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B
         """
     @B.setter
-    def B(self, arg1: typing.SupportsFloat) -> None: ...
+    def B(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def phi(self) -> float:
         """
-        Bend angle in degrees
+        Bend angle in radian
         """
     @phi.setter
-    def phi(self, arg1: typing.SupportsFloat) -> None: ...
+    def phi(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class FilteredElementsList:
+    """
+    Result of ``KnownElementsList.select(...)`` or chained ``.select()`` calls: a filtered
+    view of the same underlying lattice.
+
+    Indexing (``self[i]``) returns elements from the original ``KnownElementsList``; changing
+    fields on those elements modifies the lattice in place. You can narrow the filter again with
+    ``.select(...)`` (AND logic between chained calls). After ``delete``, ``replace_each``, or
+    ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
+    not be used.
+    """
+    def __getitem__(self, key): ...
+    def __init__(self, original_list, indices): ...
+    def __iter__(self): ...
+    def __len__(self): ...
+    def __repr__(self): ...
+    def __str__(self): ...
+    def _require_valid(self) -> None:
+        """
+        Raise if this view was invalidated after a lattice mutation.
+        """
+    def count_by_kind(self, kind_pattern) -> int:
+        """
+        Count elements of a specific kind in the filtered list.
+
+        Args:
+            kind_pattern: The element kind to count. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
+
+        Returns:
+            int: Number of elements of the specified kind.
+        """
+    def delete(self) -> None:
+        """
+        Remove selected elements from the underlying lattice. Invalidates this and all other
+        live selections on the same lattice. Returns None.
+        """
+    def get_kinds(self) -> list[type]:
+        """
+        Get all unique element kinds in the filtered list.
+
+        Returns:
+            list[type]: List of unique element types (sorted by name).
+        """
+    def has_kind(self, kind_pattern) -> bool:
+        """
+        Check if filtered list contains elements of a specific kind.
+
+        Args:
+            kind_pattern: The element kind to check for. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
+
+        Returns:
+            bool: True if at least one element of the specified kind exists.
+        """
+    def replace_each(self, element, *, keep_name=True, keep_ds=False):
+        """
+        Replace each selected element with a copy of ``element``, optionally keeping name and
+        ``ds`` from the replaced element (``keep_ds`` defaults to False). Invalidates prior views;
+        returns a new selection over the same indices.
+        """
+    def replace_with_drifts(
+        self, *, model="match", keep_alignment=True, keep_aperture=False
+    ):
+        """
+        Replace each selected element with a drift of the matching physics family.
+
+        When ``model="match"``: ``Exact*`` elements become ``ExactDrift``, ``Chr*`` elements
+        become ``ChrDrift``, and all other (linear) elements become ``Drift``. When
+        ``model`` is ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses
+        that drift model. Names and segment length ``ds`` are always taken from the replaced
+        element.
+
+        By default, alignment errors (dx, dy, rotation) are preserved and apertures are
+        cleared. Use ``keep_alignment=False`` to zero alignment errors, or
+        ``keep_aperture=True`` to preserve aperture_x/aperture_y.
+        """
+    def select(self, *, kind=None, name=None):
+        """
+        Apply filtering to this filtered list.
+
+        This method applies additional filtering to an already filtered list,
+        maintaining references to the original elements and enabling chaining.
+
+        **Filtering Logic:**
+
+        - **Within a single filter**: OR logic (e.g., ``kind=["Drift", "Quad"]`` matches Drift OR Quad)
+        - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1"`` matches Quad OR named "quad1")
+        - **Chaining filters**: AND logic (e.g., ``lattice.select(kind="Drift").select(name="drift1")`` matches Drift AND named "drift1")
+
+        :param kind: Element type(s) to filter by. Can be a single string/type or a list/tuple
+                     of strings/types for OR-based filtering. String values support exact matches
+                     and regex patterns. Examples: "Drift", r".*Quad", elements.Drift, ["Drift", r".*Quad"], [elements.Drift, elements.Quad]
+        :type kind: str or type or list[str | type] or tuple[str | type, ...] or None, optional
+
+        :param name: Element name(s) to filter by. Can be a single string, regex pattern string, or
+                     a list/tuple of strings and/or regex pattern strings for OR-based filtering.
+                     Examples: "quad1", r"quad\\d+", ["quad1", "quad2"], [r"quad\\d+", "bend1"]
+        :type name: str or list[str] or tuple[str, ...] or None, optional
+
+        :return: FilteredElementsList containing references to original elements
+        :rtype: FilteredElementsList
+
+        :raises TypeError: If kind/name parameters have wrong types
+
+        **Examples:**
+
+        Additional filtering on already filtered results:
+
+        .. code-block:: python
+
+            drift_elements = lattice.select(
+                kind="Drift"
+            )  # or lattice.select(kind=elements.Drift)
+            first_drift = drift_elements.select(
+                name="drift1"
+            )  # Further filter drifts by name
+            quad_elements = lattice.select(
+                kind="Quad"
+            )  # or lattice.select(kind=elements.Quad)
+            strong_quads = quad_elements.select(
+                name=r"quad\\d+"
+            )  # Filter quads by regex pattern
+        """
 
 class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        xkick: typing.SupportsFloat,
-        ykick: typing.SupportsFloat,
+        xkick: typing.SupportsFloat | typing.SupportsIndex,
+        ykick: typing.SupportsFloat | typing.SupportsIndex,
         unit: str = "dimensionless",
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -1364,8 +1610,8 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1379,6 +1625,11 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1386,6 +1637,7 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1401,145 +1653,145 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         horizontal kick strength (dimensionless OR T-m)
         """
     @xkick.setter
-    def xkick(self, arg1: typing.SupportsFloat) -> None: ...
+    def xkick(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def ykick(self) -> float:
         """
         vertical kick strength (dimensionless OR T-m)
         """
     @ykick.setter
-    def ykick(self, arg1: typing.SupportsFloat) -> None: ...
+    def ykick(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class KnownElementsList:
     def __getitem__(
-        self, arg0: typing.SupportsInt
+        self, arg0: typing.SupportsInt | typing.SupportsIndex
     ) -> (
-        impactx.impactx_pybind.elements.Empty
-        | impactx.impactx_pybind.elements.Aperture
-        | impactx.impactx_pybind.elements.Buncher
-        | impactx.impactx_pybind.elements.CFbend
-        | impactx.impactx_pybind.elements.ChrAcc
-        | impactx.impactx_pybind.elements.ChrDrift
-        | impactx.impactx_pybind.elements.ChrPlasmaLens
-        | impactx.impactx_pybind.elements.ChrQuad
-        | impactx.impactx_pybind.elements.ConstF
-        | impactx.impactx_pybind.elements.BeamMonitor
-        | impactx.impactx_pybind.elements.DipEdge
-        | impactx.impactx_pybind.elements.Drift
-        | impactx.impactx_pybind.elements.ExactCFbend
-        | impactx.impactx_pybind.elements.ExactDrift
-        | impactx.impactx_pybind.elements.ExactMultipole
-        | impactx.impactx_pybind.elements.ExactQuad
-        | impactx.impactx_pybind.elements.ExactSbend
-        | impactx.impactx_pybind.elements.Kicker
-        | impactx.impactx_pybind.elements.LinearMap
-        | impactx.impactx_pybind.elements.Marker
-        | impactx.impactx_pybind.elements.Multipole
-        | impactx.impactx_pybind.elements.NonlinearLens
-        | impactx.impactx_pybind.elements.PlaneXYRot
-        | impactx.impactx_pybind.elements.PolygonAperture
-        | impactx.impactx_pybind.elements.Programmable
-        | impactx.impactx_pybind.elements.PRot
-        | impactx.impactx_pybind.elements.Quad
-        | impactx.impactx_pybind.elements.QuadEdge
-        | impactx.impactx_pybind.elements.RFCavity
-        | impactx.impactx_pybind.elements.Sbend
-        | impactx.impactx_pybind.elements.ShortRF
-        | impactx.impactx_pybind.elements.SoftSolenoid
-        | impactx.impactx_pybind.elements.SoftQuadrupole
-        | impactx.impactx_pybind.elements.Sol
-        | impactx.impactx_pybind.elements.Source
-        | impactx.impactx_pybind.elements.SpinMap
-        | impactx.impactx_pybind.elements.TaperedPL
-        | impactx.impactx_pybind.elements.ThinDipole
+        Empty
+        | Aperture
+        | Buncher
+        | CFbend
+        | ChrAcc
+        | ChrDrift
+        | ChrPlasmaLens
+        | ChrQuad
+        | ConstF
+        | BeamMonitor
+        | DipEdge
+        | Drift
+        | ExactCFbend
+        | ExactDrift
+        | ExactMultipole
+        | ExactQuad
+        | ExactSbend
+        | Kicker
+        | LinearMap
+        | Marker
+        | Multipole
+        | NonlinearLens
+        | PlaneXYRot
+        | PolygonAperture
+        | Programmable
+        | PRot
+        | Quad
+        | QuadEdge
+        | RFCavity
+        | Sbend
+        | ShortRF
+        | SoftSolenoid
+        | SoftQuadrupole
+        | Sol
+        | Source
+        | SpinMap
+        | TaperedPL
+        | ThinDipole
     ): ...
     @typing.overload
     def __init__(self) -> None: ...
     @typing.overload
     def __init__(
         self,
-        arg0: impactx.impactx_pybind.elements.Empty
-        | impactx.impactx_pybind.elements.Aperture
-        | impactx.impactx_pybind.elements.Buncher
-        | impactx.impactx_pybind.elements.CFbend
-        | impactx.impactx_pybind.elements.ChrAcc
-        | impactx.impactx_pybind.elements.ChrDrift
-        | impactx.impactx_pybind.elements.ChrPlasmaLens
-        | impactx.impactx_pybind.elements.ChrQuad
-        | impactx.impactx_pybind.elements.ConstF
-        | impactx.impactx_pybind.elements.BeamMonitor
-        | impactx.impactx_pybind.elements.DipEdge
-        | impactx.impactx_pybind.elements.Drift
-        | impactx.impactx_pybind.elements.ExactCFbend
-        | impactx.impactx_pybind.elements.ExactDrift
-        | impactx.impactx_pybind.elements.ExactMultipole
-        | impactx.impactx_pybind.elements.ExactQuad
-        | impactx.impactx_pybind.elements.ExactSbend
-        | impactx.impactx_pybind.elements.Kicker
-        | impactx.impactx_pybind.elements.LinearMap
-        | impactx.impactx_pybind.elements.Marker
-        | impactx.impactx_pybind.elements.Multipole
-        | impactx.impactx_pybind.elements.NonlinearLens
-        | impactx.impactx_pybind.elements.PlaneXYRot
-        | impactx.impactx_pybind.elements.PolygonAperture
-        | impactx.impactx_pybind.elements.Programmable
-        | impactx.impactx_pybind.elements.PRot
-        | impactx.impactx_pybind.elements.Quad
-        | impactx.impactx_pybind.elements.QuadEdge
-        | impactx.impactx_pybind.elements.RFCavity
-        | impactx.impactx_pybind.elements.Sbend
-        | impactx.impactx_pybind.elements.ShortRF
-        | impactx.impactx_pybind.elements.SoftSolenoid
-        | impactx.impactx_pybind.elements.SoftQuadrupole
-        | impactx.impactx_pybind.elements.Sol
-        | impactx.impactx_pybind.elements.Source
-        | impactx.impactx_pybind.elements.SpinMap
-        | impactx.impactx_pybind.elements.TaperedPL
-        | impactx.impactx_pybind.elements.ThinDipole,
+        arg0: Empty
+        | Aperture
+        | Buncher
+        | CFbend
+        | ChrAcc
+        | ChrDrift
+        | ChrPlasmaLens
+        | ChrQuad
+        | ConstF
+        | BeamMonitor
+        | DipEdge
+        | Drift
+        | ExactCFbend
+        | ExactDrift
+        | ExactMultipole
+        | ExactQuad
+        | ExactSbend
+        | Kicker
+        | LinearMap
+        | Marker
+        | Multipole
+        | NonlinearLens
+        | PlaneXYRot
+        | PolygonAperture
+        | Programmable
+        | PRot
+        | Quad
+        | QuadEdge
+        | RFCavity
+        | Sbend
+        | ShortRF
+        | SoftSolenoid
+        | SoftQuadrupole
+        | Sol
+        | Source
+        | SpinMap
+        | TaperedPL
+        | ThinDipole,
     ) -> None: ...
     @typing.overload
     def __init__(self, arg0: list) -> None: ...
     def __iter__(
         self,
     ) -> collections.abc.Iterator[
-        impactx.impactx_pybind.elements.Empty
-        | impactx.impactx_pybind.elements.Aperture
-        | impactx.impactx_pybind.elements.Buncher
-        | impactx.impactx_pybind.elements.CFbend
-        | impactx.impactx_pybind.elements.ChrAcc
-        | impactx.impactx_pybind.elements.ChrDrift
-        | impactx.impactx_pybind.elements.ChrPlasmaLens
-        | impactx.impactx_pybind.elements.ChrQuad
-        | impactx.impactx_pybind.elements.ConstF
-        | impactx.impactx_pybind.elements.BeamMonitor
-        | impactx.impactx_pybind.elements.DipEdge
-        | impactx.impactx_pybind.elements.Drift
-        | impactx.impactx_pybind.elements.ExactCFbend
-        | impactx.impactx_pybind.elements.ExactDrift
-        | impactx.impactx_pybind.elements.ExactMultipole
-        | impactx.impactx_pybind.elements.ExactQuad
-        | impactx.impactx_pybind.elements.ExactSbend
-        | impactx.impactx_pybind.elements.Kicker
-        | impactx.impactx_pybind.elements.LinearMap
-        | impactx.impactx_pybind.elements.Marker
-        | impactx.impactx_pybind.elements.Multipole
-        | impactx.impactx_pybind.elements.NonlinearLens
-        | impactx.impactx_pybind.elements.PlaneXYRot
-        | impactx.impactx_pybind.elements.PolygonAperture
-        | impactx.impactx_pybind.elements.Programmable
-        | impactx.impactx_pybind.elements.PRot
-        | impactx.impactx_pybind.elements.Quad
-        | impactx.impactx_pybind.elements.QuadEdge
-        | impactx.impactx_pybind.elements.RFCavity
-        | impactx.impactx_pybind.elements.Sbend
-        | impactx.impactx_pybind.elements.ShortRF
-        | impactx.impactx_pybind.elements.SoftSolenoid
-        | impactx.impactx_pybind.elements.SoftQuadrupole
-        | impactx.impactx_pybind.elements.Sol
-        | impactx.impactx_pybind.elements.Source
-        | impactx.impactx_pybind.elements.SpinMap
-        | impactx.impactx_pybind.elements.TaperedPL
-        | impactx.impactx_pybind.elements.ThinDipole
+        Empty
+        | Aperture
+        | Buncher
+        | CFbend
+        | ChrAcc
+        | ChrDrift
+        | ChrPlasmaLens
+        | ChrQuad
+        | ConstF
+        | BeamMonitor
+        | DipEdge
+        | Drift
+        | ExactCFbend
+        | ExactDrift
+        | ExactMultipole
+        | ExactQuad
+        | ExactSbend
+        | Kicker
+        | LinearMap
+        | Marker
+        | Multipole
+        | NonlinearLens
+        | PlaneXYRot
+        | PolygonAperture
+        | Programmable
+        | PRot
+        | Quad
+        | QuadEdge
+        | RFCavity
+        | Sbend
+        | ShortRF
+        | SoftSolenoid
+        | SoftQuadrupole
+        | Sol
+        | Source
+        | SpinMap
+        | TaperedPL
+        | ThinDipole
     ]: ...
     def __len__(self) -> int:
         """
@@ -1547,44 +1799,44 @@ class KnownElementsList:
         """
     def append(
         self,
-        arg0: impactx.impactx_pybind.elements.Empty
-        | impactx.impactx_pybind.elements.Aperture
-        | impactx.impactx_pybind.elements.Buncher
-        | impactx.impactx_pybind.elements.CFbend
-        | impactx.impactx_pybind.elements.ChrAcc
-        | impactx.impactx_pybind.elements.ChrDrift
-        | impactx.impactx_pybind.elements.ChrPlasmaLens
-        | impactx.impactx_pybind.elements.ChrQuad
-        | impactx.impactx_pybind.elements.ConstF
-        | impactx.impactx_pybind.elements.BeamMonitor
-        | impactx.impactx_pybind.elements.DipEdge
-        | impactx.impactx_pybind.elements.Drift
-        | impactx.impactx_pybind.elements.ExactCFbend
-        | impactx.impactx_pybind.elements.ExactDrift
-        | impactx.impactx_pybind.elements.ExactMultipole
-        | impactx.impactx_pybind.elements.ExactQuad
-        | impactx.impactx_pybind.elements.ExactSbend
-        | impactx.impactx_pybind.elements.Kicker
-        | impactx.impactx_pybind.elements.LinearMap
-        | impactx.impactx_pybind.elements.Marker
-        | impactx.impactx_pybind.elements.Multipole
-        | impactx.impactx_pybind.elements.NonlinearLens
-        | impactx.impactx_pybind.elements.PlaneXYRot
-        | impactx.impactx_pybind.elements.PolygonAperture
-        | impactx.impactx_pybind.elements.Programmable
-        | impactx.impactx_pybind.elements.PRot
-        | impactx.impactx_pybind.elements.Quad
-        | impactx.impactx_pybind.elements.QuadEdge
-        | impactx.impactx_pybind.elements.RFCavity
-        | impactx.impactx_pybind.elements.Sbend
-        | impactx.impactx_pybind.elements.ShortRF
-        | impactx.impactx_pybind.elements.SoftSolenoid
-        | impactx.impactx_pybind.elements.SoftQuadrupole
-        | impactx.impactx_pybind.elements.Sol
-        | impactx.impactx_pybind.elements.Source
-        | impactx.impactx_pybind.elements.SpinMap
-        | impactx.impactx_pybind.elements.TaperedPL
-        | impactx.impactx_pybind.elements.ThinDipole,
+        arg0: Empty
+        | Aperture
+        | Buncher
+        | CFbend
+        | ChrAcc
+        | ChrDrift
+        | ChrPlasmaLens
+        | ChrQuad
+        | ConstF
+        | BeamMonitor
+        | DipEdge
+        | Drift
+        | ExactCFbend
+        | ExactDrift
+        | ExactMultipole
+        | ExactQuad
+        | ExactSbend
+        | Kicker
+        | LinearMap
+        | Marker
+        | Multipole
+        | NonlinearLens
+        | PlaneXYRot
+        | PolygonAperture
+        | Programmable
+        | PRot
+        | Quad
+        | QuadEdge
+        | RFCavity
+        | Sbend
+        | ShortRF
+        | SoftSolenoid
+        | SoftQuadrupole
+        | Sol
+        | Source
+        | SpinMap
+        | TaperedPL
+        | ThinDipole,
     ) -> None:
         """
         Add a single element to the list.
@@ -1615,6 +1867,35 @@ class KnownElementsList:
     def extend(self, arg0: list) -> KnownElementsList:
         """
         Add a list of elements to the list.
+        """
+    def from_dicts(self, dicts: list[dict]):
+        """
+        Load and append elements from a list of dictionaries.
+
+        Each dictionary should be in the format produced by element.to_dict(),
+        containing at minimum a 'type' key identifying the element class.
+
+        Args:
+            dicts: List of element dictionaries
+
+        Example:
+            .. code-block:: python
+
+                import json
+                from impactx import elements
+
+                # Load from JSON
+                with open("lattice.impactx.json") as f:
+                    data = json.load(f)
+
+                lattice = elements.KnownElementsList()
+                lattice.from_dicts(data)
+
+        Note:
+            Elements with matrix parameters (LinearMap, SpinMap) require
+            the matrices to be AMReX SmallMatrix objects. Use
+            :func:`impactx.extensions.matrix_hook` as a JSON object_hook
+            when loading such elements.
         """
     def from_pals(self, pals_beamline, nslice=1):
         """
@@ -1678,9 +1959,7 @@ class KnownElementsList:
         """
         Return and remove the last element of the list.
         """
-    def select(
-        self, *, kind=None, name=None
-    ) -> impactx.extensions.KnownElementsList.FilteredElementsList:
+    def select(self, *, kind=None, name=None) -> FilteredElementsList:
         """
         Filter elements by type and name with OR-based logic.
 
@@ -1772,6 +2051,75 @@ class KnownElementsList:
             # All modifications affect the original lattice elements
         """
     def size(self) -> int: ...
+    def to_dicts(self) -> list[dict]:
+        """
+        Serialize the lattice to a list of dictionaries.
+
+        Each element is converted to a dictionary using its to_dict() method.
+        The resulting list can be serialized to JSON, YAML, or other formats.
+
+        Returns:
+            list[dict]: List of element dictionaries
+
+        Example:
+            .. code-block:: python
+
+                import json
+                from impactx import elements
+
+                lattice = elements.KnownElementsList(
+                    [
+                        elements.Drift(ds=1.0, name="d1"),
+                        elements.Quad(ds=0.5, k=2.0, name="q1"),
+                    ]
+                )
+
+                # Serialize to JSON
+                data = lattice.to_dicts()
+                with open("lattice.impactx.json", "w") as f:
+                    json.dump(data, f, indent=2)
+
+        Note:
+            Elements with matrix parameters (LinearMap, SpinMap) contain
+            AMReX SmallMatrix objects that require custom JSON encoding.
+            Use :func:`impactx.extensions.ImpactXEncoder` for JSON serialization
+            of such elements.
+        """
+    def to_py(self) -> str:
+        """
+        Generate Python code that recreates this lattice.
+
+        Returns a string containing a complete Python script with imports
+        and a ``get_lattice()`` function that returns a KnownElementsList
+        with all elements.
+
+        Returns:
+            str: Python source code
+
+        Example:
+            .. code-block:: python
+
+                from impactx import elements
+
+                lattice = elements.KnownElementsList(
+                    [
+                        elements.Drift(ds=1.0, name="d1"),
+                        elements.Quad(ds=0.5, k=2.0, name="q1"),
+                    ]
+                )
+
+                # Generate Python code
+                code = lattice.to_py()
+                print(code)
+
+                # Save to file
+                with open("my_lattice.py", "w") as f:
+                    f.write(code)
+
+                # Later, use the generated file:
+                # from my_lattice import get_lattice
+                # lattice = get_lattice()
+        """
     def transfer_map(
         self,
         ref: impactx.impactx_pybind.RefPart,
@@ -1786,10 +2134,10 @@ class LinearMap(mixin.Named, mixin.Alignment):
     def __init__(
         self,
         R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ds: typing.SupportsFloat = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -1801,8 +2149,8 @@ class LinearMap(mixin.Named, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1816,6 +2164,11 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1823,6 +2176,7 @@ class LinearMap(mixin.Named, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1847,11 +2201,19 @@ class LinearMap(mixin.Named, mixin.Alignment):
         segment length in m
         """
     @ds.setter
-    def ds(self, arg1: typing.SupportsFloat) -> None: ...
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def nslice(self) -> int:
         """
         one, because we do not support slicing of this element
+        """
+    @property
+    def symplectic(self) -> bool:
+        """
+        Check if the transport map is symplectic.
+
+        A matrix R is symplectic if R^T J R = J, where J is the
+        standard 6x6 skew-symmetric symplectic form (also called Omega).
         """
 
 class Marker(mixin.Named, mixin.Thin):
@@ -1865,8 +2227,8 @@ class Marker(mixin.Named, mixin.Thin):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1880,6 +2242,11 @@ class Marker(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1887,6 +2254,7 @@ class Marker(mixin.Named, mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1900,12 +2268,12 @@ class Marker(mixin.Named, mixin.Thin):
 class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        multipole: typing.SupportsInt,
-        K_normal: typing.SupportsFloat,
-        K_skew: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        multipole: typing.SupportsInt | typing.SupportsIndex,
+        K_normal: typing.SupportsFloat | typing.SupportsIndex,
+        K_skew: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -1917,8 +2285,8 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -1932,6 +2300,11 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1939,6 +2312,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -1954,30 +2328,30 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         Integrated normal multipole coefficient (1/meter^m)
         """
     @K_normal.setter
-    def K_normal(self, arg1: typing.SupportsFloat) -> None: ...
+    def K_normal(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def K_skew(self) -> float:
         """
         Integrated skew multipole coefficient (1/meter^m)
         """
     @K_skew.setter
-    def K_skew(self, arg1: typing.SupportsFloat) -> None: ...
+    def K_skew(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def multipole(self) -> int:
         """
         index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
         """
     @multipole.setter
-    def multipole(self, arg1: typing.SupportsFloat) -> None: ...
+    def multipole(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        knll: typing.SupportsFloat,
-        cnll: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        knll: typing.SupportsFloat | typing.SupportsIndex,
+        cnll: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -1989,8 +2363,8 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2004,6 +2378,11 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2011,6 +2390,7 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2026,20 +2406,20 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         distance of singularities from the origin (m)
         """
     @cnll.setter
-    def cnll(self, arg1: typing.SupportsFloat) -> None: ...
+    def cnll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def knll(self) -> float:
         """
         integrated strength of the nonlinear lens (m)
         """
     @knll.setter
-    def knll(self, arg1: typing.SupportsFloat) -> None: ...
+    def knll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class PRot(mixin.Named, mixin.Thin):
     def __init__(
         self,
-        phi_in: typing.SupportsFloat,
-        phi_out: typing.SupportsFloat,
+        phi_in: typing.SupportsFloat | typing.SupportsIndex,
+        phi_out: typing.SupportsFloat | typing.SupportsIndex,
         name: str | None = None,
     ) -> None:
         """
@@ -2051,8 +2431,8 @@ class PRot(mixin.Named, mixin.Thin):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2066,13 +2446,19 @@ class PRot(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2085,25 +2471,25 @@ class PRot(mixin.Named, mixin.Thin):
     @property
     def phi_in(self) -> float:
         """
-        angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees
+        angle of the reference particle with respect to the longitudinal (z) axis in the original frame in radian
         """
     @phi_in.setter
-    def phi_in(self, arg1: typing.SupportsFloat) -> None: ...
+    def phi_in(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def phi_out(self) -> float:
         """
-        angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
+        angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in radian
         """
     @phi_out.setter
-    def phi_out(self, arg1: typing.SupportsFloat) -> None: ...
+    def phi_out(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        angle: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        angle: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -2115,8 +2501,8 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2130,13 +2516,19 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2152,21 +2544,25 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         Rotation angle (rad).
         """
     @angle.setter
-    def angle(self, arg1: typing.SupportsFloat) -> None: ...
+    def angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        vertices_x: collections.abc.Sequence[typing.SupportsFloat],
-        vertices_y: collections.abc.Sequence[typing.SupportsFloat],
-        min_radius2: typing.SupportsFloat = 0.0,
-        repeat_x: typing.SupportsFloat = 0,
-        repeat_y: typing.SupportsFloat = 0,
+        vertices_x: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        vertices_y: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        min_radius2: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
         shift_odd_x: bool = False,
         action: str = "transmit",
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -2178,8 +2574,8 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2193,6 +2589,11 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2200,6 +2601,7 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2222,21 +2624,23 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         All particles with radius squared smaller than min_radius2 pass the aperture
         """
     @min_radius2.setter
-    def min_radius2(self, arg1: typing.SupportsFloat) -> None: ...
+    def min_radius2(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
     @property
     def repeat_x(self) -> float:
         """
         horizontal period for repeated aperture masking
         """
     @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat) -> None: ...
+    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def repeat_y(self) -> float:
         """
         vertical period for repeated aperture masking
         """
     @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat) -> None: ...
+    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def shift_odd_x(self) -> bool:
         """
@@ -2248,8 +2652,8 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
 class Programmable(mixin.Named):
     def __init__(
         self,
-        ds: typing.SupportsFloat = 0.0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -2263,6 +2667,7 @@ class Programmable(mixin.Named):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2292,19 +2697,19 @@ class Programmable(mixin.Named):
     @property
     def ds(self) -> float: ...
     @ds.setter
-    def ds(self, arg1: typing.SupportsFloat) -> None: ...
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def nslice(self) -> int: ...
     @nslice.setter
-    def nslice(self, arg1: typing.SupportsInt) -> None: ...
+    def nslice(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def push(
         self,
     ) -> collections.abc.Callable[
         [
             impactx.impactx_pybind.ImpactXParticleContainer,
-            typing.SupportsInt,
-            typing.SupportsInt,
+            typing.SupportsInt | typing.SupportsIndex,
+            typing.SupportsInt | typing.SupportsIndex,
         ],
         None,
     ]:
@@ -2317,8 +2722,8 @@ class Programmable(mixin.Named):
         arg1: collections.abc.Callable[
             [
                 impactx.impactx_pybind.ImpactXParticleContainer,
-                typing.SupportsInt,
-                typing.SupportsInt,
+                typing.SupportsInt | typing.SupportsIndex,
+                typing.SupportsInt | typing.SupportsIndex,
             ],
             None,
         ],
@@ -2345,14 +2750,14 @@ class Programmable(mixin.Named):
 class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        k: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -2364,8 +2769,8 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2379,6 +2784,11 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2386,6 +2796,7 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2401,17 +2812,17 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         Quadrupole strength in m^(-2) (MADX convention) = (gradient in T/m) / (rigidity in T-m) k > 0 horizontal focusing k < 0 horizontal defocusing
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        k: typing.SupportsFloat,
-        unit: typing.SupportsInt = 0,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
         flag: str = "entry",
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -2423,8 +2834,8 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2438,6 +2849,11 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2445,6 +2861,7 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2460,14 +2877,14 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         quadrupole focusing strength (1/meter^2 OR T/m)
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         unit specification for quad strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -2492,7 +2909,7 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat, escale: typing.SupportsFloat, freq: typing.SupportsFloat, phase: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         An RF cavity.
         """
@@ -2502,8 +2919,8 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2517,6 +2934,11 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2524,6 +2946,7 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2539,40 +2962,40 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         scaling factor for on-axis RF electric field in 1/m = (peak on-axis electric field Ez in MV/m) / (particle rest energy in MeV)
         """
     @escale.setter
-    def escale(self, arg1: typing.SupportsFloat) -> None: ...
+    def escale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def freq(self) -> float:
         """
         RF frequency in Hz
         """
     @freq.setter
-    def freq(self, arg1: typing.SupportsFloat) -> None: ...
+    def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt) -> None: ...
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def phase(self) -> float:
         """
         RF driven phase in degrees
         """
     @phase.setter
-    def phase(self, arg1: typing.SupportsFloat) -> None: ...
+    def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        rc: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -2584,8 +3007,8 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2603,6 +3026,11 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Radius of curvature in m
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2610,6 +3038,7 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2623,12 +3052,12 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        V: typing.SupportsFloat,
-        freq: typing.SupportsFloat,
-        phase: typing.SupportsFloat = -90.0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        V: typing.SupportsFloat | typing.SupportsIndex,
+        freq: typing.SupportsFloat | typing.SupportsIndex,
+        phase: typing.SupportsFloat | typing.SupportsIndex = -90.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -2640,8 +3069,8 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2655,6 +3084,11 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2662,6 +3096,7 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2677,21 +3112,21 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         Normalized RF voltage V = maximum energy gain/(m*c^2)
         """
     @V.setter
-    def V(self, arg1: typing.SupportsFloat) -> None: ...
+    def V(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def freq(self) -> float:
         """
         RF frequency in Hz
         """
     @freq.setter
-    def freq(self, arg1: typing.SupportsFloat) -> None: ...
+    def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def phase(self) -> float:
         """
         RF synchronous phase in degrees (phase = 0 corresponds to maximum energy gain, phase = -90 corresponds go zero energy gain for bunching)
         """
     @phase.setter
-    def phase(self, arg1: typing.SupportsFloat) -> None: ...
+    def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -2714,7 +3149,7 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat, gscale: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge quadrupole.
         """
@@ -2724,8 +3159,8 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2739,6 +3174,11 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2746,6 +3186,7 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2761,14 +3202,14 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         Scaling factor for on-axis field gradient in inverse meters
         """
     @gscale.setter
-    def gscale(self, arg1: typing.SupportsFloat) -> None: ...
+    def gscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt) -> None: ...
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -2792,7 +3233,7 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat, bscale: typing.SupportsFloat, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat], unit: typing.SupportsFloat = 0, dx: typing.SupportsFloat = 0, dy: typing.SupportsFloat = 0, rotation: typing.SupportsFloat = 0, aperture_x: typing.SupportsFloat = 0, aperture_y: typing.SupportsFloat = 0, mapsteps: typing.SupportsInt = 1, nslice: typing.SupportsInt = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsFloat | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge solenoid.
         """
@@ -2802,8 +3243,8 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2817,6 +3258,11 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2824,6 +3270,7 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2839,33 +3286,33 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0) or magnetic field Bz in T (SI units, if unit = 1)
         """
     @bscale.setter
-    def bscale(self, arg1: typing.SupportsFloat) -> None: ...
+    def bscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt) -> None: ...
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         specification of units for scaling of the on-axis longitudinal magnetic field
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsFloat) -> None: ...
+    def unit(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
-        ds: typing.SupportsFloat,
-        ks: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
-        aperture_x: typing.SupportsFloat = 0,
-        aperture_y: typing.SupportsFloat = 0,
-        nslice: typing.SupportsInt = 1,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        ks: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
         """
@@ -2877,8 +3324,8 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2892,6 +3339,11 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2899,6 +3351,7 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2914,7 +3367,7 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         Solenoid strength in m^(-1) (MADX convention) in (magnetic field Bz in T) / (rigidity in T-m)
         """
     @ks.setter
-    def ks(self, arg1: typing.SupportsFloat) -> None: ...
+    def ks(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Source(mixin.Named, mixin.Thin):
     def __init__(
@@ -2933,8 +3386,8 @@ class Source(mixin.Named, mixin.Thin):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -2948,6 +3401,11 @@ class Source(mixin.Named, mixin.Thin):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -2955,6 +3413,7 @@ class Source(mixin.Named, mixin.Thin):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -2991,10 +3450,10 @@ class SpinMap(mixin.Named, mixin.Alignment):
         self,
         v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
         A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
-        ds: typing.SupportsFloat = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -3006,8 +3465,8 @@ class SpinMap(mixin.Named, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -3021,6 +3480,28 @@ class SpinMap(mixin.Named, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
     @property
     def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
         """
@@ -3036,7 +3517,7 @@ class SpinMap(mixin.Named, mixin.Alignment):
         segment length in m
         """
     @ds.setter
-    def ds(self, arg1: typing.SupportsFloat) -> None: ...
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def nslice(self) -> int:
         """
@@ -3055,12 +3536,12 @@ class SpinMap(mixin.Named, mixin.Alignment):
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        k: typing.SupportsFloat,
-        taper: typing.SupportsFloat,
-        unit: typing.SupportsInt = 0,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        taper: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -3078,8 +3559,8 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -3093,6 +3574,11 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3100,6 +3586,7 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3115,30 +3602,30 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         integrated focusing strength in m^(-1) (if unit = 0) or integrated focusing strength in T (if unit = 1)
         """
     @k.setter
-    def k(self, arg1: typing.SupportsFloat) -> None: ...
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def taper(self) -> float:
         """
         horizontal taper parameter in m^(-1) = 1 / (target horizontal dispersion in m)
         """
     @taper.setter
-    def taper(self, arg1: typing.SupportsFloat) -> None: ...
+    def taper(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def unit(self) -> int:
         """
         specification of units for plasma lens focusing strength
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsInt) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        theta: typing.SupportsFloat,
-        rc: typing.SupportsFloat,
-        dx: typing.SupportsFloat = 0,
-        dy: typing.SupportsFloat = 0,
-        rotation: typing.SupportsFloat = 0,
+        theta: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
@@ -3150,8 +3637,8 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def push(
         self,
         pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt = 0,
-        period: typing.SupportsInt = 0,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
     ) -> None:
         """
         Push first the reference particle, then all other particles.
@@ -3165,13 +3652,19 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
-        self,
+        self, in_degrees: bool = False
     ) -> dict[
         str,
         float
         | int
         | int
+        | bool
         | str
         | list[float]
         | list[int]
@@ -3182,16 +3675,9 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | None,
     ]: ...
     @property
-    def rc(self) -> float:
-        """
-        Effective curvature radius (meters)
-        """
-    @rc.setter
-    def rc(self, arg1: typing.SupportsFloat) -> None: ...
-    @property
     def theta(self) -> float:
         """
-        Bend angle (degrees)
+        Bend angle (radian)
         """
     @theta.setter
-    def theta(self, arg1: typing.SupportsFloat) -> None: ...
+    def theta(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...

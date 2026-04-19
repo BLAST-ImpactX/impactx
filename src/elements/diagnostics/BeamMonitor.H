@@ -88,6 +88,9 @@ namespace detail
         BeamMonitor& operator= (BeamMonitor const & other) = default;
         BeamMonitor& operator= (BeamMonitor && other) = default;
 
+        /** Reverse the element (no-op for diagnostics) */
+        void reverse () { }
+
         /** Prepare entering the element before starting push logic.
          *
          * And write reference particle.
@@ -163,6 +166,18 @@ namespace detail
         /** Provide impactx::elements::mixin::Named::has_name */
         AMREX_FORCE_INLINE
         bool has_name () const { return true; }
+
+        /** openPMD backend string passed at construction (e.g. "default", "bp4", "h5") */
+        AMREX_FORCE_INLINE
+        std::string backend () const { return m_OpenPMDFileType; }
+
+        /** openPMD iteration encoding: "v", "f", or "g" */
+        AMREX_FORCE_INLINE
+        std::string encoding () const { return m_encoding; }
+
+        /** For periodic lattices, only output every Nth period (turn or cycle) */
+        AMREX_FORCE_INLINE
+        int period_sample_intervals () const { return m_period_sample_intervals; }
 
         /** track all m_series_name instances
          *

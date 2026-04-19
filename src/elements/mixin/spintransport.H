@@ -39,9 +39,9 @@ namespace impactx::elements::mixin
          * @param[in] lambdax generator x-component
          * @param[in] lambday generator y-component
          * @param[in] lambdaz generator z-component
-         * @param[inout] sx spin vector x-component
-         * @param[inout] sy spin vector y-component
-         * @param[inout] sz spin vector z-component
+         * @param[in,out] sx spin vector x-component
+         * @param[in,out] sy spin vector y-component
+         * @param[in,out] sz spin vector z-component
          */
         template<typename T_Real=amrex::ParticleReal>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -88,6 +88,74 @@ namespace impactx::elements::mixin
             sy = syout;
             sz = szout;
         }
+
+        /** Evaluate the Thomas-BMT precession vector
+         *
+         * Evaluate in a given field,
+         *  based on the instantaneous particle orbit variables.  The model
+         *  below is evaluated in a Frenet-Serret coordinate system,
+         *  assuming a reference trajectory of curvature h, with (possible)
+         *  bending in the x-z plane.  The field components Bx,By,Bz and
+         *  are normalized by q/mc (units of 1/m), and the field components
+         *  Ex,Ey,Ez are normalized by q/mc^2 (units of 1/m).
+         *
+         * @param[in] x horizontal coordinate (in local coordinate system)
+         * @param[in] ux velocity unit direction x-component
+         * @param[in] uy velocity unit direction y-component
+         * @param[in] uz velocity unit direction z-component
+         * @param[in] gamma relativistic gamma
+         * @param[in] h design orbit curvature [1/m]
+         * @param[in] gyro_anomaly gyromagnetic anomaly
+         * @param[in] Bx magnetic field x-component [1/m, dynamic units]
+         * @param[in] By magnetic field y-component [1/m, dynamic units]
+         * @param[in] Bz magnetic field z-component [1/m, dynamic units]
+         * @param[in] Ex electric field x-component [1/m, dynamic units]
+         * @param[in] Ey electric field y-component [1/m, dynamic units]
+         * @param[in] Ez electric field z-component [1/m, dynamic units]
+         * @param[out] Omegax precession vector x-component
+         * @param[out] Omegay precession vector y-component
+         * @param[out] Omegaz precession vector z-component
+         */
+        template<typename T_Real=amrex::ParticleReal>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void tbmt_precession_vector (
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT ux,
+            T_Real const & AMREX_RESTRICT uy,
+            T_Real const & AMREX_RESTRICT uz,
+            T_Real const & AMREX_RESTRICT gamma,
+            amrex::ParticleReal const & AMREX_RESTRICT h,
+            amrex::ParticleReal const & AMREX_RESTRICT gyro_anomaly,
+            T_Real const & AMREX_RESTRICT Bx,
+            T_Real const & AMREX_RESTRICT By,
+            T_Real const & AMREX_RESTRICT Bz,
+            T_Real const & AMREX_RESTRICT Ex,
+            T_Real const & AMREX_RESTRICT Ey,
+            T_Real const & AMREX_RESTRICT Ez,
+            T_Real & AMREX_RESTRICT Omegax,
+            T_Real & AMREX_RESTRICT Omegay,
+            T_Real & AMREX_RESTRICT Omegaz
+        ) const
+        {
+            using namespace amrex::literals;  // for _prt
+            using namespace std; // for cmath(float)
+
+            // Evaluation of the full Thomas-BMT precession vector in the Frenet-Serret frame.
+            T_Real const beta_gamma = sqrt(gamma*gamma - 1_prt);
+            T_Real const beta_gamma_z = uz * beta_gamma;
+            T_Real const leading_factor = -(1_prt + h * x) / beta_gamma_z;
+            T_Real const udotB = ux*Bx + uy*By + uz*Bz;
+            T_Real const ucrossE_x = uy*Ez - uz*Ey;
+            T_Real const ucrossE_y = uz*Ex - ux*Ez;
+            T_Real const ucrossE_z = ux*Ey - uy*Ex;
+            T_Real const c1 = (1_prt + gyro_anomaly*gamma);
+            T_Real const c2 = gyro_anomaly * (gamma - 1_prt) * udotB;
+            T_Real const c3 = (gyro_anomaly + 1_prt / (1_prt + gamma)) * beta_gamma;
+            Omegax = leading_factor * (c1 * Bx - c2 * ux - c3 * ucrossE_x);
+            Omegay = leading_factor * (c1 * By - c2 * uy - c3 * ucrossE_y) + h;
+            Omegaz = leading_factor * (c1 * Bz - c2 * uz - c3 * ucrossE_z);
+        }
+
     };
 
 } // namespace impactx::elements::mixin

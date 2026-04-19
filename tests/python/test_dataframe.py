@@ -37,9 +37,9 @@ def test_df_pandas(save_png=True):
     npart = 10000
 
     #   reference particle
-    pc = sim.particle_container()
-    ref = pc.ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    beam = sim.beam
+    ref = beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
     distr = distribution.Waterbag(
@@ -55,10 +55,10 @@ def test_df_pandas(save_png=True):
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    assert pc.total_number_of_particles() == npart
+    assert beam.total_number_of_particles() == npart
 
     # record purely in memory
-    sim.particle_container().store_beam_moments = True
+    sim.beam.store_beam_moments = True
 
     # init accelerator lattice
     fodo = [
@@ -83,7 +83,7 @@ def test_df_pandas(save_png=True):
     sim.track_particles()
 
     # look at beam history (reduced beam diagnostics)
-    beam_moments = sim.particle_container().beam_moments_history()
+    beam_moments = sim.beam.beam_moments_history()
 
     if amr.ParallelDescriptor.IOProcessor():
         print(beam_moments)
@@ -95,7 +95,7 @@ def test_df_pandas(save_png=True):
             plt.show()
 
     # check local particles
-    df = pc.to_df(local=True)
+    df = beam.to_df(local=True)
     print(df)
 
     # ensure the column heads are correctly labeled
@@ -116,13 +116,13 @@ def test_df_pandas(save_png=True):
 
     # compare number of global particles
     # FIXME
-    # df = pc.to_df(local=False)
+    # df = beam.to_df(local=False)
     # if df is not None:
     #    assert npart == len(df)
     #    assert df.columns.tolist() == ['idcpu', 'position_x', 'position_y', 'position_t', 'momentum_x', 'momentum_y', 'momentum_t', 'qm', 'weighting']
 
     # plot
-    fig = pc.plot_phasespace()
+    fig = beam.plot_phasespace()
 
     #   note: figure data available on MPI rank zero
     if fig is not None:

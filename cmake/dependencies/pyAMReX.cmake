@@ -39,6 +39,12 @@ function(find_pyamrex)
     if(ImpactX_pyamrex_internal OR ImpactX_pyamrex_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+        # safe compile time
+        set(pyAMReX_CODES "ImpactX" CACHE INTERNAL "Fine-tune the pre-compiled particle containers for downstream codes")
+
+        # skip pyAMReX's own tests (e.g., pytest.AMReX) in the ImpactX superbuild
+        set(pyAMReX_BUILD_TESTING OFF CACHE BOOL "Run the pyAMReX tests" FORCE)
+
         if(ImpactX_pyamrex_src)
             add_subdirectory(${ImpactX_pyamrex_src} _deps/localpyamrex-build/)
         else()
@@ -59,7 +65,7 @@ function(find_pyamrex)
         endif()
     elseif(NOT ImpactX_pyamrex_internal)
         # TODO: MPI control
-        find_package(pyAMReX 26.03 CONFIG REQUIRED)
+        find_package(pyAMReX 26.03 CONFIG REQUIRED COMPONENTS CODES_ImpactX)
         message(STATUS "pyAMReX: Found version '${pyAMReX_VERSION}'")
     endif()
 endfunction()
@@ -74,7 +80,7 @@ option(ImpactX_pyamrex_internal "Download & build pyAMReX" ON)
 set(ImpactX_pyamrex_repo "https://github.com/AMReX-Codes/pyamrex.git"
     CACHE STRING
     "Repository URI to pull and build pyamrex from if(ImpactX_pyamrex_internal)")
-set(ImpactX_pyamrex_branch "26.03"
+set(ImpactX_pyamrex_branch "edf12bfc6ab5426a4b206e40f988afbadb93d437"
     CACHE STRING
     "Repository branch for ImpactX_pyamrex_repo if(ImpactX_pyamrex_internal)")
 

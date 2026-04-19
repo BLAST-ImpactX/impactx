@@ -22,6 +22,29 @@ namespace impactx
     /** this is the 6x6 covariance matrix */
     using CovarianceMatrix = Map6x6;
 
+    /** Return the 6x6 skew-symmetric symplectic form
+     *
+     * diag([[0,1],[-1,0]], [[0,1],[-1,0]], [[0,1],[-1,0]])
+     * for the phase space ordering (x, px, y, py, t, pt).
+     *
+     * Note: commonly referred to as J (especially in accelerator physics), but
+     * sometimes called Omega to avoid confusion with complex structures.
+     *
+     * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+     * Refs.:
+     * - K. R. Meyer and D. C. Offin, Introduction to Hamiltonian Dynamical Systems and the N-Body Problem, Springer-Verlag NY, 2009.
+     * - A. J. Dragt, Lie Methods for Nonlinear Dynamics with Applications to Accelerator Physics, University of Maryland, 2020, http://www.physics.umd.edu/dsat/
+     */
+    inline Map6x6 symplectic_form ()
+    {
+        Map6x6 Omega = Map6x6::Zero();
+        for (int i = 0; i < 3; ++i) {
+            Omega(2*i+1, 2*i+2) =  1;
+            Omega(2*i+2, 2*i+1) = -1;
+        }
+        return Omega;
+    }
+
 
     /** This struct stores the beam envelope attributes, including the 6x6 beam
      *  covariance matrix.  Used during envelope tracking mode.

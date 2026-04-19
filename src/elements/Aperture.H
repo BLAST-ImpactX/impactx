@@ -33,7 +33,7 @@ namespace impactx::elements
     struct Aperture
     : public mixin::Named,
       public mixin::BeamOptic<Aperture>,
-      public mixin::LinearTransport<Aperture>,
+      public mixin::LinearTransport<Aperture, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize,
@@ -110,6 +110,9 @@ namespace impactx::elements
                 throw std::runtime_error("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
             }
         }
+
+        /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
+        void reverse () { /* no-op */ }
 
         /** Push all particles */
         using BeamOptic::operator();

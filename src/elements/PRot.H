@@ -33,7 +33,7 @@ namespace impactx::elements
     struct PRot
     : public mixin::Named,
       public mixin::BeamOptic<PRot>,
-      public mixin::LinearTransport<PRot>,
+      public mixin::LinearTransport<PRot, false>,
       public mixin::Thin,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -62,6 +62,9 @@ namespace impactx::elements
           m_phi_out(phi_out * degree2rad)
         {
         }
+
+        /** Reverse the element (swap phi_in and phi_out) */
+        void reverse () { std::swap(m_phi_in, m_phi_out); }
 
         /** Push all particles */
         using BeamOptic::operator();

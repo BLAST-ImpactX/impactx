@@ -35,7 +35,7 @@ namespace impactx::elements
     struct NonlinearLens
     : public mixin::Named,
       public mixin::BeamOptic<NonlinearLens>,
-      public mixin::LinearTransport<NonlinearLens>,
+      public mixin::LinearTransport<NonlinearLens, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize
@@ -71,6 +71,9 @@ namespace impactx::elements
           m_knll(knll), m_cnll(cnll)
         {
         }
+
+        /** Reverse the element (negate strength) */
+        void reverse () { m_knll = -m_knll; }
 
         /** Push all particles */
         using BeamOptic::operator();

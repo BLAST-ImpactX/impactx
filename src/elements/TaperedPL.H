@@ -32,7 +32,7 @@ namespace impactx::elements
     struct TaperedPL
     : public mixin::Named,
       public mixin::BeamOptic<TaperedPL>,
-      public mixin::LinearTransport<TaperedPL>,
+      public mixin::LinearTransport<TaperedPL, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize
@@ -72,6 +72,9 @@ namespace impactx::elements
           m_k(k), m_taper(taper), m_unit(unit)
         {
         }
+
+        /** Reverse the element (negate strength) */
+        void reverse () { m_k = -m_k; }
 
         /** Push all particles */
         using BeamOptic::operator();

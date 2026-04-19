@@ -88,6 +88,9 @@ namespace impactx::elements
             return m_rc;
         }
 
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
+
         /** Push all particles */
         using BeamOptic::operator();
 

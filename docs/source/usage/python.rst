@@ -847,7 +847,19 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:method:: transfer_map(ref, order="linear", fallback_identity_map=False)
 
-      Calculate the transfer map of the elements in the list.
+      Calculate the end-to-end transfer map of the elements in the list.
+
+      Currently only the linear transfer map is implemented (``order="linear"``);
+      the ``order`` parameter is reserved for future higher-order extensions.
+      In linear mode the 6x6 map is composed element by element, using each
+      element's analytic per-slice linear transport map.
+
+      Collective effects like space charge, Coherent/Incoherent Synchrotron
+      Radiation (CSR/ISR), and wakefield effects are not applied here; the
+      returned map describes the purely linear single-particle dynamics of the
+      design lattice.
+
+      Phase-space ordering in the returned matrix is ``(x, px, y, py, t, pt)``.
 
       .. dropdown:: Example
          :color: light
@@ -857,11 +869,46 @@ This module provides elements and methods for the accelerator lattice.
          .. literalinclude:: tests/python/test_lattice_optics.py
             :language: bash
 
-      :param ref: A reference particle.
+      :param ref: reference particle at the starting s
       :param order: So far, only the calculation of linear transfer maps is supported.
       :param fallback_identity_map: For elements with an undefined transfer map in the lattice, assume the identity matrix.
-      :return: The transfer map of all elements in the list.
+      :return: The end-to-end transfer map of the lattice.
       :rtype: Map6x6
+
+   .. py:method:: map_trace(ref)
+
+      Trace the cumulative 6x6 linear transport map element by element.
+
+      The reference particle is passed by value (intentional copy); the
+      caller's reference particle is not modified in place. This matches the
+      convention used by :py:meth:`~transfer_map`.
+
+      This per-element trace is what :py:meth:`~impactx.impactx_pybind.ImpactX.twiss`
+      consumes to transport Twiss functions through the lattice.
+
+      If you only need the final cumulative map at the lattice exit, prefer
+      :py:meth:`~transfer_map` instead of indexing the last entry of
+      :py:meth:`~map_trace`.
+
+      :param ref: A reference particle.
+      :return: A list of dictionaries, one per lattice element plus a leading
+               entry for the starting position. Each entry contains:
+
+               * ``s``    -- integrated path length along the reference
+                 orbit, in meters;
+               * ``name`` -- user-supplied element name (empty string if not
+                 named);
+               * ``type`` -- element type string (e.g. ``"Drift"``,
+                 ``"Quad"``, ``"Sbend"``);
+               * ``M``    -- cumulative 6x6 linear transport map from the
+                 start of the lattice to the exit of this element (a
+                 ``Map6x6`` instance; call ``.to_numpy()`` for a standard
+                 C-ordered NumPy array).
+
+               The first entry always has the identity map at the starting
+               ``s``; the last entry contains the same map as
+               :py:meth:`~transfer_map`.
+      :rtype: list[dict]
 
    .. py:method:: to_dicts()
 

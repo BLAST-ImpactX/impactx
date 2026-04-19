@@ -735,7 +735,11 @@ class Beam:
     pc: float = 0.0  # momentum
     mass: float = 0.0
     charge: float = 0.0
-    freq0: float = 0.0  # revolution frequency [MHz]
+    freq0: float = 0.0  # revolution frequency [Hz]
+    # BV flag: +1 for forward sequence direction (default), -1 for reversed.
+    # MAD-X stores this on each element node as `other_bv` and multiplies it
+    # into bend angles, solenoid strengths, kicker kicks, and RF voltages.
+    bv: float = 1.0
 
 
 class EvaluationContext:
@@ -2215,9 +2219,18 @@ class MADXParser:
                         sequence_name = self._advance().value.lower()
                     else:
                         self._parse_expression()  # consume
-                elif attr_name in ("energy", "pc", "mass", "charge", "freq0"):
+                elif attr_name in ("energy", "pc", "mass", "charge", "bv"):
                     expr = self._parse_expression()
                     beam_attrs[attr_name] = self.context.evaluate(expr)
+                elif attr_name == "freq0":
+                    expr = self._parse_expression()
+                    # MAD-X BEAM/FREQ0 is stored internally in MHz, not Hz --
+                    # the upstream user guide (Introduction/beam.html) is stale
+                    # on this point. Source-code evidence: mad_beam.c:278 uses
+                    # freq0 = beta*c/(1e6*circ), and mad_beam.c:366 uses
+                    # freq0 = (beta*c*1e-6)/circ. We normalize to Hz here so
+                    # downstream ImpactX consumers work in SI units.
+                    beam_attrs["freq0"] = self.context.evaluate(expr) * 1.0e6
                 else:
                     # Unknown attribute, skip the value
                     self._parse_expression()
@@ -2552,7 +2565,7 @@ class MADXParser:
         return self.context.beam.energy
 
     def getFreq0(self) -> float:
-        """Get revolution frequency in MHz."""
+        """Get revolution frequency in Hz."""
         return self.context.beam.freq0
 
     def getOption(self, name: str, default: Any = 0.0) -> Any:

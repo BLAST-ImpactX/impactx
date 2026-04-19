@@ -87,11 +87,11 @@ namespace
         using Element = typename T_PyClass::type;  // py::class<T, options...>
 
         cl.def("push",
-               [](Element & el, Map6x6 & cm, RefPart const & ref) {
+               [](Element & el, Map6x6 & cm, RefPart & ref) {
                    el(cm, ref);
                },
                py::arg("cm"), py::arg("ref"),
-               "Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first."
+               "Linear push of the covariance matrix through an element. Advances the reference particle and mixes in alignment effects internally."
         );
     }
 

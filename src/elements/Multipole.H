@@ -32,7 +32,7 @@ namespace impactx::elements
     struct Multipole
     : public mixin::Named,
       public mixin::BeamOptic<Multipole>,
-      public mixin::LinearTransport<Multipole, false>,
+      public mixin::LinearTransport<Multipole>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize
@@ -195,15 +195,67 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * The thin multipole kick implemented by @see operator() is
+         *   dpx - i*dpy = -(K_normal + i*K_skew) * (x + i*y)^(m-1) / (m-1)!
+         * which matches the MAD-X MULTIPOLE thin kick (see MAD-X User Guide,
+         * "Generalisation to normal and skew components"):
+         *   dPx - i*dPy = -sum_n (KN_n + i*KS_n) * (x + i*y)^n / n!
+         * under the index mapping n = m_multipole - 1 and the identifications
+         * K_normal <-> KNL[n], K_skew <-> KSL[n] for the integrated strengths
+         * (no factorial rescaling).
+         *
+         * The linear map is the Jacobian of this ideal thin kick around the
+         * incoming reference orbit in the element frame. Alignment and roll
+         * are intentionally not applied here; the @c LinearTransport mixin
+         * wraps this ideal/local map into lab coordinates for envelope and
+         * linear-map workflows. A pure dipole kick (m_multipole == 1)
+         * contributes only to the orbit and yields the identity linear map.
+         * Higher-order multipoles generate linear feed-down when the
+         * reference orbit is off-axis.
+         *
+         * Limitation: @c Multipole keeps the ideal reference-particle push as
+         * a zero-length no-op, matching particle-tracking semantics. As a
+         * consequence, constant ideal orbit kicks from off-axis higher-order
+         * multipoles are not propagated to downstream elements. The returned
+         * map therefore includes only the local feed-down about the current
+         * reference orbit, not downstream optics changes from a moved ideal
+         * reference orbit.
+         *
+         * @param[in] refpart reference particle at the element entrance
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            Map6x6 R = Map6x6::Identity();
+
+            int const n = m_multipole - 1;
+            if (n >= 1)
+            {
+                using Complex = amrex::GpuComplex<amrex::ParticleReal>;
+
+                Complex const zeta(refpart.x, refpart.y);
+                Complex const alpha(m_Kn, m_Ks);
+
+                amrex::ParticleReal const inv_factorial_nm1 =
+                    static_cast<amrex::ParticleReal>(n) /
+                    static_cast<amrex::ParticleReal>(m_mfactorial);
+
+                // Linearize the kick around the incoming reference orbit in
+                // the element frame. For n == 1 this reproduces the standard
+                // thin quadrupole matrix, while n >= 2 gives feed-down.
+                Complex const beta = amrex::pow(zeta, n - 1) * alpha * inv_factorial_nm1;
+
+                R(2,1) = -beta.m_real;
+                R(2,3) = +beta.m_imag;
+                R(4,1) = +beta.m_imag;
+                R(4,3) = +beta.m_real;
+            }
+            // n == 0 (dipole kick) is a constant kick and does not affect the
+            // linearized map.
+
+            return R;
         }
 
         int m_multipole; //! multipole index

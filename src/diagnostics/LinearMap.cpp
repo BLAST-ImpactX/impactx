@@ -25,9 +25,10 @@ namespace impactx::diagnostics
 {
 namespace
 {
-    /** Evaluate @c element.transport_map(ref), or apply the
-     *  missing-linear-map policy for elements whose @c transport_map is
-     *  known not to be implemented.
+    /** Advance the private reference particle through one element
+     *  slice and return the aligned lab-frame linear transport map, or
+     *  apply the missing-linear-map policy for elements whose
+     *  @c transport_map is known not to be implemented.
      *
      *  The branch is chosen at compile time via
      *  @c T_Element::has_linear_transport (provided by the
@@ -47,7 +48,7 @@ namespace
     Map6x6
     safe_transport_map (
         T_Element const & element,
-        RefPart const & ref,
+        RefPart & ref,
         std::set<std::string> & warned_types,
         OnMissingLinearMap on_missing
     )
@@ -58,12 +59,13 @@ namespace
             // parameter/set/string work in the "missing" branch entirely
             // so the compiler can inline this to a direct call.
             amrex::ignore_unused(warned_types, on_missing);
-            return element.transport_map(ref);
+            return elements::mixin::detail::advance_ref_and_transport_map(element, ref);
         }
         else
         {
             // Cold path: only instantiated for element types whose
             // transport_map is known to throw. No try/catch needed.
+            element(ref);
             std::string const type_name{T_Element::type};
             switch (on_missing)
             {
@@ -128,11 +130,10 @@ namespace
      *  map is returned, starting from the identity; a fresh warning-
      *  deduplication set is maintained per call.
      *
-     *  Uses the same per-element advance / linear-map evaluation
-     *  convention as the envelope tracker in
-     *  @c src/tracking/envelope.cpp , so the resulting linear optics
-     *  is consistent with the tracker for edge-sensitive elements
-     *  such as @c RFCavity, @c SoftQuad, and @c SoftSol.
+     *  Uses the same centralized linear/affine transport convention as the
+     *  envelope tracker in @c src/tracking/envelope.cpp, so the resulting
+     *  linear optics is consistent with the tracker for alignment, roll,
+     *  and edge-/slice-sensitive elements.
      *
      * @tparam F_OnElementExit callable
      *                         @c void(E const&, RefPart const&, Map6x6 const&)
@@ -175,7 +176,6 @@ namespace
                 int const nslice = element.nslice();
                 for (int slice_i = 0; slice_i < nslice; ++slice_i)
                 {
-                    element(ref);
                     Map6x6 const R_slice = safe_transport_map<E>(
                         element, ref, warned_types, on_missing
                     );

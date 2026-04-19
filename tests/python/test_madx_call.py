@@ -18,7 +18,7 @@ import math
 
 import pytest
 
-from impactx.MADXParser import MADXInputError, MADXParser
+from impactx.MADXParser import MADXInputError, MADXInputWarning, MADXParser
 
 
 @pytest.fixture
@@ -494,3 +494,43 @@ m = pmass;
     assert parser.context.get_variable("y") == pytest.approx(2 * math.pi)
     assert parser.context.get_variable("z") == pytest.approx(2.99792458e8)
     assert parser.context.get_variable("m") == pytest.approx(0.93827208816)
+
+
+def test_get_beamline_without_use_infers_unique_root_line():
+    """Declaration-only files may omit USE; infer the unique top-level line."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+BEAM, PARTICLE=PROTON, ENERGY=1.0;
+D1: DRIFT, L=0.5;
+CELL: LINE=(D1, D1);
+BOOSTER: LINE=(CELL, CELL);
+"""
+    )
+
+    with pytest.warns(
+        MADXInputWarning, match="inferring unique top-level line 'booster'"
+    ):
+        beamline = parser.getBeamline()
+
+    assert [elem["type"] for elem in beamline] == ["drift"] * 4
+    assert parser.sequence["name"] == "booster"
+
+
+def test_get_beamline_without_use_requires_explicit_choice_when_roots_ambiguous():
+    """Do not guess when multiple top-level root lines exist."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+BEAM, PARTICLE=PROTON, ENERGY=1.0;
+D1: DRIFT, L=0.5;
+A: LINE=(D1);
+B: LINE=(D1, D1);
+"""
+    )
+
+    with pytest.raises(MADXInputError, match="multiple top-level lines"):
+        parser.getBeamline()
+
+    beamline = parser.getBeamline(line_name="b")
+    assert [elem["type"] for elem in beamline] == ["drift", "drift"]

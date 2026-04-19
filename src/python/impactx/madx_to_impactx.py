@@ -1337,16 +1337,18 @@ def lattice(
     return impactx_beamline
 
 
-def read_lattice(madx_file, nslice=1):
+def read_lattice(madx_file, nslice=1, *, line=None, sequence=None):
     """
     Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
     :param madx_file: file name to MAD-X file with beamline elements
     :param nslice: number of ds slices per element
+    :param line: explicit MAD-X LINE name to expand when no USE command is present
+    :param sequence: explicit MAD-X SEQUENCE/PERIOD name to expand
     :return: list of ImpactX.KnownElements
     """
     madx = MADXParser()
     madx.parse(madx_file)
-    beamline = madx.getBeamline()
+    beamline = madx.getBeamline(line_name=line, sequence_name=sequence)
     freq0 = madx.getFreq0()
     if getattr(madx.context.beam, "mass", 0.0) > 0.0:
         ref_mass_MeV = madx.context.beam.mass * 1.0e3

@@ -174,7 +174,10 @@ def load_file(self, filename, nslice=1):
         # example: fodo.madx
         from ..madx_to_impactx import read_lattice
 
-        self.extend(read_lattice(filename, nslice))
+        # TODO: Expose explicit MAD-X line/sequence selection in this public API
+        # once the user-facing interface is settled. The lower-level translator
+        # already supports read_lattice(..., line=..., sequence=...).
+        self.extend(read_lattice(filename, nslice, line=None, sequence=None))
         return
 
     elif extension_inner == ".pals":

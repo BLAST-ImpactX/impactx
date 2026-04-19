@@ -2495,21 +2495,99 @@ class MADXParser:
 
         return []
 
-    def getBeamline(self) -> list[dict]:
+    def _iter_line_references(self, elem) -> list[str]:
+        """Yield line/element names referenced inside a LINE definition."""
+        if isinstance(elem, str):
+            return [elem.lower()]
+
+        if isinstance(elem, dict):
+            refs = []
+            if "name" in elem and isinstance(elem["name"], str):
+                refs.append(elem["name"].lower())
+            if "elements" in elem:
+                for inner in elem["elements"]:
+                    refs.extend(self._iter_line_references(inner))
+            return refs
+
+        return []
+
+    def _root_lines(self) -> list[str]:
+        """Return top-level LINE/SEQUENCE definitions not referenced by other lines."""
+        referenced_lines = set()
+        for line in self.context.lines.values():
+            for elem in line.elements:
+                for ref in self._iter_line_references(elem):
+                    if ref in self.context.lines:
+                        referenced_lines.add(ref)
+
+        return [
+            name for name in self.context.lines.keys() if name not in referenced_lines
+        ]
+
+    def _resolve_beamline_name(
+        self, *, line_name: Optional[str] = None, sequence_name: Optional[str] = None
+    ) -> Optional[str]:
+        """Resolve which LINE/SEQUENCE should be expanded into a beamline."""
+        if line_name is not None and sequence_name is not None:
+            raise MADXInputError(
+                "Specify at most one of 'line_name' or 'sequence_name'."
+            )
+
+        selected = sequence_name or line_name or self.context.selected_sequence
+        if selected is not None:
+            selected = selected.lower()
+            if selected not in self.context.lines:
+                kind = "sequence" if sequence_name is not None else "line"
+                raise self._error(
+                    f"Requested {kind} '{selected}' is not defined in this MAD-X input."
+                )
+            self.context.selected_sequence = selected
+            return selected
+
+        if not self.context.lines:
+            return None
+
+        root_lines = self._root_lines()
+        if len(root_lines) == 1:
+            selected = root_lines[0]
+            self.context.selected_sequence = selected
+            self.context._warn(
+                "No USE command selected an active sequence; inferring unique top-level "
+                f"line '{selected}'. Prefer explicit USE, PERIOD={selected}; or pass "
+                f"line='{selected}' to the importer."
+            )
+            return selected
+
+        if len(root_lines) > 1:
+            candidates = ", ".join(root_lines[:8])
+            if len(root_lines) > 8:
+                candidates += ", ..."
+            raise self._error(
+                "No active sequence selected and multiple top-level lines are defined. "
+                "Select one explicitly with USE, PERIOD=... in MAD-X or via "
+                f"line='...' / sequence='...' in the importer. Candidates: {candidates}"
+            )
+
+        raise self._error(
+            "No active sequence selected and no unique top-level line could be inferred."
+        )
+
+    def getBeamline(
+        self, *, line_name: Optional[str] = None, sequence_name: Optional[str] = None
+    ) -> list[dict]:
         """
         Get the beamline as a list of element dictionaries.
 
         Returns a list compatible with the old parser format.
         """
-        if not self.context.selected_sequence:
-            # Try to find a line if no sequence selected
-            if self.context.lines:
-                self.context.selected_sequence = list(self.context.lines.keys())[0]
-            else:
-                return []
+        beamline_name = self._resolve_beamline_name(
+            line_name=line_name, sequence_name=sequence_name
+        )
+        if beamline_name is None:
+            return []
 
         # Flatten the line to get element names
-        element_names = self._flatten_line(self.context.selected_sequence)
+        element_names = self._flatten_line(beamline_name)
 
         # Build the beamline
         beamline = []

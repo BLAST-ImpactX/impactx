@@ -8,8 +8,7 @@
 
 import numpy as np
 
-import amrex.space3d as amr
-from impactx import Config, ImpactX, Map3x6, Map6x6, Vector3, elements
+from impactx import ImpactX, Map3x6, Map6x6, Vector3, elements
 
 sim = ImpactX()
 
@@ -54,8 +53,8 @@ sim.lattice.extend(
     ]
 )
 
-# run simulation 
-sim.track_reference(ref) 
+# run simulation
+sim.track_reference(ref)
 
 # return linear map
 Rmat = Map6x6()

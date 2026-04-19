@@ -13,7 +13,6 @@ from impactx import Map6x6, RefPart, elements
 
 from .MADXParser import MADXParser
 
-TRACKED_TRANSLATION_OPTIONS = ("rbarc", "thin_foc")
 # Single-shape mapping from MAD-X APERTYPE to ImpactX Aperture.shape.
 # Edit this table first when adding support for new MAD-X aperture types.
 # Composite shapes (rectellipse, lhcscreen/rectcircle) are not in this table;
@@ -124,10 +123,19 @@ def lattice(
     # MAD-X defaults from OPTION command table:
     # rbarc=true, thin_foc=true
     rbarc = bool(options.get("rbarc", True))
+    # TODO(audit): OPTION,THIN_FOC toggles MAD-X's weak-focusing contribution on
+    # thin elements with LRAD>0 (mainly MULTIPOLE). We currently surface the flag
+    # in MULTIPOLE warnings but do not translate a weak-focusing term into the
+    # output lattice; doing so would require composing a per-MULTIPOLE thin
+    # quadrupole kick of strength ~angle^2/LRAD when THIN_FOC=true. Track when
+    # ImpactX grows a direct equivalent.
     thin_foc = bool(options.get("thin_foc", True))
     rad_to_deg = 180.0 / math.pi
     # MAD-X bend maps are driven by ANGLE/TILT; K0/K0S are obsolete for map construction
-    # and should be consumed silently if present.
+    # and should be consumed silently if present. We read them via
+    # ``_ = d.get(attr, 0.0)`` in the SBEND/RBEND branches purely to mark them
+    # "accessed" in the _TrackedElement wrapper, which suppresses the
+    # unread-attribute warning that would otherwise fire.
     ignored_bend_attrs = ("k0", "k0s")
     # H1/H2 (pole-face curvature) still affect MAD-X fringe modeling and are not translated here.
     unsupported_bend_attrs = ("h1", "h2")
@@ -174,8 +182,11 @@ def lattice(
     def append_thin_with_length(thin_element, length, element_name):
         """Model finite-length thin-lens MAD-X elements as drift-kick-drift."""
         if length > 0.0:
-            # Note: MAD-X uses half-kick + drift(L) + half-kick (Strang split, twiss.f90:4587-4617);
-            # this leap-frog split is linearly identical and differs only at O(kick^2).
+            # Note: this emission uses drift(L/2) + kick + drift(L/2), while MAD-X
+            # uses the reverse symmetric split half-kick + drift(L) + half-kick
+            # (twiss.f90:4587-4617). Both are second-order symmetric compositions
+            # of drift + kick and are linearly identical; they differ only at
+            # O(kick^2) (nonlinear) terms.
             # TODO(audit): This is a paraxial length-preserving approximation.
             # Replace with dedicated thick elements when available.
             impactx_beamline.append(
@@ -464,10 +475,51 @@ def lattice(
             return fint
         return fintx_raw
 
+    # Element types whose per-type branch below handles aperture metadata
+    # directly (MARKER merges Aperture with its no-op emission; collimators and
+    # PLACEHOLDER use dedicated helpers). Every other supported type reuses the
+    # uniform pre-dispatch emission below.
+    aperture_handled_inline = (
+        "marker",
+        "collimator",
+        "rcollimator",
+        "ecollimator",
+        "placeholder",
+    )
+
+    def emit_aperture_entry(elem):
+        """Pre-emit ImpactX Aperture element(s) for generic MAD-X aperture metadata.
+
+        MAD-X checks aperture at element entrance (trrun.f90:820-821 + trcoll),
+        so we emit the Aperture primitive(s) *before* the main element. Composite
+        MAD-X apertypes (rectellipse/lhcscreen/rectcircle) expand to two
+        back-to-back ImpactX Apertures (rectangular + elliptical).
+        """
+        params_list = aperture_params_from_madx(elem)
+        if params_list:
+            total = len(params_list)
+            for p in params_list:
+                impactx_beamline.append(
+                    elements.Aperture(
+                        name=_aperture_name(elem["name"], "_aperture_entry", p, total),
+                        **p,
+                    )
+                )
+        elif elem.get("apertype", "") or elem.get("aperture", []):
+            # TODO(audit): Add mapping for remaining MAD-X aperture types
+            # (e.g. racetrack/octagon and vertex-defined profiles).
+            _warn(
+                f"{elem.get('type', '').upper()} '{elem['name']}' aperture metadata "
+                f"could not be mapped exactly (apertype='{elem.get('apertype', '')}'); "
+                f"skipping aperture translation."
+            )
+
     for d_raw in parsed_beamline:
         d = _TrackedElement(d_raw)
         # print(d)
         if d["type"] in supported_madx_element_types:
+            if d["type"] not in aperture_handled_inline:
+                emit_aperture_entry(d)
             if d["type"] == "marker":
                 # Always preserve MARKER semantics as an explicit no-op element.
                 impactx_beamline.append(elements.Marker(name=d["name"]))
@@ -924,6 +976,17 @@ def lattice(
                     #   px_f = QC x + QS y + C px + S py
                     #   y_f  = -S x + C y
                     #   py_f = -QS x + QC y - S px + C py
+                    #
+                    # TODO(audit): MAD-X tmsol_th (twiss.f90:8544) uses
+                    #   Q0 = skl / (1 + deltap)
+                    # i.e. the effective rotation angle is momentum-dependent. A static
+                    # 6x6 LinearMap cannot express per-particle (1+deltap) dependence
+                    # for the transverse block. We therefore evaluate C, S, Q at
+                    # deltap=0 (reference particle), which is exact on-momentum but
+                    # neglects chromatic (off-momentum) defocusing of the thin
+                    # solenoid. A proper fix requires a dedicated thin-solenoid
+                    # element in ImpactX that evaluates per-particle (1+deltap);
+                    # track with ImpactX issue #1413.
                     C = math.cos(0.5 * ksi)
                     S = math.sin(0.5 * ksi)
                     Q = -0.25 * ks * ksi
@@ -1081,6 +1144,19 @@ def lattice(
                     d["name"],
                 )
             elif d["type"] in ("monitor", "hmonitor", "vmonitor"):
+                # MAD-X handles MONITOR/HMONITOR/VMONITOR with L>0 as a drift
+                # (trrun.f90:820-821) and stores the reference orbit AFTER that
+                # drift is applied (twiss.f90:1020 calls store_node_vector at
+                # element exit). Emitting Drift(L) followed by a zero-length
+                # ImpactX BeamMonitor therefore reproduces MAD-X's exit-face
+                # recording convention exactly -- this is not a center-of-element
+                # reading, despite the MAD-X `at=` convention pointing at the
+                # element center.
+                # TODO(audit): MAD-X MREX/MREY (monitor reading alignment errors
+                # set via EALIGN) and HMONITOR/VMONITOR plane masking are not
+                # translated. LRAD/TILT on MAD-X monitors are documented as
+                # unused internally (changelog.tex:68), so we intentionally
+                # ignore them here.
                 if d.get("l", 0.0) > 0:
                     impactx_beamline.append(
                         elements.Drift(

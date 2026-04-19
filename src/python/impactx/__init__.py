@@ -28,6 +28,7 @@ __author__ = impactx_pybind.__author__
 
 from .distribution_input_helpers import twiss  # noqa
 from .fourier import fourier_coefficients  # noqa
+from .twiss_lattice import compute_twiss as _compute_twiss_lattice
 from .extensions.KnownElementsList import (
     FilteredElementsList,
     register_KnownElementsList_extension,
@@ -65,3 +66,23 @@ register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContai
 register_RFCavity_extension(impactx_pybind.elements.RFCavity)
 register_SoftQuadrupole_extension(impactx_pybind.elements.SoftQuadrupole)
 register_SoftSolenoid_extension(impactx_pybind.elements.SoftSolenoid)
+
+# Expose the Wolski-6D lattice Twiss analysis as a convenience method on the
+# ImpactX simulation object. Internally this routes through
+# ``sim.lattice.map_trace(sim.beam.ref)`` (the reference particle is copied
+# by pybind11 on the way in, so the caller's ``sim.beam.ref`` is preserved),
+# and the linear-optics analysis lives in ``impactx.twiss_lattice``.
+#
+#   sim.twiss()                               -> periodic ring: matched Twiss
+#                                                from the Wolski eigendecomposition
+#                                                of the one-turn map
+#   sim.twiss(init={"beta_x": ..., ...})      -> transfer line / linac: propagate
+#                                                uncoupled Courant-Snyder Twiss
+#                                                from the given initial conditions
+#
+# Returns a dict of numpy arrays (one entry per element boundary) with beta,
+# alpha, phase advance mu, and dispersion along s, plus the fractional tunes
+# for rings. The underlying lattice-level building blocks are available as
+# ``sim.lattice.transfer_map(ref)`` (end-to-end map) and
+# ``sim.lattice.map_trace(ref)`` (per-element cumulative trace).
+impactx_pybind.ImpactX.twiss = _compute_twiss_lattice

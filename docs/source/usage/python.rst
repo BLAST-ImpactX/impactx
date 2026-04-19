@@ -345,6 +345,48 @@ Collective Effects & Overall Simulation Parameters
 
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
 
+   .. py:method:: twiss(init=None)
+
+      Compute the linear-optics Twiss functions along the lattice.
+
+      This is a thin convenience wrapper around
+      :py:meth:`~impactx.impactx_pybind.elements.KnownElementsList.map_trace`:
+      it uses the simulation's current reference particle (``sim.beam.ref``),
+      transports the beta / alpha / phase-advance and dispersion along the
+      lattice, and returns the result as a dictionary of NumPy arrays (one
+      entry per element boundary).
+
+      Two modes are supported:
+
+      * **Periodic ring** (``init=None``): the one-turn map is computed from the
+        current lattice, the Wolski 6D eigendecomposition provides the matched
+        initial Courant-Snyder / Mais-Ripken Twiss, and the closed-orbit
+        dispersion is obtained from the periodic equation
+        :math:`(I - M_{4 \times 4}) D = M[0{:}4, 5]`. Fractional tunes are
+        extracted from the eigenvalue phases and returned in the ``tunes`` key.
+      * **Transfer line / linac** (``init`` given): the user supplies initial
+        uncoupled Courant-Snyder parameters; Twiss is then propagated from the
+        entrance through the lattice without matching.
+
+      The method does not modify ``sim.beam.ref``: the reference particle is
+      copied internally before being advanced through the lattice, so Twiss
+      analysis can be performed before or after tracking without altering the
+      simulation state.
+
+      See :py:mod:`impactx.twiss_lattice` for the full mathematical details
+      (including the parabolic-mode handling when the ring has no RF cavity).
+
+      :param init: ``None`` for a periodic ring, or a ``dict`` with at least
+                   ``beta_x``, ``beta_y`` (in meters) and optional ``alpha_x``,
+                   ``alpha_y``, ``beta_t``, ``alpha_t``, ``disp_x``, ``disp_px``,
+                   ``disp_y``, ``disp_py`` for a transfer line / linac.
+      :return: dictionary of NumPy arrays with keys ``s``, ``name``, ``type``,
+               ``beta_1x`` through ``beta_3t``, ``alpha_1x`` through
+               ``alpha_3t``, ``mu_1``, ``mu_2``, ``mu_3``, ``disp_x``,
+               ``disp_px``, ``disp_y``, ``disp_py``, and (for rings only)
+               ``tunes``.
+      :rtype: dict
+
    .. py:property:: hook
 
       User-defined function hooks that are called, e.g, during tracking.

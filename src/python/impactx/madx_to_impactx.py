@@ -1467,7 +1467,7 @@ def beam(particle, charge=None, mass=None, energy=None):
 
     :param str particle: reference particle name
     :param float charge: particle charge (proton charge units)
-    :param float mass: particle mass (electron masses)
+    :param float mass: particle mass in GeV
     :param float energy: total particle energy (GeV)
         - MAD-X default: 1 GeV
     :return dict: dictionary containing particle and beam attributes in ImpactX units
@@ -1475,27 +1475,37 @@ def beam(particle, charge=None, mass=None, energy=None):
 
     GeV2MeV = 1.0e3
     kg2MeV = sc.c**2 / sc.electron_volt * 1.0e-6
-    muon_mass = sc.physical_constants["electron-muon mass ratio"][0] / sc.m_e
+    electron_mass_MeV = sc.m_e * kg2MeV
+    proton_mass_MeV = sc.m_p * kg2MeV
+    muon_mass_MeV = (
+        electron_mass_MeV / sc.physical_constants["electron-muon mass ratio"][0]
+    )
+    # Match MAD-X source (`mad_dict.c`), which defines ION with `mass = nmass`.
+    ion_mass_MeV = 0.93956542052 * GeV2MeV
     if energy is None:
         energy_MeV = 1.0e3  # MAD-X default is 1 GeV total particle energy
     else:
         energy_MeV = energy * GeV2MeV
+    if particle is None:
+        particle = ""
+    particle = particle.casefold()
+    generic_mass_MeV = None if mass is None else mass * GeV2MeV
 
     impactx_beam = {
-        "positron": {"mass": sc.m_e * kg2MeV, "charge": 1.0},
-        "electron": {"mass": sc.m_e * kg2MeV, "charge": -1.0},
-        "proton": {"mass": sc.m_p * kg2MeV, "charge": 1.0},
-        "antiproton": {"mass": sc.m_p * kg2MeV, "charge": -1.0},
+        "positron": {"mass": electron_mass_MeV, "charge": 1.0},
+        "electron": {"mass": electron_mass_MeV, "charge": -1.0},
+        "proton": {"mass": proton_mass_MeV, "charge": 1.0},
+        "antiproton": {"mass": proton_mass_MeV, "charge": -1.0},
         "posmuon": {
-            "mass": muon_mass * kg2MeV,
+            "mass": muon_mass_MeV,
             "charge": 1.0,
         },  # positively charged muon (anti-muon)
         "negmuon": {
-            "mass": muon_mass * kg2MeV,
+            "mass": muon_mass_MeV,
             "charge": -1.0,
         },  # negatively charged muon
-        "ion": {"mass": sc.m_u * kg2MeV, "charge": 1.0},
-        "generic": {"mass": mass, "charge": charge},
+        "ion": {"mass": ion_mass_MeV, "charge": 1.0},
+        "generic": {"mass": generic_mass_MeV, "charge": charge},
     }
 
     if particle not in impactx_beam.keys():
@@ -1511,6 +1521,10 @@ def beam(particle, charge=None, mass=None, energy=None):
         )
 
     reference_particle = impactx_beam[_particle]
+    if reference_particle["mass"] is None or reference_particle["charge"] is None:
+        raise ValueError(
+            "Unknown MAD-X particle species requires explicit MASS and CHARGE in the BEAM command."
+        )
     reference_particle["energy"] = energy_MeV
 
     return reference_particle
@@ -1546,8 +1560,16 @@ def read_beam(ref: RefPart, madx_file):
 
     ref_particle_dict = beam(
         madx.getParticle(),  # if particle species is known, mass, charge, and potentially energy are set to default
-        # TODO MADX parser needs to extract charge if it's given,
-        # TODO MADX parser needs to extract mass if it's given,
+        charge=(
+            None
+            if getattr(madx.context.beam, "charge", 0.0) == 0.0
+            else float(madx.context.beam.charge)
+        ),
+        mass=(
+            None
+            if getattr(madx.context.beam, "mass", 0.0) == 0.0
+            else float(madx.context.beam.mass)
+        ),
         energy=float(madx.getEtot()),  # MADX default energy is in GeV
     )
 

@@ -72,7 +72,8 @@ namespace impactx::elements::mixin
             // small trick to force every derived class has to implement a method transport_map
             // (w/o using a purely virtual function)
             T_Element const & element = *static_cast<T_Element const*>(this);
-            cm = element.transport_map(ref) * cm * element.transport_map(ref).transpose();
+            auto const R = element.transport_map(ref);
+            cm = R * cm * R.transpose();
         }
     };
 

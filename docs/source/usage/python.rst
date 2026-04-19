@@ -634,6 +634,12 @@ Particles
 
       Load reference particle information from a MAD-X file.
 
+      .. warning::
+
+         Our MAD-X parser is under active development and provided as a preview.
+         Please check any loaded MAD-X beams very carefully.
+         Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
 
 
@@ -770,9 +776,15 @@ This module provides elements and methods for the accelerator lattice.
 
       Add a single element to the list.
 
-   .. py:method:: load_file(madx_file, nslice=1)
+   .. py:method:: load_file(filename, nslice=1)
 
       Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+      .. warning::
+
+         Our MAD-X and PALS parsers are under active development and provided as a preview.
+         Please check any loaded lattice files very carefully.
+         Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
       :param filename: filename to file with beamline elements
       :param nslice: number of slices used for the application of collective effects

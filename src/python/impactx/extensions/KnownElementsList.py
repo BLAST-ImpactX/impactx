@@ -144,7 +144,26 @@ def _make_drift_from_old(
 
 
 def load_file(self, filename, nslice=1):
-    """Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats."""
+    """Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+    .. warning::
+
+       Our MAD-X and PALS parsers are under active development
+       and provided as a preview. Please check any loaded lattice
+       files very carefully. Please report your experience and bugs
+       on our `issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+    """
+
+    import warnings
+
+    warnings.warn(
+        "Our MAD-X and PALS parsers are under active development and provided as a "
+        "preview. Please check any loaded lattice files very carefully. Please "
+        "report your experience and bugs on our issue tracker: "
+        "https://github.com/BLAST-ImpactX/impactx/issues",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
     # Attempt to strip two levels of file extensions to determine the schema.
     #   Examples: fodo.madx, fodo.pals.yaml, fodo.pals.json, ...
@@ -155,7 +174,10 @@ def load_file(self, filename, nslice=1):
         # example: fodo.madx
         from ..madx_to_impactx import read_lattice
 
-        self.extend(read_lattice(filename, nslice))
+        # TODO: Expose explicit MAD-X line/sequence selection in this public API
+        # once the user-facing interface is settled. The lower-level translator
+        # already supports read_lattice(..., line=..., sequence=...).
+        self.extend(read_lattice(filename, nslice, line=None, sequence=None))
         return
 
     elif extension_inner == ".pals":

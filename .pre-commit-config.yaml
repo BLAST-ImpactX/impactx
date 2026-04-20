@@ -12,6 +12,9 @@
 #
 # See https://pre-commit.com for more information
 
+ci:
+  autoupdate_schedule: monthly
+
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks

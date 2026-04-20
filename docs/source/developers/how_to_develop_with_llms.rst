@@ -44,7 +44,7 @@ Skills
 ------
 
 LLM assistants such as Claude Code support reusable *skills* — scripted workflows that an assistant can execute on demand, automating multi-step tasks that follow a fixed procedure.
-When defined for ImpactX, skills live in the ``.claude/skills/`` directory and use the prefix ``impactx-`` for easy discovery (start typing ``/impactx`` to see them).
+When (later) defined for ImpactX, skills will live in the ``.claude/skills/`` directory and use the prefix ``impactx-`` for easy discovery (start typing ``/impactx`` to see them).
 
 To add a new skill, create a directory under ``.claude/skills/<skill-name>/`` containing a ``SKILL.md`` file that describes the step-by-step procedure.
 

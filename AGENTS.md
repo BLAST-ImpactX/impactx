@@ -47,6 +47,9 @@ Key CMake options:
 
 Tests use CTest. Each example in `examples/` has an input file (or Python script), an analysis script, and optionally a plot script. Python unit tests live under `tests/python/` and are run via pytest.
 
+You can run the Python unit tests directly with `pytest` from `tests/python/`, but this requires that `cmake --build build --target pip_install` has been run first so the Python package is installed and importable.
+The pytest-based tests are also registered in CTest. Running them via `ctest` is often preferable during development because CTest sets the needed environment variables (especially `PYTHONPATH`) so the build tree is preferred automatically.
+
 ```bash
 # List tests
 ctest --test-dir build -N

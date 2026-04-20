@@ -137,6 +137,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${analysis_script}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.analysis)
         set_property(TEST ${name}.analysis APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -152,6 +153,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${plot_script} --save-png
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.plot)
         set_property(TEST ${name}.plot APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems

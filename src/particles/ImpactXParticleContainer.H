@@ -305,7 +305,10 @@ namespace impactx
         void
         SetCoordSystem (CoordSystem coord_system);
 
-        /** Set the bucket length used for periodic particle BCs in this container
+        /** Set the bucket length used for particle boundaries in this container
+         *
+         * Note that the bucket length is only read and applied if ParmParse
+         * "algo.particle_bc" is not set to "open" (default).
          *
          * @param bucket_length the length of the RF bucket in m
          */

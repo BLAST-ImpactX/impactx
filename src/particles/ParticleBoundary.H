@@ -12,15 +12,28 @@
 
 #include "particles/ImpactXParticleContainer.H"
 
-#include <AMReX_GpuContainers.H>
-#include <AMReX_REAL.H>
+#include <AMReX_Enum.H>
 
 
 namespace impactx::particles
 {
+    /** Boundary conditions for the particle bucket */
+    AMREX_ENUM(ParticleBC,
+        open,       //! particles might still be removed if they leave the simulation domain, e.g., w/ static grid geometry size for SC
+        periodic,   //! wrap particles that leave the bucket around
+        absorbing,  //! remove particles that leave the bucket
+        reflecting  //! reflect particles that leave the bucket
+    );
+
+    /** Check boundary option and set default (open) if unset */
+    ParticleBC
+    get_particle_boundary_condition ();
+
     /** Function to apply longitudinal particle boundary (periodic, etc.)
      *
-     * @param[inout] pc the particle species container
+     * See @c ParticleBC.
+     *
+     * @param[in,out] pc the particle species container
      */
     void ParticleBoundary (
         ImpactXParticleContainer & pc

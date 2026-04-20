@@ -7,10 +7,9 @@
  * Authors: Chad Mitchell, Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
-#include "particles/ImpactXParticleContainer.H"
+#include "particles/ParticleBoundary.H"
 
 #include <AMReX_BLProfiler.H>
-#include <AMReX_Enum.H>
 #include <AMReX_REAL.H>
 
 #include <cmath>
@@ -18,15 +17,15 @@
 #include <string>
 
 
-namespace impactx::particles
-{
-    /** Boundary conditions for the particle bucket */
-    AMREX_ENUM(ParticleBC,
-        open,       //! particles might still be removed if they leave the simulation domain, e.g., w/ static grid geometry size for SC
-        periodic,   //! wrap particles that leave the bucket around
-        absorbing,  //! remove particles that leave the bucket
-        reflecting  //! reflect particles that leave the bucket
-    );
+namespace impactx::particles {
+    ParticleBC
+    get_particle_boundary_condition ()
+    {
+        auto particle_bc = ParticleBC::open;
+        amrex::ParmParse("algo").queryAdd("particle_bc", particle_bc);
+
+        return particle_bc;
+    }
 
     void ParticleBoundary (
         ImpactXParticleContainer & pc
@@ -35,8 +34,7 @@ namespace impactx::particles
         BL_PROFILE("impactx::particles::ParticleBoundary")
 
         // check option and set default (open) if unset
-        auto particle_bc = ParticleBC::open;
-        amrex::ParmParse("algo").queryAdd("particle_bc", particle_bc);
+        auto particle_bc = get_particle_boundary_condition();
 
         // nothing to do by default
         if (particle_bc == ParticleBC::open) {
@@ -132,7 +130,9 @@ namespace impactx::particles
                         break;
 
                     default: {
-                        std::string msg = "ParticleBoundary: Unknown particle_bc. Must be one of: ";
+                        std::string const bc_str = amrex::getEnumNameString(particle_bc);
+                        std::string msg = "ParticleBoundary: Unknown particle_bc: ";
+                        msg += bc_str +"\nMust be one of: ";
                         for (auto const& name : amrex::getEnumNameStrings<ParticleBC>()) {
                             msg += name + ", ";
                         }

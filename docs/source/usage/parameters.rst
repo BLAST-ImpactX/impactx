@@ -160,6 +160,9 @@ Initial Beam Distributions
     * ``beam.normalize_halo`` (``float``, dimensionless) normalizing constant for halo population
     * ``beam.halo`` (``float``, dimensionless) fraction of charge in halo
 
+* ``beam.bucket_length`` (``float``, in meters)
+  length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions
+
 Initial Spin Distributions
 --------------------------
 
@@ -1191,10 +1194,32 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
    ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
 
+.. _running-cpp-parameters-particle-bc:
+
+Particle Boundary Condition
+---------------------------
+
+The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference particle).
+For systems involving bunches that are long relative to the local size of the RF bucket, it is often necessary to capture the effect of particle slippage between adjacent buckets.
+To handle this effectively without tracking multiple bunches, a periodic particle boundary condition can be applied.
+
+* ``algo.particle_bc`` (``string`, optional, default: ``open``)
+
+  The type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.  Options:
+
+  * ``"open"`` (default): no action is applied at the boundary.
+
+  * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+
+  * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+
+  * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+
+
 .. _running-cpp-parameters-spin:
 
 Spin Tracking
-^^^^^^^^^^^^^
+-------------
 
 Spin tracking is performed by updating the particle spin 3-vector in the presence of each element's electromagnetic fields, using methods based on the Thomas-BMT equation.
 By construction, all spin tracking methods rely on pushing particles using spin maps that lie in SO(3).  The algorithm implemented for each element is consistent with the algorithm

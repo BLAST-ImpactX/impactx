@@ -69,7 +69,7 @@ namespace impactx::particles {
                 auto & soa_real = pti.GetStructOfArrays().GetRealData();
 
                 amrex::ParticleReal * const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
-                amrex::ParticleReal * const AMREX_RESTRICT part_pt = soa_real[RealSoA::t].dataPtr();
+                amrex::ParticleReal * const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
                 uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
                 switch (particle_bc) {

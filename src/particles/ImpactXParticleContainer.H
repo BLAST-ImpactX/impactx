@@ -359,7 +359,7 @@ namespace impactx
 
         //! the RF bucket length for particles in the particle container
         //!   only active if algo.particle_bc is not set to "open" (default)
-        amrex::ParticleReal m_bucket_length;
+        amrex::ParticleReal m_bucket_length = 0.0;
 
     }; // ImpactXParticleContainer
 

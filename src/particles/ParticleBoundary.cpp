@@ -43,7 +43,15 @@ namespace impactx::particles
             return;
         }
 
+        // Access bucket length and reference particle quantities
         using namespace amrex::literals;
+        amrex::ParticleReal const bucket_length = pc.GetBucketLength();
+        if (bucket_length <= 0.0_prt) {
+            throw std::runtime_error("ParticleBoundary: Bucket length must be set >0 for particle boundary conditions.");
+        }
+        amrex::ParticleReal const ref_beta = pc.GetRefParticle().beta();
+        amrex::ParticleReal const bucket_duration = (ref_beta != 0.0_prt) ? bucket_length / ref_beta : 0.0_prt;
+        amrex::ParticleReal const bucket_half_duration = bucket_duration * 0.5_prt;
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -59,17 +67,11 @@ namespace impactx::particles
             {
                 const int np = pti.numParticles();
 
-                // Access bucket length and reference particle quantities.
-                amrex::ParticleReal const bucket_length = pc.GetBucketLength();
-                amrex::ParticleReal const ref_beta = pc.GetRefParticle().beta();
-                amrex::ParticleReal const bucket_duration = (ref_beta != 0.0_prt)? bucket_length / ref_beta : 0.0_prt;
-                amrex::ParticleReal const bucket_half_duration = bucket_duration / 2.0_prt;
-
                 // Access data from StructOfArrays (soa)
-                auto& soa_real = pti.GetStructOfArrays().GetRealData();
+                auto & soa_real = pti.GetStructOfArrays().GetRealData();
 
-                amrex::ParticleReal* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::t].dataPtr();
+                amrex::ParticleReal * const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+                amrex::ParticleReal * const AMREX_RESTRICT part_pt = soa_real[RealSoA::t].dataPtr();
                 uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
                 switch (particle_bc) {
@@ -83,9 +85,9 @@ namespace impactx::particles
 
                             // Periodic particle boundary condition:
                             //   apply phase wrapping in t (modulo bucket_duration)
-                            amrex::ParticleReal ttest = std::fmod(t + bucket_half_duration, bucket_duration);
+                            amrex::ParticleReal const ttest = std::fmod(t + bucket_half_duration, bucket_duration);
                             t = (bucket_duration != 0.0_prt) ?
-                                std::fmod(ttest+bucket_duration, bucket_duration) - bucket_half_duration
+                                std::fmod(ttest + bucket_duration, bucket_duration) - bucket_half_duration
                                 : t;
                         });
                         break;
@@ -96,13 +98,13 @@ namespace impactx::particles
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
                         {
                             // Access SoA Real data
-                            amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
+                            amrex::ParticleReal const & AMREX_RESTRICT t = part_t[i];
 
                             // Absorbing particle boundary condition:
                             //   check particle against the boundary
-                            bool inside_aperture = (std::abs(t) < bucket_half_duration);
+                            bool const inside_boundary = (std::abs(t) < bucket_half_duration);
                             // Mark particles as lost if appropriate
-                            amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
+                            amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_boundary);
                         });
                         break;
 

@@ -6,6 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
+from booster_impactx_lattice import get_lattice
 from scipy.constants import c, eV, m_p
 
 from impactx import ImpactX, distribution, elements
@@ -54,11 +55,8 @@ sim.add_particles(bunch_charge_C, distr, npart)
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
-# Read the Booster lattice
-with open("booster_impactx_lattice.txt", "r") as F:
-    lattice_txt = F.read()
-booster = eval(lattice_txt)
-sim.lattice.extend(booster)
+# load the Booster lattice
+sim.lattice.extend(get_lattice())
 sim.lattice.append(monitor)
 
 # run simulation

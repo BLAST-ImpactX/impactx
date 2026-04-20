@@ -29,7 +29,7 @@ ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 # specify the on-axis field profile
 zmin = -1.0  # lower value of on-axis longitudinal coordinate (in meters)
 zmax = 1.0  # upper value of on-axis longitudinal coordinate (in meters)
-#nz = 401  # number of longitudinal sampling points to be used
+# nz = 401  # number of longitudinal sampling points to be used
 nz = 801
 g = 0.1  # gap parameter (in meters)
 zdata = np.linspace(zmin, zmax, nz)
@@ -42,8 +42,8 @@ sol = elements.SoftSolenoid(
     bscale=-1.0,
     z=zdata,
     field_on_axis=bdata,
-#    ncoef=35,
-#    mapsteps=800,
+    #    ncoef=35,
+    #    mapsteps=800,
     ncoef=50,
     mapsteps=800,
     nslice=1,

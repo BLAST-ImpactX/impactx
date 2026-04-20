@@ -23,7 +23,7 @@ This workflow is equally applicable to:
 .. note::
 
    This section is not understood as an endorsement of any of the listed (or unlisted) coding assistants or MCP services.
-   Contributions to this section documenting further services, clients, skills, etc are encouraged.
+   Contributions to this section documenting further services, clients, skills, etc. are encouraged.
 
 How It Works: MCP Servers
 -------------------------

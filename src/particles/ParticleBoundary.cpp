@@ -10,35 +10,40 @@
 #include "particles/ImpactXParticleContainer.H"
 
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Enum.H>
 #include <AMReX_REAL.H>
-#include <AMReX_SPACE.H>
+
+#include <cmath>
+#include <stdexcept>
+#include <string>
 
 
 namespace impactx::particles
 {
+    /** Boundary conditions for the particle bucket */
+    AMREX_ENUM(ParticleBC,
+        open,       //! particles might still be removed if they leave the simulation domain, e.g., w/ static grid geometry size for SC
+        periodic,   //! wrap particles that leave the bucket around
+        absorbing,  //! remove particles that leave the bucket
+        reflecting  //! reflect particles that leave the bucket
+    );
+
     void ParticleBoundary (
         ImpactXParticleContainer & pc
     )
     {
         BL_PROFILE("impactx::particles::ParticleBoundary")
 
-        using namespace amrex::literals;
+        // check option and set default (open) if unset
+        auto particle_bc = ParticleBC::open;
+        amrex::ParmParse("algo").queryAdd("particle_bc", particle_bc);
 
-        amrex::ParmParse pp_algo("algo");
-        std::string particle_bc = "open";
-        pp_algo.queryAdd("particle_bc", particle_bc);
-
-        int particle_bc_int = 0;
-
-        if (particle_bc == "periodic") {
-            particle_bc_int = 1;
-        } else if (particle_bc == "absorbing") {
-            particle_bc_int = 2;
-        } else if (particle_bc == "reflecting") {
-            particle_bc_int = 3;
-        } else {
+        // nothing to do by default
+        if (particle_bc == ParticleBC::open) {
             return;
         }
+
+        using namespace amrex::literals;
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -57,8 +62,8 @@ namespace impactx::particles
                 // Access bucket length and reference particle quantities.
                 amrex::ParticleReal const bucket_length = pc.GetBucketLength();
                 amrex::ParticleReal const ref_beta = pc.GetRefParticle().beta();
-                amrex::ParticleReal const bucket_duration = (ref_beta != 0.0)? bucket_length / ref_beta : 0.0;
-                amrex::ParticleReal const bucket_half_duration = bucket_duration / 2.0;
+                amrex::ParticleReal const bucket_duration = (ref_beta != 0.0_prt)? bucket_length / ref_beta : 0.0_prt;
+                amrex::ParticleReal const bucket_half_duration = bucket_duration / 2.0_prt;
 
                 // Access data from StructOfArrays (soa)
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
@@ -67,8 +72,8 @@ namespace impactx::particles
                 amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::t].dataPtr();
                 uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
-                switch (particle_bc_int) {
-                    case 1:
+                switch (particle_bc) {
+                    case ParticleBC::periodic:
 
                         // Gather particles and apply boundary condition
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
@@ -76,13 +81,16 @@ namespace impactx::particles
                             // Access SoA Real data
                             amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
 
-                            // Periodic particle boundary condition:  apply phase wrapping in t (modulo bucket_duration):
-                            amrex::ParticleReal ttest = std::fmod(t+bucket_half_duration, bucket_duration);
-                            t = (bucket_duration != 0.0)? std::fmod(ttest+bucket_duration, bucket_duration)-bucket_half_duration : t;
+                            // Periodic particle boundary condition:
+                            //   apply phase wrapping in t (modulo bucket_duration)
+                            amrex::ParticleReal ttest = std::fmod(t + bucket_half_duration, bucket_duration);
+                            t = (bucket_duration != 0.0_prt) ?
+                                std::fmod(ttest+bucket_duration, bucket_duration) - bucket_half_duration
+                                : t;
                         });
                         break;
 
-                    case 2:
+                    case ParticleBC::absorbing:
 
                         // Gather particles and apply boundary condition
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
@@ -90,14 +98,15 @@ namespace impactx::particles
                             // Access SoA Real data
                             amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
 
-                            // Absorbing particle boundary condition:  check particle against the boundary:
+                            // Absorbing particle boundary condition:
+                            //   check particle against the boundary
                             bool inside_aperture = (std::abs(t) < bucket_half_duration);
                             // Mark particles as lost if appropriate
                             amrex::ParticleIDWrapper{part_idcpu[i]}.make_invalid(!inside_aperture);
                         });
                         break;
 
-                    case 3:
+                    case ParticleBC::reflecting:
 
                         // Gather particles and apply boundary condition
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
@@ -120,10 +129,15 @@ namespace impactx::particles
                         });
                         break;
 
-                    default:
-                        throw std::runtime_error("ParticleBoundary: Particle boundary condition must be open, periodic, absorbing, or reflecting.");
-
-                 }
+                    default: {
+                        std::string msg = "ParticleBoundary: Unknown particle_bc. Must be one of: ";
+                        for (auto const& name : amrex::getEnumNameStrings<ParticleBC>()) {
+                            msg += name + ", ";
+                        }
+                        msg.erase(msg.size() - 2);
+                        throw std::runtime_error(msg);
+                    }
+                 } // End switch (particle_bc)
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
     }

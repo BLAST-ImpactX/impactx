@@ -50,15 +50,226 @@ __all__: list[str] = [
     "wakeconvolution",
 ]
 
-class Config:
-    gpu_backend = None
-    have_gpu: typing.ClassVar[bool] = False
-    have_mpi: typing.ClassVar[bool] = True
-    have_omp: typing.ClassVar[bool] = True
-    have_simd: typing.ClassVar[bool] = False
-    precision: typing.ClassVar[str] = "DOUBLE"
-    precision_particles: typing.ClassVar[str] = "DOUBLE"
-    simd_size: typing.ClassVar[int] = 1
+class Envelope:
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None: ...
+    @property
+    def beam_intensity(self) -> float: ...
+    @beam_intensity.setter
+    def beam_intensity(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> Envelope: ...
+
+class RefPart:
+    @staticmethod
+    def load_file(ref: RefPart, madx_file):
+        """
+        Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
+
+        .. warning::
+
+           Our MAD-X parser is under active development and provided
+           as a preview. Please check any loaded MAD-X beams very
+           carefully. Please report your experience and bugs on our
+           `issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+
+        :param RefPart ref: ImpactX reference particle (passed by reference)
+        :param madx_file: file name to MAD-X file with beamline elements
+        :return: list of ImpactX.KnownElements
+        """
+    def __init__(self) -> None:
+        """
+        This struct stores the reference particle attributes
+        stored in ImpactXParticleContainer.
+        """
+    def copy(self) -> RefPart:
+        """
+        Copy the reference particle
+        """
+    def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Reset the reference particle
+        """
+    def set_charge_qe(
+        self, charge_qe: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
+        """
+        Set reference particle charge (positive elementary charge) [q_e]
+        """
+    def set_gyromagnetic_anomaly(
+        self, gyromagnetic_anomaly: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
+        """
+        Set reference particle gyromagnetic anomaly value (for spin tracking)
+        """
+    def set_kin_energy_MeV(
+        self, kin_energy_MeV: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
+        """
+        Set reference particle kinetic energy [MeV]
+        """
+    def set_mass_MeV(
+        self, mass_MeV: typing.SupportsFloat | typing.SupportsIndex
+    ) -> RefPart:
+        """
+        Set reference particle rest mass * c^2, expressed as an energy [MeV]
+        """
+    def set_species(self, species_name: str) -> RefPart:
+        """
+        Set reference particle species by name.
+
+        Sets charge, mass, and gyromagnetic anomaly for a known particle species.
+        Returns self for chaining, e.g.: ref.set_species("electron").set_kin_energy_MeV(2.0e3)
+        """
+    @property
+    def beta(self) -> float:
+        """
+        Get reference particle relativistic beta
+        """
+    @property
+    def beta_gamma(self) -> float:
+        """
+        Get reference particle beta*gamma
+        """
+    @property
+    def charge(self) -> float:
+        """
+        reference charge [C]
+        """
+    @charge.setter
+    def charge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def charge_qe(self) -> float:
+        """
+        Get reference particle charge (positive elementary charge)
+        """
+    @property
+    def gamma(self) -> float:
+        """
+        Get reference particle relativistic gamma
+        """
+    @property
+    def gyromagnetic_anomaly(self) -> float:
+        """
+        reference particle gyromagnetic anomaly [unitless]
+        """
+    @gyromagnetic_anomaly.setter
+    def gyromagnetic_anomaly(
+        self, arg0: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
+    @property
+    def kin_energy_MeV(self) -> float:
+        """
+        Get reference particle energy [MeV]
+        """
+    @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized map
+        """
+    @map.setter
+    def map(
+        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def mass(self) -> float:
+        """
+        reference rest mass [kg]
+        """
+    @mass.setter
+    def mass(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def mass_MeV(self) -> float:
+        """
+        Get reference particle rest mass * c^2, expressed as an energy [MeV]
+        """
+    @property
+    def pt(self) -> float:
+        """
+        energy deviation, normalized by rest energy
+        """
+    @pt.setter
+    def pt(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def px(self) -> float:
+        """
+        momentum in x divided by m*c = beta_x*gamma [unitless]
+        """
+    @px.setter
+    def px(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def py(self) -> float:
+        """
+        momentum in y divided by m*c = beta_y*gamma [unitless]
+        """
+    @py.setter
+    def py(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def pz(self) -> float:
+        """
+        momentum in z divided by m*c = beta_z*gamma [unitless]
+        """
+    @pz.setter
+    def pz(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def qm_ratio_SI(self) -> float:
+        """
+        Get reference particle charge to mass ratio [C/kg]
+        """
+    @property
+    def rigidity_Tm(self) -> float:
+        """
+        Get reference particle magnetic rigidity Brho [T*m]
+        """
+    @property
+    def s(self) -> float:
+        """
+        integrated orbit path length [m]
+        """
+    @s.setter
+    def s(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def sedge(self) -> float:
+        """
+        value of s at entrance of the current beamline element
+        """
+    @sedge.setter
+    def sedge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def t(self) -> float:
+        """
+        clock time * c [m]
+        """
+    @t.setter
+    def t(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def x(self) -> float:
+        """
+        horizontal position x [m]
+        """
+    @x.setter
+    def x(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def y(self) -> float:
+        """
+        vertical position y [m]
+        """
+    @y.setter
+    def y(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def z(self) -> float:
+        """
+        longitudinal position y [m]
+        """
+    @z.setter
+    def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class CoordSystem:
     """
@@ -69,11 +280,9 @@ class CoordSystem:
       t
     """
 
-    __members__: typing.ClassVar[
-        dict[str, CoordSystem]
-    ]  # value = {'s': <CoordSystem.s: 0>, 't': <CoordSystem.t: 1>}
-    s: typing.ClassVar[CoordSystem]  # value = <CoordSystem.s: 0>
-    t: typing.ClassVar[CoordSystem]  # value = <CoordSystem.t: 1>
+    __members__: typing.ClassVar[dict[str, CoordSystem]]
+    s: typing.ClassVar[CoordSystem]
+    t: typing.ClassVar[CoordSystem]
     def __eq__(self, other: typing.Any) -> bool: ...
     def __getstate__(self) -> int: ...
     def __hash__(self) -> int: ...
@@ -91,22 +300,170 @@ class CoordSystem:
     @property
     def value(self) -> int: ...
 
-class Envelope:
-    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    @typing.overload
-    def __init__(self) -> None: ...
+class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_polymorphic):
     @typing.overload
     def __init__(
         self,
-        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        arg1: typing.SupportsFloat | typing.SupportsIndex,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
+        level: typing.SupportsInt | typing.SupportsIndex,
     ) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
+        level: typing.SupportsInt | typing.SupportsIndex,
+        info: amrex.space3d.amrex_3d_pybind.MFItInfo,
+    ) -> None: ...
+    def pc(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
+
+class ImpactXParConstIter(
+    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_polymorphic
+):
+    @typing.overload
+    def __init__(
+        self,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
+        level: typing.SupportsInt | typing.SupportsIndex,
+    ) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
+        level: typing.SupportsInt | typing.SupportsIndex,
+        info: amrex.space3d.amrex_3d_pybind.MFItInfo,
+    ) -> None: ...
+    def pc(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
+
+class ImpactXParticleContainer(
+    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic
+):
+    ConstIterator = ImpactXParConstIter
+    Iterator = ImpactXParIter
+    def add_n_particles(
+        self,
+        x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
+        y: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
+        t: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
+        px: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
+        py: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
+        pt: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
+        qm: typing.SupportsFloat | typing.SupportsIndex,
+        bunch_charge: typing.SupportsFloat | typing.SupportsIndex | None = None,
+        w: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+        sx: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+        sy: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+        sz: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
+    ) -> None:
+        """
+        Add new particles to the container for fixed s.
+
+        Either the total charge (bunch_charge) or the weight of each
+        particle (w) must be provided.
+
+        Note: This can only be used *after* the initialization (grids) have
+              been created, meaning after the call to ImpactX.init_grids
+              has been made in the ImpactX class.
+
+        :param x: positions in x
+        :param y: positions in y
+        :param t: positions as time-of-flight in c*t
+        :param px: momentum in x
+        :param py: momentum in y
+        :param pt: momentum in t
+        :param qm: charge over mass in 1/eV
+        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
+        :param sy: spin component in y
+        :param sz: spin component in z
+        """
+    def beam_moments(self) -> dict[str, float]:
+        """
+        Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+        """
+    def beam_moments_history(self):
+        """
+        Return the history of the beam as calculated by the reduced beam characteristics on every step.
+        """
+    def beam_moments_history_list(self) -> list[dict[str, float]]:
+        """
+        Return the history of the beam moments on every step.
+        """
+    def clear(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
+        """
+        Empty the container and reset the reference particle
+        """
+    def mean_and_std_positions(self) -> tuple[float, float, float, float, float, float]:
+        """
+        Compute the mean and std of the particle position in each dimension.
+
+        :return: x_mean, x_std, y_mean, y_std, z_mean, z_std
+        """
+    def min_and_max_positions(self) -> tuple[float, float, float, float, float, float]:
+        """
+        Compute the min and max of the particle position in each dimension.
+
+        :return: x_min, y_min, z_min, x_max, y_max, z_max
+        """
+    def plot_phasespace(self, num_bins=50, root_rank=0):
+        """
+        Plot the longitudinal and transverse phase space projections with matplotlib.
+
+        Parameters
+        ----------
+        self : ImpactXParticleContainer_*
+            The particle container class in ImpactX
+        num_bins : int, default=50
+            The number of bins for spatial and momentum directions per plot axis.
+        root_rank : int, default=0
+            MPI root rank to reduce to in parallel runs.
+
+        Returns
+        -------
+        A matplotlib figure with containing the plot.
+        For MPI-parallel ranks, the figure is only created on the root_rank.
+        """
+    def record_beam_moments(self) -> None:
+        """
+        Calculate & record the beam moments at current s
+        """
+    def reduced_beam_characteristics(self) -> dict[str, float]:
+        """
+        Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
+        """
+    def ref_particle(self) -> RefPart:
+        """
+        Access the reference particle.
+
+        Deprecated: use ``beam.ref``.
+        """
+    def reset_beam_moments_history(self) -> None:
+        """
+        Reset the history of the beam moments.
+        """
+    def set_ref_particle(self, refpart: RefPart) -> None:
+        """
+        Set reference particle attributes.
+        """
     @property
-    def beam_intensity(self) -> float: ...
-    @beam_intensity.setter
-    def beam_intensity(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
-    ) -> Envelope: ...
+    def coord_system(self) -> CoordSystem:
+        """
+        Get the current coordinate system of particles in this container
+        """
+    @property
+    def ref(self) -> RefPart:
+        """
+        Access the reference particle.
+        """
+    @property
+    def store_beam_moments(self) -> bool:
+        """
+        In situ calculate and store the beam moments for every simulation step.
+        """
+    @store_beam_moments.setter
+    def store_beam_moments(self, arg1: bool) -> None: ...
 
 class ImpactX:
     def DistributionMap(
@@ -638,367 +995,6 @@ class ImpactX:
     @verbose.setter
     def verbose(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
-class ImpactXParConstIter(
-    amrex.space3d.amrex_3d_pybind.ParConstIter_pureSoA_11_0_polymorphic
-):
-    @typing.overload
-    def __init__(
-        self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt | typing.SupportsIndex,
-    ) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt | typing.SupportsIndex,
-        info: amrex.space3d.amrex_3d_pybind.MFItInfo,
-    ) -> None: ...
-    def pc(
-        self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
-
-class ImpactXParIter(amrex.space3d.amrex_3d_pybind.ParIter_pureSoA_11_0_polymorphic):
-    @typing.overload
-    def __init__(
-        self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt | typing.SupportsIndex,
-    ) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        particle_container: amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic,
-        level: typing.SupportsInt | typing.SupportsIndex,
-        info: amrex.space3d.amrex_3d_pybind.MFItInfo,
-    ) -> None: ...
-    def pc(
-        self,
-    ) -> amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic: ...
-
-class ImpactXParticleContainer(
-    amrex.space3d.amrex_3d_pybind.ParticleContainer_pureSoA_11_0_polymorphic
-):
-    ConstIterator = ImpactXParConstIter
-    Iterator = ImpactXParIter
-    def add_n_particles(
-        self,
-        x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        y: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        t: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        px: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        py: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        pt: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
-        qm: typing.SupportsFloat | typing.SupportsIndex,
-        bunch_charge: typing.SupportsFloat | typing.SupportsIndex | None = None,
-        w: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
-        sx: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
-        sy: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
-        sz: amrex.space3d.amrex_3d_pybind.PODVector_real_std | None = None,
-    ) -> None:
-        """
-        Add new particles to the container for fixed s.
-
-        Either the total charge (bunch_charge) or the weight of each
-        particle (w) must be provided.
-
-        Note: This can only be used *after* the initialization (grids) have
-              been created, meaning after the call to ImpactX.init_grids
-              has been made in the ImpactX class.
-
-        :param x: positions in x
-        :param y: positions in y
-        :param t: positions as time-of-flight in c*t
-        :param px: momentum in x
-        :param py: momentum in y
-        :param pt: momentum in t
-        :param qm: charge over mass in 1/eV
-        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
-        :param sy: spin component in y
-        :param sz: spin component in z
-        """
-    def beam_moments(self) -> dict[str, float]:
-        """
-        Calculate beam moments at current ``s`` like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
-        """
-    def beam_moments_history(self):
-        """
-        Return the history of the beam as calculated by the reduced beam characteristics on every step.
-        """
-    def beam_moments_history_list(self) -> list[dict[str, float]]:
-        """
-        Return the history of the beam moments on every step.
-        """
-    def clear(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
-        """
-        Empty the container and reset the reference particle
-        """
-    def mean_and_std_positions(self) -> tuple[float, float, float, float, float, float]:
-        """
-        Compute the mean and std of the particle position in each dimension.
-
-        :return: x_mean, x_std, y_mean, y_std, z_mean, z_std
-        """
-    def min_and_max_positions(self) -> tuple[float, float, float, float, float, float]:
-        """
-        Compute the min and max of the particle position in each dimension.
-
-        :return: x_min, y_min, z_min, x_max, y_max, z_max
-        """
-    def plot_phasespace(self, num_bins=50, root_rank=0):
-        """
-        Plot the longitudinal and transverse phase space projections with matplotlib.
-
-        Parameters
-        ----------
-        self : ImpactXParticleContainer_*
-            The particle container class in ImpactX
-        num_bins : int, default=50
-            The number of bins for spatial and momentum directions per plot axis.
-        root_rank : int, default=0
-            MPI root rank to reduce to in parallel runs.
-
-        Returns
-        -------
-        A matplotlib figure with containing the plot.
-        For MPI-parallel ranks, the figure is only created on the root_rank.
-        """
-    def record_beam_moments(self) -> None:
-        """
-        Calculate & record the beam moments at current s
-        """
-    def reduced_beam_characteristics(self) -> dict[str, float]:
-        """
-        Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters.
-        """
-    def ref_particle(self) -> RefPart:
-        """
-        Access the reference particle.
-
-        Deprecated: use ``beam.ref``.
-        """
-    def reset_beam_moments_history(self) -> None:
-        """
-        Reset the history of the beam moments.
-        """
-    def set_ref_particle(self, refpart: RefPart) -> None:
-        """
-        Set reference particle attributes.
-        """
-    @property
-    def coord_system(self) -> CoordSystem:
-        """
-        Get the current coordinate system of particles in this container
-        """
-    @property
-    def ref(self) -> RefPart:
-        """
-        Access the reference particle.
-        """
-    @property
-    def store_beam_moments(self) -> bool:
-        """
-        In situ calculate and store the beam moments for every simulation step.
-        """
-    @store_beam_moments.setter
-    def store_beam_moments(self, arg1: bool) -> None: ...
-
-class RefPart:
-    @staticmethod
-    def load_file(ref: RefPart, madx_file):
-        """
-        Function that reads elements from a MAD-X file into a list of ImpactX.KnownElements
-        :param RefPart ref: ImpactX reference particle (passed by reference)
-        :param madx_file: file name to MAD-X file with beamline elements
-        :return: list of ImpactX.KnownElements
-        """
-    def __init__(self) -> None:
-        """
-        This struct stores the reference particle attributes
-        stored in ImpactXParticleContainer.
-        """
-    def copy(self) -> RefPart:
-        """
-        Copy the reference particle
-        """
-    def reset(self, keep_mass: bool = False, keep_charge: bool = False) -> None:
-        """
-        Reset the reference particle
-        """
-    def set_charge_qe(
-        self, charge_qe: typing.SupportsFloat | typing.SupportsIndex
-    ) -> RefPart:
-        """
-        Set reference particle charge (positive elementary charge) [q_e]
-        """
-    def set_gyromagnetic_anomaly(
-        self, gyromagnetic_anomaly: typing.SupportsFloat | typing.SupportsIndex
-    ) -> RefPart:
-        """
-        Set reference particle gyromagnetic anomaly value (for spin tracking)
-        """
-    def set_kin_energy_MeV(
-        self, kin_energy_MeV: typing.SupportsFloat | typing.SupportsIndex
-    ) -> RefPart:
-        """
-        Set reference particle kinetic energy [MeV]
-        """
-    def set_mass_MeV(
-        self, mass_MeV: typing.SupportsFloat | typing.SupportsIndex
-    ) -> RefPart:
-        """
-        Set reference particle rest mass * c^2, expressed as an energy [MeV]
-        """
-    def set_species(self, species_name: str) -> RefPart:
-        """
-        Set reference particle species by name.
-
-        Sets charge, mass, and gyromagnetic anomaly for a known particle species.
-        Returns self for chaining, e.g.: ref.set_species("electron").set_kin_energy_MeV(2.0e3)
-        """
-    @property
-    def beta(self) -> float:
-        """
-        Get reference particle relativistic beta
-        """
-    @property
-    def beta_gamma(self) -> float:
-        """
-        Get reference particle beta*gamma
-        """
-    @property
-    def charge(self) -> float:
-        """
-        reference charge [C]
-        """
-    @charge.setter
-    def charge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def charge_qe(self) -> float:
-        """
-        Get reference particle charge (positive elementary charge)
-        """
-    @property
-    def gamma(self) -> float:
-        """
-        Get reference particle relativistic gamma
-        """
-    @property
-    def gyromagnetic_anomaly(self) -> float:
-        """
-        reference particle gyromagnetic anomaly [unitless]
-        """
-    @gyromagnetic_anomaly.setter
-    def gyromagnetic_anomaly(
-        self, arg0: typing.SupportsFloat | typing.SupportsIndex
-    ) -> None: ...
-    @property
-    def kin_energy_MeV(self) -> float:
-        """
-        Get reference particle energy [MeV]
-        """
-    @property
-    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
-        """
-        linearized map
-        """
-    @map.setter
-    def map(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    ) -> None: ...
-    @property
-    def mass(self) -> float:
-        """
-        reference rest mass [kg]
-        """
-    @mass.setter
-    def mass(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def mass_MeV(self) -> float:
-        """
-        Get reference particle rest mass * c^2, expressed as an energy [MeV]
-        """
-    @property
-    def pt(self) -> float:
-        """
-        energy deviation, normalized by rest energy
-        """
-    @pt.setter
-    def pt(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def px(self) -> float:
-        """
-        momentum in x divided by m*c = beta_x*gamma [unitless]
-        """
-    @px.setter
-    def px(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def py(self) -> float:
-        """
-        momentum in y divided by m*c = beta_y*gamma [unitless]
-        """
-    @py.setter
-    def py(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def pz(self) -> float:
-        """
-        momentum in z divided by m*c = beta_z*gamma [unitless]
-        """
-    @pz.setter
-    def pz(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def qm_ratio_SI(self) -> float:
-        """
-        Get reference particle charge to mass ratio [C/kg]
-        """
-    @property
-    def rigidity_Tm(self) -> float:
-        """
-        Get reference particle magnetic rigidity Brho [T*m]
-        """
-    @property
-    def s(self) -> float:
-        """
-        integrated orbit path length [m]
-        """
-    @s.setter
-    def s(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def sedge(self) -> float:
-        """
-        value of s at entrance of the current beamline element
-        """
-    @sedge.setter
-    def sedge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def t(self) -> float:
-        """
-        clock time * c [m]
-        """
-    @t.setter
-    def t(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def x(self) -> float:
-        """
-        horizontal position x [m]
-        """
-    @x.setter
-    def x(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def y(self) -> float:
-        """
-        vertical position y [m]
-        """
-    @y.setter
-    def y(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def z(self) -> float:
-        """
-        longitudinal position y [m]
-        """
-    @z.setter
-    def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-
 class UnorderedMap:
     def __bool__(self) -> bool:
         """
@@ -1019,6 +1015,16 @@ class UnorderedMap:
     def items(self) -> typing.ItemsView: ...
     def keys(self) -> typing.KeysView: ...
     def values(self) -> typing.ValuesView: ...
+
+class Config:
+    gpu_backend = None
+    have_gpu: typing.ClassVar[bool] = False
+    have_mpi: typing.ClassVar[bool] = True
+    have_omp: typing.ClassVar[bool] = True
+    have_simd: typing.ClassVar[bool] = False
+    precision: typing.ClassVar[str] = "DOUBLE"
+    precision_particles: typing.ClassVar[str] = "DOUBLE"
+    simd_size: typing.ClassVar[int] = 1
 
 def coordinate_transformation(
     pc: ImpactXParticleContainer, direction: CoordSystem
@@ -1191,5 +1197,5 @@ __author__: str = (
 )
 __license__: str = "BSD-3-Clause-LBNL"
 __version__: str = "26.03"
-s: CoordSystem  # value = <CoordSystem.s: 0>
-t: CoordSystem  # value = <CoordSystem.t: 1>
+s: CoordSystem
+t: CoordSystem

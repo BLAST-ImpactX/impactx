@@ -113,5 +113,5 @@ __author__: str = (
 )
 __license__: str = "BSD-3-Clause-LBNL"
 __version__: str = "26.03"
-s: impactx_pybind.CoordSystem  # value = <CoordSystem.s: 0>
-t: impactx_pybind.CoordSystem  # value = <CoordSystem.t: 1>
+s: impactx_pybind.CoordSystem
+t: impactx_pybind.CoordSystem

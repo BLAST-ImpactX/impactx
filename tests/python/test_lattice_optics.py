@@ -59,7 +59,7 @@ def test_lattice_linear_map():
         lattice.transfer_map(ref, order="invalid")
 
     # Create a lattice with an element that does not define a linear transfer map
-    lattice.append(elements.TaperedPL(k=0, taper=0, unit=0))
+    lattice.append(elements.Source("openPMD", "somefile.h5"))
 
     # Ensure that the calculation asserts
     with pytest.raises(RuntimeError):

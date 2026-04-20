@@ -1640,16 +1640,14 @@ add_impactx_test(htu-beamline.py
 
 # Fermilab Booster (Simple Lattice) ###########################################
 #
-if(ImpactX_PYTHON)
-    file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster/booster_impactx_lattice.py
-            DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster.py)
-    add_impactx_test(simple-booster.py
-        examples/simple_booster/run_simple_booster.py
-        OFF  # ImpactX MPI-parallel
-        examples/simple_booster/analysis_simple_booster.py
-        examples/simple_booster/plot_simple_booster.py
-    )
-endif()
+file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster/booster_impactx_lattice.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster.py)
+add_impactx_test(simple-booster.py
+    examples/simple_booster/run_simple_booster.py
+    OFF  # ImpactX MPI-parallel
+    examples/simple_booster/analysis_simple_booster.py
+    examples/simple_booster/plot_simple_booster.py
+)
 
 # HTU Beamline Model with Off-Energy Transport ################################
 #

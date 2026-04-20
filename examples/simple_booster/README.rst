@@ -6,6 +6,12 @@ Fermilab Booster (Simple Lattice)
 This example models the `Fermilab Booster <https://www.fnal.gov/pub/science/particle-accelerators/accelerator-complex.html>`__ synchrotron as an ImpactX lattice.
 The lattice is expressed as a Python fragment that instantiates the equivalent ImpactX elements from a translated MAD-X description.
 
+.. figure:: simple_booster_survey.png
+   :alt: Survey plot of the Fermilab Booster synchrotron lattice.
+
+   Survey plot of the Fermilab Booster synchrotron lattice.
+   This plot can be generated with ``sim.lattice.plot_survey(ref=ref)`` (see :py:meth:`impactx.elements.KnownElementsList.plot_survey`).
+
 .. note::
 
    TODO for Eric: a short physics description of the lattice and what this example demonstrates.

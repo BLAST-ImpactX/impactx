@@ -12,7 +12,7 @@ from impactx import ImpactX, Map3x6, Map6x6, Vector3, elements
 
 
 def test_solenoid_softedge_solvable_spin():
-    """Calculate the linear transfer map of a lattice."""
+    """This test computes the spin map for a SoftSol element, and compares against an analytical result."""
 
     sim = ImpactX()
 
@@ -25,7 +25,7 @@ def test_solenoid_softedge_solvable_spin():
 
     # reference kinetic energy
     kin_energy_MeV = 250.0  # reference energy
-    gyromagnetic_anomaly = 2.0
+    gyromagnetic_anomaly = 2.0  # this is not the gyromagnetic anomaly for the proton, but this special value is important for the test below
 
     #   reference particle
     ref = sim.particle_container().ref_particle()

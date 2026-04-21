@@ -31,8 +31,6 @@ namespace impactx::particles {
         ImpactXParticleContainer & pc
     )
     {
-        BL_PROFILE("impactx::particles::ParticleBoundary")
-
         // check option and set default (open) if unset
         auto particle_bc = get_particle_boundary_condition();
 
@@ -40,6 +38,8 @@ namespace impactx::particles {
         if (particle_bc == ParticleBC::open) {
             return;
         }
+
+        BL_PROFILE("impactx::particles::ParticleBoundary")
 
         // Access bucket length and reference particle quantities
         using namespace amrex::literals;

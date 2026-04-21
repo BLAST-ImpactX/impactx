@@ -25,9 +25,14 @@ Tracking Modes
   Mode that specifies how the beam is tracked:
 
   * ``particles`` (default): symplectic particle tracking
-  * ``envelope``: beam envelop (covariance matrix) tracking, through linearized transport maps
+  * ``envelope``: beam envelope (covariance matrix) tracking, through linearized transport maps
   * ``reference_orbit``: only tracking of the reference particle orbit
 
+  .. note::
+
+     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
+     Support for misalignments and feed-down effects in envelope tracking is in development.
+     Until then, misalignment options set on elements are silently ignored.
 
 .. _running-cpp-parameters-particle:
 

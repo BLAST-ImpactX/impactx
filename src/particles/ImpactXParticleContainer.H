@@ -305,6 +305,22 @@ namespace impactx
         void
         SetCoordSystem (CoordSystem coord_system);
 
+        /** Set the bucket length used for particle boundaries in this container
+         *
+         * Note that the bucket length is only read and applied if ParmParse
+         * "algo.particle_bc" is not set to "open" (default).
+         *
+         * @param bucket_length the length of the RF bucket in m
+         */
+        void SetBucketLength (amrex::ParticleReal bucket_length);
+
+        /** Get the bucket length used for periodic particle BCs in this container
+         *
+         * @returns bucket length in m
+         */
+        amrex::ParticleReal
+        GetBucketLength ();
+
         /** In situ calculate and store the beam moments for every simulation step */
         bool store_beam_moments = false;
 
@@ -340,6 +356,10 @@ namespace impactx
 
         //! history of the beam moments over s
         std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
+
+        //! the RF bucket length for particles in the particle container
+        //!   only active if algo.particle_bc is not set to "open" (default)
+        amrex::ParticleReal m_bucket_length = 0.0;
 
     }; // ImpactXParticleContainer
 

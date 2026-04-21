@@ -443,6 +443,12 @@ class ImpactXParticleContainer(
         """
         Reset the history of the beam moments.
         """
+    def set_bucket_length(
+        self, bucket_length: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None:
+        """
+        Set bucket length for particle boundary condition.
+        """
     def set_ref_particle(self, refpart: RefPart) -> None:
         """
         Set reference particle attributes.
@@ -803,6 +809,13 @@ class ImpactX:
     def omp_threads(
         self, arg1: typing.SupportsInt | typing.SupportsIndex | str
     ) -> None: ...
+    @property
+    def particle_bc(self) -> str:
+        """
+        Optional methods to apply a longitudinal particle boundary condition.
+        """
+    @particle_bc.setter
+    def particle_bc(self, arg1: str) -> None: ...
     @property
     def particle_lost_diagnostics_backend(self) -> str:
         """
@@ -1196,6 +1209,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.03"
+__version__: str = "26.04"
 s: CoordSystem
 t: CoordSystem

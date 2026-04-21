@@ -8,6 +8,7 @@
 #include <ImpactX.H>
 #include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
+#include <particles/ParticleBoundary.H>
 
 #include <AMReX.H>
 #include <AMReX_ParmParse.H>
@@ -443,6 +444,26 @@ void init_ImpactX (py::module& m)
               "The verbosity used for MLMG solver for space-charge fields calculation. "
               "Currently MLMG solver looks for verbosity levels from 0-5. "
               "A higher number results in more verbose output."
+        )
+        .def_property("particle_bc",
+            [](ImpactX & /* ix */) -> std::string {
+                return amrex::getEnumNameString(particles::get_particle_boundary_condition());
+            },
+            [](ImpactX & /* ix */, std::string const particle_bc) {
+                auto const valid_names = amrex::getEnumNameStrings<particles::ParticleBC>();
+                if (std::find(valid_names.begin(), valid_names.end(), particle_bc) == valid_names.end()) {
+                    std::string msg = "Particle boundary condition must be one of: ";
+                    for (auto const& name : valid_names) {
+                        msg += name + ", ";
+                    }
+                    msg.erase(msg.size() - 2);
+                    msg += " but is: " + particle_bc;
+                    throw std::runtime_error(msg);
+                }
+
+                amrex::ParmParse("algo").add("particle_bc", particle_bc);
+            },
+            "Optional methods to apply a longitudinal particle boundary condition."
         )
         .def_property("diagnostics",
              [](ImpactX & /* ix */) {

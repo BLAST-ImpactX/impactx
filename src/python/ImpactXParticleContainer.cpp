@@ -132,6 +132,11 @@ void init_impactxparticlecontainer(py::module& m)
              py::arg("refpart"),
              "Set reference particle attributes."
         )
+        .def("set_bucket_length",
+             &ImpactXParticleContainer::SetBucketLength,
+             py::arg("bucket_length"),
+             "Set bucket length for particle boundary condition."
+        )
         .def("min_and_max_positions",
              &ImpactXParticleContainer::MinAndMaxPositions,
              "Compute the min and max of the particle position in each dimension.\n\n"

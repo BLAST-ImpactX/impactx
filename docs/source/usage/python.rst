@@ -218,6 +218,11 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
 
+        .. note::
+
+           The implementation works through linear order in the phase space variables.
+           If you have the need for a more precise implementation of reflecting boundaries, please `open an issue <https://github.com/BLAST-ImpactX/impactx/issues/new>`__.
+
    .. py:property:: spin
 
       Enable (``True``) or disable (``False``) particle spin tracking (default: ``False``).

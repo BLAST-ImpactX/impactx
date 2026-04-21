@@ -56,9 +56,8 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::SpinTransport
-      public mixin::NoFinalize,
-      public mixin::PipeAperture
+      public mixin::SpinTransport,
+      public mixin::NoFinalize
 #ifndef _WIN32
       // https://github.com/AMReX-Codes/amrex/issues/4609
       , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -421,11 +420,11 @@ namespace impactx::elements
             T_Real sz = particle_spin(3);
 
 #if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* k_normal = m_k_normal_d_data;
-            amrex::ParticleReal* k_skew = m_k_skew_d_data;
+            const amrex::ParticleReal *const k_normal = m_k_normal_d_data;
+            const amrex::ParticleReal *const k_skew = m_k_skew_d_data;
 #else
-            amrex::ParticleReal* k_normal = m_k_normal_h_data;
-            amrex::ParticleReal* k_skew = m_k_skew_h_data;
+            const amrex::ParticleReal *const k_normal = m_k_normal_h_data;
+            const amrex::ParticleReal *const k_skew = m_k_skew_h_data;
 #endif
 
             // a complex type with two T_Real

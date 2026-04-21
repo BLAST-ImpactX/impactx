@@ -88,17 +88,34 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
+         * By default, @c Programmable provides no linear map because its
+         * particle push is an arbitrary user callback. Users who know the
+         * Jacobian of their push around the reference trajectory can opt
+         * in by setting the @c m_transport_map hook: a callable that
+         * returns a 6x6 transport matrix as a function of the current
+         * reference particle. When set, this hook is used by envelope
+         * tracking, @c lattice.transfer_map, @c map_trace, and Twiss.
+         *
+         * If the hook is not set, this function throws a runtime error
+         * pointing the user to the hook (or, for purely linear pushes,
+         * to the @c LinearMap element).
+         *
          * @param[in] refpart reference particle
-         * @returns 6x6 transport matrix
+         * @returns 6x6 transport matrix from the user-supplied hook
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            // TODO: can/should we fuse the two elements?
-            throw std::runtime_error("The Programmable element cannot be used for linear transport maps. Use the LinearMap element instead.");
-
-            return Map6x6::Identity();
+            if (m_transport_map == nullptr) {
+                throw std::runtime_error(
+                    "Programmable: no linear transport map hook was set. "
+                    "Set Programmable.transport_map_hook = <callable(refpart)->6x6> "
+                    "for envelope/linear-optics tracking, or use the LinearMap "
+                    "element for a purely linear map."
+                );
+            }
+            return m_transport_map(refpart);
         }
 
         /** Number of slices used for the application of space charge
@@ -141,6 +158,7 @@ namespace impactx::elements
         std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
         std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
         std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
+        std::function<Map6x6(RefPart const &)> m_transport_map; //! optional hook for linear transport map (refpart -> 6x6)
         std::function<void()> m_finalize; //! hook for finalize cleanup
     };
 

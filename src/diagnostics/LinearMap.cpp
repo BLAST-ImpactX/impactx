@@ -62,8 +62,17 @@ namespace
         }
         else
         {
-            // Cold path: only instantiated for element types whose
-            // transport_map is known to throw. No try/catch needed.
+            // Cold path: element has no compile-time-guaranteed linear
+            // map. Some elements (e.g. @c Programmable with an
+            // optional user-supplied hook) can still provide one at
+            // runtime -- try them first and fall through to the
+            // @p on_missing policy only if they throw.
+            try {
+                return element.transport_map(ref);
+            } catch (std::exception const &) {
+                // Fall through to the policy branch below.
+            }
+
             std::string const type_name{T_Element::type};
             switch (on_missing)
             {

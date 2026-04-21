@@ -1500,6 +1500,19 @@ This module provides elements and methods for the accelerator lattice.
          This function is called for the reference particle as it passes through the element.
          The reference particle is updated *before* the beam particles are pushed.
 
+   .. py:property:: linear_map
+
+      This is a function hook for pushing the linear transport map as a function of the reference particle.
+      When set, it is used by envelope tracking and diagnostics like :py:meth:`impactx.elements.KnownElementsList.transfer_map`,
+      :py:meth:`impactx.elements.KnownElementsList.map_trace` and Twiss diagnostics.
+
+      This accepts a function or lambda with the following argument:
+
+      .. py:method:: user_defined_map_function(refpart: impactx.RefPart)
+
+         This function is called when querying the linear transport map of the element.
+         The reference particle must be updated *before* this call.
+
 .. py:class:: impactx.elements.Quad(ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet.

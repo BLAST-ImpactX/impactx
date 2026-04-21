@@ -1917,6 +1917,17 @@ void init_elements(py::module& m)
               ) { p.m_ref_particle = std::move(new_hook); },
               "hook for reference particle (RefPart)"
         )
+        .def_property("linear_map",
+              [](Programmable & p) { return p.m_transport_map; },
+              [](Programmable & p,
+                 std::function<Map6x6(RefPart const &)> new_hook
+              ) { p.m_transport_map = std::move(new_hook); },
+              "hook returning the 6x6 linear transport map for this "
+              "element as a function of the reference particle; when set, it is "
+              "used by envelope tracking, lattice.transfer_map, map_trace, and "
+              "the Twiss diagnostics; when unset, those diagnostics raise a "
+              "runtime error."
+        )
     ;
 
     py::class_<Quad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Quad(me, "Quad");

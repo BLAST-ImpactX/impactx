@@ -22,16 +22,12 @@ sim.init_grids()
 
 # basic beam parameters
 kin_energy_MeV = 2000.0  # reference energy (kinetic)
-mass_MeV = 938.27208943  # particle mass for a proton
 bunch_charge_C = 25.0e-12  # used with space charge
-gyromagnetic_anomaly = 1.7928473446  # value for a proton
 npart = 100000  # number of macro particles
 
 # set reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(
-    kin_energy_MeV
-).set_gyromagnetic_anomaly(gyromagnetic_anomaly)
+ref = sim.beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Gaussian(
@@ -64,7 +60,7 @@ ks_value = 1.0
 print(f"ks_value={ks_value}")
 
 # length for this test should be one period
-ds_value = 2.0 * np.pi / (gyromagnetic_anomaly * ks_value)
+ds_value = 2.0 * np.pi / (ref.gyromagnetic_anomaly * ks_value)
 
 sol1 = elements.Sol(name="sol1", ds=ds_value, ks=ks_value, nslice=ns)
 

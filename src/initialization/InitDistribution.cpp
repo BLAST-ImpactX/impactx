@@ -45,43 +45,10 @@ namespace impactx
         std::string particle_type;  // Particle type
         pp_dist.get("particle", particle_type);
 
-        amrex::ParticleReal qe;     // charge (elementary charge)
-        amrex::ParticleReal massE;  // MeV/c^2
-        constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
-        constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
-        constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
-        amrex::ParticleReal gyromagnetic_anomaly;  // anomalous magnetic dipole moment
-        if (particle_type == "electron") {
-            qe = -1.0;
-            massE = m_e / MeV_inv_c2;
-            gyromagnetic_anomaly = 0.00115965218062;
-        } else if (particle_type == "positron") {
-            qe = 1.0;
-            massE = m_e / MeV_inv_c2;
-            gyromagnetic_anomaly = 0.00115965218062;
-        } else if (particle_type == "proton") {
-            qe = 1.0;
-            massE = m_p / MeV_inv_c2;
-            gyromagnetic_anomaly = 1.7928473446;
-        } else if (particle_type == "Hminus") {
-            qe = -1.0;
-            massE = 939.294308;  // value used in TraceWin
-            gyromagnetic_anomaly = 1.7928473446; // this value is difficult to find, and needs to be checked
-        }
-        else {  // default to electron
-            ablastr::warn_manager::WMRecordWarning(
-                    "ImpactX::initBeamDistributionFromInputs",
-                    "No beam.particle specified, defaulting to electrons.",
-                    ablastr::warn_manager::WarnPriority::low
-            );
-            qe = -1.0;
-            massE = m_e / MeV_inv_c2;
-            gyromagnetic_anomaly = 0.00115965218062;
-        }
-
         // configure a new reference particle
         RefPart ref;
-        ref.set_charge_qe(qe).set_mass_MeV(massE).set_kin_energy_MeV(kin_energy).set_gyromagnetic_anomaly(gyromagnetic_anomaly);
+        ref.set_species(particle_type);
+        ref.set_kin_energy_MeV(kin_energy);
         return ref;
     }
 

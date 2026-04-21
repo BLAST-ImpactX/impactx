@@ -7,6 +7,10 @@ This documents how to use ImpactX with an input file (``impactx input_file.in``)
 
 .. tip::
 
+   If you enjoy AI/LLM/agentic workflows, see our :ref:`AI (LLM)-Assisted Input File Design <ai_input_design>` section, too.
+
+.. tip::
+
    Input files use the AMReX `ParmParse <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parmparse>`__ syntax.
    A `parser <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parser>`__) is used for the right-hand-side of all input parameters that consist of one or more integers or floats, so expressions like ``beam.kin_energy = "2.+1."``, ``beam.lambdaY = beam.lambdaX`` and/or using :ref:`user-defined constants <running-cpp-parameters-parser>` are accepted.
 
@@ -46,7 +50,19 @@ Initial Beam Distributions
   beam current, used only if ``algo.space_charge = "2D"``
 
 * ``beam.particle`` (``string``)
-  particle type: currently either ``electron``, ``positron`` or ``proton``
+  particle type: ``electron``, ``positron``, ``proton``, or ``Hminus``.
+  For other species, please use the :ref:`Python API <usage-python>` or `open an issue <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+
+  .. dropdown:: Species Constants
+     :color: light
+     :icon: info
+     :animate: fade-in-slide-down
+
+     .. literalinclude:: ../../../src/particles/ReferenceParticle.H
+        :language: cpp
+        :dedent: 12
+        :start-after: // [known_species]
+        :end-before: // [/known_species]
 
 * ``beam.distribution`` (``string``)
   Indicates the initial distribution type.

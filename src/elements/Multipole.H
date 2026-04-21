@@ -33,7 +33,7 @@ namespace impactx::elements
     struct Multipole
     : public mixin::Named,
       public mixin::BeamOptic<Multipole>,
-      public mixin::LinearTransport<Multipole>,
+      public mixin::LinearTransport<Multipole, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::SpinTransport,
@@ -85,6 +85,9 @@ namespace impactx::elements
         {
             compute_factorial();
         }
+
+        /** Reverse the element (negate strengths) */
+        void reverse () { m_Kn = -m_Kn; m_Ks = -m_Ks; }
 
         /** Push all particles */
         using BeamOptic::operator();

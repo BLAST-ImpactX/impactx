@@ -28,8 +28,8 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+ref = sim.beam.ref
+ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   target beta functions (m)
 beta_star_x = 0.15
@@ -86,9 +86,12 @@ Rmat[6, 5] = -np.sin(phi_t) / beta_star_t
 Rmat[6, 6] = np.cos(phi_t)
 
 # design the accelerator lattice
+linear_map = elements.LinearMap(R=Rmat)
+assert linear_map.symplectic
+
 map = [
     monitor,
-    elements.LinearMap(R=Rmat),
+    linear_map,
 ]
 
 sim.lattice.extend(map)

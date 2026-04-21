@@ -19,92 +19,58 @@ __all__: list[str] = [
     "Waterbag",
 ]
 
-class Empty:
-    def __init__(self) -> None:
-        """
-        Sets all values to zero.
-        """
-
 class Gaussian:
     def __init__(
         self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
-        cutX: typing.SupportsFloat = 0.0,
-        cutY: typing.SupportsFloat = 0.0,
-        cutT: typing.SupportsFloat = 0.0,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        cutX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        cutY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        cutT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A 6D Gaussian distribution
         """
 
-class KVdist:
-    def __init__(
-        self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
-    ) -> None:
-        """
-        A K-V distribution transversely + a uniform distribution
-        in t + a Gaussian distribution in pt
-        """
-
 class Kurth4D:
     def __init__(
         self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A 4D Kurth distribution transversely + a uniform distribution
@@ -114,25 +80,25 @@ class Kurth4D:
 class Kurth6D:
     def __init__(
         self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A 6D Kurth distribution
@@ -141,58 +107,76 @@ class Kurth6D:
         C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
         """
 
+class KVdist:
+    def __init__(
+        self,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+    ) -> None:
+        """
+        A K-V distribution transversely + a uniform distribution
+        in t + a Gaussian distribution in pt
+        """
+
+class Empty:
+    def __init__(self) -> None:
+        """
+        Sets all values to zero.
+        """
+
 class Semigaussian:
     def __init__(
         self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
         """
 
-class SpinvMF:
-    @staticmethod
-    def inverse_Langevin(pmag: typing.SupportsFloat) -> float:
-        """
-        This function evaluates the inverse Langevin function, in order to return the value of concentration (kappa) required to produce a given polarization magnitude.
-        """
-    def __init__(
-        self,
-        mux: typing.SupportsFloat,
-        muy: typing.SupportsFloat,
-        muz: typing.SupportsFloat,
-    ) -> None:
-        """
-        A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin.
-        """
-
 class Thermal:
     def __init__(
         self,
-        k: typing.SupportsFloat,
-        kT: typing.SupportsFloat,
-        kT_halo: typing.SupportsFloat,
-        normalize: typing.SupportsFloat,
-        normalize_halo: typing.SupportsFloat,
-        halo: typing.SupportsFloat = 0.0,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        kT: typing.SupportsFloat | typing.SupportsIndex,
+        kT_halo: typing.SupportsFloat | typing.SupportsIndex,
+        normalize: typing.SupportsFloat | typing.SupportsIndex,
+        normalize_halo: typing.SupportsFloat | typing.SupportsIndex,
+        halo: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A stationary thermal or bithermal distribution
@@ -203,25 +187,25 @@ class Thermal:
 class Triangle:
     def __init__(
         self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A triangle distribution for laser-plasma acceleration related applications.
@@ -233,26 +217,42 @@ class Triangle:
 class Waterbag:
     def __init__(
         self,
-        lambdaX: typing.SupportsFloat,
-        lambdaY: typing.SupportsFloat,
-        lambdaT: typing.SupportsFloat,
-        lambdaPx: typing.SupportsFloat,
-        lambdaPy: typing.SupportsFloat,
-        lambdaPt: typing.SupportsFloat,
-        muxpx: typing.SupportsFloat = 0.0,
-        muypy: typing.SupportsFloat = 0.0,
-        mutpt: typing.SupportsFloat = 0.0,
-        meanX: typing.SupportsFloat = 0.0,
-        meanY: typing.SupportsFloat = 0.0,
-        meanT: typing.SupportsFloat = 0.0,
-        meanPx: typing.SupportsFloat = 0.0,
-        meanPy: typing.SupportsFloat = 0.0,
-        meanPt: typing.SupportsFloat = 0.0,
-        dispX: typing.SupportsFloat = 0.0,
-        dispPx: typing.SupportsFloat = 0.0,
-        dispY: typing.SupportsFloat = 0.0,
-        dispPy: typing.SupportsFloat = 0.0,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
     ) -> None:
         """
         A 6D Waterbag distribution
+        """
+
+class SpinvMF:
+    @staticmethod
+    def inverse_Langevin(pmag: typing.SupportsFloat | typing.SupportsIndex) -> float:
+        """
+        This function evaluates the inverse Langevin function, in order to return the value of concentration (kappa) required to produce a given polarization magnitude.
+        """
+    def __init__(
+        self,
+        mux: typing.SupportsFloat | typing.SupportsIndex,
+        muy: typing.SupportsFloat | typing.SupportsIndex,
+        muz: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None:
+        """
+        A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin.
         """

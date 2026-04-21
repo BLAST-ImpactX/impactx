@@ -40,7 +40,6 @@ def validate_fodo(beam):
     # in situ calculate the reduced beam characteristics
     rbc = beam.beam_moments()
     ref = beam.ref_particle()
-
     print("charge=", rbc["charge_C"])
     assert np.allclose(
         [
@@ -83,7 +82,7 @@ def test_impactx_fodo_file():
     sim.track_particles()
 
     # validate the results
-    validate_fodo(sim.particle_container())
+    validate_fodo(sim.beam)
 
     # finalize simulation
     sim.finalize()
@@ -110,8 +109,8 @@ def test_impactx_nofile():
     npart = 10000
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
     distr = distribution.Waterbag(
@@ -127,7 +126,7 @@ def test_impactx_nofile():
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    beam = sim.particle_container()
+    beam = sim.beam
     assert beam.total_number_of_particles() == npart
 
     # init accelerator lattice
@@ -188,8 +187,8 @@ def test_impactx_noparticles():
     kin_energy_MeV = 2.0e3
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
     #   particle bunch: init intentionally missing
 
     # init accelerator lattice
@@ -328,7 +327,27 @@ def test_impactx_fodo_hook():
     assert sim.tracking_element is None
 
     # validate the results
-    validate_fodo(sim.particle_container())
+    validate_fodo(sim.beam)
 
     # finalize simulation
+    sim.finalize()
+
+
+def test_deprecated_beam_ref_accessors_warn():
+    """Legacy accessor methods emit deprecation warnings."""
+    sim = ImpactX()
+    sim.particle_shape = 2
+    sim.init_grids()
+
+    with pytest.warns(
+        DeprecationWarning, match="particle_container\\(\\) is deprecated"
+    ):
+        beam = sim.particle_container()
+
+    with pytest.warns(DeprecationWarning, match="ref_particle\\(\\) is deprecated"):
+        ref = beam.ref_particle()
+
+    ref.x = 1.5
+    assert beam.ref.x == pytest.approx(1.5)
+
     sim.finalize()

@@ -37,8 +37,8 @@ beam_current_A = 0.15  # beam current
 npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.2720894).set_kin_energy_MeV(kin_energy_MeV)
+ref = sim.beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.KVdist(

@@ -70,6 +70,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate rotation angle) */
+        void reverse () { m_phi = -m_phi; }
+
         /** Push all particles */
         using BeamOptic::operator();
 

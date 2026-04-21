@@ -48,8 +48,8 @@ def run_APL_tracking(
     # Load a 200 MeV electron beam with alpha=0 (x and y)
     #  in the center of the APL
     # reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(
         sigma_mid, APL_g, ref.beta_gamma, ref.rigidity_Tm
@@ -157,8 +157,8 @@ def run_APL_envelope(
     # Load a 200 MeV electron beam with alpha=0 (x and y)
     #  in the center of the APL
     # reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(mass_MeV).set_kin_energy_MeV(kin_energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     (emitg, beta_0, gamma_0, mu_0, alpha_0) = do_analytic_backprop(
         sigma_mid, APL_g, ref.beta_gamma, ref.rigidity_Tm

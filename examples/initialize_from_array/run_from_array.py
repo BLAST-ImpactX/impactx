@@ -52,15 +52,15 @@ bunch_charge_C = 10.0e-12  # used with space charge
 q_e_C = 1.60217663e-19
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(energy_MeV)
+ref = sim.beam.ref
+ref.set_species("electron").set_kin_energy_MeV(energy_MeV)
 qm_eev = -1.0 / 0.510998950 / 1e6  # electron charge/mass in e / eV
 ref.z = 0
 
-pc = sim.particle_container()
+beam = sim.beam
 
 # Note for MPI-parallel simulations:
-#   `pc.add_n_particles(...)` is local to the MPI rank, spatial
+#   `beam.add_n_particles(...)` is local to the MPI rank, spatial
 #   locality does not matter. Thus, you can add particles at any
 #   MPI rank, e.g., equally chuncked up for perfect load balancing.
 #
@@ -117,7 +117,7 @@ if amr.ParallelDescriptor.IOProcessor():
     # This call has two options:
     # A) reassign equal weighting according to bunch_charge_C
     # B) use the particle weighting from the input array w
-    pc.add_n_particles(
+    beam.add_n_particles(
         dx_podv,
         dy_podv,
         dt_podv,
@@ -128,9 +128,9 @@ if amr.ParallelDescriptor.IOProcessor():
         bunch_charge=bunch_charge_C,
     )
     # ok, let's clear all particles and do option B
-    pc.clear_particles()
+    beam.clear_particles()
 
-    pc.add_n_particles(
+    beam.add_n_particles(
         dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, w=w_podv
     )
 

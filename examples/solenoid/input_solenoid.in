@@ -21,11 +21,11 @@ beam.mutpt = 0.0
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.elements = monitor sol1 monitor
+lattice.elements = m1 sol1 m1
 lattice.nslice = 1
 
-monitor.type = beam_monitor
-monitor.backend = h5
+m1.type = beam_monitor
+m1.backend = h5
 
 sol1.type = solenoid
 sol1.ds = 3.820395

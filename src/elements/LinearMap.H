@@ -25,6 +25,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <type_traits>
 
 
 namespace impactx::elements
@@ -66,6 +67,59 @@ namespace impactx::elements
         {
             m_transport_map = R;
             m_ds = ds;
+        }
+
+        /** Check if the transport map is symplectic
+         *
+         * A matrix R is symplectic if R^T Omega R = Omega, where Omega is the
+         * standard 6x6 symplectic form.
+         *
+         * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+         * @return true if the map satisfies the symplectic condition
+         */
+        bool symplectic () const
+        {
+            using namespace amrex::literals;
+
+            Map6x6 const J = impactx::symplectic_form();
+            Map6x6 const RT = m_transport_map.transpose();
+            Map6x6 const check = RT * J * m_transport_map;
+            amrex::ParticleReal max_err = 0_prt;
+            for (int i = 1; i <= 6; ++i) {
+                for (int j = 1; j <= 6; ++j) {
+                    amrex::ParticleReal const err = std::abs(check(i,j) - J(i,j));
+                    max_err = std::max(max_err, err);
+                }
+            }
+
+            amrex::ParticleReal constexpr tol = std::is_same_v<amrex::ParticleReal, float>
+                ? 1.0e-4_prt : 1.0e-10_prt;
+            return max_err <= tol;
+        }
+
+        /** Reverse the element (compute symplectic inverse of transport map)
+         *
+         * For a symplectic matrix R, the inverse is
+         *   R^{-1} = J^T R^T J = -J R^T J
+         * where J is the standard 6x6 symplectic form.
+         *
+         * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+         * Throws if the transport map is not symplectic.
+         */
+        void reverse ()
+        {
+            if (!symplectic()) {
+                throw std::runtime_error(
+                    "LinearMap::reverse: transport map is not symplectic.");
+            }
+
+            Map6x6 const Omega = impactx::symplectic_form();
+
+            // R_inv = Omega^T * R^T * Omega = -Omega * R^T * Omega
+            Map6x6 const RT = m_transport_map.transpose();
+            Map6x6 const R_inv = (-Omega) * RT * Omega;
+            m_transport_map = R_inv;
+            m_ds = -m_ds;
         }
 
         /** Push all particles */
@@ -128,7 +182,7 @@ namespace impactx::elements
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
-            if (m_ds > 0)  // Drift
+            if (m_ds != 0)  // Drift forward or backward
             {
                 using namespace amrex::literals; // for _rt and _prt
                 using amrex::Math::powi;

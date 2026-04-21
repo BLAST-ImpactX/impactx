@@ -36,8 +36,8 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 100000
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(kin_energy_MeV)
+ref = sim.beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   problem parameters
 beam_radius = 2.0e-3
@@ -74,6 +74,7 @@ drift1 = elements.Drift(
     nslice=40,
 )
 map1 = elements.LinearMap(R=Rmat)
+assert map1.symplectic
 
 # design the accelerator lattice
 sim.lattice.extend([monitor, map1, drift1, monitor])

@@ -43,10 +43,32 @@ Keep this file under 300 lines to preserve LLM context.
 Skills
 ------
 
-LLM assistants such as Claude Code support reusable *skills* — scripted workflows that an assistant can execute on demand, automating multi-step tasks that follow a fixed procedure.
-When (later) defined for ImpactX, skills will live in the ``.claude/skills/`` directory and use the prefix ``impactx-`` for easy discovery (start typing ``/impactx`` to see them).
+ImpactX defines reusable *skills* in the ``.claude/skills/`` directory.
+Skills are scripted workflows that an LLM assistant can execute on demand, automating multi-step tasks that follow a fixed procedure.
 
-To add a new skill, create a directory under ``.claude/skills/<skill-name>/`` containing a ``SKILL.md`` file that describes the step-by-step procedure.
+All ImpactX skills use the prefix ``impactx-`` for easy discovery (start typing ``/impactx`` to see them).
+
+To add new skills, create a directory under ``.claude/skills/<skill-name>/`` containing a ``SKILL.md`` file that describes the step-by-step procedure.
+
+Currently available skills:
+
+``/impactx-update-element-benchmarks``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Audits every lattice element under ``src/elements/`` for coverage in the three Python element-coverage tests and extends them in place.
+
+Usage (in Claude Code):
+
+.. code-block:: text
+
+   /impactx-update-element-benchmarks
+
+The skill will:
+
+#. Enumerate elements from the ``KnownElements`` variant in ``src/elements/All.H``.
+#. For each element, check that an entry exists in ``tests/python/test_benchmark_elements.py``, ``tests/python/test_element_serialization.py``, and ``tests/python/test_reversibility_elements.py`` — adding a missing entry using realistic parameter values taken from ``examples/``.
+#. Identify spin-capable elements (those inheriting ``mixin::SpinTransport``) and add the ``spin``/``nospin`` parametrization to their benchmark and reversibility tests where missing.
+#. Rebuild the Python bindings (``cmake --build build --target pip_install``) and run the three tests via ``pytest``, reporting pass/fail counts.
 
 
 Documentation Context via MCP Servers

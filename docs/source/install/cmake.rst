@@ -90,7 +90,7 @@ Conda provides a convenient way to install dependencies across Linux, macOS, and
 
       .. code-block:: bash
 
-         conda create -n impactx-cpu-mpich-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp "openpmd-api=*=mpi_mpich*" packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt "fftw=*=mpi_mpich*" pkg-config matplotlib mamba ninja mpich pip virtualenv vir-simd wheel
+         conda create -n impactx-cpu-mpich-dev -c conda-forge boost ccache cmake compilers git "openpmd-api=*=mpi_mpich*" packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt "fftw=*=mpi_mpich*" pkg-config matplotlib mamba ninja mpich pip virtualenv vir-simd wheel
          conda activate impactx-cpu-mpich-dev
 
          # compile ImpactX with -DImpactX_MPI=ON
@@ -100,7 +100,7 @@ Conda provides a convenient way to install dependencies across Linux, macOS, and
 
       .. code-block:: bash
 
-         conda create -n impactx-cpu-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp openpmd-api packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt fftw pkg-config matplotlib mamba ninja pip virtualenv vir-simd wheel
+         conda create -n impactx-cpu-dev -c conda-forge boost ccache cmake compilers git openpmd-api packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt fftw pkg-config matplotlib mamba ninja pip virtualenv vir-simd wheel
          conda activate impactx-cpu-dev
 
          # compile ImpactX with -DImpactX_MPI=OFF
@@ -247,7 +247,7 @@ The `Advanced Package Tool (APT) <https://en.wikipedia.org/wiki/APT_(software)>`
       .. code-block:: bash
 
          sudo apt update
-         sudo apt install build-essential ccache cmake g++ git libfftw3-dev libfftw3-dev libhdf5-dev pkg-config python3 python3-dev python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
+         sudo apt install build-essential ccache cmake g++ git libfftw3-dev libhdf5-dev pkg-config python3 python3-dev python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
 
          # optional:
          # for CUDA, either install

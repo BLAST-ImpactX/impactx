@@ -578,6 +578,10 @@ namespace impactx
                 spin_dist = distribution::SpinvMF(polarization_x, polarization_y, polarization_z);
             }
 
+            amrex::ParticleReal bucket_length = 0.0;  // Bucket length (m) for longitudinal particle boundary
+            pp_dist.queryWithParser("bucket_length", bucket_length);
+            amr_data->track_particles.m_particle_container->SetBucketLength(bucket_length);
+
             amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
             {
@@ -598,6 +602,9 @@ namespace impactx
                 std::string distribution_type;  // Beam distribution type
                 pp_dist.get("distribution", distribution_type);
                 amrex::Print() << "Beam distribution type: " << distribution_type << std::endl;
+            }
+            if (bucket_length != 0.0) {
+                amrex::Print() << "Bucket length (m): " << bucket_length << std::endl;
             }
 
             if (unit_type == "static") {

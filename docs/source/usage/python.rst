@@ -207,6 +207,26 @@ Collective Effects & Overall Simulation Parameters
       mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
       When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
 
+   .. py:property:: particle_bc
+
+      The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference
+      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.
+
+      Options:
+
+      * ``"open"`` (default): no action is applied at the boundary.
+
+      * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+
+      * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+
+      * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+
+        .. note::
+
+           The implementation works through linear order in the phase space variables.
+           If you have the need for a more precise implementation of reflecting boundaries, please `open an issue <https://github.com/BLAST-ImpactX/impactx/issues/new>`__.
+
    .. py:property:: spin
 
       Enable (``True``) or disable (``False``) particle spin tracking (default: ``False``).
@@ -487,6 +507,12 @@ Particles
       Set reference particle attributes.
 
       :param impactx.RefPart refpart: a reference particle to copy all attributes from
+
+   .. py:method:: set_bucket_length(bucket_length)
+
+      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+
+      :param bucket_length: length of the longitudinal particle domain in m
 
    .. py:method:: beam_moments()
 

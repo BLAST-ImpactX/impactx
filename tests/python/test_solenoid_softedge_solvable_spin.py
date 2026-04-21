@@ -10,6 +10,7 @@ import numpy as np
 
 from impactx import ImpactX, Map3x6, Map6x6, Vector3, elements
 
+
 def test_solenoid_softedge_solvable_spin():
     """Calculate the linear transfer map of a lattice."""
 
@@ -38,7 +39,7 @@ def test_solenoid_softedge_solvable_spin():
     g = 1.0  # gap parameter (in meters)
     zdata = np.linspace(zmin, zmax, nz)
     bdata = 1.0 / (1.0 + (zdata / g) ** 2)
-    bscale = 5.0/6.0
+    bscale = 5.0 / 6.0
 
     # design the accelerator lattice
     sol = elements.SoftSolenoid(
@@ -69,7 +70,7 @@ def test_solenoid_softedge_solvable_spin():
     vpred = Vector3()
     Apred = Map3x6()
 
-    Rmat = ref.map  #not used - included for illustration
+    Rmat = ref.map  # not used - included for illustration
     vmat = ref.spin_rotation_vector
     Amat = ref.spin_coupling
 
@@ -95,18 +96,34 @@ def test_solenoid_softedge_solvable_spin():
     beta = ref.beta
 
     # Analytical solution for reference spin rotation vector:
-    vpred[3] = -5.0*np.pi / 4.0
+    vpred[3] = -5.0 * np.pi / 4.0
 
     # Analytical solution for spin-orbit coupling map:
-    Apred[1,1] = (56354 + 8125*np.pi - 5876*np.sqrt(2.0) - 6676*np.sqrt(6)) * (gamma-1.0) / (81120 * g)
-    Apred[1,2] = (2146 + 325*np.pi + 52*np.sqrt(2.0) - 500*np.sqrt(6)) * (gamma-1.0) / (3380)
-    Apred[1,3] = (6850 + 325*np.pi - 6676*np.sqrt(2.0) + 5876*np.sqrt(6)) * (gamma-1.0) / (81120 * g)
-    Apred[1,4] = -(4146 + 325*np.pi + 500*np.sqrt(2.0) + 52*np.sqrt(6)) * (gamma-1.0) / (3380)
-    Apred[3,6] = -5*np.pi / (4.0*beta)
-    Apred[2,1] = -Apred[1,3]
-    Apred[2,2] = -Apred[1,4]
-    Apred[2,3] = Apred[1,1]
-    Apred[2,4] = Apred[1,2]
+    Apred[1, 1] = (
+        (56354 + 8125 * np.pi - 5876 * np.sqrt(2.0) - 6676 * np.sqrt(6))
+        * (gamma - 1.0)
+        / (81120 * g)
+    )
+    Apred[1, 2] = (
+        (2146 + 325 * np.pi + 52 * np.sqrt(2.0) - 500 * np.sqrt(6))
+        * (gamma - 1.0)
+        / (3380)
+    )
+    Apred[1, 3] = (
+        (6850 + 325 * np.pi - 6676 * np.sqrt(2.0) + 5876 * np.sqrt(6))
+        * (gamma - 1.0)
+        / (81120 * g)
+    )
+    Apred[1, 4] = (
+        -(4146 + 325 * np.pi + 500 * np.sqrt(2.0) + 52 * np.sqrt(6))
+        * (gamma - 1.0)
+        / (3380)
+    )
+    Apred[3, 6] = -5 * np.pi / (4.0 * beta)
+    Apred[2, 1] = -Apred[1, 3]
+    Apred[2, 2] = -Apred[1, 4]
+    Apred[2, 3] = Apred[1, 1]
+    Apred[2, 4] = Apred[1, 2]
 
     print()
     print("Reference spin rotation vector, predicted:")
@@ -125,17 +142,17 @@ def test_solenoid_softedge_solvable_spin():
     # analysis
     atol = 2.0e-6
     rtol = 0.0
-    dv = (vmat-vpred).to_numpy()
+    dv = (vmat - vpred).to_numpy()
     v = vpred.to_numpy()
 
-    print(f"  atol={atol}")  
+    print(f"  atol={atol}")
     print(f"  maximum difference in v={np.max(np.abs(dv))}")
     print(f"  maximum value of v={np.max(np.abs(v))}")
     print()
-        
+
     assert np.allclose(vmat, vpred, rtol=rtol, atol=atol)
 
-    dA = (Amat-Apred).to_numpy()
+    dA = (Amat - Apred).to_numpy()
     A = Apred.to_numpy()
     atol = 1.0e-4  # can this tolerance be improved?
     rtol = 0.0

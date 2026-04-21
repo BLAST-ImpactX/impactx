@@ -2012,3 +2012,12 @@ add_impactx_test(exact-quad-on-reference.py
     examples/symplectic_integration/analysis_exact_quad_on_reference.py
     OFF  # no additional analysis script needed
 )
+
+# Multipole tracking with spin ###################
+add_impactx_test(multipole-spin.py
+    examples/spin_tracking/run_multipole_spin.py
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_multipole_spin.py
+    OFF  # no additional analysis script needed
+)
+

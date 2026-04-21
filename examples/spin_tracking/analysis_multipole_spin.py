@@ -54,7 +54,7 @@ sigxf, sigyf, sigtf, emittance_xf, emittance_yf, emittance_tf = get_moments(fina
 atol = 0.0  # ignored
 rtol = 3.0 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
-       
+
 assert np.allclose(
     [sigx, sigy, sigt, emittance_x, emittance_y, emittance_t],
     [sigxf, sigyf, sigtf, emittance_xf, emittance_yf, emittance_tf],

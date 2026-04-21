@@ -61,19 +61,19 @@ L2 = 1.0e-4
 
 lattice = [
     monitor,
-#  Test 1:  thick quad vs thick multipole
-#    elements.ExactQuad(
-#        name="quad",
-#        ds=L,
-#        k=Kn,
-#        mapsteps=100,
-#        nslice=ns,
-#    ),
+    #  Test 1:  thick quad vs thick multipole
+    #    elements.ExactQuad(
+    #        name="quad",
+    #        ds=L,
+    #        k=Kn,
+    #        mapsteps=100,
+    #        nslice=ns,
+    #    ),
     elements.ExactMultipole(
         name="multipole",
         ds=L,
-        k_normal=[0.0, Kn],  
-        k_skew=[0.0, 0.0], 
+        k_normal=[0.0, Kn],
+        k_skew=[0.0, 0.0],
         mapsteps=100,
         nslice=ns,
     ),
@@ -84,7 +84,7 @@ lattice = [
         mapsteps=100,
         nslice=ns,
     ),
-#  Test 2:  thick multipole vs thin multipole
+    #  Test 2:  thick multipole vs thin multipole
     elements.Multipole(
         name="thin_multipole",
         multipole=3,
@@ -94,8 +94,8 @@ lattice = [
     elements.ExactMultipole(
         name="thick_multipole",
         ds=L2,
-        k_normal=[0.0, 0.0, Kn_integrated/L2],
-        k_skew=[0.0, 0.0, Ks_integrated/L2],
+        k_normal=[0.0, 0.0, Kn_integrated / L2],
+        k_skew=[0.0, 0.0, Ks_integrated / L2],
         mapsteps=100,
         nslice=ns,
     ),

@@ -66,6 +66,7 @@ namespace impactx
         auto & ref = amr_data->track_envelope.m_ref.value();
         auto & env = amr_data->track_envelope.m_env.value();
         auto & cm = env.m_env;
+        auto & centroid = env.m_centroid;
         auto & intensity = env.m_beam_intensity;
 
         // output of init state
@@ -179,11 +180,11 @@ namespace impactx
                         envelope::spacecharge::space_charge3D_push(ref, cm, intensity, slice_ds);
                     }
 
-                    std::visit([&ref, &cm](auto&& element)
+                    std::visit([&ref, &cm, &centroid](auto&& element)
                     {
-                        // push Covariance Matrix in external fields and
-                        // advance the reference particle for the next slice
-                        element(cm, ref);
+                        // push the covariance matrix and centroid in external
+                        // fields and advance the reference particle
+                        element(cm, centroid, ref);
 
                     }, element_variant);
 

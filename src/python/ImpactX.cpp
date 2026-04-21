@@ -721,6 +721,20 @@ void init_ImpactX (py::module& m)
             },
             "Access the beam particle container."
         )
+        .def_property("envelope",
+            [](ImpactX & ix) -> Envelope & {
+                if (!ix.amr_data->track_envelope.m_env.has_value())
+                {
+                    throw std::runtime_error("Envelope state not set. Did you forget to call sim.init_envelope()?");
+                }
+                return ix.amr_data->track_envelope.m_env.value();
+            },
+            [](ImpactX & ix, Envelope const & env) {
+                ix.amr_data->track_envelope.m_env = env;
+            },
+            py::return_value_policy::reference_internal,
+            "Access the envelope tracking state."
+        )
         .def(
             "rho",
             [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_rho.at(lev); },

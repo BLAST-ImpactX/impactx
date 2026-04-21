@@ -92,6 +92,7 @@ class CoordSystem:
     def value(self) -> int: ...
 
 class Envelope:
+    centroid: list[float]
     envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
     @typing.overload
     def __init__(self) -> None: ...
@@ -253,6 +254,13 @@ class ImpactX:
         """
         Access the beam particle container.
         """
+    @property
+    def envelope(self) -> Envelope:
+        """
+        Access the envelope tracking state.
+        """
+    @envelope.setter
+    def envelope(self, arg1: Envelope) -> None: ...
     @property
     def blocking_factor_x(self) -> list[int]:
         """

@@ -212,6 +212,7 @@ namespace impactx
 
         // zero out the 6x6 matrix
         CovarianceMatrix cv{};
+        PhaseSpaceVector centroid{0.0_prt, 0.0_prt, 0.0_prt, 0.0_prt, 0.0_prt, 0.0_prt};
 
         // initialize from 2nd order beam moments
         std::visit([&](auto&& distribution) {
@@ -231,21 +232,28 @@ namespace impactx
                 amrex::ParticleReal muxpx = distribution.m_muxpx;
                 amrex::ParticleReal muypy = distribution.m_muypy;
                 amrex::ParticleReal mutpt = distribution.m_mutpt;
+                amrex::ParticleReal meanx = distribution.m_meanx;
+                amrex::ParticleReal meany = distribution.m_meany;
+                amrex::ParticleReal meant = distribution.m_meant;
+                amrex::ParticleReal meanpx = distribution.m_meanpx;
+                amrex::ParticleReal meanpy = distribution.m_meanpy;
+                amrex::ParticleReal meanpt = distribution.m_meanpt;
 
-                // some things we cannot represent in envelope mode
-                if (distribution.m_meanx  != 0.0_prt ||
-                    distribution.m_meany  != 0.0_prt ||
-                    distribution.m_meant  != 0.0_prt ||
-                    distribution.m_meanpx != 0.0_prt ||
-                    distribution.m_meanpy != 0.0_prt ||
-                    distribution.m_meanpt != 0.0_prt ||
-                    distribution.m_dispx  != 0.0_prt ||
+                // some things we cannot represent in envelope mode yet
+                if (distribution.m_dispx  != 0.0_prt ||
                     distribution.m_disppx != 0.0_prt ||
                     distribution.m_dispy  != 0.0_prt ||
                     distribution.m_disppy != 0.0_prt
                 ) {
-                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means or dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
+                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
                 }
+
+                centroid(1) = meanx;
+                centroid(2) = meanpx;
+                centroid(3) = meany;
+                centroid(4) = meanpy;
+                centroid(5) = meant;
+                centroid(6) = meanpt;
 
                 // use distribution inputs to populate a 6x6 covariance matrix
                 amrex::ParticleReal denom_x = 1.0 - muxpx*muxpx;
@@ -271,6 +279,7 @@ namespace impactx
         Envelope env;
         if (intensity) { env.set_beam_intensity(intensity.value()); }
         env.set_covariance_matrix(cv);
+        env.set_centroid(centroid);
 
         return env;
     }

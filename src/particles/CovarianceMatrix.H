@@ -22,6 +22,9 @@ namespace impactx
     /** this is the 6x6 covariance matrix */
     using CovarianceMatrix = Map6x6;
 
+    /** this is a phase-space 6-vector in (x, px, y, py, t, pt) ordering */
+    using PhaseSpaceVector = amrex::SmallVector<amrex::ParticleReal, 6, 1>;
+
     /** Return the 6x6 skew-symmetric symplectic form
      *
      * diag([[0,1],[-1,0]], [[0,1],[-1,0]], [[0,1],[-1,0]])
@@ -51,7 +54,14 @@ namespace impactx
      */
     struct Envelope
     {
+        Envelope () = default;
+
+        Envelope (CovarianceMatrix const & env, amrex::ParticleReal beam_intensity)
+            : m_env(env), m_beam_intensity(beam_intensity)
+        {}
+
         CovarianceMatrix m_env; ///< the 6x6 beam covariance matrix
+        PhaseSpaceVector m_centroid{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; ///< the beam centroid relative to the reference particle
         amrex::ParticleReal m_beam_intensity = 0.0; ///< optional: charge in A (for 3D space charge) or current in A (for 2D space charge)
 
         /** Set envelope beam charge/current for 3D/2D space charge
@@ -94,6 +104,26 @@ namespace impactx
         covariance_matrix () const
         {
             return m_env;
+        }
+
+        /** Set the 6D centroid for envelope tracking
+         *
+         * @param centroid beam centroid relative to the reference particle
+         */
+        Envelope &
+        set_centroid (PhaseSpaceVector const & centroid)
+        {
+            m_centroid = centroid;
+
+            return *this;
+        }
+
+        /** Get the 6D centroid for envelope tracking
+         */
+        PhaseSpaceVector
+        centroid () const
+        {
+            return m_centroid;
         }
 
     };

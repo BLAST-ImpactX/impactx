@@ -16,6 +16,28 @@
 namespace py = pybind11;
 using namespace impactx;
 
+namespace
+{
+    std::array<amrex::ParticleReal, 6>
+    to_array (PhaseSpaceVector const & v)
+    {
+        return {v(1), v(2), v(3), v(4), v(5), v(6)};
+    }
+
+    PhaseSpaceVector
+    to_phase_space_vector (std::array<amrex::ParticleReal, 6> const & values)
+    {
+        PhaseSpaceVector v;
+        v(1) = values[0];
+        v(2) = values[1];
+        v(3) = values[2];
+        v(4) = values[3];
+        v(5) = values[4];
+        v(6) = values[5];
+        return v;
+    }
+}
+
 
 void init_distribution(py::module& m)
 {
@@ -208,6 +230,13 @@ void init_distribution(py::module& m)
         .def(py::init<>())
         .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
         .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
+        .def_property("centroid",
+            [](Envelope const & env) {
+                return to_array(env.centroid());
+            },
+            [](Envelope & env, std::array<amrex::ParticleReal, 6> const & centroid) {
+                env.set_centroid(to_phase_space_vector(centroid));
+            })
         .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
     ;
 

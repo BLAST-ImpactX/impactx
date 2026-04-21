@@ -20,15 +20,82 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 
 namespace impactx::elements::mixin
 {
     namespace detail
     {
+        template <typename T_Element, typename = void>
+        struct has_compute_constants : std::false_type {};
+
+        template <typename T_Element>
+        struct has_compute_constants<
+            T_Element,
+            std::void_t<decltype(std::declval<T_Element &>().compute_constants(std::declval<RefPart const &>()))>
+        > : std::true_type {};
+
+        template <typename T_Element, typename = void>
+        struct has_particle_push : std::false_type {};
+
+        template <typename T_Element>
+        struct has_particle_push<
+            T_Element,
+            std::void_t<decltype(
+                std::declval<T_Element &>()(
+                    std::declval<amrex::ParticleReal &>(),
+                    std::declval<amrex::ParticleReal &>(),
+                    std::declval<amrex::ParticleReal &>(),
+                    std::declval<amrex::ParticleReal &>(),
+                    std::declval<amrex::ParticleReal &>(),
+                    std::declval<amrex::ParticleReal &>(),
+                    std::declval<std::uint64_t &>(),
+                    std::declval<RefPart const &>()
+                )
+            )>
+        > : std::true_type {};
+
+        /** Push the centroid with the same particle-coordinate contract used in
+         *  particle tracking, after the reference particle has been advanced.
+         *
+         *  This captures constant kicks without changing the shared reference
+         *  particle push semantics across tracking modes.
+         *
+         * @param[in] element the current lattice element
+         * @param[in,out] centroid the beam centroid relative to the reference
+         * @param[in] ref the already-advanced reference particle
+         */
+        template <typename T_Element>
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        void
+        push_centroid (
+            T_Element const & element,
+            PhaseSpaceVector & AMREX_RESTRICT centroid,
+            RefPart const & AMREX_RESTRICT ref
+        )
+        {
+            if constexpr (has_compute_constants<T_Element>::value && has_particle_push<T_Element>::value)
+            {
+                T_Element element_copy = element;
+                element_copy.compute_constants(ref);
+
+                auto & x = centroid(1);
+                auto & px = centroid(2);
+                auto & y = centroid(3);
+                auto & py = centroid(4);
+                auto & t = centroid(5);
+                auto & pt = centroid(6);
+                std::uint64_t idcpu = 0;
+
+                element_copy(x, y, t, px, py, pt, idcpu, ref);
+            }
+        }
+
         /** Advance the reference particle and return the corresponding
          *  lab-frame linear transport map for one element slice.
          *
@@ -121,6 +188,36 @@ namespace impactx::elements::mixin
             auto const R = detail::advance_ref_and_transport_map(element, ref);
             cm = R * cm * R.transpose();
         }
+
+        /** Linear push of the covariance matrix and centroid through an
+         *  element.
+         *
+         * Advances the reference particle first, matching particle tracking,
+         * then propagates the centroid with the particle-coordinate contract
+         * and the covariance matrix with the aligned linear transport map.
+         *
+         * @param[in,out] cm covariance matrix
+         * @param[in,out] centroid beam centroid relative to the reference
+         * @param[in,out] ref reference particle seen by downstream elements
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        void
+        operator() (
+            Map6x6 & AMREX_RESTRICT cm,
+            PhaseSpaceVector & AMREX_RESTRICT centroid,
+            RefPart & AMREX_RESTRICT ref
+        ) const
+        {
+            static_assert(
+                std::is_base_of_v<LinearTransport, T_Element>,
+                "LinearTransport can only be used as a mixin class!"
+            );
+
+            T_Element const & element = *static_cast<T_Element const*>(this);
+            auto const R = detail::advance_ref_and_transport_map(element, ref);
+            detail::push_centroid(element, centroid, ref);
+            cm = R * cm * R.transpose();
+        }
     };
 
     /** Partial specialization for elements that have not yet implemented a
@@ -166,6 +263,26 @@ namespace impactx::elements::mixin
         void
         operator() (
             [[maybe_unused]] Map6x6 & AMREX_RESTRICT cm,
+            [[maybe_unused]] RefPart & AMREX_RESTRICT ref
+        ) const
+        {
+            static_assert(
+                std::is_base_of_v<LinearTransport, T_Element>,
+                "LinearTransport can only be used as a mixin class!"
+            );
+            T_Element const & element = *static_cast<T_Element const*>(this);
+
+            (void) element.transport_map(ref);  // expected to throw
+        }
+
+        /** Covariance-matrix and centroid push; identical throwing behavior as
+         *  the primary overload above.
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        void
+        operator() (
+            [[maybe_unused]] Map6x6 & AMREX_RESTRICT cm,
+            [[maybe_unused]] PhaseSpaceVector & AMREX_RESTRICT centroid,
             [[maybe_unused]] RefPart & AMREX_RESTRICT ref
         ) const
         {

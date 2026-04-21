@@ -10,6 +10,7 @@
 #ifndef IMPACTX_ELEMENTS_MIXIN_LINEAR_TRANSPORT_H
 #define IMPACTX_ELEMENTS_MIXIN_LINEAR_TRANSPORT_H
 
+#include "alignment.H"
 #include "particles/CovarianceMatrix.H"
 
 #include <ablastr/constant.H>
@@ -26,6 +27,50 @@
 
 namespace impactx::elements::mixin
 {
+    namespace detail
+    {
+        /** Advance the reference particle and return the corresponding
+         *  lab-frame linear transport map for one element slice.
+         *
+         *  Element-local contracts are without alignment errors (i.e., ideal):
+         *    - @c operator()(RefPart&) advances the ideal reference particle
+         *      without alignment errors.
+         *    - @c transport_map(ref) returns the ideal/local linear map.
+         *
+         *  This helper centralizes @c Alignment handling for linear/envelope
+         *  workflows by shifting the incoming reference particle into
+         *  the element frame, applying the ideal reference push there,
+         *  evaluating the ideal/local map at the updated local reference
+         *  state, and finally transforming both the reference particle and
+         *  linear map back to lab coordinates.
+         *
+         * @param[in] element the current lattice element
+         * @param[in,out] ref the reference particle
+         */
+        template <typename T_Element>
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        advance_ref_and_transport_map (
+            T_Element const & element,
+            RefPart & AMREX_RESTRICT ref
+        )
+        {
+            if constexpr (std::is_base_of_v<Alignment, T_Element>)
+            {
+                RefPart ref_local = element.shift_in(ref);
+                element(ref_local);
+                auto const R_local = element.transport_map(ref_local);
+                ref = element.shift_out(ref_local);
+                return element.rotate_map(R_local);
+            }
+            else
+            {
+                element(ref);
+                return element.transport_map(ref);
+            }
+        }
+    } // namespace detail
+
     /** Mixin for lattice elements that can be expressed as linear transport maps.
      *
      *  @tparam T_Element   the concrete element type (CRTP).
@@ -52,16 +97,17 @@ namespace impactx::elements::mixin
 
         /** Linear push of the covariance matrix through an element
          *
-         * Expects that the reference particle was advanced first.
+         * Advances the reference particle and pushes the covariance
+         * matrix through the aligned lab-frame linear transport step.
          *
          * @param[in,out] cm covariance matrix
-         * @param[in] ref reference particle
+         * @param[in,out] ref reference particle seen by downstream elements
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         void
         operator() (
             Map6x6 & AMREX_RESTRICT cm,
-            RefPart const & AMREX_RESTRICT ref
+            RefPart & AMREX_RESTRICT ref
         ) const
         {
             static_assert(
@@ -72,7 +118,7 @@ namespace impactx::elements::mixin
             // small trick to force every derived class has to implement a method transport_map
             // (w/o using a purely virtual function)
             T_Element const & element = *static_cast<T_Element const*>(this);
-            auto const R = element.transport_map(ref);
+            auto const R = detail::advance_ref_and_transport_map(element, ref);
             cm = R * cm * R.transpose();
         }
     };
@@ -119,17 +165,17 @@ namespace impactx::elements::mixin
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         void
         operator() (
-            Map6x6 & AMREX_RESTRICT cm,
-            RefPart const & AMREX_RESTRICT ref
+            [[maybe_unused]] Map6x6 & AMREX_RESTRICT cm,
+            [[maybe_unused]] RefPart & AMREX_RESTRICT ref
         ) const
         {
             static_assert(
                 std::is_base_of_v<LinearTransport, T_Element>,
                 "LinearTransport can only be used as a mixin class!"
             );
-
             T_Element const & element = *static_cast<T_Element const*>(this);
-            cm = element.transport_map(ref) * cm * element.transport_map(ref).transpose();
+
+            (void) element.transport_map(ref);  // expected to throw
         }
     };
 

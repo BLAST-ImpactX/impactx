@@ -67,25 +67,33 @@ namespace impactx::diagnostics
 
     /** Compose the linear transport map element-by-element along a lattice.
      *
-     *  Walks the lattice once, advancing a local copy of the reference
-     *  particle through each element's non-linear reference-particle push and
-     *  multiplying the cumulative 6x6 linear transport map by each element's
-     *  per-slice @c transport_map. The caller's reference particle is not
-     *  modified.
+     *  Walks the lattice once, advancing a local copy of the
+     *  reference particle and multiplying the cumulative 6x6 linear
+     *  transport map by each element's per-slice aligned lab-frame linear
+     *  step. Element-local @c transport_map(ref) remains the ideal/local map;
+     *  alignment and roll are mixed in centrally during the traversal. The
+     *  caller's reference particle is not modified.
      *
      *  Slice ordering inside each element matches the envelope tracker in
-     *  @c src/tracking/envelope.cpp : for each of @c nslice sub-steps, first
-     *  advance the reference particle by one slice, then evaluate
-     *  @c transport_map at the post-advance reference state. This keeps both
-     *  code paths consistent for elements whose linear map depends on the
-     *  reference momentum through the element (for example radio-frequency
-     *  cavities).
+     *  @c src/tracking/envelope.cpp : for each of @c nslice sub-steps, the
+     *  reference particle is advanced and the aligned lab-frame
+     *  linear map is evaluated at the post-advance reference state. This
+     *  keeps both code paths consistent for elements whose linear map depends
+     *  on the reference momentum through the element (for example
+     *  radio-frequency cavities).
      *
      *  Effects that are part of the non-linear tracker but not of the linear
      *  map are deliberately skipped here: space charge, Coherent Synchrotron
      *  Radiation (CSR), and Incoherent Synchrotron Radiation (ISR). The
      *  result is a purely element-by-element linear-optics trace appropriate
      *  for Twiss / tune / chromaticity / dispersion diagnostics.
+     *
+     *  Limitation: diagnostics follow each element's @c operator()(RefPart&)
+     *  contract for the reference particle. For @c Multipole, that
+     *  ideal reference push remains a zero-length no-op, so off-axis
+     *  higher-order multipoles contribute local feed-down to the linear map
+     *  but do not propagate constant ideal orbit kicks to downstream
+     *  elements.
      *
      *  Elements whose @c transport_map throws (for example @c NonlinearLens
      *  and @c Programmable explicitly reject a linear-map evaluation) are

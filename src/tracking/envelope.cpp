@@ -181,13 +181,8 @@ namespace impactx
 
                     std::visit([&ref, &cm](auto&& element)
                     {
-                        // push reference particle in global coordinates
-                        {
-                            BL_PROFILE("impactx::push::RefPart");
-                            element(ref);
-                        }
-
-                        // push Covariance Matrix in external fields
+                        // push Covariance Matrix in external fields and
+                        // advance the reference particle for the next slice
                         element(cm, ref);
 
                     }, element_variant);

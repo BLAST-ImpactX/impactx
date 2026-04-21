@@ -249,7 +249,7 @@ def test_Kicker(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+# Note: has no spin support; see SpinMap
 def test_LinearMap(benchmark, sim):
     R1 = Map6x6.identity()
 

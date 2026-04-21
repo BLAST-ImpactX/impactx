@@ -221,6 +221,10 @@ def roundtrip(
 # =============================================================================
 
 
+# CFbend is spin-capable (inherits mixin::SpinTransport) but its spin
+# reversibility path does not round-trip at machine precision
+# (https://github.com/BLAST-ImpactX/impactx/issues/1328). Keep nospin-only
+# until the C++ spin-reversal is fixed.
 def test_CFbend(sim):
     roundtrip(
         elements.CFbend(
@@ -378,8 +382,10 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 def test_ExactQuad(sim, unit, k):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
         elements.ExactQuad(
             ds=1.0,
@@ -388,10 +394,11 @@ def test_ExactQuad(sim, unit, k):
             int_order=4,
             nslice=nslice,
             mapsteps=mapsteps,
-            **PIPE_KWARGS,
+            **kwargs,
         ),
         sim,
         phase_atol=1e-8,
+        spin=sim.spin,
     )
 
 
@@ -671,6 +678,7 @@ def test_QuadEdge(sim, flag, unit, k):
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_LinearMap(sim):
     R1 = Map6x6.identity()
     ds1 = 0.25
@@ -698,7 +706,7 @@ def test_LinearMap(sim):
 
     el = elements.LinearMap(R=R1, ds=ds1, **ALIGNMENT_KWARGS)
     assert el.symplectic
-    roundtrip(el, sim)
+    roundtrip(el, sim, spin=sim.spin)
 
 
 # There is a hacky implementation draft in the C++ code for

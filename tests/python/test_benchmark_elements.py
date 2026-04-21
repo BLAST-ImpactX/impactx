@@ -199,6 +199,20 @@ def test_ExactDrift(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+def test_ExactCFbend(benchmark, sim):
+    el = elements.ExactCFbend(
+        name="cfbend1",
+        ds=1.0,
+        k_normal=[0.1, 0.0],
+        k_skew=[0.0, 0.0],
+        unit=0,
+        int_order=2,
+        mapsteps=mapsteps,
+        nslice=nslice,
+    )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
 def test_ExactMultipole(benchmark, sim):
     el = elements.ExactMultipole(
         name="quad1",
@@ -212,6 +226,7 @@ def test_ExactMultipole(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactQuad(benchmark, sim):
     el = elements.ExactQuad(
         name="quad1",
@@ -234,6 +249,7 @@ def test_Kicker(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_LinearMap(benchmark, sim):
     R1 = Map6x6.identity()
 
@@ -264,6 +280,25 @@ def test_NonlinearLens(benchmark, sim):
 
 def test_PlaneXYRot(benchmark, sim):
     el = elements.PlaneXYRot(name="rotation1", angle=90.0)
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+def test_PolygonAperture(benchmark, sim):
+    vertices_x = [
+        float(u)
+        for u in "0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3 1.5e-3 1.5e-3 0.5e-3".split()
+    ]
+    vertices_y = [
+        float(u)
+        for u in "0.5e-3 1.5e-3 1.5e-3 0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3".split()
+    ]
+    el = elements.PolygonAperture(
+        name="polyap",
+        vertices_x=vertices_x,
+        vertices_y=vertices_y,
+        min_radius2=2 * 0.5e-3**2,
+        action="transmit",
+    )
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 

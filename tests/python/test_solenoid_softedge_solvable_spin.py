@@ -136,9 +136,6 @@ def test_solenoid_softedge_solvable_spin():
         for j in range(1, 7):
             print(i, j, Apred[i, j])
 
-    # clean shutdown
-    sim.finalize()
-
     # analysis
     atol = 2.0e-6
     rtol = 0.0

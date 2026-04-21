@@ -5,6 +5,10 @@ Parameters: Python
 
 This documents on how to use ImpactX as a Python script (``python3 run_script.py``).
 
+.. tip::
+
+   If you enjoy AI/LLM/agentic workflows, see our :ref:`AI (LLM)-Assisted Input File Design <ai_input_design>` section, too.
+
 Collective Effects & Overall Simulation Parameters
 --------------------------------------------------
 

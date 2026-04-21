@@ -61,14 +61,6 @@ L2 = 1.0e-4
 
 lattice = [
     monitor,
-    #  Test 1:  thick quad vs thick multipole
-    #    elements.ExactQuad(
-    #        name="quad",
-    #        ds=L,
-    #        k=Kn,
-    #        mapsteps=100,
-    #        nslice=ns,
-    #    ),
     elements.ExactMultipole(
         name="multipole",
         ds=L,

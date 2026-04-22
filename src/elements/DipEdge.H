@@ -287,7 +287,7 @@ namespace impactx::elements
         /** This pushes the reference particle. */
         using Thin::operator();
 
-        /** This pushes the reference particle. 
+        /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
          */
@@ -312,7 +312,7 @@ namespace impactx::elements
                 amrex::ParticleReal const dx_ref = -c3_ref;
                 amrex::ParticleReal const dpx_ref = m_c13 - c2_ref - c3_ref*m_c5;
                 amrex::ParticleReal const dpz_ref = -1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm));
-            
+
                 // advance position and momentum (thin dipole)
                 refpart.x = x + (pz/pnorm)*dx_ref;
                 refpart.z = z - (px/pnorm)*dx_ref;

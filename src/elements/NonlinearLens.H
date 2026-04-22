@@ -217,8 +217,7 @@ namespace impactx::elements
          * thin kick (cf. MAD-X Physical Methods Manual, nonlinear lens).
          *
          * Reference: V. Danilov and S. Nagaitsev, Phys. Rev. ST Accel.
-         * Beams 13, 084002 (2010), Sect. V.A (see also the class-level
-         * docstring above, which cites the same reference).
+         * Beams 13, 084002 (2010), Sect. V.A
          *
          * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix

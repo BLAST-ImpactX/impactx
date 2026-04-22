@@ -178,10 +178,9 @@ namespace impactx::elements
          * element that carries the quadratic taper term.
          *
          * Physics references:
-         * - C. Lindstrøm & E. Adli, Phys. Rev. Accel. Beams 19, 071002
-         *   (2016), for the linear focusing.
-         * - Doss et al., Phys. Rev. Accel. Beams 22, 111001 (2019),
-         *   for the taper term (quadratic, drops at linear order).
+         * - C. Lindstrøm et al., "Achromatic optics using nonlinear plasma lenses
+for beam-quality preservation between plasma-accelerator stages",
+         *   submitted (2026), https://arxiv.org/abs/2604.17605
          *
          * @param[in] refpart reference particle (used only for the
          *                    unit conversion when m_unit == 1)

@@ -6,15 +6,33 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, distribution, elements, twiss
 import impactx
-from scipy.constants import m_p, c, eV
+import sys
 
-mp_mev = 1.0e-6 * m_p * c**2/eV
+from scipy.constants import m_p, c, eV, pi
+
 total_Booster_charge = 6.7e12 # PIP-II full Booster
 active_buckets = 81 # 81 out of 84 buckets full
 
 turns = 1
+
+emit_x = 16.0e-6 # normalized 95% emit
+emit_y = 16.0e-6
+emit_eV_s = 0.1 # longitudinal emittance 97% eV-s
+
+# 
+# these lattice functions are calculated with Synergia3
+# from the sbbooster-cooked.madx file.
+alpha_x = -1.298673960026007664e-02
+beta_x = 3.373645362843065243e+01
+alpha_y = 6.089861210659328755e-03
+beta_y = 5.252517912567207681e+00
+
+disp_x = 3.187407765856291153e+00
+disp_px = 1.136005067625678322e-03
+# s betax alphax psix dispx dprimex betay alphay psiy dispy dprimey
+#4.742027519999999186e+02 3.373645362843065243e+01 -1.298673960026007664e-02 4.216017341852963085e+01 3.187407765856291153e+00 1.136005067625678322e-03 5.252517912567207681e+00 6.089861210659328755e-03 4.278849194102631515e+01 0.000000000000000000e+00 0.000000000000000000e+00
 
 sim = ImpactX()
 
@@ -29,6 +47,7 @@ sim.init_grids()
 # load a 800 MeV proton beam
 
 kin_energy_MeV = 800.0  # reference energy 800 MeV
+
 bunch_charge_C = eV * total_Booster_charge/active_buckets  # used with space charge
 npart = 10000  # number of macro particles
 
@@ -36,19 +55,23 @@ npart = 10000  # number of macro particles
 ref = sim.particle_container().ref_particle()
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
-# this is not the distribution that will be used
-#   particle bunch
-distr = distribution.Waterbag(
-    lambdaX=3.9984884770e-5,
-    lambdaY=3.9984884770e-5,
-    lambdaT=1.0e-3,
-    lambdaPx=2.6623538760e-5,
-    lambdaPy=2.6623538760e-5,
-    lambdaPt=2.0e-3,
-    muxpx=-0.846574929020762,
-    muypy=0.846574929020762,
-    mutpt=0.0,
-)
+distr = distribution.Gaussian(
+    **twiss(
+        beta_x = beta_x,
+        alpha_x = alpha_x,
+        emitt_x = emit_x/(ref.beta_gamma*6), # normalized 95% emit -> geometric
+        beta_y = beta_y,
+        alpha_y = alpha_y,
+        emitt_y = emit_y/(ref.beta_gamma*6), # normalized 95% emit -> geometric
+        emitt_t = emit_eV_s * 1.0e-6 * c/(ref.mass_MeV * ref.beta_gamma * 6 * pi), # 97% emit eV-s -> RMS emit
+        beta_t = 1258.0, # seems to go from 1158 close to the center to
+                        # 1258 at about 1.25m
+        # dispersion from Synergia so it needs conversion from dp/p to dE/p
+        dispersion_x = disp_x/ref.beta,
+        dispersion_px = disp_px/ref.beta
+        )
+    )
+
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
@@ -58,6 +81,8 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 with open("booster_impactx_lattice.txt", "r") as F:
     lattice_txt = F.read()
 booster = eval(lattice_txt)
+
+sim.lattice.append(monitor)
 sim.lattice.extend(booster)
 sim.lattice.append(monitor)
 

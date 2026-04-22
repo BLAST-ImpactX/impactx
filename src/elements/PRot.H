@@ -186,15 +186,9 @@ namespace impactx::elements
          * The (y, py) sub-block is the identity: pole-face rotation in
          * the x-z plane does not mix the vertical plane at linear order.
          *
-         * Reference: MaryLie 3.0 Users' Manual, Sect. 6.4 ("General
-         * Bends, Geometric Corrections"); A. J. Dragt, Lie Methods for
-         * Nonlinear Dynamics with Applications to Accelerator Physics,
-         * Sect. 12.5 (exact bend geometry / pole-face rotations).
-         *
-         * Sign convention: with ImpactX's pt = -Delta(gamma)/(beta0
-         * gamma0) (opposite sign to MAD-X's PT = +Delta(E)/(p0*c)), the
-         * R(2,6) and R(5,1) signs agree with the sibling Sbend element
-         * in ImpactX but differ overall from the MAD-X PROT formulas.
+         * Reference: MaryLie 3.0 Users' Manual, Sect. 6.5 ("Plane Rotation");
+         * A. J. Dragt, Lie Methods for Nonlinear Dynamics with Applications
+         * to Accelerator Physics, Appendix V ("PROT without and in the Presence of a Magnetic Field").
          *
          * Ideal behavior only: alignment and rotation errors are
          * ignored; the linearization is at (x, y, t) = (0, 0, 0) and

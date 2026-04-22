@@ -188,7 +188,8 @@ namespace impactx::elements
          *
          * Reference: MaryLie 3.0 Users' Manual, Sect. 6.5 ("Plane Rotation");
          * A. J. Dragt, Lie Methods for Nonlinear Dynamics with Applications
-         * to Accelerator Physics, Appendix V ("PROT without and in the Presence of a Magnetic Field").
+         * to Accelerator Physics, v. Nov. 2020,
+         * Appendix V ("PROT without and in the Presence of a Magnetic Field").
          *
          * Ideal behavior only: alignment and rotation errors are
          * ignored; the linearization is at (x, y, t) = (0, 0, 0) and

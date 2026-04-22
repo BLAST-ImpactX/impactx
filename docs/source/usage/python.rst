@@ -363,6 +363,12 @@ Collective Effects & Overall Simulation Parameters
 
       Run the envelope tracking simulation loop.
 
+      .. note::
+
+         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
+         Support for misalignments and feed-down effects in envelope tracking is in development.
+         Until then, misalignment options set on elements are silently ignored.
+
    .. py:method:: track_reference(ref)
 
       Run the reference orbit tracking simulation loop.

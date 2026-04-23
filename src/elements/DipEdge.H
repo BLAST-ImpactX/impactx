@@ -284,8 +284,6 @@ namespace impactx::elements
             shift_out(x, y, px, py);
         }
 
-        /** This pushes the reference particle. */
-        using Thin::operator();
 
         /** This pushes the reference particle.
          *
@@ -305,12 +303,19 @@ namespace impactx::elements
             [[maybe_unused]] amrex::ParticleReal const pt = refpart.pt;
 
             if (m_modify_ref_part && m_model == dipedge::Model::nonlinear) {
-                // calculate expensive terms once
-                amrex::ParticleReal const c2_ref = m_c2_times_1plusdelta;
-                amrex::ParticleReal const c3_ref = m_c3_times_1plusdelta;
+                // calculate expensive terms
+                amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
+                auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
+                amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
+                amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
+                amrex::ParticleReal const c2_ref = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
+                amrex::ParticleReal const c3_ref = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+                amrex::ParticleReal const c5_ref = tan_psi / (2_prt * m_rc);
+                amrex::ParticleReal const c13_ref = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
+
                 amrex::ParticleReal const pnorm = std::sqrt(pt*pt-1_prt);
                 amrex::ParticleReal const dx_ref = -c3_ref;
-                amrex::ParticleReal const dpx_ref = m_c13 - c2_ref - c3_ref*m_c5;
+                amrex::ParticleReal const dpx_ref = c13_ref - c2_ref - c3_ref*c5_ref;
                 amrex::ParticleReal const dpz_ref = -1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm));
 
                 // advance position and momentum (thin dipole)

@@ -81,7 +81,7 @@ lattice = [
         nslice=ns,
     ),
     #  Test 2:  thick multipole vs thin multipole
-    elements.Multipole(  
+    elements.Multipole(
         name="thin_multipole",
         multipole=2,
         K_normal=-Kn_quad_integrated,

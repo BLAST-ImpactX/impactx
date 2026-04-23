@@ -53,10 +53,14 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
 ns = 5  # number of slices per ds in the element
-Kn = 2.0
+Kn_quad = 2.0
 L = 1.0
-Kn_integrated = 1.0
-Ks_integrated = -0.5
+Kn_quad_integrated = -0.2
+Ks_quad_integrated = 0.1
+Kn_quad_integrated = 0.0
+Ks_quad_integrated = 0.0
+Kn_sext_integrated = 1.0
+Ks_sext_integrated = -0.5
 L2 = 1.0e-4
 
 lattice = [
@@ -64,7 +68,7 @@ lattice = [
     elements.ExactMultipole(
         name="multipole",
         ds=L,
-        k_normal=[0.0, Kn],
+        k_normal=[0.0, Kn_quad],
         k_skew=[0.0, 0.0],
         mapsteps=100,
         nslice=ns,
@@ -72,22 +76,28 @@ lattice = [
     elements.ExactQuad(
         name="quad",
         ds=-L,
-        k=Kn,
+        k=Kn_quad,
         mapsteps=100,
         nslice=ns,
     ),
     #  Test 2:  thick multipole vs thin multipole
+    elements.Multipole(  
+        name="thin_multipole",
+        multipole=2,
+        K_normal=-Kn_quad_integrated,
+        K_skew=-Ks_quad_integrated,
+    ),
     elements.Multipole(
         name="thin_multipole",
         multipole=3,
-        K_normal=-Kn_integrated,
-        K_skew=-Ks_integrated,
+        K_normal=-Kn_sext_integrated,
+        K_skew=-Ks_sext_integrated,
     ),
     elements.ExactMultipole(
         name="thick_multipole",
         ds=L2,
-        k_normal=[0.0, 0.0, Kn_integrated / L2],
-        k_skew=[0.0, 0.0, Ks_integrated / L2],
+        k_normal=[0.0, Kn_quad_integrated / L2, Kn_sext_integrated / L2],
+        k_skew=[0.0, Ks_quad_integrated / L2, Ks_sext_integrated / L2],
         mapsteps=100,
         nslice=ns,
     ),

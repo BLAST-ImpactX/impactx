@@ -137,6 +137,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${analysis_script}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.analysis)
         set_property(TEST ${name}.analysis APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -152,6 +153,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${plot_script} --save-png
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.plot)
         set_property(TEST ${name}.plot APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -1634,6 +1636,17 @@ add_impactx_test(htu-beamline.py
     ON   # ImpactX MPI-parallel
     examples/htu_beamline/analysis_htu_beamline.py
     OFF  # no plot script yet
+)
+
+# Fermilab Booster (Simple Lattice) ###########################################
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster/booster_impactx_lattice.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster.py)
+add_impactx_test(simple-booster.py
+    examples/simple_booster/run_simple_booster.py
+    OFF  # ImpactX MPI-parallel
+    examples/simple_booster/analysis_simple_booster.py
+    examples/simple_booster/plot_simple_booster.py
 )
 
 # HTU Beamline Model with Off-Energy Transport ################################

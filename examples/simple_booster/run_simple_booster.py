@@ -7,11 +7,11 @@
 # -*- coding: utf-8 -*-
 
 from impactx import ImpactX, distribution, elements, twiss
-import impactx
-import sys
 
-from scipy.constants import m_p, c, eV, pi
+from booster_impactx_lattice import get_lattice
+from scipy.constants import c, eV, m_p, pi
 
+mp_mev = 1.0e-6 * m_p * c**2/eV
 total_Booster_charge = 6.7e12 # PIP-II full Booster
 active_buckets = 81 # 81 out of 84 buckets full
 
@@ -47,8 +47,7 @@ sim.init_grids()
 # load a 800 MeV proton beam
 
 kin_energy_MeV = 800.0  # reference energy 800 MeV
-
-bunch_charge_C = eV * total_Booster_charge/active_buckets  # used with space charge
+bunch_charge_C = eV * total_Booster_charge / active_buckets  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
@@ -77,13 +76,9 @@ sim.add_particles(bunch_charge_C, distr, npart)
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
-# Read the Booster lattice
-with open("booster_impactx_lattice.txt", "r") as F:
-    lattice_txt = F.read()
-booster = eval(lattice_txt)
-
 sim.lattice.append(monitor)
-sim.lattice.extend(booster)
+# load the Booster lattice
+sim.lattice.extend(get_lattice())
 sim.lattice.append(monitor)
 
 # run simulation

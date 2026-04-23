@@ -1,19 +1,57 @@
 #!/usr/bin/env python3
-
-import matplotlib.pyplot as plt
+#
+# Copyright 2022-2026 ImpactX contributors
+# Authors: Eric G. Stern, Axel Huebl, Chad Mitchell
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
+import math
 import numpy as np
+import matplotlib.pyplot as plt
 import openpmd_api as io
 import scipy
 
-# columns in rbc file
-# step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
+from booster_impactx_lattice import get_lattice
+
+from impactx import elements
+
+# load the Booster lattice
+lattice = elements.KnownElementsList()
+lattice.extend(get_lattice())
+
+# total lattice length (nominal Fermilab Booster circumference: 474.20 m)
+total_s = sum(element.ds for element in lattice)
+expected_s = 474.20
+# tolerance loose enough to hold in single precision accumulation across the ring
+assert math.isclose(total_s, expected_s, rel_tol=1.0e-4), (
+    f"lattice length {total_s} m does not match expected {expected_s} m"
+)
+
+# initial/final beam (TODO)
+# series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+# last_step = list(series.iterations)[-1]
+# initial = series.iterations[1].particles["beam"].to_df()
+# final = series.iterations[last_step].particles["beam"].to_df()
+
+# compare number of particles (TODO)
+# num_particles = 10000
+# assert num_particles == len(initial)
+# assert num_particles == len(final)
+
+# TODO for Eric: add more tests as needed, e.g., checking beam moments
 
 
+
+series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+last_step = list(series.iterations)[-1]
+initial = series.iterations[1].particles["beam"].to_df()
+final = series.iterations[last_step].particles["beam"].to_df()
+
+beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 
 rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=1)
 
-
-step_s = rbc[:, 0]
+step = rbc[:, 0]
 s = rbc[:, 1]
 
 mean_x = rbc[:, 2]
@@ -71,7 +109,6 @@ emittance_tn = rbc[:, 41]
 
 charge = rbc[:, 42] / scipy.constants.eV
 
-
 print("\t\tInitial\t\tFinal")
 print("\t\t=======\t\t=====")
 print(f"std x\t\t{sigma_x[0]:7g}\t{sigma_x[-1]:7g}")
@@ -86,3 +123,47 @@ print(f"std t\t\t{sigma_t[0]:7g}\t\t{sigma_t[-1]:7g}")
 print(f"std pt\t\t{sigma_pt[0]:7g}\t{sigma_pt[-1]:7g}")
 print(f"emittance t\t{emittance_t[0]:7g}\t{emittance_t[-1]:7g}")
 
+assert math.isclose(sigma_x[0], 0.0083783, rel_tol=1.0e-4)
+assert math.isclose(sigma_x[-1], 0.0083783, rel_tol=1.0e-2), (
+                    "sigma_x change over one turn too large"
+)
+
+assert math.isclose(sigma_px[0], 0.000226298, rel_tol=1.0e-4)
+assert math.isclose(sigma_px[-1], 0.000226298, rel_tol=1.0e-2), (
+    "sigma_px change over one turn too large"
+)
+
+assert math.isclose(emittance_x[0], 1.89474e-06, rel_tol=1.0e-4)
+assert math.isclose(emittance_x[1], 1.89474e-06, rel_tol=1.0e-2), (
+    "emittance_x change over one turn too large"
+    )
+
+assert math.isclose(sigma_y[0],  0.00299246, rel_tol=1.0e-4)
+assert math.isclose(sigma_y[-1],  0.00299246, rel_tol=1.0e-2), (
+    "sigma_y change over one turn too large"
+)
+
+assert math.isclose(sigma_py[0], 0.000575451, rel_tol=1.0e-4)
+assert math.isclose(sigma_py[-1], 0.000575451, rel_tol=1.0e-2), (
+    "sigma_py change over one turn too large"
+)
+
+assert math.isclose(emittance_y[0], 1.72198e-06, rel_tol=1.0e-4)
+assert math.isclose(emittance_y[1], 1.72198e-06, rel_tol=1.0e-2), (
+    "emittance_y change over one turn too large"
+)
+
+assert math.isclose(sigma_t[0], 1.16878, rel_tol=1.0e-4)
+assert math.isclose(sigma_t[-1],  1.16878, rel_tol=1.0e-2), (
+    "sigma_t change over one turn too large"
+)
+
+assert math.isclose(sigma_pt[0], 0.000914371, rel_tol=1.0e-4)
+assert math.isclose(sigma_pt[-1], 0.000914371, rel_tol=1.0e-2), (
+    "sigma_pt change over one turn too large"
+)
+
+assert math.isclose(emittance_t[0], 0.00106837, rel_tol=1.0e-4)
+assert math.isclose(emittance_t[1], 0.00106837, rel_tol=1.0e-2), (
+    "emittance_t change over one turn too large"
+)

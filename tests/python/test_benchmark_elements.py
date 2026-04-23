@@ -20,7 +20,7 @@ import pytest
 from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 # benchmark config
-if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == 1:
+if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == "1":
     # https://codspeed.io/docs/instruments/cpu/index
     rounds = 1
     npart = 10_000

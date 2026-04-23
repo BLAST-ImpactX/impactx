@@ -381,14 +381,14 @@ By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``
 
 Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference trajectory.
 
-For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with the true 
+For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with the true
 
 horizontal position (after including the effect of the fringe field).  To model this correction, we allow two options in the dipedge model:
 
-* the default model, in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector -- 
+* the default model, in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
 this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
 
-* an option in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector -- 
+* an option in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
 this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
 
 This element requires these additional parameters:

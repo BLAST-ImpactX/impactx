@@ -1221,7 +1221,7 @@ This module provides elements and methods for the accelerator lattice.
    By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
    the corresponding default value of ``K2`` is set to 1).
 
-   Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference 
+   Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference
    trajectory.  For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with
    the true horizontal position (after including the effect of the fringe field).  To model this correction, we allow two options in the dipedge model:
 

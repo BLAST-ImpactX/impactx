@@ -141,7 +141,6 @@ def test_dipedge_modify_ref_part_false():
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py])
     vec_ref_pred = [0, 0, 0, 0]
 
-    rtol = 0.0
     atol = 1.0e-12
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
@@ -182,7 +181,6 @@ def test_dipedge_modify_ref_part_true():
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py])
     vec_ref_pred = [x_shift, px_shift, 0, 0]
 
-    rtol = 0.0
     atol = 1.0e-12
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)

@@ -33,7 +33,7 @@ namespace impactx::elements
     struct PRot
     : public mixin::Named,
       public mixin::BeamOptic<PRot>,
-      public mixin::LinearTransport<PRot, false>,
+      public mixin::LinearTransport<PRot>,
       public mixin::Thin,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -168,15 +168,60 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * Jacobian at the reference trajectory of the exact pole-face
+         * rotation implemented by @see operator(). With net rotation
+         * angle theta = phi_out - phi_in, the nonzero entries are
+         *   R(1,1) = cos(phi_in) / cos(phi_out),
+         *   R(2,2) = cos(phi_out) / cos(phi_in),
+         *   R(2,6) = -sin(theta) / (beta * cos(phi_in)),
+         *   R(5,1) = +sin(theta) / (beta * cos(phi_out)),
+         * and all other diagonal entries are 1. The derivation uses the
+         * trig identity
+         *   cos(phi_in) * cos(phi_in - phi_out)
+         *     + sin(phi_in) * sin(phi_in - phi_out) = cos(phi_out),
+         * which simplifies the x-denominator pz|_0 -> cos(phi_out).
+         * Symplecticity of the reduced (x, px, t, pt) block was
+         * verified with SymPy (R^T J R = J).
+         *
+         * The (y, py) sub-block is the identity: pole-face rotation in
+         * the x-z plane does not mix the vertical plane at linear order.
+         *
+         * Reference: MaryLie 3.0 Users' Manual, Sect. 6.5 ("Plane Rotation");
+         * A. J. Dragt, Lie Methods for Nonlinear Dynamics with Applications
+         * to Accelerator Physics, v. Nov. 2020,
+         * Appendix V ("PROT without and in the Presence of a Magnetic Field").
+         *
+         * Ideal behavior only: alignment and rotation errors are
+         * ignored; the linearization is at (x, y, t) = (0, 0, 0) and
+         * (px, py, pt) = (0, 0, 0).
+         *
+         * @param[in] refpart reference particle (used for beta)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            amrex::ParticleReal const beta = refpart.beta();
+
+            // Precompute trigonometric quantities.
+            amrex::ParticleReal const theta = m_phi_out - m_phi_in;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
+            (void) cos_theta;  // not needed for the linear map
+            auto const [sin_phi_in, cos_phi_in] = amrex::Math::sincos(m_phi_in);
+            (void) sin_phi_in;
+            auto const [sin_phi_out, cos_phi_out] = amrex::Math::sincos(m_phi_out);
+            (void) sin_phi_out;
+
+            Map6x6 R = Map6x6::Identity();
+            R(1,1) = cos_phi_in / cos_phi_out;
+            R(2,2) = cos_phi_out / cos_phi_in;
+            R(2,6) = -sin_theta / (beta * cos_phi_in);
+            R(5,1) = +sin_theta / (beta * cos_phi_out);
+
+            return R;
         }
 
         amrex::ParticleReal m_phi_in; //! normalized (max) RF voltage drop.

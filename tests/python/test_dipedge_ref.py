@@ -27,7 +27,6 @@ def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):
     # load initial beam parameters
     kin_energy_MeV = 0.8e3  # reference energy
     bunch_charge_C = 1.0e-9  # used with space charge
-    npart = 10000  # number of macro particles
 
     #   reference particle
     ref = sim.beam.ref

@@ -10,13 +10,29 @@
 import mpi4py.MPI as MPI
 import numpy as np
 from scipy import constants
-from impactx import ImpactX, elements, synmadx
+from impactx import ImpactX, distribution, elements, synmadx, twiss
 from syn2_to_impactx import syn2_to_impactx, unroll_impactx_lattice
 
-
+pi = constants.pi
 c = constants.c
 eV = constants.eV
 mp = 1.0e-9 * constants.m_p * c**2/eV # proton mass in GeV
+
+# 
+# these lattice functions are calculated with Synergia3
+# from the sbbooster-cooked.madx file.
+alpha_x = -1.298673960026007664e-02
+beta_x = 3.373645362843065243e+01
+alpha_y = 6.089861210659328755e-03
+beta_y = 5.252517912567207681e+00
+
+disp_x = 3.187407765856291153e+00
+disp_px = 1.136005067625678322e-03
+
+# emittances from PIP-II CDR v0.3
+emit_x = 16.0e-6 # normalized 95% emit
+emit_y = 16.0e-6
+emit_eV_s = 0.1 # longitudinal emittance 97% eV-s
 
 sim = ImpactX()
 
@@ -25,6 +41,9 @@ sim = ImpactX()
 harmonic_number = 84  # harmonic number
 enable_rf = True
 rf_volt = 200.0e-6  # 200 KV
+
+# number of particles
+npart = 10000
 
 turns = 1
 
@@ -174,6 +193,26 @@ def main():
     # charge to mass ratio
     qm_eev = 1.0 / (1.0e-9 * mp)
 
+    # Create distribution and add particles
+    distr = distribution.Gaussian(
+        **twiss(
+            beta_x = beta_x,
+            alpha_x = alpha_x,
+            emitt_x = emit_x/(ref.beta_gamma*6), # normalized 95% emit -> geometric
+            beta_y = beta_y,
+            alpha_y = alpha_y,
+            emitt_y = emit_y/(ref.beta_gamma*6), # normalized 95% emit -> geometric
+            emitt_t = emit_eV_s * 1.0e-6 * c/(ref.mass_MeV * ref.beta_gamma * 6 * pi), # 97% emit eV-s -> RMS emit
+            beta_t = 1258.0, # seems to go from 1158 close to the center to
+                            # 1258 at about 1.25m
+            # dispersion from Synergia so it needs conversion from dp/p to dE/p
+            dispersion_x = disp_x/ref.beta,
+            dispersion_px = disp_px/ref.beta
+            )
+        )
+
+    sim.add_particles(bunch_charge_C, distr, npart)
+
     # insert the converted MAD-X->Synergia lattice
     init_monitor = False
     final_monitor = True
@@ -195,19 +234,12 @@ def main():
 
     # the monitor is the last element in the list. Run a 1 turn simulation
     # get the initial distribution with a Source element
-    source = elements.Source("openPMD", "booster_particles.h5")
-    sim.lattice.append(source)
+
     # add the monitor element to get the initial distribution
     sim.lattice.append(ix_lattice[-1])
-
-    print("begin lattice")
-    for e in sim.lattice:
-        print(e)
-    print("end lattice")
     sim.periods = 1
     sim.track_particles()
 
-    print("running full lattice")
     # now run the full lattice
     sim.lattice.clear()
     sim.lattice.extend(ix_lattice)
@@ -220,9 +252,7 @@ def main():
 
     # clean shutdown
     sim.finalize()
-    pass
-
 
 if __name__ == "__main__":
     main()
-    pass
+

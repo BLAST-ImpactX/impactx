@@ -75,8 +75,6 @@ def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):
     )
 
     # design the accelerator lattice)
-    ns = 1  # number of slices per ds in the element
-
     dipedge1 = elements.DipEdge(
         name="dipedge1",
         psi=edge_angle,

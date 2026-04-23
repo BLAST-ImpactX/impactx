@@ -450,8 +450,8 @@ namespace impactx::elements
                // multipole contribution to magnetic field normalized by q/mc:
                Complex alpha(knormal_value, kskew_value);
                Complex kick = amrex::pow(zeta, m) * alpha;
-               Bx = kick.m_imag / factorial * m_beta * m_gamma_ref;
-               By = kick.m_real / factorial * m_beta * m_gamma_ref;
+               Bx += kick.m_imag / factorial * m_beta * m_gamma_ref;
+               By += kick.m_real / factorial * m_beta * m_gamma_ref;
 
                factorial *= m+1;
 

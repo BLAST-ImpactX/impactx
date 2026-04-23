@@ -6,15 +6,10 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import openpmd_api as io
 import scipy
-
-from booster_impactx_lattice import get_lattice
-
-from impactx import ImpactX, elements
-
 
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
@@ -99,7 +94,7 @@ plt.plot(s, sigma_t, label="sigma_t")
 plt.legend(loc="best")
 plt.subplot(224)
 plt.plot(s, sigma_pt, label="sigma_pt")
-plt.legend(loc='best')
+plt.legend(loc="best")
 
 plt.figure()
 plt.title("charge")
@@ -119,31 +114,37 @@ ax[1, 0].legend(loc="best")
 ax[1, 1].plot(s, max_y, label="max y")
 ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(s, min_t*beta_ref, label="min z")
+ax[2, 0].plot(s, min_t * beta_ref, label="min z")
 ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(s, max_t*beta_ref, label="max z")
+ax[2, 1].plot(s, max_t * beta_ref, label="max z")
 ax[2, 1].legend(loc="best")
 
 
 f, ax = plt.subplots(3, 2)
 
-ax[0, 0].plot(initial["position_x"], initial["momentum_x"], '.', label="initial x vs. px")
+ax[0, 0].plot(
+    initial["position_x"], initial["momentum_x"], ".", label="initial x vs. px"
+)
 ax[0, 0].legend(loc="best")
 
-ax[0, 1].plot(final["position_x"], final["momentum_x"], '.', label="final x vs. px")
+ax[0, 1].plot(final["position_x"], final["momentum_x"], ".", label="final x vs. px")
 ax[0, 1].legend(loc="best")
 
-ax[1, 0].plot(initial["position_y"], initial["momentum_y"], '.', label="initial y vs. py")
+ax[1, 0].plot(
+    initial["position_y"], initial["momentum_y"], ".", label="initial y vs. py"
+)
 ax[1, 0].legend(loc="best")
 
-ax[1, 1].plot(final["position_y"], final["momentum_y"], '.', label="final y vs. py")
+ax[1, 1].plot(final["position_y"], final["momentum_y"], ".", label="final y vs. py")
 ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(initial["position_t"], initial["momentum_t"], '.', label="initial t vs. pt")
+ax[2, 0].plot(
+    initial["position_t"], initial["momentum_t"], ".", label="initial t vs. pt"
+)
 ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(final["position_t"], final["momentum_t"], '.', label="final t vs. pt")
+ax[2, 1].plot(final["position_t"], final["momentum_t"], ".", label="final t vs. pt")
 ax[2, 1].legend(loc="best")
 
 plt.show()

@@ -7,8 +7,8 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from booster_impactx_lattice import get_lattice
 
 from impactx import ImpactX, elements

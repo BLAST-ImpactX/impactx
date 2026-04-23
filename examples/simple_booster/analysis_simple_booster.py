@@ -6,11 +6,10 @@
 #
 # -*- coding: utf-8 -*-
 import math
+
 import numpy as np
-import matplotlib.pyplot as plt
 import openpmd_api as io
 import scipy
-
 from booster_impactx_lattice import get_lattice
 
 from impactx import elements
@@ -39,7 +38,6 @@ assert math.isclose(total_s, expected_s, rel_tol=1.0e-4), (
 # assert num_particles == len(final)
 
 # TODO for Eric: add more tests as needed, e.g., checking beam moments
-
 
 
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -125,7 +123,7 @@ print(f"emittance t\t{emittance_t[0]:7g}\t{emittance_t[-1]:7g}")
 
 assert math.isclose(sigma_x[0], 0.0083783, rel_tol=1.0e-4)
 assert math.isclose(sigma_x[-1], 0.0083783, rel_tol=1.0e-2), (
-                    "sigma_x change over one turn too large"
+    "sigma_x change over one turn too large"
 )
 
 assert math.isclose(sigma_px[0], 0.000226298, rel_tol=1.0e-4)
@@ -136,10 +134,10 @@ assert math.isclose(sigma_px[-1], 0.000226298, rel_tol=1.0e-2), (
 assert math.isclose(emittance_x[0], 1.89474e-06, rel_tol=1.0e-4)
 assert math.isclose(emittance_x[1], 1.89474e-06, rel_tol=1.0e-2), (
     "emittance_x change over one turn too large"
-    )
+)
 
-assert math.isclose(sigma_y[0],  0.00299246, rel_tol=1.0e-4)
-assert math.isclose(sigma_y[-1],  0.00299246, rel_tol=1.0e-2), (
+assert math.isclose(sigma_y[0], 0.00299246, rel_tol=1.0e-4)
+assert math.isclose(sigma_y[-1], 0.00299246, rel_tol=1.0e-2), (
     "sigma_y change over one turn too large"
 )
 
@@ -154,7 +152,7 @@ assert math.isclose(emittance_y[1], 1.72198e-06, rel_tol=1.0e-2), (
 )
 
 assert math.isclose(sigma_t[0], 1.16878, rel_tol=1.0e-4)
-assert math.isclose(sigma_t[-1],  1.16878, rel_tol=1.0e-2), (
+assert math.isclose(sigma_t[-1], 1.16878, rel_tol=1.0e-2), (
     "sigma_t change over one turn too large"
 )
 

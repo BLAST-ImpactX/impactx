@@ -1195,7 +1195,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -1221,6 +1221,16 @@ This module provides elements and methods for the accelerator lattice.
    By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
    the corresponding default value of ``K2`` is set to 1).
 
+   Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference 
+   trajectory.  For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with
+   the true horizontal position (after including the effect of the fringe field).  To model this correction, we allow two options in the dipedge model:
+
+   * the default model, in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+   this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+   * an option in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+   this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]
    :param g: Gap parameter [m]
@@ -1234,6 +1244,7 @@ This module provides elements and methods for the accelerator lattice.
    :param K6: Fringe field integral [unitless]
    :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
    :param location: the fringe field edge location: ``entry`` (default) or ``exit``
+   :param modify_ref_part: apply fringe field to the reference particle ``True`` or ``False`` (default)
    :param dx: horizontal translation error [m]
    :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]

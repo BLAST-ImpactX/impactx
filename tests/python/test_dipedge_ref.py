@@ -9,10 +9,10 @@
 import math
 
 import numpy as np
-import pandas as pd
 
 import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
+
 
 def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):
     sim = ImpactX()
@@ -88,7 +88,7 @@ def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):
         modify_ref_part=modify_ref_part,
     )
 
-    line = [ dipedge1 ]
+    line = [dipedge1]
 
     # assign a segment
     sim.lattice.extend(line)
@@ -117,24 +117,33 @@ def test_dipedge_modify_ref_part_false():
     g = 1.0e-3
 
     K0 = np.pi**2 / 6.0
-    c2 = (1.0/np.cos(edge_angle))**3 * np.sin(edge_angle)/2.0 * g**2/rc**2 * K0
-    c3 = (1.0/np.cos(edge_angle))**2 * g**2/rc * K0
-    c5 = np.tan(edge_angle)/(2.0*rc)
-    c13 = 0.0 
-    
+    c2 = (1.0 / np.cos(edge_angle)) ** 3 * np.sin(edge_angle) / 2.0 * g**2 / rc**2 * K0
+    c3 = (1.0 / np.cos(edge_angle)) ** 2 * g**2 / rc * K0
+    c5 = np.tan(edge_angle) / (2.0 * rc)
+    c13 = 0.0
+
     x_shift = -c3
-    px_shift = c13 - c2 - c3*c5
+    px_shift = c13 - c2 - c3 * c5
 
     rbc, ref = _track_particle_dipedge(False, edge_angle, g, rc)
-        
+
     # access centroid data (= single particle orbit)
-    vec_part = np.array([ rbc["mean_x"], rbc["mean_px"], rbc["mean_y"], rbc["mean_py"], rbc["mean_t"], rbc["mean_pt"] ])
+    vec_part = np.array(
+        [
+            rbc["mean_x"],
+            rbc["mean_px"],
+            rbc["mean_y"],
+            rbc["mean_py"],
+            rbc["mean_t"],
+            rbc["mean_pt"],
+        ]
+    )
     vec_part_pred = [x_shift, px_shift, 0.0, 0.0, 0.0, 0.0]
-    
+
     # access reference particle
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py])
     vec_ref_pred = [0, 0, 0, 0]
-    
+
     rtol = 0.0
     atol = 1.0e-12
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
@@ -142,7 +151,7 @@ def test_dipedge_modify_ref_part_false():
 
 
 def test_dipedge_modify_ref_part_true():
-    """ 
+    """
     This tests the application of longitudinal particle boundary conditions.
     """
     edge_angle = math.pi / 8.0
@@ -150,25 +159,33 @@ def test_dipedge_modify_ref_part_true():
     g = 1.0e-3
 
     K0 = np.pi**2 / 6.0
-    c2 = (1.0/np.cos(edge_angle))**3 * np.sin(edge_angle)/2.0 * g**2/rc**2 * K0
-    c3 = (1.0/np.cos(edge_angle))**2 * g**2/rc * K0
-    c5 = np.tan(edge_angle)/(2.0*rc)
-    c13 = 0.0     
+    c2 = (1.0 / np.cos(edge_angle)) ** 3 * np.sin(edge_angle) / 2.0 * g**2 / rc**2 * K0
+    c3 = (1.0 / np.cos(edge_angle)) ** 2 * g**2 / rc * K0
+    c5 = np.tan(edge_angle) / (2.0 * rc)
+    c13 = 0.0
     x_shift = -c3
-    px_shift = c13 - c2 - c3*c5
+    px_shift = c13 - c2 - c3 * c5
 
     rbc, ref = _track_particle_dipedge(True, edge_angle, g, rc)
-    
+
     # access centroid data (= single particle orbit)
-    vec_part = np.array([ rbc["mean_x"], rbc["mean_px"], rbc["mean_y"], rbc["mean_py"], rbc["mean_t"], rbc["mean_pt"] ])
+    vec_part = np.array(
+        [
+            rbc["mean_x"],
+            rbc["mean_px"],
+            rbc["mean_y"],
+            rbc["mean_py"],
+            rbc["mean_t"],
+            rbc["mean_pt"],
+        ]
+    )
     vec_part_pred = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    
+
     # access reference particle
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py])
-    vec_ref_pred = [x_shift, px_shift, 0, 0]    
+    vec_ref_pred = [x_shift, px_shift, 0, 0]
 
     rtol = 0.0
     atol = 1.0e-12
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
-

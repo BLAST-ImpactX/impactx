@@ -40,6 +40,3 @@ if args.save_png:
     plt.savefig("simple_booster_survey.png")
 else:
     plt.show()
-
-# clean shutdown
-sim.finalize()

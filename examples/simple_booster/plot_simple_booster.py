@@ -148,6 +148,3 @@ ax[2, 1].plot(final["position_t"], final["momentum_t"], ".", label="final t vs. 
 ax[2, 1].legend(loc="best")
 
 plt.show()
-
-# clean shutdown
-sim.finalize()

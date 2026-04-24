@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from impactx import ImpactX, Map3x6, Map6x6, Vector3, elements
+from impactx import ImpactX, Map3x6, Vector3, elements
 
 
 def test_solenoid_softedge_solvable_spin():
@@ -64,9 +64,6 @@ def test_solenoid_softedge_solvable_spin():
     sim.track_reference(ref)
 
     # return spin map
-    Rmat = Map6x6()
-    vmat = Vector3()
-    Amat = Map3x6()
     vpred = Vector3()
     Apred = Map3x6()
 

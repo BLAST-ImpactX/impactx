@@ -85,15 +85,15 @@ namespace impactx::elements
          *
          * @param refpart reference particle
          */
-        void compute_constants (RefPart const & refpart)  
+        void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-          
+
             Alignment::compute_constants(refpart);
-         
+
             // normalize focusing strength units to MAD-X convention if needed
             if (m_unit == 1) {
-                m_g = m_k / refpart.rigidity_Tm();   
+                m_g = m_k / refpart.rigidity_Tm();
             }
 
             // additional constants needed for spin push
@@ -101,7 +101,7 @@ namespace impactx::elements
             m_gyro_anomaly = refpart.gyromagnetic_anomaly;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
-          
+
         }
 
         /** Push all particles */
@@ -218,7 +218,7 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // normalize focusing strength units to MAD-X convention if needed
-           // amrex::ParticleReal g = m_k;  
+           // amrex::ParticleReal g = m_k;
            // if (m_unit == 1) {
            //     g = m_k / refpart.rigidity_Tm();
            // }

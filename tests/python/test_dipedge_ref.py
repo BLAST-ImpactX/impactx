@@ -99,10 +99,12 @@ def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):
     # collect final beam moments
     rbc = beam.beam_moments()
 
+    ref_state = ref.copy()
+
     sim.finalize()
 
     # return beam moments and reference particle
-    return rbc, ref
+    return rbc, ref_state
 
 
 def test_dipedge_modify_ref_part_false():

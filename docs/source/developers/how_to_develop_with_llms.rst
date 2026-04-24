@@ -68,7 +68,7 @@ The skill will:
 #. Enumerate elements from the ``KnownElements`` variant in ``src/elements/All.H``.
 #. For each element, check that an entry exists in ``tests/python/test_benchmark_elements.py``, ``tests/python/test_element_serialization.py``, and ``tests/python/test_reversibility_elements.py`` — adding a missing entry using realistic parameter values taken from ``examples/``.
 #. Identify spin-capable elements (those inheriting ``mixin::SpinTransport``) and add the ``spin``/``nospin`` parametrization to their benchmark and reversibility tests where missing.
-#. Rebuild the Python bindings (``cmake --build build --target pip_install``) and run the three tests via ``pytest``, reporting pass/fail counts.
+#. Rebuild the Python bindings (``cmake --build build_cpu --target pip_install``) and run the three tests via ``pytest``, reporting pass/fail counts.
 
 
 Documentation Context via MCP Servers

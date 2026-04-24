@@ -9,7 +9,7 @@ version: 0.1.0
 Audit and extend the three Python element-coverage tests so that every lattice element exposed from `src/elements/` is represented, and that every spin-capable element is parametrized over spin tracking. Then run the three tests.
 
 To run this skill, invoke `/impactx-update-element-benchmarks` in a new session.
-The skill also auto-loads on triggers like "update element benchmarks" or "audit element test coverage".
+The skill also auto-loads on triggers like "update element benchmarks", "add missing element tests", "audit element test coverage", or "add a benchmark for <element>".
 
 
 ## The three target files
@@ -82,7 +82,6 @@ Use `PIPE_KWARGS` for elements that accept `aperture_x`/`aperture_y`, otherwise 
 
 An element is spin-capable iff its header under `src/elements/<Name>.H` inherits `public mixin::SpinTransport`. To find the current set in one shot:
 
-```bash
 # via Grep tool
 Grep: "mixin::SpinTransport" under src/elements/ (files_with_matches)
 ```
@@ -117,9 +116,9 @@ cmake -S . -B build_cpu -DImpactX_PYTHON=ON -DImpactX_PYTHON_IPO=OFF -DpyAMReX_I
 cmake --build build_cpu -j 6 --target pip_install
 
 # 3. Run the three tests directly with pytest.
-python -m pytest tests/pythontest_benchmark_elements.py
-python -m pytest tests/pythontest_element_serialization.py
-python -m pytest tests/pythontest_reversibility_elements.py
+python -m pytest tests/python/test_benchmark_elements.py
+python -m pytest tests/python/test_element_serialization.py
+python -m pytest tests/python/test_reversibility_elements.py
 ```
 
 Notes:

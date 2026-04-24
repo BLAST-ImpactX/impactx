@@ -109,6 +109,16 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate psi and K2, swap entry/exit) */
+        void reverse ()
+        {
+            m_psi = -m_psi;
+            m_K2 = -m_K2;
+            m_location = (m_location == dipedge::Location::entry)
+                ? dipedge::Location::exit
+                : dipedge::Location::entry;
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 

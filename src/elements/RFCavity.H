@@ -166,6 +166,13 @@ namespace impactx::elements
             m_sin_h_data = coef.sin.host_const().data();
         }
 
+        /** Reverse the element (negate ds) */
+        void reverse () {
+            // Reversing ds traverses the Fourier profile in the opposite z direction,
+            // so the odd sine terms change sign implicitly via sin(-kz) = -sin(kz).
+            Thick::reverse();
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -363,7 +370,7 @@ namespace impactx::elements
 
             // specify constants
             using ablastr::constant::math::pi;
-            amrex::ParticleReal const zlen = m_ds;
+            amrex::ParticleReal const zlen = std::abs(m_ds);
             amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis electric field (z is relative to cavity midpoint)

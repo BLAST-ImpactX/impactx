@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 26.03)
+project(ImpactX VERSION 26.04)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -306,7 +306,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v3.0.0/tools/pybind11Common.cmake#L420-L426
+            # https://github.com/pybind/pybind11/blob/v3.0.3/tools/pybind11Common.cmake#L436-L442
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()
@@ -454,6 +454,8 @@ if(ImpactX_PYTHON)
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
+            pyImpactX
+            pyImpactX_python_sources
     )
 
     # this will also upgrade/downgrade dependencies, e.g., when the version of numpy changes
@@ -516,9 +518,6 @@ if(ImpactX_PYTHON)
         VERBATIM
     )
     add_dependencies(pyImpactX_python_sources pyImpactX)
-    add_dependencies(${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
-        pyImpactX_python_sources
-    )
 endif()
 
 

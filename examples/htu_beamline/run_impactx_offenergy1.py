@@ -41,7 +41,7 @@ bunch_charge_C = 25.0e-12  # used with space charge
 npart = 10000  # number of macro particles
 
 # set reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 # factors converting the beam distribution to ImpactX input
@@ -79,7 +79,7 @@ sim.track_particles()
 
 # in situ calculate the reduced beam characteristics
 # note: rbc us a dataframe, sim can be finalized once rbc was created
-# beam = sim.particle_container()
+# beam = sim.beam
 # rbc = beam.reduced_beam_characteristics()
 
 # clean shutdown

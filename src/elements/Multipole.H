@@ -84,6 +84,9 @@ namespace impactx::elements
             compute_factorial();
         }
 
+        /** Reverse the element (negate strengths) */
+        void reverse () { m_Kn = -m_Kn; m_Ks = -m_Ks; }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -192,15 +195,58 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * The thin multipole kick implemented by @see operator() is
+         *   dpx - i*dpy = -(K_normal + i*K_skew) * (x + i*y)^(m-1) / (m-1)!
+         * matching the MAD-X MULTIPOLE thin kick (MAD-X User Guide,
+         * "Generalisation to normal and skew components"),
+         *   dPx - i*dPy = -sum_n (KN_n + i*KS_n) * (x + i*y)^n / n!,
+         * with the index mapping n = m_multipole - 1 and
+         * K_normal <-> KNL[n], K_skew <-> KSL[n].
+         *
+         * The linear map is the Jacobian of this kick around the reference
+         * trajectory, i.e. at (x, y) = (0, 0). Ideal behavior only: we
+         * ignore alignment and rotation errors, and we ignore feed-down
+         * from an off-axis reference orbit (the magnetic center and the
+         * reference trajectory are assumed coincident).
+         *
+         * Three cases:
+         *  - m_multipole == 1 (thin dipole kick): constant, yields the
+         *    identity linear map.
+         *  - m_multipole == 2 (thin quadrupole): the only nontrivial case;
+         *    R(2,1) = -K_normal, R(2,3) = +K_skew,
+         *    R(4,1) = +K_skew,   R(4,3) = +K_normal.
+         *    (Wiedemann, Particle Accelerator Physics, 3rd ed., Sect. 6.3;
+         *    Dragt, Lie Methods for Nonlinear Dynamics with Applications
+         *    to Accelerator Physics, Sect. 7.3.)
+         *  - m_multipole >= 3 (sextupole and higher): the kick vanishes at
+         *    least quadratically at the origin, yielding the identity.
+         *
+         * Sign/units convention: ImpactX phase-space ordering is
+         * (x, px, y, py, t, pt) with 1-based matrix indices, matching the
+         * other linear elements in this directory (e.g. Drift, Quad).
+         *
+         * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            Map6x6 R = Map6x6::Identity();
+
+            // Only m_multipole == 2 (thin quadrupole) has a nonzero Jacobian
+            // at the reference trajectory; m_multipole == 1 is a constant
+            // kick and m_multipole >= 3 vanishes at the origin.
+            if (m_multipole == 2) {
+                R(2,1) = -m_Kn;
+                R(2,3) = +m_Ks;
+                R(4,1) = +m_Ks;
+                R(4,3) = +m_Kn;
+            }
+
+            return R;
         }
 
         int m_multipole; //! multipole index

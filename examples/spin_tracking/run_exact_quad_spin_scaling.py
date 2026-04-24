@@ -27,12 +27,12 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 qm_eev = 1.0 / 0.510998950 / 1e6  # electron charge/mass in e / eV
 
-pc = sim.particle_container()
+beam = sim.beam
 
 if amr.ParallelDescriptor.IOProcessor():
     df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
@@ -91,7 +91,7 @@ if amr.ParallelDescriptor.IOProcessor():
     for p_dsz in dsz:
         dsz_podv.push_back(p_dsz)
 
-    pc.add_n_particles(
+    beam.add_n_particles(
         dx_podv,
         dy_podv,
         dt_podv,

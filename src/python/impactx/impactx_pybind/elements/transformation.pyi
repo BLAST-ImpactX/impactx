@@ -12,7 +12,7 @@ __all__: list[str] = ["insert_element_every_ds"]
 
 def insert_element_every_ds(
     list: impactx.impactx_pybind.elements.KnownElementsList,
-    ds: typing.SupportsFloat,
+    ds: typing.SupportsFloat | typing.SupportsIndex,
     element: impactx.impactx_pybind.elements.Empty
     | impactx.impactx_pybind.elements.Aperture
     | impactx.impactx_pybind.elements.Buncher

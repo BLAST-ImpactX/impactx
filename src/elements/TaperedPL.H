@@ -73,6 +73,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate strength) */
+        void reverse () { m_k = -m_k; }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -152,15 +155,55 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * The tapered plasma-lens kick implemented by @see operator() is
+         *   dpx = -g * ( x + taper/2 * (x^2 + y^2) )
+         *   dpy = -g * ( y + taper * x * y )
+         * where g is the integrated focusing strength (in units that
+         * match @c m_unit: either m^-1 directly, or rigidity-normalized
+         * from T via refpart.rigidity_Tm()).
+         *
+         * Linearized at the reference trajectory (x = y = 0), the taper
+         * contributes only quadratic terms and drops out. The element
+         * therefore reduces to a thin axisymmetric focusing kick:
+         *   R(2,1) = -g,  R(4,3) = -g.
+         *
+         * Ideal behavior only: alignment and rotation errors, and any
+         * feed-down from an off-axis reference orbit, are ignored; the
+         * map is taken at (x, y) = (0, 0).
+         *
+         * MAD-X convention: no direct analogue. Its linear limit
+         * coincides with a thin axisymmetric focusing quadrupole-like
+         * kick (equivalent to a MAD-X MULTIPOLE with normal KNL of
+         * equal strength in both transverse planes), but MAD-X has no
+         * element that carries the quadratic taper term.
+         *
+         * Physics references:
+         * - C. Lindstrøm et al., "Achromatic optics using nonlinear plasma lenses
+for beam-quality preservation between plasma-accelerator stages",
+         *   submitted (2026), https://arxiv.org/abs/2604.17605
+         *
+         * @param[in] refpart reference particle (used only for the
+         *                    unit conversion when m_unit == 1)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+
+            // Normalize focusing strength to MAD-X convention if needed.
+            amrex::ParticleReal const g = (m_unit == 1)
+                ? m_k / refpart.rigidity_Tm()
+                : m_k;
+
+            // Linearized axisymmetric focusing kick; taper is quadratic
+            // and therefore absent from the linear map.
+            Map6x6 R = Map6x6::Identity();
+            R(2,1) = -g;
+            R(4,3) = -g;
+
+            return R;
         }
 
         amrex::ParticleReal m_k; //! linear focusing strength (field gradient)

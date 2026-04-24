@@ -20,7 +20,7 @@ import pytest
 from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 # benchmark config
-if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == 1:
+if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == "1":
     # https://codspeed.io/docs/instruments/cpu/index
     rounds = 1
     npart = 10_000
@@ -52,7 +52,7 @@ def sim(request):
 
             self.sim.init_grids()
 
-            beam = self.sim.particle_container()
+            beam = self.sim.beam
             beam.clear_particles()
 
             # load a 1 GeV electron beam with an initial
@@ -61,7 +61,7 @@ def sim(request):
             bunch_charge_C = 1.0e-9  # used with space charge
 
             #   reference particle
-            ref = self.sim.particle_container().ref_particle()
+            ref = self.sim.beam.ref
             ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
             #   particle bunch
@@ -87,15 +87,13 @@ def sim(request):
                 self.sim.add_particles(bunch_charge_C, distr, npart, spin_vectors)
             else:
                 self.sim.add_particles(bunch_charge_C, distr, npart)
-            assert self.sim.particle_container().total_number_of_particles() == npart
+            assert self.sim.beam.total_number_of_particles() == npart
 
-            self.sim.backup_beam = self.sim.particle_container().make_alike()
-            self.sim.backup_beam.arena = self.sim.particle_container().arena
+            self.sim.backup_beam = self.sim.beam.make_alike()
+            self.sim.backup_beam.arena = self.sim.beam.arena
             assert self.sim.backup_beam.total_number_of_particles() == 0
 
-            self.sim.backup_beam.add_particles(
-                self.sim.particle_container(), local=True
-            )
+            self.sim.backup_beam.add_particles(self.sim.beam, local=True)
             assert self.sim.backup_beam.total_number_of_particles() == npart
 
             return self.sim
@@ -112,20 +110,20 @@ def sim(request):
 
 
 def pc_setup(sim):
-    """Fresh PC for each call of benchmark"""
+    """Fresh beam for each call of benchmark."""
 
     assert sim.backup_beam.total_number_of_particles() == npart
 
     # instead of drawing from the distribution again, create a 2nd
     # particle container and copy the same initial particles again.
-    pc = sim.particle_container()
-    # pc.arena = ... ??
-    pc.clear_particles()
-    pc.add_particles(sim.backup_beam, local=True)
+    beam = sim.beam
+    # beam.arena = ... ??
+    beam.clear_particles()
+    beam.add_particles(sim.backup_beam, local=True)
 
-    assert pc.total_number_of_particles() == npart
+    assert beam.total_number_of_particles() == npart
 
-    return (pc,), {}
+    return (beam,), {}
 
 
 def test_Aperture(benchmark, sim):

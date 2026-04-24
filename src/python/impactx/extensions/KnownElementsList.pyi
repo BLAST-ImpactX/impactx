@@ -260,6 +260,13 @@ def has_kind(self, kind_pattern) -> bool:
 def load_file(self, filename, nslice=1):
     """
     Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+    .. warning::
+
+       Our MAD-X and PALS parsers are under active development
+       and provided as a preview. Please check any loaded lattice
+       files very carefully. Please report your experience and bugs
+       on our `issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
     """
 
 def register_KnownElementsList_extension(kel):
@@ -438,4 +445,4 @@ _DRIFT_MODEL_CLASSES: dict = {
     "paraxial": impactx.impactx_pybind.elements.ChrDrift,
     "exact": impactx.impactx_pybind.elements.ExactDrift,
 }
-_filtered_views_by_lattice: weakref.WeakKeyDictionary  # value = <WeakKeyDictionary>
+_filtered_views_by_lattice: weakref.WeakKeyDictionary

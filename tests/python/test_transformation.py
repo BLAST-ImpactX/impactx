@@ -42,8 +42,8 @@ def test_transformation():
     npart = 10000  # number of macro particles
 
     #   reference particle
-    pc = sim.particle_container()
-    ref = pc.ref_particle()
+    beam = sim.beam
+    ref = beam.ref
     ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
@@ -59,23 +59,23 @@ def test_transformation():
         mutpt=0.8,
     )
     sim.add_particles(bunch_charge_C, distr, npart)
-    rbc_s0 = pc.beam_moments()
+    rbc_s0 = beam.beam_moments()
 
     # this must fail: we cannot transform from s to s
     with pytest.raises(Exception):
-        coordinate_transformation(pc, direction=CoordSystem.s)
+        coordinate_transformation(beam, direction=CoordSystem.s)
 
     # transform to t
-    coordinate_transformation(pc, direction=CoordSystem.t)
-    rbc_t = pc.beam_moments()
+    coordinate_transformation(beam, direction=CoordSystem.t)
+    rbc_t = beam.beam_moments()
 
     # this must fail: we cannot transform from t to t
     with pytest.raises(Exception):
-        coordinate_transformation(pc, direction=CoordSystem.t)
+        coordinate_transformation(beam, direction=CoordSystem.t)
 
     # transform back to s
-    coordinate_transformation(pc, direction=CoordSystem.s)
-    rbc_s = pc.beam_moments()
+    coordinate_transformation(beam, direction=CoordSystem.s)
+    rbc_s = beam.beam_moments()
 
     # finalize simulation
     sim.finalize()

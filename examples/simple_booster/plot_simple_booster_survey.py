@@ -7,8 +7,8 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from booster_impactx_lattice import get_lattice
 
 from impactx import ImpactX, elements
@@ -40,6 +40,3 @@ if args.save_png:
     plt.savefig("simple_booster_survey.png")
 else:
     plt.show()
-
-# clean shutdown
-sim.finalize()

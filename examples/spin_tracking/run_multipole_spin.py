@@ -59,7 +59,7 @@ Kn_quad_integrated = -0.2
 Ks_quad_integrated = 0.1
 Kn_sext_integrated = 1.0
 Ks_sext_integrated = -0.5
-L2 = 1.0e-4
+L2 = 1.0e-5
 
 lattice = [
     monitor,

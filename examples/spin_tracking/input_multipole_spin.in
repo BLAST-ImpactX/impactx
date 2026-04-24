@@ -52,9 +52,9 @@ thin_sext.k_normal = -1.0
 thin_sext.k_skew = 0.5
 
 thick_multipole.type = multipole_exact
-thick_multipole.ds = 1.0e-4
-thick_multipole.k_normal = 0 -0.2e4 1.0e4
-thick_multipole.k_skew = 0 0.1e4 -0.5e4
+thick_multipole.ds = 1.0e-5
+thick_multipole.k_normal = 0 -0.2e5 1.0e5
+thick_multipole.k_skew = 0 0.1e5 -0.5e5
 thick_multipole.mapsteps = 100
 
 

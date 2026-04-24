@@ -21,6 +21,9 @@ def read_file(file_pattern):
         if "step" not in df.columns:
             step = int(re.findall(r"[0-9]+", filename)[0])
             df["step"] = step
+        else:
+            df = df[df["step"] != "step"]
+        df = df.apply(pd.to_numeric)
         yield df
 
 
@@ -51,63 +54,23 @@ beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
-step = rbc[:, 0]
-s = rbc[:, 1]
+s = rbc["s"]
 
-mean_x = rbc[:, 2]
-min_x = rbc[:, 3]
-max_x = rbc[:, 4]
+min_x = rbc["min_x"]
+max_x = rbc["max_x"]
 
-mean_y = rbc[:, 5]
-min_y = rbc[:, 6]
-max_y = rbc[:, 7]
+min_y = rbc["min_y"]
+max_y = rbc["max_y"]
 
-mean_t = rbc[:, 8]
-min_t = rbc[:, 9]
-max_t = rbc[:, 10]
+min_t = rbc["min_t"]
+max_t = rbc["max_t"]
 
-sigma_x = rbc[:, 11]
-sigma_y = rbc[:, 12]
-sigma_t = rbc[:, 13]
+sigma_x = rbc["sigma_x"]
+sigma_y = rbc["sigma_y"]
+sigma_t = rbc["sigma_t"]
+sigma_pt = rbc["sigma_pt"]
 
-mean_px = rbc[:, 14]
-min_px = rbc[:, 15]
-max_px = rbc[:, 16]
-
-mean_py = rbc[:, 17]
-min_py = rbc[:, 18]
-max_py = rbc[:, 19]
-
-mean_pt = rbc[:, 20]
-min_pt = rbc[:, 21]
-max_pt = rbc[:, 22]
-
-sigma_px = rbc[:, 23]
-sigma_py = rbc[:, 24]
-sigma_pt = rbc[:, 25]
-
-emittance_x = rbc[:, 26]
-emittance_y = rbc[:, 27]
-emittance_t = rbc[:, 28]
-
-alpha_x = rbc[:, 29]
-alpha_y = rbc[:, 30]
-alpha_t = rbc[:, 31]
-
-beta_x = rbc[:, 32]
-beta_y = rbc[:, 33]
-beta_t = rbc[:, 34]
-
-dispersion_x = rbc[:, 35]
-dispersion_px = rbc[:, 36]
-dispersion_y = rbc[:, 37]
-dispersion_py = rbc[:, 38]
-
-emittance_xn = rbc[:, 39]
-emittance_yn = rbc[:, 40]
-emittance_tn = rbc[:, 41]
-
-charge = rbc[:, 42] / scipy.constants.eV
+charge = rbc["charge_C"] / scipy.constants.eV
 
 plt.figure()
 plt.suptitle("sigmas vs. s")

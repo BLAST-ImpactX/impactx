@@ -15,6 +15,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -35,6 +36,7 @@ namespace impactx::elements
       public mixin::LinearTransport<TaperedPL>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::SpinTransport,
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
@@ -75,6 +77,32 @@ namespace impactx::elements
 
         /** Reverse the element (negate strength) */
         void reverse () { m_k = -m_k; }
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)  
+        {
+            using namespace amrex::literals; // for _rt and _prt
+          
+            Alignment::compute_constants(refpart);
+         
+            // normalize focusing strength units to MAD-X convention if needed
+            if (m_unit == 1) {
+                m_g = m_k / refpart.rigidity_Tm();   
+            }
+
+            // additional constants needed for spin push
+            m_gamma_ref = refpart.gamma();
+            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
+            m_beta = refpart.beta();
+            m_ibeta = 1_prt / m_beta;
+          
+        }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -150,6 +178,88 @@ namespace impactx::elements
         /** This pushes the reference particle. */
         using Thin::operator();
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // normalize focusing strength units to MAD-X convention if needed
+           // amrex::ParticleReal g = m_k;  
+           // if (m_unit == 1) {
+           //     g = m_k / refpart.rigidity_Tm();
+           // }
+
+            // access reference beta*gamma
+            //amrex::ParticleReal beta_gamma_ref = refpart.beta_gamma();
+
+            // compute multipole magnetic field normalized by q/mc:
+            T_Real const Bx = m_g * ( y + m_taper * x * y ) * m_gamma_ref * m_beta;
+            T_Real const By = -m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * m_gamma_ref * m_beta;
+            T_Real const Bz = 0_prt;
+
+            // Electric field normalized by q/mc^2:
+            T_Real const Ex = 0.0_prt;
+            T_Real const Ey = 0.0_prt;
+            T_Real const Ez = 0.0_prt;
+
+            // Quantities required to evaluate the full Thomas-BMT precession vector.
+            T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
+            T_Real const iPnorm = 1_prt/Pnorm;
+            T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
+            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
+            T_Real const ux = px * iPnorm;
+            T_Real const uy = py * iPnorm;
+            T_Real const uz = Ps * iPnorm;
+
+            // Zero curvature in a quadrupole
+            amrex::ParticleReal const h = 0.0_prt;
+
+            // Evaluation of the full Thomas-BMT precession vector.
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+        }
+
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
@@ -209,6 +319,19 @@ for beam-quality preservation between plasma-accelerator stages",
         amrex::ParticleReal m_k; //! linear focusing strength (field gradient)
         amrex::ParticleReal m_taper; //! horizontal taper parameter
         int m_unit;  //! units for linear focusing strength (field gradient)
+        // see: compute_factorial() to refresh
+        int m_mfactorial;  //! factorial of multipole index
+        // see: compute_constants() to refresh
+        amrex::GpuComplex<amrex::ParticleReal> m_alpha;
+        amrex::ParticleReal m_inv_factorial;
+
+      private:
+        // constants that are independent of the individually tracked particle
+        amrex::ParticleReal m_gamma_ref;      //! relativistic gamma
+        amrex::ParticleReal m_gyro_anomaly;   //! particle gyromagnetic anomaly
+        amrex::ParticleReal m_beta;           //! relativistic beta
+        amrex::ParticleReal m_ibeta;          //! inverse of beta
+        amrex::ParticleReal m_g;              //! quadrupole strength
     };
 
 } // namespace impactx

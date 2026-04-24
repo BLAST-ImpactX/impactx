@@ -3,7 +3,7 @@
     Copyright (c) 2010 Eric Niebler
     Copyright (c) 2010 Thomas Heller
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #ifndef BOOST_PHOENIX_CORE_IS_NULLARY_HPP
@@ -40,7 +40,7 @@ namespace boost { namespace phoenix
             >
         {};
     };
-    
+
     template <typename Dummy>
     struct is_nullary::when<rule::argument, Dummy>
     {
@@ -51,7 +51,7 @@ namespace boost { namespace phoenix
             typedef mpl::false_ result_type;
         };
     };
-    
+
     template <
         typename Trait
       , typename Expr
@@ -63,7 +63,7 @@ namespace boost { namespace phoenix
     {
         typedef typename Trait::type result_type;
     };
-    
+
     template <typename Transform, typename Expr, typename State, typename Data>
     struct is_nullary_custom_terminal_impl<Transform, Expr, State, Data, true>
     {
@@ -80,7 +80,7 @@ namespace boost { namespace phoenix
     struct is_nullary::when<rule::custom_terminal, Dummy>
     {
         BOOST_PROTO_TRANSFORM(is_nullary::when<rule::custom_terminal>)
-        
+
         template <typename Expr, typename State, typename Data>
         struct impl
             : is_nullary_custom_terminal_impl<
@@ -97,7 +97,7 @@ namespace boost { namespace phoenix
             >
         {};
     };
-    
+
     template <typename Dummy>
     struct is_nullary::when<rule::terminal, Dummy>
     {
@@ -122,7 +122,7 @@ namespace boost { namespace phoenix
               , proto::empty_env
             >::result_type
         {};
-        
+
         template <typename T>
         struct is_nullary<T & >
             : is_nullary<T>
@@ -147,7 +147,7 @@ namespace boost { namespace phoenix
         struct is_nullary<custom_terminal<actor<T> > >
             : evaluator
         {};
-        
+
         template <typename T>
         struct is_nullary<custom_terminal<boost::reference_wrapper<actor<T> > > >
         {
@@ -158,7 +158,7 @@ namespace boost { namespace phoenix
                 typedef typename evaluator::template impl<actor<T>, State, Data>::result_type result_type;
             };
         };
-        
+
         template <typename T>
         struct is_nullary<custom_terminal<boost::reference_wrapper<actor<T> const> > >
         {
@@ -174,4 +174,3 @@ namespace boost { namespace phoenix
 }}
 
 #endif
-

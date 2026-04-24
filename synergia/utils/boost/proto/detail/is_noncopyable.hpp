@@ -44,7 +44,7 @@ namespace boost { namespace proto { namespace detail
 
     /// INTERNAL ONLY
     // This should be a customization point. And it serves the same purpose
-    // as the is_noncopyable trait in Boost.Foreach. 
+    // as the is_noncopyable trait in Boost.Foreach.
     template<typename T>
     struct is_noncopyable
         : mpl::or_<

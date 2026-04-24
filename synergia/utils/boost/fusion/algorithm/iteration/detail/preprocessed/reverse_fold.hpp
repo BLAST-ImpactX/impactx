@@ -18,7 +18,7 @@ namespace boost { namespace fusion
     {
         template<int SeqSize, typename It, typename State, typename F, typename = void
 # if BOOST_WORKAROUND (BOOST_MSVC, < 1500)
-          
+
           , bool = SeqSize == 0
 # endif
         >
@@ -38,9 +38,9 @@ namespace boost { namespace fusion
         struct result_of_it_reverse_fold<SeqSize,It,State,F
           , typename boost::enable_if_has_type<
 # if BOOST_WORKAROUND (BOOST_MSVC, >= 1500)
-                
-                
-                
+
+
+
                 typename boost::disable_if_c<SeqSize == 0, State>::type::type
 # else
                 BOOST_FUSION_FOLD_IMPL_ENABLER(State)

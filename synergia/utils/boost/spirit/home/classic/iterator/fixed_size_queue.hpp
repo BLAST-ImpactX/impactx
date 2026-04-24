@@ -40,7 +40,7 @@ namespace impl {
 template <typename QueueT, typename T, typename PointerT>
 class fsq_iterator
 :   public boost::iterator_adaptor<
-        fsq_iterator<QueueT, T, PointerT>, 
+        fsq_iterator<QueueT, T, PointerT>,
         PointerT,
         T,
         std::random_access_iterator_tag
@@ -55,12 +55,12 @@ public:
 
     fsq_iterator() {}
     fsq_iterator(position const &p_) : p(p_) {}
-    
+
     position const &get_position() const { return p; }
-    
+
 private:
     friend class boost::iterator_core_access;
-    
+
     typename base_t::reference dereference() const
     {
         return p.self->m_queue[p.pos];
@@ -82,28 +82,28 @@ private:
     }
 
     template <
-        typename OtherDerivedT, typename OtherIteratorT, 
+        typename OtherDerivedT, typename OtherIteratorT,
         typename V, typename C, typename R, typename D
-    >   
-    bool equal(iterator_adaptor<OtherDerivedT, OtherIteratorT, V, C, R, D> 
+    >
+    bool equal(iterator_adaptor<OtherDerivedT, OtherIteratorT, V, C, R, D>
         const &x) const
     {
-        position const &rhs_pos = 
+        position const &rhs_pos =
             static_cast<OtherDerivedT const &>(x).get_position();
         return (p.self == rhs_pos.self) && (p.pos == rhs_pos.pos);
     }
 
     template <
-        typename OtherDerivedT, typename OtherIteratorT, 
+        typename OtherDerivedT, typename OtherIteratorT,
         typename V, typename C, typename R, typename D
-    >   
+    >
     typename base_t::difference_type distance_to(
-        iterator_adaptor<OtherDerivedT, OtherIteratorT, V, C, R, D> 
+        iterator_adaptor<OtherDerivedT, OtherIteratorT, V, C, R, D>
         const &x) const
     {
         typedef typename base_t::difference_type diff_t;
 
-        position const &p2 = 
+        position const &p2 =
             static_cast<OtherDerivedT const &>(x).get_position();
         std::size_t pos1 = p.pos;
         std::size_t pos2 = p2.pos;
@@ -146,7 +146,7 @@ private:
                 p.pos -= QueueT::MAX_SIZE+1;
         }
     }
-    
+
 private:
     position p;
 };
@@ -178,13 +178,13 @@ private:
 public:
     // Declare the iterators
     typedef impl::fsq_iterator<fixed_size_queue<T, N>, T, T*> iterator;
-    typedef impl::fsq_iterator<fixed_size_queue<T, N>, T const, T const*> 
+    typedef impl::fsq_iterator<fixed_size_queue<T, N>, T const, T const*>
         const_iterator;
     typedef position position_t;
 
     friend class impl::fsq_iterator<fixed_size_queue<T, N>, T, T*>;
     friend class impl::fsq_iterator<fixed_size_queue<T, N>, T const, T const*>;
-    
+
     fixed_size_queue();
     fixed_size_queue(const fixed_size_queue& x);
     fixed_size_queue& operator=(const fixed_size_queue& x);

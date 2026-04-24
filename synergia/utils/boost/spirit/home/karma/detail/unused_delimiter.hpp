@@ -30,11 +30,11 @@ namespace boost { namespace spirit { namespace karma { namespace detail
 #endif
 
     // If a surrounding verbatim[] directive was specified, the current
-    // delimiter is of the type unused_delimiter. In this case we 
+    // delimiter is of the type unused_delimiter. In this case we
     // re-activate the delimiter which was active before the verbatim[]
     // directive.
     template <typename Delimiter, typename Default>
-    inline Delimiter const& 
+    inline Delimiter const&
     get_delimiter(unused_delimiter<Delimiter> const& u, Default const&)
     {
         return u.delimiter;
@@ -43,7 +43,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     // If no surrounding verbatim[] directive was specified we activate
     // a single space as the delimiter to use.
     template <typename Delimiter, typename Default>
-    inline Default const& 
+    inline Default const&
     get_delimiter(Delimiter const&, Default const& d)
     {
         return d;

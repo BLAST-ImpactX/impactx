@@ -443,7 +443,7 @@ namespace boost {
                 typename stream_trait::traits,
                 stream_trait::len_t::value + 1
             > optimized_src_stream;
-            
+
             template <class T>
             static auto detect_type(int)
                 -> decltype(std::declval<optimized_src_stream&>().stream_in(std::declval<lcast::exact<T>>()), optimized_src_stream{});
@@ -477,4 +477,3 @@ namespace boost {
 #undef BOOST_LCAST_NO_WCHAR_T
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_CONVERTER_LEXICAL_HPP
-

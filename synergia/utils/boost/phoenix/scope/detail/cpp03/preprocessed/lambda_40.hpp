@@ -7,13 +7,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0>
         lambda_actor_gen<
             vector1<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type>
@@ -33,13 +33,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1>
         lambda_actor_gen<
             vector2<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type>
@@ -59,13 +59,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2>
         lambda_actor_gen<
             vector3<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type>
@@ -85,13 +85,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3>
         lambda_actor_gen<
             vector4<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type>
@@ -111,13 +111,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
         lambda_actor_gen<
             vector5<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type>
@@ -137,13 +137,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
         lambda_actor_gen<
             vector6<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type>
@@ -163,13 +163,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
         lambda_actor_gen<
             vector7<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type>
@@ -189,13 +189,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
         lambda_actor_gen<
             vector8<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type>
@@ -215,13 +215,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
         lambda_actor_gen<
             vector9<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type>
@@ -241,13 +241,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
         lambda_actor_gen<
             vector10<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type>
@@ -267,13 +267,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10>
         lambda_actor_gen<
             vector11<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type>
@@ -293,13 +293,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11>
         lambda_actor_gen<
             vector12<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type>
@@ -319,13 +319,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12>
         lambda_actor_gen<
             vector13<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type>
@@ -345,13 +345,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13>
         lambda_actor_gen<
             vector14<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type>
@@ -371,13 +371,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14>
         lambda_actor_gen<
             vector15<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type>
@@ -397,13 +397,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15>
         lambda_actor_gen<
             vector16<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type>
@@ -423,13 +423,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16>
         lambda_actor_gen<
             vector17<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type>
@@ -449,13 +449,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17>
         lambda_actor_gen<
             vector18<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type>
@@ -475,13 +475,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18>
         lambda_actor_gen<
             vector19<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type>
@@ -501,13 +501,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19>
         lambda_actor_gen<
             vector20<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type>
@@ -527,13 +527,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20>
         lambda_actor_gen<
             vector21<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type>
@@ -553,13 +553,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21>
         lambda_actor_gen<
             vector22<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type>
@@ -579,13 +579,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22>
         lambda_actor_gen<
             vector23<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type>
@@ -605,13 +605,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23>
         lambda_actor_gen<
             vector24<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type>
@@ -631,13 +631,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24>
         lambda_actor_gen<
             vector25<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type>
@@ -657,13 +657,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25>
         lambda_actor_gen<
             vector26<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type>
@@ -683,13 +683,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26>
         lambda_actor_gen<
             vector27<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type>
@@ -709,13 +709,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27>
         lambda_actor_gen<
             vector28<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type>
@@ -735,13 +735,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28>
         lambda_actor_gen<
             vector29<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type>
@@ -761,13 +761,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29>
         lambda_actor_gen<
             vector30<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type>
@@ -787,13 +787,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30>
         lambda_actor_gen<
             vector31<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type>
@@ -813,13 +813,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31>
         lambda_actor_gen<
             vector32<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type>
@@ -839,13 +839,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32>
         lambda_actor_gen<
             vector33<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type>
@@ -865,13 +865,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33>
         lambda_actor_gen<
             vector34<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type>
@@ -891,13 +891,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34>
         lambda_actor_gen<
             vector35<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A34 , 1 >::type >::type>
@@ -917,13 +917,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35>
         lambda_actor_gen<
             vector36<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A34 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A35 , 1 >::type >::type>
@@ -943,13 +943,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36>
         lambda_actor_gen<
             vector37<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A34 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A35 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A36 , 1 >::type >::type>
@@ -969,13 +969,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37>
         lambda_actor_gen<
             vector38<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A34 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A35 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A36 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A37 , 1 >::type >::type>
@@ -995,13 +995,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38>
         lambda_actor_gen<
             vector39<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A34 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A35 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A36 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A37 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A38 , 1 >::type >::type>
@@ -1021,13 +1021,13 @@
                     >
                 >(locals);
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39>
         lambda_actor_gen<
             vector40<typename proto::detail::uncvref< typename proto::result_of::child_c< A0 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A1 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A2 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A3 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A4 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A5 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A6 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A7 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A8 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A9 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A10 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A11 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A12 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A13 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A14 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A15 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A16 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A17 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A18 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A19 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A20 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A21 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A22 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A23 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A24 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A25 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A26 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A27 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A28 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A29 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A30 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A31 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A32 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A33 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A34 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A35 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A36 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A37 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A38 , 1 >::type >::type , typename proto::detail::uncvref< typename proto::result_of::child_c< A39 , 1 >::type >::type>

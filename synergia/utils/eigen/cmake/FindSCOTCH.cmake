@@ -198,16 +198,16 @@ else()
     foreach(scotch_lib ${SCOTCH_libs_to_find})
       set(SCOTCH_${scotch_lib}_LIBRARY "SCOTCH_${scotch_lib}_LIBRARY-NOTFOUND")
       find_library(SCOTCH_${scotch_lib}_LIBRARY
-	NAMES ${scotch_lib}
-	HINTS ${SCOTCH_DIR}
-	PATH_SUFFIXES lib lib32 lib64)
+    NAMES ${scotch_lib}
+    HINTS ${SCOTCH_DIR}
+    PATH_SUFFIXES lib lib32 lib64)
     endforeach()
   else()
     foreach(scotch_lib ${SCOTCH_libs_to_find})
       set(SCOTCH_${scotch_lib}_LIBRARY "SCOTCH_${scotch_lib}_LIBRARY-NOTFOUND")
       find_library(SCOTCH_${scotch_lib}_LIBRARY
-	NAMES ${scotch_lib}
-	HINTS ${_lib_env})
+    NAMES ${scotch_lib}
+    HINTS ${_lib_env})
     endforeach()
   endif()
 endif()

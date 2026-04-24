@@ -119,9 +119,9 @@ void verify_data(ViewTypeData view_data_h, ViewTypeTest view_test,
   for (std::size_t i = 0; i < my_diff; ++i) {
     ASSERT_EQ(view_test_h(i), view_data_h[i]);
     // std::cout << "i= " << i << " "
-    // 	      << "mine: " << view_test_h(i) << " "
-    // 	      << "std: " << view_data_h(i)
-    // 	      << '\n';
+    //        << "mine: " << view_test_h(i) << " "
+    //        << "std: " << view_data_h(i)
+    //        << '\n';
   }
 }
 

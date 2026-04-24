@@ -10,29 +10,30 @@
 import mpi4py.MPI as MPI
 import numpy as np
 from scipy import constants
-from impactx import ImpactX, distribution, elements, synmadx, twiss
 from syn2_to_impactx import syn2_to_impactx, unroll_impactx_lattice
+
+from impactx import ImpactX, distribution, synmadx, twiss
 
 pi = constants.pi
 c = constants.c
 eV = constants.eV
-mp = 1.0e-9 * constants.m_p * c**2/eV # proton mass in GeV
+mp = 1.0e-9 * constants.m_p * c**2 / eV  # proton mass in GeV
 
-# 
+#
 # these lattice functions are calculated with Synergia3
 # from the sbbooster-cooked.madx file.
 alpha_x = -1.298673960026007664e-02
-beta_x = 3.373645362843065243e+01
+beta_x = 3.373645362843065243e01
 alpha_y = 6.089861210659328755e-03
-beta_y = 5.252517912567207681e+00
+beta_y = 5.252517912567207681e00
 
-disp_x = 3.187407765856291153e+00
+disp_x = 3.187407765856291153e00
 disp_px = 1.136005067625678322e-03
 
 # emittances from PIP-II CDR v0.3
-emit_x = 16.0e-6 # normalized 95% emit
+emit_x = 16.0e-6  # normalized 95% emit
 emit_y = 16.0e-6
-emit_eV_s = 0.1 # longitudinal emittance 97% eV-s
+emit_eV_s = 0.1  # longitudinal emittance 97% eV-s
 
 sim = ImpactX()
 
@@ -100,7 +101,7 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
     beta = lattice.get_reference_particle().get_beta()
 
     lattice_length = lattice.get_length()
-    rf_freq = harmno * beta * c/lattice_length
+    rf_freq = harmno * beta * c / lattice_length
 
     # Set the RF cavity voltage distributing over all RF cavities
 
@@ -109,14 +110,12 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
             elem.set_double_attribute("volt", 1000 * voltage / cavities)
             elem.set_double_attribute("lag", phase_set / (2 * np.pi))
             elem.set_double_attribute("harmon", harmno)
-            elem.set_double_attribute("freq", rf_freq*1.0e-6) # MAD-X convention frequency in MHz
+            elem.set_double_attribute(
+                "freq", rf_freq * 1.0e-6
+            )  # MAD-X convention frequency in MHz
 
     for elem in lattice.get_elements():
-        if (
-            DEBUG
-            and myrank == 0
-            and elem.get_type() == synmadx.element_type.rfcavity
-        ):
+        if DEBUG and myrank == 0 and elem.get_type() == synmadx.element_type.rfcavity:
             print("set_rf: ", elem)
             break
 
@@ -142,7 +141,9 @@ def get_lattice():
 
     return lattice_raw
 
+
 # ========================================================================
+
 
 def main():
 
@@ -172,7 +173,6 @@ def main():
         print("beta: ", beta)
         print()
 
-
     # set numerical parameters and IO control
     sim.particle_shape = 2  # B-spline order
     sim.space_charge = False
@@ -196,20 +196,23 @@ def main():
     # Create distribution and add particles
     distr = distribution.Gaussian(
         **twiss(
-            beta_x = beta_x,
-            alpha_x = alpha_x,
-            emitt_x = emit_x/(ref.beta_gamma*6), # normalized 95% emit -> geometric
-            beta_y = beta_y,
-            alpha_y = alpha_y,
-            emitt_y = emit_y/(ref.beta_gamma*6), # normalized 95% emit -> geometric
-            emitt_t = emit_eV_s * 1.0e-6 * c/(ref.mass_MeV * ref.beta_gamma * 6 * pi), # 97% emit eV-s -> RMS emit
-            beta_t = 1258.0, # seems to go from 1158 close to the center to
-                            # 1258 at about 1.25m
+            beta_x=beta_x,
+            alpha_x=alpha_x,
+            emitt_x=emit_x / (ref.beta_gamma * 6),  # normalized 95% emit -> geometric
+            beta_y=beta_y,
+            alpha_y=alpha_y,
+            emitt_y=emit_y / (ref.beta_gamma * 6),  # normalized 95% emit -> geometric
+            emitt_t=emit_eV_s
+            * 1.0e-6
+            * c
+            / (ref.mass_MeV * ref.beta_gamma * 6 * pi),  # 97% emit eV-s -> RMS emit
+            beta_t=1258.0,  # seems to go from 1158 close to the center to
+            # 1258 at about 1.25m
             # dispersion from Synergia so it needs conversion from dp/p to dE/p
-            dispersion_x = disp_x/ref.beta,
-            dispersion_px = disp_px/ref.beta
-            )
+            dispersion_x=disp_x / ref.beta,
+            dispersion_px=disp_px / ref.beta,
         )
+    )
 
     sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -253,6 +256,6 @@ def main():
     # clean shutdown
     sim.finalize()
 
+
 if __name__ == "__main__":
     main()
-

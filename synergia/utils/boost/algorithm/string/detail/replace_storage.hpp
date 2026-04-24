@@ -22,7 +22,7 @@ namespace boost {
         namespace detail {
 
 //  storage handling routines -----------------------------------------------//
-            
+
             template< typename StorageT, typename OutputIteratorT >
             inline OutputIteratorT move_from_storage(
                 StorageT& Storage,
@@ -30,7 +30,7 @@ namespace boost {
                 OutputIteratorT DestEnd )
             {
                 OutputIteratorT OutputIt=DestBegin;
-                
+
                 while( !Storage.empty() && OutputIt!=DestEnd )
                 {
                     *OutputIt=Storage.front();
@@ -56,7 +56,7 @@ namespace boost {
             struct process_segment_helper
             {
                 // Optimized version of process_segment for generic sequence
-                template< 
+                template<
                     typename StorageT,
                     typename InputT,
                     typename ForwardIteratorT >
@@ -112,7 +112,7 @@ namespace boost {
             struct process_segment_helper< true >
             {
                 // Optimized version of process_segment for list-like sequence
-                template< 
+                template<
                     typename StorageT,
                     typename InputT,
                     typename ForwardIteratorT >
@@ -134,7 +134,7 @@ namespace boost {
             };
 
             // Process one segment in the replace_all algorithm
-            template< 
+            template<
                 typename StorageT,
                 typename InputT,
                 typename ForwardIteratorT >
@@ -145,12 +145,12 @@ namespace boost {
                 ForwardIteratorT SegmentBegin,
                 ForwardIteratorT SegmentEnd )
             {
-                return 
-                    process_segment_helper< 
+                return
+                    process_segment_helper<
                         has_stable_iterators<InputT>::value>()(
                                 Storage, Input, InsertIt, SegmentBegin, SegmentEnd );
             }
-            
+
 
         } // namespace detail
     } // namespace algorithm

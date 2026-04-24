@@ -49,7 +49,7 @@ TEST_CASE("Bunch", "[Bunch]")
     constexpr double dE = 0.050; // 50 MeV
     double energy = ref.get_total_energy();
     double old_p = sqrt(energy*energy - mass*mass);
-	
+
 
     // Add some energy to each particle by changing dp/p
 
@@ -75,9 +75,9 @@ TEST_CASE("Bunch", "[Bunch]")
         // check that dp/p is now close to 0
         CHECK_THAT(parts(i, Bunch::dpop), Catch::Matchers::WithinAbs(0.0, 1.0e-12));
         // transverse momenta
-		std::cout << "new_parts(" << i << "(, 1): " << new_parts(i, 1) << std::endl;
+        std::cout << "new_parts(" << i << "(, 1): " << new_parts(i, 1) << std::endl;
         CHECK_THAT(parts(i, Bunch::xp), Catch::Matchers::WithinRel(i*1.0e-4*old_p/new_p,  1.0e-12));
-		std::cout << "new_parts(" << i << "(, 3): " << new_parts(i, 3) << std::endl;
+        std::cout << "new_parts(" << i << "(, 3): " << new_parts(i, 3) << std::endl;
         CHECK_THAT(parts(i, Bunch::yp), Catch::Matchers::WithinRel((localnum-i)*1.0e-4*old_p/new_p,  1.0e-12));
     }
 }

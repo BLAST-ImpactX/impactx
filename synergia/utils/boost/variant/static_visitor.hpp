@@ -72,8 +72,8 @@ namespace detail {
 template <typename T>
 struct is_static_visitor_impl
 {
-    BOOST_STATIC_CONSTANT(bool, value = 
-        (::boost::is_base_and_derived< 
+    BOOST_STATIC_CONSTANT(bool, value =
+        (::boost::is_base_and_derived<
             detail::is_static_visitor_tag,
             T
         >::value));

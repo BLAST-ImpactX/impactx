@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_DISTANCE_09172005_0730)
@@ -27,13 +27,13 @@ namespace boost { namespace fusion { namespace distance_detail
     template <typename First, typename Last>
     struct next_distance
     {
-        typedef typename 
+        typedef typename
             mpl::next<
                 typename linear_distance<
                     typename result_of::next<First>::type
                   , Last
                 >::type
-            >::type 
+            >::type
         type;
     };
 

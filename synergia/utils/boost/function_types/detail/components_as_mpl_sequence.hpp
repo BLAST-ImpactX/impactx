@@ -90,7 +90,7 @@ struct push_front_impl
   template< typename S, typename T >
   struct apply
     : S
-  { 
+  {
     typedef apply type;
     typedef typename mpl::push_front< typename S::types, T >::type types;
   };
@@ -104,7 +104,7 @@ struct pop_front_impl
     : S
   {
     typedef apply type;
-    typedef typename mpl::pop_front< typename S::types >::type types; 
+    typedef typename mpl::pop_front< typename S::types >::type types;
   };
 };
 template<>
@@ -116,7 +116,7 @@ struct push_back_impl
     : S
   {
     typedef apply type;
-    typedef typename mpl::push_back< typename S::types, T >::type types; 
+    typedef typename mpl::push_back< typename S::types, T >::type types;
   };
 };
 template<>
@@ -128,11 +128,10 @@ struct pop_back_impl
     : S
   {
     typedef apply type;
-    typedef typename mpl::pop_back< typename S::types >::type types; 
+    typedef typename mpl::pop_back< typename S::types >::type types;
   };
 };
 
 } } // namespace ::boost::mpl
 
 #endif
-

@@ -40,4 +40,3 @@ element_type * construct(const T0 & a0, const T1 & a1, const T2 & a2)
   catch (...) { (free)(ret); throw; }
   return ret;
 }
-

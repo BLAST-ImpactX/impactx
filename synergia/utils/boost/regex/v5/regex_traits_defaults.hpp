@@ -40,8 +40,8 @@ namespace boost{ namespace BOOST_REGEX_DETAIL_NS{
 template <class charT>
 inline bool is_extended(charT c)
 {
-   typedef typename std::make_unsigned<charT>::type unsigned_type; 
-   return (sizeof(charT) > 1) && (static_cast<unsigned_type>(c) >= 256u); 
+   typedef typename std::make_unsigned<charT>::type unsigned_type;
+   return (sizeof(charT) > 1) && (static_cast<unsigned_type>(c) >= 256u);
 }
 inline bool is_extended(char)
 { return false; }
@@ -961,28 +961,28 @@ inline typename std::enable_if<(sizeof(charT) == 1), const charT*>::type get_esc
 #  pragma warning(push)
 #  pragma warning(disable:4309 4245)
 #endif
-   static const charT e2[] = { 
-      static_cast<charT>('('), 
-      static_cast<charT>('?'), 
-      static_cast<charT>('-'), 
-      static_cast<charT>('x'), 
-      static_cast<charT>(':'), 
-      static_cast<charT>('('), 
-      static_cast<charT>('?'), 
-      static_cast<charT>('>'), 
-      static_cast<charT>('\x0D'), 
-      static_cast<charT>('\x0A'), 
+   static const charT e2[] = {
+      static_cast<charT>('('),
       static_cast<charT>('?'),
-      static_cast<charT>('|'), 
-      static_cast<charT>('['), 
-      static_cast<charT>('\x0A'), 
-      static_cast<charT>('\x0B'), 
-      static_cast<charT>('\x0C'), 
-      static_cast<charT>('\x85'), 
-      static_cast<charT>(']'), 
-      static_cast<charT>(')'), 
-      static_cast<charT>(')'), 
-      static_cast<charT>('\0') 
+      static_cast<charT>('-'),
+      static_cast<charT>('x'),
+      static_cast<charT>(':'),
+      static_cast<charT>('('),
+      static_cast<charT>('?'),
+      static_cast<charT>('>'),
+      static_cast<charT>('\x0D'),
+      static_cast<charT>('\x0A'),
+      static_cast<charT>('?'),
+      static_cast<charT>('|'),
+      static_cast<charT>('['),
+      static_cast<charT>('\x0A'),
+      static_cast<charT>('\x0B'),
+      static_cast<charT>('\x0C'),
+      static_cast<charT>('\x85'),
+      static_cast<charT>(']'),
+      static_cast<charT>(')'),
+      static_cast<charT>(')'),
+      static_cast<charT>('\0')
    };
    return e2;
 #ifdef BOOST_REGEX_MSVC

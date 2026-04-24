@@ -4,7 +4,7 @@
     Copyright (c) 2009 Christopher Schmidt
     Copyright (c) 2018 Kohei Takahashi
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_FIND_IF_05052005_1107)
@@ -65,7 +65,7 @@ namespace boost { namespace fusion { namespace detail
     };
 
     template<
-        typename First, typename Last, 
+        typename First, typename Last,
         typename Pred, bool>
     struct choose_find_if;
 

@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2001-2011 Joel de Guzman
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_LAZY_MARCH_27_2007_1231PM)
@@ -120,10 +120,10 @@ namespace boost { namespace spirit { namespace karma
           : func(func), modifiers(modifiers) {}
 
         template <
-            typename OutputIterator, typename Context, 
+            typename OutputIterator, typename Context,
             typename Delimiter, typename Attribute
         >
-        bool generate(OutputIterator& sink, Context& context, 
+        bool generate(OutputIterator& sink, Context& context,
             Delimiter const& d, Attribute const& attr) const
         {
             return detail::lazy_generate_impl_main(
@@ -148,7 +148,7 @@ namespace boost { namespace spirit { namespace karma
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Function, typename Subject, typename Modifiers>
-    struct lazy_directive 
+    struct lazy_directive
       : unary_generator<lazy_directive<Function, Subject, Modifiers> >
     {
         typedef mpl::int_<generator_properties::all_properties> properties;

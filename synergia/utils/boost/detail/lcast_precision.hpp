@@ -91,4 +91,3 @@ inline void lcast_set_precision(std::ios_base& stream, Source*, Target*)
 }}
 
 #endif //  BOOST_DETAIL_LCAST_PRECISION_HPP_INCLUDED
-

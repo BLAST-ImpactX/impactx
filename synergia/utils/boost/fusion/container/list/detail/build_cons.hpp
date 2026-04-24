@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_BUILD_CONS_09232005_1222)
@@ -44,7 +44,7 @@ namespace boost { namespace fusion { namespace detail
 
         typedef cons<
             typename result_of::value_of<First>::type
-          , typename next_build_cons::type> 
+          , typename next_build_cons::type>
         type;
 
         BOOST_CXX14_CONSTEXPR BOOST_FUSION_GPU_ENABLED

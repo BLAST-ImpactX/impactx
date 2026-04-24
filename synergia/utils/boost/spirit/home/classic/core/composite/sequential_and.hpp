@@ -34,35 +34,35 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     template <typename A, typename B>
     sequence<A, B>
     operator&&(parser<A> const& a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, chlit<char> >
     operator&&(parser<A> const& a, char b);
-    
+
     template <typename B>
     sequence<chlit<char>, B>
     operator&&(char a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, strlit<char const*> >
     operator&&(parser<A> const& a, char const* b);
-    
+
     template <typename B>
     sequence<strlit<char const*>, B>
     operator&&(char const* a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, chlit<wchar_t> >
     operator&&(parser<A> const& a, wchar_t b);
-    
+
     template <typename B>
     sequence<chlit<wchar_t>, B>
     operator&&(wchar_t a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, strlit<wchar_t const*> >
     operator&&(parser<A> const& a, wchar_t const* b);
-    
+
     template <typename B>
     sequence<strlit<wchar_t const*>, B>
     operator&&(wchar_t const* a, parser<B> const& b);

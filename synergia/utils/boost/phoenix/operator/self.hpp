@@ -22,7 +22,7 @@ namespace boost { namespace phoenix
         (assign)
         (subscript)
     )
-    
+
     using proto::exprns_::operator&;
     using proto::exprns_::operator*;
 }}

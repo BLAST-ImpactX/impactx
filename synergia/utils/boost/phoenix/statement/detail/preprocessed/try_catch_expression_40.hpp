@@ -5,38 +5,38 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <
             typename Try
-            
-            
+
+
         >
         struct try_catch<
             Try
-            
-            
+
+
         >
             : expr_ext<
                 try_catch_actor
               , tag::try_catch
               , Try
-               
+
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -54,14 +54,14 @@
               , A0
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -79,14 +79,14 @@
               , A0 , A1
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -104,14 +104,14 @@
               , A0 , A1 , A2
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -129,14 +129,14 @@
               , A0 , A1 , A2 , A3
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -154,14 +154,14 @@
               , A0 , A1 , A2 , A3 , A4
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -179,14 +179,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -204,14 +204,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -229,14 +229,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -254,14 +254,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -279,14 +279,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -304,14 +304,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -329,14 +329,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -354,14 +354,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -379,14 +379,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -404,14 +404,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -429,14 +429,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -454,14 +454,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -479,14 +479,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -504,14 +504,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -529,14 +529,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -554,14 +554,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -579,14 +579,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -604,14 +604,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -629,14 +629,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -654,14 +654,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -679,14 +679,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -704,14 +704,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -729,14 +729,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -754,14 +754,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -779,14 +779,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -804,14 +804,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -829,14 +829,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -854,14 +854,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -879,14 +879,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -904,14 +904,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33 , A34
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -929,14 +929,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33 , A34 , A35
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -954,14 +954,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33 , A34 , A35 , A36
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -979,14 +979,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33 , A34 , A35 , A36 , A37
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -1004,14 +1004,14 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33 , A34 , A35 , A36 , A37 , A38
             >
         {};
-     
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
         template <
             typename Try
             ,
@@ -1029,4 +1029,3 @@
               , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17 , A18 , A19 , A20 , A21 , A22 , A23 , A24 , A25 , A26 , A27 , A28 , A29 , A30 , A31 , A32 , A33 , A34 , A35 , A36 , A37 , A38 , A39
             >
         {};
-     

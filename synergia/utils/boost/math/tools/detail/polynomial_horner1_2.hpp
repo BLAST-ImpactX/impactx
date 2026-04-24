@@ -33,4 +33,3 @@ inline V evaluate_polynomial_c_imp(const T* a, const V& x, const std::integral_c
 }}}} // namespaces
 
 #endif // include guard
-

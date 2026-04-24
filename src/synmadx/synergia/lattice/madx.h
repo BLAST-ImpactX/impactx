@@ -25,7 +25,7 @@ namespace synergia
   , STRING
   , DEFFERED_NUMBER
   , ARRAY
-  , DEFFERED_ARRAY 
+  , DEFFERED_ARRAY
   };
 
   enum MadX_command_type
@@ -48,7 +48,7 @@ namespace synergia
   , ENTRY_SEQUENCE };
 
 
-  std::string 
+  std::string
   to_string(MadX_value const& val);
 }
 
@@ -125,7 +125,7 @@ typedef std::map<string_t, synergia::MadX_command>  commands_m_t;
 class synergia::MadX_line
 {
 public:
-  MadX_line(MadX const & parent) 
+  MadX_line(MadX const & parent)
     : parent(parent), elements_() { }
 
   // accessor
@@ -152,13 +152,13 @@ class synergia::MadX_sequence
 private:
   struct seq_element
   {
-    seq_element(std::string const & label_, 
-            mx_expr const& at_, 
+    seq_element(std::string const & label_,
+            mx_expr const& at_,
             std::string const & from_)
       : label(label_)
       , from_str(from_)
       , at(at_)
-      , from(0.0) 
+      , from(0.0)
     { }
 
     std::string label;

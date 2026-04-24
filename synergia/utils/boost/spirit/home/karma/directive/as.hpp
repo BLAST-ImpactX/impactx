@@ -46,18 +46,18 @@ namespace boost { namespace spirit
     ///////////////////////////////////////////////////////////////////////////
     // enables as_string[...]
     template <>
-    struct use_directive<karma::domain, tag::as_string> 
+    struct use_directive<karma::domain, tag::as_string>
       : mpl::true_ {};
 
     // enables as_wstring[...]
     template <>
-    struct use_directive<karma::domain, tag::as_wstring> 
+    struct use_directive<karma::domain, tag::as_wstring>
       : mpl::true_ {};
 
     // enables as<T>[...]
     template <typename T>
-    struct use_directive<karma::domain, tag::stateful_tag<T, tag::as> > 
-      : mpl::true_ 
+    struct use_directive<karma::domain, tag::stateful_tag<T, tag::as> >
+      : mpl::true_
     {};
 }}
 
@@ -75,7 +75,7 @@ namespace boost { namespace spirit { namespace karma
     // output generation process
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename T>
-    struct as_directive 
+    struct as_directive
       : unary_generator<as_directive<Subject, T> >
     {
         typedef Subject subject_type;
@@ -135,7 +135,7 @@ namespace boost { namespace spirit { namespace karma
             return result_type(subject);
         }
     };
-    
+
     template <typename T, typename Subject, typename Modifiers>
     struct make_directive<tag::stateful_tag<T, tag::as>, Subject, Modifiers>
     {

@@ -91,4 +91,3 @@ BOOST_TYPEOF_REGISTER_TYPE(BOOST_SPIRIT_CLASSIC_NS::file_position_without_column
 BOOST_TYPEOF_REGISTER_TYPE(BOOST_SPIRIT_CLASSIC_NS::file_position_without_column_base<std::basic_string<wchar_t> >)
 
 #endif
-

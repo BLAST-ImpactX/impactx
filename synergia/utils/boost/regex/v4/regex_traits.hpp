@@ -3,12 +3,12 @@
  * Copyright (c) 2003
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
- 
+
  /*
   *   LOCATION:    see http://www.boost.org for most recent version.
   *   FILE         regex_traits.hpp
@@ -160,9 +160,9 @@ struct compute_wrapper_base<c_regex_traits<wchar_t>, false>
 } // namespace BOOST_REGEX_DETAIL_NS
 
 template <class BaseT>
-struct regex_traits_wrapper 
+struct regex_traits_wrapper
    : public ::boost::BOOST_REGEX_DETAIL_NS::compute_wrapper_base<
-               BaseT, 
+               BaseT,
                ::boost::BOOST_REGEX_DETAIL_NS::has_boost_extensions_tag<BaseT>::value
             >::type
 {
@@ -186,4 +186,3 @@ private:
 #endif
 
 #endif // include
-

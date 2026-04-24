@@ -50,7 +50,7 @@ matrices with double-precision numbers. Second, if you use an expression such as
 <tt>mat.topLeftCorner(3,3)</tt> as the parameter \c src, then this is copied into a temporary variable of type
 MatrixXf; this copy can be avoided.
 
-As explained in \ref TopicFunctionTakingEigenTypes, both issues can be resolved by making 
+As explained in \ref TopicFunctionTakingEigenTypes, both issues can be resolved by making
 \c copyUpperTriangularPart() accept any object of type MatrixBase. This leads to the following code:
 
 <table class="example">
@@ -86,7 +86,7 @@ The precise rules are rather complicated, but ignoring some subtleties we can su
   example, \c dst is a dependent name because it is of type <tt>MatrixBase&lt;Derived1&gt;</tt> which depends
   on the template parameter \c Derived1.
 - If the code contains either one of the constructs <tt>xxx.yyy</tt> or <tt>xxx-&gt;yyy</tt> and \c xxx is a
-  dependent name and \c yyy refers to a member template, then the \c template keyword must be used before 
+  dependent name and \c yyy refers to a member template, then the \c template keyword must be used before
   \c yyy, leading to <tt>xxx.template yyy</tt> or <tt>xxx-&gt;template yyy</tt>.
 - If the code contains the construct <tt>xxx::yyy</tt> and \c xxx is a dependent name and \c yyy refers to a
   member typedef, then the \c typename keyword must be used before the whole construct, leading to

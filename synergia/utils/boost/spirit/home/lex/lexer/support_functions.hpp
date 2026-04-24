@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef BOOST_SPIRIT_LEX_LEXER_SUPPORT_FUNCTIONS_HPP
@@ -21,24 +21,24 @@
 namespace boost { namespace spirit { namespace lex
 {
     ///////////////////////////////////////////////////////////////////////////
-    // The function object less_type is used by the implementation of the 
-    // support function lex::less(). Its functionality is equivalent to flex' 
-    // function yyless(): it returns an iterator positioned to the nth input 
-    // character beyond the current start iterator (i.e. by assigning the 
+    // The function object less_type is used by the implementation of the
+    // support function lex::less(). Its functionality is equivalent to flex'
+    // function yyless(): it returns an iterator positioned to the nth input
+    // character beyond the current start iterator (i.e. by assigning the
     // return value to the placeholder '_end' it is possible to return all but
-    // the first n characters of the current token back to the input stream. 
+    // the first n characters of the current token back to the input stream.
     //
-    //  This Phoenix actor is invoked whenever the function lex::less(n) is 
+    //  This Phoenix actor is invoked whenever the function lex::less(n) is
     //  used inside a lexer semantic action:
     //
     //      lex::token_def<> identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
     //      this->self = identifier [ _end = lex::less(4) ];
     //
-    //  The example shows how to limit the length of the matched identifier to 
+    //  The example shows how to limit the length of the matched identifier to
     //  four characters.
     //
-    //  Note: the function lex::less() has no effect if used on it's own, you 
-    //        need to use the returned result in order to make use of its 
+    //  Note: the function lex::less() has no effect if used on it's own, you
+    //        need to use the returned result in order to make use of its
     //        functionality.
     template <typename Actor>
     struct less_type
@@ -48,7 +48,7 @@ namespace boost { namespace spirit { namespace lex
         template <typename Env>
         struct result
         {
-            typedef typename remove_reference< 
+            typedef typename remove_reference<
                 typename remove_const<
                     typename mpl::at_c<typename Env::args_type, 4>::type
                 >::type
@@ -57,7 +57,7 @@ namespace boost { namespace spirit { namespace lex
         };
 
         template <typename Env>
-        typename result<Env>::type 
+        typename result<Env>::type
         eval(Env const& env) const
         {
             typename result<Env>::type it;
@@ -82,13 +82,13 @@ namespace boost { namespace spirit { namespace lex
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // The function object more_type is used by the implementation of the  
-    // support function lex::more(). Its functionality is equivalent to flex' 
-    // function yymore(): it tells the lexer that the next time it matches a 
-    // rule, the corresponding token should be appended onto the current token 
+    // The function object more_type is used by the implementation of the
+    // support function lex::more(). Its functionality is equivalent to flex'
+    // function yymore(): it tells the lexer that the next time it matches a
+    // rule, the corresponding token should be appended onto the current token
     // value rather than replacing it.
     //
-    //  This Phoenix actor is invoked whenever the function lex::more(n) is 
+    //  This Phoenix actor is invoked whenever the function lex::more(n) is
     //  used inside a lexer semantic action:
     //
     //      lex::token_def<> identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
@@ -114,7 +114,7 @@ namespace boost { namespace spirit { namespace lex
     };
 
     //  The function lex::more() is used to create a Phoenix actor allowing to
-    //  implement functionality similar to flex' function yymore(). 
+    //  implement functionality similar to flex' function yymore().
     //inline expression::more<mpl::void_>::type const
     inline phoenix::actor<more_type> more()
     {
@@ -122,8 +122,8 @@ namespace boost { namespace spirit { namespace lex
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // The function object lookahead_type is used by the implementation of the  
-    // support function lex::lookahead(). Its functionality is needed to 
+    // The function object lookahead_type is used by the implementation of the
+    // support function lex::lookahead(). Its functionality is needed to
     // emulate the flex' lookahead operator a/b. Use lex::lookahead() inside
     // of lexer semantic actions to test whether the argument to this function
     // matches the current look ahead input. lex::lookahead() can be used with
@@ -154,7 +154,7 @@ namespace boost { namespace spirit { namespace lex
         StateActor state_actor_;
     };
 
-    //  The function lex::lookahead() is used to create a Phoenix actor 
+    //  The function lex::lookahead() is used to create a Phoenix actor
     //  allowing to implement functionality similar to flex' lookahead operator
     //  a/b.
     template <typename T>
@@ -184,10 +184,10 @@ namespace boost { namespace spirit { namespace lex
 
         std::size_t state = tok.state();
 
-        // The following assertion fires if you pass a token_def instance to 
-        // lex::lookahead without first associating this instance with the 
+        // The following assertion fires if you pass a token_def instance to
+        // lex::lookahead without first associating this instance with the
         // lexer.
-        BOOST_ASSERT(std::size_t(~0) != state && 
+        BOOST_ASSERT(std::size_t(~0) != state &&
             "token_def instance not associated with lexer yet");
 
         return expression::lookahead<id_actor_type, state_actor_type>::make(

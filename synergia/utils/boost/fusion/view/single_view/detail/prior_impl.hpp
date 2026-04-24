@@ -26,7 +26,7 @@ namespace boost { namespace fusion
         struct prior_impl<single_view_iterator_tag>
         {
             template <typename Iterator>
-            struct apply 
+            struct apply
             {
                 typedef single_view_iterator<
                     typename Iterator::single_view_type,

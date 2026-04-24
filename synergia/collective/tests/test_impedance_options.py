@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-import sys, os
-import numpy as np
 import synergia
-import pytest
 
 
 def test_default_contructor():

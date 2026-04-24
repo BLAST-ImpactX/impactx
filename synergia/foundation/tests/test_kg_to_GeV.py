@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import synergia.foundation
 import pytest
+
+import synergia.foundation
 
 
 def test_kg_to_Gev():

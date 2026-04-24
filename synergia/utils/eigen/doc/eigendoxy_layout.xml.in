@@ -50,7 +50,7 @@
       <related title="" subtitle=""/>
       <membergroups visible="yes"/>
     </memberdecl>
-    
+
     <memberdef>
       <inlineclasses title=""/>
       <typedefs title=""/>
@@ -144,7 +144,7 @@
       <friends title=""/>
       <membergroups visible="yes"/>
     </memberdecl>
-    
+
     <memberdef>
       <pagedocs/>
       <inlineclasses title=""/>

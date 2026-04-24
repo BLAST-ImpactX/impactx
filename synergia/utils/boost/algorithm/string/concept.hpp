@@ -16,7 +16,7 @@
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-/*! \file 
+/*! \file
     Defines concepts used in string_algo library
 */
 
@@ -45,17 +45,17 @@ namespace boost {
         private:
             range r;
             IteratorT i;
-            FinderT* pF;    
+            FinderT* pF;
         }; // Finder_concept
 
-        
+
         //! Formatter concept
         /*!
             Defines the Formatter concept. Formatter is a functor, which
             takes a result from a finder operation and transforms it
             in a specific way.
 
-            Result must be a container supported by container_traits, 
+            Result must be a container supported by container_traits,
             or a reference to it.
         */
         template<typename FormatterT, typename FinderT, typename IteratorT>

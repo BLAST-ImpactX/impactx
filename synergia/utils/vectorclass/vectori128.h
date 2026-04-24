@@ -234,7 +234,7 @@ public:
     Vec4qb get_high() const;                     // in vectorf512.h
 #endif
     // Member function to change a single element in vector
-    Vec8b const insert(int index, bool value) {        
+    Vec8b const insert(int index, bool value) {
         mm = Vec8b_masktype(((uint8_t)mm & ~(1 << index)) | (int)value << index);
         return *this;
     }
@@ -786,7 +786,7 @@ public:
         _mm_store_si128((__m128i*)p, xmm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 16
     void store_nt(void * p) const {

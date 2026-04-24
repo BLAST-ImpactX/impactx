@@ -50,7 +50,7 @@ namespace boost { namespace spirit
         {}
 
         const char* what() const BOOST_NOEXCEPT_OR_NOTHROW BOOST_OVERRIDE
-        { 
+        {
             return "bad any cast";
         }
 

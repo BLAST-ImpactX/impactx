@@ -39,22 +39,22 @@
 
 namespace boost {
 
-/*! 
+/*!
 
 \brief Simple Segregated Storage is the simplest, and probably the fastest,
 memory allocation/deallocation algorithm.  It is responsible for
-partitioning a memory block into fixed-size chunks: where the block comes from 
+partitioning a memory block into fixed-size chunks: where the block comes from
 is determined by the client of the class.
 
-\details Template class simple_segregated_storage controls access to a free list of memory chunks. 
-Please note that this is a very simple class, with preconditions on almost all its functions. It is intended to 
-be the fastest and smallest possible quick memory allocator - e.g., something to use in embedded systems. 
+\details Template class simple_segregated_storage controls access to a free list of memory chunks.
+Please note that this is a very simple class, with preconditions on almost all its functions. It is intended to
+be the fastest and smallest possible quick memory allocator - e.g., something to use in embedded systems.
 This class delegates many difficult preconditions to the user (i.e., alignment issues).
 
-An object of type simple_segregated_storage<SizeType>  is empty  if its free list is empty. 
-If it is not empty, then it is ordered  if its free list is ordered. A free list is ordered if repeated calls 
-to <tt>malloc()</tt> will result in a constantly-increasing sequence of values, as determined by <tt>std::less<void *></tt>. 
-A member function is <i>order-preserving</i> if the free list maintains its order orientation (that is, an 
+An object of type simple_segregated_storage<SizeType>  is empty  if its free list is empty.
+If it is not empty, then it is ordered  if its free list is ordered. A free list is ordered if repeated calls
+to <tt>malloc()</tt> will result in a constantly-increasing sequence of values, as determined by <tt>std::less<void *></tt>.
+A member function is <i>order-preserving</i> if the free list maintains its order orientation (that is, an
 ordered free list is still ordered after the member function call).
 
 */
@@ -189,7 +189,7 @@ class simple_segregated_storage
     }
 
    void * malloc_n(size_type n, size_type partition_size);
-    
+
     //! \pre chunks was previously allocated from *this with the same
     //!   values for n and partition_size.
     //! \post !empty()
@@ -197,7 +197,7 @@ class simple_segregated_storage
     //!  be using an ordered pool.
     void free_n(void * const chunks, const size_type n,
         const size_type partition_size)
-    { 
+    {
        BOOST_POOL_VALIDATE_INTERNALS
       if(n != 0)
         add_block(chunks, n * partition_size, partition_size);
@@ -251,7 +251,7 @@ class simple_segregated_storage
 //! \returns location previous to where ptr would go if it was in the free list.
 template <typename SizeType>
 void * simple_segregated_storage<SizeType>::find_prev(void * const ptr)
-{ 
+{
   // Handle border case.
   if (first == 0 || std::greater<void *>()(first, ptr))
     return 0;
@@ -355,10 +355,10 @@ void * simple_segregated_storage<SizeType>::try_malloc_n(
   return iter;
 }
 
-//! Attempts to find a contiguous sequence of n partition_sz-sized chunks. If found, removes them 
-//! all from the free list and returns a pointer to the first. If not found, returns 0. It is strongly 
-//! recommended (but not required) that the free list be ordered, as this algorithm will fail to find 
-//! a contiguous sequence unless it is contiguous in the free list as well. Order-preserving. 
+//! Attempts to find a contiguous sequence of n partition_sz-sized chunks. If found, removes them
+//! all from the free list and returns a pointer to the first. If not found, returns 0. It is strongly
+//! recommended (but not required) that the free list be ordered, as this algorithm will fail to find
+//! a contiguous sequence unless it is contiguous in the free list as well. Order-preserving.
 //! O(N) with respect to the size of the free list.
 template <typename SizeType>
 void * simple_segregated_storage<SizeType>::malloc_n(const size_type n,

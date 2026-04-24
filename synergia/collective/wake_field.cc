@@ -155,7 +155,7 @@ Wake_field::Wake_field(std::string const& wake_file,
                                 if (wake_type=="YLYT") {
                                     yw_lead.push_back(temp_wake[1]);
                                     yw_trail.push_back(temp_wake[2]);
-                                } 			*/
+                                }           */
                                 if (wake_type == "XLYLZ") {
                                     xw_lead_v.push_back(temp_wake[1] *
                                                         mwf_xlead);

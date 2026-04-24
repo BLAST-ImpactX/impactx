@@ -32,7 +32,7 @@ This assignment exhibits aliasing: the coefficient \c mat(1,1) appears both in t
 <tt>mat.bottomRightCorner(2,2)</tt> on the left-hand side of the assignment and the block
 <tt>mat.topLeftCorner(2,2)</tt> on the right-hand side. After the assignment, the (2,2) entry in the bottom
 right corner should have the value of \c mat(1,1) before the assignment, which is 5. However, the output shows
-that \c mat(2,2) is actually 1. The problem is that %Eigen uses lazy evaluation (see 
+that \c mat(2,2) is actually 1. The problem is that %Eigen uses lazy evaluation (see
 \ref TopicEigenExpressionTemplates) for <tt>mat.topLeftCorner(2,2)</tt>. The result is similar to
 \code
 mat(1,1) = mat(0,0);
@@ -64,9 +64,9 @@ Again, the output shows the aliasing issue. However, by default %Eigen uses a ru
 and exits with a message like
 
 \verbatim
-void Eigen::DenseBase<Derived>::checkTransposeAliasing(const OtherDerived&) const 
-[with OtherDerived = Eigen::Transpose<Eigen::Matrix<int, 2, 2, 0, 2, 2> >, Derived = Eigen::Matrix<int, 2, 2, 0, 2, 2>]: 
-Assertion `(!internal::check_transpose_aliasing_selector<Scalar,internal::blas_traits<Derived>::IsTransposed,OtherDerived>::run(internal::extract_data(derived()), other)) 
+void Eigen::DenseBase<Derived>::checkTransposeAliasing(const OtherDerived&) const
+[with OtherDerived = Eigen::Transpose<Eigen::Matrix<int, 2, 2, 0, 2, 2> >, Derived = Eigen::Matrix<int, 2, 2, 0, 2, 2>]:
+Assertion `(!internal::check_transpose_aliasing_selector<Scalar,internal::blas_traits<Derived>::IsTransposed,OtherDerived>::run(internal::extract_data(derived()), other))
 && "aliasing detected during transposition, use transposeInPlace() or evaluate the rhs into a temporary using .eval()"' failed.
 \endverbatim
 
@@ -94,10 +94,10 @@ For example, here is the corrected version of the first example above:
 
 Now, \c mat(2,2) equals 5 after the assignment, as it should be.
 
-The same solution also works for the second example, with the transpose: simply replace the line 
+The same solution also works for the second example, with the transpose: simply replace the line
 <tt>a = a.transpose();</tt> with <tt>a = a.transpose().eval();</tt>. However, in this common case there is a
-better solution. %Eigen provides the special-purpose function 
-\link DenseBase::transposeInPlace() transposeInPlace() \endlink which replaces a matrix by its transpose. 
+better solution. %Eigen provides the special-purpose function
+\link DenseBase::transposeInPlace() transposeInPlace() \endlink which replaces a matrix by its transpose.
 This is shown below:
 
 <table class="example">
@@ -111,7 +111,7 @@ This is shown below:
 
 If an xxxInPlace() function is available, then it is best to use it, because it indicates more clearly what you
 are doing. This may also allow %Eigen to optimize more aggressively. These are some of the xxxInPlace()
-functions provided: 
+functions provided:
 
 <table class="manual">
 <tr><th>Original function</th><th>In-place function</th></tr>
@@ -132,7 +132,7 @@ you can use \link PlainObjectBase::conservativeResize() conservativeResize() \en
 As explained above, it may be dangerous if the same matrix or array occurs on both the left-hand side and the
 right-hand side of an assignment operator, and it is then often necessary to evaluate the right-hand side
 explicitly. However, applying component-wise operations (such as matrix addition, scalar multiplication and
-array multiplication) is safe. 
+array multiplication) is safe.
 
 The following example has only component-wise operations. Thus, there is no need for \link DenseBase::eval()
 eval() \endlink even though the same matrix appears on both sides of the assignments.

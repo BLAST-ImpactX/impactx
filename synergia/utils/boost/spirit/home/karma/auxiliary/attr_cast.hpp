@@ -49,11 +49,11 @@ namespace boost { namespace spirit { namespace karma
         typedef typename mpl::eval_if<
             traits::not_is_unused<Transformed>
           , mpl::identity<Transformed>
-          , traits::attribute_of<subject_type> >::type 
+          , traits::attribute_of<subject_type> >::type
         transformed_attribute_type;
 
         attr_cast_generator(Subject const& subject)
-          : subject(subject) 
+          : subject(subject)
         {
             // If you got an error_invalid_expression error message here,
             // then the expression (Subject) is not a valid spirit karma
@@ -76,7 +76,7 @@ namespace boost { namespace spirit { namespace karma
           , Attribute const& attr) const
         {
             typedef traits::transform_attribute<
-                Attribute const, transformed_attribute_type, domain> 
+                Attribute const, transformed_attribute_type, domain>
             transform;
 
             return compile<karma::domain>(subject).generate(

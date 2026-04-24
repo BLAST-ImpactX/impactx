@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-import sys, os
+import os
+
 import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 if hasattr(synergia.bunch.Bunch, "read_openpmd_file"):
     import openpmd_api as io

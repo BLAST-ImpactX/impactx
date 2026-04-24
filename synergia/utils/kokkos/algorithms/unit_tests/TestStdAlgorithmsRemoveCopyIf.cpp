@@ -126,9 +126,9 @@ void verify_data(ViewTypeFrom view_from, ViewTypeDest view_dest,
   for (std::size_t i = 0; i < my_diff; ++i) {
     ASSERT_EQ(view_dest_h(i), gold_dest_std[i]);
     // std::cout << "i= " << i << " "
-    // 	      << "mine: " << view_dest_h(i) << " "
-    // 	      << "std: " << gold_dest_std[i]
-    // 	      << '\n';
+    //        << "mine: " << view_dest_h(i) << " "
+    //        << "std: " << gold_dest_std[i]
+    //        << '\n';
   }
 }
 

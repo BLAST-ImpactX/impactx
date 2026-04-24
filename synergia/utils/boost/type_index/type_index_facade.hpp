@@ -24,13 +24,13 @@ namespace boost { namespace typeindex {
 
 /// \class type_index_facade
 ///
-/// This class takes care about the comparison operators, hash functions and 
+/// This class takes care about the comparison operators, hash functions and
 /// ostream operators. Use this class as a public base class for defining new
 /// type_info-conforming classes.
 ///
 /// \b Example:
 /// \code
-/// class stl_type_index: public type_index_facade<stl_type_index, std::type_info> 
+/// class stl_type_index: public type_index_facade<stl_type_index, std::type_info>
 /// {
 /// public:
 ///     typedef std::type_info type_info_t;
@@ -47,10 +47,10 @@ namespace boost { namespace typeindex {
 ///
 /// \tparam Derived Class derived from type_index_facade.
 /// \tparam TypeInfo Class that will be used as a base type_info class.
-/// \note Take a look at the protected methods. They are \b not \b defined in type_index_facade. 
-/// Protected member functions raw_name() \b must be defined in Derived class. All the other 
+/// \note Take a look at the protected methods. They are \b not \b defined in type_index_facade.
+/// Protected member functions raw_name() \b must be defined in Derived class. All the other
 /// methods are mandatory.
-/// \see 'Making a custom type_index' section for more information about 
+/// \see 'Making a custom type_index' section for more information about
 /// creating your own type_index using type_index_facade.
 template <class Derived, class TypeInfo>
 class type_index_facade {
@@ -113,7 +113,7 @@ protected:
     /// This is a factory method that is used to create instances of Derived classes.
     /// boost::typeindex::type_id() will call this method, if Derived has same type as boost::typeindex::type_index.
     ///
-    /// \b Override: This function \b may be redefined and made public in Derived class. Overrides \b must not throw. 
+    /// \b Override: This function \b may be redefined and made public in Derived class. Overrides \b must not throw.
     /// Overrides \b must remove const, volatile && and & modifiers from T.
     /// \tparam T Type for which type_index must be created.
     /// \return type_index for type T.
@@ -123,7 +123,7 @@ protected:
     /// This is a factory method that is used to create instances of Derived classes.
     /// boost::typeindex::type_id_with_cvr() will call this method, if Derived has same type as boost::typeindex::type_index.
     ///
-    /// \b Override: This function \b may be redefined and made public in Derived class. Overrides \b must not throw. 
+    /// \b Override: This function \b may be redefined and made public in Derived class. Overrides \b must not throw.
     /// Overrides \b must \b not remove const, volatile && and & modifiers from T.
     /// \tparam T Type for which type_index must be created.
     /// \return type_index for type T.
@@ -259,8 +259,8 @@ bool operator ==, !=, <, ... (const TypeInfo& lhs, const type_index_facade& rhs)
 /// Ostream operator that will output demangled name.
 template <class CharT, class TriatT, class Derived, class TypeInfo>
 inline std::basic_ostream<CharT, TriatT>& operator<<(
-    std::basic_ostream<CharT, TriatT>& ostr, 
-    const type_index_facade<Derived, TypeInfo>& ind) 
+    std::basic_ostream<CharT, TriatT>& ostr,
+    const type_index_facade<Derived, TypeInfo>& ind)
 {
     ostr << static_cast<Derived const&>(ind).pretty_name();
     return ostr;
@@ -277,4 +277,3 @@ inline std::size_t hash_value(const type_index_facade<Derived, TypeInfo>& lhs) n
 }} // namespace boost::typeindex
 
 #endif // BOOST_TYPE_INDEX_TYPE_INDEX_FACADE_HPP
-

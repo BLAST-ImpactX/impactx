@@ -343,7 +343,7 @@ struct foreach_iterator
 {
     // **** READ THIS IF YOUR COMPILE BREAKS HERE ****
     //
-    // There is an ambiguity about how to iterate over arrays of char and wchar_t. 
+    // There is an ambiguity about how to iterate over arrays of char and wchar_t.
     // Should the last array element be treated as a null terminator to be skipped, or
     // is it just like any other element in the array? To fix the problem, you must
     // say which behavior you want.
@@ -355,7 +355,7 @@ struct foreach_iterator
     // as in BOOST_FOREACH( char ch, boost::as_array("hello") ) ...
     BOOST_MPL_ASSERT_MSG( (!is_char_array<T>::value), IS_THIS_AN_ARRAY_OR_A_NULL_TERMINATED_STRING, (T&) );
 
-    // If the type is a pointer to a null terminated string (as opposed 
+    // If the type is a pointer to a null terminated string (as opposed
     // to an array type), there is no ambiguity.
     typedef BOOST_DEDUCED_TYPENAME wrap_cstr<T>::type container;
 
@@ -372,7 +372,7 @@ struct foreach_reverse_iterator
 {
     // **** READ THIS IF YOUR COMPILE BREAKS HERE ****
     //
-    // There is an ambiguity about how to iterate over arrays of char and wchar_t. 
+    // There is an ambiguity about how to iterate over arrays of char and wchar_t.
     // Should the last array element be treated as a null terminator to be skipped, or
     // is it just like any other element in the array? To fix the problem, you must
     // say which behavior you want.
@@ -384,7 +384,7 @@ struct foreach_reverse_iterator
     // as in BOOST_FOREACH( char ch, boost::as_array("hello") ) ...
     BOOST_MPL_ASSERT_MSG( (!is_char_array<T>::value), IS_THIS_AN_ARRAY_OR_A_NULL_TERMINATED_STRING, (T&) );
 
-    // If the type is a pointer to a null terminated string (as opposed 
+    // If the type is a pointer to a null terminated string (as opposed
     // to an array type), there is no ambiguity.
     typedef BOOST_DEDUCED_TYPENAME wrap_cstr<T>::type container;
 
@@ -540,7 +540,7 @@ struct rvalue_probe
         boost::mpl::or_<boost::is_abstract<T>, boost::is_array<T> >, private_type_, T
     >::type value_type;
     #endif
-    
+
     operator value_type()
     {
         this->is_rvalue = true;
@@ -606,7 +606,7 @@ struct simple_variant
 
 private:
     enum size_type { size = sizeof(T) > sizeof(T*) ? sizeof(T) : sizeof(T*) };
-    simple_variant &operator =(simple_variant const &); 
+    simple_variant &operator =(simple_variant const &);
     bool const is_rvalue;
     aligned_storage<size> data;
 };
@@ -1087,7 +1087,7 @@ rderef(auto_any_t cur, type2type<T, C> *)
 //   std::list<int> int_list(/*stuff*/);
 //   BOOST_FOREACH(int &i, int_list)
 //   {
-//       /* 
+//       /*
 //        * loop body goes here.
 //        * i is a reference to the int in int_list.
 //        */

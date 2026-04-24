@@ -52,8 +52,8 @@ Finally, if bench results already exist (the bench*.dat files) then they merges 
  Then you can look the raw data,
         go_mean my_directory
  or smooth the data first :
-	smooth_all.sh my_directory
-	go_mean my_directory_smooth
+    smooth_all.sh my_directory
+    go_mean my_directory_smooth
 
 
 *************************************************
@@ -76,49 +76,49 @@ Principles : the code modularity is achieved by defining two concepts :
 
  ****** Action concept : This is a class defining which kind
   of test must be performed (e.g. a matrix_vector_product).
-	An Action should define the following methods :
+    An Action should define the following methods :
 
         *** Ctor using the size of the problem (matrix or vector size) as an argument
-	    Action action(size);
+        Action action(size);
         *** initialize : this method initialize the calculation (e.g. initialize the matrices and vectors arguments)
-	    action.initialize();
-	*** calculate : this method actually launch the calculation to be benchmarked
-	    action.calculate;
-	*** nb_op_base() : this method returns the complexity of the calculate method (allowing the mflops evaluation)
+        action.initialize();
+    *** calculate : this method actually launch the calculation to be benchmarked
+        action.calculate;
+    *** nb_op_base() : this method returns the complexity of the calculate method (allowing the mflops evaluation)
         *** name() : this method returns the name of the action (std::string)
 
  ****** Interface concept : This is a class or namespace defining how to use a given library and
   its specific containers (matrix and vector). Up to now an interface should following types
 
-	*** real_type : kind of float to be used (float or double)
-	*** stl_vector : must correspond to std::vector<real_type>
-	*** stl_matrix : must correspond to std::vector<stl_vector>
-	*** gene_vector : the vector type for this interface        --> e.g. (real_type *) for the C_interface
-	*** gene_matrix : the matrix type for this interface        --> e.g. (gene_vector *) for the C_interface
+    *** real_type : kind of float to be used (float or double)
+    *** stl_vector : must correspond to std::vector<real_type>
+    *** stl_matrix : must correspond to std::vector<stl_vector>
+    *** gene_vector : the vector type for this interface        --> e.g. (real_type *) for the C_interface
+    *** gene_matrix : the matrix type for this interface        --> e.g. (gene_vector *) for the C_interface
 
-	+ the following common methods
+    + the following common methods
 
         *** free_matrix(gene_matrix & A, int N)  dealocation of a N sized gene_matrix A
         *** free_vector(gene_vector & B)  dealocation of a N sized gene_vector B
         *** matrix_from_stl(gene_matrix & A, stl_matrix & A_stl) copy the content of an stl_matrix A_stl into a gene_matrix A.
-	     The allocation of A is done in this function.
-	*** vector_to_stl(gene_vector & B, stl_vector & B_stl)  copy the content of an stl_vector B_stl into a gene_vector B.
-	     The allocation of B is done in this function.
+         The allocation of A is done in this function.
+    *** vector_to_stl(gene_vector & B, stl_vector & B_stl)  copy the content of an stl_vector B_stl into a gene_vector B.
+         The allocation of B is done in this function.
         *** matrix_to_stl(gene_matrix & A, stl_matrix & A_stl) copy the content of an gene_matrix A into an stl_matrix A_stl.
              The size of A_STL must corresponds to the size of A.
         *** vector_to_stl(gene_vector & A, stl_vector & A_stl) copy the content of an gene_vector A into an stl_vector A_stl.
              The size of B_STL must corresponds to the size of B.
-	*** copy_matrix(gene_matrix & source, gene_matrix & cible, int N) : copy the content of source in cible. Both source
-		and cible must be sized NxN.
-	*** copy_vector(gene_vector & source, gene_vector & cible, int N) : copy the content of source in cible. Both source
- 		and cible must be sized N.
+    *** copy_matrix(gene_matrix & source, gene_matrix & cible, int N) : copy the content of source in cible. Both source
+        and cible must be sized NxN.
+    *** copy_vector(gene_vector & source, gene_vector & cible, int N) : copy the content of source in cible. Both source
+        and cible must be sized N.
 
-	and the following method corresponding to the action one wants to be benchmarked :
+    and the following method corresponding to the action one wants to be benchmarked :
 
-	***  matrix_vector_product(const gene_matrix & A, const gene_vector & B, gene_vector & X, int N)
-	***  matrix_matrix_product(const gene_matrix & A, const gene_matrix & B, gene_matrix & X, int N)
+    ***  matrix_vector_product(const gene_matrix & A, const gene_vector & B, gene_vector & X, int N)
+    ***  matrix_matrix_product(const gene_matrix & A, const gene_matrix & B, gene_matrix & X, int N)
         ***  ata_product(const gene_matrix & A, gene_matrix & X, int N)
-	***  aat_product(const gene_matrix & A, gene_matrix & X, int N)
+    ***  aat_product(const gene_matrix & A, gene_matrix & X, int N)
         ***  axpy(real coef, const gene_vector & X, gene_vector & Y, int N)
 
  The bench algorithm (generic_bench/bench.hh) is templated with an action itself templated with
@@ -149,6 +149,3 @@ Principles : the code modularity is achieved by defining two concepts :
  in generic/bench.hh
 
 .
-
-
-

@@ -67,7 +67,7 @@ struct constraint
 #   pragma GCC diagnostic pop
 #   endif
 };
-  
+
 template <class Model>
 struct requirement_<void(*)(Model)>
   : boost::conditional<
@@ -76,7 +76,7 @@ struct requirement_<void(*)(Model)>
       , requirement<failed ************ Model::************>
     >::type
 {};
-  
+
 # else
 
 // For GCC-2.x, these can't have exactly the same name
@@ -84,7 +84,7 @@ template <class Model>
 struct requirement_<void(*)(Model)>
     : requirement<failed ************ Model::************>
 {};
-  
+
 # endif
 
 #  define BOOST_CONCEPT_ASSERT_FN( ModelFnPtr )             \

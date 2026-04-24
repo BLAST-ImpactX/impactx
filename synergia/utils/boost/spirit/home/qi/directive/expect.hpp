@@ -85,7 +85,7 @@ namespace boost { namespace spirit { namespace qi {
     struct make_directive<tag::expect, Subject, Modifiers>
     {
         typedef expect_directive<Subject> result_type;
-        
+
         result_type operator()
             (unused_type, Subject const& subject, unused_type) const
         {

@@ -1209,7 +1209,7 @@ ifeq ($(KOKKOS_INTERNAL_COMPILER_CRAY_CLANG), 0)
     ifeq ($(KOKKOS_INTERNAL_COMPILER_NVHPC), 0)
       KOKKOS_INTERNAL_CUDA_ARCH_FLAG := $(KOKKOS_INTERNAL_CUDA_ARCH_FLAG)=sm_87
     endif
-  endif  
+  endif
   ifeq ($(KOKKOS_INTERNAL_USE_ARCH_ADA89), 1)
     tmp := $(call kokkos_append_header,"$H""define KOKKOS_ARCH_ADA89")
     ifeq ($(KOKKOS_INTERNAL_COMPILER_NVHPC), 0)
@@ -1561,7 +1561,7 @@ ifeq ($(KOKKOS_INTERNAL_USE_OPENACC), 1)
       $(error If a GPU architecture is specified,  KOKKOS_OPENACC_OPTIONS = force_host_as_device cannot be used. Disable the force_host_as_device option)
     endif
   else ifeq ($(KOKKOS_INTERNAL_OPENACC_FORCE_HOST_AS_DEVICE), 1)
-    # Compile for kernel execution on the host. In that case, 
+    # Compile for kernel execution on the host. In that case,
     # memory is shared between the OpenACC space and the host space.
     ifeq ($(KOKKOS_INTERNAL_COMPILER_NVHPC), 1)
       KOKKOS_CXXFLAGS += -acc=multicore

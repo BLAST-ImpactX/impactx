@@ -129,7 +129,7 @@ There are at least two ways around this:
 
 The current behaviour of using \c Matrix with boolean coefficients is inconsistent and likely to change in future versions of Eigen, so please use it carefully!
 
-A simple example for such an inconsistency is 
+A simple example for such an inconsistency is
 
 \code
 template<int Size>

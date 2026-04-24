@@ -3,7 +3,7 @@
     Copyright (c) 2005 Eric Niebler
     Copyright (c) 2007 Dan Marsden
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_ANY_05052005_1229)
@@ -19,7 +19,7 @@
 #include <boost/fusion/iterator/deref.hpp>
 #include <boost/fusion/iterator/distance.hpp>
 
-namespace boost { namespace fusion { 
+namespace boost { namespace fusion {
     struct random_access_traversal_tag;
 namespace detail
 {
@@ -137,4 +137,3 @@ namespace detail
 }}}
 
 #endif
-

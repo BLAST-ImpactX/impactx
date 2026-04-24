@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_DETAIL_GENERATE_FEB_20_2007_0959AM)
@@ -27,7 +27,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         // Report invalid expression error as early as possible.
         // If you got an error_invalid_expression error message here,
         // then the expression (Expr) is not a valid spirit karma expression.
-        // Did you intend to use the auto_ facilities while forgetting to 
+        // Did you intend to use the auto_ facilities while forgetting to
         // #include <boost/spirit/include/karma_auto.hpp>?
         BOOST_SPIRIT_ASSERT_MATCH(karma::domain, Expr);
     };
@@ -69,7 +69,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         // Report invalid expression error as early as possible.
         // If you got an error_invalid_expression error message here,
         // then the expression (Expr) is not a valid spirit karma expression.
-        // Did you intend to use the auto_ facilities while forgetting to 
+        // Did you intend to use the auto_ facilities while forgetting to
         // #include <boost/spirit/include/karma_auto.hpp>?
         BOOST_SPIRIT_ASSERT_MATCH(karma::domain, Expr);
     };
@@ -112,7 +112,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
             // then the delimiter is not a valid spirit karma expression.
             BOOST_SPIRIT_ASSERT_MATCH(karma::domain, Delimiter);
 
-            typename result_of::compile<karma::domain, Delimiter>::type const 
+            typename result_of::compile<karma::domain, Delimiter>::type const
                 delimiter_ = compile<karma::domain>(delimiter);
 
             if (pre_delimit == delimit_flag::predelimit &&
@@ -128,4 +128,3 @@ namespace boost { namespace spirit { namespace karma { namespace detail
 }}}}
 
 #endif
-

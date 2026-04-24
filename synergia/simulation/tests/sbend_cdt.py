@@ -2,11 +2,10 @@
 
 # this script for Synergia2 and CHEF
 
-import sys, os
+import beamline
 import numpy as np
 
 import synergia
-import beamline
 
 # create lattice with bend
 lattice = synergia.lattice.Lattice("foo")

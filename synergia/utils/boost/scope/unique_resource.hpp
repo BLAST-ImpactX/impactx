@@ -1104,7 +1104,7 @@ struct dereference_traits< T, true >
  * unallocated resource values, which will create \c unique_resource objects in
  * unallocated state (the deleter will not be called on unallocated resource
  * values).
- * 
+ *
  * \tparam Resource Resource type.
  * \tparam Deleter Resource deleter function object type.
  * \tparam Traits Optional resource traits type.
@@ -1365,7 +1365,7 @@ public:
      * \brief Returns \c true if the resource is allocated and to be reclaimed by the deleter, otherwise \c false.
      *
      * \note This method does not test the value of the resource.
-     * 
+     *
      * **Throws:** Nothing.
      */
     explicit operator bool () const noexcept

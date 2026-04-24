@@ -16,11 +16,11 @@
 #include <string>
 #include <iosfwd>
 
-#include <boost/format/detail/compat_workarounds.hpp> 
+#include <boost/format/detail/compat_workarounds.hpp>
 
 namespace boost {
 
-    template <class Ch, 
+    template <class Ch,
         class Tr = BOOST_IO_STD char_traits<Ch>, class Alloc = std::allocator<Ch> >
     class basic_format;
 
@@ -31,11 +31,11 @@ namespace boost {
 #endif
 
     namespace io {
-        enum format_error_bits { bad_format_string_bit = 1, 
+        enum format_error_bits { bad_format_string_bit = 1,
                                  too_few_args_bit = 2, too_many_args_bit = 4,
                                  out_of_range_bit = 8,
                                  all_error_bits = 255, no_error_bits=0 };
-                  
+
     } // namespace io
 
 } // namespace boost

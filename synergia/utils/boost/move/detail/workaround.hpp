@@ -148,4 +148,3 @@ template<unsigned> struct static_assert_test {};
 #endif
 
 #endif   //#ifndef BOOST_MOVE_DETAIL_WORKAROUND_HPP
-

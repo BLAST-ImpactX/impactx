@@ -1,6 +1,6 @@
 //  Copyright (c) 2001 Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -30,7 +30,7 @@ namespace boost { namespace spirit { namespace iterator_policies
         {
             void swap(unique&) {}
 
-            // clone is called when a copy of the iterator is made, so 
+            // clone is called when a copy of the iterator is made, so
             // increment the ref-count.
             template <typename MultiPass>
             static void clone(MultiPass& mp)
@@ -51,7 +51,7 @@ namespace boost { namespace spirit { namespace iterator_policies
             // std_deque StoragePolicy will free it's buffered data if this
             // returns true.
             template <typename MultiPass>
-            static bool is_unique(MultiPass const& mp) 
+            static bool is_unique(MultiPass const& mp)
             {
                 return 0 == mp.shared() || 1 == mp.shared()->count;
             }

@@ -1,7 +1,7 @@
 //  Copyright (c) 2001, Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  http://spirit.sourceforge.net/
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,7 +15,7 @@
 #include <boost/spirit/home/support/iterators/detail/combine_policies.hpp>
 #include <boost/spirit/home/support/iterators/multi_pass.hpp>
 
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
     //  this could be a template typedef, since such a thing doesn't
@@ -28,7 +28,7 @@ namespace boost { namespace spirit
                 iterator_policies::first_owner
               , iterator_policies::no_check
               , iterator_policies::input_iterator
-              , iterator_policies::fixed_size_queue<N> > 
+              , iterator_policies::fixed_size_queue<N> >
         >
     {
     private:
@@ -37,7 +37,7 @@ namespace boost { namespace spirit
                 iterator_policies::first_owner
               , iterator_policies::no_check
               , iterator_policies::input_iterator
-              , iterator_policies::fixed_size_queue<N> > 
+              , iterator_policies::fixed_size_queue<N> >
         > base_type;
 
     public:

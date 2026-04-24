@@ -238,7 +238,7 @@ display_help_text() {
       echo "                                rdc"
       echo "--with-hpx-options=[OPT]:     Additional options to HPX:"
       echo "                                enable_async_dispatch"
-      echo "--gcc-toolchain=/Path/To/GccRoot:  Set the gcc toolchain to use with clang (e.g. /usr)" 
+      echo "--gcc-toolchain=/Path/To/GccRoot:  Set the gcc toolchain to use with clang (e.g. /usr)"
       echo "--cmake-flags=[CMAKE Command options]:  Set cmake options not handled by script"
       echo "--make-j=[NUM]:               DEPRECATED: call make with appropriate"
       echo "                                -j flag"

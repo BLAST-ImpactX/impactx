@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from synergia.foundation import Reference_particle, Four_momentum
-import pytest
 import numpy
+import pytest
+
+from synergia.foundation import Four_momentum, Reference_particle
 
 charge = 1
 mass = 2.2

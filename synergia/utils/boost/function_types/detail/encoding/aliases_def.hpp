@@ -13,4 +13,3 @@
 #define non_member       BOOST_FT_non_member
 #define variadic         BOOST_FT_variadic
 #define non_variadic     BOOST_FT_non_variadic
-

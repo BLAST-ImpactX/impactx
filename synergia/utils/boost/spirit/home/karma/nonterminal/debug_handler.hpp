@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2001-2011 Joel de Guzman
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -23,7 +23,7 @@ namespace boost { namespace spirit { namespace karma
       , typename Properties, typename F>
     struct debug_handler
     {
-        typedef detail::output_iterator<OutputIterator, Properties> 
+        typedef detail::output_iterator<OutputIterator, Properties>
             output_iterator;
         typedef detail::enable_buffering<output_iterator> buffer_type;
 
@@ -48,7 +48,7 @@ namespace boost { namespace spirit { namespace karma
                 r = subject(sink, context, delim);
             }
 
-            if (r) 
+            if (r)
             {
                 f (sink, context, successful_generate, rule_name, buffer);
                 buffer.buffer_copy();
@@ -82,7 +82,7 @@ namespace boost { namespace spirit { namespace karma
 
     struct simple_trace;
 
-    namespace detail 
+    namespace detail
     {
         // This class provides an extra level of indirection through a
         // template to produce the simple_trace type. This way, the use
@@ -90,7 +90,7 @@ namespace boost { namespace spirit { namespace karma
         // that compilers eagerly type-checking template definitions
         // won't complain that simple_trace is incomplete.
         template<typename T>
-        struct get_simple_trace 
+        struct get_simple_trace
         {
             typedef simple_trace type;
         };
@@ -110,7 +110,7 @@ namespace boost { namespace spirit { namespace karma
               , typename rule_type::properties
               , simple_trace>
         debug_handler;
-        typedef typename karma::detail::get_simple_trace<OutputIterator>::type 
+        typedef typename karma::detail::get_simple_trace<OutputIterator>::type
           trace;
         r.f = debug_handler(r.f, trace(), r.name());
     }

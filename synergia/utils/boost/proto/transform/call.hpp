@@ -170,7 +170,7 @@ namespace boost { namespace proto
         {
             typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
             typedef typename detail::poly_function_traits<Fun, Fun(a0)>::result_type result_type;
-            
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl2::expr_param   e
@@ -190,7 +190,7 @@ namespace boost { namespace proto
         {
             typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
             typedef typename Fun::template impl<a0, State, Data>::result_type result_type;
-            
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl2::expr_param   e
@@ -244,7 +244,7 @@ namespace boost { namespace proto
             typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
             typedef typename when<_, A1>::template impl<Expr, State, Data>::result_type a1;
             typedef typename detail::poly_function_traits<Fun, Fun(a0, a1)>::result_type result_type;
-            
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl2::expr_param   e
@@ -266,7 +266,7 @@ namespace boost { namespace proto
             typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
             typedef typename when<_, A1>::template impl<Expr, State, Data>::result_type a1;
             typedef typename Fun::template impl<a0, a1, Data>::result_type result_type;
-            
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl2::expr_param   e
@@ -328,7 +328,7 @@ namespace boost { namespace proto
             typedef typename when<_, A1>::template impl<Expr, State, Data>::result_type a1;
             typedef typename when<_, A2>::template impl<Expr, State, Data>::result_type a2;
             typedef typename detail::poly_function_traits<Fun, Fun(a0, a1, a2)>::result_type result_type;
-            
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl2::expr_param   e
@@ -352,7 +352,7 @@ namespace boost { namespace proto
             typedef typename when<_, A1>::template impl<Expr, State, Data>::result_type a1;
             typedef typename when<_, A2>::template impl<Expr, State, Data>::result_type a2;
             typedef typename Fun::template impl<a0, a1, a2>::result_type result_type;
-            
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl2::expr_param   e

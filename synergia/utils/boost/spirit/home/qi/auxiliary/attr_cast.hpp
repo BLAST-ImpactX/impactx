@@ -41,7 +41,7 @@ namespace boost { namespace spirit { namespace qi
     // generating anything
     ///////////////////////////////////////////////////////////////////////////
     template <typename Exposed, typename Transformed, typename Subject>
-    struct attr_cast_parser 
+    struct attr_cast_parser
       : unary_parser<attr_cast_parser<Exposed, Transformed, Subject> >
     {
         typedef typename result_of::compile<qi::domain, Subject>::type

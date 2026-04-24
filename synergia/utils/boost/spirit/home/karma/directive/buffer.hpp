@@ -48,7 +48,7 @@ namespace boost { namespace spirit { namespace karma
     {
         typedef Subject subject_type;
         typedef mpl::int_<
-            subject_type::properties::value | 
+            subject_type::properties::value |
             generator_properties::countingbuffer
         > properties;
 
@@ -73,7 +73,7 @@ namespace boost { namespace spirit { namespace karma
                 detail::disable_counting<OutputIterator> nocounting(sink);
                 r = subject.generate(sink, ctx, d, attr);
             }
-            if (r) 
+            if (r)
                 buffering.buffer_copy();
             return r;
         }

@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_MPL_ITERATOR_05052005_0731)
@@ -50,7 +50,7 @@ namespace boost { namespace fusion
         struct next
         {
             typedef mpl_iterator<
-                typename mpl::next<typename Iterator::iterator_type>::type> 
+                typename mpl::next<typename Iterator::iterator_type>::type>
             type;
 
             BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
@@ -65,7 +65,7 @@ namespace boost { namespace fusion
         struct prior
         {
             typedef mpl_iterator<
-                typename mpl::prior<typename Iterator::iterator_type>::type> 
+                typename mpl::prior<typename Iterator::iterator_type>::type>
             type;
 
             BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
@@ -92,18 +92,18 @@ namespace boost { namespace fusion
         };
 
         template <typename I1, typename I2>
-        struct distance : 
+        struct distance :
             mpl::distance<
                 typename I1::iterator_type
               , typename I2::iterator_type>
         {
-            typedef typename 
+            typedef typename
                 mpl::distance<
                     typename I1::iterator_type
                   , typename I2::iterator_type
                 >::type
             type;
-            
+
             BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
             static type
             call(I1 const&, I2 const&)
@@ -124,5 +124,3 @@ namespace std
 #endif
 
 #endif
-
-

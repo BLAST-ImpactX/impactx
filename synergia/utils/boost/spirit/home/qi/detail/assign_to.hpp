@@ -250,10 +250,10 @@ namespace boost { namespace spirit { namespace traits
             traits::push_back(attr, val);
         }
 
-        // T is a container (but not a string), and T is convertible to the 
+        // T is a container (but not a string), and T is convertible to the
         // value_type of the Attribute container
         template <typename T_>
-        static void 
+        static void
         append_to_container_not_string(T_ const& val, Attribute& attr, mpl::true_)
         {
             traits::push_back(attr, val);
@@ -261,7 +261,7 @@ namespace boost { namespace spirit { namespace traits
 
         // T is a container (but not a string), generic overload
         template <typename T_>
-        static void 
+        static void
         append_to_container_not_string(T_ const& val, Attribute& attr, mpl::false_)
         {
             typedef typename traits::container_iterator<T_ const>::type

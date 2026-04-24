@@ -181,4 +181,3 @@ struct dynamic_num_converter_impl
 }} // namespace boost::detail
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_CONVERTER_NUMERIC_HPP
-

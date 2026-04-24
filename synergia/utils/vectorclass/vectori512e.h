@@ -87,7 +87,7 @@ public:
         Vec8i(z1).store_a((int32_t*)p+8);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 64
     void store_nt(void * p) const {
@@ -2225,7 +2225,7 @@ static inline Vec16ib extend_z(Vec8ib a) {
 }
 static inline Vec8qb extend_z(Vec4qb a) {
     return Vec8qb(a, Vec4qb(false));
-} 
+}
 
 
 /*****************************************************************************

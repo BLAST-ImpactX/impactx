@@ -53,20 +53,20 @@ namespace boost { namespace spirit
 
     // enables *lazy* right_align(d)[g], where d provides a generator
     template <>
-    struct use_lazy_directive<karma::domain, tag::right_align, 1> 
+    struct use_lazy_directive<karma::domain, tag::right_align, 1>
       : mpl::true_ {};
 
-    // enables right_align(w, d)[g], where d is a generator and w is a maximum 
+    // enables right_align(w, d)[g], where d is a generator and w is a maximum
     // width
     template <typename Width, typename Padding>
     struct use_directive<karma::domain
           , terminal_ex<tag::right_align, fusion::vector2<Width, Padding> > >
       : spirit::traits::matches<karma::domain, Padding> {};
 
-    // enables *lazy* right_align(w, d)[g], where d provides a generator and w 
+    // enables *lazy* right_align(w, d)[g], where d provides a generator and w
     // is a maximum width
     template <>
-    struct use_lazy_directive<karma::domain, tag::right_align, 2> 
+    struct use_lazy_directive<karma::domain, tag::right_align, 2>
       : mpl::true_ {};
 
 }}
@@ -82,15 +82,15 @@ namespace boost { namespace spirit { namespace karma
     namespace detail
     {
         ///////////////////////////////////////////////////////////////////////
-        //  The right_align_generate template function is used for all the 
-        //  different flavors of the right_align[] directive. 
+        //  The right_align_generate template function is used for all the
+        //  different flavors of the right_align[] directive.
         ///////////////////////////////////////////////////////////////////////
-        template <typename OutputIterator, typename Context, typename Delimiter, 
+        template <typename OutputIterator, typename Context, typename Delimiter,
             typename Attribute, typename Embedded, typename Padding>
-        inline static bool 
-        right_align_generate(OutputIterator& sink, Context& ctx, 
-            Delimiter const& d, Attribute const& attr, Embedded const& e, 
-            unsigned int const width, Padding const& p) 
+        inline static bool
+        right_align_generate(OutputIterator& sink, Context& ctx,
+            Delimiter const& d, Attribute const& attr, Embedded const& e,
+            unsigned int const width, Padding const& p)
         {
 #if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1600))
             (void)e; // suppresses warning: C4100: 'e' : unreferenced formal parameter
@@ -99,7 +99,7 @@ namespace boost { namespace spirit { namespace karma
             detail::enable_buffering<OutputIterator> buffering(sink, width);
             bool r = false;
 
-            // first generate the embedded output 
+            // first generate the embedded output
             {
                 detail::disable_counting<OutputIterator> nocounting(sink);
                 r = e.generate(sink, ctx, d, attr);
@@ -109,11 +109,11 @@ namespace boost { namespace spirit { namespace karma
 
             // generate the left padding
             detail::enable_counting<OutputIterator> counting(sink, buffering.buffer_size());
-            while(r && counting.count() < width) 
+            while(r && counting.count() < width)
                 r = p.generate(sink, ctx, unused, unused);
 
             // copy the buffered output to the target output iterator
-            if (r) 
+            if (r)
                 buffering.buffer_copy();
             return r;
         }
@@ -126,7 +126,7 @@ namespace boost { namespace spirit { namespace karma
     //  generator (always spaces).
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename Width = detail::default_width>
-    struct simple_right_alignment 
+    struct simple_right_alignment
       : unary_generator<simple_right_alignment<Subject, Width> >
     {
         typedef Subject subject_type;
@@ -170,7 +170,7 @@ namespace boost { namespace spirit { namespace karma
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename Padding
       , typename Width = detail::default_width>
-    struct padding_right_alignment 
+    struct padding_right_alignment
       : unary_generator<padding_right_alignment<Subject, Padding, Width> >
     {
         typedef Subject subject_type;
@@ -178,7 +178,7 @@ namespace boost { namespace spirit { namespace karma
 
         typedef mpl::int_<
             generator_properties::countingbuffer |
-            subject_type::properties::value | padding_type::properties::value 
+            subject_type::properties::value | padding_type::properties::value
         > properties;
 
         template <typename Context, typename Iterator>
@@ -324,4 +324,3 @@ namespace boost { namespace spirit { namespace traits
 }}}
 
 #endif
-

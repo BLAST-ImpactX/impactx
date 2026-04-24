@@ -223,7 +223,7 @@ public:
         _mm256_store_si256((__m256i*)p, ymm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 32
     void store_nt(void * p) const {
@@ -5364,7 +5364,7 @@ static inline Vec8b extend_z(Vec4b a) {
 }
 static inline Vec4b extend_z(Vec2b a) {
     return __mmask8(uint8_t(a) & 0x03);
-} 
+}
 
 #endif
 

@@ -308,7 +308,7 @@ namespace boost { namespace phoenix {
             }
         };
 
-        struct lower_bound 
+        struct lower_bound
         {
             template <typename Sig>
             struct result;
@@ -352,7 +352,7 @@ namespace boost { namespace phoenix {
             }
         };
 
-        struct upper_bound 
+        struct upper_bound
         {
             template <typename Sig>
             struct result;
@@ -408,7 +408,7 @@ namespace boost { namespace phoenix {
             };
         }
 
-        struct equal_range 
+        struct equal_range
         {
             template <typename Sig>
             struct result;
@@ -494,7 +494,7 @@ namespace boost { namespace phoenix {
             }
         };
 
-        struct binary_search 
+        struct binary_search
         {
             typedef bool result_type;
 
@@ -511,7 +511,7 @@ namespace boost { namespace phoenix {
             }
         };
 
-        struct includes 
+        struct includes
         {
             typedef bool result_type;
 
@@ -539,7 +539,7 @@ namespace boost { namespace phoenix {
         {
             template <typename Sig>
             struct result;
-            
+
             template <typename This, class R>
             struct result<This(R&)>
                 : range_iterator<R>
@@ -556,7 +556,7 @@ namespace boost { namespace phoenix {
             {
                 return std::min_element(detail::begin_(r), detail::end_(r));
             }
-        
+
             template<class R, class P>
             typename range_iterator<R>::type
             operator()(R& r, P p) const
@@ -586,7 +586,7 @@ namespace boost { namespace phoenix {
             {
                 return std::max_element(detail::begin_(r), detail::end_(r));
             }
-        
+
             template<class R, class P>
             typename range_iterator<R>::type
             operator()(R& r, P p) const
@@ -607,7 +607,7 @@ namespace boost { namespace phoenix {
                     , detail::begin_(r2), detail::end_(r2)
                     );
             }
-        
+
             template<class R1, class R2, class P>
             bool operator()(R1& r1, R2& r2, P p) const
             {

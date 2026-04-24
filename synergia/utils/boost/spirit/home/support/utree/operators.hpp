@@ -26,7 +26,7 @@
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_integral.hpp>
 
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     // Relational operators
     bool operator==(utree const& a, utree const& b);
@@ -322,7 +322,7 @@ namespace boost { namespace spirit
         {
             return Base::eval(true, true);
         }
-        
+
         // unary
         template <typename A>
         utree operator()(A const& a) const
@@ -575,7 +575,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("addition performed on non-arithmetic utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -587,7 +587,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("subtraction performed on non-arithmetic utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -599,7 +599,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("multiplication performed on non-arithmetic utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -611,7 +611,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("division performed on non-arithmetic utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -623,7 +623,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("modulos performed on non-integral utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -635,7 +635,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("negation performed on non-arithmetic utree type",
                a.which()));
-        } 
+        }
         return r;
     }
 
@@ -647,7 +647,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("bitwise and performed on non-integral utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -659,7 +659,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("bitwise or performed on non-integral utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -671,7 +671,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("bitwise xor performed on non-integral utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -683,7 +683,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("left shift performed on non-integral utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -695,7 +695,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("right shift performed on non-integral utree types",
                a.which(), b.which()));
-        } 
+        }
         return r;
     }
 
@@ -707,7 +707,7 @@ namespace boost { namespace spirit
             BOOST_THROW_EXCEPTION(bad_type_exception
               ("inversion performed on non-integral utree type",
                a.which()));
-        } 
+        }
         return r;
     }
 }}

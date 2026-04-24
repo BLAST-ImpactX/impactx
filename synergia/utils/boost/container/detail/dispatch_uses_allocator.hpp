@@ -218,7 +218,7 @@ BOOST_MOVE_ITERATE_0TO9(BOOST_CONTAINER_SCOPED_ALLOCATOR_DISPATCH_USES_ALLOCATOR
 template < typename ConstructAlloc
          , typename ArgAlloc
          , typename Pair
-         > inline 
+         > inline
 BOOST_CONTAINER_DOC1ST(void, typename dtl::enable_if<dtl::is_pair<Pair> BOOST_MOVE_I void >::type)
    dispatch_uses_allocator
    ( ConstructAlloc & construct_alloc

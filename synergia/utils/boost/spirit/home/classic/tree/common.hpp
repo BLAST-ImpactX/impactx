@@ -57,7 +57,7 @@ template <typename T>
 struct tree_node
 {
     typedef T parse_node_t;
-    
+
 #if !defined(BOOST_SPIRIT_USE_BOOST_ALLOCATOR_FOR_TREES)
     typedef std::allocator<tree_node<T> > allocator_type;
 #elif !defined(BOOST_SPIRIT_USE_LIST_FOR_TREES)
@@ -420,7 +420,7 @@ public:
 
 //////////////////////////////////
 template <typename ValueT>
-class node_val_data_factory 
+class node_val_data_factory
 {
 public:
     // This inner class is so that node_val_data_factory can simulate
@@ -552,8 +552,8 @@ public:
 
     tree_match(std::size_t length_, parse_node_t const& n)
     : match<T>(length_), trees()
-    { 
-        trees.push_back(node_t(n)); 
+    {
+        trees.push_back(node_t(n));
     }
 
     tree_match(std::size_t length_, param_type val, parse_node_t const& n)
@@ -568,7 +568,7 @@ public:
     // attention, these constructors will change the second parameter!
     tree_match(std::size_t length_, container_t& c)
     : match<T>(length_), trees()
-    { 
+    {
         impl::cp_swap(trees, c);
     }
 
@@ -671,7 +671,7 @@ template <
     typename MatchPolicyT,
     typename IteratorT,
     typename NodeFactoryT,
-    typename TreePolicyT, 
+    typename TreePolicyT,
     typename T
 >
 struct common_tree_match_policy : public match_policy
@@ -708,12 +708,12 @@ struct common_tree_match_policy : public match_policy
 #if defined(BOOST_SPIRIT_DEBUG) && \
     (BOOST_SPIRIT_DEBUG_FLAGS & BOOST_SPIRIT_DEBUG_FLAGS_NODES)
 
-        BOOST_SPIRIT_DEBUG_OUT << "\n>>> create_node(begin) <<<\n" 
+        BOOST_SPIRIT_DEBUG_OUT << "\n>>> create_node(begin) <<<\n"
             "creating node text: \"";
         for (Iterator1T it = first; it != last; ++it)
             impl::token_printer(BOOST_SPIRIT_DEBUG_OUT, *it);
         BOOST_SPIRIT_DEBUG_OUT << "\"\n";
-        BOOST_SPIRIT_DEBUG_OUT << ">>> create_node(end) <<<\n\n"; 
+        BOOST_SPIRIT_DEBUG_OUT << ">>> create_node(end) <<<\n\n";
 #endif
         return tree_match<IteratorT, NodeFactoryT, AttrT>(length, val,
             tree_policy_t::create_node(length, first, last, true));
@@ -757,7 +757,7 @@ struct common_tree_match_policy : public match_policy
         IteratorT2 const&   last) const
     {
         if (!m) return;
-        
+
 #if defined(BOOST_SPIRIT_DEBUG) && \
     (BOOST_SPIRIT_DEBUG_FLAGS & BOOST_SPIRIT_DEBUG_FLAGS_TREES)
 
@@ -898,7 +898,7 @@ struct leaf_node_parser
             scanner);
 
         if (hit)
-            return result_t(hit.length(), 
+            return result_t(hit.length(),
                 factory_t::create_node(from, scanner.first, true));
         else
             return result_t(hit.length());
@@ -1099,8 +1099,8 @@ struct discard_first_node_op
         // copying the tree nodes is expensive, since it may copy a whole
         // tree.  swapping them is cheap, so swap the nodes we want into
         // a new container of children, instead of saying
-        // m.trees.erase(m.trees.begin()) because, on a container_t that will 
-        // cause all the nodes afterwards to be copied into the previous 
+        // m.trees.erase(m.trees.begin()) because, on a container_t that will
+        // cause all the nodes afterwards to be copied into the previous
         // position.
         container_t new_children;
         std::size_t length = 0;
@@ -1126,20 +1126,20 @@ struct discard_first_node_op
         }
         else {
         // if there was a tree and now there isn't any, insert an empty node
-            iter_t i = m.trees.begin(); 
+            iter_t i = m.trees.begin();
 
         // This isn't entirely correct, since the empty node will reference
-        // the end of the discarded node, but I currently don't see any way to 
+        // the end of the discarded node, but I currently don't see any way to
         // get at the begin of the node following this subnode.
         // This should be safe anyway because the it shouldn't get dereferenced
         // under any circumstances.
             typedef typename value_t::parse_node_t::iterator_t iterator_type;
             iterator_type it = (*i).value.end();
-            
+
             new_children.push_back(
                 value_t(typename value_t::parse_node_t(it, it)));
         }
-        
+
         m = MatchT(length, new_children);
     }
 };
@@ -1162,8 +1162,8 @@ struct discard_last_node_op
         // copying the tree nodes is expensive, since it may copy a whole
         // tree.  swapping them is cheap, so swap the nodes we want into
         // a new container of children, instead of saying
-        // m.trees.erase(m.trees.begin()) because, on a container_t that will 
-        // cause all the nodes afterwards to be copied into the previous 
+        // m.trees.erase(m.trees.begin()) because, on a container_t that will
+        // cause all the nodes afterwards to be copied into the previous
         // position.
         container_t new_children;
         std::size_t length = 0;
@@ -1176,7 +1176,7 @@ struct discard_last_node_op
             m.trees.pop_back();
 #if !defined(BOOST_SPIRIT_USE_LIST_FOR_TREES)
             new_children.reserve(tree_size - 1);
-#endif            
+#endif
             iter_t i_end = m.trees.end();
             for (iter_t i = m.trees.begin(); i != i_end; ++i)
             {
@@ -1190,15 +1190,15 @@ struct discard_last_node_op
         }
         else {
         // if there was a tree and now there isn't any, insert an empty node
-            iter_t i = m.trees.begin(); 
+            iter_t i = m.trees.begin();
 
             typedef typename value_t::parse_node_t::iterator_t iterator_type;
             iterator_type it = (*i).value.begin();
-            
+
             new_children.push_back(
                 value_t(typename value_t::parse_node_t(it, it)));
         }
-        
+
         m = MatchT(length, new_children);
     }
 };
@@ -1221,13 +1221,13 @@ struct inner_node_op
         // copying the tree nodes is expensive, since it may copy a whole
         // tree.  swapping them is cheap, so swap the nodes we want into
         // a new container of children, instead of saying
-        // m.trees.erase(m.trees.begin()) because, on a container_t that will 
-        // cause all the nodes afterwards to be copied into the previous 
+        // m.trees.erase(m.trees.begin()) because, on a container_t that will
+        // cause all the nodes afterwards to be copied into the previous
         // position.
         container_t new_children;
         std::size_t length = 0;
         std::size_t tree_size = m.trees.size();
-        
+
         // the inner_node_d[] make no sense for nodes with less then 2 subnodes
         BOOST_SPIRIT_ASSERT(tree_size >= 2);
 
@@ -1242,7 +1242,7 @@ struct inner_node_op
             {
                 // adjust the length
                 length += std::distance((*i).value.begin(), (*i).value.end());
-                
+
                 // move the child node
                 new_children.push_back(value_t());
                 swap(new_children.back(), *i);
@@ -1254,11 +1254,11 @@ struct inner_node_op
 
             typedef typename value_t::parse_node_t::iterator_t iterator_type;
             iterator_type it = (*++i).value.begin();
-            
+
             new_children.push_back(
                 value_t(typename value_t::parse_node_t(it, it)));
         }
-        
+
         m = MatchT(length, new_children);
     }
 };
@@ -1348,7 +1348,7 @@ struct access_match_action::action
 {
     typedef action_parser_category parser_category;
     typedef action<ParserT, ActionT> self_t;
-    
+
     template <typename ScannerT>
     struct result
     {
@@ -1420,7 +1420,7 @@ struct access_node_action::action
 {
     typedef action_parser_category parser_category;
     typedef action<ParserT, ActionT> self_t;
-    
+
     template <typename ScannerT>
     struct result
     {
@@ -1513,7 +1513,7 @@ template <
     typename NodeFactoryT,
     typename T
 >
-struct tree_parse_info 
+struct tree_parse_info
 {
     IteratorT   stop;
     bool        match;
@@ -1569,4 +1569,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

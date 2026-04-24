@@ -2,7 +2,7 @@
     Copyright (c) 2001-2011 Joel de Guzman
     Copyright (c) 2006 Dan Marsden
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_DISTANCE_IMPL_20060124_2033)
@@ -50,11 +50,11 @@ namespace boost { namespace fusion {
         {
             typedef typename result_of::find_if<
                 typename It1::iterators, is_same<traits::category_of<mpl::_>, random_access_iterator_tag> > finder;
-                
+
             typedef typename mpl::eval_if<
                 is_same<typename finder::type, typename result_of::end<typename It1::iterators>::type>,
                 detail::default_distance<It1, It2> ,
-                detail::best_distance<typename finder::type, It2> >::type type;               
+                detail::best_distance<typename finder::type, It2> >::type type;
         };
     }
 
@@ -75,7 +75,7 @@ namespace boost { namespace fusion {
                 call(It1 const& /*it1*/, It2 const& /*it2*/)
                 {
                     return typename detail::zip_view_iterator_distance<It1, It2>::type();
-                }                
+                }
             };
         };
     }

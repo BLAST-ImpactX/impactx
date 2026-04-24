@@ -28,7 +28,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         bool call(Iterator& first, Iterator const& last
           , Context& context, Skipper const& skipper, mpl::true_) const
         {
-            // If DeducedAuto is false (semantic actions is present), the 
+            // If DeducedAuto is false (semantic actions is present), the
             // component's attribute is unused.
             return p.parse(first, last, context, skipper, unused);
         }
@@ -37,7 +37,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         bool call(Iterator& first, Iterator const& last
           , Context& context, Skipper const& skipper, mpl::false_) const
         {
-            // If DeducedAuto is true (no semantic action), we pass the rule's 
+            // If DeducedAuto is true (no semantic action), we pass the rule's
             // attribute on to the component.
             return p.parse(first, last, context, skipper
                 , fusion::at_c<0>(context.attributes));

@@ -21,7 +21,7 @@ There are two versions, whose syntax is as follows:
 <tr><td>%Block of size <tt>(p,q)</tt>, starting at <tt>(i,j)</tt></td>
     <td>\code
 matrix.block(i,j,p,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.block<p,q>(i,j);\endcode </td>
 </tr>
 </table>
@@ -115,70 +115,70 @@ The different possibilities are summarized in the following table:
 <tr><td>Top-left p by q block \link DenseBase::topLeftCorner() * \endlink</td>
     <td>\code
 matrix.topLeftCorner(p,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.topLeftCorner<p,q>();\endcode </td>
 </tr>
 <tr><td>Bottom-left p by q block
               \link DenseBase::bottomLeftCorner() * \endlink</td>
     <td>\code
 matrix.bottomLeftCorner(p,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.bottomLeftCorner<p,q>();\endcode </td>
 </tr>
 <tr><td>Top-right p by q block
               \link DenseBase::topRightCorner() * \endlink</td>
     <td>\code
 matrix.topRightCorner(p,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.topRightCorner<p,q>();\endcode </td>
 </tr>
 <tr><td>Bottom-right p by q block
                \link DenseBase::bottomRightCorner() * \endlink</td>
     <td>\code
 matrix.bottomRightCorner(p,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.bottomRightCorner<p,q>();\endcode </td>
 </tr>
 <tr><td>%Block containing the first q rows
                    \link DenseBase::topRows() * \endlink</td>
     <td>\code
 matrix.topRows(q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.topRows<q>();\endcode </td>
 </tr>
 <tr><td>%Block containing the last q rows
                     \link DenseBase::bottomRows() * \endlink</td>
     <td>\code
 matrix.bottomRows(q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.bottomRows<q>();\endcode </td>
 </tr>
 <tr><td>%Block containing the first p columns
                     \link DenseBase::leftCols() * \endlink</td>
     <td>\code
 matrix.leftCols(p);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.leftCols<p>();\endcode </td>
 </tr>
 <tr><td>%Block containing the last q columns
                     \link DenseBase::rightCols() * \endlink</td>
     <td>\code
 matrix.rightCols(q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.rightCols<q>();\endcode </td>
 </tr>
 <tr><td>%Block containing the q columns starting from i
                     \link DenseBase::middleCols() * \endlink</td>
     <td>\code
 matrix.middleCols(i,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.middleCols<q>(i);\endcode </td>
 </tr>
 <tr><td>%Block containing the q rows starting from i
                     \link DenseBase::middleRows() * \endlink</td>
     <td>\code
 matrix.middleRows(i,q);\endcode </td>
-    <td>\code 
+    <td>\code
 matrix.middleRows<q>(i);\endcode </td>
 </tr>
 </table>
@@ -203,25 +203,25 @@ Eigen also provides a set of block operations designed specifically for the spec
 <tr><th> %Block operation</th>
 <th>Version constructing a \n dynamic-size block expression</th>
 <th>Version constructing a \n fixed-size block expression</th></tr>
-<tr><td>%Block containing the first \p n elements 
+<tr><td>%Block containing the first \p n elements
                     \link DenseBase::head() * \endlink</td>
     <td>\code
 vector.head(n);\endcode </td>
-    <td>\code 
+    <td>\code
 vector.head<n>();\endcode </td>
 </tr>
 <tr><td>%Block containing the last \p n elements
                     \link DenseBase::tail() * \endlink</td>
     <td>\code
 vector.tail(n);\endcode </td>
-    <td>\code 
+    <td>\code
 vector.tail<n>();\endcode </td>
 </tr>
 <tr><td>%Block containing \p n elements, starting at position \p i
                     \link DenseBase::segment() * \endlink</td>
     <td>\code
 vector.segment(i,n);\endcode </td>
-    <td>\code 
+    <td>\code
 vector.segment<n>(i);\endcode </td>
 </tr>
 </table>

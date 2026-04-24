@@ -179,7 +179,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         //////////////////////////////////
 #ifdef BOOST_SPIRIT_THREADSAFE
         template <typename TagT, typename IdT>
-        inline void 
+        inline void
         object_with_id_base<TagT, IdT>::mutex_init()
         {
             mutex_instance();

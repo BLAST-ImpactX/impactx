@@ -287,9 +287,9 @@ namespace FF_rfcavity {
         rp.ref_cdt_2 = ref_l_cdt;
 
         // save the new state. The cdt has to be saved so that the transit time
-	// in the RF cavity is accounted for. We don't save the new dp/p here but all
-	// elements should not use it as their starting value in reference time
-	// calculation.
+    // in the RF cavity is accounted for. We don't save the new dp/p here but all
+    // elements should not use it as their starting value in reference time
+    // calculation.
         ref_l.set_state(
             ref_l_x, ref_l_xp, ref_l_y, ref_l_yp, total_ref_cdt, 0.0);
 

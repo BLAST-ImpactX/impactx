@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef BOOST_SPIRIT_LEX_LEXER_ACTION_HPP
@@ -32,7 +32,7 @@ namespace boost { namespace spirit { namespace lex
         void collect(LexerDef& lexdef, String const& state
           , String const& targetstate) const
         {
-            // collect the token definition information for the token_def 
+            // collect the token definition information for the token_def
             // this action is attached to
             subject.collect(lexdef, state, targetstate);
         }
@@ -40,10 +40,10 @@ namespace boost { namespace spirit { namespace lex
         template <typename LexerDef>
         void add_actions(LexerDef& lexdef) const
         {
-            // call to add all actions attached further down the hierarchy 
+            // call to add all actions attached further down the hierarchy
             subject.add_actions(lexdef);
 
-            // retrieve the id of the associated token_def and register the 
+            // retrieve the id of the associated token_def and register the
             // given semantic action with the lexer instance
             lexdef.add_action(subject.unique_id(), subject.state(), f);
         }

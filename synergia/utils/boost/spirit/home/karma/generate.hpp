@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_GENERATE_DEC_01_2009_0734PM)
@@ -109,7 +109,7 @@ namespace boost { namespace spirit { namespace karma
         OutputIterator& sink
       , Expr const& expr
       , Delimiter const& delimiter
-      , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit = 
+      , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit =
             delimit_flag::dont_predelimit)
     {
         return detail::generate_delimited_impl<Expr>::call(
@@ -122,7 +122,7 @@ namespace boost { namespace spirit { namespace karma
         OutputIterator const& sink_
       , Expr const& expr
       , Delimiter const& delimiter
-      , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit = 
+      , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit =
             delimit_flag::dont_predelimit)
     {
         OutputIterator sink = sink_;
@@ -147,7 +147,7 @@ namespace boost { namespace spirit { namespace karma
         BOOST_SPIRIT_ASSERT_MATCH(karma::domain, Expr);
         BOOST_SPIRIT_ASSERT_MATCH(karma::domain, Delimiter);
 
-        typename result_of::compile<karma::domain, Delimiter>::type const 
+        typename result_of::compile<karma::domain, Delimiter>::type const
             delimiter_ = compile<karma::domain>(delimiter);
 
         if (pre_delimit == delimit_flag::predelimit &&
@@ -229,4 +229,3 @@ namespace boost { namespace spirit { namespace karma
 }}}
 
 #endif
-

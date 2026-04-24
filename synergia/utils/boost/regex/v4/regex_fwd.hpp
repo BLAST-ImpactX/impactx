@@ -3,8 +3,8 @@
  * Copyright (c) 1998-2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -67,7 +67,3 @@ typedef basic_regex<wchar_t, regex_traits<wchar_t> > wregex;
 #endif  // BOOST_REGEX_NO_FWD
 
 #endif
-
-
-
-

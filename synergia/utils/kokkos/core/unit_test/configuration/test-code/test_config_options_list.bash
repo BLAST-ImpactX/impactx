@@ -1,6 +1,6 @@
 SRC_DIR=${KOKKOS_PATH}/core/unit_test/configuration/test-code
 
-# List of parallel device types 
+# List of parallel device types
 Options=(aggressive_vectorization disable_profiling large_mem_tests)
 CudaOptions=(lambda relocatable_device_code uvm constexpr)
 
@@ -27,7 +27,7 @@ do
   #Renaming options as GNU Make expects them
   option=${option/large_mem_tests/enable_large_mem_tests}
 
-  if [ ! -z $CudaOptions ]; then 
+  if [ ! -z $CudaOptions ]; then
     for cuda_option in "${CudaOptions[@]}"
     do
       cuda_option_up=`echo $cuda_option | tr a-z A-Z`
@@ -41,8 +41,7 @@ do
 
       ${SRC_DIR}/test_config_run.bash "$MakeDevices" "$CMakeDevices" "$MakeArch" "$CMakeArch" "KOKKOS_OPTIONS=$option KOKKOS_CUDA_OPTIONS=$cuda_option" "$CMAKE_OPTION $CMAKE_CUDA_OPTION"
     done
-  else  
+  else
     ${SRC_DIR}/test_config_run.bash "$MakeDevices" "$CMakeDevices" "$MakeArch" "$CMakeArch" "KOKKOS_OPTIONS=$option" "$CMAKE_OPTION"
   fi
 done
-

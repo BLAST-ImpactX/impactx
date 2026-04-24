@@ -4,8 +4,8 @@
 
 // Copyright Aleksey Gurtovoy 2000-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -30,7 +30,7 @@ template<
       typename Iterator
     , typename LastIterator
     , typename Predicate
-    > 
+    >
 struct filter_iter;
 
 template<
@@ -44,7 +44,7 @@ struct next_filter_iter
           iterator_range<Iterator,LastIterator>
         , Predicate
         >::type base_iter_;
- 
+
     typedef filter_iter<base_iter_,LastIterator,Predicate> type;
 };
 
@@ -64,7 +64,7 @@ struct filter_iter
         , LastIterator
         , Predicate
         >::type next;
-    
+
     typedef typename deref<base>::type type;
 };
 
@@ -97,7 +97,7 @@ struct filter_iter_impl
             , LastIterator
             , Predicate
             >::type next;
-        
+
         typedef typename deref<base>::type type;
     };
 };

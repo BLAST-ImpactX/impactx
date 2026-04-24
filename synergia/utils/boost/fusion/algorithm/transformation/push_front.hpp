@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_PUSH_FRONT_07162005_0749)
@@ -36,12 +36,11 @@ namespace boost { namespace fusion
     push_front(Sequence const& seq, T const& x)
     {
         typedef typename result_of::push_front<Sequence const, T> push_front;
-        typedef typename push_front::single_view single_view; 
-        typedef typename push_front::type result; 
+        typedef typename push_front::single_view single_view;
+        typedef typename push_front::type result;
         single_view x_(x);
         return result(x_, seq);
     }
 }}
 
 #endif
-

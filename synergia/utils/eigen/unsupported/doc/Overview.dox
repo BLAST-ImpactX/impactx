@@ -28,4 +28,3 @@ subject to be included in %Eigen in the future.
 /// \internal \brief Namespace containing low-level routines from the %Eigen library.
 namespace internal {}
 }
-

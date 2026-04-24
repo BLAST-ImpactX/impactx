@@ -27,7 +27,7 @@ namespace boost { namespace spirit { namespace traits
     // it is not already a fusion tuple.
     //
     // Note: in the comment above, "sequence" is a spirit sequence
-    // component (parser or generator), and a tuple is a fusion sequence 
+    // component (parser or generator), and a tuple is a fusion sequence
     // (to avoid terminology confusion).
     template <typename Derived, typename Attribute>
     struct pass_attribute<Derived, Attribute,

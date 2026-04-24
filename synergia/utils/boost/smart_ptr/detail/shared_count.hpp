@@ -73,7 +73,7 @@ template< class D > struct sp_inplace_tag
 };
 
 template< class T > class sp_reference_wrapper
-{ 
+{
 public:
 
     explicit sp_reference_wrapper( T & t): t_( boost::addressof( t ) )
@@ -375,7 +375,7 @@ public:
         r.release();
     }
 
-#endif 
+#endif
 
 #if !defined( BOOST_NO_CXX11_SMART_PTR )
 

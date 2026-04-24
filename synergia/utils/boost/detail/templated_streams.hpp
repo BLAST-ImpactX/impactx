@@ -30,10 +30,10 @@
     template < typename E , typename T , typename A >
 
 #define BOOST_TEMPLATED_STREAM_ARGS(E,T) \
-    typename E , typename T 
+    typename E , typename T
 
 #define BOOST_TEMPLATED_STREAM_ARGS_ALLOC(E,T,A) \
-    typename E , typename T , typename A 
+    typename E , typename T , typename A
 
 #define BOOST_TEMPLATED_STREAM_COMMA        ,
 

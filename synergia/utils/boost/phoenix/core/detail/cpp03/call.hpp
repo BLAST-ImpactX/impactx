@@ -39,7 +39,7 @@
 #define M1(Z, N ,D) \
     BOOST_PP_COMMA_IF(N) proto::child_c<N>(e)
 /**/
-    
+
 
 #define BOOST_PHOENIX_ITERATION_PARAMS                                          \
     (3, (1, BOOST_PHOENIX_LIMIT,                                                \
@@ -56,7 +56,7 @@
 #endif
 
 #else
-        
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, BOOST_PHOENIX_ITERATION>
             : proto::transform_impl<Expr, State, Data>

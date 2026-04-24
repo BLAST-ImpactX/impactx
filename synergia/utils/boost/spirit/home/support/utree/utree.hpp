@@ -45,35 +45,35 @@ namespace boost { namespace spirit
     /*` All exceptions thrown by utree are derived from utree_exception. */
     struct BOOST_SYMBOL_VISIBLE utree_exception : std::exception {};
 
-    /*`The `bad_type_exception` is thrown whenever somebody calls a member 
-       function, which applies to certain stored utree_type's only, but this 
+    /*`The `bad_type_exception` is thrown whenever somebody calls a member
+       function, which applies to certain stored utree_type's only, but this
        precondition is violated as the `utree` instance holds some other type.
     */
     struct bad_type_exception /*: utree_exception*/;
 
     /*`The `empty_exception` is thrown whenever a precondition of a list
-       or range utree method is violated due to the list or range being empty. 
+       or range utree method is violated due to the list or range being empty.
     */
     struct empty_exception /*: utree_exception*/;
     //]
 
     //[utree_types
-    /*`Each instance of an `utree` data structure can store exactly one of the 
-       following data types at a time: 
+    /*`Each instance of an `utree` data structure can store exactly one of the
+       following data types at a time:
     */
     struct utree_type
     {
         enum info
         {
-            invalid_type,       // the utree has not been initialized (it's 
+            invalid_type,       // the utree has not been initialized (it's
                                 // default constructed)
             nil_type,           // nil is the sentinel (empty) utree type.
             list_type,          // A doubly linked list of utrees.
-            range_type,         // A range of list::iterators. 
+            range_type,         // A range of list::iterators.
             reference_type,     // A reference to another utree.
-            any_type,           // A pointer or reference to any C++ type. 
+            any_type,           // A pointer or reference to any C++ type.
             function_type,      // A utree holding a stored_function<F> object,
-                                // where F is an unary function object taking a 
+                                // where F is an unary function object taking a
                                 // utree as it's parameter and returning a
                                 // utree.
 
@@ -83,18 +83,18 @@ namespace boost { namespace spirit
             double_type,        // An utree holding a floating point (double) value
 
             // text atoms (utf8)
-            string_type,        // An UTF-8 string 
+            string_type,        // An UTF-8 string
             string_range_type,  // A pair of iterators into an UTF-8 string
             symbol_type,        // An UTF-8 symbol name
 
             binary_type         // Arbitrary binary data
         };
-        typedef boost::uint_t<sizeof(info)*8>::exact exact_integral_type; 
-        typedef boost::uint_t<sizeof(info)*8>::fast fast_integral_type; 
+        typedef boost::uint_t<sizeof(info)*8>::exact exact_integral_type;
+        typedef boost::uint_t<sizeof(info)*8>::fast fast_integral_type;
     };
     //]
 
-    // streaming operator for utree types - essential for diagnostics    
+    // streaming operator for utree types - essential for diagnostics
     inline std::ostream& operator<<(std::ostream& out, utree_type::info t)
     {
         boost::io::ios_all_saver saver(out);
@@ -119,7 +119,7 @@ namespace boost { namespace spirit
             << static_cast<utree_type::fast_integral_type>(t) << "]";
         return out;
     }
-    
+
     struct bad_type_exception : utree_exception
     {
         std::string msg;
@@ -132,7 +132,7 @@ namespace boost { namespace spirit
                 << " (got utree type '" << got << "')";
             msg = oss.str();
         }
-        
+
         bad_type_exception(char const* error, utree_type::info got1,
                            utree_type::info got2)
           : msg()
@@ -148,13 +148,13 @@ namespace boost { namespace spirit
         virtual char const* what() const BOOST_NOEXCEPT_OR_NOTHROW
         { return msg.c_str(); }
     };
-    
+
     struct empty_exception : utree_exception
     {
         char const* msg;
 
         empty_exception(char const* error) : msg(error) {}
-        
+
         virtual ~empty_exception() BOOST_NOEXCEPT_OR_NOTHROW {}
 
         virtual char const* what() const BOOST_NOEXCEPT_OR_NOTHROW
@@ -192,14 +192,14 @@ namespace boost { namespace spirit
     };
 
     //[utree_strings
-    /*`The `utree` string types described below are used by the `utree` API 
+    /*`The `utree` string types described below are used by the `utree` API
        only. These are not used to store information in the `utree` itself.
        Their purpose is to refer to different internal `utree` node types
-       only. For instance, creating a `utree` from a binary data type will 
+       only. For instance, creating a `utree` from a binary data type will
        create a `binary_type` utree node (see above).
     */
-    /*`The binary data type can be represented either verbatim as a sequence 
-       of bytes or as a pair of iterators into some other stored binary data 
+    /*`The binary data type can be represented either verbatim as a sequence
+       of bytes or as a pair of iterators into some other stored binary data
        sequence. Use this string type to access/create a `binary_type` `utree`.
     */
     typedef basic_string<
@@ -209,8 +209,8 @@ namespace boost { namespace spirit
         std::string, utree_type::binary_type
     > binary_string_type;
 
-    /*`The UTF-8 string can be represented either verbatim as a sequence of 
-       characters or as a pair of iterators into some other stored binary data 
+    /*`The UTF-8 string can be represented either verbatim as a sequence of
+       characters or as a pair of iterators into some other stored binary data
        sequence. Use this string type to access/create a `string_type` `utree`.
     */
     typedef basic_string<
@@ -220,8 +220,8 @@ namespace boost { namespace spirit
         std::string, utree_type::string_type
     > utf8_string_type;
 
-    /*`The UTF-8 symbol can be represented either verbatim as a sequence of 
-       characters or as a pair of iterators into some other stored binary data 
+    /*`The UTF-8 symbol can be represented either verbatim as a sequence of
+       characters or as a pair of iterators into some other stored binary data
        sequence. Use this string type to access/create a `symbol_type` `utree`.
     */
     typedef basic_string<
@@ -244,9 +244,9 @@ namespace boost { namespace spirit
         virtual utree operator()(utree const& env) const = 0;
         virtual utree operator()(utree& env) const = 0;
 
-        // Calling f.clone() must return a newly allocated function_base 
+        // Calling f.clone() must return a newly allocated function_base
         // instance that is equal to f.
-        virtual function_base* clone() const = 0; 
+        virtual function_base* clone() const = 0;
     };
 
     template <typename F>
@@ -259,7 +259,7 @@ namespace boost { namespace spirit
         virtual utree operator()(utree& env) const;
         virtual function_base* clone() const;
     };
-    
+
     template <typename F>
     struct referenced_function : function_base
     {
@@ -335,7 +335,7 @@ namespace boost { namespace spirit
         struct nil_type {};
 
         ///////////////////////////////////////////////////////////////////////
-        // The list type, this can be used to initialize an utree to hold an 
+        // The list type, this can be used to initialize an utree to hold an
         // empty list
         struct list_type;
 
@@ -361,16 +361,16 @@ namespace boost { namespace spirit
 
         ////////////////////////////////////////////////////////////////////////
         //[utree_initialization
-        /*`A `utree` can be constructed or initialized from a wide range of 
-           data types, allowing to create `utree` instances for every 
-           possible node type (see the description of `utree_type::info` above). 
-           For this reason it exposes a constructor and an assignment operator 
+        /*`A `utree` can be constructed or initialized from a wide range of
+           data types, allowing to create `utree` instances for every
+           possible node type (see the description of `utree_type::info` above).
+           For this reason it exposes a constructor and an assignment operator
            for each of the allowed node types as shown below. All constructors
            are non-explicit on purpose, allowing to use an utree instance as
            the attribute to almost any Qi parser.
         */
         // This constructs an `invalid_type` node. When used in places
-        // where a boost::optional is expected (i.e. as an attribute for the 
+        // where a boost::optional is expected (i.e. as an attribute for the
         // optional component), this represents the 'empty' state.
         utree(invalid_type = invalid_type());
 
@@ -384,7 +384,7 @@ namespace boost { namespace spirit
         explicit utree(bool);
         reference operator=(bool);
 
-        // This initializes an `integer_type` node, which can hold arbitrary 
+        // This initializes an `integer_type` node, which can hold arbitrary
         // integers. For convenience these functions are overloaded for signed
         // and unsigned integer types.
         utree(unsigned int);
@@ -392,12 +392,12 @@ namespace boost { namespace spirit
         reference operator=(unsigned int);
         reference operator=(int);
 
-        // This initializes a `double_type` node, which can hold arbitrary 
+        // This initializes a `double_type` node, which can hold arbitrary
         // floating point (double) values.
         utree(double);
         reference operator=(double);
 
-        // This initializes a `string_type` node, which can hold a narrow 
+        // This initializes a `string_type` node, which can hold a narrow
         // character sequence (usually an UTF-8 string).
         utree(char);
         utree(char const*);
@@ -407,42 +407,42 @@ namespace boost { namespace spirit
         reference operator=(char const*);
         reference operator=(std::string const&);
 
-        // This constructs a `string_range_type` node, which does not copy the 
-        // data but stores the iterator range to the character sequence the 
+        // This constructs a `string_range_type` node, which does not copy the
+        // data but stores the iterator range to the character sequence the
         // range has been initialized from.
         utree(utf8_string_range_type const&, shallow_tag);
 
-        // This initializes a `reference_type` node, which holds a reference to 
+        // This initializes a `reference_type` node, which holds a reference to
         // another utree node. All operations on such a node are automatically
         // forwarded to the referenced utree instance.
         utree(boost::reference_wrapper<utree>);
         reference operator=(boost::reference_wrapper<utree>);
 
         // This initializes an `any_type` node, which can hold a pointer to an
-        // instance of any type together with the typeid of that type. When 
-        // accessing that pointer the typeid will be checked, causing a 
+        // instance of any type together with the typeid of that type. When
+        // accessing that pointer the typeid will be checked, causing a
         // std::bad_cast to be thrown if the typeids do not match.
         utree(any_ptr const&);
         reference operator=(any_ptr const&);
 
         // This initializes a `range_type` node, which holds an utree list node
-        // the elements of which are copy constructed (assigned) from the 
+        // the elements of which are copy constructed (assigned) from the
         // elements referenced by the given range of iterators.
         template <class Iterator>
         utree(boost::iterator_range<Iterator>);
         template <class Iterator>
         reference operator=(boost::iterator_range<Iterator>);
-        
+
         // This initializes a `function_type` node from a polymorphic function
-        // object pointer (takes ownership) or reference. 
+        // object pointer (takes ownership) or reference.
         utree(function_base const&);
         reference operator=(function_base const&);
         utree(function_base*);
         reference operator=(function_base*);
 
-        // This initializes either a `string_type`, a `symbol_type`, or a 
-        // `binary_type` node (depending on the template parameter `type_`), 
-        // which will hold the corresponding narrow character sequence (usually 
+        // This initializes either a `string_type`, a `symbol_type`, or a
+        // `binary_type` node (depending on the template parameter `type_`),
+        // which will hold the corresponding narrow character sequence (usually
         // an UTF-8 string).
         template <class Base, utree_type::info type_>
         utree(basic_string<Base, type_> const&);
@@ -450,7 +450,7 @@ namespace boost { namespace spirit
         reference operator=(basic_string<Base, type_> const&);
         //]
 
-        // copy 
+        // copy
         utree(const_reference);
         reference operator=(const_reference);
 
@@ -499,7 +499,7 @@ namespace boost { namespace spirit
         //[utree_container_functions
         // STL Container interface
 
-        // insertion 
+        // insertion
         template <class T>
         void push_back(T const&);
         template <class T>
@@ -536,7 +536,7 @@ namespace boost { namespace spirit
         void clear();
 
         void swap(utree&);
- 
+
         bool empty() const;
 
         size_type size() const;
@@ -546,12 +546,12 @@ namespace boost { namespace spirit
         ////////////////////////////////////////////////////////////////////////
 
         //[utree_variant_functions
-        // return the data type (`utree_type::info`) of the currently stored 
+        // return the data type (`utree_type::info`) of the currently stored
         // data item
         utree_type::info which() const;
 
-        // access the currently stored data in a type safe manner, this will 
-        // throw a `std::bad_cast()` if the currently stored data item is not 
+        // access the currently stored data in a type safe manner, this will
+        // throw a `std::bad_cast()` if the currently stored data item is not
         // default convertible to `T`.
         template <class T>
         T get() const;
@@ -600,7 +600,7 @@ namespace boost { namespace spirit
     };
     //]
 
-    //[utree_tuple_interface 
+    //[utree_tuple_interface
     /*<-*/inline/*->*/
     utree::reference get(utree::reference, utree::size_type);
     /*<-*/inline/*->*/
@@ -616,7 +616,7 @@ namespace boost { namespace spirit
 
         template <typename T0>
         list_type(T0 t0) : utree(t0) {}
-      
+
         template <typename T0, typename T1>
         list_type(T0 t0, T1 t1) : utree(t0, t1) {}
     };
@@ -633,4 +633,3 @@ namespace boost { namespace spirit
 #endif
 
 #endif
-

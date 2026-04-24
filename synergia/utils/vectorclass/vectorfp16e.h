@@ -50,9 +50,9 @@ namespace VCL_NAMESPACE {
 
 // test if _Float16 is defined
 #if defined(FLT16_MAX) || defined(__FLT16_MAX__)
-    // _Float16 is defined. 
+    // _Float16 is defined.
     typedef _Float16 Float16;
-    
+
     // Define bit-casting between uint16_t <-> Float16
     static inline uint16_t castfp162s(Float16 x) {
         union {
@@ -134,7 +134,7 @@ namespace VCL_NAMESPACE {
             if (mants == 0x400) v.expo = 1;
         }
         x = v.h;                                 // store result
-    }    
+    }
     operator float() const {                     // Type cast operator to convert fp16 to float
         union {
             uint32_t hhh;
@@ -159,7 +159,7 @@ namespace VCL_NAMESPACE {
         }
         u.hhh |= (x & 0x8000) << 16;             // copy sign bit
         return u.fff;
-    } 
+    }
 #endif  // F16C supported
 
     void setBits(uint16_t a) {
@@ -296,7 +296,7 @@ public:
         _mm_store_si128 ((__m128i *)p, xmm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 16
     void store_nt(void * p) const {
@@ -400,7 +400,7 @@ static Vec8h convert4f_8h (Vec4f x) {
     __m128i e = _mm_and_si128(a, _mm_set1_epi32(0x7FFFFFFF));        // remove sign bit
     __m128i f = _mm_sub_epi32(e, _mm_set1_epi32(0x70 << 23));        // adjust exponent bias (underflow will be caught by uu below)
     __m128i g = _mm_srli_epi32(f, 13);                               // shift exponent into new place
-    __m128i h = _mm_and_si128(g, _mm_set1_epi32(0x3FC00));           // isolate exponent 
+    __m128i h = _mm_and_si128(g, _mm_set1_epi32(0x3FC00));           // isolate exponent
     __m128i i = _mm_or_si128(n, h);                                  // combine exponent and mantissa
     Vec4i   j = _mm_add_epi32(i, w);                                 // round mantissa. Overflow will carry into exponent
     // check for overflow and underflow
@@ -413,9 +413,9 @@ static Vec8h convert4f_8h (Vec4f x) {
     __m128i ss = _mm_add_epi32(e, _mm_set1_epi32(24 << 23));         // add 24 to exponent
     __m128i tt = _mm_cvtps_epi32(_mm_castsi128_ps(ss));              // convert float to int with rounding
     __m128i vv = _mm_and_si128(tt, _mm_set1_epi32(0x3FF));           // mantissa of subnormal number
-    // combine results   
+    // combine results
     Vec4i  bb = select(k, 0x7C00, j);                                // select INF if overflow
-    Vec4i  dd = select(ii, pp, bb);                                  // select INF or NAN    
+    Vec4i  dd = select(ii, pp, bb);                                  // select INF or NAN
     Vec4i  cc = select(uu, vv, dd);                                  // select if subnormal or zero or exponent underflow
     // get sign bit
     Vec4i  sa = Vec4i(a) >> 16;                                      // extend sign bit to avoid saturation in pack instruction below
@@ -425,7 +425,7 @@ static Vec8h convert4f_8h (Vec4f x) {
     Vec4i  rr = sb | sc;                                             // combine with sign
     Vec4i  rc  = _mm_packs_epi32(rr, _mm_setzero_si128());           // pack into 16-bit words (words are sign extended so they will not saturate)
     return (__m128i)rc;                                              // return as Vec8h
-} 
+}
 
 #endif
 
@@ -486,7 +486,7 @@ static Vec8h to_float16 (Vec8f x) {
     __m256i e = _mm256_and_si256(a, _mm256_set1_epi32(0x7FFFFFFF));  // remove sign bit
     __m256i f = _mm256_sub_epi32(e, _mm256_set1_epi32(0x70 << 23));  // adjust exponent bias (underflow will be caught by uu below)
     __m256i g = _mm256_srli_epi32(f, 13);                            // shift exponent into new place
-    __m256i h = _mm256_and_si256(g, _mm256_set1_epi32(0x3FC00));     // isolate exponent 
+    __m256i h = _mm256_and_si256(g, _mm256_set1_epi32(0x3FC00));     // isolate exponent
     __m256i i = _mm256_or_si256(n, h);                               // combine exponent and mantissa
     __m256i j = _mm256_add_epi32(i, w);                              // round mantissa. Overflow will carry into exponent
     // check for overflow and underflow
@@ -501,7 +501,7 @@ static Vec8h to_float16 (Vec8f x) {
     __m256i vv = _mm256_and_si256(tt, _mm256_set1_epi32(0x7FF));     // mantissa of subnormal number (possible overflow to normal)
     // combine results
     __m256i bb = _mm256_blendv_epi8(j, _mm256_set1_epi32(0x7C00), k);// select INF if overflow
-    __m256i dd = _mm256_blendv_epi8(bb, pp, ii);                     // select INF or NAN    
+    __m256i dd = _mm256_blendv_epi8(bb, pp, ii);                     // select INF or NAN
     __m256i cc = _mm256_blendv_epi8(dd, vv, uu);                     // select if subnormal or zero or exponent underflow
     __m256i sa = _mm256_srai_epi32(a, 16);                           // extend sign bit to avoid saturation in pack instruction below
     __m256i sb = _mm256_and_si256(sa, _mm256_set1_epi32(0xFFFF8000));// isolate sign
@@ -511,9 +511,9 @@ static Vec8h to_float16 (Vec8f x) {
     __m128i rh = _mm256_extractf128_si256(rr, 1);                    // high half of results
     __m128i rc = _mm_packs_epi32(rl, rh);                            // pack into 16-bit words (words are sign extended so they will not saturate)
     return  rc;                                                      // return as Vec8h
-} 
+}
 
-#else // __F16C__ not defined, AVX2 not supported 
+#else // __F16C__ not defined, AVX2 not supported
 
 // extend precision: Vec8h -> Vec8f
 static Vec8f to_float (Vec8h x) {
@@ -542,7 +542,7 @@ static Vec8f to_float (Vec8h x) {
     Vec4f  s2 = to_float(m2) * (1.f/16777216.f);
     Vec4ui sm1 = Vec4ui(reinterpret_i(s1)) & Vec4ui(z1); // converted subnormal, masked
     Vec4ui sm2 = Vec4ui(reinterpret_i(s2)) & Vec4ui(z2);
-    Vec4ui inm1 = Vec4ui(i1) & Vec4ui(0x7F800000); // INF or NAN exponent field, masked off if not INF or NAN 
+    Vec4ui inm1 = Vec4ui(i1) & Vec4ui(0x7F800000); // INF or NAN exponent field, masked off if not INF or NAN
     Vec4ui inm2 = Vec4ui(i2) & Vec4ui(0x7F800000);
     Vec4ui fm1 = _mm_andnot_si128(Vec4ui(z1), f1); // normal result, masked off if zero or subnormal
     Vec4ui fm2 = _mm_andnot_si128(Vec4ui(z2), f2);
@@ -555,10 +555,10 @@ static Vec8f to_float (Vec8h x) {
     Vec4f  u1 = reinterpret_f(t1);               // bit-cast to float
     Vec4f  u2 = reinterpret_f(t2);
     return Vec8f(u1, u2);                        // combine low and high part
-} 
+}
 
 // reduce precision: Vec8f -> Vec8h
-static Vec8h to_float16 (Vec8f x) {              
+static Vec8h to_float16 (Vec8f x) {
     Vec4ui a1 = _mm_castps_si128(x.get_low());             // low half
     Vec4ui a2 = _mm_castps_si128(x.get_high());            // high half
     Vec4ui r1 = a1 >> 12;                                  // get first discarded mantissa bit
@@ -581,7 +581,7 @@ static Vec8h to_float16 (Vec8f x) {
     Vec4ui f2 = e2 - (0x70 << 23);
     Vec4ui g1 = f1 >> 13;                                  // shift exponent into new place
     Vec4ui g2 = f2 >> 13;
-    Vec4ui h1 = g1 & 0x3FC00;                              // isolate exponent 
+    Vec4ui h1 = g1 & 0x3FC00;                              // isolate exponent
     Vec4ui h2 = g2 & 0x3FC00;
     Vec4ui i1 = n1 | h1;                                   // combine exponent and mantissa
     Vec4ui i2 = n2 | h2;
@@ -608,7 +608,7 @@ static Vec8h to_float16 (Vec8f x) {
     // combine results
     Vec4i  bb1 = select(k1, 0x7C00, j1);                   // select INF if overflow
     Vec4i  bb2 = select(k2, 0x7C00, j2);
-    Vec4i  dd1 = select(ii1, pp1, bb1);                    // select INF or NAN    
+    Vec4i  dd1 = select(ii1, pp1, bb1);                    // select INF or NAN
     Vec4i  dd2 = select(ii2, pp2, bb2);
     Vec4i  cc1 = select(uu1, vv1, dd1);                    // select if subnormal or zero or exponent underflow
     Vec4i  cc2 = select(uu2, vv2, dd2);
@@ -927,7 +927,7 @@ Vec8h nan_vec<Vec8h>(uint32_t payload) {
     if constexpr (Vec8h::elementtype() == 15) {  // Float16
         return Vec8h(_mm_set1_epi16(0x7E00 | (payload & 0x01FF)));
     }
-} 
+}
 
 // Function nan8h: returns a vector where all elements are NAN (quiet)
 static inline Vec8h nan8h(int n = 0x10) {
@@ -1118,9 +1118,9 @@ template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7>
 Vec8h change_sign(Vec8h const a) {
     if constexpr ((i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7) == 0) return a;
     __m128i mask = constant4ui<
-        (i0 ? 0x8000 : 0) | (i1 ? 0x80000000 : 0), 
-        (i2 ? 0x8000 : 0) | (i3 ? 0x80000000 : 0), 
-        (i4 ? 0x8000 : 0) | (i5 ? 0x80000000 : 0), 
+        (i0 ? 0x8000 : 0) | (i1 ? 0x80000000 : 0),
+        (i2 ? 0x8000 : 0) | (i3 ? 0x80000000 : 0),
+        (i4 ? 0x8000 : 0) | (i5 ? 0x80000000 : 0),
         (i6 ? 0x8000 : 0) | (i7 ? 0x80000000 : 0) >();
     return _mm_xor_si128(a, mask);
 }
@@ -1254,7 +1254,7 @@ public:
     // Constructor to build from all elements:
     Vec16h(Float16 f0, Float16 f1, Float16 f2, Float16 f3, Float16 f4, Float16 f5, Float16 f6, Float16 f7,
     Float16 f8, Float16 f9, Float16 f10, Float16 f11, Float16 f12, Float16 f13, Float16 f14, Float16 f15) :
-        Vec16s(castfp162s(f0), castfp162s(f1), castfp162s(f2), castfp162s(f3), castfp162s(f4), castfp162s(f5), castfp162s(f6), castfp162s(f7), 
+        Vec16s(castfp162s(f0), castfp162s(f1), castfp162s(f2), castfp162s(f3), castfp162s(f4), castfp162s(f5), castfp162s(f6), castfp162s(f7),
             castfp162s(f8), castfp162s(f9), castfp162s(f10), castfp162s(f11), castfp162s(f12), castfp162s(f13), castfp162s(f14), castfp162s(f15)) {}
 
     // Constructor to build from two Vec8h:
@@ -1296,13 +1296,13 @@ public:
     // Member function storing into array, aligned by 32
     // You may use store_a instead of store if you are certain that p points to an address
     // divisible by 32.
-    // void store_a(void * p) const // inherited from Vec16s 
+    // void store_a(void * p) const // inherited from Vec16s
 
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 32
-    // void store_nt(void * p) const // inherited from Vec16s 
+    // void store_nt(void * p) const // inherited from Vec16s
 
     // Partial load. Load n elements and set the rest to 0
     Vec16h & load_partial(int n, void const * p) {
@@ -1310,7 +1310,7 @@ public:
         return *this;
     }
     // Partial store. Store n elements
-    // void store_partial(int n, void * p) const // inherited from Vec16s 
+    // void store_partial(int n, void * p) const // inherited from Vec16s
 
     // cut off vector to n elements. The last 8-n elements are set to zero
     Vec16h & cutoff(int n) {
@@ -1526,7 +1526,7 @@ static inline Vec16hb operator >= (Vec16h const a, Vec16h const b) {
 
 // vector operator & : bitwise and
 static inline Vec16h operator & (Vec16h const a, Vec16h const b) {
-#if INSTRSET >= 8         
+#if INSTRSET >= 8
     return _mm256_and_si256(__m256i(a), __m256i(b));
 #else
     return Vec16h(a.get_low() & b.get_low(), a.get_high() & b.get_high());
@@ -1541,7 +1541,7 @@ static inline Vec16h & operator &= (Vec16h & a, Vec16h const b) {
 
 // vector operator & : bitwise and of Vec16h and Vec16hb
 static inline Vec16h operator & (Vec16h const a, Vec16hb const b) {
-#if INSTRSET >= 10         
+#if INSTRSET >= 10
     return __m256i(_mm256_maskz_mov_epi16(b, __m256i(a)));
 #elif INSTRSET >= 8
     return _mm256_and_si256(__m256i(a), __m256i(b));
@@ -1555,7 +1555,7 @@ static inline Vec16h operator & (Vec16hb const a, Vec16h const b) {
 
 // vector operator | : bitwise or
 static inline Vec16h operator | (Vec16h const a, Vec16h const b) {
-#if INSTRSET >= 8         
+#if INSTRSET >= 8
     return _mm256_or_si256(__m256i(a), __m256i(b));
 #else
     return Vec16h(a.get_low() | b.get_low(), a.get_high() | b.get_high());
@@ -1570,7 +1570,7 @@ static inline Vec16h & operator |= (Vec16h & a, Vec16h const b) {
 
 // vector operator ^ : bitwise xor
 static inline Vec16h operator ^ (Vec16h const a, Vec16h const b) {
-#if INSTRSET >= 8         
+#if INSTRSET >= 8
     return _mm256_xor_si256(__m256i(a), __m256i(b));
 #else
     return Vec16h(a.get_low() ^ b.get_low(), a.get_high() ^ b.get_high());
@@ -1723,7 +1723,7 @@ static inline Vec16hb is_subnormal(Vec16h const a) {
 // false for finite numbers, NAN and INF
 static inline Vec16hb is_zero_or_subnormal(Vec16h const a) {
     return (Vec16s(reinterpret_i(a)) & 0x7C00) == 0;
-} 
+}
 
 // Function infinite16h: returns a vector where all elements are +INF
 static inline Vec16h infinite16h() {
@@ -1736,7 +1736,7 @@ Vec16h nan_vec<Vec16h>(uint32_t payload) {
     if constexpr (Vec16h::elementtype() == 15) {  // Float16
         return reinterpret_h(Vec16s(0x7E00 | (payload & 0x01FF)));
     }
-} 
+}
 
 // Function nan16h: returns a vector where all elements are NAN (quiet)
 static inline Vec16h nan16h(int n = 0x10) {
@@ -1813,7 +1813,7 @@ inline Vec16h pow<uint32_t>(Vec16h const x0, uint32_t const n) {
 template <int n>
 static inline Vec16h pow(Vec16h const a, Const_int_t<n>) {
     return pow_n<Vec16h, n>(a);
-} 
+}
 
 
 static inline Vec16h round(Vec16h const a) {
@@ -1925,19 +1925,19 @@ static inline Vec16h exp2(Vec16s const n) {
 
 // change signs on vectors Vec16h
 // Each index i0 - i15 is 1 for changing sign on the corresponding element, 0 for no change
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15>
 Vec16h change_sign(Vec16h const a) {
 #if INSTRSET >= 8
     if constexpr ((i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7 | i8 | i9 | i10 | i11 | i12 | i13 | i14 | i15) == 0) return a;
     __m256i mask = constant8ui<
-        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0), 
-        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0), 
-        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0), 
-        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0), 
-        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0), 
-        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0), 
-        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0), 
+        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0),
+        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0),
+        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0),
+        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0),
+        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0),
+        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0),
+        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0),
         (i14 ? 0x8000 : 0) | (i15 ? 0x80000000 : 0) >();
     return Vec16h(_mm256_xor_si256(a, mask));     // flip sign bits
 #else
@@ -1959,7 +1959,7 @@ Vec16h change_sign(Vec16h const a) {
 *
 *****************************************************************************/
 // permute vector Vec16h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15>
 Vec16h permute16(Vec16h const a) {
     return reinterpret_h (
@@ -1974,7 +1974,7 @@ Vec16h permute16(Vec16h const a) {
 *****************************************************************************/
 
 // permute and blend Vec16h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15>
 static inline Vec16h blend16(Vec16h const a, Vec16h const b) {
     return reinterpret_h (
@@ -2035,7 +2035,7 @@ typedef Vec32sb Vec32hb;  // broad boolean vector
 
 #endif
 
- 
+
 /*****************************************************************************
 *
 *          Vec32h: Vector of 4 single precision floating point values
@@ -2047,8 +2047,8 @@ public:
     // Default constructor:
     Vec32h() = default;
     // Constructor to broadcast the same value into all elements:
-    Vec32h(Float16 f) : Vec32s(castfp162s(f)) {}   
-    Vec32h(float f) : Vec32s(castfp162s(Float16(f))) {} 
+    Vec32h(Float16 f) : Vec32s(castfp162s(f)) {}
+    Vec32h(float f) : Vec32s(castfp162s(Float16(f))) {}
 
     // Copy constructor
     Vec32h (Vec32h const &x) = default;
@@ -2061,7 +2061,7 @@ public:
     Float16 f8, Float16 f9, Float16 f10, Float16 f11, Float16 f12, Float16 f13, Float16 f14, Float16 f15,
     Float16 f16, Float16 f17, Float16 f18, Float16 f19, Float16 f20, Float16 f21, Float16 f22, Float16 f23,
     Float16 f24, Float16 f25, Float16 f26, Float16 f27, Float16 f28, Float16 f29, Float16 f30, Float16 f31) :
-        Vec32s (castfp162s(f0), castfp162s(f1), castfp162s(f2), castfp162s(f3), castfp162s(f4), castfp162s(f5), castfp162s(f6), castfp162s(f7), 
+        Vec32s (castfp162s(f0), castfp162s(f1), castfp162s(f2), castfp162s(f3), castfp162s(f4), castfp162s(f5), castfp162s(f6), castfp162s(f7),
             castfp162s(f8), castfp162s(f9), castfp162s(f10), castfp162s(f11), castfp162s(f12), castfp162s(f13), castfp162s(f14), castfp162s(f15),
             castfp162s(f16), castfp162s(f17), castfp162s(f18), castfp162s(f19), castfp162s(f20), castfp162s(f21), castfp162s(f22), castfp162s(f23),
             castfp162s(f24), castfp162s(f25), castfp162s(f26), castfp162s(f27), castfp162s(f28), castfp162s(f29), castfp162s(f30), castfp162s(f31))
@@ -2108,7 +2108,7 @@ public:
     //void store_a(void * p) const // inherited from Vec32s
 
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 64
     // void store_nt(void * p) const // inherited from Vec32s
@@ -2317,7 +2317,7 @@ static inline Vec32hb operator >= (Vec32h const a, Vec32h const b) {
 
 // vector operator & : bitwise and
 static inline Vec32h operator & (Vec32h const a, Vec32h const b) {
-#if INSTRSET >= 10         
+#if INSTRSET >= 10
     return _mm512_and_si512(__m512i(a), __m512i(b));
 #else
     return Vec32h(a.get_low() & b.get_low(), a.get_high() & b.get_high());
@@ -2332,7 +2332,7 @@ static inline Vec32h & operator &= (Vec32h & a, Vec32h const b) {
 
 // vector operator & : bitwise and of Vec32h and Vec32hb
 static inline Vec32h operator & (Vec32h const a, Vec32hb const b) {
-#if INSTRSET >= 10         
+#if INSTRSET >= 10
     return _mm512_maskz_mov_epi16(b, a);
 #else
     return Vec32h(a.get_low() & b.get_low(), a.get_high() & b.get_high());
@@ -2344,7 +2344,7 @@ static inline Vec32h operator & (Vec32hb const a, Vec32h const b) {
 
 // vector operator | : bitwise or
 static inline Vec32h operator | (Vec32h const a, Vec32h const b) {
-#if INSTRSET >= 10         
+#if INSTRSET >= 10
     return _mm512_or_si512(__m512i(a), __m512i(b));
 #else
     return Vec32h(a.get_low() | b.get_low(), a.get_high() | b.get_high());
@@ -2359,7 +2359,7 @@ static inline Vec32h & operator |= (Vec32h & a, Vec32h const b) {
 
 // vector operator ^ : bitwise xor
 static inline Vec32h operator ^ (Vec32h const a, Vec32h const b) {
-#if INSTRSET >= 10         
+#if INSTRSET >= 10
     return _mm512_xor_si512(__m512i(a), __m512i(b));
 #else
     return Vec32h(a.get_low() ^ b.get_low(), a.get_high() ^ b.get_high());
@@ -2514,7 +2514,7 @@ Vec32h nan_vec<Vec32h>(uint32_t payload) {
     if constexpr (Vec32h::elementtype() == 15) {  // Float16
         return reinterpret_h(Vec32s(0x7E00 | (payload & 0x01FF)));
     }
-} 
+}
 
 // Function nan32h: returns a vector where all elements are NAN (quiet)
 static inline Vec32h nan32h(int n = 0x10) {
@@ -2543,7 +2543,7 @@ static inline float horizontal_add_x(Vec32h const a) {
 // function max: a > b ? a : b
 static inline Vec32h max(Vec32h const a, Vec32h const b) {
         return Vec32h(max(a.get_low(), b.get_low()), max(a.get_high(), b.get_high()));
-} 
+}
 // function min: a < b ? a : b
 static inline Vec32h min(Vec32h const a, Vec32h const b) {
         return Vec32h(min(a.get_low(), b.get_low()), min(a.get_high(), b.get_high()));
@@ -2699,38 +2699,38 @@ static inline Vec32h exp2(Vec32s const n) {
 
 // change signs on vectors Vec32h
 // Each index i0 - i31 is 1 for changing sign on the corresponding element, 0 for no change
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15,
 int i16, int i17, int i18, int i19, int i20, int i21, int i22, int i23,
 int i24, int i25, int i26, int i27, int i28, int i29, int i30, int i31 >
 static inline Vec32h change_sign(Vec32h const a) {
-    
+
 #if INSTRSET >= 10
     if constexpr ((i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7 | i8 | i9 | i10 | i11 | i12 | i13 | i14 | i15) == 0) return a;
     __m512i mask = constant16ui<
-        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0), 
-        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0), 
-        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0), 
-        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0), 
-        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0), 
-        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0), 
-        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0), 
-        (i14 ? 0x8000 : 0) | (i15 ? 0x80000000 : 0),        
-        (i16 ? 0x8000 : 0) | (i17 ? 0x80000000 : 0), 
-        (i18 ? 0x8000 : 0) | (i19 ? 0x80000000 : 0), 
-        (i20 ? 0x8000 : 0) | (i21 ? 0x80000000 : 0), 
-        (i22 ? 0x8000 : 0) | (i23 ? 0x80000000 : 0), 
-        (i24 ? 0x8000 : 0) | (i25 ? 0x80000000 : 0), 
-        (i26 ? 0x8000 : 0) | (i27 ? 0x80000000 : 0), 
-        (i28 ? 0x8000 : 0) | (i29 ? 0x80000000 : 0), 
+        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0),
+        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0),
+        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0),
+        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0),
+        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0),
+        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0),
+        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0),
+        (i14 ? 0x8000 : 0) | (i15 ? 0x80000000 : 0),
+        (i16 ? 0x8000 : 0) | (i17 ? 0x80000000 : 0),
+        (i18 ? 0x8000 : 0) | (i19 ? 0x80000000 : 0),
+        (i20 ? 0x8000 : 0) | (i21 ? 0x80000000 : 0),
+        (i22 ? 0x8000 : 0) | (i23 ? 0x80000000 : 0),
+        (i24 ? 0x8000 : 0) | (i25 ? 0x80000000 : 0),
+        (i26 ? 0x8000 : 0) | (i27 ? 0x80000000 : 0),
+        (i28 ? 0x8000 : 0) | (i29 ? 0x80000000 : 0),
         (i30 ? 0x8000 : 0) | (i31 ? 0x80000000 : 0) >();
     return  _mm512_xor_si512(a, mask);     // flip sign bits
 #else
-    return Vec32h(change_sign<i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12,i13,i14,i15>(a.get_low()), 
+    return Vec32h(change_sign<i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12,i13,i14,i15>(a.get_low()),
         change_sign<i16,i17,i18,i19,i20,i21,i22,i23,i24,i25,i26,i27,i28,i29,i30,i31>(a.get_high()));
 #endif
 }
-    
+
 /*****************************************************************************
 *
 *          Vector permute and blend functions
@@ -2745,7 +2745,7 @@ static inline Vec32h change_sign(Vec32h const a) {
 *****************************************************************************/
 
 // permute vector Vec32h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15,
 int i16, int i17, int i18, int i19, int i20, int i21, int i22, int i23,
 int i24, int i25, int i26, int i27, int i28, int i29, int i30, int i31 >
@@ -2763,7 +2763,7 @@ static inline Vec32h permute32(Vec32h const a) {
 *****************************************************************************/
 
 // permute and blend Vec32h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15,
 int i16, int i17, int i18, int i19, int i20, int i21, int i22, int i23,
 int i24, int i25, int i26, int i27, int i28, int i29, int i30, int i31 >
@@ -2830,7 +2830,7 @@ static inline V vf_pow2n (V const n) {
 // BA: 0 for exp, 1 for 0.5*exp, 2 for pow(2,x), 10 for pow(10,x)
 
 template<typename VTYPE, int M1, int BA>
-static inline VTYPE exp_h(VTYPE const initial_x) { 
+static inline VTYPE exp_h(VTYPE const initial_x) {
     // Taylor coefficients
     const float P0expf   =  1.f/2.f;
     const float P1expf   =  1.f/6.f;
@@ -2872,7 +2872,7 @@ static inline VTYPE exp_h(VTYPE const initial_x) {
     z = mul_add(z, x2, x);                       // z *= x2;  z += x;
     if constexpr (BA == 1) r--;                  // 0.5 * exp(x)
     n2 = vf_pow2n(r);                            // multiply by power of 2
-    if constexpr (M1 == 0) {                     // exp        
+    if constexpr (M1 == 0) {                     // exp
         z = (z + 1.0f) * n2;
     }
     else {                                       // expm1
@@ -2963,7 +2963,7 @@ static inline VTYPE sincos_h(VTYPE * cosret, VTYPE const xx) {
     // Taylor expansion of sin and cos, valid for -pi/4 <= x <= pi/4
     x2 = x * x;
     s = mul_add(x2, P1sinf, P0sinf) * (x*x2) + x;
-    c = mul_add(x2, P1cosf, P0cosf) * (x2*x2) + nmul_add(0.5f, x2, 1.0f); 
+    c = mul_add(x2, P1cosf, P0cosf) * (x2*x2) + nmul_add(0.5f, x2, 1.0f);
     // s = P0sinf * (x*x2) + x;  // 2 ULP error
     // c = P0cosf * (x2*x2) + nmul_add(0.5f, x2, 1.0f);  // 2 ULP error
 
@@ -3067,7 +3067,7 @@ static inline Vec8h tanpi(Vec8h const x) {
     Vec8f xf = to_float(x);
     Vec8f yf = sincos_h<Vec8f, 12>(0, xf);
     return to_float16(yf);
-} 
+}
 
 #if MAX_VECTOR_SIZE >= 512
 
@@ -3116,7 +3116,7 @@ static inline Vec16h tan(Vec16h const x) {
     Vec16f xf = to_float(x);
     Vec16f yf = sincos_h<Vec16f, 4>(0, xf);
     return to_float16(yf);
-} 
+}
 
 static inline Vec16h sinpi(Vec16h const x) {
     Vec16f xf = to_float(x);
@@ -3139,9 +3139,9 @@ static inline Vec16h tanpi(Vec16h const x) {
     Vec16f xf = to_float(x);
     Vec16f yf = sincos_h<Vec16f, 12>(0, xf);
     return to_float16(yf);
-} 
+}
 
-#endif  // MAX_VECTOR_SIZE >= 256 
+#endif  // MAX_VECTOR_SIZE >= 256
 
 #if MAX_VECTOR_SIZE >= 512
 
@@ -3237,7 +3237,7 @@ static inline Vec32h tanpi(Vec32h const x) {
     Vec16f yf_lo = sincos_h<Vec16f, 12>(0, xf_lo);
     Vec16f yf_hi = sincos_h<Vec16f, 12>(0, xf_hi);
     return Vec32h(to_float16(yf_lo), to_float16(yf_hi));
-} 
+}
 
 #endif  // MAX_VECTOR_SIZE >= 512
 

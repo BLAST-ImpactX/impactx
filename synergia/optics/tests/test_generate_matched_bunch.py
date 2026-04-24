@@ -9,11 +9,10 @@ sys.path.append("../../simulation")
 sys.path.append("../../bunch")
 sys.path.append("/home/amundson/work/synergia2-devel_1_0/install/lib")
 
-from nose.tools import *
 from mad8_reader import Mad8_reader
+from matching import generate_matched_bunch_transverse
+from nose.tools import *
 from simulation import Lattice_simulator
-
-from matching import generate_matched_bunch, generate_matched_bunch_transverse
 
 # def test_3d():
 #    lattice = Mad8_reader().get_lattice("fobrdobo", "foborodobo_s.lat")

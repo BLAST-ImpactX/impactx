@@ -23,19 +23,19 @@ namespace boost { namespace phoenix
     //      An actor that does nothing (a "bum", if you will :-).
     //
     /////////////////////////////////////////////////////////////////////////////
-    
+
     namespace detail
     {
         struct nothing {};
     }
-    
+
     namespace expression
     {
         struct null
             : expression::value<detail::nothing>
         {};
     }
-    
+
     template<typename Dummy>
     struct is_custom_terminal<detail::nothing, Dummy>
       : mpl::true_

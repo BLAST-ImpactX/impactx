@@ -334,7 +334,7 @@ PYBIND11_MODULE(bunch, m)
             "Calculate the second order moments for the bunch.",
             "bunch"_a,
             "mean"_a);
- 
+
     // Diagnostics_handler
     py::class_<Diagnostics_handler>(m, "Diagnostics_handler")
         .def("type",

@@ -51,7 +51,7 @@ namespace boost { namespace spirit { namespace qi
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Expr, typename Skipper>
-    inline typename detail::phrase_match<Expr, Skipper>::type 
+    inline typename detail::phrase_match<Expr, Skipper>::type
     phrase_match(
         Expr const& expr
       , Skipper const& s
@@ -122,4 +122,3 @@ namespace boost { namespace spirit { namespace qi
 }}}
 
 #endif
-

@@ -19,6 +19,7 @@ import numpy as np
 import impactx
 import impactx.synmadx
 
+
 class Order(Enum):
     linear = 0
     chr = 1
@@ -1404,8 +1405,6 @@ beam, particle=proton, energy=pmass+0.0025;
 
 
 def test_linear(lattice, line):
-    import impactx
-    import impactx.synmadx
 
     reader = synmadx.MadX_reader()
     reader.parse(lattice)
@@ -1427,8 +1426,6 @@ def test_linear(lattice, line):
 
 
 def test_exact(lattice, line):
-    import impactx
-    import impactx.synmadx
 
     reader = synmadx.MadX_reader()
     reader.parse(lattice)

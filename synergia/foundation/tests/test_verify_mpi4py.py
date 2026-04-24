@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_mpi4py_installed():
     """Make sure that mpi4py is installed."""
     try:

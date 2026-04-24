@@ -49,4 +49,3 @@ const_rend( const T& r )
 } // namespace 'boost'
 
 #endif
-

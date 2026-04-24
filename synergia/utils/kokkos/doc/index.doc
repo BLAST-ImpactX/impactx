@@ -1,4 +1,4 @@
-/*! 
+/*!
 \mainpage Trilinos/Kokkos: Shared-memory programming interface and computational kernels
 
 \section Kokkos_Intro Introduction
@@ -62,7 +62,7 @@ sparse triangular solve, Gauss-Seidel, and dense vector operations.
 They are templated on the type of objects (\c Scalar) on which they
 operate.  This component was not meant to be visible to users; it is
 an implementation detail of the %Tpetra distributed linear algebra
-package.  
+package.
 
 %Kokkos Classic also implements a shared-memory parallel programming
 model.  This inspired and preceded the %Kokkos programming model

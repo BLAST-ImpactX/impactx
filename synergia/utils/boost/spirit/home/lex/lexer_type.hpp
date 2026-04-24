@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2001-2011 Joel de Guzman
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEXER_TYPE_APR_20_2009_0759PM)
@@ -28,8 +28,8 @@ namespace boost { namespace spirit { namespace lex
         //  l:           a lexer component
         //  def:         token definition container
         //  state:       lexer state this token definition needs to be added to
-        //  targetstate: an optional lexer state the lexer should be switched 
-        //               into after matching this token 
+        //  targetstate: an optional lexer state the lexer should be switched
+        //               into after matching this token
 
         Derived const& derived() const
         {

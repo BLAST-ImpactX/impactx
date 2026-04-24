@@ -24,19 +24,19 @@ namespace solenoid_impl
 
         KOKKOS_INLINE_FUNCTION
         void operator() (const int idx) const
-        { 
+        {
             int i = idx * gsv_t::size();
             int mask = 0;
             for(int x=i; x<i+gsv_t::size(); ++x) mask |= m(x);
 
-            if (mask) 
+            if (mask)
             {
                 gsv_t p0(&p(i, 0));
                 gsv_t p1(&p(i, 1));
                 gsv_t p2(&p(i, 2));
                 gsv_t p3(&p(i, 3));
 
-                KF(p0, p1, p2, p3, kse); 
+                KF(p0, p1, p2, p3, kse);
 
                 p1.store(&p(i, 1));
                 p3.store(&p(i, 3));
@@ -76,12 +76,12 @@ namespace solenoid_impl
 
         KOKKOS_INLINE_FUNCTION
         void operator() (const int idx) const
-        { 
+        {
             int i = idx * gsv_t::size();
             int mask = 0;
             for(int x=i; x<i+gsv_t::size(); ++x) mask |= m(x);
 
-            if (mask) 
+            if (mask)
             {
                 gsv_t p0(&p(i, 0));
                 gsv_t p1(&p(i, 1));
@@ -92,7 +92,7 @@ namespace solenoid_impl
 
                 FF_algorithm::solenoid_unit(
                         p0, p1, p2, p3, p4, p5,
-                        ksl, ks, length, ref_p, mass, ref_cdt); 
+                        ksl, ks, length, ref_p, mass, ref_cdt);
 
                 p0.store(&p(i, 0));
                 p1.store(&p(i, 1));
@@ -117,7 +117,7 @@ namespace solenoid_impl
         auto range = Kokkos::RangePolicy<exec>(0, bunch.size_in_gsv(pg));
 
         solenoid_unit_kicker<BunchT> sk{
-            parts, masks, ksl, ks, length, 
+            parts, masks, ksl, ks, length,
             ref_p, mass, ref_cdt
         };
 
@@ -194,10 +194,10 @@ namespace FF_solenoid
         }
 
         // scaling
-        double brho_l = ref_l.get_momentum() 
+        double brho_l = ref_l.get_momentum()
             * (1.0 + ref_l.get_state()[Bunch::dpop]) / ref_l.get_charge();  // GV/c
 
-        double brho_b = ref_b.get_momentum() 
+        double brho_b = ref_b.get_momentum()
             * (1.0 + ref_b.get_state()[Bunch::dpop]) / ref_l.get_charge();  // GV/c
 
         double scale = brho_l / brho_b;
@@ -207,7 +207,7 @@ namespace FF_solenoid
         double kse = ks * 0.5;
 
         // reference cdt
-        const double ref_cdt = get_reference_cdt_solenoid(length, ref_l, 
+        const double ref_cdt = get_reference_cdt_solenoid(length, ref_l,
                 has_in_edge, has_out_edge, ks, kse, ksl);
 
         using gsv_t = typename BunchT::gsv_t;
@@ -215,11 +215,11 @@ namespace FF_solenoid
         // in-edge
         if (has_in_edge)
         {
-            apply_edge_kick<BunchT, 
+            apply_edge_kick<BunchT,
                 FF_algorithm::solenoid_in_edge_kick<gsv_t>>(
                     bunch, ParticleGroup::regular, kse);
 
-            apply_edge_kick<BunchT, 
+            apply_edge_kick<BunchT,
                 FF_algorithm::solenoid_in_edge_kick<gsv_t>>(
                     bunch, ParticleGroup::spectator, kse);
         }

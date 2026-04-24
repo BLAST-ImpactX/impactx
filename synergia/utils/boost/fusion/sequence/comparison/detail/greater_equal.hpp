@@ -2,7 +2,7 @@
     Copyright (c) 1999-2003 Jaakko Jarvi
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_GREATER_EQUAL_05052005_1142)
@@ -37,7 +37,7 @@ namespace boost { namespace fusion { namespace detail
         call(I1 const& a, I2 const& b, mpl::false_)
         {
             return extension::as_const(*a) >= extension::as_const(*b)
-                && (!(extension::as_const(*b) >= extension::as_const(*a)) || 
+                && (!(extension::as_const(*b) >= extension::as_const(*a)) ||
                     call(fusion::next(a), fusion::next(b)));
         }
 

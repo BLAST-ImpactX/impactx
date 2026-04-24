@@ -52,7 +52,7 @@ namespace boost { namespace fusion
         template <typename Stack>
         struct pop_front_car
         {
-            typedef 
+            typedef
                 iterator_range<
                     typename result_of::next<
                         typename Stack::car_type::begin_type
@@ -60,7 +60,7 @@ namespace boost { namespace fusion
                   , typename Stack::car_type::end_type
                 >
             car_type;
-            
+
             typedef
                 cons<car_type, typename Stack::cdr_type>
             type;
@@ -81,7 +81,7 @@ namespace boost { namespace fusion
             int StackSize   = Stack::size::value>
         struct segmented_next_impl_recurse;
 
-        // Handle the case where the top of the stack has no usable 
+        // Handle the case where the top of the stack has no usable
         //auto segmented_next_impl_recurse3(stack)
         //{
         //  if (size(stack) == 1)

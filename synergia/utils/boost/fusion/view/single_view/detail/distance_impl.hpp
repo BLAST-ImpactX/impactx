@@ -11,7 +11,7 @@
 #include <boost/fusion/support/config.hpp>
 #include <boost/mpl/minus.hpp>
 
-namespace boost { namespace fusion 
+namespace boost { namespace fusion
 {
     struct single_view_iterator_tag;
 

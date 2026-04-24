@@ -167,7 +167,7 @@ namespace foil_impl {
     {
         const double elementary_charge_CGS = 4.8032068e-10;
 
-        // Convert to mm and mrad for this routine.	And density to g/cm3
+        // Convert to mm and mrad for this routine. And density to g/cm3
         x *= 1000.0;
         y *= 1000.0;
         px *= 1000.0;
@@ -657,7 +657,7 @@ namespace foil_impl {
 
 #if 0
                     std::cout << "step 0\n";
-                    std::cout << "  meanfreepath = " << meanfreepath 
+                    std::cout << "  meanfreepath = " << meanfreepath
                         << ", stepsize = " << stepsize << "\n";
 #endif
                 }
@@ -679,7 +679,7 @@ namespace foil_impl {
                 double totcross = ecross + icross + rcross;
 
 #if 0
-                std::cout << "E = " << E 
+                std::cout << "E = " << E
                     << ", ecross = " << ecross
                     << ", icross = " << icross
                     << ", rcross = " << rcross
@@ -693,7 +693,7 @@ namespace foil_impl {
                 stepsize = -meanfreepath * log(rand_gen.drand());
 
 #if 0
-                std::cout << "  meanfreepath = " << meanfreepath 
+                std::cout << "  meanfreepath = " << meanfreepath
                     << ", stepsize = " << stepsize << "\n";
 #endif
 

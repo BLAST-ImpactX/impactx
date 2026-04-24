@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_GENERATOR_BINDER_APR_17_2009_0952PM)
@@ -28,7 +28,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         bool call(OutputIterator& sink, Context& context
           , Delimiter const& delim, mpl::true_) const
         {
-            // If DeducedAuto is false (semantic actions is present), the 
+            // If DeducedAuto is false (semantic actions is present), the
             // component's attribute is unused.
             return g.generate(sink, context, delim, unused);
         }
@@ -37,7 +37,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         bool call(OutputIterator& sink, Context& context
           , Delimiter const& delim, mpl::false_) const
         {
-            // If DeducedAuto is true (no semantic action), we pass the rule's 
+            // If DeducedAuto is true (no semantic action), we pass the rule's
             // attribute on to the component.
             return g.generate(sink, context, delim
                 , fusion::at_c<0>(context.attributes));

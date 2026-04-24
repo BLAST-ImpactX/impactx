@@ -36,7 +36,7 @@
 
         #define PHOENIX_EVAL_ARG(z, n, data)                                    \
             help_rvalue_deduction(boost::phoenix::eval(BOOST_PP_CAT(a, n), ctx))
-        
+
         #define M0(z, n, data)                                     \
             typename proto::detail::uncvref<BOOST_PP_CAT(a, n)>::type
 

@@ -14,7 +14,7 @@
 
 namespace boost { namespace phoenix
 {
-    
+
     BOOST_PHOENIX_UNARY_OPERATORS(
         (logical_not)
     )
@@ -22,7 +22,7 @@ namespace boost { namespace phoenix
         (logical_and)
         (logical_or)
     )
-    
+
     using proto::exprns_::operator!;
     using proto::exprns_::operator&&;
     using proto::exprns_::operator||;

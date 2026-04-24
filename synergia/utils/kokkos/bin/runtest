@@ -162,4 +162,3 @@ if [[ ${BUILD_ONLY} -eq 0 ]]; then
 fi
 
 exit ${RESULT}
-

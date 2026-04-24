@@ -161,12 +161,12 @@ struct confix_parser_gen
             LexemeT
         > type;
     };
-  
+
     template<typename StartT, typename ExprT, typename EndT>
-    typename paren_op_result_type<StartT, ExprT, EndT>::type 
+    typename paren_op_result_type<StartT, ExprT, EndT>::type
     operator()(StartT const &start_, ExprT const &expr_, EndT const &end_) const
     {
-        typedef typename paren_op_result_type<StartT,ExprT,EndT>::type 
+        typedef typename paren_op_result_type<StartT,ExprT,EndT>::type
             return_t;
 
         return return_t(
@@ -271,7 +271,7 @@ struct comment_parser_gen
     };
 
     template<typename StartT>
-    typename paren_op1_result_type<StartT>::type 
+    typename paren_op1_result_type<StartT>::type
     operator() (StartT const &start_) const
     {
         typedef typename paren_op1_result_type<StartT>::type
@@ -385,7 +385,7 @@ struct comment_nest_p_result
 };
 
 template<typename OpenT, typename CloseT>
-inline typename comment_nest_p_result<OpenT,CloseT>::type 
+inline typename comment_nest_p_result<OpenT,CloseT>::type
 comment_nest_p(OpenT const &open, CloseT const &close)
 {
     typedef typename comment_nest_p_result<OpenT,CloseT>::type

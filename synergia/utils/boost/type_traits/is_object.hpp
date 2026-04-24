@@ -17,10 +17,10 @@
 namespace boost {
 
 template <class T> struct is_object
-   : public 
+   : public
       integral_constant<
-         bool, 
-         ! ::boost::is_reference<T>::value && ! ::boost::is_void<T>::value && ! ::boost::is_function<T>::value > 
+         bool,
+         ! ::boost::is_reference<T>::value && ! ::boost::is_void<T>::value && ! ::boost::is_function<T>::value >
 {};
 
 } // namespace boost

@@ -64,7 +64,7 @@
    #if defined(BOOST_GCC) && (BOOST_GCC >= 40400) && (BOOST_GCC < 40500)
    #define BOOST_RV_ATTRIBUTE_MAY_ALIAS BOOST_MAY_ALIAS
    #else
-   #define BOOST_RV_ATTRIBUTE_MAY_ALIAS 
+   #define BOOST_RV_ATTRIBUTE_MAY_ALIAS
    #endif
 
    namespace boost {
@@ -495,7 +495,7 @@
    //!In C++03 mode, when accessing a member of type through a rvalue (implemented as a `rv<T> &` type, where rv<T> derives
    //!from T) triggers a potential UB as the program never creates objects of type rv<T>. This macro casts back `rv<T>` to
    //!`T&` so that access to member types are done through the original type.
-   //! 
+   //!
    //!In C++11 compilers the cast from a rvalue reference of a derived type to a rvalue reference of
    //!a base type is implicit, so it's a no-op.
    #define BOOST_MOVE_TO_LV(ARG) ARG

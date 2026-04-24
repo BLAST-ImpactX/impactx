@@ -6,7 +6,7 @@
     //  Copyright 2008 Eric Niebler. Distributed under the Boost
     //  Software License, Version 1.0. (See accompanying file
     //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-    
+
     template<typename Tag, typename Args, long Arity >
     struct make<proto::expr<Tag, Args, Arity>()>
       : transform<make<proto::expr<Tag, Args, Arity>()> >
@@ -23,7 +23,7 @@
             ) const
             {
                 return proto::expr<Tag, Args, Arity>::make(
-                    
+
                 );
             }
         };
@@ -44,12 +44,12 @@
             ) const
             {
                 return proto::basic_expr<Tag, Args, Arity>::make(
-                    
+
                 );
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0>
     struct make<proto::expr<Tag, Args, Arity>(A0)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0)> >
@@ -92,7 +92,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1)> >
@@ -135,7 +135,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2)> >
@@ -178,7 +178,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3)> >
@@ -221,7 +221,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4)> >
@@ -264,7 +264,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5)> >
@@ -307,7 +307,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6)> >
@@ -350,7 +350,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7)> >
@@ -393,7 +393,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8)> >
@@ -436,7 +436,7 @@
             }
         };
     };
-    
+
     template<typename Tag, typename Args, long Arity , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
     struct make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9)>
       : transform<make<proto::expr<Tag, Args, Arity>(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9)> >

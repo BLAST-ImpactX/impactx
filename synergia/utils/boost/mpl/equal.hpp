@@ -4,8 +4,8 @@
 
 // Copyright Aleksey Gurtovoy 2000-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -49,7 +49,7 @@ struct equal_pred
         >
     struct apply
     {
-        typedef typename and_< 
+        typedef typename and_<
               not_< is_same<Iterator1,LastIterator1> >
             , not_< is_same<Iterator2,LastIterator2> >
             , aux::iter_apply2<Predicate,Iterator1,Iterator2>
@@ -98,7 +98,7 @@ template<
     , typename Predicate = is_same<_,_>
     >
 struct equal
-    : aux::msvc_eti_base< 
+    : aux::msvc_eti_base<
           typename aux::equal_impl<Sequence1,Sequence2,Predicate>::type
         >::type
 {

@@ -27,7 +27,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         // Report invalid expression error as early as possible.
         // If you got an error_invalid_expression error message here,
         // then the expression (expr) is not a valid spirit qi expression.
-        // Did you intend to use the auto_ facilities while forgetting to 
+        // Did you intend to use the auto_ facilities while forgetting to
         // #include <boost/spirit/include/qi_auto.hpp>?
         BOOST_SPIRIT_ASSERT_MATCH(qi::domain, Expr);
     };
@@ -54,7 +54,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         // Report invalid expression error as early as possible.
         // If you got an error_invalid_expression error message here,
         // then the expression (expr) is not a valid spirit qi expression.
-        // Did you intend to use the auto_ facilities while forgetting to 
+        // Did you intend to use the auto_ facilities while forgetting to
         // #include <boost/spirit/include/qi_auto.hpp>?
         BOOST_SPIRIT_ASSERT_MATCH(qi::domain, Expr);
     };
@@ -94,4 +94,3 @@ namespace boost { namespace spirit { namespace qi { namespace detail
 }}}}
 
 #endif
-

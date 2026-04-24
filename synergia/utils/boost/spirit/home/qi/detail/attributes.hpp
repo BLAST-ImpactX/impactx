@@ -72,8 +72,8 @@ namespace boost { namespace spirit { namespace qi
               , mpl::not_<is_reference<Exposed> >
               , traits::is_proxy<Transformed> >
           , proxy_transform_attribute<Exposed, Transformed>
-          , default_transform_attribute<Exposed, Transformed> 
-        >::type 
+          , default_transform_attribute<Exposed, Transformed>
+        >::type
     {};
 
     template <typename Exposed, typename Transformed>

@@ -16,7 +16,7 @@
 
   \details Header singleton_pool.hpp provides a template class <tt>singleton_pool</tt>,
   which provides access to a pool as a singleton object.
-  
+
 */
 
 #include <boost/pool/poolfwd.hpp>
@@ -30,7 +30,7 @@
 
 namespace boost {
 
- /*! 
+ /*!
  The singleton_pool class allows other pool interfaces
  for types of the same size to share the same pool.  Template
  parameters are as follows:
@@ -41,9 +41,9 @@ namespace boost {
 
  <B>UserAllocator</b> User allocator, default = default_user_allocator_new_delete.
 
- <b>Mutex</B> This class is the type of mutex to use to protect simultaneous access to the underlying Pool. 
+ <b>Mutex</B> This class is the type of mutex to use to protect simultaneous access to the underlying Pool.
  Can be any Boost.Thread Mutex type or <tt>boost::details::pool::null_mutex</tt>.
- It is exposed so that users may declare some singleton pools normally (i.e., with synchronization), but 
+ It is exposed so that users may declare some singleton pools normally (i.e., with synchronization), but
  some singleton pools without synchronization (by specifying <tt>boost::details::pool::null_mutex</tt>) for efficiency reasons.
  The member typedef <tt>mutex</tt> exposes the value of this template parameter.  The default for this
  parameter is boost::details::pool::default_mutex which is a synonym for either <tt>boost::details::pool::null_mutex</tt>
@@ -79,12 +79,12 @@ namespace boost {
   pool<UserAllocator> p(RequestedSize, NextSize, MaxSize);
 
   \attention
-  The underlying pool constructed by the singleton 
+  The underlying pool constructed by the singleton
   <b>is never freed</b>.  This means that memory allocated
   by a singleton_pool can be still used after main() has
   completed, but may mean that some memory checking programs
   will complain about leaks from singleton_pool.
- 
+
   */
 
  template <typename Tag,
@@ -201,7 +201,7 @@ private:
       static bool f = false;
       if(!f)
       {
-         // This code *must* be called before main() starts, 
+         // This code *must* be called before main() starts,
          // and when only one thread is executing.
          f = true;
          new (&storage) pool_type;

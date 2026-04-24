@@ -16,7 +16,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 = `BOOST_PLAT_WINDOWS_UWP`
 
 http://docs.microsoft.com/windows/uwp/[Universal Windows Platform]
-is available if the current development environment is capable of targeting 
+is available if the current development environment is capable of targeting
 UWP development.
 
 [options="header"]

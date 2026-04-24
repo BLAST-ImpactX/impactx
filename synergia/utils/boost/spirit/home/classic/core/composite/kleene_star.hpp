@@ -33,7 +33,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     //
     ///////////////////////////////////////////////////////////////////////////
     struct kleene_star_parser_gen;
-    
+
 #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
 #pragma warning(push)
 #pragma warning(disable:4512) //assignment operator could not be generated
@@ -47,10 +47,10 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typedef unary_parser_category       parser_category_t;
         typedef kleene_star_parser_gen      parser_generator_t;
         typedef unary<S, parser<self_t> >   base_t;
-    
+
         kleene_star(S const& a)
         : base_t(a) {}
-    
+
         template <typename ScannerT>
         typename parser_result<self_t, ScannerT>::type
         parse(ScannerT const& scan) const
@@ -58,7 +58,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             typedef typename parser_result<self_t, ScannerT>::type result_t;
             typedef typename ScannerT::iterator_t iterator_t;
             result_t hit = scan.empty_match();
-    
+
             for (;;)
             {
                 iterator_t save = scan.first;
@@ -74,7 +74,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             }
         }
     };
-    
+
 #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
 #pragma warning(pop)
 #endif
@@ -82,11 +82,11 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct kleene_star_parser_gen
     {
         template <typename S>
-        struct result 
+        struct result
         {
             typedef kleene_star<S> type;
         };
-    
+
         template <typename S>
         static kleene_star<S>
         generate(parser<S> const& a)
@@ -94,7 +94,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             return kleene_star<S>(a.derived());
         }
     };
-    
+
     //////////////////////////////////
     template <typename S>
     kleene_star<S>

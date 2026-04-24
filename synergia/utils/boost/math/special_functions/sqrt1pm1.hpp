@@ -41,8 +41,3 @@ inline typename tools::promote_args<T>::type sqrt1pm1(const T& val)
 } // namespace boost
 
 #endif // BOOST_MATH_SQRT1PM1
-
-
-
-
-

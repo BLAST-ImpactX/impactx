@@ -370,8 +370,8 @@ template <typename T>
 struct generic_k0e<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  k0ef.c
-     *	Modified Bessel function, third kind, order zero,
-     *	exponentially scaled
+     *  Modified Bessel function, third kind, order zero,
+     *  exponentially scaled
      *
      *
      *
@@ -421,8 +421,8 @@ template <typename T>
 struct generic_k0e<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  k0e.c
-     *	Modified Bessel function, third kind, order zero,
-     *	exponentially scaled
+     *  Modified Bessel function, third kind, order zero,
+     *  exponentially scaled
      *
      *
      *
@@ -495,7 +495,7 @@ template <typename T>
 struct generic_k0<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  k0f.c
-     *	Modified Bessel function, third kind, order zero
+     *  Modified Bessel function, third kind, order zero
      *
      *
      *
@@ -557,8 +557,8 @@ struct generic_k0<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*
      *
-     *	Modified Bessel function, third kind, order zero,
-     *	exponentially scaled
+     *  Modified Bessel function, third kind, order zero,
+     *  exponentially scaled
      *
      *
      *
@@ -630,8 +630,8 @@ struct generic_k1e<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /* k1ef.c
      *
-     *	Modified Bessel function, third kind, order one,
-     *	exponentially scaled
+     *  Modified Bessel function, third kind, order one,
+     *  exponentially scaled
      *
      *
      *
@@ -684,8 +684,8 @@ struct generic_k1e<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  k1e.c
      *
-     *	Modified Bessel function, third kind, order one,
-     *	exponentially scaled
+     *  Modified Bessel function, third kind, order one,
+     *  exponentially scaled
      *
      *
      *
@@ -759,7 +759,7 @@ template <typename T>
 struct generic_k1<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /* k1f.c
-     *	Modified Bessel function, third kind, order one
+     *  Modified Bessel function, third kind, order one
      *
      *
      *
@@ -817,7 +817,7 @@ template <typename T>
 struct generic_k1<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  k1.c
-     *	Modified Bessel function, third kind, order one
+     *  Modified Bessel function, third kind, order one
      *
      *
      *
@@ -896,7 +896,7 @@ template <typename T>
 struct generic_j0<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /* j0f.c
-     *	Bessel function of order zero
+     *  Bessel function of order zero
      *
      *
      *
@@ -969,7 +969,7 @@ template <typename T>
 struct generic_j0<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  j0.c
-     *	Bessel function of order zero
+     *  Bessel function of order zero
      *
      *
      *
@@ -1070,7 +1070,7 @@ template <typename T>
 struct generic_y0<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /* j0f.c
-     * 	Bessel function of the second kind, order zero
+     *  Bessel function of the second kind, order zero
      *
      *
      *
@@ -1147,7 +1147,7 @@ template <typename T>
 struct generic_y0<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  j0.c
-     *	Bessel function of the second kind, order zero
+     *  Bessel function of the second kind, order zero
      *
      *
      *
@@ -1244,7 +1244,7 @@ template <typename T>
 struct generic_j1<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /* j1f.c
-     *	Bessel function of order one
+     *  Bessel function of order one
      *
      *
      *
@@ -1317,7 +1317,7 @@ template <typename T>
 struct generic_j1<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  j1.c
-     *	Bessel function of order one
+     *  Bessel function of order one
      *
      *
      *
@@ -1409,7 +1409,7 @@ template <typename T>
 struct generic_y1<T, float> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /* j1f.c
-     *	Bessel function of second kind of order one
+     *  Bessel function of second kind of order one
      *
      *
      *
@@ -1488,7 +1488,7 @@ template <typename T>
 struct generic_y1<T, double> {
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T& x) {
     /*  j1.c
-     *	Bessel function of second kind of order one
+     *  Bessel function of second kind of order one
      *
      *
      *

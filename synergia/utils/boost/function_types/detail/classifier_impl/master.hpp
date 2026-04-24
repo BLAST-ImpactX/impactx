@@ -30,4 +30,3 @@ classifier_impl(BOOST_FT_type);
 #else
 #   error "attempt to use arity loop master file without loop"
 #endif
-

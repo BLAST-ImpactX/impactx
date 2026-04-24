@@ -20,7 +20,7 @@ BOOST_PHOENIX_DEFINE_EXPRESSION(
   , (proto::terminal<detail::target<proto::_> >)
     (meta_grammar)
 )
-    
+
 namespace boost { namespace phoenix
 {
     struct dynamic_cast_eval

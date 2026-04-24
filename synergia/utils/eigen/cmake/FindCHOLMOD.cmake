@@ -79,7 +79,7 @@ if(CHOLMOD_LIBRARIES)
   if (SUITESPARSE_LIBRARY)
     set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${SUITESPARSE_LIBRARY})
   endif ()
-  
+
 endif()
 
 include(FindPackageHandleStandardArgs)

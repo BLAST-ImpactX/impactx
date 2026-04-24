@@ -15,7 +15,7 @@
 
 #include "boost/lambda/detail/is_instance_of.hpp"
 
-namespace boost { 
+namespace boost {
 namespace lambda {
 
 #if defined BOOST_LAMBDA_BE1
@@ -104,7 +104,7 @@ BOOST_LAMBDA_BE1(OPER_NAME, ACTION, CONSTA, CONSTB, CONST_CONVERSION)        \
 BOOST_LAMBDA_BE2(OPER_NAME, ACTION, CONSTA, CONSTB, CONST_CONVERSION)        \
 BOOST_LAMBDA_BE3(OPER_NAME, ACTION, CONSTA, CONSTB, CONST_CONVERSION)
 
-#define BOOST_LAMBDA_EMPTY() 
+#define BOOST_LAMBDA_EMPTY()
 
 BOOST_LAMBDA_BE(operator+, arithmetic_action<plus_action>, const A, const B, const_copy_argument)
 BOOST_LAMBDA_BE(operator-, arithmetic_action<minus_action>, const A, const B, const_copy_argument)
@@ -153,8 +153,8 @@ BOOST_LAMBDA_BE3(BOOST_LAMBDA_COMMA_OPERATOR_NAME, other_action<comma_action>, c
 namespace detail {
 
 // special cases for ostream& << Any and istream& >> Any ---------------
-// the actual stream classes may vary and thus a specialisation for, 
-// say ostream& does not match (the general case above is chosen). 
+// the actual stream classes may vary and thus a specialisation for,
+// say ostream& does not match (the general case above is chosen).
 // Therefore we specialise for non-const reference:
 // if the left argument is a stream, we store the stream as reference
 // if it is something else, we store a const plain by default
@@ -185,7 +185,7 @@ template<class T> struct convert_istream_to_ref_others_to_c_plain_by_default {
 } // detail
 
 BOOST_LAMBDA_BE2(operator<<, bitwise_action< leftshift_action>, A, const B, detail::convert_ostream_to_ref_others_to_c_plain_by_default)
-BOOST_LAMBDA_BE2(operator>>, bitwise_action< rightshift_action>, A, const B, detail::convert_istream_to_ref_others_to_c_plain_by_default)      
+BOOST_LAMBDA_BE2(operator>>, bitwise_action< rightshift_action>, A, const B, detail::convert_istream_to_ref_others_to_c_plain_by_default)
 
 
 // special case for io_manipulators.
@@ -194,47 +194,47 @@ BOOST_LAMBDA_BE2(operator>>, bitwise_action< rightshift_action>, A, const B, det
 // so common, that specializations are provided to make them work.
 
 template<class Arg, class Ret, class ManipArg>
-inline const 
+inline const
 lambda_functor<
   lambda_functor_base<
     bitwise_action<leftshift_action>,
-    tuple<lambda_functor<Arg>, Ret(&)(ManipArg)> 
-  > 
+    tuple<lambda_functor<Arg>, Ret(&)(ManipArg)>
+  >
 >
 operator<<(const lambda_functor<Arg>& a, Ret(&b)(ManipArg))
 {
-  return 
+  return
       lambda_functor_base<
         bitwise_action<leftshift_action>,
         tuple<lambda_functor<Arg>, Ret(&)(ManipArg)>
-      > 
+      >
     ( tuple<lambda_functor<Arg>, Ret(&)(ManipArg)>(a, b) );
 }
 
 template<class Arg, class Ret, class ManipArg>
-inline const 
+inline const
 lambda_functor<
   lambda_functor_base<
     bitwise_action<rightshift_action>,
     tuple<lambda_functor<Arg>, Ret(&)(ManipArg)>
-  > 
+  >
 >
 operator>>(const lambda_functor<Arg>& a, Ret(&b)(ManipArg))
 {
-  return 
+  return
       lambda_functor_base<
         bitwise_action<rightshift_action>,
         tuple<lambda_functor<Arg>, Ret(&)(ManipArg)>
-      > 
+      >
     ( tuple<lambda_functor<Arg>, Ret(&)(ManipArg)>(a, b) );
 }
 
 
-// (+ and -) take their arguments as const references. 
+// (+ and -) take their arguments as const references.
 // This has consquences with pointer artihmetic
-// E.g int a[]; ... *a = 1 works but not *(a+1) = 1. 
+// E.g int a[]; ... *a = 1 works but not *(a+1) = 1.
 // the result of a+1 would be const
-// To make the latter work too, 
+// To make the latter work too,
 // non-const arrays are taken as non-const and stored as non-const as well.
 #if defined  BOOST_LAMBDA_PTR_ARITHMETIC_E1
 #error "Multiple defines of  BOOST_LAMBDA_PTR_ARITHMETIC_E1"

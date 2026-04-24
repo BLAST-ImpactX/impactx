@@ -12,4 +12,3 @@ echo "Generating main Kokkos doxygen documentation ..."
 echo
 
 doxygen Doxyfile
-

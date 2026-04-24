@@ -104,7 +104,7 @@ namespace boost { namespace spirit
         {
             return var;
         }
-        
+
         void swap(extended_variant& rhs) BOOST_NOEXCEPT
         {
             var.swap(rhs.var);

@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_CHAR_TOKEN_DEF_MAR_28_2007_0626PM)
@@ -47,7 +47,7 @@ namespace boost { namespace spirit
     struct use_terminal<lex::domain
       , terminal_ex<
             tag::char_code<tag::char_, CharEncoding>
-          , fusion::vector1<A0> > > 
+          , fusion::vector1<A0> > >
       : mpl::true_ {};
 
     // enables char_('x', ID), char_("x", ID)
@@ -55,12 +55,12 @@ namespace boost { namespace spirit
     struct use_terminal<lex::domain
       , terminal_ex<
             tag::char_code<tag::char_, CharEncoding>
-          , fusion::vector2<A0, A1> > > 
+          , fusion::vector2<A0, A1> > >
       : mpl::true_ {};
 }}
 
 namespace boost { namespace spirit { namespace lex
-{ 
+{
     // use char_ from standard character set by default
 #ifndef BOOST_SPIRIT_NO_PREDEFINED_TERMINALS
     using spirit::standard::char_;
@@ -69,7 +69,7 @@ namespace boost { namespace spirit { namespace lex
 
     ///////////////////////////////////////////////////////////////////////////
     //
-    //  char_token_def 
+    //  char_token_def
     //      represents a single character token definition
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -80,9 +80,9 @@ namespace boost { namespace spirit { namespace lex
     {
         typedef typename CharEncoding::char_type char_type;
 
-        char_token_def(char_type ch, IdType const& id) 
+        char_token_def(char_type ch, IdType const& id)
           : ch(ch), id_(id), unique_id_(std::size_t(~0))
-          , token_state_(std::size_t(~0)) 
+          , token_state_(std::size_t(~0))
         {}
 
         template <typename LexerDef, typename String>
@@ -91,10 +91,10 @@ namespace boost { namespace spirit { namespace lex
         {
             std::size_t state_id = lexdef.add_state(state.c_str());
 
-            // If the following assertion fires you are probably trying to use 
-            // a single char_token_def instance in more than one lexer state. 
-            // This is not possible. Please create a separate token_def instance 
-            // from the same regular expression for each lexer state it needs 
+            // If the following assertion fires you are probably trying to use
+            // a single char_token_def instance in more than one lexer state.
+            // This is not possible. Please create a separate token_def instance
+            // from the same regular expression for each lexer state it needs
             // to be associated with.
             BOOST_ASSERT(
                 (std::size_t(~0) == token_state_ || state_id == token_state_) &&
@@ -239,4 +239,4 @@ namespace boost { namespace spirit { namespace lex
     };
 }}}  // namespace boost::spirit::lex
 
-#endif 
+#endif

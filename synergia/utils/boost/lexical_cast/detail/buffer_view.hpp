@@ -42,7 +42,7 @@ namespace boost { namespace conversion { namespace detail {
     }
 
     template< typename CharT, typename Elem, typename Traits >
-    std::basic_ostream<Elem,Traits>& operator<<( 
+    std::basic_ostream<Elem,Traits>& operator<<(
                 std::basic_ostream<Elem, Traits>& os,
                 buffer_view<CharT> r)
     {
@@ -56,4 +56,3 @@ namespace boost { namespace conversion { namespace detail {
 }}}  // namespace boost::conversion::detail
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_BUFFER_VIEW_HPP
-

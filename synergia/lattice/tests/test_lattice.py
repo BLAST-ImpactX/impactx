@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import pytest
+
 import synergia
-from synergia.lattice import Lattice, Lattice_element
 from synergia.foundation import Reference_particle
+from synergia.lattice import Lattice
 
 name = "foo"
 charge = -1
@@ -46,6 +47,7 @@ def test_set_reference_particle_energy():
     lattice.get_reference_particle().set_total_energy(total_energy + 1)
     assert lattice.get_reference_particle().get_total_energy() == total_energy + 1.0
 
+
 def test_copy_constructor():
     lattice_txt = """
 q1: quadrupole, l=0.5, k1=0.2;
@@ -56,10 +58,10 @@ machine: sequence, refer=entry, l=6.0;
     endsequence;
     beam, particle=proton, energy=1.5;
 """
-    
+
     reader = synergia.lattice.MadX_reader()
     reader.parse(lattice_txt)
-    lattice1 = reader.get_lattice('machine')
+    lattice1 = reader.get_lattice("machine")
     assert lattice1.get_length() == 6.0
 
     lattice2 = lattice1
@@ -69,8 +71,8 @@ machine: sequence, refer=entry, l=6.0;
     assert id(lattice1) == id(lattice2)
     # Change to an element in lattice2 is reflected in lattice1
     elem = lattice2.get_elements()[1]
-    elem.set_double_attribute('xyzzy', 3.0)
-    assert lattice1.get_elements()[1].get_double_attribute('xyzzy') == 3.0
+    elem.set_double_attribute("xyzzy", 3.0)
+    assert lattice1.get_elements()[1].get_double_attribute("xyzzy") == 3.0
 
     # lattice3 should be a seperate object with copies of the elements
     lattice3 = synergia.lattice.Lattice(lattice1)
@@ -81,5 +83,5 @@ machine: sequence, refer=entry, l=6.0;
     # change parameters in an element of lattice3 to check that it doesn't
     # affect lattice1
     elem = lattice3.get_elements()[0]
-    elem.set_double_attribute('foo', 4)
-    assert not lattice1.get_elements()[0].has_double_attribute('foo')
+    elem.set_double_attribute("foo", 4)
+    assert not lattice1.get_elements()[0].has_double_attribute("foo")

@@ -146,7 +146,7 @@ struct concat_index_tuple<index_tuple<I1...>, index_tuple<I2...>>
 
 template<std::size_t N> struct build_number_seq;
 
-template<std::size_t N> 
+template<std::size_t N>
 struct build_number_seq
    : concat_index_tuple<typename build_number_seq<N/2>::type
                        ,typename build_number_seq<N - N/2 >::type

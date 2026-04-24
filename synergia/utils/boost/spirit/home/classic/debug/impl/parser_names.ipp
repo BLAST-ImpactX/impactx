@@ -425,7 +425,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     }   // namespace impl
 
     template<
-        typename DerivedT, typename EmbedT, 
+        typename DerivedT, typename EmbedT,
         typename T0, typename T1, typename T2
     >
     inline std::string
@@ -497,11 +497,11 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 //  decide, if a node is to be traced or not
     template<
-        typename DerivedT, typename EmbedT, 
+        typename DerivedT, typename EmbedT,
         typename T0, typename T1, typename T2
     >
     inline bool
-    trace_parser(impl::rule_base<DerivedT, EmbedT, T0, T1, T2> 
+    trace_parser(impl::rule_base<DerivedT, EmbedT, T0, T1, T2>
         const& p)
     {
         return impl::get_node_registry().trace_node(&p);

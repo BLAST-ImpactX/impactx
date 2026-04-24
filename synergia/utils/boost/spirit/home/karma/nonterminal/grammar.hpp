@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_GRAMMAR_MAR_05_2007_0542PM)
@@ -58,7 +58,7 @@ namespace boost { namespace spirit { namespace karma
         };
 
         // the output iterator is always wrapped by karma
-        typedef detail::output_iterator<OutputIterator, properties> 
+        typedef detail::output_iterator<OutputIterator, properties>
             output_iterator;
 
         grammar(start_type const& start
@@ -67,15 +67,15 @@ namespace boost { namespace spirit { namespace karma
           , name_(name_)
         {}
 
-        // This constructor is used to catch if the start rule is not 
-        // compatible with the grammar. 
+        // This constructor is used to catch if the start rule is not
+        // compatible with the grammar.
         template <typename Iterator_, typename T1_, typename T2_, typename T3_,
             typename T4_>
         grammar(rule<Iterator_, T1_, T2_, T3_, T4_> const&
               , std::string const& = "unnamed-grammar")
         {
-            // If you see the assertion below failing then the start rule 
-            // passed to the constructor of the grammar is not compatible with 
+            // If you see the assertion below failing then the start rule
+            // passed to the constructor of the grammar is not compatible with
             // the grammar (i.e. it uses different template parameters).
             BOOST_SPIRIT_ASSERT_MSG(
                 (is_same<start_type, rule<Iterator_, T1_, T2_, T3_, T4_> >::value)
@@ -125,7 +125,7 @@ namespace boost { namespace spirit { namespace traits
     struct handles_container<
             karma::grammar<IteratorA, T1, T2, T3, T4>, Attribute, Context
           , IteratorB>
-      : detail::nonterminal_handles_container< 
+      : detail::nonterminal_handles_container<
             typename attribute_of<
                 karma::grammar<IteratorA, T1, T2, T3, T4>
               , Context, IteratorB

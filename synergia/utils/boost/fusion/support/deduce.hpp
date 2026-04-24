@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2007 Tobias Schwinger
-  
-    Use modification and distribution are subject to the Boost Software 
+
+    Use modification and distribution are subject to the Boost Software
     License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
     http://www.boost.org/LICENSE_1_0.txt).
 ==============================================================================*/
@@ -27,7 +27,7 @@ namespace boost { namespace fusion { namespace traits
     template <typename T>
     struct deduce
     {
-        typedef T type; 
+        typedef T type;
     };
 
     template <typename T>
@@ -116,7 +116,7 @@ namespace boost { namespace fusion { namespace traits
     template <typename T, int N>
     struct deduce<volatile T(&)[N]>
     {
-        typedef volatile T(&type)[N]; 
+        typedef volatile T(&type)[N];
     };
 
     template <typename T, int N>
@@ -134,4 +134,3 @@ namespace boost { namespace fusion { namespace traits
 }}}
 
 #endif
-

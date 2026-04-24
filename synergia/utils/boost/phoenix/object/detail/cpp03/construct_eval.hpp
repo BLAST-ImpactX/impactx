@@ -49,7 +49,7 @@
             : detail::result_of::target<A0>
         {
         };
-        
+
         template <BOOST_PHOENIX_typename_A, typename Context>
         typename detail::result_of::target<A0>::type
         operator()(

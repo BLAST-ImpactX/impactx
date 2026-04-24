@@ -42,8 +42,8 @@ IteratorType rotate_with_pivot_in_left_half(const std::string& label,
     If we have:
 
     | 0 | 1 | 2 | 1 | 4 | 5 | 2 | 2 | 10 | -3 | 1 | -6 | -5 | 8 | 9 | 11 | *
-      ^           ^              mid					   ^
-    first       n_first							  last
+      ^           ^              mid                       ^
+    first       n_first                           last
 
     In step 1, we create a temporary view with extent = distance(n_first, last)
     and *move* the elements from [n_first, last) to tmp view, such that
@@ -111,7 +111,7 @@ IteratorType rotate_with_pivot_in_right_half(const std::string& label,
 
     | 0 | 1 | 2 | 1 | 4 | 5 | 2 | 2 | 10 | -3 | 1 | -6 | -5 | 8 | 9 | 11 | *
       ^                          mid            ^                          ^
-    first                                    n_first			  last
+    first                                    n_first              last
 
     In step 1, we create a temporary view with extent = distance(first, n_first)
     and *move* the elements from [first, n_first) to tmp view,

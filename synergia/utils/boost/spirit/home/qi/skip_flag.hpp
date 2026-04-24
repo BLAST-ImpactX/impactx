@@ -13,11 +13,11 @@
 
 #include <boost/spirit/home/support/detail/scoped_enum_emulation.hpp>
 
-namespace boost { namespace spirit { namespace qi 
+namespace boost { namespace spirit { namespace qi
 {
     ///////////////////////////////////////////////////////////////////////////
-    BOOST_SCOPED_ENUM_START(skip_flag) 
-    { 
+    BOOST_SCOPED_ENUM_START(skip_flag)
+    {
         postskip,           // force post-skipping in phrase_parse()
         dont_postskip       // inhibit post-skipping in phrase_parse()
     };
@@ -26,4 +26,3 @@ namespace boost { namespace spirit { namespace qi
 }}}
 
 #endif
-

@@ -45,6 +45,3 @@ inline void move_swap(T& lhs, T& rhs)
 }}} // namespace boost::detail::variant
 
 #endif // BOOST_VARIANT_DETAIL_MOVE_HPP
-
-
-

@@ -145,7 +145,7 @@ namespace dipedge_impl
                 gsv_t p2(&p(i, 2));
                 gsv_t p3(&p(i, 3));
 
- 
+
                 // bend
                 FF_algorithm::dipedge_unit<gsv_t>(
                         p0, p1, p2, p3,
@@ -163,13 +163,13 @@ namespace dipedge_impl
     };
 
     inline void prop_reference(
-            Reference_particle & ref_l, 
+            Reference_particle & ref_l,
             DipedgeParams & dipedge_params )
     {
         double pref_l = ref_l.get_momentum();
         double    m_l = ref_l.get_mass();
 
-        // propagate the reference particle, and set the edge kick strength 
+        // propagate the reference particle, and set the edge kick strength
         // from the reference particle
         double    x_l = ref_l.get_state()[Bunch::x];
         double   xp_l = ref_l.get_state()[Bunch::xp];
@@ -184,7 +184,7 @@ namespace dipedge_impl
                 dipedge_params.re_2_1,
                 dipedge_params.re_4_3,
                 dipedge_params.te);
-        
+
         ref_l.set_state(x_l, xp_l, y_l, yp_l,
             cdt_l, dpop_l);
 
@@ -329,4 +329,3 @@ namespace FF_dipedge {
 }
 
 #endif // FF_DIPEDGE_H
-

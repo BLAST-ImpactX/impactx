@@ -35,7 +35,7 @@ namespace boost {
                 typedef BOOST_STRING_TYPENAME
                     range_const_iterator<RangeT>::type format_iterator;
                 typedef iterator_range<format_iterator> result_type;
-            
+
             public:
                 // Construction
                 const_formatF(const RangeT& Format) :
@@ -75,7 +75,7 @@ namespace boost {
             };
 
 //  empty format functor ( used by erase ) ------------------------------------//
-        
+
             // empty format functor
             template< typename CharT >
             struct empty_formatF
@@ -100,7 +100,7 @@ namespace boost {
 
                   // Operation
                   template<typename RangeT>
-                  inline iterator_range< 
+                  inline iterator_range<
                       BOOST_STRING_TYPENAME range_const_iterator<RangeT>::type>
                   operator()(const RangeT& Replace) const
                   {

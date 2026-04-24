@@ -251,6 +251,3 @@ class integer_traits< unsigned __int64>
 } // namespace boost
 
 #endif /* BOOST_INTEGER_TRAITS_HPP */
-
-
-

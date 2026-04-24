@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-import sys, os
-import numpy as np
-import synergia
 import pytest
 
+import synergia
 import synergia.simulation as SIM
+
 ET = synergia.lattice.element_type
 MT = synergia.lattice.marker_type
 PCONST = synergia.foundation.pconstants
 
-kinetic_energy = 0.00250 # IOTA Kinetic Energy 2.5 MeV
+kinetic_energy = 0.00250  # IOTA Kinetic Energy 2.5 MeV
 stepper = "elements"
 steps = 1
 harmonic_number = 4
@@ -385,18 +384,22 @@ def lattice_fixture():
 
     return lattice
 
+
 ################################################################################
+
 
 def get_propagator(lattice):
 
     sc_ops = synergia.collective.Dummy_CO_options()
     stepper = synergia.simulation.Independent_stepper_elements(steps)
-    
+
     propagator = synergia.simulation.Propagator(lattice, stepper)
 
     return propagator
 
+
 ################################################################################
+
 
 def test_elem_lengths(lattice_fixture):
     lattice = lattice_fixture
@@ -404,33 +407,35 @@ def test_elem_lengths(lattice_fixture):
 
     refpart = lattice.get_reference_particle()
     beta = refpart.get_beta()
-    
+
     # set the RF cavities
     state = SIM.Lattice_simulator.tune_circular_lattice(lattice)
-    
+
     # the cdt of state should be the orbit length/beta
-    assert lattice_length == pytest.approx(state[4]*beta)
+    assert lattice_length == pytest.approx(state[4] * beta)
 
     # Check the frequency of the RF cavities
-    freq_should_be = harmonic_number * beta * PCONST.c/lattice_length
+    freq_should_be = harmonic_number * beta * PCONST.c / lattice_length
 
     for elem in lattice.get_elements():
         # is this an RF cavity?
         if elem.get_type() == ET.rfcavity:
             # RF cavity freq is in MHz
-            freq = elem.get_double_attribute('freq')*1.0e6
+            freq = elem.get_double_attribute("freq") * 1.0e6
             assert freq_should_be == pytest.approx(freq)
 
     # Propagate a bunch and check each element length
     element_lengths = [e.get_length() for e in lattice.get_elements()]
 
     # logger for simulation
-    simlog = synergia.utils.parallel_utils.Logger(0, 
-            synergia.utils.parallel_utils.LoggerV.INFO_TURN)
+    simlog = synergia.utils.parallel_utils.Logger(
+        0, synergia.utils.parallel_utils.LoggerV.INFO_TURN
+    )
 
     commxx = synergia.utils.Commxx()
     sim = synergia.simulation.Bunch_simulator.create_single_bunch_simulator(
-        refpart, 16, 1.0e10, commxx)
+        refpart, 16, 1.0e10, commxx
+    )
 
     bunch = sim.get_bunch(0, 0)
     parts = bunch.get_particles_numpy()
@@ -446,7 +451,7 @@ def test_elem_lengths(lattice_fixture):
         cdt = bunch.get_design_reference_particle().get_state()[4]
         context.elem_cdt.append(cdt)
         return
-    
+
     sim.reg_prop_action_step_end(step_end_action)
 
     propagator = get_propagator(lattice)
@@ -456,12 +461,14 @@ def test_elem_lengths(lattice_fixture):
 
     # Now the elem_cdts * beta should equal the element lengths
     for i in range(len(element_lengths)):
-        #print(i, element_lengths[i], context.elem_cdt[i]*beta, flush=True)
-        assert element_lengths[i] == pytest.approx(context.elem_cdt[i]*beta)
+        # print(i, element_lengths[i], context.elem_cdt[i]*beta, flush=True)
+        assert element_lengths[i] == pytest.approx(context.elem_cdt[i] * beta)
+
 
 def main():
     lf = lattice_fixture()
     test_elem_lengths(lf)
+
 
 if __name__ == "__main__":
     main()

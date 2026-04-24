@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_NO_DELIMIT_JAN_19_2010_0920AM)
@@ -44,7 +44,7 @@ namespace boost { namespace spirit { namespace karma
     //  The no_delimit generator is used for no_delimit[...] directives.
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject>
-    struct no_delimit_generator 
+    struct no_delimit_generator
       : unary_generator<no_delimit_generator<Subject> >
     {
         typedef Subject subject_type;
@@ -63,7 +63,7 @@ namespace boost { namespace spirit { namespace karma
         bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d
           , Attribute const& attr) const
         {
-            //  the no_delimit generator simply dispatches to the embedded 
+            //  the no_delimit generator simply dispatches to the embedded
             //  generator while supplying unused_delimiter as the new delimiter
             //  to avoid delimiting down the generator stream
             typedef detail::unused_delimiter<Delimiter> unused_delimiter;
@@ -89,7 +89,7 @@ namespace boost { namespace spirit { namespace karma
     {
         typedef no_delimit_generator<Subject> result_type;
 
-        result_type 
+        result_type
         operator()(unused_type, Subject const& subject, unused_type) const
         {
             return result_type(subject);

@@ -58,4 +58,3 @@ struct components_impl<BOOST_FT_type, L>
 #else
 #   error "attempt to use arity loop master file without loop"
 #endif
-

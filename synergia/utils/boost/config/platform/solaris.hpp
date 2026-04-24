@@ -1,7 +1,7 @@
-//  (C) Copyright John Maddock 2001 - 2003. 
-//  (C) Copyright Jens Maurer 2003. 
-//  Use, modification and distribution are subject to the 
-//  Boost Software License, Version 1.0. (See accompanying file 
+//  (C) Copyright John Maddock 2001 - 2003.
+//  (C) Copyright Jens Maurer 2003.
+//  Use, modification and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See http://www.boost.org for most recent version.
@@ -23,9 +23,7 @@
 # undef BOOST_HAS_PTHREADS
 #endif
 
-#define BOOST_HAS_STDINT_H 
-#define BOOST_HAS_PTHREAD_MUTEXATTR_SETTYPE 
-#define BOOST_HAS_LOG1P 
+#define BOOST_HAS_STDINT_H
+#define BOOST_HAS_PTHREAD_MUTEXATTR_SETTYPE
+#define BOOST_HAS_LOG1P
 #define BOOST_HAS_EXPM1
-
-

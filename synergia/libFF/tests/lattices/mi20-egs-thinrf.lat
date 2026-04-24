@@ -11,42 +11,42 @@
 ! *******************************************************************************************
 ! jfa: changed beam energy to 8.9
 ! *******************************************************************************************
-! 
+!
 ! File: mi20_mad-F_for_chef.lat
 ! Date: March 13, 2008
-! 
-! This is a modified version of Dave Johnson's mi20_mad-F.lat, 
+!
+! This is a modified version of Dave Johnson's mi20_mad-F.lat,
 ! uploaded from Fermilab's Accelerator Division Lattice Repository on
 ! March 7, 2008.  The original file itself is dated October 1, 2004.
 ! Changes were made to correct errors and to enable chef-mdi/chef to
 ! read it and build a model of the Main Injector, specifically the line
 ! RING_P_Q605.  Using this, the ring closes and lattice functions
 ! can be calculated.
-! 
+!
 ! The following is a list of the changes I made to Dave Johnson's
 ! original file.  I have tried not to forget any, but there is no
 ! guarantee.  It is provided (a) to emphasize that the two files should
 ! describe the same lattice, and (b) to record for others the sorts of
 ! things that still need to be done to massage a MAD lattice file into
 ! one that can be interpreted by MAD8Factory.
-! 
+!
 ! Even if you ignore everything else, please notice the warnings about
 ! tunes in Item (12) and split cavities in Item (11).
-! 
+!
 ! - Leo Michelotti  (michelotti@fnal.gov)
 ! - Thursday. March 13, 2008.
-! 
+!
 ! *******************************************************************************************
 ! *******************************************************************************************
-! 
+!
 ! (1) A BEAM statement has been added at the top of the file. The
 ! momentum was arbitrarily set to 120 GeV/c.
-! 
-! 
+!
+!
 ! (2) The syntax of all parameter assignments have been changed
 ! from "XXXXX = YYYYY" to "XXXXX := YYYYY".
-! 
-! 
+!
+!
 ! (3) RBENDs have been changed to SBENDs with parallel faces.
 ! This required changing the length attribute, because RBEND
 ! length is along a straight line, while SBEND length is along
@@ -54,12 +54,12 @@
 ! Also necessary to get the ring to close, with survey coordinates
 ! the same as MAD's.) That is, these lines
 !   --------------------------------------------------------
-!   IDA001:  RBEND, TYPE = IDA, L=LIDA_MAG, ANGLE = CIRBEND 
+!   IDA001:  RBEND, TYPE = IDA, L=LIDA_MAG, ANGLE = CIRBEND
 !   ...
-!   IDB113:  RBEND, TYPE = IDB, L=LIDB_MAG, ANGLE = CIRBEND 
-!   IDC000:  RBEND, TYPE = IDC, L=LIDC_MAG, ANGLE = (2/3)*CIRBEND 
+!   IDB113:  RBEND, TYPE = IDB, L=LIDB_MAG, ANGLE = CIRBEND
+!   IDC000:  RBEND, TYPE = IDC, L=LIDC_MAG, ANGLE = (2/3)*CIRBEND
 !   ...
-!   IDD069:  RBEND, TYPE = IDD, L=LIDD_MAG, ANGLE = (2/3)*CIRBEND 
+!   IDD069:  RBEND, TYPE = IDD, L=LIDD_MAG, ANGLE = (2/3)*CIRBEND
 !   --------------------------------------------------------
 ! were replaced with these:
 !   --------------------------------------------------------
@@ -67,7 +67,7 @@
 !   XIDB_MAG := (LIDB_MAG*CIRBEND)/(2*SIN(CIRBEND/2))
 !   XIDC_MAG := (LIDC_MAG*(2/3)*CIRBEND)/(2*SIN(CIRBEND/3))
 !   XIDD_MAG := (LIDD_MAG*(2/3)*CIRBEND)/(2*SIN(CIRBEND/3))
-!   
+!
 !   IDA001:  SBEND, TYPE = IDA, L=XIDA_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
 !   ...
 !   IDB000:  SBEND, TYPE = IDB, L=XIDB_MAG, ANGLE = CIRBEND, E1 = CIRBEND/2, E2 = CIRBEND/2
@@ -79,13 +79,13 @@
 ! designation, esp. if random error fields are to be introduced later,
 ! and (b) CHEF's most recent version is temporarily experiencing
 ! difficulties with rbends.  (That will be fixed.)
-! 
-! 
+!
+!
 ! (4) I have shifted the declaration of markers forward so that they
 ! are defined before they are used.  This should not make a difference,
 ! but it eliminates a lot of warnings from the parser/factory.
-! 
-! 
+!
+!
 ! (5) Shortcut tokens HKICK and VKICK were expanded to HKICKER
 ! and VKICKER.  That is, from this
 !   --------------------------------------------------------
@@ -99,8 +99,8 @@
 !   V101:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V101
 !   ...
 !   --------------------------------------------------------
-! 
-! 
+!
+!
 ! (6) OCTUPOLE strength parameters were used but never declared
 ! or assigned. Statements were added assigning their values.
 ! Similarly, some kicker parameters were used but never set.
@@ -115,10 +115,10 @@
 !   ...
 !   K602ANG := 0
 !   --------------------------------------------------------
-! 
-! 
+!
+!
 ! (7) Several typographical errors were corrected, for example:
-! from 
+! from
 !   --------------------------------------------------------
 !   LAM40AMP:   MULTIPOLE, K0L = LAM40A_K0L/2, K1L = LAM40A_L1K/2
 !   ...
@@ -134,8 +134,8 @@
 !   --------------------------------------------------------
 ! I did warn Dave Johnson of these particular mistakes some years ago,
 ! when I was studying Fermilab lattices in more detail.
-! 
-! 
+!
+!
 ! (8) Another typographical error appeared in the definition of
 ! drift space D601E.  I changed this:
 !   --------------------------------------------------------
@@ -152,8 +152,8 @@
 !                     -D1IN[L]-LIQBU_END-LPINGER-LSCHOTTKY-3*D6IN[L]-LWBPU
 !   --------------------------------------------------------
 ! Can you spot the difference?
-! 
-! 
+!
+!
 ! (9) Three markers were given an RFCAVITY type attribute:
 !   --------------------------------------------------------
 !   M_CAV: MARKER, TYPE=RFCAVITY
@@ -193,8 +193,8 @@
 !   S110: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
 !   ... etc., etc., etc.
 !   --------------------------------------------------------
-! 
-! 
+!
+!
 ! (10) A drift space, D602E, has negative length.
 !   --------------------------------------------------------
 !   D602D: DRIFT, L = 1.9177   !0.66294
@@ -223,8 +223,8 @@
 !                   D602DE,WBPU,D602F,VSD,VDPU,D602G, &
 !                   VCEND,V603,VCEND,D1IN,IQBUEND)
 !   --------------------------------------------------------
-! 
-! 
+!
+!
 ! There is also a mysterious drift that gets redefined before
 ! use. It didn't seem to present a problem, so I left it as is.
 !   ---------------------------------------------------------
@@ -233,14 +233,14 @@
 !   D602A: DRIFT, L = 0.508 - LIQBD_END- 0.3
 !   ---------------------------------------------------------
 ! One would think that LBPM's value was 0.3, but it is zero.
-! 
-! 
+!
+!
 ! (11) Element named V100 was defined twice: first as a drift and
 ! then as a kicker with non-zero horizontal and vertical strengths.
 ! Both original definitions were replaced with a single kicker
 ! definition but with strengths set to zero.
-! 
-! 
+!
+!
 ! (12) EXTREME CAUTION: The cavities are split in this description.
 ! For example,
 !   ---------------------------------------------------------
@@ -254,17 +254,17 @@
 ! unless they are turned on.  Also, these are "synchrotron" cavities, not
 ! "linac" cavities.  Take special care to insure that the factory and
 ! propagators are still handling the synchronous phase correctly.
-! 
+!
 ! I did not change these lines, but this will have to be revisited when
 ! fully six-dimensional calculations are done on bunches.
-!     
-! 
+!
+!
 ! (13) WARNING: I compared with MAD on four files: (1) Dave Johnson's
 ! original, (2) this file with no RBEND->SBEND replacement, (3) this
 ! file, but with the arclength of the sbends changed back to the
 ! original rbend lengths, and (4) this file, as is.  The calculations
 ! done by MAD were
-! 
+!
 !   (1) ORIGINAL
 !   : total length = 3319.390644  Qx = 26.424996 Qy = 25.415003
 !   (2) MODIFIED (BUT RBEND, NOT SBEND)
@@ -273,33 +273,33 @@
 !   : total length = 3319.390644  Qx = 26.097289 Qy = 25.744566
 !   (4) MODIFIED (PARALLEL FACE SBEND w/ ARCLENGTH ATTRIBUTE)
 !   : total length = 3319.418686  Qx = 26.097588 Qy = 25.744848
-! 
+!
 ! CHEF's length calculation (using this file) agrees with MAD's for
 ! Case (4).  CHEF's tunes (using this file) agree closely with MAD's
 ! when MAD uses the RBEND, Cases (1) (and (2)), the differences being
 ! only about 0.003.
-! 
+!
 ! For whatever it is worth, using this file, CHEF's and MAD's site
 ! coordinates agree exactly.
-! 
+!
 ! *******************************************************************************************
 ! *******************************************************************************************
-! 
+!
 ! Lattice file: mi20 generated from: ~dej/MI20/revise_mi60_102699/make_mi20
 ! Lattice generated by: dej
 ! Lattice file created: Mon Sep 6 12:23:16 CDT 2004
-! 
-! -------------------------------------------------------------------------------------------- 
-! @#$ --- 
+!
+! --------------------------------------------------------------------------------------------
+! @#$ ---
 ! Table file: table_mad.g.parameter generated from: ~dej/MI20/Rev_lat_des_040904/bld_mi20.c
 ! created: Mon Sep 6 12:23:16 CDT 2004
 ! generated by: dej
-! -------------------------------------------------------------------------------------------- 
+! --------------------------------------------------------------------------------------------
 
 BEAM, PARTICLE=PROTON, PC=8.9
 
 !
-! Lattice and Device Parameters 
+! Lattice and Device Parameters
 !
 !
 ! Half-cell lengths
@@ -320,7 +320,7 @@ LIQB_MAG        := 2*LHIQB_MAG
 LIQBU_END       := 0.0762   !3 inches
 LIQBD_END       := 0.0762   !3inches
 !
-! IQE: Quad 
+! IQE: Quad
 !
 LIQEU_END       := 0.0381   !1.5 inches
 LIQED_END       := 0.058674 !2.31 inches
@@ -331,7 +331,7 @@ LIQED_END       := 0.058674 !2.31 inches
 !
 LHIQCA_STEEL   := 1.0662
 !Previous value used in MI-19
-!LHIQCA_STEEL   := 1.0668 
+!LHIQCA_STEEL   := 1.0668
 LHIQCA_EXCESS  := 0.008
 LHIQCA_MAG     := LHIQCA_STEEL-LHIQCA_EXCESS
 LHIQCD_STEEL   := 1.4724
@@ -410,7 +410,7 @@ LMRSQ_END      := 0.0254
 LMRSQ_SLOT     := 2*LMRSQ_END+LMRSQ
 
 !
-! ISA: MI Sextupole 
+! ISA: MI Sextupole
 !
 LMIS            := 0.4572
 LMIS_END        := 0.04206
@@ -504,7 +504,7 @@ LK622_SLOT      := 2*LK622_END + LK622_MAG
 !
 ! MI Electrostatic Septa
 !
-LES          := 3.6576 
+LES          := 3.6576
 LES_END      := 0.0254
 LES_SLOT     := 2*LES_END+LES
 !
@@ -533,9 +533,9 @@ LCCAVU_END_ORIG      := 0.0815848   !3.212
 LCCAVD_END_ORIG      := 0.0333502   !1.313
 LCCAV_SPOOL     := 0.257175    !1.313
 LCCAV_SLOT       := LCCAVU_END_ORIG+LCCAV_ORIG+LCCAVD_END_ORIG
-LCCAVU_END	:= LCCAVU_END_ORIG + LCCAV_ORIG/2.0
-LCCAVD_END	:= LCCAVD_END_ORIG + LCCAV_ORIG/2.0
-LCCAV	:= 0.0
+LCCAVU_END  := LCCAVU_END_ORIG + LCCAV_ORIG/2.0
+LCCAVD_END  := LCCAVD_END_ORIG + LCCAV_ORIG/2.0
+LCCAV   := 0.0
 !
 !  Beam Damper Pick-up
 !
@@ -553,7 +553,7 @@ LSCHOTTKY      := 0.6096
 !
 LRWM           := 1.787026
 !
-! Wide Band Pick Up (62.2 inches f-f) 
+! Wide Band Pick Up (62.2 inches f-f)
 !
 LWBPU          := 1.59004
 !
@@ -624,7 +624,7 @@ LBELLAB         := 0.08255               !3.25
 LBELLCD         := 0.0821436             !3.234
 LBELL           := 0.08255+0.0002123     !3.25+0.005458extension
 LVALVE          := 0.2921    ! ASSUME 11.5
-LIPPOP          := 0.130175  ! 34.625-29.5 
+LIPPOP          := 0.130175  ! 34.625-29.5
 !
 ! Calculate lengths between magnetic ends of
 !   IDA-IDB and ICD-IDD dipoles
@@ -834,15 +834,15 @@ D42D:  DRIFT, L = LD116D-LIQDD_END
 ! Type 43 Insert Drifts
 D43U:  DRIFT, L = LD116U-LMIVC_SLOT-D1IN[L]-LIQDU_END
 D43D:  DRIFT, L = LD116D-LIQDD_END
-! -------------------------------------------------------------------------------------------- 
-! @#$ --- 
+! --------------------------------------------------------------------------------------------
+! @#$ ---
 ! Table file: table_mad.g.circuit generated from: ~dej/MI20/Rev_lat_des_040904/bld_mi20.c
 ! created: Mon Sep 6 12:23:17 CDT 2004
 ! generated by: dej
-! -------------------------------------------------------------------------------------------- 
+! --------------------------------------------------------------------------------------------
 
 !
-! Circuit values 
+! Circuit values
 !
 XXXCHARGE  := 1.0   ! POSITIVE FOR PROTONS
 CIRBEND := -0.0208512786*XXXCHARGE
@@ -1524,7 +1524,7 @@ IDD067:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E
 IDD068:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
 IDD069:  SBEND, TYPE = IDD, L=XIDD_MAG, ANGLE = (2/3)*CIRBEND, E1 = CIRBEND/3, E2 = CIRBEND/3
 !
-! Dipole Magnet Assignments 
+! Dipole Magnet Assignments
 !
 D104: LINE = (IDC045 , DCD , IDD059)  !assigned     8/5/92    10/24/92
 D105: LINE = (IDC002 , DCD , IDD019)  !assigned    4/25/92      8/5/92
@@ -1700,7 +1700,7 @@ D640: LINE = (IDC003 , DCD , IDD031)  !assigned   10/22/93    10/22/93
 D641: LINE = (IDC007 , DCD , IDD032)  !assigned   10/22/93    10/22/93
 
 !
-! Quadrupole Magnet Definitions 
+! Quadrupole Magnet Definitions
 !
 M100: MARKER, TYPE = CELLBDY
 M101: MARKER, TYPE = CELLBDY
@@ -2547,7 +2547,7 @@ IQD006:  QUADRUPOLE, TYPE = IQD, L = LIQD_STEEL, K1 = K1QDIQD
 Q641:  LINE = (M641, QDFAKE, IQD006, QDFAKE )  !assiged   1/19/94
 
 !
-! Dipole CORRECTOR Definitions 
+! Dipole CORRECTOR Definitions
 !
 HCEND:  DRIFT, L = LMIHC_END
 VCEND:  DRIFT, L = LMIVC_END
@@ -2760,7 +2760,7 @@ V639:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V639
 H640:   HKICKER, TYPE = IDH, L=LMIHC , KICK = CIR_H640
 V641:   VKICKER, TYPE = IDV, L=LMIVC , KICK = CIR_V641
 !
-! QUAD CORRECTOR Definitions 
+! QUAD CORRECTOR Definitions
 !
 QCEND:  DRIFT, L = LMRQC_END
 QC206: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC206
@@ -2780,7 +2780,7 @@ QC630: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC630
 QC632: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC632
 QC634: QUADRUPOLE, TYPE = MRQ, L=LMRQC , K1 = CIR_QC634
 !
-! SKEW QUAD CORRECTOR Definitions 
+! SKEW QUAD CORRECTOR Definitions
 !
 SQEND:  DRIFT, L = LMRSQ_END
 SQ213: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ213, TILT
@@ -2796,7 +2796,7 @@ SQ635: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ635, TILT
 SQ636: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ636, TILT
 SQ637: QUADRUPOLE, TYPE = MRSQ, L=LMRSQ , K1 = CIR_SQ637, TILT
 !
-! SEXTUPOLE CORRECTOR Definitions 
+! SEXTUPOLE CORRECTOR Definitions
 !
 SEND:  DRIFT, L = LMIS_END
 S108: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
@@ -2908,7 +2908,7 @@ S635: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
 S636: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SF*XXXCHARGE
 S637: SEXTUPOLE, TYPE = ISA, L=LMIS , K2 = CIR_SD*XXXCHARGE
 !
-! OCTUPOLE CORRECTOR Definitions 
+! OCTUPOLE CORRECTOR Definitions
 !
 CIR_O110 := 0
 CIR_O112 := 0
@@ -3325,7 +3325,7 @@ K602_INS:    LINE = (K602_END, K602A, K602_END,K602_SPOOL, &
                      K602_END, K602C, K602_END)
 !
 K622A:        VKICKER,   L = LK622_MAG, KICK = K622ANG
-K622B:        VKICKER,   L = LK622_MAG, KICK = 0 
+K622B:        VKICKER,   L = LK622_MAG, KICK = 0
 K622_END:    DRIFT, L = LK622_END
 K622_SPOOL:    DRIFT, L = LK622_SPOOL
 K622A_INS:    LINE = (K622_END, K622A, K622_END)
@@ -3349,13 +3349,13 @@ LAM10_END:        DRIFT, L = LLAM10_END
 LAM10:      DRIFT, TYPE= IL10 , L = LLAM10_MAG
 LAM10_INS: LINE=(LAM10_END, LAM10, LAM10_END)
 !
-!MI Abort Lambertson at Q402 
+!MI Abort Lambertson at Q402
 !
 LAM_END:        DRIFT, L = LILA_END
 LAM40:      DRIFT, TYPE= ILA , L = LILA_MAG
 LAM40AMP:   MULTIPOLE, K0L = LAM40A_K0L/2, K1L = LAM40A_K1L/2
-LAM40BMP:   MULTIPOLE, K0L = LAM40B_K0L/2, K1L = LAM40B_K1L/2 
-LAM40CMP:   MULTIPOLE, K0L = LAM40C_K0L/2, K1L = LAM40C_K1L/2 
+LAM40BMP:   MULTIPOLE, K0L = LAM40B_K0L/2, K1L = LAM40B_K1L/2
+LAM40CMP:   MULTIPOLE, K0L = LAM40C_K0L/2, K1L = LAM40C_K1L/2
 LAM40A_INS: LINE = (LAM_END, LAM40AMP, LAM40, LAM40AMP, LAM_END)
 LAM40B_INS: LINE = (LAM_END, LAM40BMP, LAM40, LAM40BMP, LAM_END)
 LAM40C_INS: LINE = (LAM_END, LAM40CMP, LAM40, LAM40CMP, LAM_END)
@@ -3364,8 +3364,8 @@ LAM40C_INS: LINE = (LAM_END, LAM40CMP, LAM40, LAM40CMP, LAM_END)
 !
 LAM52:      DRIFT, TYPE= ILA , L = LILA_MAG
 LAM52AMP:   MULTIPOLE, K0L = LAM52A_K0L/2, K1L = LAM52A_K1L/2
-LAM52BMP:   MULTIPOLE, K0L = LAM52B_K0L/2, K1L = LAM52B_K1L/2 
-LAM52CMP:   MULTIPOLE, K0L = LAM52C_K0L/2, K1L = LAM52C_K1L/2 
+LAM52BMP:   MULTIPOLE, K0L = LAM52B_K0L/2, K1L = LAM52B_K1L/2
+LAM52CMP:   MULTIPOLE, K0L = LAM52C_K0L/2, K1L = LAM52C_K1L/2
 LAM52A_INS: LINE = (LAM_END, LAM52AMP, LAM52, LAM52AMP, LAM_END)
 LAM52B_INS: LINE = (LAM_END, LAM52BMP, LAM52, LAM52BMP, LAM_END)
 LAM52C_INS: LINE = (LAM_END, LAM52CMP, LAM52, LAM52CMP, LAM_END)
@@ -3374,8 +3374,8 @@ LAM52C_INS: LINE = (LAM_END, LAM52CMP, LAM52, LAM52CMP, LAM_END)
 !
 LAM60:      DRIFT, TYPE= ILA , L = LILA_MAG
 LAM60AMP:   MULTIPOLE, K0L = LAM60A_K0L/2, K1L = LAM60A_K1L/2
-LAM60BMP:   MULTIPOLE, K0L = LAM60B_K0L/2, K1L = LAM60B_K1L/2 
-LAM60CMP:   MULTIPOLE, K0L = LAM60C_K0L/2, K1L = LAM60C_K1L/2 
+LAM60BMP:   MULTIPOLE, K0L = LAM60B_K0L/2, K1L = LAM60B_K1L/2
+LAM60CMP:   MULTIPOLE, K0L = LAM60C_K0L/2, K1L = LAM60C_K1L/2
 LAM60A_INS: LINE = (LAM_END, LAM60AMP, LAM60, LAM60AMP, LAM_END)
 LAM60B_INS: LINE = (LAM_END, LAM60BMP, LAM60, LAM60BMP, LAM_END)
 LAM60C_INS: LINE = (LAM_END, LAM60CMP, LAM60, LAM60CMP, LAM_END)
@@ -3384,8 +3384,8 @@ LAM60C_INS: LINE = (LAM_END, LAM60CMP, LAM60, LAM60CMP, LAM_END)
 !
 LAM62:      DRIFT, TYPE= ILA , L = LILA_MAG
 LAM62AMP:   MULTIPOLE, K0L = LAM62A_K0L/2, K1L = LAM62A_K1L/2
-LAM62BMP:   MULTIPOLE, K0L = LAM62B_K0L/2, K1L = LAM62B_K1L/2 
-LAM62CMP:   MULTIPOLE, K0L = LAM62C_K0L/2, K1L = LAM62C_K1L/2 
+LAM62BMP:   MULTIPOLE, K0L = LAM62B_K0L/2, K1L = LAM62B_K1L/2
+LAM62CMP:   MULTIPOLE, K0L = LAM62C_K0L/2, K1L = LAM62C_K1L/2
 LAM62A_INS: LINE = (LAM_END, LAM62AMP, LAM62, LAM62AMP, LAM_END)
 LAM62B_INS: LINE = (LAM_END, LAM62BMP, LAM62, LAM62BMP, LAM_END)
 LAM62C_INS: LINE = (LAM_END, LAM62CMP, LAM62, LAM62CMP, LAM_END)
@@ -3429,7 +3429,7 @@ M_HCAV: MARKER
 HRFCAV:  LINE = (HRFCU_END, M_HCAV, HRFCD_END)
 CCCU_END: DRIFT, L = LCCAVU_END
 CCCD_END: DRIFT, L = LCCAVD_END
-CCAV_SPOOL:   DRIFT, L = LCCAV_SPOOL 
+CCAV_SPOOL:   DRIFT, L = LCCAV_SPOOL
 M_CCAV: MARKER
 CCCAV:  LINE = (CCCU_END, M_CCAV, CCCD_END)
 IN100U: LINE=(D27U,HCEND,H100,HCEND,D1IN,IQCUEND)
@@ -3835,7 +3835,7 @@ D221B: DRIFT, L = 0.9 - LIQBU_END-LMIHC_SLOT-LIPL_END-D1IN[L]
 D221A: DRIFT, L = LSS221 - LIQBU_END-LBPM-LIPL_SLOT-D221B[L] &
                          -LMIHC_SLOT-D1IN[L]-LIQBU_END
 SS221: LINE = (IQBDEND,VP221,D221A,LAM222_INS,D221B, &
-               HCEND,H222,HCEND,D1IN,IQBUEND) 
+               HCEND,H222,HCEND,D1IN,IQBUEND)
 D222A: DRIFT, L = LSS222 - LIQBD_END-LBPM-LMIVC_SLOT-D1IN[L]-LIQCU_END
 SS222: LINE = (IQBDEND,HP222,D222A,VCEND,V223,VCEND,D1IN,IQCUEND)
 !
@@ -3844,7 +3844,7 @@ SS222: LINE = (IQBDEND,HP222,D222A,VCEND,V223,VCEND,D1IN,IQCUEND)
 D319A: DRIFT, L = LSS319 - LIQCD_END-LBPM-LMIVC_SLOT-D1IN[L]-LIQBU_END
 SS319: LINE = (IQCDEND,VP319,D319A,HCEND,H320,HCEND,D1IN,IQBUEND)
 D320A: DRIFT, L = LSS320 - LIQBU_END-LBPM-LMIHC_SLOT-D1IN[L]-LIQBU_END
-SS320: LINE = (IQBDEND,HP320,D320A,VCEND,V321,VCEND,D1IN,IQBUEND) 
+SS320: LINE = (IQBDEND,HP320,D320A,VCEND,V321,VCEND,D1IN,IQBUEND)
 D321A: DRIFT, L = 1.9746-LIPL_END-LIQBD_END-LBPM
 D321B: DRIFT, L = LSS321 - LIQBD_END-LBPM-LIPL_SLOT-D321A[L] &
                   -LMIHC_SLOT-D1IN[L]-LIQCU_END
@@ -3854,9 +3854,9 @@ SS321: LINE = (IQBDEND,VP321,D321A,LAM321_INS,D321B, &
 !  MI30 Straight Section
 !
 D301A: DRIFT, L = LSS301 - LIQCD_END-LBPM-LMIHC_SLOT-D1IN[L]-LIQBU_END
-SS301: LINE = (IQCDEND,VP301,D301A,HCEND,H302,HCEND,D1IN,IQBUEND) 
-D302A: DRIFT, L = LSS302 - LIQBD_END-LBPM-D6IN[L]-LQXR_SLOT & 
-                 -LMIVC_SLOT-D1IN[L]-LIQBU_END 
+SS301: LINE = (IQCDEND,VP301,D301A,HCEND,H302,HCEND,D1IN,IQBUEND)
+D302A: DRIFT, L = LSS302 - LIQBD_END-LBPM-D6IN[L]-LQXR_SLOT &
+                 -LMIVC_SLOT-D1IN[L]-LIQBU_END
 SS302: LINE = (IQBDEND,HP302,D6IN,QXR_INS,D302A,&
                VCEND,V303,VCEND,D1IN,IQBUEND)
 D303D: DRIFT, L = 1.0-LIQBU_END-LONE_IN-LMIHC_SLOT
@@ -3890,14 +3890,14 @@ SS308: LINE = (IQBDEND,HP308,D308A,VCEND,V309,VCEND,D1IN,IQCUEND)
 !
 !  MI40 Straight Section
 !
-D400A: DRIFT, L = 1.5783854 
-D400B: DRIFT, L = LSS400-LIQCD_END-D400A[L]-2*LK400_SLOT-LK400_SPOOL & 
+D400A: DRIFT, L = 1.5783854
+D400B: DRIFT, L = LSS400-LIQCD_END-D400A[L]-2*LK400_SLOT-LK400_SPOOL &
                   -LMIVC_SLOT-D1IN[L]-LIQBU_END
 SS400: LINE = (IQCDEND,HP400,D400A,K400_INS,D400B, &
                VCEND,V401,VCEND,D1IN,IQBUEND)
 D401C: DRIFT, L = 0.127
 D401B: DRIFT, L = 0.127
-D401A: DRIFT, L = LSS401-LIQBD_END-LBPM-LMIHC_SLOT-D1IN[L] & 
+D401A: DRIFT, L = LSS401-LIQBD_END-LBPM-LMIHC_SLOT-D1IN[L] &
                  -D401B[L]-LILA_SLOT-D401C[L]-LIQEU_END
 SS401: LINE = (IQBDEND,VP521,D401A,HCEND,H402,HCEND,D1IN, &
                D401B,LAM40A_INS,D401C,IQEUEND)
@@ -3936,7 +3936,7 @@ SS522: LINE = (IQEDEND,HP522,D522A,LAM52B_INS,D522B,LAM52C_INS,D522C, &
 !  MI62 Straight Section
 !
 D619D: DRIFT, L = 0.33804-LIQEU_END-LLGBPM
-D619C: DRIFT, L = 0.1524 
+D619C: DRIFT, L = 0.1524
 D619B: DRIFT, L = 0.127
 D619A: DRIFT, L = LSS619-LIQCD_END-LBPM-LICA_SLOT-D619B[L]-LILA_SLOT &
                   -D619C[L]-LILA_SLOT-D619D[L]-LLGBPM-LIQEU_END
@@ -3945,7 +3945,7 @@ SS619: LINE = (IQCDEND,VP619,D619A,V900_INS,D619B,LAM62C_INS,D619C,&
 D620A: DRIFT, L = 0.19685 - LIQED_END
 D620B: DRIFT, L = 0.1524
 D620C: DRIFT, L = LSS620 - LIQBD_END-D620A[L]-LILA_SLOT-D620B[L] &
-                   -LMIHC_SLOT-LMIVC_SLOT-D1IN[L]-LIQBU_END 
+                   -LMIHC_SLOT-LMIVC_SLOT-D1IN[L]-LIQBU_END
 SS620: LINE = (IQBDEND,D620A,LAM62A_INS,D620B,HCEND,H620,HCEND,D620C,&
                VCEND,V621,VCEND,D1IN,IQBUEND)
 D621B: DRIFT, L = 0.7439
@@ -3974,12 +3974,12 @@ SS601: LINE = (IQCDEND,VP601,D601A,VDPU,D601B,VDK,D601C,GRIF,D601D,WBPU, &
 ! Modified straight section 602 to include NuMI kickers
 !
 D602A: DRIFT, L = 0.508 - LIQBD_END-LBPM
-D602B: DRIFT, L = 0.254  
+D602B: DRIFT, L = 0.254
 D602C: DRIFT, L = 0.62484  !0.13335+1.74625
 D602D: DRIFT, L = 1.9177   !0.66294
 D602F: DRIFT, L = 0.1397
 D602G: DRIFT, L = 0.81915 - LIQBU_END-LMIVC_SLOT-D1IN[L]
-! 3 kicker layout inserted 10/10/02 by 
+! 3 kicker layout inserted 10/10/02 by
 D602A: DRIFT, L = 0.508 - LIQBD_END- 0.3
 D602E: DRIFT, L = LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
                   -D602B[L]-LRWM-D602C[L]-D602D[L] &
@@ -3993,7 +3993,7 @@ SS602: LINE = (IQBDEND,D602A,K602_INS,D602B,RWM,D602C, &
 !  Rest of styraight section
 !
 D605A: DRIFT, L = LAMBDAO2 - LHIQB_STEEL-LIQBU_END-LMIVC_SLOT-D1IN[L] &
-                  - LRFC_SLOT/2 
+                  - LRFC_SLOT/2
 D604B: DRIFT, L = LSS604 - LIQBD_END-D1IN[L]-LMIVC_SLOT-D605A[L] &
                   -5*LRFC_SLOT-5*LRFCIP-LBPM-LIQBD_END
 SS604: LINE = (IQBDEND,HP604,D604B,5*(DRFCIP,RFCAV), &
@@ -4005,7 +4005,7 @@ D603B: DRIFT, L = LSS603 - LIQBU_END-D1IN[L]-LMIHC_SLOT-LRFCIP-D604A[L] &
 SS603: LINE = (IQBDEND,VP603,D603B,4*(DRFCIP,RFCAV),DRFCIP, &
                       D604A,HDPU,D12IN,HCEND,H604,HCEND,D1IN,IQBUEND)
 D605B: DRIFT, L = LAMBDAO2-LHIQB_STEEL-LIQBD_END-LBPM &
-                  -LRFC_SLOT/2 
+                  -LRFC_SLOT/2
 D606A: DRIFT, L = LSS605 - LIQBD_END-D605B[L]-5*LRFC_SLOT-4*LRFCIP &
                   -LMIHC_SLOT-D1IN[L]-LIQBU_END
 H606D: MARKER
@@ -4033,10 +4033,10 @@ D608E: DRIFT, L = LSS608-LIQED_END-LLGBPM-D608B[L]-2*LILA_SLOT-D608C[L] &
                   -D608D[L]-LICA_SLOT-LMIVC_SLOT-D1IN[L]-LIQCU_END
 SS608: LINE = (IQEDEND,HP608,D608B,LAM60B_INS,D608C,LAM60C_INS,D608D, &
               V100_INS,D608E,VCEND,V609,VCEND,D1IN,IQCUEND)
-! 
-! 
+!
+!
 ! Half Cell description using FULL Quad
-! 
+!
  HC_100: LINE = (Q100,SS100)
  HC_101: LINE = (Q101,SS101)
  HC_102: LINE = (Q102,SS102)
@@ -4246,75 +4246,75 @@ SS608: LINE = (IQEDEND,HP608,D608B,LAM60B_INS,D608C,LAM60C_INS,D608D, &
  HC_640: LINE = (Q640,IN640D,D640,IN641U)
  HC_641: LINE = (Q641,IN641D,D641,IN100U)
 !
-! Construct RING Definition 
+! Construct RING Definition
 !
-! 
-! 
-! Sector 1 description 
-! 
-SEC_1A: LINE=(HC_100, HC_101, HC_102, HC_103, HC_104, HC_105, HC_106) 
-SEC_1B: LINE=(HC_107, HC_108, HC_109, HC_110, HC_111, HC_112, HC_113) 
-SEC_1C: LINE=(HC_114, HC_115, HC_116, HC_117, HC_118, HC_119, HC_120) 
-SEC_1D: LINE=(HC_121, HC_122, HC_123, HC_124, HC_125, HC_126, HC_127) 
-SEC_1E: LINE=(HC_128, HC_129, HC_130) 
-SEC_1:  LINE=(SEC_1A, SEC_1B, SEC_1C, SEC_1D, SEC_1E) 
-! 
-! Sector 2 description 
-! 
-SEC_2A: LINE=(HC_201, HC_202, HC_203, HC_204, HC_205, HC_206, HC_207) 
-SEC_2B: LINE=(HC_208, HC_209, HC_210, HC_211, HC_212, HC_213, HC_214) 
-SEC_2C: LINE=(HC_215, HC_216, HC_217, HC_218, HC_219, HC_220, HC_221) 
-SEC_2D: LINE=(HC_222, HC_223, HC_224, HC_225, HC_226, HC_227, HC_228) 
-SEC_2E: LINE=(HC_229, HC_230, HC_231, HC_232) 
-SEC_2:  LINE=(SEC_2A, SEC_2B, SEC_2C, SEC_2D, SEC_2E) 
-! 
-! Sector 3 description 
-! 
-SEC_3A: LINE=(HC_301, HC_302, HC_303, HC_304, HC_305, HC_306, HC_307) 
-SEC_3B: LINE=(HC_308, HC_309, HC_310, HC_311, HC_312, HC_313, HC_314) 
-SEC_3C: LINE=(HC_315, HC_316, HC_317, HC_318, HC_319, HC_320, HC_321) 
-SEC_3D: LINE=(HC_322, HC_323, HC_324, HC_325, HC_326, HC_327, HC_328) 
-SEC_3E: LINE=(HC_329, HC_330, HC_331, HC_332, HC_333, HC_334, HC_335) 
-SEC_3F: LINE=(HC_336, HC_337, HC_338, HC_339, HC_340, HC_341) 
-SEC_3:  LINE=(SEC_3A, SEC_3B, SEC_3C, SEC_3D, SEC_3E, SEC_3F) 
-! 
-! Sector 4 description 
-! 
-SEC_4A: LINE=(HC_400, HC_401, HC_402, HC_403, HC_404, HC_405, HC_406) 
-SEC_4B: LINE=(HC_407, HC_408, HC_409, HC_410, HC_411, HC_412, HC_413) 
-SEC_4C: LINE=(HC_414, HC_415, HC_416, HC_417, HC_418, HC_419, HC_420) 
-SEC_4D: LINE=(HC_421, HC_422, HC_423, HC_424, HC_425, HC_426, HC_427) 
-SEC_4E: LINE=(HC_428, HC_429, HC_430) 
-SEC_4:  LINE=(SEC_4A, SEC_4B, SEC_4C, SEC_4D, SEC_4E) 
-! 
-! Sector 5 description 
-! 
-SEC_5A: LINE=(HC_501, HC_502, HC_503, HC_504, HC_505, HC_506, HC_507) 
-SEC_5B: LINE=(HC_508, HC_509, HC_510, HC_511, HC_512, HC_513, HC_514) 
-SEC_5C: LINE=(HC_515, HC_516, HC_517, HC_518, HC_519, HC_520, HC_521) 
-SEC_5D: LINE=(HC_522, HC_523, HC_524, HC_525, HC_526, HC_527, HC_528) 
-SEC_5E: LINE=(HC_529, HC_530, HC_531, HC_532) 
-SEC_5:  LINE=(SEC_5A, SEC_5B, SEC_5C, SEC_5D, SEC_5E) 
-! 
-! Sector 3 description 
-! 
-SEC_6A: LINE=(HC_601, HC_602, HC_603, HC_604) 
-SEC_6B: LINE=(HC_605, HC_606, HC_607) 
-SEC_6C: LINE=(HC_608, HC_609, HC_610, HC_611, HC_612, HC_613, HC_614) 
-SEC_6D: LINE=(HC_615, HC_616, HC_617, HC_618, HC_619, HC_620, HC_621) 
-SEC_6E: LINE=(HC_622, HC_623, HC_624, HC_625, HC_626, HC_627, HC_628) 
-SEC_6F: LINE=(HC_629, HC_630, HC_631, HC_632, HC_633, HC_634, HC_635) 
-SEC_6G: LINE=(HC_636, HC_637, HC_638, HC_639, HC_640, HC_641) 
-SEC_6:  LINE=(SEC_6B, SEC_6C, SEC_6D, SEC_6E, SEC_6F, SEC_6G) 
-! 
-!  FULL RING from MI-10 (Q100) in PROTON DIRECTION 
-! 
-RING_P_Q100: LINE=(SEC_1, SEC_2, SEC_3, SEC_4, SEC_5, SEC_6A, SEC_6) 
-! 
-!  FULL RING from MI-60 in PROTON DIRECTION 
-! 
-RING_P_Q605: LINE=(SEC_6, SEC_1, SEC_2, SEC_3, SEC_4, SEC_5, SEC_6A) 
-! 
-!  FULL RING from MI-60 in PBAR DIRECTION 
-! 
-RING_A_Q605: LINE=(-RING_P_Q605) 
+!
+!
+! Sector 1 description
+!
+SEC_1A: LINE=(HC_100, HC_101, HC_102, HC_103, HC_104, HC_105, HC_106)
+SEC_1B: LINE=(HC_107, HC_108, HC_109, HC_110, HC_111, HC_112, HC_113)
+SEC_1C: LINE=(HC_114, HC_115, HC_116, HC_117, HC_118, HC_119, HC_120)
+SEC_1D: LINE=(HC_121, HC_122, HC_123, HC_124, HC_125, HC_126, HC_127)
+SEC_1E: LINE=(HC_128, HC_129, HC_130)
+SEC_1:  LINE=(SEC_1A, SEC_1B, SEC_1C, SEC_1D, SEC_1E)
+!
+! Sector 2 description
+!
+SEC_2A: LINE=(HC_201, HC_202, HC_203, HC_204, HC_205, HC_206, HC_207)
+SEC_2B: LINE=(HC_208, HC_209, HC_210, HC_211, HC_212, HC_213, HC_214)
+SEC_2C: LINE=(HC_215, HC_216, HC_217, HC_218, HC_219, HC_220, HC_221)
+SEC_2D: LINE=(HC_222, HC_223, HC_224, HC_225, HC_226, HC_227, HC_228)
+SEC_2E: LINE=(HC_229, HC_230, HC_231, HC_232)
+SEC_2:  LINE=(SEC_2A, SEC_2B, SEC_2C, SEC_2D, SEC_2E)
+!
+! Sector 3 description
+!
+SEC_3A: LINE=(HC_301, HC_302, HC_303, HC_304, HC_305, HC_306, HC_307)
+SEC_3B: LINE=(HC_308, HC_309, HC_310, HC_311, HC_312, HC_313, HC_314)
+SEC_3C: LINE=(HC_315, HC_316, HC_317, HC_318, HC_319, HC_320, HC_321)
+SEC_3D: LINE=(HC_322, HC_323, HC_324, HC_325, HC_326, HC_327, HC_328)
+SEC_3E: LINE=(HC_329, HC_330, HC_331, HC_332, HC_333, HC_334, HC_335)
+SEC_3F: LINE=(HC_336, HC_337, HC_338, HC_339, HC_340, HC_341)
+SEC_3:  LINE=(SEC_3A, SEC_3B, SEC_3C, SEC_3D, SEC_3E, SEC_3F)
+!
+! Sector 4 description
+!
+SEC_4A: LINE=(HC_400, HC_401, HC_402, HC_403, HC_404, HC_405, HC_406)
+SEC_4B: LINE=(HC_407, HC_408, HC_409, HC_410, HC_411, HC_412, HC_413)
+SEC_4C: LINE=(HC_414, HC_415, HC_416, HC_417, HC_418, HC_419, HC_420)
+SEC_4D: LINE=(HC_421, HC_422, HC_423, HC_424, HC_425, HC_426, HC_427)
+SEC_4E: LINE=(HC_428, HC_429, HC_430)
+SEC_4:  LINE=(SEC_4A, SEC_4B, SEC_4C, SEC_4D, SEC_4E)
+!
+! Sector 5 description
+!
+SEC_5A: LINE=(HC_501, HC_502, HC_503, HC_504, HC_505, HC_506, HC_507)
+SEC_5B: LINE=(HC_508, HC_509, HC_510, HC_511, HC_512, HC_513, HC_514)
+SEC_5C: LINE=(HC_515, HC_516, HC_517, HC_518, HC_519, HC_520, HC_521)
+SEC_5D: LINE=(HC_522, HC_523, HC_524, HC_525, HC_526, HC_527, HC_528)
+SEC_5E: LINE=(HC_529, HC_530, HC_531, HC_532)
+SEC_5:  LINE=(SEC_5A, SEC_5B, SEC_5C, SEC_5D, SEC_5E)
+!
+! Sector 3 description
+!
+SEC_6A: LINE=(HC_601, HC_602, HC_603, HC_604)
+SEC_6B: LINE=(HC_605, HC_606, HC_607)
+SEC_6C: LINE=(HC_608, HC_609, HC_610, HC_611, HC_612, HC_613, HC_614)
+SEC_6D: LINE=(HC_615, HC_616, HC_617, HC_618, HC_619, HC_620, HC_621)
+SEC_6E: LINE=(HC_622, HC_623, HC_624, HC_625, HC_626, HC_627, HC_628)
+SEC_6F: LINE=(HC_629, HC_630, HC_631, HC_632, HC_633, HC_634, HC_635)
+SEC_6G: LINE=(HC_636, HC_637, HC_638, HC_639, HC_640, HC_641)
+SEC_6:  LINE=(SEC_6B, SEC_6C, SEC_6D, SEC_6E, SEC_6F, SEC_6G)
+!
+!  FULL RING from MI-10 (Q100) in PROTON DIRECTION
+!
+RING_P_Q100: LINE=(SEC_1, SEC_2, SEC_3, SEC_4, SEC_5, SEC_6A, SEC_6)
+!
+!  FULL RING from MI-60 in PROTON DIRECTION
+!
+RING_P_Q605: LINE=(SEC_6, SEC_1, SEC_2, SEC_3, SEC_4, SEC_5, SEC_6A)
+!
+!  FULL RING from MI-60 in PBAR DIRECTION
+!
+RING_A_Q605: LINE=(-RING_P_Q605)

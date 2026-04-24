@@ -61,33 +61,33 @@ int main(int argc, char** argv) {
 if(MPREAL_INCLUDES)
 
   # Set MPREAL_VERSION
-  
+
   file(READ "${MPREAL_INCLUDES}/mpreal.h" _mpreal_version_header)
-  
+
   string(REGEX MATCH "define[ \t]+MPREAL_VERSION_MAJOR[ \t]+([0-9]+)" _mpreal_major_version_match "${_mpreal_version_header}")
   set(MPREAL_MAJOR_VERSION "${CMAKE_MATCH_1}")
   string(REGEX MATCH "define[ \t]+MPREAL_VERSION_MINOR[ \t]+([0-9]+)" _mpreal_minor_version_match "${_mpreal_version_header}")
   set(MPREAL_MINOR_VERSION "${CMAKE_MATCH_1}")
   string(REGEX MATCH "define[ \t]+MPREAL_VERSION_PATCHLEVEL[ \t]+([0-9]+)" _mpreal_patchlevel_version_match "${_mpreal_version_header}")
   set(MPREAL_PATCHLEVEL_VERSION "${CMAKE_MATCH_1}")
-  
+
   set(MPREAL_VERSION ${MPREAL_MAJOR_VERSION}.${MPREAL_MINOR_VERSION}.${MPREAL_PATCHLEVEL_VERSION})
-  
+
   # Check whether found version exceeds minimum version
-  
+
   if(${MPREAL_VERSION} VERSION_LESS ${MPREAL_FIND_VERSION})
     set(MPREAL_VERSION_OK FALSE)
     message(STATUS "MPREAL version ${MPREAL_VERSION} found in ${MPREAL_INCLUDES}, "
                    "but at least version ${MPREAL_FIND_VERSION} is required")
   else()
     set(MPREAL_VERSION_OK TRUE)
-    
+
     list(APPEND MPREAL_INCLUDES "${MPFR_INCLUDES}" "${GMP_INCLUDES}")
     list(REMOVE_DUPLICATES MPREAL_INCLUDES)
-    
+
     list(APPEND MPREAL_LIBRARIES "${MPFR_LIBRARIES}" "${GMP_LIBRARIES}")
     list(REMOVE_DUPLICATES MPREAL_LIBRARIES)
-    
+
     # Make sure it compiles with the current compiler.
     unset(MPREAL_WORKS CACHE)
     include(CheckCXXSourceCompiles)

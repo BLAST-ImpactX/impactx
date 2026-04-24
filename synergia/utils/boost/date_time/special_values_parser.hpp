@@ -3,11 +3,11 @@
 #define DATE_TIME_SPECIAL_VALUES_PARSER_HPP__
 
 /* Copyright (c) 2005 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
+ * Use, modification and distribution is subject to the
  * Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
  * Author: Jeff Garland, Bart Garst
- * $Date: 
+ * $Date:
  */
 
 
@@ -18,10 +18,10 @@
 
 namespace boost { namespace date_time {
 
-  //! Class for special_value parsing 
-  /*! 
+  //! Class for special_value parsing
+  /*!
    * TODO: add doc-comments for which elements can be changed
-   * Parses input stream for strings representing special_values. 
+   * Parses input stream for strings representing special_values.
    * Special values parsed are:
    *  - not_a_date_time
    *  - neg_infin
@@ -47,7 +47,7 @@ namespace boost { namespace date_time {
     static const char_type pos_inf_string[10];
     static const char_type min_date_time_string[18];
     static const char_type max_date_time_string[18];
-   
+
     //! Creates a special_values_parser with the default set of "sv_strings"
     special_values_parser()
     {
@@ -122,7 +122,7 @@ namespace boost { namespace date_time {
     //! \param[out]  mr  the match result:
     //!                  mr.current_match is set to the corresponding special_value or -1
     //! \returns  whether something matched
-    bool match(stream_itr_type& sitr, 
+    bool match(stream_itr_type& sitr,
                         stream_itr_type& str_end,
                         match_results& mr) const
     {
@@ -133,7 +133,7 @@ namespace boost { namespace date_time {
 
    private:
     parse_tree_type m_sv_strings;
-    
+
   };
 
   template<class date_type, class CharT>
@@ -160,4 +160,3 @@ namespace boost { namespace date_time {
 } } //namespace
 
 #endif // DATE_TIME_SPECIAL_VALUES_PARSER_HPP__
-

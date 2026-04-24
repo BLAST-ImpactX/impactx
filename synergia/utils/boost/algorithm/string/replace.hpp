@@ -37,9 +37,9 @@ namespace boost {
         //! Replace range algorithm
         /*!
             Replace the given range in the input string.
-            The result is a modified copy of the input. It is returned as a sequence 
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
-            
+
             \param Output An output iterator to which the result will be copied
             \param Input An input string
             \param SearchRange A range in the input to be substituted
@@ -51,13 +51,13 @@ namespace boost {
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T>
         inline OutputIteratorT replace_range_copy(
             OutputIteratorT Output,
             const Range1T& Input,
             const iterator_range<
-                BOOST_STRING_TYPENAME 
+                BOOST_STRING_TYPENAME
                     range_const_iterator<Range1T>::type>& SearchRange,
             const Range2T& Format)
         {
@@ -73,10 +73,10 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename RangeT>
-        inline SequenceT replace_range_copy( 
+        inline SequenceT replace_range_copy(
             const SequenceT& Input,
             const iterator_range<
-                BOOST_STRING_TYPENAME 
+                BOOST_STRING_TYPENAME
                     range_const_iterator<SequenceT>::type>& SearchRange,
             const RangeT& Format)
         {
@@ -88,7 +88,7 @@ namespace boost {
 
         //! Replace range algorithm
         /*!
-            Replace the given range in the input string. 
+            Replace the given range in the input string.
             The input sequence is modified in-place.
 
             \param Input An input string
@@ -96,10 +96,10 @@ namespace boost {
             \param Format A substitute string
         */
         template<typename SequenceT, typename RangeT>
-        inline void replace_range( 
+        inline void replace_range(
             SequenceT& Input,
             const iterator_range<
-                BOOST_STRING_TYPENAME 
+                BOOST_STRING_TYPENAME
                     range_iterator<SequenceT>::type>& SearchRange,
             const RangeT& Format)
         {
@@ -113,14 +113,14 @@ namespace boost {
 
         //! Replace first algorithm
         /*!
-            Replace the first match of the search substring in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace the first match of the search substring in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
-            
+
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \return An output iterator pointing just after the last inserted character or
                     a modified copy of the input
@@ -129,7 +129,7 @@ namespace boost {
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT replace_first_copy(
@@ -150,12 +150,12 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT replace_first_copy( 
+        inline SequenceT replace_first_copy(
             const SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::first_finder(Search),
                 ::boost::algorithm::const_formatter(Format) );
@@ -163,21 +163,21 @@ namespace boost {
 
         //! Replace first algorithm
         /*!
-            replace the first match of the search substring in the input 
+            replace the first match of the search substring in the input
             with the format string. The input sequence is modified in-place.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void replace_first( 
+        inline void replace_first(
             SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::first_finder(Search),
                 ::boost::algorithm::const_formatter(Format) );
         }
@@ -186,15 +186,15 @@ namespace boost {
 
         //! Replace first algorithm ( case insensitive )
         /*!
-            Replace the first match of the search substring in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace the first match of the search substring in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
             Searching is case insensitive.
 
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
             \return An output iterator pointing just after the last inserted character or
@@ -204,7 +204,7 @@ namespace boost {
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT ireplace_first_copy(
@@ -226,13 +226,13 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range2T, typename Range1T>
-        inline SequenceT ireplace_first_copy( 
+        inline SequenceT ireplace_first_copy(
             const SequenceT& Input,
             const Range2T& Search,
             const Range1T& Format,
             const std::locale& Loc=std::locale() )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::first_finder(Search, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
@@ -240,24 +240,24 @@ namespace boost {
 
         //! Replace first algorithm ( case insensitive )
         /*!
-            Replace the first match of the search substring in the input 
+            Replace the first match of the search substring in the input
             with the format string. Input sequence is modified in-place.
             Searching is case insensitive.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void ireplace_first( 
+        inline void ireplace_first(
             SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::first_finder(Search, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
         }
@@ -266,9 +266,9 @@ namespace boost {
 
         //! Replace last algorithm
         /*!
-            Replace the last match of the search string in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace the last match of the search string in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
 
             \param Output An output iterator to which the result will be copied
@@ -276,13 +276,13 @@ namespace boost {
             \param Search A substring to be searched for
             \param Format A substitute string
             \return An output iterator pointing just after the last inserted character or
-                    a modified copy of the input            
+                    a modified copy of the input
 
               \note The second variant of this function provides the strong exception-safety guarantee
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT replace_last_copy(
@@ -303,12 +303,12 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT replace_last_copy( 
+        inline SequenceT replace_last_copy(
             const SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::last_finder(Search),
                 ::boost::algorithm::const_formatter(Format) );
@@ -316,21 +316,21 @@ namespace boost {
 
         //! Replace last algorithm
         /*!
-            Replace the last match of the search string in the input 
+            Replace the last match of the search string in the input
             with the format string. Input sequence is modified in-place.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void replace_last( 
+        inline void replace_last(
             SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::last_finder(Search),
                 ::boost::algorithm::const_formatter(Format) );
         }
@@ -339,25 +339,25 @@ namespace boost {
 
         //! Replace last algorithm ( case insensitive )
         /*!
-            Replace the last match of the search string in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace the last match of the search string in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
             Searching is case insensitive.
 
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
             \return An output iterator pointing just after the last inserted character or
-                    a modified copy of the input  
+                    a modified copy of the input
 
             \note The second variant of this function provides the strong exception-safety guarantee
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT ireplace_last_copy(
@@ -379,13 +379,13 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT ireplace_last_copy( 
+        inline SequenceT ireplace_last_copy(
             const SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::last_finder(Search, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
@@ -393,24 +393,24 @@ namespace boost {
 
         //! Replace last algorithm ( case insensitive )
         /*!
-            Replace the last match of the search string in the input 
+            Replace the last match of the search string in the input
             with the format string.The input sequence is modified in-place.
             Searching is case insensitive.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void ireplace_last( 
+        inline void ireplace_last(
             SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::last_finder(Search, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
         }
@@ -419,14 +419,14 @@ namespace boost {
 
         //! Replace nth algorithm
         /*!
-            Replace an Nth (zero-indexed) match of the search string in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace an Nth (zero-indexed) match of the search string in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
 
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Nth An index of the match to be replaced. The index is 0-based.
                 For negative N, matches are counted from the end of string.
             \param Format A substitute string
@@ -437,7 +437,7 @@ namespace boost {
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT replace_nth_copy(
@@ -459,13 +459,13 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT replace_nth_copy( 
+        inline SequenceT replace_nth_copy(
             const SequenceT& Input,
             const Range1T& Search,
             int Nth,
             const Range2T& Format )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::nth_finder(Search, Nth),
                 ::boost::algorithm::const_formatter(Format) );
@@ -473,53 +473,53 @@ namespace boost {
 
         //! Replace nth algorithm
         /*!
-            Replace an Nth (zero-indexed) match of the search string in the input 
+            Replace an Nth (zero-indexed) match of the search string in the input
             with the format string. Input sequence is modified in-place.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Nth An index of the match to be replaced. The index is 0-based.
                 For negative N, matches are counted from the end of string.
             \param Format A substitute string
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void replace_nth( 
+        inline void replace_nth(
             SequenceT& Input,
             const Range1T& Search,
             int Nth,
             const Range2T& Format )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::nth_finder(Search, Nth),
                 ::boost::algorithm::const_formatter(Format) );
         }
 
 //  replace_nth ( case insensitive ) -----------------------------------------------//
-        
+
         //! Replace nth algorithm ( case insensitive )
         /*!
-            Replace an Nth (zero-indexed) match of the search string in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace an Nth (zero-indexed) match of the search string in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
             Searching is case insensitive.
 
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Nth An index of the match to be replaced. The index is 0-based.
                 For negative N, matches are counted from the end of string.
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
             \return An output iterator pointing just after the last inserted character or
-                    a modified copy of the input            
+                    a modified copy of the input
 
             \note The second variant of this function provides the strong exception-safety guarantee
        */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT ireplace_nth_copy(
@@ -542,14 +542,14 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT ireplace_nth_copy( 
+        inline SequenceT ireplace_nth_copy(
             const SequenceT& Input,
             const Range1T& Search,
             int Nth,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::nth_finder(Search, Nth, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
@@ -557,27 +557,27 @@ namespace boost {
 
         //! Replace nth algorithm ( case insensitive )
         /*!
-            Replace an Nth (zero-indexed) match of the search string in the input 
+            Replace an Nth (zero-indexed) match of the search string in the input
             with the format string. Input sequence is modified in-place.
             Searching is case insensitive.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Nth An index of the match to be replaced. The index is 0-based.
                 For negative N, matches are counted from the end of string.
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void ireplace_nth( 
+        inline void ireplace_nth(
             SequenceT& Input,
             const Range1T& Search,
             int Nth,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::nth_finder(Search, Nth, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
         }
@@ -586,23 +586,23 @@ namespace boost {
 
         //! Replace all algorithm
         /*!
-            Replace all occurrences of the search string in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace all occurrences of the search string in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
 
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \return An output iterator pointing just after the last inserted character or
-                    a modified copy of the input 
+                    a modified copy of the input
 
              \note The second variant of this function provides the strong exception-safety guarantee
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT replace_all_copy(
@@ -623,12 +623,12 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT replace_all_copy( 
+        inline SequenceT replace_all_copy(
             const SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format )
         {
-            return ::boost::algorithm::find_format_all_copy( 
+            return ::boost::algorithm::find_format_all_copy(
                 Input,
                 ::boost::algorithm::first_finder(Search),
                 ::boost::algorithm::const_formatter(Format) );
@@ -636,48 +636,48 @@ namespace boost {
 
         //! Replace all algorithm
         /*!
-            Replace all occurrences of the search string in the input 
+            Replace all occurrences of the search string in the input
             with the format string. The input sequence is modified in-place.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void replace_all( 
+        inline void replace_all(
             SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format )
         {
-            ::boost::algorithm::find_format_all( 
-                Input, 
+            ::boost::algorithm::find_format_all(
+                Input,
                 ::boost::algorithm::first_finder(Search),
                 ::boost::algorithm::const_formatter(Format) );
         }
-        
+
 //  replace_all ( case insensitive ) -----------------------------------------------//
 
         //! Replace all algorithm ( case insensitive )
         /*!
-            Replace all occurrences of the search string in the input 
-            with the format string. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace all occurrences of the search string in the input
+            with the format string.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
             Searching is case insensitive.
 
             \param Output An output iterator to which the result will be copied
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
             \return An output iterator pointing just after the last inserted character or
-                    a modified copy of the input 
+                    a modified copy of the input
 
             \note The second variant of this function provides the strong exception-safety guarantee
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T,
             typename Range3T>
         inline OutputIteratorT ireplace_all_copy(
@@ -699,13 +699,13 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline SequenceT ireplace_all_copy( 
+        inline SequenceT ireplace_all_copy(
             const SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            return ::boost::algorithm::find_format_all_copy( 
+            return ::boost::algorithm::find_format_all_copy(
                 Input,
                 ::boost::algorithm::first_finder(Search, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
@@ -713,39 +713,39 @@ namespace boost {
 
         //! Replace all algorithm ( case insensitive )
         /*!
-            Replace all occurrences of the search string in the input 
+            Replace all occurrences of the search string in the input
             with the format string.The input sequence is modified in-place.
             Searching is case insensitive.
 
             \param Input An input string
-            \param Search A substring to be searched for 
+            \param Search A substring to be searched for
             \param Format A substitute string
             \param Loc A locale used for case insensitive comparison
         */
         template<typename SequenceT, typename Range1T, typename Range2T>
-        inline void ireplace_all( 
+        inline void ireplace_all(
             SequenceT& Input,
             const Range1T& Search,
             const Range2T& Format,
             const std::locale& Loc=std::locale() )
         {
-            ::boost::algorithm::find_format_all( 
-                Input, 
+            ::boost::algorithm::find_format_all(
+                Input,
                 ::boost::algorithm::first_finder(Search, is_iequal(Loc)),
                 ::boost::algorithm::const_formatter(Format) );
         }
-        
+
 //  replace_head --------------------------------------------------------------------//
 
         //! Replace head algorithm
         /*!
-            Replace the head of the input with the given format string. 
-            The head is a prefix of a string of given size. 
-            If the sequence is shorter then required, whole string if 
-            considered to be the head. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace the head of the input with the given format string.
+            The head is a prefix of a string of given size.
+            If the sequence is shorter then required, whole string if
+            considered to be the head.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
-            
+
             \param Output An output iterator to which the result will be copied
             \param Input An input string
             \param N Length of the head.
@@ -753,13 +753,13 @@ namespace boost {
                 For N<0, size(Input)-|N| characters are extracted.
             \param Format A substitute string
             \return An output iterator pointing just after the last inserted character or
-                a modified copy of the input  
+                a modified copy of the input
 
             \note The second variant of this function provides the strong exception-safety guarantee
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T>
         inline OutputIteratorT replace_head_copy(
             OutputIteratorT Output,
@@ -779,12 +779,12 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename RangeT>
-        inline SequenceT replace_head_copy( 
+        inline SequenceT replace_head_copy(
             const SequenceT& Input,
             int N,
             const RangeT& Format )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::head_finder(N),
                 ::boost::algorithm::const_formatter(Format) );
@@ -792,9 +792,9 @@ namespace boost {
 
         //! Replace head algorithm
         /*!
-            Replace the head of the input with the given format string. 
-            The head is a prefix of a string of given size. 
-            If the sequence is shorter then required, the whole string is 
+            Replace the head of the input with the given format string.
+            The head is a prefix of a string of given size.
+            If the sequence is shorter then required, the whole string is
             considered to be the head. The input sequence is modified in-place.
 
             \param Input An input string
@@ -804,13 +804,13 @@ namespace boost {
             \param Format A substitute string
         */
         template<typename SequenceT, typename RangeT>
-        inline void replace_head( 
+        inline void replace_head(
             SequenceT& Input,
             int N,
             const RangeT& Format )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::head_finder(N),
                 ::boost::algorithm::const_formatter(Format) );
         }
@@ -819,11 +819,11 @@ namespace boost {
 
         //! Replace tail algorithm
         /*!
-            Replace the tail of the input with the given format string. 
-            The tail is a suffix of a string of given size. 
-            If the sequence is shorter then required, whole string is 
-            considered to be the tail. 
-            The result is a modified copy of the input. It is returned as a sequence 
+            Replace the tail of the input with the given format string.
+            The tail is a suffix of a string of given size.
+            If the sequence is shorter then required, whole string is
+            considered to be the tail.
+            The result is a modified copy of the input. It is returned as a sequence
             or copied to the output iterator.
 
             \param Output An output iterator to which the result will be copied
@@ -833,13 +833,13 @@ namespace boost {
                 For N<0, size(Input)-|N| characters are extracted.
             \param Format A substitute string
             \return An output iterator pointing just after the last inserted character or
-                    a modified copy of the input   
+                    a modified copy of the input
 
               \note The second variant of this function provides the strong exception-safety guarantee
         */
         template<
             typename OutputIteratorT,
-            typename Range1T, 
+            typename Range1T,
             typename Range2T>
         inline OutputIteratorT replace_tail_copy(
             OutputIteratorT Output,
@@ -859,12 +859,12 @@ namespace boost {
             \overload
         */
         template<typename SequenceT, typename RangeT>
-        inline SequenceT replace_tail_copy( 
+        inline SequenceT replace_tail_copy(
             const SequenceT& Input,
             int N,
             const RangeT& Format )
         {
-            return ::boost::algorithm::find_format_copy( 
+            return ::boost::algorithm::find_format_copy(
                 Input,
                 ::boost::algorithm::tail_finder(N),
                 ::boost::algorithm::const_formatter(Format) );
@@ -872,9 +872,9 @@ namespace boost {
 
         //! Replace tail algorithm
         /*!
-            Replace the tail of the input with the given format sequence. 
-            The tail is a suffix of a string of given size. 
-            If the sequence is shorter then required, the whole string is 
+            Replace the tail of the input with the given format sequence.
+            The tail is a suffix of a string of given size.
+            If the sequence is shorter then required, the whole string is
             considered to be the tail. The input sequence is modified in-place.
 
             \param Input An input string
@@ -884,13 +884,13 @@ namespace boost {
             \param Format A substitute string
         */
         template<typename SequenceT, typename RangeT>
-        inline void replace_tail( 
+        inline void replace_tail(
             SequenceT& Input,
             int N,
             const RangeT& Format )
         {
-            ::boost::algorithm::find_format( 
-                Input, 
+            ::boost::algorithm::find_format(
+                Input,
                 ::boost::algorithm::tail_finder(N),
                 ::boost::algorithm::const_formatter(Format) );
         }

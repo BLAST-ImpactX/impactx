@@ -227,7 +227,7 @@ namespace boost { namespace proto
     struct is_expr<T, typename T::proto_is_expr_>
       : mpl::true_
     {};
-            
+
     template<typename T>
     struct is_expr<T &, void>
       : is_expr<T>

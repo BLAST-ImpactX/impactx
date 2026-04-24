@@ -2,8 +2,8 @@
 // Copyright Peter Dimov 2001
 // Copyright Aleksey Gurtovoy 2001-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -303,4 +303,3 @@ struct resolve_bind_arg<
 BOOST_MPL_AUX_ARITY_SPEC(6, bind5)
 BOOST_MPL_AUX_TEMPLATE_ARITY_SPEC(6, bind5)
 }}
-

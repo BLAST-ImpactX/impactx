@@ -555,7 +555,7 @@ namespace boost {
 #  define BOOST_APPEND_EXPLICIT_TEMPLATE_NON_TYPE_SPEC(t, v)
 
 // When BOOST_NO_STD_TYPEINFO is defined, we can just import
-// the global definition into std namespace, 
+// the global definition into std namespace,
 // see https://svn.boost.org/trac10/ticket/4115
 #if defined(BOOST_NO_STD_TYPEINFO) && defined(__cplusplus) && defined(BOOST_MSVC)
 #include <typeinfo>
@@ -672,7 +672,7 @@ namespace std{ using ::type_info; }
 #    if __has_attribute(noreturn)
 #      define BOOST_NORETURN [[noreturn]]
 #    endif
-#  elif defined(__has_cpp_attribute) 
+#  elif defined(__has_cpp_attribute)
 #    if __has_cpp_attribute(noreturn)
 #      define BOOST_NORETURN [[noreturn]]
 #    endif

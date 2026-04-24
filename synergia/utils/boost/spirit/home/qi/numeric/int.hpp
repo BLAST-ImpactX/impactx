@@ -29,7 +29,7 @@ namespace boost { namespace spirit
     {
         template <typename T, unsigned Radix, unsigned MinDigits
                 , int MaxDigits>
-        struct int_parser 
+        struct int_parser
         {
             BOOST_SPIRIT_IS_TAG()
         };

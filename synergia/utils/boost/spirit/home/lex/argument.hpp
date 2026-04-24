@@ -2,8 +2,8 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
 //  Copyright (c)      2010 Bryce Lelbach
 //  Copyright (c)      2011 Thomas Heller
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_ARGUMENT_JUNE_07_2009_1106AM)
@@ -28,8 +28,8 @@
 namespace boost { namespace spirit { namespace lex
 {
     ///////////////////////////////////////////////////////////////////////////
-    //  The state_getter is a Phoenix actor used to access the name of the 
-    //  current lexer state by calling get_state_name() on the context (which 
+    //  The state_getter is a Phoenix actor used to access the name of the
+    //  current lexer state by calling get_state_name() on the context (which
     //  is the 5th parameter to any lexer semantic actions).
     //
     //  This Phoenix actor is invoked whenever the placeholder '_state' is used
@@ -67,8 +67,8 @@ namespace boost { namespace spirit { namespace lex
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    //  The state_setter is a Phoenix actor used to change the name of the 
-    //  current lexer state by calling set_state_name() on the context (which 
+    //  The state_setter is a Phoenix actor used to change the name of the
+    //  current lexer state by calling set_state_name() on the context (which
     //  is the 5th parameter to any lexer semantic actions).
     //
     //  This Phoenix actor is invoked whenever the placeholder '_state' is used
@@ -104,7 +104,7 @@ namespace boost { namespace spirit { namespace lex
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    //  The value_getter is used to create the _val placeholder, which is a 
+    //  The value_getter is used to create the _val placeholder, which is a
     //  Phoenix actor used to access the value of the current token.
     //
     //  This Phoenix actor is invoked whenever the placeholder '_val' is used
@@ -134,7 +134,7 @@ namespace boost { namespace spirit { namespace lex
         };
 
         template <typename Env>
-        typename result<Env>::type 
+        typename result<Env>::type
         eval(Env const& env) const
         {
             return fusion::at_c<4>(env.args()).get_value();
@@ -142,8 +142,8 @@ namespace boost { namespace spirit { namespace lex
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    //  The value_setter is a Phoenix actor used to change the name of the 
-    //  current lexer state by calling set_state_name() on the context (which 
+    //  The value_setter is a Phoenix actor used to change the name of the
+    //  current lexer state by calling set_state_name() on the context (which
     //  is the 5th parameter to any lexer semantic actions).
     //
     //  This Phoenix actor is invoked whenever the placeholder '_val' is used
@@ -178,15 +178,15 @@ namespace boost { namespace spirit { namespace lex
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    //  The eoi_getter is used to create the _eoi placeholder, which is a 
-    //  Phoenix actor used to access the end of input iterator pointing to the 
+    //  The eoi_getter is used to create the _eoi placeholder, which is a
+    //  Phoenix actor used to access the end of input iterator pointing to the
     //  end of the underlying input sequence.
     //
     //  This actor is invoked whenever the placeholder '_eoi' is used in a
     //  lexer semantic action:
     //
     //      lex::token_def<> identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
-    //      this->self = identifier 
+    //      this->self = identifier
     //          [ std::cout << construct_<std::string>(_end, _eoi) ];
     //
     //  The example shows how to use _eoi to print all remaining input after
@@ -210,7 +210,7 @@ namespace boost { namespace spirit { namespace lex
         };
 
         template <typename Env>
-        typename result<Env>::type 
+        typename result<Env>::type
         eval(Env const& env) const
         {
             return fusion::at_c<4>(env.args()).get_eoi();
@@ -218,7 +218,7 @@ namespace boost { namespace spirit { namespace lex
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    // '_start' and '_end' may be used to access the start and the end of 
+    // '_start' and '_end' may be used to access the start and the end of
     // the matched sequence of the current token
     typedef phoenix::arg_names::_1_type _start_type;
     typedef phoenix::arg_names::_2_type _end_type;
@@ -228,7 +228,7 @@ namespace boost { namespace spirit { namespace lex
 #endif
 
     // We are reusing the placeholder '_pass' to access and change the pass
-    // status of the current match (see support/argument.hpp for its 
+    // status of the current match (see support/argument.hpp for its
     // definition).
     // typedef phoenix::arg_names::_3_type _pass_type;
     using boost::spirit::_pass_type;
@@ -236,7 +236,7 @@ namespace boost { namespace spirit { namespace lex
     using boost::spirit::_pass;
 #endif
 
-    // '_tokenid' may be used to access and change the tokenid of the current 
+    // '_tokenid' may be used to access and change the tokenid of the current
     // token
     typedef phoenix::arg_names::_4_type _tokenid_type;
 #ifndef BOOST_SPIRIT_NO_PREDEFINED_TERMINALS
@@ -250,10 +250,10 @@ namespace boost { namespace spirit { namespace lex
     // '_val' may be used to access and change the token value of the current
     // token
     _val_type const _val = _val_type();
-    // _state may be used to access and change the name of the current lexer 
+    // _state may be used to access and change the name of the current lexer
     // state
     _state_type const _state = _state_type();
-    // '_eoi' may be used to access the end of input iterator of the input 
+    // '_eoi' may be used to access the end of input iterator of the input
     // stream used by the lexer to match tokens from
     _eoi_type const _eoi = _eoi_type();
 #endif
@@ -262,4 +262,3 @@ namespace boost { namespace spirit { namespace lex
 
 #undef SPIRIT_DECLARE_ARG
 #endif
-

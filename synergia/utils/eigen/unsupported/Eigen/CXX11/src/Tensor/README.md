@@ -1664,14 +1664,14 @@ Six 2x2 patches can be extracted and indexed using the following code:
     for (int k = 0; k < 6; ++k) {
       cout << "patch index: " << k << endl;
       for (int i = 0; i < 2; ++i) {
-    	for (int j = 0; j < 2; ++j) {
-    	  if (DataLayout == ColMajor) {
-    		cout << patch(i, j, k) << " ";
-    	  } else {
-    		cout << patch(k, i, j) << " ";
-    	  }
-    	}
-    	cout << endl;
+        for (int j = 0; j < 2; ++j) {
+          if (DataLayout == ColMajor) {
+            cout << patch(i, j, k) << " ";
+          } else {
+            cout << patch(k, i, j) << " ";
+          }
+        }
+        cout << endl;
       }
     }
 
@@ -1811,25 +1811,25 @@ TODO
 ## Tensor Printing
 Tensors can be printed into a stream object (e.g. `std::cout`) using different formatting options.
 
-	Eigen::Tensor<float, 3> tensor3d = {4, 3, 2};
-	tensor3d.setValues( {{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 10}, {11, 12}}, {{13, 14}, {15, 16}, {17, 18}}, {{19, 20}, {21, 22}, {23, 24}}} );
-	std::cout << tensor3d.format(Eigen::TensorIOFormat::Plain()) << std::endl;
-	==>
-	 1  2
-	 3  4
-	 5  6
+    Eigen::Tensor<float, 3> tensor3d = {4, 3, 2};
+    tensor3d.setValues( {{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 10}, {11, 12}}, {{13, 14}, {15, 16}, {17, 18}}, {{19, 20}, {21, 22}, {23, 24}}} );
+    std::cout << tensor3d.format(Eigen::TensorIOFormat::Plain()) << std::endl;
+    ==>
+     1  2
+     3  4
+     5  6
 
-	 7  8
-	 9 10
-	11 12
+     7  8
+     9 10
+    11 12
 
-	13 14
-	15 16
-	17 18
+    13 14
+    15 16
+    17 18
 
-	19 20
-	21 22
-	23 24
+    19 20
+    21 22
+    23 24
 
 
 In the example, we used the predefined format `Eigen::TensorIOFormat::Plain`.

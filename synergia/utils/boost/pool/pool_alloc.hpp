@@ -13,7 +13,7 @@
 /*!
   \file
   \brief C++ Standard Library compatible pool-based allocators.
-  \details  This header provides two template types - 
+  \details  This header provides two template types -
   \ref pool_allocator and \ref fast_pool_allocator -
   that can be used for fast and efficient memory allocation
   in conjunction with the C++ Standard Library containers.
@@ -125,10 +125,10 @@ unsigned debug_info<b>::allocated = 0;
 
   <b>T</b> Type of object to allocate/deallocate.
 
-  <b>UserAllocator</B>. Defines the method that the underlying Pool will use to allocate memory from the system. See 
+  <b>UserAllocator</B>. Defines the method that the underlying Pool will use to allocate memory from the system. See
   <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">User Allocators</a> for details.
 
-  <b>Mutex</b> Allows the user to determine the type of synchronization to be used on the underlying singleton_pool. 
+  <b>Mutex</b> Allows the user to determine the type of synchronization to be used on the underlying singleton_pool.
 
   <b>NextSize</b> The value of this parameter is passed to the underlying singleton_pool when it is created.
 
@@ -141,8 +141,8 @@ unsigned debug_info<b>::allocated = 0;
   by the allocator can be still used after main() has
   completed, but may mean that some memory checking programs
   will complain about leaks.
- 
-  
+
+
   */
 template <typename T,
     typename UserAllocator,
@@ -294,7 +294,7 @@ public:
     //! Nested class rebind allows for transformation from
     //! pool_allocator<T> to pool_allocator<U> via the member
     //! typedef other.
-    template <class U> 
+    template <class U>
     struct rebind
     {
        typedef pool_allocator<U, UserAllocator, Mutex, NextSize, MaxSize> other;
@@ -322,7 +322,7 @@ struct fast_pool_allocator_tag
 
   <b>T</b> Type of object to allocate/deallocate.
 
-  <b>UserAllocator</b>. Defines the method that the underlying Pool will use to allocate memory from the system. 
+  <b>UserAllocator</b>. Defines the method that the underlying Pool will use to allocate memory from the system.
   See <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">User Allocators</a> for details.
 
   <b>Mutex</b> Allows the user to determine the type of synchronization to be used on the underlying <tt>singleton_pool</tt>.
@@ -338,7 +338,7 @@ struct fast_pool_allocator_tag
   by the allocator can be still used after main() has
   completed, but may mean that some memory checking programs
   will complain about leaks.
- 
+
  */
 
 template <typename T,

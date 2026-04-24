@@ -43,27 +43,27 @@ namespace boost { namespace spirit
     // enables maxwidth(w)[g], where w provides a maxwidth
     template <typename T>
     struct use_directive<karma::domain
-          , terminal_ex<tag::maxwidth, fusion::vector1<T> > > 
+          , terminal_ex<tag::maxwidth, fusion::vector1<T> > >
       : mpl::true_ {};
 
     // enables *lazy* maxwidth(w)[g], where w provides a maxwidth
     template <>
-    struct use_lazy_directive<karma::domain, tag::maxwidth, 1> 
+    struct use_lazy_directive<karma::domain, tag::maxwidth, 1>
       : mpl::true_ {};
 
     // enables maxwidth(w, r)[g], where w provides a maxwidth and r is an output
-    // iterator used to receive the rest of the output not fitting into the 
+    // iterator used to receive the rest of the output not fitting into the
     // maxwidth limit
     template <typename T, typename RestIter>
     struct use_directive<karma::domain
-          , terminal_ex<tag::maxwidth, fusion::vector2<T, RestIter> > > 
+          , terminal_ex<tag::maxwidth, fusion::vector2<T, RestIter> > >
       : mpl::true_ {};
 
-    // enables *lazy* maxwidth(w, r)[g], where w provides a maxwidth and r is 
-    // an output iterator used to receive the rest of the output not fitting 
+    // enables *lazy* maxwidth(w, r)[g], where w provides a maxwidth and r is
+    // an output iterator used to receive the rest of the output not fitting
     // into the maxwidth limit
     template <>
-    struct use_lazy_directive<karma::domain, tag::maxwidth, 2> 
+    struct use_lazy_directive<karma::domain, tag::maxwidth, 2>
       : mpl::true_ {};
 
 }}
@@ -94,25 +94,25 @@ namespace boost { namespace spirit { namespace karma
         }
 
         ///////////////////////////////////////////////////////////////////////
-        //  The maxwidth_generate template function is used for all the 
-        //  different flavors of the maxwidth[] directive. 
+        //  The maxwidth_generate template function is used for all the
+        //  different flavors of the maxwidth[] directive.
         ///////////////////////////////////////////////////////////////////////
-        template <typename OutputIterator, typename Context, typename Delimiter, 
+        template <typename OutputIterator, typename Context, typename Delimiter,
             typename Attribute, typename Embedded, typename Rest>
-        inline static bool 
-        maxwidth_generate(OutputIterator& sink, Context& ctx, 
-            Delimiter const& d, Attribute const& attr, Embedded const& e, 
-            unsigned int const maxwidth, Rest& restdest) 
+        inline static bool
+        maxwidth_generate(OutputIterator& sink, Context& ctx,
+            Delimiter const& d, Attribute const& attr, Embedded const& e,
+            unsigned int const maxwidth, Rest& restdest)
         {
 #if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1600))
             (void)e; // suppresses warning: C4100: 'e' : unreferenced formal parameter
 #endif
-            // wrap the given output iterator to allow buffering, but disable 
+            // wrap the given output iterator to allow buffering, but disable
             // counting
             detail::enable_buffering<OutputIterator> buffering(sink);
 
-            // generate the underlying output and copy the embedded 
-            // output to the target output iterator applying the given 
+            // generate the underlying output and copy the embedded
+            // output to the target output iterator applying the given
             // maxwidth
             bool r = false;
             {
@@ -129,9 +129,9 @@ namespace boost { namespace spirit { namespace karma
     //  The maxwidth directive is used for maxwidth[...]
     //  generators. It uses default values for the generated width (defined via
     //  the BOOST_KARMA_DEFAULT_FIELD_MAXWIDTH constant).
-    // 
+    //
     //  The maxwidth with width directive, is used for generators
-    //  like maxwidth(width)[...]. 
+    //  like maxwidth(width)[...].
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename Width = detail::default_max_width
       , typename Rest = unused_type>
@@ -241,5 +241,3 @@ namespace boost { namespace spirit { namespace traits
 }}}
 
 #endif
-
-

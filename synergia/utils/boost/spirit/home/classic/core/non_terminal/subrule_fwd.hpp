@@ -16,7 +16,7 @@ namespace boost { namespace spirit  {
 BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
     template <int ID, typename ContextT = parser_context<> >
-    struct subrule; 
+    struct subrule;
 
     template <int ID, typename DefT, typename ContextT = parser_context<> >
     struct subrule_parser;
@@ -25,11 +25,10 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct subrules_scanner;
 
     template <typename FirstT, typename RestT>
-    struct subrule_list; 
+    struct subrule_list;
 
 BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

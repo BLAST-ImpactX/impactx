@@ -2,8 +2,8 @@
 #define DATE_DURATION_TYPES_HPP___
 
 /* Copyright (c) 2004 CrystalClear Software, Inc.
- * Subject to the Boost Software License, Version 1.0. 
- * (See accompanying file LICENSE_1_0.txt or 
+ * Subject to the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE_1_0.txt or
  * http://www.boost.org/LICENSE_1_0.txt)
  * Author: Jeff Garland, Bart Garst
  * $Date$
@@ -22,9 +22,9 @@ namespace date_time {
   template <class duration_config>
   class BOOST_SYMBOL_VISIBLE weeks_duration : public date_duration<duration_config> {
   public:
-    BOOST_CXX14_CONSTEXPR weeks_duration(typename duration_config::impl_type w) 
+    BOOST_CXX14_CONSTEXPR weeks_duration(typename duration_config::impl_type w)
       : date_duration<duration_config>(w * 7) {}
-    BOOST_CXX14_CONSTEXPR weeks_duration(special_values sv) 
+    BOOST_CXX14_CONSTEXPR weeks_duration(special_values sv)
       : date_duration<duration_config>(sv) {}
   };
 
@@ -33,8 +33,8 @@ namespace date_time {
   class BOOST_SYMBOL_VISIBLE years_duration;
 
   //! additional duration type that represents a logical month
-  /*! A logical month enables things like: "date(2002,Mar,2) + months(2) -> 
-   * 2002-May2". If the date is a last day-of-the-month, the result will 
+  /*! A logical month enables things like: "date(2002,Mar,2) + months(2) ->
+   * 2002-May2". If the date is a last day-of-the-month, the result will
    * also be a last-day-of-the-month.
    */
   template<class base_config>
@@ -50,7 +50,7 @@ namespace date_time {
       typedef years_duration<base_config> years_type;
     public:
       BOOST_CXX14_CONSTEXPR months_duration(int_rep num) : _m(num) {}
-      BOOST_CXX14_CONSTEXPR months_duration(special_values sv) : _m(sv) 
+      BOOST_CXX14_CONSTEXPR months_duration(special_values sv) : _m(sv)
       {
         _m = int_rep::from_special(sv);
       }
@@ -152,8 +152,8 @@ namespace date_time {
   };
 
   //! additional duration type that represents a logical year
-  /*! A logical year enables things like: "date(2002,Mar,2) + years(2) -> 
-   * 2004-Mar-2". If the date is a last day-of-the-month, the result will 
+  /*! A logical year enables things like: "date(2002,Mar,2) + years(2) ->
+   * 2004-Mar-2". If the date is a last day-of-the-month, the result will
    * also be a last-day-of-the-month (ie date(2001-Feb-28) + years(3) ->
    * 2004-Feb-29).
    */
@@ -170,7 +170,7 @@ namespace date_time {
       typedef months_duration<base_config> months_type;
     public:
       BOOST_CXX14_CONSTEXPR years_duration(int_rep num) : _y(num) {}
-      BOOST_CXX14_CONSTEXPR years_duration(special_values sv) : _y(sv) 
+      BOOST_CXX14_CONSTEXPR years_duration(special_values sv) : _y(sv)
       {
         _y = int_rep::from_special(sv);
       }

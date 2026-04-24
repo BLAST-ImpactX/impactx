@@ -77,4 +77,3 @@ BOOST_TYPEOF_REGISTER_TEMPLATE(BOOST_SPIRIT_CLASSIC_NS::ast_match_policy,1)
 
 
 #endif
-

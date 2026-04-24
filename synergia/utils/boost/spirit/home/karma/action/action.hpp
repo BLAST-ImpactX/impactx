@@ -62,9 +62,9 @@ namespace boost { namespace spirit { namespace karma
 
             attr_type attr = transform::pre(attr_);
 
-            // call the function, passing the attribute, the context and a bool 
+            // call the function, passing the attribute, the context and a bool
             // flag that the client can set to false to fail generating.
-            return traits::action_dispatch<Subject>()(f, attr, ctx) && 
+            return traits::action_dispatch<Subject>()(f, attr, ctx) &&
                    subject.generate(sink, ctx, d, attr);
         }
 

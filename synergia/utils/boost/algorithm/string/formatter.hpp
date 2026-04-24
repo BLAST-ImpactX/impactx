@@ -24,7 +24,7 @@
     for a specific Formatter. An example of such a cooperation is regex_finder
     and regex_formatter.
 
-    Formatters are used as pluggable components for replace facilities. 
+    Formatters are used as pluggable components for replace facilities.
     This header contains generator functions for the Formatters provided in this library.
 */
 
@@ -73,14 +73,14 @@ namespace boost {
         //! Empty formatter
         /*!
             Constructs an \c empty_formatter. Empty formatter always returns an empty
-            sequence. 
+            sequence.
 
             \param Input container used to select a correct value_type for the
                          resulting empty_container<>.
             \return An instance of the \c empty_formatter object.
         */
         template<typename RangeT>
-        inline detail::empty_formatF< 
+        inline detail::empty_formatF<
             BOOST_STRING_TYPENAME range_value<RangeT>::type>
         empty_formatter(const RangeT&)
         {
@@ -91,7 +91,7 @@ namespace boost {
         //! Empty formatter
         /*!
             Constructs a \c dissect_formatter. Dissect formatter uses a specified finder
-            to extract a portion of the formatted sequence. The first finder's match is returned 
+            to extract a portion of the formatted sequence. The first finder's match is returned
             as a result
 
             \param Finder a finder used to select a portion of the formatted sequence

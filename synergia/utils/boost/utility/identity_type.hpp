@@ -43,4 +43,3 @@ add and remove a reference to the specified type.
     boost::function_traits< void parenthesized_type >::arg1_type
 
 #endif // #include guard
-

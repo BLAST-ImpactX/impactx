@@ -19,8 +19,8 @@
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-namespace boost 
-{ 
+namespace boost
+{
 
     template< class T >
     inline bool empty( const T& r )

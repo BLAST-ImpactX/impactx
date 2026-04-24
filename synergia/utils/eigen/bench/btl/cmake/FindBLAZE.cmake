@@ -28,4 +28,3 @@ find_package_handle_standard_args(BLAZE DEFAULT_MSG BLAZE_INCLUDE_DIR)
 mark_as_advanced(BLAZE_INCLUDE_DIR)
 
 endif()
-

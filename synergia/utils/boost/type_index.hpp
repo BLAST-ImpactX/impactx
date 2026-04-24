@@ -11,7 +11,7 @@
 /// \file boost/type_index.hpp
 /// \brief Includes minimal set of headers required to use the Boost.TypeIndex library.
 ///
-/// By inclusion of this file most optimal type index classes will be included and used 
+/// By inclusion of this file most optimal type index classes will be included and used
 /// as a boost::typeindex::type_index and boost::typeindex::type_info.
 
 #include <boost/config.hpp>
@@ -118,10 +118,10 @@ namespace boost { namespace typeindex {
 #define BOOST_TYPE_INDEX_CTTI_USER_DEFINED_PARSING (0, 0, false, "")
 
 
-    /// Depending on a compiler flags, optimal implementation of type_index will be used 
+    /// Depending on a compiler flags, optimal implementation of type_index will be used
     /// as a default boost::typeindex::type_index.
     ///
-    /// Could be a boost::typeindex::stl_type_index, boost::typeindex::ctti_type_index or 
+    /// Could be a boost::typeindex::stl_type_index, boost::typeindex::ctti_type_index or
     /// user defined type_index class.
     ///
     /// \b See boost::typeindex::type_index_facade for a full description of type_index functions.
@@ -130,14 +130,14 @@ namespace boost { namespace typeindex {
     // Nothing to do
 #elif (!defined(BOOST_NO_RTTI) && !defined(BOOST_TYPE_INDEX_FORCE_NO_RTTI_COMPATIBILITY)) || defined(BOOST_MSVC)
     typedef boost::typeindex::stl_type_index type_index;
-#else 
+#else
     typedef boost::typeindex::ctti_type_index type_index;
 #endif
 
-/// Depending on a compiler flags, optimal implementation of type_info will be used 
+/// Depending on a compiler flags, optimal implementation of type_info will be used
 /// as a default boost::typeindex::type_info.
 ///
-/// Could be a std::type_info, boost::typeindex::detail::ctti_data or 
+/// Could be a std::type_info, boost::typeindex::detail::ctti_data or
 /// some user defined class.
 ///
 /// type_info \b is \b not copyable or default constructible. It is \b not assignable too!
@@ -212,10 +212,10 @@ inline type_index type_id() noexcept {
     return type_index::type_id<T>();
 }
 
-/// Function for constructing boost::typeindex::type_index instance for type T. 
+/// Function for constructing boost::typeindex::type_index instance for type T.
 /// Does not remove const, volatile, & and && modifiers from T.
 ///
-/// If T has no const, volatile, & and && modifiers, then returns exactly 
+/// If T has no const, volatile, & and && modifiers, then returns exactly
 /// the same result as in case of calling `type_id<T>()`.
 ///
 /// \b Example:
@@ -262,4 +262,3 @@ inline type_index type_id_runtime(const T& runtime_val) noexcept {
 
 
 #endif // BOOST_TYPE_INDEX_HPP
-

@@ -52,7 +52,7 @@ namespace boost { namespace phoenix
     namespace tag {
       struct terminal /*: public proto::tag::terminal */ {};
     }
- 
+
     namespace expression
     {
         template <typename T, template <typename> class Actor = actor>
@@ -68,7 +68,7 @@ namespace boost { namespace phoenix
                 >
                 base_type;
             typedef Actor<base_type> type;
-            
+
             static const type make(T const& t)
             {
             // ?? Should the next line be Actor not actor which is the default?
@@ -88,7 +88,7 @@ namespace boost { namespace phoenix
         struct custom_terminal
             : proto::if_<boost::phoenix::is_custom_terminal<proto::_value>()>
         {};
-        
+
         struct terminal
             : proto::terminal<proto::_>
         {};
@@ -120,7 +120,7 @@ namespace boost { namespace phoenix
             : mpl::int_<N::value>
         {};
     }
-    
+
     template <typename Grammar>
     struct default_actions::when<rule::argument, Grammar>
         : proto::call<

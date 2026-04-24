@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
@@ -26,7 +26,7 @@ namespace boost { namespace phoenix { namespace detail
 
         function_ptr(FP fp_)
             : base(fp_) {}
-        
+
         using base::fp;
 
         bool operator==(function_ptr const & rhs) const
@@ -94,7 +94,7 @@ namespace boost { namespace phoenix { namespace detail
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 

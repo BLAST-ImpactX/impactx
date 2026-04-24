@@ -222,7 +222,7 @@ namespace date_time {
         facet_type default_facet;
         date_put(d, os, default_facet);
       }
-    } // date_to_ostream 
+    } // date_to_ostream
   }; //class date_formatter
 
 
@@ -231,4 +231,3 @@ namespace date_time {
 #endif
 
 #endif
-

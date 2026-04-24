@@ -78,10 +78,10 @@ namespace FF_offset_cdt {
 
         CoordParams cp;
 
-	cp.offset = offset;
+    cp.offset = offset;
         // actually we don't care about the slice at all. Maybe
         // we can eliminate the slice argument
- 
+
         Reference_particle& ref_l = bunch.get_design_reference_particle();
         Reference_particle& ref_b = bunch.get_reference_particle();
 

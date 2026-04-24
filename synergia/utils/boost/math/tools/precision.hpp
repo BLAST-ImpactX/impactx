@@ -392,4 +392,3 @@ inline constexpr T forth_root_epsilon() noexcept(std::is_floating_point<T>::valu
 } // namespace boost
 
 #endif // BOOST_MATH_TOOLS_PRECISION_INCLUDED
-

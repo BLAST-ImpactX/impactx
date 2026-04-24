@@ -39,8 +39,8 @@ namespace FF_octupole
         Reference_particle const & ref_b = bunch.get_reference_particle();
 
         double brho_l = ref_l.get_momentum() / ref_l.get_charge();  // GV/c
-        double brho_b = ref_b.get_momentum() 
-                        * (1.0 + ref_b.get_state()[Bunch::dpop]) 
+        double brho_b = ref_b.get_momentum()
+                        * (1.0 + ref_b.get_state()[Bunch::dpop])
                         / ref_l.get_charge();  // GV/c
 
         double scale = brho_l / brho_b;
@@ -49,7 +49,7 @@ namespace FF_octupole
         k[1] *= scale;
 
         using gsv_t = typename BunchT::gsv_t;
-        using pp = FF_patterned_propagator<BunchT, gsv_t, 
+        using pp = FF_patterned_propagator<BunchT, gsv_t,
               kick<gsv_t>, kick<double>>;
 
         if ( close_to_zero(length) )
@@ -88,4 +88,3 @@ namespace FF_octupole
 }
 
 #endif // FF_SEXTUPOLE_H
-

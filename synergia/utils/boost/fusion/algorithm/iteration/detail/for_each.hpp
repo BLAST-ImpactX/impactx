@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_FOR_EACH_05052005_1028)
@@ -33,7 +33,7 @@ namespace detail
     for_each_linear(First const& first, Last const& last, F& f, mpl::false_)
     {
         f(*first);
-        detail::for_each_linear(fusion::next(first), last, f, 
+        detail::for_each_linear(fusion::next(first), last, f,
                                 result_of::equal_to<typename result_of::next<First>::type, Last>());
     }
 
@@ -146,4 +146,3 @@ namespace detail
 
 
 #endif
-

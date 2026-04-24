@@ -1,5 +1,5 @@
 
-//  (C) Copyright John Maddock 2005.  
+//  (C) Copyright John Maddock 2005.
 //  Use, modification and distribution are subject to the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt).
@@ -15,8 +15,8 @@
 
 namespace boost {
 
-template <class T> struct is_member_object_pointer 
-   : public integral_constant<bool, 
+template <class T> struct is_member_object_pointer
+   : public integral_constant<bool,
    ::boost::is_member_pointer<T>::value && !::boost::is_member_function_pointer<T>::value>{};
 
 } // namespace boost

@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_OSTREAM_ITERATOR_MAY_26_2007_1016PM)
@@ -14,18 +14,18 @@
 #include <iterator>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit { namespace karma 
+namespace boost { namespace spirit { namespace karma
 {
     ///////////////////////////////////////////////////////////////////////////
     //  We need our own implementation of an ostream_iterator just to be able
-    //  to access the wrapped ostream, which is necessary for the 
+    //  to access the wrapped ostream, which is necessary for the
     //  stream_generator, where we must generate the output using the original
     //  ostream to retain possibly registered facets.
     ///////////////////////////////////////////////////////////////////////////
     template <
         typename T, typename Elem = char
       , typename Traits = std::char_traits<Elem> >
-    class ostream_iterator 
+    class ostream_iterator
     {
     public:
         typedef std::output_iterator_tag iterator_category;

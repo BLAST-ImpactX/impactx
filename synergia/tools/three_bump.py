@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-import sys
-import os
-import synergia
-import numpy as np
 import h5py
+import numpy as np
 from scipy.optimize import least_squares
+
+import synergia
+
 
 # class that calculates corrector settings to create a 3 kick local orbit bump
 class Three_bump:
-
     ##################################################
 
     #  lattice you wnat
@@ -26,7 +25,16 @@ class Three_bump:
     #    be specified
     # verbose = False/True on whether the module is chatty
 
-    def __init__(self, lattice, start_name, end_name, hcorr_names, vcorr_names, target_name, verbose=0):
+    def __init__(
+        self,
+        lattice,
+        start_name,
+        end_name,
+        hcorr_names,
+        vcorr_names,
+        target_name,
+        verbose=0,
+    ):
 
         self.lattice = lattice
         # this is a reference to the actual working lattice
@@ -49,38 +57,47 @@ class Three_bump:
         self.bump_lattice = synergia.lattice.Lattice("bump")
         self.bump_lattice.set_reference_particle(self.lattice.get_reference_particle())
 
-        if self.verbose: print("length of lattice_elements: ", len(self.lattice_elements))
+        if self.verbose:
+            print("length of lattice_elements: ", len(self.lattice_elements))
         elem_names = [e.get_name() for e in self.lattice_elements]
-        if self.verbose: print("elem_names: ", elem_names)
+        if self.verbose:
+            print("elem_names: ", elem_names)
 
         # find the start and end of the region by element name
         try:
             start_idx = elem_names.index(self.start_name)
-            if self.verbose: print('start_idx: ', start_idx)
+            if self.verbose:
+                print("start_idx: ", start_idx)
         except:
-            raise RuntimeError("Three_bump: start_name: %s not found"%self.start_name)
+            raise RuntimeError("Three_bump: start_name: %s not found" % self.start_name)
         try:
             end_idx = elem_names.index(self.end_name)
-            if self.verbose: print('end_idx: ', end_idx)
+            if self.verbose:
+                print("end_idx: ", end_idx)
         except:
-            raise RuntimeError("Three_bump: end_name: %s not found"%self.end_name)
+            raise RuntimeError("Three_bump: end_name: %s not found" % self.end_name)
 
         # start is before end so I can just peel elements in that range
         if start_idx < end_idx:
-            for elem in self.lattice_elements[start_idx:end_idx+1]:
+            for elem in self.lattice_elements[start_idx : end_idx + 1]:
                 self.bump_lattice.append(elem)
-            self.bump_idx = self.lattice_elements_idx[start_idx:end_idx+1]
+            self.bump_idx = self.lattice_elements_idx[start_idx : end_idx + 1]
         else:
-            for elem in self.lattice_elements[start_idx:] + self.lattice_elements[:end_idx+1]:
+            for elem in (
+                self.lattice_elements[start_idx:] + self.lattice_elements[: end_idx + 1]
+            ):
                 self.bump_lattice.append(elem)
-            self.bump_idx = self.lattice_elements_idx[start_idx:] + self.lattice_elements_idx[:end_idx+1]
+            self.bump_idx = (
+                self.lattice_elements_idx[start_idx:]
+                + self.lattice_elements_idx[: end_idx + 1]
+            )
 
         # self.bump_idx[] is the index pointing to the original elements in self.lattice_elements
 
         if self.verbose > 2:
             print("bump lattice:")
             print(self.bump_lattice)
-            print('bump_idx: ', self.bump_idx)
+            print("bump_idx: ", self.bump_idx)
 
         bump_elements = self.bump_lattice.get_elements()
         bump_enames = [e.get_name() for e in bump_elements]
@@ -89,7 +106,7 @@ class Three_bump:
 
         # hcorr_names or vcorr_names may be None, but not both of them
         if (self.hcorr_names is None) and (self.vcorr_names is None):
-            raise RuntimeError('no corrector element names specified')
+            raise RuntimeError("no corrector element names specified")
 
         # get horizontal corrector elements
         if self.hcorr_names is None:
@@ -97,7 +114,7 @@ class Three_bump:
             self.hcorr_elements = None
         else:
             if len(self.hcorr_names) != 3:
-                raise RuntimeError('length of hcorr_names needs to be 3')
+                raise RuntimeError("length of hcorr_names needs to be 3")
 
             self.hcorr_elements = []
             self.hcorr_idx = []
@@ -105,14 +122,16 @@ class Three_bump:
                 try:
                     hc_idx = bump_enames.index(self.hcorr_names[i])
                 except:
-                    raise RuntimeError("Three_bump: hcorr_name: %s not found"%self.hcorr_names[i])
+                    raise RuntimeError(
+                        "Three_bump: hcorr_name: %s not found" % self.hcorr_names[i]
+                    )
 
                 if self.verbose:
-                    print('hcorrector element ', i, ' at index: ', hc_idx)
+                    print("hcorrector element ", i, " at index: ", hc_idx)
                 self.hcorr_elements.append(bump_elements[hc_idx])
                 self.hcorr_idx.append(self.bump_idx[hc_idx])
             for e in self.hcorr_elements:
-                e.set_double_attribute('hkick', 0.0)
+                e.set_double_attribute("hkick", 0.0)
 
         # get vertical corrector elements
         if self.vcorr_names is None:
@@ -120,7 +139,7 @@ class Three_bump:
             self.vcorr_elements = None
         else:
             if len(self.vcorr_names) != 3:
-                raise RuntimeError('length of hcorr_names needs to be 3')
+                raise RuntimeError("length of hcorr_names needs to be 3")
 
             self.vcorr_elements = []
             self.vcorr_idx = []
@@ -128,17 +147,21 @@ class Three_bump:
                 try:
                     vc_idx = bump_enames.index(self.vcorr_names[i])
                 except:
-                    raise RuntimeError("Three_bump: vcorr_name: %s not found"%self.vcorr_names[i])
+                    raise RuntimeError(
+                        "Three_bump: vcorr_name: %s not found" % self.vcorr_names[i]
+                    )
 
                 self.vcorr_elements.append(bump_elements[vc_idx])
                 self.vcorr_idx.append(self.bump_idx[vc_idx])
             for e in self.vcorr_elements:
-                e.set_double_attribute('vkick', 0.0)
+                e.set_double_attribute("vkick", 0.0)
 
         try:
             target_idx = bump_enames.index(self.target_name)
         except:
-            raise RuntimeError("Three_bump: target_name: %s not found"%self.target_name)
+            raise RuntimeError(
+                "Three_bump: target_name: %s not found" % self.target_name
+            )
 
         self.target_elem = bump_elements[target_idx]
 
@@ -147,23 +170,31 @@ class Three_bump:
     # print out information about the bump settings
 
     def information(self):
-        print("bump_lattice: ", len(self.bump_lattice.get_elements()), " elements, length: ", self.bump_lattice.get_length())
+        print(
+            "bump_lattice: ",
+            len(self.bump_lattice.get_elements()),
+            " elements, length: ",
+            self.bump_lattice.get_length(),
+        )
         print("horizontal correctors: ")
         if self.hcorr_elements is None:
-            print('\t No horizontal correctors')
+            print("\t No horizontal correctors")
         else:
             for i in range(3):
-                print(f"\t{self.hcorr_elements[i].get_name()}, index: {self.hcorr_idx[i]}, hkick = {self.hcorr_elements[i].get_double_attribute('hkick'):.16g}")
+                print(
+                    f"\t{self.hcorr_elements[i].get_name()}, index: {self.hcorr_idx[i]}, hkick = {self.hcorr_elements[i].get_double_attribute('hkick'):.16g}"
+                )
 
         print("vertical correctors: ")
         if self.vcorr_elements is None:
-            print('\t No vertical correctors')
+            print("\t No vertical correctors")
         else:
             for i in range(3):
-                print(f"\t{self.vcorr_elements[i].get_name()}, index: {self.vcorr_idx[i]}, vkick = {self.vcorr_elements[i].get_double_attribute('vkick'):.16g}")
+                print(
+                    f"\t{self.vcorr_elements[i].get_name()}, index: {self.vcorr_idx[i]}, vkick = {self.vcorr_elements[i].get_double_attribute('vkick'):.16g}"
+                )
 
         print("target element name: ", self.target_name)
-
 
     ##################################################
 
@@ -179,7 +210,9 @@ class Three_bump:
         comm = synergia.utils.Commxx()
         refpart = self.bump_lattice.get_reference_particle()
 
-        sim = synergia.simulation.Bunch_simulator.create_single_bunch_simulator(refpart, 8, 0.5e11)
+        sim = synergia.simulation.Bunch_simulator.create_single_bunch_simulator(
+            refpart, 8, 0.5e11
+        )
         bunch = sim.get_bunch(0, 0)
         lp = bunch.get_particles_numpy()
         lp[:, 0:6] = 0.0
@@ -194,8 +227,9 @@ class Three_bump:
         stepper = synergia.simulation.Independent_stepper_elements(1)
         bump_propagator = synergia.simulation.Propagator(self.bump_lattice, stepper)
 
-        simlog = synergia.utils.parallel_utils.Logger(0,
-                    synergia.utils.parallel_utils.LoggerV.ERROR)
+        simlog = synergia.utils.parallel_utils.Logger(
+            0, synergia.utils.parallel_utils.LoggerV.ERROR
+        )
         bump_propagator.propagate(sim, simlog, 1)
 
         del simlog
@@ -206,16 +240,20 @@ class Three_bump:
         del lp
         del bunch
         del sim
-    
-        h5_target = h5py.File('target.h5', 'r')
-        h5_orbit = h5py.File('orbit.h5', 'r')
-    
-        results = np.hstack((h5_target.get('track_coords')[0, 0, 0:3:2],
-                              h5_orbit.get('track_coords')[1, 0, 0:4]))
-        
+
+        h5_target = h5py.File("target.h5", "r")
+        h5_orbit = h5py.File("orbit.h5", "r")
+
+        results = np.hstack(
+            (
+                h5_target.get("track_coords")[0, 0, 0:3:2],
+                h5_orbit.get("track_coords")[1, 0, 0:4],
+            )
+        )
+
         h5_target.close()
         h5_orbit.close()
-    
+
         return results
 
     ##################################################
@@ -231,9 +269,10 @@ class Three_bump:
 
     def set_bump(self, desired_position):
 
-        targets = np.array([desired_position[0], desired_position[1],
-                           0.0, 0.0, 0.0, 0.0])
-    
+        targets = np.array(
+            [desired_position[0], desired_position[1], 0.0, 0.0, 0.0, 0.0]
+        )
+
         ##################################################
         # Set the horizontal and vertical corrector values in preparation
         #    for the propagation of particles.
@@ -241,25 +280,31 @@ class Three_bump:
 
         def set_corrector_elements(hcorr_values, vcorr_values):
             if self.hcorr_elements is not None:
-
                 if self.verbose:
-                    print('setting hcorr settings to ', hcorr_values)
+                    print("setting hcorr settings to ", hcorr_values)
                 if len(self.hcorr_elements) != len(hcorr_values):
-                    raise RuntimeError("set_corrector_elements: len(hcorr_elements) != len(hcorr_values)")
+                    raise RuntimeError(
+                        "set_corrector_elements: len(hcorr_elements) != len(hcorr_values)"
+                    )
                 for i in range(len(hcorr_values)):
-                    self.hcorr_elements[i].set_double_attribute("hkick", hcorr_values[i])
-        
-            if self.vcorr_elements is not None:
+                    self.hcorr_elements[i].set_double_attribute(
+                        "hkick", hcorr_values[i]
+                    )
 
+            if self.vcorr_elements is not None:
                 if self.verbose:
-                    print('setting vcorr settings to ', vcorr_values)
+                    print("setting vcorr settings to ", vcorr_values)
                 if len(self.vcorr_elements) != len(vcorr_values):
-                    raise RuntimeError("set_corrector_elements: len(vcorr_elements) != len(vcorr_values)")
+                    raise RuntimeError(
+                        "set_corrector_elements: len(vcorr_elements) != len(vcorr_values)"
+                    )
                 for i in range(len(vcorr_values)):
-                    self.vcorr_elements[i].set_double_attribute("vkick", vcorr_values[i])
+                    self.vcorr_elements[i].set_double_attribute(
+                        "vkick", vcorr_values[i]
+                    )
 
             if self.verbose:
-                print('bump_lattice after settings:', self.bump_lattice)
+                print("bump_lattice after settings:", self.bump_lattice)
 
         ##################################################
 
@@ -271,45 +316,59 @@ class Three_bump:
             hc = (x[0], x[1], x[2])
             vc = (x[3], x[4], x[5])
             if self.verbose:
-                print('propagating with hc: ', hc, ', vc: ', vc)
+                print("propagating with hc: ", hc, ", vc: ", vc)
             set_corrector_elements(hc, vc)
             mean = self.propagate_zero()
             if self.verbose:
-                print('\tresult: ', mean)
+                print("\tresult: ", mean)
             residuals = mean - targets
             return residuals
 
         ##################################################
 
-        init_guess =  np.zeros(6)
-        x_scale = np.array([1.0, 1.0, 1.0, 1.0/30.5, 1.0, 1.0/7.5])
-        result = least_squares(bump_f, init_guess,  ftol=1.0e-12, xtol=1.0e-12, gtol=1.0e-12, x_scale=x_scale, verbose=2)
+        init_guess = np.zeros(6)
+        x_scale = np.array([1.0, 1.0, 1.0, 1.0 / 30.5, 1.0, 1.0 / 7.5])
+        result = least_squares(
+            bump_f,
+            init_guess,
+            ftol=1.0e-12,
+            xtol=1.0e-12,
+            gtol=1.0e-12,
+            x_scale=x_scale,
+            verbose=2,
+        )
         if self.verbose:
-            print('corrector values: ', result.x)
-            print('cost: ', result.cost)
-            print('residuals: ', result.fun)
+            print("corrector values: ", result.x)
+            print("cost: ", result.cost)
+            print("residuals: ", result.fun)
 
         # copy the settings in the bump_lattice corrector elements
         # back to the original lattice elements
         if self.hcorr_elements is not None:
             for i in range(3):
                 elem = self.lattice.get_elements()[self.hcorr_idx[i]]
-                elem.set_double_attribute('hkick', self.hcorr_elements[i].get_double_attribute('hkick'))
+                elem.set_double_attribute(
+                    "hkick", self.hcorr_elements[i].get_double_attribute("hkick")
+                )
         if self.vcorr_elements is not None:
             for i in range(3):
                 elem = self.lattice.get_elements()[self.vcorr_idx[i]]
-                elem.set_double_attribute('vkick', self.vcorr_elements[i].get_double_attribute('vkick'))
+                elem.set_double_attribute(
+                    "vkick", self.vcorr_elements[i].get_double_attribute("vkick")
+                )
 
         if self.verbose:
-            print('lattice')
+            print("lattice")
             print(self.lattice)
 
         return result.x
 
+    ##################################################
+    ##################################################
 
-    ##################################################
-    ##################################################
+
 #  just a little tester for the class
+
 
 def create_lattice():
     lattice = synergia.lattice.Lattice("foo")
@@ -350,36 +409,56 @@ def create_lattice():
     lattice.append(mend)
     lattice.append(dr4)
 
-    refpart = synergia.foundation.Reference_particle(1, synergia.foundation.pconstants.mp, synergia.foundation.pconstants.mp+0.4)
+    refpart = synergia.foundation.Reference_particle(
+        1, synergia.foundation.pconstants.mp, synergia.foundation.pconstants.mp + 0.4
+    )
     lattice.set_reference_particle(refpart)
 
     return lattice
+
 
 #####################################################################################################
 
 if __name__ == "__main__":
     lattice = create_lattice()
 
-    print("read lattice: ", len(lattice.get_elements()), " elements, length = ", lattice.get_length())
+    print(
+        "read lattice: ",
+        len(lattice.get_elements()),
+        " elements, length = ",
+        lattice.get_length(),
+    )
 
-    hcorr_names = ('hk1', 'hk2', 'hk3')
-    vcorr_names = ('vk1', 'vk2', 'vk3')
-    three_bump = Three_bump(lattice, 'mbegin', 'mend', hcorr_names, vcorr_names, 'm', True)
-    #three_bump = Three_bump(lattice, 'mbegin', 'mend', hcorr_names, None, 'm', True)
+    hcorr_names = ("hk1", "hk2", "hk3")
+    vcorr_names = ("vk1", "vk2", "vk3")
+    three_bump = Three_bump(
+        lattice, "mbegin", "mend", hcorr_names, vcorr_names, "m", True
+    )
+    # three_bump = Three_bump(lattice, 'mbegin', 'mend', hcorr_names, None, 'm', True)
 
     # three_bump.information()
     # final_coords = three_bump.propagate_zero()
     # print('Final coords: ', final_coords)
     bump_settings = three_bump.set_bump((0.00075, -0.0005))
 
-    print("bump_settings: ", bump_settings[0], bump_settings[1], bump_settings[2], bump_settings[3], bump_settings[4], bump_settings[5])
+    print(
+        "bump_settings: ",
+        bump_settings[0],
+        bump_settings[1],
+        bump_settings[2],
+        bump_settings[3],
+        bump_settings[4],
+        bump_settings[5],
+    )
     three_bump.information()
 
     # propagate the whole lattice now
     comm = synergia.utils.Commxx()
     refpart = lattice.get_reference_particle()
 
-    sim = synergia.simulation.Bunch_simulator.create_single_bunch_simulator(refpart, 8, 0.5e11)
+    sim = synergia.simulation.Bunch_simulator.create_single_bunch_simulator(
+        refpart, 8, 0.5e11
+    )
     bunch = sim.get_bunch(0, 0)
     lp = bunch.get_particles_numpy()
     lp[:, 0:6] = 0.0
@@ -392,9 +471,10 @@ if __name__ == "__main__":
     stepper = synergia.simulation.Independent_stepper_elements(1)
     propagator = synergia.simulation.Propagator(lattice, stepper)
 
-    simlog = synergia.utils.parallel_utils.Logger(0,
-                                              synergia.utils.parallel_utils.LoggerV.ERROR)
-                #synergia.utils.parallel_utils.LoggerV.INFO_TURN)
+    simlog = synergia.utils.parallel_utils.Logger(
+        0, synergia.utils.parallel_utils.LoggerV.ERROR
+    )
+    # synergia.utils.parallel_utils.LoggerV.INFO_TURN)
     propagator.propagate(sim, simlog, 1)
 
     del propagator
@@ -404,21 +484,22 @@ if __name__ == "__main__":
     del lp
     del bunch
     del sim
-    #sys.exit(0)
+    # sys.exit(0)
 
-    h5 = h5py.File('tracks.h5', 'r')
-    s = h5.get('track_s')[()]
-    trks = h5.get('track_coords')[()]
+    h5 = h5py.File("tracks.h5", "r")
+    s = h5.get("track_s")[()]
+    trks = h5.get("track_coords")[()]
     h5.close()
 
     import matplotlib.pyplot as plt
-    f, ax = plt.subplots(2, 1, sharex=True)
-    plt.suptitle('orbit')
-    ax[0].plot(s, trks[:, 0, 0], label='X')
-    ax[0].legend(loc='best')
-    ax[1].plot(s, trks[:, 0, 2], label='Y')
-    ax[1].legend(loc='best')
 
-    ax[1].set_xlabel('s')
+    f, ax = plt.subplots(2, 1, sharex=True)
+    plt.suptitle("orbit")
+    ax[0].plot(s, trks[:, 0, 0], label="X")
+    ax[0].legend(loc="best")
+    ax[1].plot(s, trks[:, 0, 2], label="Y")
+    ax[1].legend(loc="best")
+
+    ax[1].set_xlabel("s")
 
     plt.show()

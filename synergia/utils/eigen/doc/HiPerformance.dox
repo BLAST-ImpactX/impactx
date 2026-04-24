@@ -57,7 +57,7 @@ temp = m2 * m3;
 m1 += temp; \endcode</td>
 <td>\code
 m1.noalias() += m2 * m3; \endcode</td>
-<td>Use .noalias() to tell Eigen the result and right-hand-sides do not alias. 
+<td>Use .noalias() to tell Eigen the result and right-hand-sides do not alias.
     Otherwise the product m2 * m3 is evaluated into a temporary.</td>
 </tr>
 <tr class="alt">

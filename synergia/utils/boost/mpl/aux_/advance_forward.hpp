@@ -8,8 +8,8 @@
 
 // Copyright Aleksey Gurtovoy 2000-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -51,7 +51,7 @@ template< BOOST_MPL_AUX_NTTP_DECL(long, N) > struct advance_forward;
 #   include BOOST_PP_ITERATE()
 
 // implementation for N that exceeds BOOST_MPL_LIMIT_UNROLLING
-template< BOOST_MPL_AUX_NTTP_DECL(long, N) > 
+template< BOOST_MPL_AUX_NTTP_DECL(long, N) >
 struct advance_forward
 {
     template< typename Iterator > struct apply
@@ -119,7 +119,7 @@ struct advance_forward< BOOST_PP_FRAME_ITERATION(1) >
 #   define AUX778076_ITER_1 BOOST_PP_CAT(iter,BOOST_PP_FRAME_ITERATION(2))
 
         typedef typename next<AUX778076_ITER_0>::type AUX778076_ITER_1;
-        
+
 #   undef AUX778076_ITER_1
 #   undef AUX778076_ITER_0
 

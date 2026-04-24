@@ -73,15 +73,15 @@ struct make_initializer_node
             typedef typename unwrap_recursive<recursive_enabled_T>::type
                 public_T;
 
-            typedef boost::is_reference<public_T> 
+            typedef boost::is_reference<public_T>
                 is_reference_content_t;
 
-            typedef typename boost::mpl::if_<is_reference_content_t, public_T, const public_T& >::type 
+            typedef typename boost::mpl::if_<is_reference_content_t, public_T, const public_T& >::type
                 param_T;
 
             template <class T> struct disable_overload{};
 
-            typedef typename boost::mpl::if_<is_reference_content_t, disable_overload<public_T>, public_T&& >::type 
+            typedef typename boost::mpl::if_<is_reference_content_t, disable_overload<public_T>, public_T&& >::type
                 param2_T;
 
         public: // static functions

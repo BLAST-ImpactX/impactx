@@ -34,4 +34,3 @@ public:
 }}} // namespace boost::detail::variant
 
 #endif // BOOST_VARIANT_DETAIL_HAS_RESULT_TYPE_HPP
-

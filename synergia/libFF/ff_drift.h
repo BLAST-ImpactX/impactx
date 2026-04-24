@@ -102,7 +102,7 @@ namespace FF_drift
         const double    mass = bunch.get_mass();
 
         // zero-length drift does nothing
-        if (close_to_zero(length)) 
+        if (close_to_zero(length))
         {
             bunch.get_design_reference_particle().set_state_cdt(0.0);
             return;

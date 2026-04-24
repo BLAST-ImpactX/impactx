@@ -34,7 +34,7 @@ namespace impl {
 //
 //  unpack_tuple class
 //
-//      This class is used to unpack a supplied tuple such, that the members of 
+//      This class is used to unpack a supplied tuple such, that the members of
 //      this tuple will be handled as if they would be supplied separately.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ template <typename TupleT>
 struct unpack_tuple : public TupleT {
 
     typedef TupleT tuple_t;
-    
+
     unpack_tuple() {}
     unpack_tuple(tuple_t const &tuple_) : TupleT(tuple_) {}
 };
@@ -266,7 +266,7 @@ struct actor : public BaseT {
     template <typename TupleT>
     typename actor_result<BaseT, unpack_tuple<TupleT> >::type
     operator()(unpack_tuple<TupleT> const &t) const;
-    
+
     template <typename B>
     typename impl::make_binary1<assign_op, BaseT, B>::type
     operator=(B const& b) const;

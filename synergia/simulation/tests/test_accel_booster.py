@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import sys, os
 import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 macroparticles = 16
 realparticles = 4.0e10
@@ -26,31 +26,31 @@ def prop_fixture():
 // From JFO 2022-12-08
 // The simplified booster lattice is trivial. I have no madx lattice (you could make one
 // very easily) - I just use pyorbit classes directly to instantiate a basic cell;  it is then
-// replicated 24 times. I took the bending magnets lengths and 
-// strengths directly from the official MADX  lattice file. 
+// replicated 24 times. I took the bending magnets lengths and
+// strengths directly from the official MADX  lattice file.
 
-// The basic cell is 
+// The basic cell is
 
-// d1 fmag d2 dmag d3 
+// d1 fmag d2 dmag d3
 
 // d1, d2, d3 : drifts of lengths 0.6 0.5 and 3.0 m
-// fmag:  focusing      bend   L = 2.889612 m 
+// fmag:  focusing      bend   L = 2.889612 m
 // dmag   defocusing bend   L = 2.889612 m
 
 // total cell length: 19.758 m
-// total ring  length = 24*19.758 = 474.20 m 
+// total ring  length = 24*19.758 = 474.20 m
 
-// The length, focusing strengths and curvature radius of the 
-// magnets are as in the booster MADX file.  
+// The length, focusing strengths and curvature radius of the
+// magnets are as in the booster MADX file.
 
 // If you entered 1 cell correctly, you should get the periodic solution:
 // bx = 33.86 m ax = 0
-// by = 5.39m    ay =0 
+// by = 5.39m    ay =0
 
 // For 24 cells, the raw tunes are nux = 7.017 and nuy = 6.675.  You will need to tweak the nominal focusing strengths a bit to avoid resonances.
 
 
-//--------- Nominal Gradient Magnet Definitions  
+//--------- Nominal Gradient Magnet Definitions
 
 // EGS
 // The apparent cell structure is actually:
@@ -108,7 +108,7 @@ d5: drift, l=0.6;
 
 ! these drifts pad the RF cavities right after dmagunn beginning the long straight
 
-drlnna: drift, l=0.21;  
+drlnna: drift, l=0.21;
 drlnnb: drift, l=0.12;
 drlnnc: drift, l=0.25;
 drlnnd: drift, l=0.111;

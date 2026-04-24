@@ -4,8 +4,8 @@
 
 // Copyright Aleksey Gurtovoy 2002-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -28,7 +28,7 @@
 #   define BOOST_MPL_PP_DEFAULT_PARAMS(n,p,v) \
     BOOST_PP_CAT(BOOST_MPL_PP_DEFAULT_PARAMS_,n)(p,v) \
     /**/
-    
+
 #   define BOOST_MPL_PP_DEFAULT_PARAMS_0(p,v)
 #   define BOOST_MPL_PP_DEFAULT_PARAMS_1(p,v) p##1=v
 #   define BOOST_MPL_PP_DEFAULT_PARAMS_2(p,v) p##1=v,p##2=v

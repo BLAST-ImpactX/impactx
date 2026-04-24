@@ -24,7 +24,7 @@ namespace boost { namespace phoenix
     //      function for evaluating values, e.g. val(123)
     //
     ////////////////////////////////////////////////////////////////////////////
- 
+
     namespace expression
     {
         template <typename T>
@@ -68,7 +68,7 @@ namespace boost { namespace phoenix
     struct is_custom_terminal<actor<Expr> >
       : mpl::true_
     {};
-    
+
     // Special handling for actor
     template<typename Expr>
     struct custom_terminal<actor<Expr> >
@@ -122,7 +122,7 @@ namespace boost { namespace phoenix
         template <typename T, int N>
         struct decay<T[N]> : decay<T const *> {};
     }
-    
+
     template <typename T>
     struct as_actor<T, mpl::false_>
     {

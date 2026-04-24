@@ -34,7 +34,7 @@ struct to_sequence
 
 // reduce template instantiations, if possible
 template<typename T, typename U>
-struct to_sequence< components<T,U> > 
+struct to_sequence< components<T,U> >
 {
   typedef typename components<T,U>::types type;
 };
@@ -42,4 +42,3 @@ struct to_sequence< components<T,U> >
 } } } // namespace ::boost::function_types::detail
 
 #endif
-

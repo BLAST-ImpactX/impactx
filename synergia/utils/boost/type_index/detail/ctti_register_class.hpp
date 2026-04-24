@@ -37,4 +37,3 @@ inline const ctti_data& ctti_construct_typeid_ref(const T*) noexcept {
 /// @endcond
 
 #endif // BOOST_TYPE_INDEX_CTTI_REGISTER_CLASS_HPP
-

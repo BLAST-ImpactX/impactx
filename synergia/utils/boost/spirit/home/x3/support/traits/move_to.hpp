@@ -54,14 +54,14 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
         template <typename Source, typename Dest>
         inline void
         move_to(Source&, Dest&, unused_attribute) {}
-        
+
         template <typename Source, typename Dest>
         inline void
         move_to_plain(Source& src, Dest& dest, mpl::false_) // src is not a single-element tuple
         {
             dest = std::move(src);
         }
-        
+
         template <typename Source, typename Dest>
         inline void
         move_to_plain(Source& src, Dest& dest, mpl::true_) // src is a single-element tuple
@@ -77,7 +77,7 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
                 fusion::traits::is_sequence<Source>,
                 is_size_one_sequence<Source> >
             is_single_element_sequence;
-        
+
             move_to_plain(src, dest, is_single_element_sequence);
         }
 
@@ -114,21 +114,21 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
         {
             dest = std::move(src);
         }
-        
+
         template <typename Source, typename Dest>
         inline void
         move_to_variant_from_single_element_sequence(Source& src, Dest& dest, mpl::false_)
         {
             // dest is a variant, src is a single element fusion sequence that the variant
             // cannot directly hold. We'll try to unwrap the single element fusion sequence.
-            
+
             // Make sure that the Dest variant can really hold Source
             static_assert(variant_has_substitute<Dest, typename fusion::result_of::front<Source>::type>::value,
                 "Error! The destination variant (Dest) cannot hold the source type (Source)");
-            
+
             dest = std::move(fusion::front(src));
         }
-        
+
         template <typename Source, typename Dest>
         inline void
         move_to_variant_from_single_element_sequence(Source& src, Dest& dest, mpl::true_)
@@ -181,7 +181,7 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
         {
             traits::move_to(first, last, fusion::front(dest));
         }
-        
+
         template <typename Iterator>
         inline void
         move_to(Iterator first, Iterator last, boost::iterator_range<Iterator>& rng, range_attribute)

@@ -65,7 +65,7 @@ namespace
 
   string_t
     retrieve_string_from_map( value_map_t const & m
-                            , string_t const & k 
+                            , string_t const & k
                             , string_t const & def )
   {
     string_t key(k);
@@ -151,7 +151,7 @@ namespace
         throw std::runtime_error( "retrieve number sequence: cannot find attribute with name " + key);
       else
       {
-        vector<double> r(1); 
+        vector<double> r(1);
         r[0] = def;
         return r;
       }
@@ -619,7 +619,7 @@ void
 
   for(auto const& ele : seq_)
   {
-      cout << "  " << ele.label 
+      cout << "  " << ele.label
            << ", at = " << boost::apply_visitor(mx_calculator(parent), ele.at)
            << ", from = " << ele.from
            << ", from_ref = " << ele.from_str
@@ -652,7 +652,7 @@ MadX::MadX()
 // that only contains the references (variables and commands) for
 // the Lattice_tree, and leaves the MadX object as an intermediate
 // data strucuture for madx parsing, and remains non-copyable
-MadX::MadX(MadX const& o) 
+MadX::MadX(MadX const& o)
     : variables_(o.variables_)
     , cmd_seq_(o.cmd_seq_)
     , cmd_map_(o.cmd_map_)
@@ -666,7 +666,7 @@ MadX::MadX(MadX const& o)
 }
 
 MadX&
-MadX::operator=(MadX const& o) 
+MadX::operator=(MadX const& o)
 {
     variables_ = o.variables_;
     cmd_seq_ = o.cmd_seq_;
@@ -1017,8 +1017,8 @@ void
 MadX::print() const
 {
     for(auto const& var : variables_)
-    { 
-        std::cout << var.first << " = " 
+    {
+        std::cout << var.first << " = "
             << to_string(var.second) << "\n";
     }
 
@@ -1045,14 +1045,14 @@ std::string
 MadX::export_variables() const
 {
     std::string vars;
-    
+
     for(auto const& var : variables_)
         vars += var.first + "=" + to_string(var.second) + ";\n";
 
     return vars;
 }
 
-std::string 
+std::string
 MadX::export_unnamed_cmds() const
 {
     std::string cmds;
@@ -1066,7 +1066,7 @@ MadX::export_unnamed_cmds() const
     return cmds;
 }
 
-std::string 
+std::string
 MadX::export_labled_cmds() const
 {
     std::string cmds;
@@ -1080,7 +1080,7 @@ MadX::export_labled_cmds() const
     return cmds;
 }
 
-std::string 
+std::string
 MadX::to_madx() const
 {
     std::string madx;
@@ -1091,5 +1091,3 @@ MadX::to_madx() const
 
     return madx;
 }
-
-

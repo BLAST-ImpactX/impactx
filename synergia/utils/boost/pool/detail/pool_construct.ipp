@@ -849,4 +849,3 @@ element_type * construct(const volatile T0 & a0, const volatile T1 & a1, const v
   catch (...) { (free)(ret); throw; }
   return ret;
 }
-

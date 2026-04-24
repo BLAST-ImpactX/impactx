@@ -183,8 +183,8 @@ void verify_data(const std::string& name, ViewTypeFrom view_from,
   else if (name == "medium" || name == "large") {
     // for (std::size_t i = 0; i < view_from_h.extent(0); ++i){
     //   std::cout << "i= " << i << " "
-    // 		<< " vf = " << view_from_h(i) << " "
-    // 		<< " vt = " << view_test_h(i) << '\n';
+    //      << " vf = " << view_from_h(i) << " "
+    //      << " vt = " << view_test_h(i) << '\n';
     // }
 
     std::size_t count = 0;

@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_DIRECTIVE_FEB_21_2007_0833PM)
@@ -13,7 +13,7 @@
 #include <boost/spirit/home/karma/directive/encoding.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-//  directives related to alignment 
+//  directives related to alignment
 //  left_align[...], right_align[...], center[...]
 ///////////////////////////////////////////////////////////////////////////////
 #include <boost/spirit/home/karma/directive/left_alignment.hpp>
@@ -34,7 +34,7 @@
 #include <boost/spirit/home/karma/directive/upper_lower_case.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-//  directives related to delimiting generators 
+//  directives related to delimiting generators
 //  delimit[...] and verbatim[...]
 ///////////////////////////////////////////////////////////////////////////////
 #include <boost/spirit/home/karma/directive/verbatim.hpp>

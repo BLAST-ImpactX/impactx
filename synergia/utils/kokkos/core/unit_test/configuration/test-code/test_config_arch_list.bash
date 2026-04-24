@@ -1,5 +1,5 @@
 
-# List of parallel device types 
+# List of parallel device types
 HostArch=(SNB HSW SKX KNL)
 DeviceArch=(Kepler35 Kepler37 Pascal60 Pascal61 Volta70)
 if [ ! -z "$KOKKOS_HOST_ARCH_TEST" ]; then
@@ -40,6 +40,5 @@ do
     done
   else
     ${SRC_DIR}/test_config_options_list.bash "$MakeDevices" "$CMakeDevices" "$harch" "${CMAKE_HARCH}"
-  fi 
+  fi
 done
-

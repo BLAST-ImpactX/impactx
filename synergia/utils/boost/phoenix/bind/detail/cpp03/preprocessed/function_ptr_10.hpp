@@ -1,16 +1,16 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<2, Dummy>
     {
@@ -28,13 +28,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<3, Dummy>
     {
@@ -52,13 +52,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<4, Dummy>
     {
@@ -76,13 +76,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<5, Dummy>
     {
@@ -100,13 +100,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<6, Dummy>
     {
@@ -124,13 +124,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<7, Dummy>
     {
@@ -148,13 +148,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<8, Dummy>
     {
@@ -172,13 +172,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<9, Dummy>
     {
@@ -196,13 +196,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<10, Dummy>
     {

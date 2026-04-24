@@ -369,7 +369,7 @@ public:
         Vec8f(z1).store_a(p+8);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 64
     void store_nt(float * p) const {
@@ -997,7 +997,7 @@ public:
         z1.store_a(p+4);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 64
     void store_nt(double * p) const {
@@ -1642,13 +1642,13 @@ static inline Vec16f extend_z(Vec8f a) {
 }
 static inline Vec8d extend_z(Vec4d a) {
     return Vec8d(a, Vec4d(0));
-} 
+}
 static inline Vec16fb extend_z(Vec8fb a) {
     return Vec16fb(a, Vec8fb(false));
 }
 static inline Vec8db extend_z(Vec4db a) {
     return Vec8db(a, Vec4db(false));
-} 
+}
 
 
 /*****************************************************************************

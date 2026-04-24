@@ -4,14 +4,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-        
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -29,7 +29,7 @@
                 typedef typename
                     boost::result_of<fn(a0)>::type
                     type;
-                
+
             };
             template <typename F, typename A0, typename Context>
             typename result<
@@ -55,13 +55,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -79,7 +79,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1, typename Context>
             typename result<
@@ -105,13 +105,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -129,7 +129,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2, typename Context>
             typename result<
@@ -155,13 +155,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -179,7 +179,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3, typename Context>
             typename result<
@@ -205,13 +205,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -229,7 +229,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4, typename Context>
             typename result<
@@ -255,13 +255,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -279,7 +279,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5, typename Context>
             typename result<
@@ -305,13 +305,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -329,7 +329,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6, typename Context>
             typename result<
@@ -355,13 +355,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -379,7 +379,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7, typename Context>
             typename result<
@@ -405,13 +405,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -429,7 +429,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8, typename Context>
             typename result<
@@ -455,13 +455,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -479,7 +479,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9, typename Context>
             typename result<
@@ -505,13 +505,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -529,7 +529,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10, typename Context>
             typename result<
@@ -555,13 +555,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -579,7 +579,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11, typename Context>
             typename result<
@@ -605,13 +605,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -629,7 +629,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12, typename Context>
             typename result<
@@ -655,13 +655,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -679,7 +679,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13, typename Context>
             typename result<
@@ -705,13 +705,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -729,7 +729,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14, typename Context>
             typename result<
@@ -755,13 +755,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -779,7 +779,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15, typename Context>
             typename result<
@@ -805,13 +805,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -829,7 +829,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16, typename Context>
             typename result<
@@ -855,13 +855,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -879,7 +879,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17, typename Context>
             typename result<
@@ -905,13 +905,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -929,7 +929,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18, typename Context>
             typename result<
@@ -955,13 +955,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -979,7 +979,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19, typename Context>
             typename result<
@@ -1005,13 +1005,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1029,7 +1029,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20, typename Context>
             typename result<
@@ -1055,13 +1055,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1079,7 +1079,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21, typename Context>
             typename result<
@@ -1105,13 +1105,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1129,7 +1129,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22, typename Context>
             typename result<
@@ -1155,13 +1155,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1179,7 +1179,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23, typename Context>
             typename result<
@@ -1205,13 +1205,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1229,7 +1229,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24, typename Context>
             typename result<
@@ -1255,13 +1255,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1279,7 +1279,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25, typename Context>
             typename result<
@@ -1305,13 +1305,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1329,7 +1329,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26, typename Context>
             typename result<
@@ -1355,13 +1355,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1379,7 +1379,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27, typename Context>
             typename result<
@@ -1405,13 +1405,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1429,7 +1429,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28, typename Context>
             typename result<
@@ -1455,13 +1455,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1479,7 +1479,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29, typename Context>
             typename result<
@@ -1505,13 +1505,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1529,7 +1529,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30, typename Context>
             typename result<
@@ -1555,13 +1555,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1579,7 +1579,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31, typename Context>
             typename result<
@@ -1605,13 +1605,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1629,7 +1629,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32, typename Context>
             typename result<
@@ -1655,13 +1655,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1679,7 +1679,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33, typename Context>
             typename result<
@@ -1705,13 +1705,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1729,7 +1729,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34, typename Context>
             typename result<
@@ -1755,13 +1755,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1779,7 +1779,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35, typename Context>
             typename result<
@@ -1805,13 +1805,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1829,7 +1829,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36, typename Context>
             typename result<
@@ -1855,13 +1855,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1879,7 +1879,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37, typename Context>
             typename result<
@@ -1905,13 +1905,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1929,7 +1929,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38, typename Context>
             typename result<
@@ -1955,13 +1955,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -1979,7 +1979,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39, typename Context>
             typename result<
@@ -2005,13 +2005,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2029,7 +2029,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40, typename Context>
             typename result<
@@ -2055,13 +2055,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2079,7 +2079,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41, typename Context>
             typename result<
@@ -2105,13 +2105,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2129,7 +2129,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42, typename Context>
             typename result<
@@ -2155,13 +2155,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a42, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2179,7 +2179,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42 , a43)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42 , typename A43, typename Context>
             typename result<
@@ -2205,13 +2205,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a42, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a43, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2229,7 +2229,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42 , a43 , a44)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42 , typename A43 , typename A44, typename Context>
             typename result<
@@ -2255,13 +2255,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a42, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a43, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a44, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2279,7 +2279,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42 , a43 , a44 , a45)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42 , typename A43 , typename A44 , typename A45, typename Context>
             typename result<
@@ -2305,13 +2305,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a42, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a43, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a44, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a45, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2329,7 +2329,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42 , a43 , a44 , a45 , a46)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42 , typename A43 , typename A44 , typename A45 , typename A46, typename Context>
             typename result<
@@ -2355,13 +2355,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a42, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a43, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a44, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a45, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a46, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2379,7 +2379,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42 , a43 , a44 , a45 , a46 , a47)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42 , typename A43 , typename A44 , typename A45 , typename A46 , typename A47, typename Context>
             typename result<
@@ -2405,13 +2405,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a8, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a9, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a10, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a11, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a12, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a13, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a14, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a15, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a16, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a17, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a18, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a19, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a20, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a21, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a22, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a23, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a24, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a25, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a26, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a27, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a28, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a29, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a30, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a31, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a32, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a33, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a34, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a35, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a36, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a37, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a38, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a39, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a40, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a41, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a42, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a43, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a44, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a45, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a46, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a47, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -2429,7 +2429,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37 , a38 , a39 , a40 , a41 , a42 , a43 , a44 , a45 , a46 , a47 , a48)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30 , typename A31 , typename A32 , typename A33 , typename A34 , typename A35 , typename A36 , typename A37 , typename A38 , typename A39 , typename A40 , typename A41 , typename A42 , typename A43 , typename A44 , typename A45 , typename A46 , typename A47 , typename A48, typename Context>
             typename result<

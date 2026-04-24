@@ -3,12 +3,12 @@
  * Copyright (c) 1998-2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
- 
+
  /*
   *   LOCATION:    see http://www.boost.org for most recent version.
   *   FILE         pattern_except.hpp
@@ -68,7 +68,7 @@ public:
    { return m_error_code; }
    std::ptrdiff_t position()const
    { return m_position; }
-   void raise()const 
+   void raise()const
    {
 #ifndef BOOST_NO_EXCEPTIONS
 #ifndef BOOST_REGEX_STANDALONE

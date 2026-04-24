@@ -35,5 +35,3 @@
 
 
 #endif // #if defined(BOOST_INTEL)
-
-

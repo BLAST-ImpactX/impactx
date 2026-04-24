@@ -16,17 +16,17 @@
 #include <boost/mpl/bitxor.hpp>
 
 
-namespace boost { namespace function_types { 
+namespace boost { namespace function_types {
 
-namespace detail 
+namespace detail
 {
   typedef long bits_t;
 
-  template<bits_t Value> struct constant 
-    : boost::integral_constant<bits_t,Value> 
+  template<bits_t Value> struct constant
+    : boost::integral_constant<bits_t,Value>
   { };
 
-  template<bits_t Bits, bits_t Mask> struct property_tag 
+  template<bits_t Bits, bits_t Mask> struct property_tag
   {
     typedef constant<Bits> bits;
     typedef constant<Mask> mask;
@@ -36,19 +36,19 @@ namespace detail
   template<typename T> struct mask : T::mask { };
 
   // forward declaration, defined in pp_tags
-  template<bits_t Bits, bits_t CCID> struct encode_bits_impl; 
+  template<bits_t Bits, bits_t CCID> struct encode_bits_impl;
 
   // forward declaration, defined in pp_tags
-  template<bits_t LHS_bits, bits_t LHS_mask, 
-           bits_t RHS_bits, bits_t RHS_mask> 
+  template<bits_t LHS_bits, bits_t LHS_mask,
+           bits_t RHS_bits, bits_t RHS_mask>
   struct tag_ice;
- 
-  // forward declaration, defined in retag_default_cc 
-  template<class Tag, class RegTag = Tag> struct retag_default_cc; 
- 
+
+  // forward declaration, defined in retag_default_cc
+  template<class Tag, class RegTag = Tag> struct retag_default_cc;
+
   template<bits_t Bits, bits_t CCID> struct encode_bits
-    : constant< 
-        ::boost::function_types::detail::encode_bits_impl<Bits,CCID>::value 
+    : constant<
+        ::boost::function_types::detail::encode_bits_impl<Bits,CCID>::value
       >
   { };
 
@@ -60,17 +60,17 @@ namespace detail
         , ::boost::function_types::detail::mask<LHS>::value
         , ::boost::function_types::detail::bits<RHS>::value
         , ::boost::function_types::detail::mask<RHS>::value
-        >::combined_bits 
+        >::combined_bits
     > bits;
 
-    typedef constant< 
+    typedef constant<
       ::boost::function_types::detail::tag_ice
         < ::boost::function_types::detail::bits<LHS>::value
         , ::boost::function_types::detail::mask<LHS>::value
         , ::boost::function_types::detail::bits<RHS>::value
         , ::boost::function_types::detail::mask<RHS>::value
-        >::combined_mask 
-    > mask; 
+        >::combined_mask
+    > mask;
   };
 
   template <class Base, class PropOld, class PropNew>
@@ -99,7 +99,7 @@ typedef detail::property_tag<0,0> null_tag;
 
 template<class Tag1, class Tag2, class Tag3 = null_tag, class Tag4 = null_tag>
 struct tag
-  : detail::compound_tag< detail::compound_tag<Tag1,Tag2>, 
+  : detail::compound_tag< detail::compound_tag<Tag1,Tag2>,
         detail::compound_tag<Tag3,Tag4> >
 { };
 
@@ -120,29 +120,29 @@ template<class Tag, class QueryTag> struct represents
 
 
 template<class Tag, class QueryTag> struct extract
-{ 
+{
   typedef detail::constant<
     ::boost::function_types::detail::tag_ice
       < ::boost::function_types::detail::bits<Tag>::value
       , ::boost::function_types::detail::mask<Tag>::value
       , ::boost::function_types::detail::bits<QueryTag>::value
       , ::boost::function_types::detail::mask<QueryTag>::value
-      >::extracted_bits 
+      >::extracted_bits
   > bits;
 
-  typedef detail::constant< 
+  typedef detail::constant<
     ::boost::function_types::detail::mask<QueryTag>::value
-  > mask; 
+  > mask;
 };
 
 /*
 
   The following is a metafunction which checks whether a
   property tag is in a possibly compounded tag type.
-  
+
   Here both the possibly compounded tag type and a property tag
   is given.
-  
+
 */
 
 template<class Tag, class PropertyTag> struct has_property_tag
@@ -162,7 +162,7 @@ namespace boost { namespace function_types {
   The following are metafunctions which check whether the
   specific property tag is in a possibly compounded tag type.
   Here only the possibly compounded tag type is given.
-  
+
 */
 
 template<class Tag> struct has_property_tag<Tag,null_tag>
@@ -196,4 +196,3 @@ template<class Tag> struct has_null_property_tag
 } } // namespace boost::function_types
 
 #endif
-

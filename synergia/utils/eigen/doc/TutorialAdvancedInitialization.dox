@@ -100,7 +100,7 @@ with angles in degrees, the corresponding angle in radians, and their sine and c
 </td></tr></table>
 
 This example shows that objects like the ones returned by LinSpaced() can be assigned to variables (and
-expressions). Eigen defines utility functions like \link DenseBase::setZero() setZero()\endlink, 
+expressions). Eigen defines utility functions like \link DenseBase::setZero() setZero()\endlink,
 \link MatrixBase::setIdentity() \endlink and \link DenseBase::setLinSpaced() \endlink to do this
 conveniently. The following example contrasts three ways to construct the matrix
 \f$ J = \bigl[ \begin{smallmatrix} O & I \\ I & O \end{smallmatrix} \bigr] \f$: using static methods and
@@ -141,7 +141,7 @@ The expression <tt>m + MatrixXf::Constant(3,3,1.2)</tt> constructs the 3-by-3 ma
 equal to 1.2 plus the corresponding coefficient of \a m.
 
 The comma-initializer, too, can also be used to construct temporary objects. The following example constructs a random
-matrix of size 2-by-3, and then multiplies this matrix on the left with 
+matrix of size 2-by-3, and then multiplies this matrix on the left with
 \f$ \bigl[ \begin{smallmatrix} 0 & 1 \\ 1 & 0 \end{smallmatrix} \bigr] \f$.
 
 <table class="example">

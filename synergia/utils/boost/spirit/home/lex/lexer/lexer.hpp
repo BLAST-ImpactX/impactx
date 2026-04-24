@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_LEXER_MAR_13_2007_0145PM)
@@ -42,7 +42,7 @@ namespace boost { namespace spirit { namespace lex
         struct lexer_def_
           : proto::extends<
                 typename proto::terminal<
-                   lex::reference<lexer_def_<LexerDef> const> 
+                   lex::reference<lexer_def_<LexerDef> const>
                 >::type
               , lexer_def_<LexerDef> >
           , qi::parser<lexer_def_<LexerDef> >
@@ -70,11 +70,11 @@ namespace boost { namespace spirit { namespace lex
             template <typename Context, typename Iterator>
             struct attribute
             {
-                //  the return value of a token set contains the matched token 
+                //  the return value of a token set contains the matched token
                 //  id, and the corresponding pair of iterators
                 typedef typename Iterator::base_iterator_type iterator_type;
-                typedef 
-                    fusion::vector2<id_type, iterator_range<iterator_type> > 
+                typedef
+                    fusion::vector2<id_type, iterator_range<iterator_type> >
                 type;
             };
 
@@ -88,8 +88,8 @@ namespace boost { namespace spirit { namespace lex
                 qi::skip_over(first, last, skipper);   // always do a pre-skip
 
                 if (first != last) {
-                    typedef typename 
-                        std::iterator_traits<Iterator>::value_type 
+                    typedef typename
+                        std::iterator_traits<Iterator>::value_type
                     token_type;
 
                     token_type const& t = *first;
@@ -115,11 +115,11 @@ namespace boost { namespace spirit { namespace lex
             // syntax
             struct adder
             {
-                adder(lexer_def_& def_) 
+                adder(lexer_def_& def_)
                   : def(def_) {}
 
                 // Add a token definition based on a single character as given
-                // by the first parameter, the second parameter allows to 
+                // by the first parameter, the second parameter allows to
                 // specify the token id to use for the new token. If no token
                 // id is given the character code is used.
                 adder const& operator()(char_type c
@@ -132,10 +132,10 @@ namespace boost { namespace spirit { namespace lex
                     return *this;
                 }
 
-                // Add a token definition based on a character sequence as 
-                // given by the first parameter, the second parameter allows to 
+                // Add a token definition based on a character sequence as
+                // given by the first parameter, the second parameter allows to
                 // specify the token id to use for the new token. If no token
-                // id is given this function will generate a unique id to be 
+                // id is given this function will generate a unique id to be
                 // used as the token's id.
                 adder const& operator()(string_type const& s
                   , id_type token_id = id_type()) const
@@ -162,10 +162,10 @@ namespace boost { namespace spirit { namespace lex
                             token_id = tokdef.id();
                         }
                     }
-                    else { 
+                    else {
                     // the following assertion makes sure that the token_def
                     // instance has not been assigned a different id earlier
-                        BOOST_ASSERT(id_type() == tokdef.id() 
+                        BOOST_ASSERT(id_type() == tokdef.id()
                                   || token_id == tokdef.id());
                         tokdef.id(token_id);
                     }
@@ -179,7 +179,7 @@ namespace boost { namespace spirit { namespace lex
 //                 {
 //                     if (id_type() == token_id)
 //                         token_id = def.def.get_next_id();
-//                     std::size_t unique_id = 
+//                     std::size_t unique_id =
 //                         def.def.add_token (def.state.c_str(), s, token_id);
 //                     def.def.add_action(unique_id, def.state.c_str(), act);
 //                     return *this;
@@ -193,7 +193,7 @@ namespace boost { namespace spirit { namespace lex
             // syntax
             struct pattern_adder
             {
-                pattern_adder(lexer_def_& def_) 
+                pattern_adder(lexer_def_& def_)
                   : def(def_) {}
 
                 pattern_adder const& operator()(string_type const& p
@@ -211,7 +211,7 @@ namespace boost { namespace spirit { namespace lex
             // Helper function to invoke the necessary 2 step compilation
             // process on token definition expressions
             template <typename TokenExpr>
-            void compile2pass(TokenExpr const& expr) 
+            void compile2pass(TokenExpr const& expr)
             {
                 expr.collect(def, state, targetstate);
                 expr.add_actions(def);
@@ -254,7 +254,7 @@ namespace boost { namespace spirit { namespace lex
             {
                 // Report invalid expression error as early as possible.
                 // If you got an error_invalid_expression error message here,
-                // then the expression (expr) is not a valid spirit lex 
+                // then the expression (expr) is not a valid spirit lex
                 // expression.
                 BOOST_SPIRIT_ASSERT_MATCH(lex::domain, Expr);
 
@@ -290,7 +290,7 @@ namespace boost { namespace spirit { namespace lex
         {
             // Report invalid expression error as early as possible.
             // If you got an error_invalid_expression error message here,
-            // then the expression (expr) is not a valid spirit lex 
+            // then the expression (expr) is not a valid spirit lex
             // expression.
             BOOST_SPIRIT_ASSERT_MATCH(lex::domain, Expr);
 
@@ -305,7 +305,7 @@ namespace boost { namespace spirit { namespace lex
         {
             // Report invalid expression error as early as possible.
             // If you got an error_invalid_expression error message here,
-            // then the expression (expr) is not a valid spirit lex 
+            // then the expression (expr) is not a valid spirit lex
             // expression.
             BOOST_SPIRIT_ASSERT_MATCH(lex::domain, Expr);
 
@@ -315,12 +315,12 @@ namespace boost { namespace spirit { namespace lex
 #endif
 
         template <typename LexerDef, typename Expr>
-        inline lexer_def_<LexerDef>& 
+        inline lexer_def_<LexerDef>&
         operator+= (lexer_def_<LexerDef>& lexdef, Expr const& xpr)
         {
             // Report invalid expression error as early as possible.
             // If you got an error_invalid_expression error message here,
-            // then the expression (expr) is not a valid spirit lex 
+            // then the expression (expr) is not a valid spirit lex
             // expression.
             BOOST_SPIRIT_ASSERT_MATCH(lex::domain, Expr);
 
@@ -330,11 +330,11 @@ namespace boost { namespace spirit { namespace lex
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    //  The match_flags flags are used to influence different matching 
+    //  The match_flags flags are used to influence different matching
     //  modes of the lexer
     struct match_flags
     {
-        enum enum_type 
+        enum enum_type
         {
             match_default = 0,          // no flags
             match_not_dot_newline = 1,  // the regex '.' doesn't match newlines
@@ -347,9 +347,9 @@ namespace boost { namespace spirit { namespace lex
     ///////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////
-    // This is the first token id automatically assigned by the library 
+    // This is the first token id automatically assigned by the library
     // if needed
-    enum tokenids 
+    enum tokenids
     {
         min_token_id = 0x10000
     };
@@ -385,7 +385,7 @@ namespace boost { namespace spirit { namespace lex
         lexer(unsigned int flags, id_type first_id)
           : lexer_type(flags)
           , next_token_id(first_id)
-          , self(this_(), lexer_type::initial_state()) 
+          , self(this_(), lexer_type::initial_state())
         {}
 
         // access iterator interface
@@ -393,7 +393,7 @@ namespace boost { namespace spirit { namespace lex
         iterator_type begin(Iterator& first, Iterator const& last
                 , char_type const* initial_state = 0) const
             { return this->lexer_type::begin(first, last, initial_state); }
-        iterator_type end() const 
+        iterator_type end() const
             { return this->lexer_type::end(); }
 
         std::size_t map_state(char_type const* state)

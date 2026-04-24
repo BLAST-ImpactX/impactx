@@ -44,7 +44,7 @@ public:
     /// Fill two one-dimensional arrays such that (x,y) are distributed
     /// uniformly in the unit disk.
     void fill_unit_disk(double* x_array, double* y_array) override
-    { 
+    {
         const auto Nx = x_array.extent(0);
         const auto Ny = y_array.extent(0);
 

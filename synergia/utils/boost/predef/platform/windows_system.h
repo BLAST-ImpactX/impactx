@@ -34,7 +34,7 @@ for Windows System development.
 #   undef BOOST_PLAT_WINDOWS_SYSTEM
 #   define BOOST_PLAT_WINDOWS_SYSTEM BOOST_VERSION_NUMBER_AVAILABLE
 #endif
- 
+
 #if BOOST_PLAT_WINDOWS_SYSTEM
 #   define BOOST_PLAT_WINDOWS_SYSTEM_AVAILABLE
 #   include <boost/predef/detail/platform_detected.h>

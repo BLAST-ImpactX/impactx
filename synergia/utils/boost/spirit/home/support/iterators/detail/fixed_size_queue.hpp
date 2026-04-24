@@ -1,6 +1,6 @@
 //  Copyright (c) 2001 Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -20,7 +20,7 @@
 #if !defined(BOOST_ITERATOR_ADAPTORS_VERSION) || \
     BOOST_ITERATOR_ADAPTORS_VERSION < 0x0200
 #error "Please use at least Boost V1.31.0 while compiling the fixed_size_queue class!"
-#endif 
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #define BOOST_SPIRIT_ASSERT_FSQ_SIZE                                          \
@@ -79,7 +79,7 @@ namespace boost { namespace spirit { namespace detail
             return p.self == 0 || p.pos == p.self->size();
         }
 
-        template <typename Q, typename T_, typename P>   
+        template <typename Q, typename T_, typename P>
         bool equal(fsq_iterator<Q, T_, P> const &x) const
         {
             if (is_eof())
@@ -91,7 +91,7 @@ namespace boost { namespace spirit { namespace detail
             return (p.self == rhs_pos.self) && (p.pos == rhs_pos.pos);
         }
 
-        template <typename Q, typename T_, typename P>   
+        template <typename Q, typename T_, typename P>
         typename base_type::difference_type distance_to(
             fsq_iterator<Q, T_, P> const &x) const
         {
@@ -170,8 +170,8 @@ namespace boost { namespace spirit { namespace detail
     public:
         // Declare the iterators
         typedef fsq_iterator<fixed_size_queue<T, N>, T, T*> iterator;
-        typedef 
-            fsq_iterator<fixed_size_queue<T, N>, T const, T const*> 
+        typedef
+            fsq_iterator<fixed_size_queue<T, N>, T const, T const*>
         const_iterator;
         typedef position position_type;
 
@@ -385,7 +385,7 @@ namespace boost { namespace spirit { namespace detail
         BOOST_ASSERT(m_tail <= N+1);
     }
 
-}}} 
+}}}
 
 #undef BOOST_SPIRIT_ASSERT_FSQ_SIZE
 

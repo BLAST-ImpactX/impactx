@@ -174,10 +174,10 @@ namespace boost { namespace spirit { namespace repository { namespace qi
                 >
             context_type;
 
-            // do down-stream transformation, provides attribute for 
+            // do down-stream transformation, provides attribute for
             // rhs parser
             typedef traits::transform_attribute<
-                Attribute, subrule_attr_type, spirit::qi::domain> 
+                Attribute, subrule_attr_type, spirit::qi::domain>
             transform;
 
             typename transform::type attr_ = transform::pre(attr);
@@ -189,7 +189,7 @@ namespace boost { namespace spirit { namespace repository { namespace qi
 
             if (def.binder(first, last, context, skipper))
             {
-                // do up-stream transformation, this integrates the results 
+                // do up-stream transformation, this integrates the results
                 // back into the original attribute value, if appropriate
                 transform::post(attr, attr_);
                 return true;
@@ -223,10 +223,10 @@ namespace boost { namespace spirit { namespace repository { namespace qi
                 >
             context_type;
 
-            // do down-stream transformation, provides attribute for 
+            // do down-stream transformation, provides attribute for
             // rhs parser
             typedef traits::transform_attribute<
-                Attribute, subrule_attr_type, spirit::qi::domain> 
+                Attribute, subrule_attr_type, spirit::qi::domain>
             transform;
 
             typename transform::type attr_ = transform::pre(attr);
@@ -238,7 +238,7 @@ namespace boost { namespace spirit { namespace repository { namespace qi
 
             if (def.binder(first, last, context, skipper))
             {
-                // do up-stream transformation, this integrates the results 
+                // do up-stream transformation, this integrates the results
                 // back into the original attribute value, if appropriate
                 transform::post(attr, attr_);
                 return true;

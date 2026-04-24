@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_PADDING_MAY_06_2008_0436PM)
@@ -32,7 +32,7 @@ namespace boost { namespace spirit
     // enables pad(...)
     template <typename A0>
     struct use_terminal<karma::domain
-        , terminal_ex<tag::pad, fusion::vector1<A0> > > 
+        , terminal_ex<tag::pad, fusion::vector1<A0> > >
       : mpl::true_ {};
 
     // enables lazy pad(...)
@@ -50,7 +50,7 @@ namespace boost { namespace spirit { namespace karma
 #endif
     using boost::spirit::pad_type;
 
-    struct binary_padding_generator 
+    struct binary_padding_generator
       : primitive_generator<binary_padding_generator>
     {
         typedef mpl::int_<generator_properties::tracking> properties;

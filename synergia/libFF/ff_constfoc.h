@@ -8,7 +8,7 @@ class FF_constfoc : public FF_element
 {
 private:
     double get_reference_cdt(
-            double length, double csl, double snl, double BL, double iBL, 
+            double length, double csl, double snl, double BL, double iBL,
             Reference_particle & reference_particle);
 public:
     FF_constfoc();

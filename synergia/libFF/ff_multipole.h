@@ -40,7 +40,7 @@ namespace mpole_impl
 
             int m = 0;
             for(int x=i; x<i+gsv_t::size(); ++x) m |= masks(x);
- 
+
             if (m)
             {
                 gsv_t p0(&p(i,0));
@@ -49,19 +49,19 @@ namespace mpole_impl
                 gsv_t p3(&p(i,3));
 
                 if (mp.kn[0])
-                    FF_algorithm::thin_dipole_unit( 
+                    FF_algorithm::thin_dipole_unit(
                             p0, p1, p2, p3, &mp.kl[0]);
 
                 if (mp.kn[1])
-                    FF_algorithm::thin_quadrupole_unit( 
+                    FF_algorithm::thin_quadrupole_unit(
                             p0, p1, p2, p3, &mp.kl[2]);
 
                 if (mp.kn[2])
-                    FF_algorithm::thin_sextupole_unit( 
+                    FF_algorithm::thin_sextupole_unit(
                             p0, p1, p2, p3, &mp.kl[4]);
 
                 if (mp.kn[3])
-                    FF_algorithm::thin_octupole_unit( 
+                    FF_algorithm::thin_octupole_unit(
                             p0, p1, p2, p3, &mp.kl[6]);
 
                 for(int n=4; n<max_order; ++n)
@@ -101,7 +101,7 @@ namespace FF_multipole
         auto const& element = slice.get_lattice_element();
 
         // extract attributes
-        if ( element.has_vector_attribute("knl") 
+        if ( element.has_vector_attribute("knl")
                 || element.has_vector_attribute("ksl") )
         {
             // it is in Mad X format
@@ -156,8 +156,8 @@ namespace FF_multipole
         Reference_particle const & ref_b = bunch.get_reference_particle();
 
         double brho_l = ref_l.get_momentum() / ref_l.get_charge();  // GV/c
-        double brho_b = ref_b.get_momentum() 
-                        * (1.0 + ref_b.get_state()[Bunch::dpop]) 
+        double brho_b = ref_b.get_momentum()
+                        * (1.0 + ref_b.get_state()[Bunch::dpop])
                         / ref_l.get_charge();  // GV/c
 
         // scale

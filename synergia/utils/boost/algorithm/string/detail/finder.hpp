@@ -401,7 +401,7 @@ namespace boost {
 
                 // Advance It, It2 to the end
                 for(; It2!=End; ++It,++It2 )
-                	;
+                    ;
 
                 return result_type( It, It2 );
             }
@@ -620,7 +620,7 @@ namespace boost {
                     ForwardIterator2T,
                     ForwardIterator2T ) const
                 {
-#if BOOST_WORKAROUND( __MWERKS__, <= 0x3003 ) 
+#if BOOST_WORKAROUND( __MWERKS__, <= 0x3003 )
                     return iterator_range<const ForwardIterator2T>(this->m_Range);
 #else
                     return m_Range;

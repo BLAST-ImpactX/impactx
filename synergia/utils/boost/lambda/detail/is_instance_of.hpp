@@ -19,13 +19,13 @@
 #include "boost/preprocessor/repeat_2nd.hpp"
 
 // is_instance_of --------------------------------
-// 
-// is_instance_of_n<A, B>::value is true, if type A is 
-// an instantiation of a template B, or A derives from an instantiation 
+//
+// is_instance_of_n<A, B>::value is true, if type A is
+// an instantiation of a template B, or A derives from an instantiation
 // of template B
 //
 // n is the number of template arguments for B
-// 
+//
 // Example:
 // is_instance_of_2<std::istream, basic_stream>::value == true
 
@@ -33,14 +33,14 @@
 // for different compilers. However, there was still a problem
 // with gcc.3.0.2 and 3.0.3 compilers, which didn't think regard
 // is_instance_of_N<...>::value was a constant.
-// John Maddock suggested the way around this problem by building 
+// John Maddock suggested the way around this problem by building
 // is_instance_of templates using boost::is_convertible.
 // Now we only have one version of is_instance_of templates, which delagate
-// all the nasty compiler tricks to is_convertible. 
+// all the nasty compiler tricks to is_convertible.
 
 #define BOOST_LAMBDA_CLASS(z, N,A) BOOST_PP_COMMA_IF(N) class
-#define BOOST_LAMBDA_CLASS_ARG(z, N,A) BOOST_PP_COMMA_IF(N) class A##N 
-#define BOOST_LAMBDA_ARG(z, N,A) BOOST_PP_COMMA_IF(N) A##N 
+#define BOOST_LAMBDA_CLASS_ARG(z, N,A) BOOST_PP_COMMA_IF(N) class A##N
+#define BOOST_LAMBDA_ARG(z, N,A) BOOST_PP_COMMA_IF(N) A##N
 
 #define BOOST_LAMBDA_CLASS_LIST(n, NAME) BOOST_PP_REPEAT(n, BOOST_LAMBDA_CLASS, NAME)
 
@@ -97,8 +97,3 @@ BOOST_PP_REPEAT_2ND(4,BOOST_LAMBDA_HELPER,FOO)
 } // boost
 
 #endif
-
-
-
-
-

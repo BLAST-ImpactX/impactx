@@ -7,43 +7,43 @@
     //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 0>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child0 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child0>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 0>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child0 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child0>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -53,19 +53,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 0>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child0 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child0>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -73,10 +73,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0>
         struct function
         <
@@ -97,19 +97,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0;
             typedef detail::if_vararg<A0> proto_child1; typedef detail::if_vararg<A0> proto_child2; typedef detail::if_vararg<A0> proto_child3; typedef detail::if_vararg<A0> proto_child4; typedef detail::if_vararg<A0> proto_child5; typedef detail::if_vararg<A0> proto_child6; typedef detail::if_vararg<A0> proto_child7; typedef detail::if_vararg<A0> proto_child8; typedef detail::if_vararg<A0> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0>
         struct nary_expr
         <
@@ -132,7 +132,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0;
             typedef detail::if_vararg<A0> proto_child1; typedef detail::if_vararg<A0> proto_child2; typedef detail::if_vararg<A0> proto_child3; typedef detail::if_vararg<A0> proto_child4; typedef detail::if_vararg<A0> proto_child5; typedef detail::if_vararg<A0> proto_child6; typedef detail::if_vararg<A0> proto_child7; typedef detail::if_vararg<A0> proto_child8; typedef detail::if_vararg<A0> proto_child9;
@@ -149,43 +149,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 1>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child1 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child1>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 1>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child1 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child1>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -195,19 +195,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 1>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child1 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child1>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -215,10 +215,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1>
         struct function
         <
@@ -239,19 +239,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1;
             typedef detail::if_vararg<A1> proto_child2; typedef detail::if_vararg<A1> proto_child3; typedef detail::if_vararg<A1> proto_child4; typedef detail::if_vararg<A1> proto_child5; typedef detail::if_vararg<A1> proto_child6; typedef detail::if_vararg<A1> proto_child7; typedef detail::if_vararg<A1> proto_child8; typedef detail::if_vararg<A1> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1>
         struct nary_expr
         <
@@ -274,7 +274,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1;
             typedef detail::if_vararg<A1> proto_child2; typedef detail::if_vararg<A1> proto_child3; typedef detail::if_vararg<A1> proto_child4; typedef detail::if_vararg<A1> proto_child5; typedef detail::if_vararg<A1> proto_child6; typedef detail::if_vararg<A1> proto_child7; typedef detail::if_vararg<A1> proto_child8; typedef detail::if_vararg<A1> proto_child9;
@@ -291,43 +291,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 2>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child2 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child2>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 2>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child2 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child2>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -337,19 +337,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 2>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child2 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child2>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -357,10 +357,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2>
         struct function
         <
@@ -381,19 +381,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2;
             typedef detail::if_vararg<A2> proto_child3; typedef detail::if_vararg<A2> proto_child4; typedef detail::if_vararg<A2> proto_child5; typedef detail::if_vararg<A2> proto_child6; typedef detail::if_vararg<A2> proto_child7; typedef detail::if_vararg<A2> proto_child8; typedef detail::if_vararg<A2> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2>
         struct nary_expr
         <
@@ -416,7 +416,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2;
             typedef detail::if_vararg<A2> proto_child3; typedef detail::if_vararg<A2> proto_child4; typedef detail::if_vararg<A2> proto_child5; typedef detail::if_vararg<A2> proto_child6; typedef detail::if_vararg<A2> proto_child7; typedef detail::if_vararg<A2> proto_child8; typedef detail::if_vararg<A2> proto_child9;
@@ -433,43 +433,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 3>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child3 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child3>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 3>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child3 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child3>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -479,19 +479,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 3>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child3 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child3>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -499,10 +499,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3>
         struct function
         <
@@ -523,19 +523,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3;
             typedef detail::if_vararg<A3> proto_child4; typedef detail::if_vararg<A3> proto_child5; typedef detail::if_vararg<A3> proto_child6; typedef detail::if_vararg<A3> proto_child7; typedef detail::if_vararg<A3> proto_child8; typedef detail::if_vararg<A3> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3>
         struct nary_expr
         <
@@ -558,7 +558,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3;
             typedef detail::if_vararg<A3> proto_child4; typedef detail::if_vararg<A3> proto_child5; typedef detail::if_vararg<A3> proto_child6; typedef detail::if_vararg<A3> proto_child7; typedef detail::if_vararg<A3> proto_child8; typedef detail::if_vararg<A3> proto_child9;
@@ -575,43 +575,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 4>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child4 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child4>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 4>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child4 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child4>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -621,19 +621,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 4>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child4 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child4>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -641,10 +641,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
         struct function
         <
@@ -665,19 +665,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4;
             typedef detail::if_vararg<A4> proto_child5; typedef detail::if_vararg<A4> proto_child6; typedef detail::if_vararg<A4> proto_child7; typedef detail::if_vararg<A4> proto_child8; typedef detail::if_vararg<A4> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
         struct nary_expr
         <
@@ -700,7 +700,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4;
             typedef detail::if_vararg<A4> proto_child5; typedef detail::if_vararg<A4> proto_child6; typedef detail::if_vararg<A4> proto_child7; typedef detail::if_vararg<A4> proto_child8; typedef detail::if_vararg<A4> proto_child9;
@@ -717,43 +717,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 5>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child5 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child5>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 5>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child5 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child5>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -763,19 +763,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 5>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child5 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child5>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -783,10 +783,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
         struct function
         <
@@ -807,19 +807,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5;
             typedef detail::if_vararg<A5> proto_child6; typedef detail::if_vararg<A5> proto_child7; typedef detail::if_vararg<A5> proto_child8; typedef detail::if_vararg<A5> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
         struct nary_expr
         <
@@ -842,7 +842,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5;
             typedef detail::if_vararg<A5> proto_child6; typedef detail::if_vararg<A5> proto_child7; typedef detail::if_vararg<A5> proto_child8; typedef detail::if_vararg<A5> proto_child9;
@@ -859,43 +859,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 6>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child6 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child6>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 6>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child6 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child6>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -905,19 +905,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 6>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child6 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child6>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -925,10 +925,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
         struct function
         <
@@ -949,19 +949,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6;
             typedef detail::if_vararg<A6> proto_child7; typedef detail::if_vararg<A6> proto_child8; typedef detail::if_vararg<A6> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
         struct nary_expr
         <
@@ -984,7 +984,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6;
             typedef detail::if_vararg<A6> proto_child7; typedef detail::if_vararg<A6> proto_child8; typedef detail::if_vararg<A6> proto_child9;
@@ -1001,43 +1001,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 7>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child7 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child7>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 7>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child7 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child7>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -1047,19 +1047,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 7>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child7 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child7>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -1067,10 +1067,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
         struct function
         <
@@ -1091,19 +1091,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6; typedef A7 proto_child7;
             typedef detail::if_vararg<A7> proto_child8; typedef detail::if_vararg<A7> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
         struct nary_expr
         <
@@ -1126,7 +1126,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6; typedef A7 proto_child7;
             typedef detail::if_vararg<A7> proto_child8; typedef detail::if_vararg<A7> proto_child9;
@@ -1143,43 +1143,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 8>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child8 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child8>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 8>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child8 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child8>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -1189,19 +1189,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 8>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child8 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child8>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -1209,10 +1209,10 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
         struct function
         <
@@ -1233,19 +1233,19 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6; typedef A7 proto_child7; typedef A8 proto_child8;
             typedef detail::if_vararg<A8> proto_child9;
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
         struct nary_expr
         <
@@ -1268,7 +1268,7 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6; typedef A7 proto_child7; typedef A8 proto_child8;
             typedef detail::if_vararg<A8> proto_child9;
@@ -1285,43 +1285,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 9>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child9 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child9>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 9>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child9 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child9>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -1331,19 +1331,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 9>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child9 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child9>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {
@@ -1351,16 +1351,16 @@
                 }
             };
         }
-        
-        
-        
-        
+
+
+
+
         template<typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
         struct function
           : proto::transform<
                 function<
                     A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9
-                    
+
                 >
               , int
             >
@@ -1371,26 +1371,26 @@
             struct impl
               : detail::pass_through_impl<function, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef proto::tag::function proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6; typedef A7 proto_child7; typedef A8 proto_child8; typedef A9 proto_child9;
-            
+
         };
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         template<typename Tag , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
         struct nary_expr
           : proto::transform<
                 nary_expr<
                     Tag
                     , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9
-                    
+
                 >
               , int
             >
@@ -1401,10 +1401,10 @@
             struct impl
               : detail::pass_through_impl<nary_expr, deduce_domain, Expr, State, Data>
             {};
-            
+
             typedef Tag proto_tag;
             typedef A0 proto_child0; typedef A1 proto_child1; typedef A2 proto_child2; typedef A3 proto_child3; typedef A4 proto_child4; typedef A5 proto_child5; typedef A6 proto_child6; typedef A7 proto_child7; typedef A8 proto_child8; typedef A9 proto_child9;
-            
+
         };
         namespace detail
         {
@@ -1418,43 +1418,43 @@
         }
         namespace result_of
         {
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             template<typename Expr>
             struct child_c<Expr, 10>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child10 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child10>::value_type type;
             };
             template<typename Expr>
             struct child_c<Expr &, 10>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child10 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child10>::reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr &e)
                 {
@@ -1464,19 +1464,19 @@
             template<typename Expr>
             struct child_c<Expr const &, 10>
             {
-                
+
                 BOOST_STATIC_ASSERT(0 != Expr::proto_arity_c);
-                
-                
+
+
                 typedef typename Expr::proto_child10 value_type;
-                
-                
-                
-                
-                
+
+
+
+
+
                 typedef typename detail::expr_traits<typename Expr::proto_child10>::const_reference type;
-                
-                
+
+
                 BOOST_FORCEINLINE
                 static type call(Expr const &e)
                 {

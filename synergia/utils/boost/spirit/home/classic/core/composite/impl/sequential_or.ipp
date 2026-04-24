@@ -26,56 +26,56 @@ namespace boost { namespace spirit {
     {
         return sequential_or<A, B>(a.derived(), b.derived());
     }
-    
+
     template <typename A>
     inline sequential_or<A, chlit<char> >
     operator||(parser<A> const& a, char b)
     {
         return sequential_or<A, chlit<char> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline sequential_or<chlit<char>, B>
     operator||(char a, parser<B> const& b)
     {
         return sequential_or<chlit<char>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline sequential_or<A, strlit<char const*> >
     operator||(parser<A> const& a, char const* b)
     {
         return sequential_or<A, strlit<char const*> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline sequential_or<strlit<char const*>, B>
     operator||(char const* a, parser<B> const& b)
     {
         return sequential_or<strlit<char const*>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline sequential_or<A, chlit<wchar_t> >
     operator||(parser<A> const& a, wchar_t b)
     {
         return sequential_or<A, chlit<wchar_t> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline sequential_or<chlit<wchar_t>, B>
     operator||(wchar_t a, parser<B> const& b)
     {
         return sequential_or<chlit<wchar_t>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline sequential_or<A, strlit<wchar_t const*> >
     operator||(parser<A> const& a, wchar_t const* b)
     {
         return sequential_or<A, strlit<wchar_t const*> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline sequential_or<strlit<wchar_t const*>, B>
     operator||(wchar_t const* a, parser<B> const& b)

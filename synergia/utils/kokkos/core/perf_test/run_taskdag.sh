@@ -18,4 +18,3 @@ done
 
 rm -f datapoints.txt
 paste xvals yvals > datapoints.txt
-

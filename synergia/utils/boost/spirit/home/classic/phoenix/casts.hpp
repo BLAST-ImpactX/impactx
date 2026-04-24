@@ -236,27 +236,27 @@ struct construct_l {
     >
     struct result { typedef T type; };
 
-    T operator()() const 
+    T operator()() const
     {
         return T();
     }
 
     template <typename A>
-    T operator()(A const& a) const 
+    T operator()(A const& a) const
     {
-        T t(a); 
+        T t(a);
         return t;
     }
 
     template <typename A, typename B>
-    T operator()(A const& a, B const& b) const 
+    T operator()(A const& a, B const& b) const
     {
         T t(a, b);
         return t;
     }
 
     template <typename A, typename B, typename C>
-    T operator()(A const& a, B const& b, C const& c) const 
+    T operator()(A const& a, B const& b, C const& c) const
     {
         T t(a, b, c);
         return t;
@@ -432,7 +432,7 @@ struct construct_1 {
     struct result { typedef T type; };
 
     template <typename A>
-    T operator()(A const& a) const 
+    T operator()(A const& a) const
     {
         T t(a);
         return t;
@@ -450,7 +450,7 @@ struct construct_2 {
     struct result { typedef T type; };
 
     template <typename A, typename B>
-    T operator()(A const& a, B const& b) const 
+    T operator()(A const& a, B const& b) const
     {
         T t(a, b);
         return t;
@@ -469,7 +469,7 @@ struct construct_3 {
     struct result { typedef T type; };
 
     template <typename A, typename B, typename C>
-    T operator()(A const& a, B const& b, C const& c) const 
+    T operator()(A const& a, B const& b, C const& c) const
     {
         T t(a, b, c);
         return t;
@@ -1029,7 +1029,7 @@ construct_()
     typedef impl::make_composite<construct_l_0<T> > make_composite_t;
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
-    
+
     return type_t(composite_type_t(construct_l_0<T>()));
 }
 
@@ -1042,7 +1042,7 @@ construct_(A const& a)
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_1<T>(), 
+    return type_t(composite_type_t(construct_1<T>(),
         as_actor<A>::convert(a)
     ));
 }
@@ -1056,8 +1056,8 @@ construct_(A const& a, B const& b)
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_2<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_2<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b)
     ));
 }
@@ -1071,8 +1071,8 @@ construct_(A const& a, B const& b, C const& c)
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_3<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_3<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c)
     ));
@@ -1093,8 +1093,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_4<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_4<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d)
@@ -1115,8 +1115,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_5<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_5<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1140,8 +1140,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_6<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_6<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1167,8 +1167,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_7<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_7<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1194,8 +1194,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_8<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_8<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1222,8 +1222,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_9<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_9<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1255,8 +1255,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_10<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_10<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1289,8 +1289,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_11<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_11<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1325,8 +1325,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_12<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_12<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1363,8 +1363,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_13<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_13<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1401,8 +1401,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_14<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_14<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),
@@ -1440,8 +1440,8 @@ construct_(
     typedef typename make_composite_t::type type_t;
     typedef typename make_composite_t::composite_type composite_type_t;
 
-    return type_t(composite_type_t(construct_15<T>(), 
-        as_actor<A>::convert(a), 
+    return type_t(composite_type_t(construct_15<T>(),
+        as_actor<A>::convert(a),
         as_actor<B>::convert(b),
         as_actor<C>::convert(c),
         as_actor<D>::convert(d),

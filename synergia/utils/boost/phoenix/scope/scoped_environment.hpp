@@ -66,7 +66,7 @@ namespace boost { namespace phoenix
         {
             return fusion::pop_front(env);
         }
-    
+
         #define BOOST_PHOENIX_ADAPT_SCOPED_ENVIRONMENT(INTRINSIC)               \
         template <typename Seq>                                                 \
         struct INTRINSIC                                                        \
@@ -101,7 +101,7 @@ namespace boost { namespace phoenix
         BOOST_PHOENIX_ADAPT_SCOPED_ENVIRONMENT(end);
         BOOST_PHOENIX_ADAPT_SCOPED_ENVIRONMENT(size);
         #undef BOOST_PHOENIX_ADAPT_SCOPED_ENVIRONMENT
-    
+
         template <typename Seq, typename N>
         struct value_at
         {
@@ -126,7 +126,7 @@ namespace boost { namespace phoenix
                 >::type
                 type;
         };
-        
+
         template <typename Seq, typename N>
         struct at
         {
@@ -160,10 +160,10 @@ namespace boost { namespace phoenix
 
     template <typename Env, typename Dummy = void>
     struct is_scoped_environment : mpl::false_ {};
-    
+
     template <typename Env>
     struct is_scoped_environment<Env&> : is_scoped_environment<Env> {};
-    
+
     template <typename Env, typename OuterEnv, typename Locals, typename Map>
     struct is_scoped_environment<scoped_environment<Env, OuterEnv, Locals, Map> >
         : mpl::true_

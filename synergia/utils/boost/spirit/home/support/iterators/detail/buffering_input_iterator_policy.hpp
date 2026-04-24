@@ -1,6 +1,6 @@
 //  Copyright (c) 2001 Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -18,13 +18,13 @@ namespace boost { namespace spirit { namespace iterator_policies
     ///////////////////////////////////////////////////////////////////////////
     //  class input_iterator
     //
-    //  Implementation of the InputPolicy used by multi_pass, this is different 
+    //  Implementation of the InputPolicy used by multi_pass, this is different
     //  from the input_iterator policy only as it is buffering the last input
     //  character to allow returning it by reference. This is needed for
-    //  wrapping iterators not buffering the last item (such as the 
-    //  std::istreambuf_iterator). Unfortunately there is no way to 
+    //  wrapping iterators not buffering the last item (such as the
+    //  std::istreambuf_iterator). Unfortunately there is no way to
     //  automatically figure this out at compile time.
-    // 
+    //
     //  The buffering_input_iterator encapsulates an input iterator of type T
     ///////////////////////////////////////////////////////////////////////////
     struct buffering_input_iterator
@@ -76,7 +76,7 @@ namespace boost { namespace spirit { namespace iterator_policies
 
             // test, whether we reached the end of the underlying stream
             template <typename MultiPass>
-            static bool input_at_eof(MultiPass const& mp) 
+            static bool input_at_eof(MultiPass const& mp)
             {
                 static T const end_iter;
                 return mp.shared()->input_ == end_iter;
@@ -99,7 +99,7 @@ namespace boost { namespace spirit { namespace iterator_policies
                 typename std::iterator_traits<T>::value_type
             result_type;
 
-            explicit shared(T const& input) 
+            explicit shared(T const& input)
               : input_(input), curtok_(0), input_is_valid_(false) {}
 
             void advance_input()

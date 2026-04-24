@@ -478,6 +478,3 @@ inline typename tools::promote_args<T>::type log1pmx(T x)
 #endif
 
 #endif // BOOST_MATH_LOG1P_INCLUDED
-
-
-

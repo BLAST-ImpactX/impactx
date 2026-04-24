@@ -15,7 +15,7 @@ namespace boost { namespace spirit {
 
 BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
-    namespace fileiter_impl 
+    namespace fileiter_impl
     {
         template <typename CharT = char>
         class std_file_iterator;
@@ -23,7 +23,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         // may never be defined -- so what...
         template <typename CharT = char>
         class mmap_file_iterator;
-    } 
+    }
 
     // no defaults here -- too much dependencies
     template <
@@ -36,4 +36,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

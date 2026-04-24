@@ -31,7 +31,7 @@ namespace boost {
 #else
 #define BOOST_TT_DEF_CALL
 #endif
-   
+
 #if !defined(_M_CEE_SAFE) && !defined(_M_CEE_PURE)
    template <class Ret, class...Args BOOST_TT_NOEXCEPT_PARAM>
    struct is_function<Ret BOOST_TT_DEF_CALL(Args...)BOOST_TT_NOEXCEPT_DECL> : public true_type {};
@@ -39,7 +39,7 @@ namespace boost {
    template <class Ret, class ...Args BOOST_TT_NOEXCEPT_PARAM>
    struct is_function<Ret(Args..., ...)BOOST_TT_NOEXCEPT_DECL> : public true_type {};
    // const qualified:
-   
+
 #if !defined(_M_CEE_SAFE) && !defined(_M_CEE_PURE)
    template <class Ret, class...Args BOOST_TT_NOEXCEPT_PARAM>
    struct is_function<Ret BOOST_TT_DEF_CALL(Args...)const BOOST_TT_NOEXCEPT_DECL> : public true_type {};
@@ -47,7 +47,7 @@ namespace boost {
    template <class Ret, class ...Args BOOST_TT_NOEXCEPT_PARAM>
    struct is_function<Ret(Args..., ...)const BOOST_TT_NOEXCEPT_DECL> : public true_type {};
    // volatile:
-   
+
 #if !defined(_M_CEE_SAFE) && !defined(_M_CEE_PURE)
    template <class Ret, class...Args BOOST_TT_NOEXCEPT_PARAM>
    struct is_function<Ret BOOST_TT_DEF_CALL(Args...)volatile BOOST_TT_NOEXCEPT_DECL> : public true_type {};
@@ -143,7 +143,7 @@ namespace boost {
 #endif
 #endif
    // const:
-   
+
 #if !defined(_M_X64) && !defined(_M_CEE_SAFE) && !defined(_M_CEE_PURE)
    template <class Ret, class...Args BOOST_TT_NOEXCEPT_PARAM>
    struct is_function<Ret __stdcall(Args...)const BOOST_TT_NOEXCEPT_DECL> : public true_type {};
@@ -673,4 +673,3 @@ namespace boost {
 #undef BOOST_TT_DEF_CALL
 
 #endif // BOOST_TT_IS_FUNCTION_CXX_11_HPP_INCLUDED
-

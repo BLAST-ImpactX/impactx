@@ -2,10 +2,10 @@
 #define YearMonthDayBase_HPP__
 
 /* Copyright (c) 2002,2003 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
+ * Use, modification and distribution is subject to the
  * Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
- * Author: Jeff Garland 
+ * Author: Jeff Garland
  * $Date$
  */
 
@@ -34,7 +34,7 @@ namespace date_time {
   //! A basic constructor
   template<typename YearType, typename MonthType, typename DayType>
   inline BOOST_CXX14_CONSTEXPR
-  year_month_day_base<YearType,MonthType,DayType>::year_month_day_base(YearType y, 
+  year_month_day_base<YearType,MonthType,DayType>::year_month_day_base(YearType y,
                                                                        MonthType m,
                                                                        DayType d) :
     year(y),
@@ -46,4 +46,3 @@ namespace date_time {
 
 
 #endif
-

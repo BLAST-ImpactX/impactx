@@ -6,13 +6,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1>
         struct mem_fun_ptr_eval<Context, A0 , A1>
         {
@@ -25,13 +25,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2>
         {
@@ -44,13 +44,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3>
         {
@@ -63,13 +63,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3 , A4>
         {
@@ -82,13 +82,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3 , A4 , A5>
         {
@@ -101,13 +101,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3 , A4 , A5 , A6>
         {
@@ -120,13 +120,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7>
         {
@@ -139,13 +139,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8>
         {
@@ -158,13 +158,13 @@
                 >::type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Context, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
         struct mem_fun_ptr_eval<Context, A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9>
         {

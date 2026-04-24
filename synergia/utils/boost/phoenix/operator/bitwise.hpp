@@ -17,7 +17,7 @@ namespace boost { namespace phoenix
     BOOST_PHOENIX_UNARY_OPERATORS(
         (complement)
     )
-    
+
     BOOST_PHOENIX_BINARY_OPERATORS(
         (bitwise_and_assign)
         (bitwise_or_assign)

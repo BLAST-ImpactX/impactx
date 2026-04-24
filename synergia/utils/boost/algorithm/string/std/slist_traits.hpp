@@ -1,6 +1,6 @@
 //  Boost string_algo library slist_traits.hpp header file  ---------------------------//
 
-//  Copyright Pavol Droba 2002-2003. 
+//  Copyright Pavol Droba 2002-2003.
 //
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -13,7 +13,7 @@
 
 #include <boost/algorithm/string/config.hpp>
 #include <boost/algorithm/string/yes_no_type.hpp>
-#include BOOST_SLIST_HEADER 
+#include BOOST_SLIST_HEADER
 #include <boost/algorithm/string/sequence_traits.hpp>
 
 namespace boost {

@@ -121,7 +121,7 @@ fi
 if [ ! -z "$SEMS_MODULEFILES_ROOT" ]; then
   if [[ "$MACHINE" = "" ]]; then
     MACHINE=sems
-  fi  
+  fi
 fi
 
 if [[ "$MACHINE" = "" ]]; then
@@ -661,9 +661,9 @@ single_build_and_test() {
 
   if [[ "$KOKKOS_OPTIONS" == "" ]]; then
     local extra_args="--with-options=enable_large_mem_tests"
-  else 
+  else
     local extra_args=
-  fi    
+  fi
 
   if [[ "$build_type" = hwloc* ]]; then
     local extra_args="$extra_args --with-hwloc=$(dirname $(dirname $(which hwloc-info)))"
@@ -756,7 +756,7 @@ run_in_background() {
     if [[ "$compiler" == cuda* ]]; then
       num_jobs=1
     fi
-    if [[ "$compiler" == clang ]]; then 
+    if [[ "$compiler" == clang ]]; then
       num_jobs=1
     fi
   # fi

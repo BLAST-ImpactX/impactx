@@ -56,4 +56,3 @@ public:
 } // namespace boost
 
 #endif // include
-

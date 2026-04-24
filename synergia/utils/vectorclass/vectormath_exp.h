@@ -1872,7 +1872,7 @@ static inline VTYPE pow_template_f(VTYPE const x0, VTYPE const y) {
     if (horizontal_or(overflow | underflow)) {
         // handle errors
         z = select(underflow, VTYPE(0.f), z);
-        z = select(overflow, infinite_vec<VTYPE>(), z);                
+        z = select(overflow, infinite_vec<VTYPE>(), z);
     }
 
     // check for x == 0

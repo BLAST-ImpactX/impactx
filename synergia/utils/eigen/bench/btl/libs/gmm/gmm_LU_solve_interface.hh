@@ -83,7 +83,7 @@ class blitz_LU_solve_interface : public blitz_interface<real> {
       for (int i = 0; i < j; i++) {
         theSum = LU(i, j);
         theSum -= matrix_matrix_product_sliced(LU, i, 0, i - 1, LU, 0, j);
-        //	theSum -= sum( LU( i, Range( fromStart, i-1 ) )*LU( Range( fromStart, i-1 ), j ) ) ;
+        //  theSum -= sum( LU( i, Range( fromStart, i-1 ) )*LU( Range( fromStart, i-1 ), j ) ) ;
         LU(i, j) = theSum;
       }
 
@@ -92,7 +92,7 @@ class blitz_LU_solve_interface : public blitz_interface<real> {
       for (int i = j; i < N; i++) {
         theSum = LU(i, j);
         theSum -= matrix_matrix_product_sliced(LU, i, 0, j - 1, LU, 0, j);
-        //	theSum -= sum( LU( i, Range( fromStart, j-1 ) )*LU( Range( fromStart, j-1 ), j ) ) ;
+        //  theSum -= sum( LU( i, Range( fromStart, j-1 ) )*LU( Range( fromStart, j-1 ), j ) ) ;
         LU(i, j) = theSum;
         if ((ImplicitScaling(i) * abs(theSum)) >= big) {
           dum = ImplicitScaling(i) * abs(theSum);
@@ -135,8 +135,8 @@ class blitz_LU_solve_interface : public blitz_interface<real> {
       //      B( ip ) = B( i ) ;
       if (ii) {
         theSum -= matrix_vector_product_sliced(LU, X, i, ii - 1, i - 1);
-        //	theSum -= sum( LU( i, Range( ii-1, i-1 ) )*X( Range( ii-1, i-1 ) ) ) ;
-        //	theSum -= sum( LU( i, Range( ii-1, i-1 ) )*B( Range( ii-1, i-1 ) ) ) ;
+        //  theSum -= sum( LU( i, Range( ii-1, i-1 ) )*X( Range( ii-1, i-1 ) ) ) ;
+        //  theSum -= sum( LU( i, Range( ii-1, i-1 ) )*B( Range( ii-1, i-1 ) ) ) ;
       } else if (theSum) {
         ii = i + 1;
       }

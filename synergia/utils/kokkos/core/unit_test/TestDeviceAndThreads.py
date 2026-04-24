@@ -1,4 +1,4 @@
-#@HEADER
+# @HEADER
 # ************************************************************************
 
 #                        Kokkos v. 4.0
@@ -15,10 +15,10 @@
 # ************************************************************************
 # @HEADER
 
-import unittest
-import subprocess
-import platform
 import os
+import platform
+import subprocess
+import unittest
 
 PREFIX = "$<TARGET_FILE_DIR:Kokkos_CoreUnitTest_DeviceAndThreads>"
 EXECUTABLE = "$<TARGET_FILE_NAME:Kokkos_CoreUnitTest_DeviceAndThreads>"
@@ -31,27 +31,32 @@ def GetFlag(flag, *extra_args):
         raise Exception(p.stderr.decode("utf-8"))
     return int(p.stdout)
 
+
 def GetNumThreads(max_threads):
     args = []
     name = platform.system()
-    if name == 'Darwin':
-        args = ['sysctl', '-n', 'hw.physicalcpu_max']
-    elif name == 'Linux':
-        args = ['nproc', '--all']
+    if name == "Darwin":
+        args = ["sysctl", "-n", "hw.physicalcpu_max"]
+    elif name == "Linux":
+        args = ["nproc", "--all"]
     else:
-        args = ['wmic', 'cpu', 'get', 'NumberOfCores']
+        args = ["wmic", "cpu", "get", "NumberOfCores"]
 
     result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output = result.stdout.decode('utf-8')
+    output = result.stdout.decode("utf-8")
     phys_cores_count = int(output)
-    looplist = [1] + [i*phys_cores_count for i in [1,2,3,4,5,6,7]] \
-        if GetFlag("hwloc_enabled") else [1,2,3,4,5]
+    looplist = (
+        [1] + [i * phys_cores_count for i in [1, 2, 3, 4, 5, 6, 7]]
+        if GetFlag("hwloc_enabled")
+        else [1, 2, 3, 4, 5]
+    )
 
     for x in looplist:
         if x >= max_threads:
             break
         yield x
     yield max_threads
+
 
 class KokkosInitializationTestCase(unittest.TestCase):
     def test_num_threads(self):
@@ -61,9 +66,8 @@ class KokkosInitializationTestCase(unittest.TestCase):
         for num_threads in GetNumThreads(max_threads):
             self.assertEqual(
                 num_threads,
-                GetFlag(
-                    "num_threads",
-                    "--kokkos-num-threads={}".format(num_threads)))
+                GetFlag("num_threads", "--kokkos-num-threads={}".format(num_threads)),
+            )
 
     def test_num_devices(self):
         if "KOKKOS_VISIBLE_DEVICES" in os.environ:
@@ -86,36 +90,19 @@ class KokkosInitializationTestCase(unittest.TestCase):
         for device_id in range(num_devices):
             self.assertEqual(
                 device_id,
-                GetFlag(
-                    "device_id",
-                    "--kokkos-device-id={}".format(device_id)))
+                GetFlag("device_id", "--kokkos-device-id={}".format(device_id)),
+            )
 
     def test_disable_warnings(self):
         self.assertEqual(0, GetFlag("disable_warnings"))
-        self.assertEqual(
-            0,
-            GetFlag(
-                "disable_warnings",
-                "--kokkos-disable-warnings=0"))
-        self.assertEqual(
-            1,
-            GetFlag(
-                "disable_warnings",
-                "--kokkos-disable-warnings=1"))
+        self.assertEqual(0, GetFlag("disable_warnings", "--kokkos-disable-warnings=0"))
+        self.assertEqual(1, GetFlag("disable_warnings", "--kokkos-disable-warnings=1"))
 
     def test_tune_internals(self):
         self.assertEqual(0, GetFlag("tune_internals"))
-        self.assertEqual(
-            0,
-            GetFlag(
-                "tune_internals",
-                "--kokkos-tune-internals=0"))
-        self.assertEqual(
-            1,
-            GetFlag(
-                "tune_internals",
-                "--kokkos-tune-internals=1"))
+        self.assertEqual(0, GetFlag("tune_internals", "--kokkos-tune-internals=0"))
+        self.assertEqual(1, GetFlag("tune_internals", "--kokkos-tune-internals=1"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

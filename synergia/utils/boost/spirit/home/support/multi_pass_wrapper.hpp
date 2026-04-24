@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_ITERATOR_MULTI_PASS_WRAPPER_JUL_12_2009_0914PM)
@@ -19,7 +19,7 @@ namespace boost { namespace spirit { namespace traits
     // with expectation points
 
     // normal iterators require no special handling
-    BOOST_SCOPED_ENUM_START(clear_mode) 
+    BOOST_SCOPED_ENUM_START(clear_mode)
     {
         clear_if_enabled,
         clear_always
@@ -28,17 +28,17 @@ namespace boost { namespace spirit { namespace traits
 
     template <typename Iterator>
     void clear_queue(Iterator&
-      , BOOST_SCOPED_ENUM(clear_mode) /*mode*/ = clear_mode::clear_if_enabled) 
+      , BOOST_SCOPED_ENUM(clear_mode) /*mode*/ = clear_mode::clear_if_enabled)
     {}
 
     template <typename Iterator>
-    void inhibit_clear_queue(Iterator&, bool) 
+    void inhibit_clear_queue(Iterator&, bool)
     {}
 
     template <typename Iterator>
-    bool inhibit_clear_queue(Iterator&) 
-    { 
-        return false; 
+    bool inhibit_clear_queue(Iterator&)
+    {
+        return false;
     }
 
     // Helper template to recognize a multi_pass iterator. This specialization
@@ -49,4 +49,3 @@ namespace boost { namespace spirit { namespace traits
 }}}
 
 #endif
-

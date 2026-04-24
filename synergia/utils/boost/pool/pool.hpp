@@ -86,7 +86,7 @@
  namespace boost
 {
 
-//! \brief Allocator used as the default template parameter for 
+//! \brief Allocator used as the default template parameter for
 //! a <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">UserAllocator</a>
 //! template parameter.  Uses new and delete.
 struct default_user_allocator_new_delete
@@ -131,16 +131,16 @@ class PODptr
   //!  (for alignment reasons),
   //! PODptr must contain the size of this "class" as well as the pointer to this "object".
 
-  /*! \details A PODptr holds the location and size of a memory block allocated from the system. 
+  /*! \details A PODptr holds the location and size of a memory block allocated from the system.
   Each memory block is split logically into three sections:
 
-  <b>Chunk area</b>. This section may be different sizes. PODptr does not care what the size of the chunks is, 
+  <b>Chunk area</b>. This section may be different sizes. PODptr does not care what the size of the chunks is,
   but it does care (and keep track of) the total size of the chunk area.
 
-  <b>Next pointer</b>. This section is always the same size for a given SizeType. It holds a pointer 
+  <b>Next pointer</b>. This section is always the same size for a given SizeType. It holds a pointer
   to the location of the next memory block in the memory block list, or 0 if there is no such block.
 
-  <b>Next size</b>. This section is always the same size for a given SizeType. It holds the size of the 
+  <b>Next size</b>. This section is always the same size for a given SizeType. It holds the size of the
   next memory block in the memory block list.
 
 The PODptr class just provides cleaner ways of dealing with raw memory blocks.
@@ -905,14 +905,14 @@ pool<UserAllocator>::find_POD(void * const chunk) const
 
 #else // BOOST_POOL_VALGRIND
 
-template<typename UserAllocator> 
-class pool 
+template<typename UserAllocator>
+class pool
 {
 public:
   // types
-  typedef UserAllocator                  user_allocator;   // User allocator. 
-  typedef typename UserAllocator::size_type       size_type;        // An unsigned integral type that can represent the size of the largest object to be allocated. 
-  typedef typename UserAllocator::difference_type difference_type;  // A signed integral type that can represent the difference of any two pointers. 
+  typedef UserAllocator                  user_allocator;   // User allocator.
+  typedef typename UserAllocator::size_type       size_type;        // An unsigned integral type that can represent the size of the largest object to be allocated.
+  typedef typename UserAllocator::difference_type difference_type;  // A signed integral type that can represent the difference of any two pointers.
 
   // construct/copy/destruct
   explicit pool(const size_type s, const size_type = 32, const size_type m = 0) : chunk_size(s), max_alloc_size(m) {}
@@ -1034,4 +1034,3 @@ protected:
 #endif
 
 #endif // #ifdef BOOST_POOL_HPP
-

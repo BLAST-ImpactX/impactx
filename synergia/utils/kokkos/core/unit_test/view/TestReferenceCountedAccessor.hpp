@@ -56,9 +56,9 @@ void test_refcountedacc_ctors() {
       {
         acc_t acc;
         const_acc_t c_acc(acc);
-	static_assert(!std::is_constructible_v<acc_t, const_acc_t>);
+    static_assert(!std::is_constructible_v<acc_t, const_acc_t>);
 
-	unused_variable_sink(c_acc);
+    unused_variable_sink(c_acc);
 }
 // from default_accessor
 {

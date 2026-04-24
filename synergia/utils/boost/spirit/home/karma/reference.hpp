@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_REFERENCE_APR_17_2009_1057PM)
@@ -46,7 +46,7 @@ namespace boost { namespace spirit { namespace karma
             return ref.get().generate(sink, context, delim, attr);
         }
 
-        // This overload gets called from an aliased rule only, we take the 
+        // This overload gets called from an aliased rule only, we take the
         // attribute from the context provided from the wrapper rule.
         template <typename OutputIterator, typename Context
           , typename Delimiter>
@@ -84,7 +84,7 @@ namespace boost { namespace spirit { namespace traits
     struct handles_container<karma::reference<Subject>, Attribute
       , Context, Iterator>
       : handles_container<typename remove_const<Subject>::type, Attribute
-        , Context, Iterator> 
+        , Context, Iterator>
     {};
 }}}
 

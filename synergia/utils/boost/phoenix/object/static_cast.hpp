@@ -14,7 +14,7 @@
 #include <boost/phoenix/core/meta_grammar.hpp>
 #include <boost/phoenix/object/detail/target.hpp>
 #include <boost/proto/transform/lazy.hpp>
-    
+
 BOOST_PHOENIX_DEFINE_EXPRESSION(
     (boost)(phoenix)(static_cast_)
   , (proto::terminal<detail::target<proto::_> >)

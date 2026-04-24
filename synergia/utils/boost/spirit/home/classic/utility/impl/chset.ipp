@@ -213,7 +213,7 @@ inline void
 chset<CharT>::set(negated_char_parser<chlit<CharT> > const& arg_)
 {
     utility::impl::detach(ptr);
-    
+
     if(arg_.positive.ch != (std::numeric_limits<CharT>::min)()) {
         ptr->set((std::numeric_limits<CharT>::min)(), arg_.positive.ch - 1);
     }
@@ -227,7 +227,7 @@ inline void
 chset<CharT>::set(negated_char_parser<range<CharT> > const& arg_)
 {
     utility::impl::detach(ptr);
-    
+
     if(arg_.positive.first != (std::numeric_limits<CharT>::min)()) {
         ptr->set((std::numeric_limits<CharT>::min)(), arg_.positive.first - 1);
     }
@@ -319,4 +319,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace boost::spirit
 
 #endif
-

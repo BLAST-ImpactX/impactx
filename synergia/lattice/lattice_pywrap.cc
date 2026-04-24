@@ -15,8 +15,8 @@ namespace py = pybind11;
 using namespace py::literals;
 
 // convert the std::list<Lattice_element> to a python tuple object
-template <> 
-struct pybind11::detail::type_caster<std::list<Lattice_element>> 
+template <>
+struct pybind11::detail::type_caster<std::list<Lattice_element>>
     : pybind11::detail::py_tuple_caster<std::list<Lattice_element>, Lattice_element> { };
 
 
@@ -27,7 +27,7 @@ PYBIND11_MODULE(lattice, m)
         .value("mad8", element_format::mad8)
         .value("madx", element_format::madx)
         ;
- 
+
     py::enum_<element_type>(m, "element_type", py::arithmetic())
         .value("generic",    element_type::generic)
         .value("drift",      element_type::drift)
@@ -80,24 +80,24 @@ PYBIND11_MODULE(lattice, m)
         .def( py::init<>(),
                 "Construct a generic lattice element" )
 
-        .def( py::init<std::string const&, std::string const&, element_format>(), 
+        .def( py::init<std::string const&, std::string const&, element_format>(),
                 "Construct a lattice element with type, name, and format",
                 "type"_a, "name"_a, "format"_a = element_format::madx )
 
-        .def( "get_type", 
-                &Lattice_element::get_type, 
+        .def( "get_type",
+                &Lattice_element::get_type,
                 "Returns lattice element type" )
 
-        .def( "get_type_name", 
-                &Lattice_element::get_type_name, 
+        .def( "get_type_name",
+                &Lattice_element::get_type_name,
                 "Returns lattice element type string" )
 
-        .def( "get_name", 
-                &Lattice_element::get_name, 
+        .def( "get_name",
+                &Lattice_element::get_name,
                 "Returns lattice element name" )
 
-        .def( "get_format", 
-                &Lattice_element::get_format, 
+        .def( "get_format",
+                &Lattice_element::get_format,
                 "Returns lattice element format (madx or mad8)" )
 
         .def( "get_length",
@@ -118,97 +118,97 @@ PYBIND11_MODULE(lattice, m)
                 "element"_a )
 
         // double attribute
-        .def( "has_double_attribute", 
+        .def( "has_double_attribute",
                 &Lattice_element::has_double_attribute,
                 "Check for existence of the named double attribute",
                 "name"_a )
 
-        .def( "get_double_attribute", 
+        .def( "get_double_attribute",
                 (double (Lattice_element::*)(std::string const&) const)
                 &Lattice_element::get_double_attribute,
                 "Get the value of the named double attribute",
                 "name"_a )
 
-        .def( "get_double_attribute", 
+        .def( "get_double_attribute",
                 (double (Lattice_element::*)(std::string const&, double) const)
                 &Lattice_element::get_double_attribute,
                 "Get the value of the named double attribute, or return the default",
                 "name"_a, "default"_a )
 
-        .def( "set_double_attribute", 
+        .def( "set_double_attribute",
                 (void (Lattice_element::*)(std::string const&, double, bool))
-                &Lattice_element::set_double_attribute, 
-                "Set the value of the named double attribute", 
+                &Lattice_element::set_double_attribute,
+                "Set the value of the named double attribute",
                 "name"_a, "value"_a, "increment_revision"_a = true )
 
-        .def( "remove_double_attribute", 
+        .def( "remove_double_attribute",
                 (void (Lattice_element::*)(std::string const&))
-                &Lattice_element::remove_double_attribute, 
-                "Remove the named double attribute", 
+                &Lattice_element::remove_double_attribute,
+                "Remove the named double attribute",
                 "name"_a )
 
-        .def( "set_double_attribute", 
+        .def( "set_double_attribute",
                 (void (Lattice_element::*)(std::string const&, std::string const&, bool))
-                &Lattice_element::set_double_attribute, 
-                "Set the value (as an expression)  of the named double attribute", 
+                &Lattice_element::set_double_attribute,
+                "Set the value (as an expression)  of the named double attribute",
                 "name"_a, "value"_a, "increment_revision"_a = true )
 
         .def( "get_double_attribute_names",
                 &Lattice_element::get_double_attribute_names )
 
         // string attribute
-        .def( "has_string_attribute", 
+        .def( "has_string_attribute",
                 &Lattice_element::has_string_attribute,
                 "Check for existence of the named string attribute",
                 "name"_a )
 
-        .def( "remove_string_attribute", 
+        .def( "remove_string_attribute",
                 &Lattice_element::remove_string_attribute,
                 "Remove the named string attribute",
                 "name"_a )
 
-        .def( "get_string_attribute", 
+        .def( "get_string_attribute",
                 (std::string const& (Lattice_element::*)(std::string const&) const)
                 &Lattice_element::get_string_attribute,
                 "Get the value of the named double attribute",
                 "name"_a )
 
-        .def( "get_string_attribute", 
+        .def( "get_string_attribute",
                 (std::string const& (Lattice_element::*)(std::string const&, std::string const&) const)
                 &Lattice_element::get_string_attribute,
                 "Get the value of the named string attribute, or return the default",
                 "name"_a, "default"_a )
 
-        .def( "set_string_attribute", 
-                &Lattice_element::set_string_attribute, 
-                "Set the value of the named string attribute", 
+        .def( "set_string_attribute",
+                &Lattice_element::set_string_attribute,
+                "Set the value of the named string attribute",
                 "name"_a, "value"_a, "increment_revision"_a = true )
 
         // vector attribute
-        .def( "has_vector_attribute", 
+        .def( "has_vector_attribute",
                 &Lattice_element::has_vector_attribute,
                 "Check for existence of the named vector attribute",
                 "name"_a )
 
-        .def( "remove_vector_attribute", 
+        .def( "remove_vector_attribute",
                 &Lattice_element::remove_vector_attribute,
                 "Remove the named vector attribute",
                 "name"_a )
 
-                .def( "get_vector_attribute", 
+                .def( "get_vector_attribute",
                 (std::vector<double> (Lattice_element::*)(std::string const&) const)
                 &Lattice_element::get_vector_attribute,
                 "Get the value of the named vector attribute",
                 "name"_a )
 
-        .def( "get_vector_attribute", 
+        .def( "get_vector_attribute",
                 (std::vector<double> (Lattice_element::*)(std::string const&, std::vector<double> const&) const)
                 &Lattice_element::get_vector_attribute,
                 "Get the value of the named vector attribute, or return the default",
                 "name"_a, "default"_a )
 
-        .def( "set_vector_attribute", 
-                &Lattice_element::set_vector_attribute, 
+        .def( "set_vector_attribute",
+                &Lattice_element::set_vector_attribute,
                 "Set the value of the named vector attribute",
                 "name"_a, "value"_a, "increment_revision"_a = true )
 
@@ -252,47 +252,47 @@ PYBIND11_MODULE(lattice, m)
         .def_static( "get_all_type_names",
                 &Lattice_element::get_all_type_names )
 
-        .def_readwrite( "lf", 
+        .def_readwrite( "lf",
                 &Lattice_element::lf )
 
         // print
-        .def( "print_", 
+        .def( "print_",
                 &Lattice_element::print,
                 "Print the lattice element" )
 
-        .def( "__repr__", 
+        .def( "__repr__",
                 &Lattice_element::as_string )
         ;
 
     // Lattice_element_slice
     py::class_<Lattice_element_slice>(m, "Lattice_element_slice")
-        .def( py::init<Lattice_element const&>(), 
+        .def( py::init<Lattice_element const&>(),
                 "Construct a lattice element slice from an entire element",
                 "element"_a)
         .def (py::init<Lattice_element const&, double, double>(),
                 "Construct a lattice element slice with left and right from an element",
                 "element"_a, "left"_a, "right"_a)
-        .def( "is_whole", 
-                &Lattice_element_slice::is_whole, 
+        .def( "is_whole",
+                &Lattice_element_slice::is_whole,
                 "Is a whole element" )
 
-        .def( "has_left_edge", 
-                &Lattice_element_slice::has_left_edge, 
+        .def( "has_left_edge",
+                &Lattice_element_slice::has_left_edge,
                 "Does this slice include the left edge of the element" )
 
-        .def( "has_right_edge", 
-                &Lattice_element_slice::has_right_edge, 
+        .def( "has_right_edge",
+                &Lattice_element_slice::has_right_edge,
                 "Does this slice include the right edge of the element" )
 
-        .def( "get_left", 
-                &Lattice_element_slice::get_left, 
+        .def( "get_left",
+                &Lattice_element_slice::get_left,
                 "Get the start position of the slice" )
 
-        .def( "get_right", 
-                &Lattice_element_slice::get_right, 
+        .def( "get_right",
+                &Lattice_element_slice::get_right,
                 "Get the end position of the slice" )
 
-        .def( "print_", 
+        .def( "print_",
                 &Lattice_element_slice::print,
                 "Print the lattice element slice" )
 
@@ -300,15 +300,15 @@ PYBIND11_MODULE(lattice, m)
                 &Lattice_element_slice::get_lattice_element,
                 "Get the lattice element corresponding to this slice")
 
-        .def( "__repr__", 
+        .def( "__repr__",
                 &Lattice_element_slice::as_string )
         ;
 
     // Lattice_tree
-    using lattice_tree_set_element_attribute_1 = 
+    using lattice_tree_set_element_attribute_1 =
         void (Lattice_tree::*)(std::string const&, std::string const&, double);
 
-    using lattice_tree_set_element_attribute_2 = 
+    using lattice_tree_set_element_attribute_2 =
         void (Lattice_tree::*)(std::string const&, std::string const&, std::string const&);
 
     py::class_<Lattice_tree>(m, "Lattice_tree")
@@ -318,7 +318,7 @@ PYBIND11_MODULE(lattice, m)
                 "name"_a,
                 "val"_a )
 
-        .def( "set_variable", 
+        .def( "set_variable",
                 (void (Lattice_tree::*)(std::string const&, std::string const&))
                 &Lattice_tree::set_variable,
                 "name"_a,
@@ -344,18 +344,18 @@ PYBIND11_MODULE(lattice, m)
 
     // Lattice
     py::class_<Lattice>(m, "Lattice")
-        .def( py::init<>(), 
+        .def( py::init<>(),
                 "Construct an unnamed empty lattice" )
 
-        .def( py::init<std::string const&>(), 
-                "Construct an empty latttice.", 
+        .def( py::init<std::string const&>(),
+                "Construct an empty latttice.",
                 "name"_a )
 
         .def( py::init<Lattice const&>(),
                 "Construct a copy of a lattice." )
 
-        .def( py::init<std::string const&, Reference_particle const&>(), 
-                "Construct an empty latttice with given reference particle.", 
+        .def( py::init<std::string const&, Reference_particle const&>(),
+                "Construct an empty latttice with given reference particle.",
                 "name"_a,
                 "refpart"_a )
 
@@ -364,8 +364,8 @@ PYBIND11_MODULE(lattice, m)
                 "name"_a,
                 "tree"_a )
 
-        .def( py::init<Lsexpr const&>(), 
-                "Construct from the Lsexpr representation", 
+        .def( py::init<Lsexpr const&>(),
+                "Construct from the Lsexpr representation",
                 "lsexpr"_a )
 
         .def( "get_name",
@@ -477,10 +477,10 @@ PYBIND11_MODULE(lattice, m)
         ;
 
 
-    using madx_reader_get_lattice_1 = 
+    using madx_reader_get_lattice_1 =
         Lattice (MadX_reader::*)(std::string const&);
 
-    using madx_reader_get_lattice_2 = 
+    using madx_reader_get_lattice_2 =
         Lattice (MadX_reader::*)(std::string const&, std::string const&);
 
     // MadX_reader
@@ -519,7 +519,5 @@ PYBIND11_MODULE(lattice, m)
                 "Parse a lattice file",
                 "filename"_a )
         ;
- 
+
 }
-
-

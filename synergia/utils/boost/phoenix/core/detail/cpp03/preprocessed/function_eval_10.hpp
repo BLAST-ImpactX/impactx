@@ -4,14 +4,14 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-        
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -29,7 +29,7 @@
                 typedef typename
                     boost::result_of<fn(a0)>::type
                     type;
-                
+
             };
             template <typename F, typename A0, typename Context>
             typename result<
@@ -55,13 +55,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -79,7 +79,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1, typename Context>
             typename result<
@@ -105,13 +105,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -129,7 +129,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2, typename Context>
             typename result<
@@ -155,13 +155,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -179,7 +179,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3, typename Context>
             typename result<
@@ -205,13 +205,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -229,7 +229,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4, typename Context>
             typename result<
@@ -255,13 +255,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -279,7 +279,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5, typename Context>
             typename result<
@@ -305,13 +305,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -329,7 +329,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6, typename Context>
             typename result<
@@ -355,13 +355,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -379,7 +379,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7, typename Context>
             typename result<
@@ -405,13 +405,13 @@
             {
                 return boost::phoenix::eval(f, ctx)(help_rvalue_deduction(boost::phoenix::eval(a0, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a1, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a2, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a3, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a4, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a5, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a6, ctx)) , help_rvalue_deduction(boost::phoenix::eval(a7, ctx)));
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <
                 typename This
               , typename F
@@ -429,7 +429,7 @@
                 typedef typename
                     boost::result_of<fn(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8)>::type
                     type;
-                
+
             };
             template <typename F, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8, typename Context>
             typename result<

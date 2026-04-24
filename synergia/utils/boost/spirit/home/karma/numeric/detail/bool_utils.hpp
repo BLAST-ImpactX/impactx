@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_BOOL_UTILS_SEP_28_2009_0644PM)
@@ -17,11 +17,11 @@
 #include <boost/spirit/home/karma/numeric/detail/numeric_utils.hpp>
 #include <boost/detail/workaround.hpp>
 
-namespace boost { namespace spirit { namespace karma 
-{ 
+namespace boost { namespace spirit { namespace karma
+{
     ///////////////////////////////////////////////////////////////////////////
     //
-    //  The bool_inserter template takes care of the boolean to string 
+    //  The bool_inserter template takes care of the boolean to string
     //  conversion. The Policies template parameter is used to allow
     //  customization of the formatting process
     //
@@ -55,7 +55,7 @@ namespace boost { namespace spirit { namespace karma
 #if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1600))
             (void)p; // suppresses warning: C4100: 'p' : unreferenced formal parameter
 #endif
-            if (b) 
+            if (b)
                 return p.template generate_true<CharEncoding, Tag>(sink, b);
             return p.template generate_false<CharEncoding, Tag>(sink, b);
         }
@@ -64,4 +64,3 @@ namespace boost { namespace spirit { namespace karma
 }}}
 
 #endif
-

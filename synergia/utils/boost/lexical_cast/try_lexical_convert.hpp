@@ -90,4 +90,3 @@ namespace boost {
 } // namespace boost
 
 #endif // BOOST_LEXICAL_CAST_TRY_LEXICAL_CONVERT_HPP
-

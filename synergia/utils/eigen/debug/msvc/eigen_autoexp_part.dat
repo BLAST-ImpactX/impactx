@@ -18,7 +18,7 @@
 ; * alignment (RowMajor vs. ColMajor).
 ; *
 ; * This file is distributed WITHOUT ANY WARRANTY. Please ensure
-; * that your original autoexp.dat file is copied to a safe 
+; * that your original autoexp.dat file is copied to a safe
 ; * place before proceeding with its modification.
 ; ***************************************************************
 
@@ -131,7 +131,7 @@ Eigen::Matrix<*,-1,-1,*,*,*>{
              #array(
                 rank: 2,
                 base: 0,
-                expr: ($c.m_storage.m_data)[($i % $c.m_storage.m_rows)*$c.m_storage.m_cols + (($i- $i % $c.m_storage.m_rows)/$c.m_storage.m_rows)], 
+                expr: ($c.m_storage.m_data)[($i % $c.m_storage.m_rows)*$c.m_storage.m_cols + (($i- $i % $c.m_storage.m_rows)/$c.m_storage.m_rows)],
                 size: ($r==1)*$c.m_storage.m_rows+($r==0)*$c.m_storage.m_cols
              )
          ) #else (
@@ -219,7 +219,7 @@ Eigen::Matrix<*,-1,*,*,*,*>{
              #array(
                 rank: 2,
                 base: 0,
-                expr: ($c.m_storage.m_data)[($i % $c.m_storage.m_rows)*$c.ColsAtCompileTime + (($i- $i % $c.m_storage.m_rows)/$c.m_storage.m_rows)], 
+                expr: ($c.m_storage.m_data)[($i % $c.m_storage.m_rows)*$c.ColsAtCompileTime + (($i- $i % $c.m_storage.m_rows)/$c.m_storage.m_rows)],
                 size: ($r==1)*$c.m_storage.m_rows+($r==0)*$c.ColsAtCompileTime
              )
          ) #else (
@@ -263,7 +263,7 @@ Eigen::Matrix<*,*,*,*,*,*>{
              #array(
                 rank: 2,
                 base: 0,
-                expr: ($c.m_storage.m_data.array)[($i % $c.RowsAtCompileTime)*$c.ColsAtCompileTime + (($i- $i % $c.RowsAtCompileTime)/$c.RowsAtCompileTime)], 
+                expr: ($c.m_storage.m_data.array)[($i % $c.RowsAtCompileTime)*$c.ColsAtCompileTime + (($i- $i % $c.RowsAtCompileTime)/$c.RowsAtCompileTime)],
                 size: ($r==1)*$c.RowsAtCompileTime+($r==0)*$c.ColsAtCompileTime
              )
          ) #else (

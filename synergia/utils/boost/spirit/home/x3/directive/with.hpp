@@ -25,7 +25,7 @@ namespace boost { namespace spirit { namespace x3
           : base_type(subject)
           , val(std::forward<T>(val)) {}
     };
-    
+
     template <typename Subject, typename Derived, typename T>
     struct with_value_holder<Subject, Derived, T&>
       : unary_parser<Subject, Derived>
@@ -62,7 +62,7 @@ namespace boost { namespace spirit { namespace x3
               , attr);
         }
     };
-   
+
     template <typename ID, typename T>
     struct with_gen
     {

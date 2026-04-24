@@ -125,7 +125,7 @@ void endFence(const uint64_t handle);
  * label:     name of the View within the DualView
  * ptr:       that View's data ptr
  * to_device: true if the data is being synchronized to the device
- * 		false otherwise
+ *      false otherwise
  */
 void syncDualView(const std::string& label, const void* const ptr,
                   bool to_device);
@@ -140,7 +140,7 @@ void syncDualView(const std::string& label, const void* const ptr,
  * label:     name of the View within the DualView
  * ptr:       that View's data ptr
  * on_device: true if the data is being modified on the device
- * 		false otherwise
+ *      false otherwise
  */
 void modifyDualView(const std::string& label, const void* const ptr,
                     bool on_device);

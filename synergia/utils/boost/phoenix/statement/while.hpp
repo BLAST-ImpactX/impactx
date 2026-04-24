@@ -35,7 +35,7 @@ namespace boost { namespace phoenix
             }
         }
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::while_, Dummy>
         : call<while_eval, Dummy>

@@ -65,7 +65,7 @@
 //      BOOST_VARIANT_ENUM_SHIFTED_PARAMS(Something)            => SomethingN...
 //      BOOST_VARIANT_ENUM_SHIFTED_PARAMS(Something)            => SomethingN...
 //
-// Rationale: Cleaner, simpler code for clients of variant library. Minimal 
+// Rationale: Cleaner, simpler code for clients of variant library. Minimal
 // code modifications to move from C++03 to C++11.
 //
 
@@ -85,7 +85,7 @@ namespace detail { namespace variant {
 
 ///////////////////////////////////////////////////////////////////////////////
 // (detail) class void_ and class template convert_void
-// 
+//
 // Provides the mechanism by which void(NN) types are converted to
 // mpl::void_ (and thus can be passed to mpl::list).
 //

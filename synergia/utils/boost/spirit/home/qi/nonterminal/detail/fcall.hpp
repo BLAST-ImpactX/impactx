@@ -49,5 +49,3 @@
 
 #undef N
 #endif // defined(BOOST_PP_IS_ITERATING)
-
-

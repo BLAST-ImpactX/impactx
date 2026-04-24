@@ -28,18 +28,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 1>
         {
@@ -52,9 +52,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -87,18 +87,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 2>
         {
@@ -111,9 +111,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -146,18 +146,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 3>
         {
@@ -170,9 +170,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -205,18 +205,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 4>
         {
@@ -229,9 +229,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -264,18 +264,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 5>
         {
@@ -288,9 +288,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -323,18 +323,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 6>
         {
@@ -347,9 +347,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -382,18 +382,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 7>
         {
@@ -406,9 +406,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -441,18 +441,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 8>
         {
@@ -465,9 +465,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -500,18 +500,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 9>
         {
@@ -524,9 +524,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(
@@ -559,18 +559,18 @@
     }
     namespace context
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
         template<typename Expr, typename Context>
         struct callable_eval<Expr, Context, 10>
         {
@@ -583,9 +583,9 @@
                     )
                 >::type
             result_type;
-            
-            
-            
+
+
+
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return context(

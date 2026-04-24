@@ -15,7 +15,7 @@ BOOST_FUSION_BARRIER_BEGIN
         template <typename I0>
         struct apply
         {
-            
+
             typedef pair_from<I0, is_assoc> D0; typedef typename D0::type T0;
             typedef map<T0> type;
         };
@@ -26,7 +26,7 @@ BOOST_FUSION_BARRIER_BEGIN
         {
             typedef apply<Iterator> gen;
             typedef typename gen::type result;
-            
+
             return result(gen::D0::call(i0));
         }
     };

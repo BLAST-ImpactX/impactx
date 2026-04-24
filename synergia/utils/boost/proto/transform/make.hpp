@@ -165,13 +165,13 @@ namespace boost { namespace proto
     /// template<typename T>
     /// struct Bar
     /// {};
-    /// 
+    ///
     /// struct Foo
     ///   : proto::when<_, Bar<_>() >
     /// {};
-    /// 
+    ///
     /// proto::terminal<int>::type i = {0};
-    /// 
+    ///
     /// int main()
     /// {
     ///     Foo()(i);

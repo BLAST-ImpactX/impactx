@@ -11,7 +11,7 @@ Matrix3f P, Q, R;                     // 3x3 float matrix.
 Vector3f x, y, z;                     // 3x1 float matrix.
 RowVector3f a, b, c;                  // 1x3 float matrix.
 VectorXd v;                           // Dynamic column vector of doubles
-double s;                            
+double s;
 
 // Basic usage
 // Eigen          // Matlab           // comments
@@ -25,7 +25,7 @@ A.resize(4, 4);   // Runtime error if assertions are on.
 B.resize(4, 9);   // Runtime error if assertions are on.
 A.resize(3, 3);   // Ok; size didn't change.
 B.resize(3, 9);   // Ok; only dynamic cols changed.
-                  
+
 A << 1, 2, 3,     // Initialize A. The elements can also be
      4, 5, 6,     // matrices, which are stacked along cols
      7, 8, 9;     // and then the rows are stacked.

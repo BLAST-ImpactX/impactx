@@ -71,5 +71,3 @@ namespace std
 #endif
 
 #endif
-
-

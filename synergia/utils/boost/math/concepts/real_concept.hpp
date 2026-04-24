@@ -46,7 +46,7 @@
 #endif
 
 #if defined __has_include
-#  if __cplusplus > 202002L || _MSVC_LANG > 202002L 
+#  if __cplusplus > 202002L || _MSVC_LANG > 202002L
 #    if __has_include (<stdfloat>)
 #    include <stdfloat>
 #    endif
@@ -396,5 +396,3 @@ inline constexpr int digits<concepts::real_concept>(BOOST_MATH_EXPLICIT_TEMPLATE
 } // namespace boost
 
 #endif // BOOST_MATH_REAL_CONCEPT_HPP
-
-

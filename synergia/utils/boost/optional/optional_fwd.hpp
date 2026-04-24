@@ -38,4 +38,3 @@ template<class T> void swap ( optional<T&>& , optional<T&>& ) BOOST_NOEXCEPT;
 } // namespace boost
 
 #endif
-

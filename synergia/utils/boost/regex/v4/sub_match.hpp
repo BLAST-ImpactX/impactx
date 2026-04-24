@@ -3,8 +3,8 @@
  * Copyright (c) 1998-2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -117,7 +117,7 @@ struct sub_match : public std::pair<BidiIterator, BidiIterator>
 
    const capture_sequence_type& captures()const
    {
-      if(!m_captures) 
+      if(!m_captures)
          m_captures.reset(new capture_sequence_type());
       return *m_captures;
    }
@@ -126,7 +126,7 @@ struct sub_match : public std::pair<BidiIterator, BidiIterator>
    //
    capture_sequence_type& get_captures()const
    {
-      if(!m_captures) 
+      if(!m_captures)
          m_captures.reset(new capture_sequence_type());
       return *m_captures;
    }
@@ -136,14 +136,14 @@ private:
 public:
 
 #endif
-   sub_match(const sub_match& that, bool 
+   sub_match(const sub_match& that, bool
 #ifdef BOOST_REGEX_MATCH_EXTRA
       deep_copy
 #endif
       = true
-      ) 
-      : std::pair<BidiIterator, BidiIterator>(that), 
-        matched(that.matched) 
+      )
+      : std::pair<BidiIterator, BidiIterator>(that),
+        matched(that.matched)
    {
 #ifdef BOOST_REGEX_MATCH_EXTRA
       if(that.m_captures)
@@ -347,7 +347,7 @@ inline bool operator >= (typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<R
 
 // addition operators:
 template <class RandomAccessIterator, class traits, class Allocator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type, traits, Allocator> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type, traits, Allocator>
 operator + (const std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type, traits, Allocator>& s,
                   const sub_match<RandomAccessIterator>& m)
 {
@@ -356,7 +356,7 @@ operator + (const std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterat
    return result.append(s).append(m.first, m.second);
 }
 template <class RandomAccessIterator, class traits, class Allocator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type, traits, Allocator> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type, traits, Allocator>
 operator + (const sub_match<RandomAccessIterator>& m,
             const std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type, traits, Allocator>& s)
 {
@@ -366,7 +366,7 @@ operator + (const sub_match<RandomAccessIterator>& m,
 }
 #if !(defined(__GNUC__) && defined(BOOST_NO_STD_LOCALE))
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type const* s,
                   const sub_match<RandomAccessIterator>& m)
 {
@@ -375,7 +375,7 @@ operator + (typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIt
    return result.append(s).append(m.first, m.second);
 }
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (const sub_match<RandomAccessIterator>& m,
             typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type const * s)
 {
@@ -386,14 +386,14 @@ operator + (const sub_match<RandomAccessIterator>& m,
 #else
 // worwaround versions:
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type const* s,
                   const sub_match<RandomAccessIterator>& m)
 {
    return s + m.str();
 }
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (const sub_match<RandomAccessIterator>& m,
             typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type const * s)
 {
@@ -401,7 +401,7 @@ operator + (const sub_match<RandomAccessIterator>& m,
 }
 #endif
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type const& s,
                   const sub_match<RandomAccessIterator>& m)
 {
@@ -410,7 +410,7 @@ operator + (typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIt
    return result.append(1, s).append(m.first, m.second);
 }
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (const sub_match<RandomAccessIterator>& m,
             typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type const& s)
 {
@@ -419,7 +419,7 @@ operator + (const sub_match<RandomAccessIterator>& m,
    return result.append(m.first, m.second).append(1, s);
 }
 template <class RandomAccessIterator>
-inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type> 
+inline std::basic_string<typename BOOST_REGEX_DETAIL_NS::regex_iterator_traits<RandomAccessIterator>::value_type>
 operator + (const sub_match<RandomAccessIterator>& m1,
             const sub_match<RandomAccessIterator>& m2)
 {
@@ -513,4 +513,3 @@ sub_match<BidiIterator>::operator unsigned int()const
 #endif
 
 #endif
-

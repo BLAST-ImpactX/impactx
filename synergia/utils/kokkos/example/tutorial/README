@@ -1,4 +1,4 @@
-Build the examples by typing in each directory: 
+Build the examples by typing in each directory:
 make -j 16
 
 To specify a target device:
@@ -7,6 +7,5 @@ KOKKOS_DEVICES=Pthread make -j 16
 KOKKOS_DEVICES=Serial  make -j 16
 KOKKOS_DEVICES=Cuda    make -j 16
 
-Some of the advanced topics try to highlight performance impacts by timing 
+Some of the advanced topics try to highlight performance impacts by timing
 different variants of doing the same thing.
-

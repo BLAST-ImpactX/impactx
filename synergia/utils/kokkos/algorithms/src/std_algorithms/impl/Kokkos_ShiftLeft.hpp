@@ -50,8 +50,8 @@ IteratorType shift_left_exespace_impl(
     Suppose that n = 5, and our [first,last) spans:
 
     | 0  | 1  |  2 | 1  | 2  | 1  | 2  | 2  | 10 | -3 | 1  | -6 | *
-      ^                         				  ^
-    first							 last
+      ^                                           ^
+    first                            last
 
     shift_left modifies the range such that we have this data:
     | 1  | 2  | 2  | 10  | -3 | 1  | -6 | x | x  | x  | x  |  x | *

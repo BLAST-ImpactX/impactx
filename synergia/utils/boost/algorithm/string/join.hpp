@@ -17,7 +17,7 @@
 #include <boost/range/as_literal.hpp>
 
 /*! \file
-    Defines join algorithm. 
+    Defines join algorithm.
 
     Join algorithm is a counterpart to split algorithms.
     It joins strings from a 'list' by adding user defined separator.
@@ -42,7 +42,7 @@ namespace boost {
             \note This function provides the strong exception-safety guarantee
         */
         template< typename SequenceSequenceT, typename Range1T>
-        inline typename range_value<SequenceSequenceT>::type 
+        inline typename range_value<SequenceSequenceT>::type
         join(
             const SequenceSequenceT& Input,
             const Range1T& Separator)
@@ -57,7 +57,7 @@ namespace boost {
 
             // Construct container to hold the result
             ResultT Result;
-            
+
             // Append first element
             if(itBegin!=itEnd)
             {
@@ -92,7 +92,7 @@ namespace boost {
             \note This function provides the strong exception-safety guarantee
         */
         template< typename SequenceSequenceT, typename Range1T, typename PredicateT>
-        inline typename range_value<SequenceSequenceT>::type 
+        inline typename range_value<SequenceSequenceT>::type
         join_if(
             const SequenceSequenceT& Input,
             const Range1T& Separator,
@@ -142,4 +142,3 @@ namespace boost {
 
 
 #endif  // BOOST_STRING_JOIN_HPP
-

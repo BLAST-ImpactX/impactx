@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_STRING_TOKEN_DEF_MAR_28_2007_0722PM)
@@ -39,7 +39,7 @@ namespace boost { namespace spirit
     struct use_terminal<lex::domain
       , terminal_ex<
             tag::char_code<tag::string, CharEncoding>
-          , fusion::vector1<A0> > > 
+          , fusion::vector1<A0> > >
       : traits::is_string<A0> {};
 
     // enables string(str, ID)
@@ -47,12 +47,12 @@ namespace boost { namespace spirit
     struct use_terminal<lex::domain
       , terminal_ex<
             tag::char_code<tag::string, CharEncoding>
-          , fusion::vector2<A0, A1> > > 
+          , fusion::vector2<A0, A1> > >
       : traits::is_string<A0> {};
 }}
 
 namespace boost { namespace spirit { namespace lex
-{ 
+{
     // use string from standard character set by default
 #ifndef BOOST_SPIRIT_NO_PREDEFINED_TERMINALS
     using spirit::standard::string;
@@ -61,7 +61,7 @@ namespace boost { namespace spirit { namespace lex
 
     ///////////////////////////////////////////////////////////////////////////
     //
-    //  string_token_def 
+    //  string_token_def
     //      represents a string based token definition
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ namespace boost { namespace spirit { namespace lex
 
         string_token_def(typename add_reference<String>::type str, IdType const& id)
           : str_(str), id_(id), unique_id_(std::size_t(~0))
-          , token_state_(std::size_t(~0)) 
+          , token_state_(std::size_t(~0))
         {}
 
         template <typename LexerDef, typename String_>
@@ -86,10 +86,10 @@ namespace boost { namespace spirit { namespace lex
         {
             std::size_t state_id = lexdef.add_state(state.c_str());
 
-            // If the following assertion fires you are probably trying to use 
-            // a single string_token_def instance in more than one lexer state. 
-            // This is not possible. Please create a separate token_def instance 
-            // from the same regular expression for each lexer state it needs 
+            // If the following assertion fires you are probably trying to use
+            // a single string_token_def instance in more than one lexer state.
+            // This is not possible. Please create a separate token_def instance
+            // from the same regular expression for each lexer state it needs
             // to be associated with.
             BOOST_ASSERT(
                 (std::size_t(~0) == token_state_ || state_id == token_state_) &&
@@ -145,7 +145,7 @@ namespace boost { namespace spirit { namespace lex
       , Modifiers>
     {
         typedef typename add_const<A0>::type const_string;
-        typedef string_token_def<const_string, std::size_t, CharEncoding> 
+        typedef string_token_def<const_string, std::size_t, CharEncoding>
             result_type;
 
         template <typename Terminal>
@@ -174,4 +174,4 @@ namespace boost { namespace spirit { namespace lex
     };
 }}}  // namespace boost::spirit::lex
 
-#endif 
+#endif

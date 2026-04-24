@@ -50,8 +50,8 @@ IteratorType shift_right_exespace_impl(
     Suppose that n = 3, and [first,last) spans:
 
     | 0  | 1  |  2 | 1  | 2  | 1  | 2  | 2  | 10 | -3 | 1  | -6 | *
-      ^                         				  ^
-    first							 last
+      ^                                           ^
+    first                            last
 
     shift_right modifies the range such that we have this data:
     |  x | x  | x  | 0  | 1  |  2 | 1  | 2  | 1  | 2  | 2  | 10 | *

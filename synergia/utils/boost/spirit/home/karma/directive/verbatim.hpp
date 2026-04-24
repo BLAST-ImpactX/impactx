@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_VERBATIM_MAR_02_2007_0303PM)
@@ -63,13 +63,13 @@ namespace boost { namespace spirit { namespace karma
         bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d
           , Attribute const& attr) const
         {
-            //  the verbatim generator simply dispatches to the embedded 
+            //  the verbatim generator simply dispatches to the embedded
             //  generator while supplying unused_delimiter as the new delimiter
             //  to avoid delimiting down the generator stream
             typedef detail::unused_delimiter<Delimiter> unused_delimiter;
 
             return subject.generate(sink, ctx, unused_delimiter(d), attr) &&
-                   karma::delimit_out(sink, d);     // always do post-delimiting 
+                   karma::delimit_out(sink, d);     // always do post-delimiting
         }
 
         template <typename Context>

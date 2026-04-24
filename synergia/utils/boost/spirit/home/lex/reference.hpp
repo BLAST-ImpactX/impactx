@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2001-2011 Joel de Guzman
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_REFERENCE_APR_20_2009_0827AM)
@@ -25,7 +25,7 @@ namespace boost { namespace spirit { namespace lex
     // all lexer components are at the same time
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename IdType = unused_type>
-    struct reference; 
+    struct reference;
 
     template <typename Subject>
     struct reference<Subject, unused_type>
@@ -43,7 +43,7 @@ namespace boost { namespace spirit { namespace lex
         }
 
         template <typename LexerDef>
-        void add_actions(LexerDef& lexdef) const 
+        void add_actions(LexerDef& lexdef) const
         {
             this->ref.get().add_actions(lexdef);
         }
@@ -55,17 +55,17 @@ namespace boost { namespace spirit { namespace lex
         reference(Subject& subject)
           : reference<Subject>(subject) {}
 
-        IdType id() const 
-        { 
-            return this->ref.get().id(); 
+        IdType id() const
+        {
+            return this->ref.get().id();
         }
-        std::size_t unique_id() const 
-        { 
-            return this->ref.get().unique_id(); 
+        std::size_t unique_id() const
+        {
+            return this->ref.get().unique_id();
         }
-        std::size_t state() const 
-        { 
-            return this->ref.get().state(); 
+        std::size_t state() const
+        {
+            return this->ref.get().state();
         }
     };
 }}}
@@ -78,7 +78,7 @@ namespace boost { namespace spirit { namespace traits
     struct handles_container<lex::reference<Subject, IdType>
           , Attribute, Context, Iterator>
       : handles_container<
-            typename remove_const<Subject>::type, Attribute, Context, Iterator> 
+            typename remove_const<Subject>::type, Attribute, Context, Iterator>
     {};
 }}}
 

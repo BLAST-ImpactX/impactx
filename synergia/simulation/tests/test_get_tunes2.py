@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import sys, os
-import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 # This test is similar to test_get_tunes2.py but with the Booster-like lattice.
 

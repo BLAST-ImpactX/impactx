@@ -143,7 +143,7 @@ public:
         _mm512_store_ps(p, zmm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 16
     void store_nt(float * p) const {
@@ -786,12 +786,12 @@ public:
         _mm512_store_pd(p, zmm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 16
     void store_nt(double * p) const {
         _mm512_stream_pd(p, zmm);
-    } 
+    }
     // Partial load. Load n elements and set the rest to 0
     Vec8d & load_partial(int n, double const * p) {
         zmm = _mm512_maskz_loadu_pd(__mmask16((1<<n)-1), p);

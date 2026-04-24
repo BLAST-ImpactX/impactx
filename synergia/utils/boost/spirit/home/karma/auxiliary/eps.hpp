@@ -18,7 +18,7 @@
 #include <boost/spirit/home/support/unused.hpp>
 #include <boost/fusion/include/at.hpp>
 
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
     // Enablers
@@ -32,7 +32,7 @@ namespace boost { namespace spirit
     // enables eps(bool-condition)
     template <typename A0>
     struct use_terminal<karma::domain
-        , terminal_ex<tag::eps, fusion::vector1<A0> > > 
+        , terminal_ex<tag::eps, fusion::vector1<A0> > >
       : is_convertible<A0, bool> {};
 
     // enables lazy eps(f)
@@ -83,7 +83,7 @@ namespace boost { namespace spirit { namespace karma
         };
 
         semantic_predicate(bool predicate)
-          : predicate_(predicate) 
+          : predicate_(predicate)
         {}
 
         template <

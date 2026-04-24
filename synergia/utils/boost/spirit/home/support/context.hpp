@@ -232,7 +232,7 @@ namespace boost { namespace spirit
             return get_arg<N>((fusion::at_c<1>(env.args())).locals);
         }
     };
-    
+
     typedef phoenix::actor<attribute<0> > _val_type;
     typedef phoenix::actor<attribute<0> > _r0_type;
     typedef phoenix::actor<attribute<1> > _r1_type;

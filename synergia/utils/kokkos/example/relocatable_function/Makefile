@@ -26,7 +26,7 @@ test: $(EXE)
 $(EXE): $(OBJ) $(KOKKOS_LINK_DEPENDS)
 	$(LINK) $(KOKKOS_LDFLAGS) $(LDFLAGS) $(EXTRA_PATH) $(OBJ) $(KOKKOS_LIBS) -o $(EXE)
 
-clean: kokkos-clean 
+clean: kokkos-clean
 	rm -f *.o Kokkos_example_relocatable_function
 
 # Compilation rules

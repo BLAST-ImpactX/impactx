@@ -34,7 +34,7 @@ for Windows Server development.
 #   undef BOOST_PLAT_WINDOWS_SERVER
 #   define BOOST_PLAT_WINDOWS_SERVER BOOST_VERSION_NUMBER_AVAILABLE
 #endif
- 
+
 #if BOOST_PLAT_WINDOWS_SERVER
 #   define BOOST_PLAT_WINDOWS_SERVER_AVAILABLE
 #   include <boost/predef/detail/platform_detected.h>

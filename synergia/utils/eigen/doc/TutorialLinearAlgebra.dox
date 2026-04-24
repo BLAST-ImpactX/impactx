@@ -128,7 +128,7 @@ depending on your matrix, the problem you are trying to solve, and the trade-off
 </table>
 To get an overview of the true relative speed of the different decompositions, check this \link DenseDecompositionBenchmark benchmark \endlink.
 
-All of these decompositions offer a solve() method that works as in the above example. 
+All of these decompositions offer a solve() method that works as in the above example.
 
 If you know more about the properties of your matrix, you can use the above table to select the best method.
 For example, a good choice for solving linear systems with a non-symmetric matrix of full rank is PartialPivLU.
@@ -156,7 +156,7 @@ in the least squares sense, is the SVD decomposition. Eigen provides two impleme
 The recommended one is the BDCSVD class, which scales well for large problems
 and automatically falls back to the JacobiSVD class for smaller problems.
 For both classes, their solve() method solved the linear system in the least-squares
-sense. 
+sense.
 
 Here is an example:
 <table class="example">
@@ -167,7 +167,7 @@ Here is an example:
 </tr>
 </table>
 
-An alternative to the SVD, which is usually faster and about as accurate, is CompleteOrthogonalDecomposition. 
+An alternative to the SVD, which is usually faster and about as accurate, is CompleteOrthogonalDecomposition.
 
 Again, if you know more about the problem, the table above contains methods that are potentially faster.
 If your matrix is full rank, HouseHolderQR is the method of choice. If your matrix is full rank and well conditioned,

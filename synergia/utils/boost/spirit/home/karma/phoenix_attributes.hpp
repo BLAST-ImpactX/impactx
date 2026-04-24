@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_PHOENIX_ATTRIBUTES_OCT_01_2009_1128AM)
@@ -27,8 +27,8 @@ namespace boost { namespace phoenix
 namespace boost { namespace spirit { namespace traits
 {
     ///////////////////////////////////////////////////////////////////////////
-    // Provide customization points allowing the use of phoenix expressions as 
-    // generator functions in the context of generators expecting a container 
+    // Provide customization points allowing the use of phoenix expressions as
+    // generator functions in the context of generators expecting a container
     // attribute (Kleene, plus, list, repeat, etc.)
     ///////////////////////////////////////////////////////////////////////////
     template <typename Eval>
@@ -85,7 +85,7 @@ namespace boost { namespace spirit { namespace traits
     template <typename Eval>
     struct compare_iterators<phoenix::actor<Eval> const>
     {
-        static bool 
+        static bool
         call(phoenix::actor<Eval> const&, phoenix::actor<Eval> const&)
         {
             return false;

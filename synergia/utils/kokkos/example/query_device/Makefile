@@ -39,11 +39,10 @@ build: $(EXE)
 $(EXE): $(OBJ) $(KOKKOS_LINK_DEPENDS)
 	$(LINK) $(KOKKOS_LDFLAGS) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(KOKKOS_LIBS) $(LIB) -o $(EXE)
 
-clean: 
+clean:
 	rm -f *.a *.o *.cuda *.host
 
 # Compilation rules
 
 %.o:$(SRC_DIR)/%.cpp $(KOKKOS_CPP_DEPENDS)
 	$(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -c $<
-

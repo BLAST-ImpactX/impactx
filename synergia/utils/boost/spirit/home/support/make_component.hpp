@@ -62,7 +62,7 @@ namespace boost { namespace spirit { namespace detail
       : proto::transform_impl<Expr, State, Data>
     {
         typedef typename
-            proto::result_of::value<Expr>::type 
+            proto::result_of::value<Expr>::type
         value;
 
         typedef typename result_of::make_cons<value>::type elements;
@@ -407,7 +407,7 @@ namespace boost { namespace spirit { namespace detail
                         >::type()
                     );
             }
-            
+
             result_type operator()(
                 typename impl::expr_param expr
               , typename impl::state_param state

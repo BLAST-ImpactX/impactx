@@ -39,24 +39,24 @@ namespace boost { namespace spirit
     // enables columns(c)[g], where c provides the number of require columns
     template <typename T>
     struct use_directive<karma::domain
-          , terminal_ex<tag::columns, fusion::vector1<T> > > 
+          , terminal_ex<tag::columns, fusion::vector1<T> > >
       : mpl::true_ {};
 
     // enables *lazy* columns(c)[g]
     template <>
-    struct use_lazy_directive<karma::domain, tag::columns, 1> 
+    struct use_lazy_directive<karma::domain, tag::columns, 1>
       : mpl::true_ {};
 
     // enables columns(c, d)[g], where c provides the number of require columns
     // and d is the custom column-delimiter (default is karma::endl)
     template <typename T1, typename T2>
     struct use_directive<karma::domain
-          , terminal_ex<tag::columns, fusion::vector2<T1, T2> > > 
+          , terminal_ex<tag::columns, fusion::vector2<T1, T2> > >
       : boost::spirit::traits::matches<karma::domain, T2> {};
 
     // enables *lazy* columns(c, d)[g]
     template <>
-    struct use_lazy_directive<karma::domain, tag::columns, 2> 
+    struct use_lazy_directive<karma::domain, tag::columns, 2>
       : mpl::true_ {};
 
 }}
@@ -75,7 +75,7 @@ namespace boost { namespace spirit { namespace karma
 #  pragma warning(disable: 4512) // assignment operator could not be generated.
 #endif
         template <typename Delimiter, typename ColumnDelimiter>
-        struct columns_delimiter 
+        struct columns_delimiter
         {
             columns_delimiter(Delimiter const& delim
                   , ColumnDelimiter const& cdelim, unsigned int const numcols)
@@ -91,14 +91,14 @@ namespace boost { namespace spirit { namespace karma
                 if (!karma::delimit_out(sink, delimiter))
                     return false;
 
-                // now we count the number of invocations and emit the column 
+                // now we count the number of invocations and emit the column
                 // delimiter if needed
                 if ((++count % numcolumns) == 0)
                     return karma::delimit_out(sink, column_delimiter);
                 return true;
             }
 
-            // generate a final column delimiter if the last invocation didn't 
+            // generate a final column delimiter if the last invocation didn't
             // emit one
             template <typename OutputIterator>
             bool delimit_out(OutputIterator& sink) const
@@ -122,14 +122,14 @@ namespace boost { namespace spirit { namespace karma
     //  The columns_generator is used for columns(c, d)[...] directives.
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename NumColumns, typename ColumnsDelimiter>
-    struct columns_generator 
+    struct columns_generator
       : unary_generator<columns_generator<Subject, NumColumns, ColumnsDelimiter> >
     {
         typedef Subject subject_type;
         typedef ColumnsDelimiter delimiter_type;
 
         typedef mpl::int_<
-            subject_type::properties::value | delimiter_type::properties::value 
+            subject_type::properties::value | delimiter_type::properties::value
         > properties;
 
         template <typename Context, typename Iterator>
@@ -139,7 +139,7 @@ namespace boost { namespace spirit { namespace karma
 
         columns_generator(Subject const& subject, NumColumns const& cols
               , ColumnsDelimiter const& cdelimiter)
-          : subject(subject), numcolumns(cols), column_delimiter(cdelimiter) 
+          : subject(subject), numcolumns(cols), column_delimiter(cdelimiter)
         {
             // having zero number of columns doesn't make any sense
             BOOST_ASSERT(numcolumns > 0);
@@ -150,8 +150,8 @@ namespace boost { namespace spirit { namespace karma
         bool generate(OutputIterator& sink, Context& ctx
           , Delimiter const& delimiter, Attribute const& attr) const
         {
-            //  The columns generator dispatches to the embedded generator 
-            //  while supplying a new delimiter to use, wrapping the outer 
+            //  The columns generator dispatches to the embedded generator
+            //  while supplying a new delimiter to use, wrapping the outer
             //  delimiter.
             typedef detail::columns_delimiter<
                 Delimiter, ColumnsDelimiter
@@ -184,7 +184,7 @@ namespace boost { namespace spirit { namespace karma
             result_of::compile<karma::domain, eol_type, Modifiers>::type
         columns_delimiter_type;
         typedef columns_generator<
-            Subject, detail::default_columns, columns_delimiter_type> 
+            Subject, detail::default_columns, columns_delimiter_type>
         result_type;
 
         result_type operator()(unused_type, Subject const& subject

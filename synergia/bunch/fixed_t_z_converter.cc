@@ -86,7 +86,7 @@ Fixed_t_z_zeroth::from_z_lab_to_t_bunch(Bunch& bunch)
 #if 0
 #pragma omp parallel for shared(                                               \
     local_num, gb, particles, gamma, beta, m, p_ref, exception_flag)
-    for (int part = 0; part < local_num; ++part) 
+    for (int part = 0; part < local_num; ++part)
     {
         // z in beam rest frame
         particles[part][Bunch::z] = gb * particles[part][Bunch::cdt];
@@ -113,7 +113,7 @@ Fixed_t_z_zeroth::from_z_lab_to_t_bunch(Bunch& bunch)
 
 #pragma omp parallel for shared(                                               \
     local_s_num, gb, s_particles, gamma, beta, m, p_ref, exception_flag)
-    for (int part = 0; part < local_s_num; ++part) 
+    for (int part = 0; part < local_s_num; ++part)
     {
         // z in beam rest frame
         s_particles[part][Bunch::z] = gb * s_particles[part][Bunch::cdt];
@@ -163,7 +163,7 @@ Fixed_t_z_zeroth::from_t_bunch_to_z_lab(Bunch& bunch)
     double gb = - gamma*beta;
 
 #pragma omp parallel for shared(local_num, gb, particles, gamma, beta, m, p_ref)
-    for (int part = 0; part < local_num; ++part) 
+    for (int part = 0; part < local_num; ++part)
     {
         // ct in accelerator frame
         particles[part][Bunch::cdt] = particles[part][Bunch::z] / gb;
@@ -183,7 +183,7 @@ Fixed_t_z_zeroth::from_t_bunch_to_z_lab(Bunch& bunch)
 
 #pragma omp parallel for shared(                                               \
     local_s_num, gb, s_particles, gamma, beta, m, p_ref)
-    for (int part = 0; part < local_s_num; ++part) 
+    for (int part = 0; part < local_s_num; ++part)
     {
         // ct in accelerator frame
         s_particles[part][Bunch::cdt] = s_particles[part][Bunch::z] / gb;
@@ -217,7 +217,7 @@ Fixed_t_z_zeroth::from_z_lab_to_t_lab(Bunch& bunch)
     int local_s_num = bunch.get_local_spectator_num();
 
 #pragma omp parallel for shared(local_num, particles, beta, p_ref)
-    for (int part = 0; part < local_num; ++part) 
+    for (int part = 0; part < local_num; ++part)
     {
           // total momentum in accelerator frame
         double p = p_ref + particles[part][Bunch::dpop] * p_ref;
@@ -237,7 +237,7 @@ Fixed_t_z_zeroth::from_z_lab_to_t_lab(Bunch& bunch)
     }
 
 #pragma omp parallel for shared(local_s_num, s_particles, beta, p_ref)
-    for (int part = 0; part < local_s_num; ++part) 
+    for (int part = 0; part < local_s_num; ++part)
     {
           // total momentum in accelerator frame
         double p = p_ref + s_particles[part][Bunch::dpop] * p_ref;
@@ -272,7 +272,7 @@ Fixed_t_z_zeroth::from_t_lab_to_z_lab(Bunch& bunch)
     int local_s_num = bunch.get_local_spectator_num();
 
 #pragma omp parallel for shared(local_num, particles, beta, p_ref)
-    for (int part = 0; part < local_num; ++part) 
+    for (int part = 0; part < local_num; ++part)
     {
         // p'_{x,y,z} in beam rest frame
         double px = particles[part][Bunch::xp]* p_ref;
@@ -284,7 +284,7 @@ Fixed_t_z_zeroth::from_t_lab_to_z_lab(Bunch& bunch)
     }
 
 #pragma omp parallel for shared(local_s_num, s_particles, beta, p_ref)
-    for (int part = 0; part < local_s_num; ++part) 
+    for (int part = 0; part < local_s_num; ++part)
     {
         // p'_{x,y,z} in beam rest frame
         double px = s_particles[part][Bunch::xp]* p_ref;
@@ -313,7 +313,7 @@ Fixed_t_z_zeroth::from_t_lab_to_t_bunch(Bunch& bunch)
     int local_s_num = bunch.get_local_spectator_num();
 
 #pragma omp parallel for shared(local_num, particles, gamma, beta, m, p_ref)
-    for (int part = 0; part < local_num; ++part) 
+    for (int part = 0; part < local_num; ++part)
     {
         double px  = particles[part][Bunch::xp] * p_ref;
         double py  = particles[part][Bunch::yp] * p_ref;
@@ -326,7 +326,7 @@ Fixed_t_z_zeroth::from_t_lab_to_t_bunch(Bunch& bunch)
     }
 
 #pragma omp parallel for shared(local_s_num, s_particles, gamma, beta, m, p_ref)
-    for (int part = 0; part < local_s_num; ++part) 
+    for (int part = 0; part < local_s_num; ++part)
     {
         double px  = s_particles[part][Bunch::xp] * p_ref;
         double py  = s_particles[part][Bunch::yp] * p_ref;
@@ -356,7 +356,7 @@ Fixed_t_z_zeroth::from_t_bunch_to_t_lab(Bunch& bunch)
     int local_s_num = bunch.get_local_spectator_num();
 
 #pragma omp parallel for shared(local_num, particles, gamma, beta, m, p_ref)
-    for (int part = 0; part < local_num; ++part) 
+    for (int part = 0; part < local_num; ++part)
     {
           // p'_{x,y,z} in beam rest frame
         double pxp = particles[part][Bunch::xp] * p_ref;
@@ -372,7 +372,7 @@ Fixed_t_z_zeroth::from_t_bunch_to_t_lab(Bunch& bunch)
     }
 
 #pragma omp parallel for shared(local_s_num, s_particles, gamma, beta, m, p_ref)
-    for (int part = 0; part < local_s_num; ++part) 
+    for (int part = 0; part < local_s_num; ++part)
     {
           // p'_{x,y,z} in beam rest frame
         double pxp = s_particles[part][Bunch::xp] * p_ref;

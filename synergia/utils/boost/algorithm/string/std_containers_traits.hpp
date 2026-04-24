@@ -11,7 +11,7 @@
 #ifndef BOOST_STRING_STD_CONTAINERS_TRAITS_HPP
 #define BOOST_STRING_STD_CONTAINERS_TRAITS_HPP
 
-/*!\file 
+/*!\file
     This file includes sequence traits for stl containers.
 */
 

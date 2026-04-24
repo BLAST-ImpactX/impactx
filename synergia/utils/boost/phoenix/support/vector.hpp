@@ -109,7 +109,7 @@ namespace boost { namespace phoenix
     struct BOOST_PP_CAT(vector, BOOST_PHOENIX_ITERATION)
     {
         BOOST_PP_REPEAT(BOOST_PHOENIX_ITERATION, M0, _)
-        
+
         typedef mpl::int_<BOOST_PHOENIX_ITERATION> size_type;
         static const int size_value = BOOST_PHOENIX_ITERATION;
 

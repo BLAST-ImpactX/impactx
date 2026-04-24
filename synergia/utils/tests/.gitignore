@@ -25,4 +25,3 @@ test_lsexpr
 *.h5
 lsexpr_file.lsx
 logger-log*
-

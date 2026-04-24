@@ -1,13 +1,13 @@
 
 SRC_DIR=${KOKKOS_PATH}/core/unit_test/configuration/test-code
-# List of parallel device types 
+# List of parallel device types
 HostPDevices=(OpenMP Threads)
 if [ ! -z "$KOKKOS_ARCH_TEST" ]; then
   HostPDevices=(OpenMP)
 fi
 
 if [ ! -z "$HPX_ROOT" ]
-then 
+then
   HostPDevices=(${HostPDevices[@]} HPX)
 fi
 
@@ -40,6 +40,5 @@ do
     #export CXX=g++
     ${SRC_DIR}/test_config_arch_list.bash "$hpdevice" "${CMAKE_HPDEVICE}"
     ${SRC_DIR}/test_config_arch_list.bash "$hpdevice,Serial" "${CMAKE_HPDEVICE} -DKokkos_ENABLE_SERIAL=ON"
-  fi 
+  fi
 done
-

@@ -32,7 +32,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct action_parser_category;
 
     // match.hpp
-    template<typename T> class match; 
+    template<typename T> class match;
 
     // primitives/primitives.hpp
     template<class ParserT> struct negated_char_parser;
@@ -55,7 +55,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct blank_parser;
     struct space_parser;
     struct eol_parser;
-    struct end_parser; 
+    struct end_parser;
 
     // non_terminal/parser_context.hpp
     template<typename T> struct parser_context;
@@ -67,10 +67,10 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct parser_address_tag;
 
     // non_terminal/rule.hpp
-    template<typename T0, typename T1, typename T2> class rule; 
+    template<typename T0, typename T1, typename T2> class rule;
 
     // non_terminal/grammar.hpp
-    template<class DerivedT, typename ContextT> struct grammar; 
+    template<class DerivedT, typename ContextT> struct grammar;
 
     // composite.hpp
     template<class ParserT, typename ActionT> class action;
@@ -105,7 +105,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct assign_action;
     struct push_back_action;
     template<typename T, typename ActionT> class ref_value_actor;
-    template<typename T, typename ValueT, typename ActionT> 
+    template<typename T, typename ValueT, typename ActionT>
     class ref_const_ref_actor;
 
 BOOST_SPIRIT_CLASSIC_NAMESPACE_END
@@ -340,4 +340,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 
 
 #endif
- 

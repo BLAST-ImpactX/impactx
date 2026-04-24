@@ -29,7 +29,7 @@ namespace FF_element
 
         switch(t)
         {
-        case element_type::drift:      FF_drift::apply(slice, b); break; 
+        case element_type::drift:      FF_drift::apply(slice, b); break;
         case element_type::sbend:      FF_sbend::apply(slice, b); break;
         case element_type::quadrupole: FF_quadrupole::apply(slice, b); break;
 
@@ -57,11 +57,11 @@ namespace FF_element
         case element_type::dipedge:    FF_dipedge::apply(slice, b); break;
         case element_type::matrix:     FF_matrix::apply(slice, b); break;
 
-        default: 
+        default:
             throw std::runtime_error(
-                    "FF_element::apply() unknown element type = " + 
+                    "FF_element::apply() unknown element type = " +
                         elm.get_type_name() +
-                    ", element name = " + 
+                    ", element name = " +
                         elm.get_name() );
         }
     }
@@ -85,12 +85,12 @@ public:
 
 #if 0
     template<size_t I>
-    virtual void apply(Lattice_element_slice const& slice, 
+    virtual void apply(Lattice_element_slice const& slice,
             Trigon_particle<I> & trigon)
     { }
 #endif
 
-    virtual void apply(Lattice_element_slice const& slice, 
+    virtual void apply(Lattice_element_slice const& slice,
             Bunch & bunch)
     { }
 

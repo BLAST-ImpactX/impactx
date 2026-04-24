@@ -207,11 +207,11 @@ namespace boost { namespace proto
     /// struct int_terminal
     ///   : proto::terminal<int>
     /// {};
-    /// 
+    ///
     /// struct char_terminal
     ///   : proto::terminal<char>
     /// {};
-    /// 
+    ///
     /// struct my_grammar
     ///   : proto::or_<
     ///         proto::when< int_terminal, proto::external_transform >
@@ -222,7 +222,7 @@ namespace boost { namespace proto
     ///         >
     ///     >
     /// {};
-    /// 
+    ///
     /// struct my_transforms
     ///   : proto::external_transforms<
     ///         proto::when<int_terminal, print(proto::_value)>

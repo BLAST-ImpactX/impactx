@@ -85,19 +85,19 @@ namespace boost
                                                  boost::begin(r),
                                                  boost::end(r) );
         }
-        
+
         template< class Left, class Right >
         inline bool greater_than( const Left& l, const Right& r )
         {
             return iterator_range_detail::less_than(r,l);
         }
-        
+
         template< class Left, class Right >
         inline bool less_or_equal_than( const Left& l, const Right& r )
         {
             return !iterator_range_detail::less_than(r,l);
         }
-        
+
         template< class Left, class Right >
         inline bool greater_or_equal_than( const Left& l, const Right& r )
         {
@@ -267,7 +267,7 @@ public:
        BOOST_ASSERT(n >= difference_type());
        std::advance(this->m_Begin, n);
    }
-   
+
    // Deprecated
    void pop_front() { drop_front(); }
 
@@ -335,7 +335,7 @@ public:
         BOOST_ASSERT(n >= difference_type());
         std::advance(this->m_End, -n);
     }
-    
+
     // Deprecated
     void pop_back() { drop_back(); }
 };
@@ -606,7 +606,7 @@ public:
         {
             return iterator_range_detail::less_than( l, r );
         }
-        
+
         template< class IteratorT, class ForwardRange >
         inline BOOST_DEDUCED_TYPENAME boost::enable_if<
             mpl::not_<boost::is_base_and_derived<iterator_range_detail::iterator_range_tag, ForwardRange> >,
@@ -616,7 +616,7 @@ public:
         {
             return iterator_range_detail::less_or_equal_than( l, r );
         }
-        
+
         template< class IteratorT, class ForwardRange >
         inline BOOST_DEDUCED_TYPENAME boost::enable_if<
             mpl::not_<boost::is_base_and_derived<iterator_range_detail::iterator_range_tag, ForwardRange> >,
@@ -626,7 +626,7 @@ public:
         {
             return iterator_range_detail::greater_than( l, r );
         }
-        
+
         template< class IteratorT, class ForwardRange >
         inline BOOST_DEDUCED_TYPENAME boost::enable_if<
             mpl::not_<boost::is_base_and_derived<iterator_range_detail::iterator_range_tag, ForwardRange> >,
@@ -689,14 +689,14 @@ public:
         {
             return iterator_range_detail::less_than( l, r );
         }
-        
+
         template< class Iterator1T, class Iterator2T >
         inline bool
         operator<=( const iterator_range<Iterator1T>& l, const iterator_range<Iterator2T>& r )
         {
             return iterator_range_detail::less_or_equal_than( l, r );
         }
-        
+
         template< class IteratorT, class ForwardRange >
         inline BOOST_DEDUCED_TYPENAME boost::enable_if<
             mpl::not_<boost::is_base_and_derived<iterator_range_detail::iterator_range_tag, ForwardRange> >,
@@ -706,14 +706,14 @@ public:
         {
             return iterator_range_detail::less_or_equal_than( l, r );
         }
-        
+
         template< class Iterator1T, class Iterator2T >
         inline bool
         operator>( const iterator_range<Iterator1T>& l, const iterator_range<Iterator2T>& r )
         {
             return iterator_range_detail::greater_than( l, r );
         }
-        
+
         template< class IteratorT, class ForwardRange >
         inline BOOST_DEDUCED_TYPENAME boost::enable_if<
             mpl::not_<boost::is_base_and_derived<iterator_range_detail::iterator_range_tag, ForwardRange> >,
@@ -723,14 +723,14 @@ public:
         {
             return iterator_range_detail::greater_than( l, r );
         }
-        
+
         template< class Iterator1T, class Iterator2T >
         inline bool
         operator>=( const iterator_range<Iterator1T>& l, const iterator_range<Iterator2T>& r )
         {
             return iterator_range_detail::greater_or_equal_than( l, r );
         }
-        
+
         template< class IteratorT, class ForwardRange >
         inline BOOST_DEDUCED_TYPENAME boost::enable_if<
             mpl::not_<boost::is_base_and_derived<iterator_range_detail::iterator_range_tag, ForwardRange> >,
@@ -849,4 +849,3 @@ public:
 #endif
 
 #endif
-

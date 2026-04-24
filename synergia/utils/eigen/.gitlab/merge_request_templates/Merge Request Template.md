@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Thanks for contributing a merge request! Please name and fully describe your MR as you would for a commit message.
 If the MR fixes an issue, please include "Fixes #issue" in the commit message and the MR description.
 

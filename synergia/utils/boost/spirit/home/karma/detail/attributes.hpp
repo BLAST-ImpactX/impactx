@@ -18,8 +18,8 @@ namespace boost { namespace spirit { namespace karma
     struct transform_attribute
     {
         typedef Transformed type;
-        static Transformed pre(Exposed& val) 
-        { 
+        static Transformed pre(Exposed& val)
+        {
             return Transformed(traits::extract_from<Transformed>(val, unused));
         }
         // Karma only, no post() and no fail() required

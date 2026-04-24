@@ -41,7 +41,7 @@ namespace boost { namespace spirit { namespace x3
         struct is_unused_skipper<unused_skipper<Skipper>>
           : mpl::true_ {};
 
-        template <> 
+        template <>
         struct is_unused_skipper<unused_type>
           : mpl::true_ {};
 
@@ -80,7 +80,7 @@ namespace boost { namespace spirit { namespace x3
 
     // this tag is used to find the skipper from the context
     struct skipper_tag;
-    
+
     template <typename Context>
     struct has_skipper
       : mpl::not_<detail::is_unused_skipper<

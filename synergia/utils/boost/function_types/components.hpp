@@ -63,17 +63,17 @@
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-namespace boost 
-{ 
-  namespace function_types 
+namespace boost
+{
+  namespace function_types
   {
 
     using mpl::placeholders::_;
 
-    template< typename T, typename ClassTypeTransform = add_reference<_> > 
+    template< typename T, typename ClassTypeTransform = add_reference<_> >
     struct components;
 
-    namespace detail 
+    namespace detail
     {
       template<typename T, typename L> struct components_impl;
 #if BOOST_WORKAROUND(BOOST_BORLANDC, <= 0x565)
@@ -81,7 +81,7 @@ namespace boost
 #endif
     }
 
-    template<typename T, typename ClassTypeTransform> 
+    template<typename T, typename ClassTypeTransform>
     struct components
 #if !BOOST_WORKAROUND(BOOST_BORLANDC, <= 0x565)
       : detail::components_impl<T, ClassTypeTransform>
@@ -89,7 +89,7 @@ namespace boost
       : detail::components_bcc<typename remove_cv<T>::type,T,
             ClassTypeTransform>
 #endif
-    { 
+    {
       typedef components<T,ClassTypeTransform> type;
 
       BOOST_MPL_AUX_LAMBDA_SUPPORT(2,components,(T,ClassTypeTransform))
@@ -99,7 +99,7 @@ namespace boost
 
   namespace detail {
 
-    struct components_mpl_sequence_tag; 
+    struct components_mpl_sequence_tag;
 
     struct components_non_func_base
     {
@@ -126,9 +126,9 @@ namespace boost
         >::type
     { };
 
-    // We detect plain function types and function references as function 
-    // pointers by recursive instantiation of components_impl. 
-    // The third specialization of components_impl makes sure the recursion 
+    // We detect plain function types and function references as function
+    // pointers by recursive instantiation of components_impl.
+    // The third specialization of components_impl makes sure the recursion
     // terminates (when adding pointers).
     template<typename T, typename L>
     struct components_impl
@@ -176,36 +176,36 @@ namespace boost
     template<typename T, typename L>
     struct components_impl<T*, L>
       : components_non_func_base
-    { }; 
+    { };
 #endif
 
     template<typename T, typename L>
-    struct components_impl<T* const, L> 
+    struct components_impl<T* const, L>
       : components_impl<T*,L>
     { };
 
     template<typename T, typename L>
-    struct components_impl<T* volatile, L> 
+    struct components_impl<T* volatile, L>
       : components_impl<T*,L>
     { };
 
     template<typename T, typename L>
-    struct components_impl<T* const volatile, L> 
+    struct components_impl<T* const volatile, L>
       : components_impl<T*,L>
     { };
 
     template<typename T, typename L>
-    struct components_impl<T const, L> 
+    struct components_impl<T const, L>
       : components_impl<T,L>
     { };
 
     template<typename T, typename L>
-    struct components_impl<T volatile, L> 
+    struct components_impl<T volatile, L>
       : components_impl<T,L>
     { };
 
     template<typename T, typename L>
-    struct components_impl<T const volatile, L> 
+    struct components_impl<T const volatile, L>
       : components_impl<T,L>
     { };
 
@@ -263,11 +263,11 @@ namespace boost
       : member_obj_ptr_components<T,C,L>
     { };
 
-#else  
+#else
 #   define BOOST_FT_variations BOOST_FT_pointer
 
-    // This workaround removes the member pointer from the type to allow 
-    // detection of member function pointers with BCC. 
+    // This workaround removes the member pointer from the type to allow
+    // detection of member function pointers with BCC.
     template<typename T, typename C, typename L>
     struct components_impl<T C::*, L>
       : detail::retagged_if
@@ -276,11 +276,11 @@ namespace boost
         , member_obj_ptr_components<T,C,L> >
     { };
 
-    // BCC lets us test the cv-qualification of a function type by template 
-    // partial specialization - so we use this bug feature to find out the 
-    // member function's cv-qualification (unfortunately there are some 
+    // BCC lets us test the cv-qualification of a function type by template
+    // partial specialization - so we use this bug feature to find out the
+    // member function's cv-qualification (unfortunately there are some
     // invisible modifiers that impose some limitations on these types even if
-    // we remove the qualifiers, So we cannot exploit the same bug to make the 
+    // we remove the qualifiers, So we cannot exploit the same bug to make the
     // library work for cv-qualified function types).
     template<typename T> struct encode_cv
     { typedef char (& type)[1]; BOOST_STATIC_CONSTANT(std::size_t, value = 1); };
@@ -288,19 +288,19 @@ namespace boost
     { typedef char (& type)[2]; BOOST_STATIC_CONSTANT(std::size_t, value = 2); };
     template<typename T> struct encode_cv<T volatile *>
     { typedef char (& type)[3]; BOOST_STATIC_CONSTANT(std::size_t, value = 3); };
-    template<typename T> struct encode_cv<T const volatile *> 
+    template<typename T> struct encode_cv<T const volatile *>
     { typedef char (& type)[4]; BOOST_STATIC_CONSTANT(std::size_t, value = 4); };
 
     // For member function pointers we have to use a function template (partial
-    // template specialization for a member pointer drops the cv qualification 
+    // template specialization for a member pointer drops the cv qualification
     // of the function type).
     template<typename T, typename C>
     typename encode_cv<T *>::type mfp_cv_tester(T C::*);
 
     template<typename T> struct encode_mfp_cv
-    { 
-      BOOST_STATIC_CONSTANT(std::size_t, value = 
-          sizeof(detail::mfp_cv_tester((T)0L))); 
+    {
+      BOOST_STATIC_CONSTANT(std::size_t, value =
+          sizeof(detail::mfp_cv_tester((T)0L)));
     };
 
     // Associate bits with the CV codes above.
@@ -323,40 +323,40 @@ namespace boost
     template<typename T> struct decode_cv<T,1> : mpl::identity<T *>          {};
     template<typename T> struct decode_cv<T,2> : mpl::identity<T const *>    {};
     template<typename T> struct decode_cv<T,3> : mpl::identity<T volatile *> {};
-    template<typename T> struct decode_cv<T,4> 
+    template<typename T> struct decode_cv<T,4>
                                          : mpl::identity<T const volatile *> {};
 
     // The class type transformation comes after adding cv-qualifiers. We have
     // wrap it to remove the pointer added in decode_cv_impl.
     template<typename T, typename L> struct bcc_class_transform_impl;
     template<typename T, typename L> struct bcc_class_transform_impl<T *, L>
-      : class_transform<T,L> 
+      : class_transform<T,L>
     { };
 
-    template<typename T, typename D, typename L> struct bcc_class_transform 
+    template<typename T, typename D, typename L> struct bcc_class_transform
       : bcc_class_transform_impl
         < typename decode_cv
           < T
-          , ::boost::function_types::detail::encode_mfp_cv<D>::value 
+          , ::boost::function_types::detail::encode_mfp_cv<D>::value
           >::type
         , L
-        > 
+        >
     { };
 
     // After extracting the member pointee from the type the class type is still
     // in the type (somewhere -- you won't see with RTTI, that is) and that type
     // is flagged unusable and *not* identical to the nonmember function type.
     // We can, however, decompose this type via components_impl but surprisingly
-    // a pointer to the const qualified class type pops up again as the first 
-    // parameter type. 
-    // We have to replace this type with the properly cv-qualified and 
+    // a pointer to the const qualified class type pops up again as the first
+    // parameter type.
+    // We have to replace this type with the properly cv-qualified and
     // transformed class type, integrate the cv qualification into the bits.
     template<typename Base, typename MFP, typename OrigT, typename L>
     struct mfp_components;
 
 
     template<typename Base, typename T, typename C, typename OrigT, typename L>
-    struct mfp_components<Base,T C::*,OrigT,L> 
+    struct mfp_components<Base,T C::*,OrigT,L>
     {
     private:
       typedef typename mpl::front<typename Base::types>::type result_type;
@@ -364,13 +364,13 @@ namespace boost
 
       typedef mpl::vector2<result_type, class_type> result_and_class_type;
 
-      typedef typename 
+      typedef typename
         mpl::advance
         < typename mpl::begin<typename Base::types>::type
         , typename mpl::if_
           < mpl::equal_to< typename detail::classifier<OrigT>::function_arity
                          , typename Base::function_arity >
-          , mpl::integral_c<int,2> , mpl::integral_c<int,1> 
+          , mpl::integral_c<int,2> , mpl::integral_c<int,1>
           >::type
         >::type
       from;
@@ -381,12 +381,12 @@ namespace boost
       typedef mpl::joint_view< result_and_class_type, param_types> types_view;
     public:
 
-      typedef typename 
-        mpl::reverse_copy<types_view, mpl::front_inserter< mpl::vector0<> > >::type 
+      typedef typename
+        mpl::reverse_copy<types_view, mpl::front_inserter< mpl::vector0<> > >::type
       types;
 
-      typedef typename 
-        function_types::tag< Base, detail::cv_tag_mfp<OrigT> >::bits 
+      typedef typename
+        function_types::tag< Base, detail::cv_tag_mfp<OrigT> >::bits
       bits;
 
       typedef typename Base::mask mask;
@@ -421,4 +421,3 @@ namespace boost
 #include <boost/function_types/detail/retag_default_cc.hpp>
 
 #endif
-

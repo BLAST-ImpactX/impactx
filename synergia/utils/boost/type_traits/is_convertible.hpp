@@ -74,7 +74,7 @@ namespace detail {
    struct is_convertible_basic_impl
    {
       // Nothing converts to function or array, but void converts to void:
-      static const bool value = is_void<To>::value; 
+      static const bool value = is_void<To>::value;
    };
 
    template<typename From, typename To>
@@ -183,7 +183,7 @@ struct is_convertible_basic_impl
     static ::boost::type_traits::no_type BOOST_TT_DECL _m_check(any_conversion ...);
     static ::boost::type_traits::yes_type BOOST_TT_DECL _m_check(To, int);
     typedef typename add_lvalue_reference<From>::type lvalue_type;
-    typedef typename add_rvalue_reference<From>::type rvalue_type; 
+    typedef typename add_rvalue_reference<From>::type rvalue_type;
     static lvalue_type _m_from;
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
@@ -234,7 +234,7 @@ struct is_convertible_basic_impl
 };
 
 #elif defined(__MWERKS__)
-// 
+//
 // CW works with the technique implemented above for EDG, except when From
 // is a function type (or a reference to such a type), in which case
 // any_conversion won't be accepted as a valid conversion. We detect this
@@ -258,7 +258,7 @@ struct is_convertible_basic_impl_aux<From,To,false /*FromIsFunctionRef*/>
     static ::boost::type_traits::no_type BOOST_TT_DECL _m_check(any_conversion ...);
     static ::boost::type_traits::yes_type BOOST_TT_DECL _m_check(To, int);
     typedef typename add_lvalue_reference<From>::type lvalue_type;
-    typedef typename add_rvalue_reference<From>::type rvalue_type; 
+    typedef typename add_rvalue_reference<From>::type rvalue_type;
     static lvalue_type _m_from;
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
@@ -333,7 +333,7 @@ struct is_convertible_basic_impl
 #endif
 #endif
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    typedef typename add_rvalue_reference<From>::type rvalue_type; 
+    typedef typename add_rvalue_reference<From>::type rvalue_type;
     BOOST_STATIC_CONSTANT(bool, value =
         sizeof( _m_check(static_cast<rvalue_type>(_m_from)) ) == sizeof(::boost::type_traits::yes_type)
         );
@@ -354,8 +354,8 @@ struct is_convertible_basic_impl
 template <typename From, typename To>
 struct is_convertible_impl
 {
-    enum { 
-       value = ( ::boost::detail::is_convertible_basic_impl<From,To>::value && ! ::boost::is_array<To>::value && ! ::boost::is_function<To>::value) 
+    enum {
+       value = ( ::boost::detail::is_convertible_basic_impl<From,To>::value && ! ::boost::is_array<To>::value && ! ::boost::is_function<To>::value)
     };
 };
 #elif !defined(BOOST_BORLANDC) || BOOST_BORLANDC > 0x551
@@ -410,8 +410,8 @@ template <typename From, typename To>
 struct is_convertible_impl_dispatch_base
 {
 #if !BOOST_WORKAROUND(__HP_aCC, < 60700)
-   typedef is_convertible_impl_select< 
-      ::boost::is_arithmetic<From>::value, 
+   typedef is_convertible_impl_select<
+      ::boost::is_arithmetic<From>::value,
       ::boost::is_arithmetic<To>::value,
 #if !defined(BOOST_NO_IS_ABSTRACT) && !defined(BOOST_TT_CXX11_IS_CONVERTIBLE)
       // We need to filter out abstract types, only if we don't have a strictly conforming C++11 version:
@@ -428,7 +428,7 @@ struct is_convertible_impl_dispatch_base
 };
 
 template <typename From, typename To>
-struct is_convertible_impl_dispatch 
+struct is_convertible_impl_dispatch
    : public is_convertible_impl_dispatch_base<From, To>::type
 {};
 
@@ -477,8 +477,8 @@ template <class From> struct is_convertible_impl_dispatch<From, void volatile> :
 
 } // namespace detail
 
-template <class From, class To> 
-struct is_convertible : public integral_constant<bool, ::boost::detail::is_convertible_impl_dispatch<From, To>::value> 
+template <class From, class To>
+struct is_convertible : public integral_constant<bool, ::boost::detail::is_convertible_impl_dispatch<From, To>::value>
 {
    BOOST_STATIC_ASSERT_MSG(boost::is_complete<To>::value || boost::is_void<To>::value || boost::is_array<To>::value, "Destination argument type to is_convertible must be a complete type");
    BOOST_STATIC_ASSERT_MSG(boost::is_complete<From>::value || boost::is_void<From>::value || boost::is_array<From>::value, "From argument type to is_convertible must be a complete type");
@@ -487,7 +487,7 @@ struct is_convertible : public integral_constant<bool, ::boost::detail::is_conve
 #else
 
 template <class From, class To>
-struct is_convertible : public integral_constant<bool, BOOST_IS_CONVERTIBLE(From, To)> 
+struct is_convertible : public integral_constant<bool, BOOST_IS_CONVERTIBLE(From, To)>
 {
 #if defined(BOOST_MSVC)
    BOOST_STATIC_ASSERT_MSG(boost::is_complete<From>::value || boost::is_void<From>::value || boost::is_array<From>::value || boost::is_reference<From>::value, "From argument type to is_convertible must be a complete type");

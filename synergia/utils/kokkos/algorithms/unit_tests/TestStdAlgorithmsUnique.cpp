@@ -167,9 +167,9 @@ void verify_data(const std::string& name, ResultIt my_result_it,
   auto view_test_h = create_host_space_copy(view_test);
   for (std::size_t i = 0; i < std_diff; ++i) {
     // std::cout << "i = " << i
-    // 		<< " my  = " << view_test_h(i) << " "
-    // 		<< " std = " << data_v_h(i)
-    // 		<< '\n';
+    //      << " my  = " << view_test_h(i) << " "
+    //      << " std = " << data_v_h(i)
+    //      << '\n';
     ASSERT_EQ(view_test_h(i), data_v_h(i));
   }
 

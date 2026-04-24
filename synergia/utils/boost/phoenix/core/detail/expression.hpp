@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2010 Thomas Heller
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
@@ -167,7 +167,7 @@ namespace boost { namespace phoenix                                             
               , BOOST_PP_ENUM_PARAMS(BOOST_PP_SEQ_SIZE(GRAMMAR_SEQ), A)>        \
         {};                                                                     \
 /**/
-        
+
 #define BOOST_PHOENIX_DEFINE_EXPRESSION_RULE_DEFAULT(NAME_SEQ, GRAMMAR_SEQ, D)  \
     struct BOOST_PP_SEQ_HEAD(BOOST_PP_SEQ_REVERSE(NAME_SEQ))                    \
         : expression:: BOOST_PP_SEQ_HEAD(BOOST_PP_SEQ_REVERSE(NAME_SEQ))        \

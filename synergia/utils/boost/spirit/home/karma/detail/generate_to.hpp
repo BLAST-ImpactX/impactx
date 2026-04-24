@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_DETAIL_GENERATE_TO_FEB_20_2007_0417PM)
@@ -14,17 +14,17 @@
 #include <boost/spirit/home/support/char_class.hpp>
 #include <boost/spirit/home/karma/detail/output_iterator.hpp>
 
-namespace boost { namespace spirit { namespace karma { namespace detail 
+namespace boost { namespace spirit { namespace karma { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
-    //  These utility functions insert the given parameter into the supplied 
+    //  These utility functions insert the given parameter into the supplied
     //  output iterator.
     //  If the attribute is spirit's unused_type, this is a no_op.
     ///////////////////////////////////////////////////////////////////////////
     template <
         typename OutputIterator, typename Attribute, typename CharEncoding
       , typename Tag>
-    inline bool 
+    inline bool
     generate_to(OutputIterator& sink, Attribute const& p, CharEncoding, Tag)
     {
         *sink = spirit::char_class::convert<CharEncoding>::to(Tag(), p);
@@ -33,7 +33,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     }
 
     template <typename OutputIterator, typename Attribute>
-    inline bool 
+    inline bool
     generate_to(OutputIterator& sink, Attribute const& p, unused_type, unused_type)
     {
         *sink = p;
@@ -48,7 +48,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     }
 
     template <typename OutputIterator, typename Attribute>
-    inline bool 
+    inline bool
     generate_to(OutputIterator& sink, Attribute const& p)
     {
         *sink = p;

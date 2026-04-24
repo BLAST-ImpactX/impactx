@@ -79,9 +79,9 @@ namespace boost { namespace spirit { namespace qi
       , Iterator last
       , Expr& expr)
     {
-        // Make sure the iterator is at least a forward_iterator. If you got a 
+        // Make sure the iterator is at least a forward_iterator. If you got a
         // compilation error here, then you are using an input_iterator while
-        // calling this function, you need to supply at least a 
+        // calling this function, you need to supply at least a
         // forward_iterator instead.
         BOOST_CONCEPT_ASSERT((ForwardIterator<Iterator>));
 
@@ -98,9 +98,9 @@ namespace boost { namespace spirit { namespace qi
       , Skipper const& skipper
       , BOOST_SCOPED_ENUM(skip_flag) post_skip = skip_flag::postskip)
     {
-        // Make sure the iterator is at least a forward_iterator. If you got a 
+        // Make sure the iterator is at least a forward_iterator. If you got a
         // compilation error here, then you are using an input_iterator while
-        // calling this function, you need to supply at least a 
+        // calling this function, you need to supply at least a
         // forward_iterator instead.
         BOOST_CONCEPT_ASSERT((ForwardIterator<Iterator>));
 
@@ -110,4 +110,3 @@ namespace boost { namespace spirit { namespace qi
 }}}
 
 #endif
-

@@ -18,7 +18,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
     ///////////////////////////////////////////////////////////////////////////
     //  Summary:
-    //  A semantic action policy that insert data into an associative 
+    //  A semantic action policy that insert data into an associative
     //  container using a const reference to a key.
     //  (This doc uses convention available in actors.hpp)
     //
@@ -31,12 +31,12 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     //      insert_at_action
     //
     //  Policy holder, corresponding helper method:
-    //      ref_const_ref_value_actor, insert_at_a( ref, key_ref ); 
+    //      ref_const_ref_value_actor, insert_at_a( ref, key_ref );
     //      ref_const_ref_const_ref_actor, insert_a( ref, key_ref, value_ref );
     //
     //  () operators: both
     //
-    //  See also ref_const_ref_value_actor and ref_const_ref_const_ref_actor 
+    //  See also ref_const_ref_value_actor and ref_const_ref_const_ref_actor
     //  for more details.
     ///////////////////////////////////////////////////////////////////////////
     struct insert_at_action
@@ -47,7 +47,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             typename ValueT
         >
         void act(
-            T& ref_, 
+            T& ref_,
             ReferentT const& key_,
             ValueT const& value_
             ) const
@@ -62,9 +62,9 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             typename IteratorT
         >
         void act(
-            T& ref_, 
+            T& ref_,
             ReferentT const& key_,
-            IteratorT const& first_, 
+            IteratorT const& first_,
             IteratorT const& last_
             ) const
         {
@@ -81,7 +81,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typename T,
         typename ReferentT
         >
-    inline ref_const_ref_value_actor<T,ReferentT,insert_at_action> 
+    inline ref_const_ref_value_actor<T,ReferentT,insert_at_action>
     insert_at_a(
             T& ref_,
             ReferentT const& key_
@@ -99,7 +99,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typename ReferentT,
         typename ValueT
     >
-    inline ref_const_ref_const_ref_actor<T,ReferentT,ValueT,insert_at_action> 
+    inline ref_const_ref_const_ref_actor<T,ReferentT,ValueT,insert_at_action>
     insert_at_a(
                 T& ref_,
                 ReferentT const& key_,

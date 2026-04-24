@@ -28,7 +28,7 @@ namespace boost { namespace spirit
           : phoenix::expression::terminal<spirit::argument<N> >
         {
             typedef typename phoenix::expression::terminal<
-                spirit::argument<N> 
+                spirit::argument<N>
             >::type type;
 
             static type make()
@@ -37,13 +37,13 @@ namespace boost { namespace spirit
                 return e;
             }
         };
-        
+
         template <typename Dummy>
         struct attribute_context
           : phoenix::expression::terminal<spirit::attribute_context<Dummy> >
         {
             typedef typename phoenix::expression::terminal<
-                spirit::attribute_context<Dummy> 
+                spirit::attribute_context<Dummy>
             >::type type;
 
             static type make()

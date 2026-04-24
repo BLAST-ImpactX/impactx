@@ -13,7 +13,7 @@
 // input:  BOOST_FT_type_name  BOOST_FT_type --> "R (* ..._type_name)()" (pass2)
 #endif
 // input:  BOOST_FT_syntax     type macro to use
-// input:  BOOST_FT_cc         empty or cc specifier 
+// input:  BOOST_FT_cc         empty or cc specifier
 // input:  BOOST_FT_ell        empty or "..."
 // input:  BOOST_FT_cv         empty or cv qualifiers
 // input:  BOOST_FT_flags      single decimal integer encoding the flags
@@ -40,7 +40,7 @@
 #   if !defined(BOOST_FT_PREPROCESSING_MODE)
 
 #     if BOOST_FT_MAX_ARITY < 10
-#       define BOOST_FT_FROM_ARITY 0 
+#       define BOOST_FT_FROM_ARITY 0
 #     elif BOOST_FT_MAX_ARITY < 20
 #       define BOOST_FT_FROM_ARITY 10
 #     elif BOOST_FT_MAX_ARITY < 30
@@ -110,7 +110,7 @@ BOOST_PP_EXPAND(#) include BOOST_FT_AL_PREPROCESSED
 #       define BOOST_FT_params(prefx) \
             BOOST_PP_IF(BOOST_FT_arity,BOOST_PP_ENUM_PARAMS, \
                 BOOST_FT_nullary_param BOOST_PP_TUPLE_EAT(2))( \
-                    BOOST_FT_arity,prefx() T) 
+                    BOOST_FT_arity,prefx() T)
 #     else
 
 #       define BOOST_FT_params(prefx) \
@@ -118,7 +118,7 @@ BOOST_PP_EXPAND(#) include BOOST_FT_AL_PREPROCESSED
 
 #     endif
 
-#     if !BOOST_FT_FROM_ARITY 
+#     if !BOOST_FT_FROM_ARITY
 #       define BOOST_PP_ITERATION_LIMITS (BOOST_FT_mfp, BOOST_FT_MAX_ARITY)
 #     else
 #       define BOOST_PP_ITERATION_LIMITS \
@@ -146,4 +146,3 @@ BOOST_PP_EXPAND(#) include BOOST_FT_AL_PREPROCESSED
 #else
 #   error "attempt to nest arity loops"
 #endif
-

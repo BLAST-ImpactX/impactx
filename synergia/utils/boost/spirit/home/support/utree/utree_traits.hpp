@@ -73,7 +73,7 @@ namespace boost { namespace spirit { namespace traits
     {
         static int call(utree const& u) { return u.which(); }
     };
-    
+
     template <>
     struct variant_which<utree::list_type>
     {
@@ -83,7 +83,7 @@ namespace boost { namespace spirit { namespace traits
     ///////////////////////////////////////////////////////////////////////////
     // Make sure all components of an alternative expose utree, even if they
     // actually expose a utree::list_type
-    template <typename Domain> 
+    template <typename Domain>
     struct alternative_attribute_transform<utree::list_type, Domain>
       : mpl::identity<utree>
     {};
@@ -91,7 +91,7 @@ namespace boost { namespace spirit { namespace traits
     ///////////////////////////////////////////////////////////////////////////
     // Make sure all components of a sequence expose utree, even if they
     // actually expose a utree::list_type
-    template <typename Domain> 
+    template <typename Domain>
     struct sequence_attribute_transform<utree::list_type, Domain>
       : mpl::identity<utree>
     {};
@@ -100,19 +100,19 @@ namespace boost { namespace spirit { namespace traits
     // this specialization lets Spirit know that typed basic_strings
     // are strings
     template <typename Base, utree_type::info I>
-    struct is_string<spirit::basic_string<Base, I> > 
-      : mpl::true_ 
+    struct is_string<spirit::basic_string<Base, I> >
+      : mpl::true_
     {};
 
     ///////////////////////////////////////////////////////////////////////////
-    // these specializations extract the character type of a utree typed string 
+    // these specializations extract the character type of a utree typed string
     template <typename T, utree_type::info I>
     struct char_type_of<spirit::basic_string<iterator_range<T>, I> >
-      : char_type_of<T> 
+      : char_type_of<T>
     {};
 
     template <utree_type::info I>
-    struct char_type_of<spirit::basic_string<std::string, I> > 
+    struct char_type_of<spirit::basic_string<std::string, I> >
       : mpl::identity<char>
     {};
 
@@ -139,7 +139,7 @@ namespace boost { namespace spirit { namespace traits
             return s.begin();
         }
     };
-    
+
     template <utree_type::info I>
     struct extract_c_string<spirit::basic_string<std::string, I> >
     {
@@ -160,24 +160,24 @@ namespace boost { namespace spirit { namespace traits
 
     ///////////////////////////////////////////////////////////////////////////
     // these specializations are needed because utree::value_type == utree
-    template <> 
-    struct is_substitute<utree, utree> 
-      : mpl::true_ 
+    template <>
+    struct is_substitute<utree, utree>
+      : mpl::true_
     {};
 
-    template <> 
-    struct is_weak_substitute<utree, utree> 
-      : mpl::true_ 
+    template <>
+    struct is_weak_substitute<utree, utree>
+      : mpl::true_
     {};
 
-    template <> 
-    struct is_substitute<utree::list_type, utree::list_type> 
-      : mpl::true_ 
+    template <>
+    struct is_substitute<utree::list_type, utree::list_type>
+      : mpl::true_
     {};
 
-    template <> 
-    struct is_weak_substitute<utree::list_type, utree::list_type> 
-      : mpl::true_ 
+    template <>
+    struct is_weak_substitute<utree::list_type, utree::list_type>
+      : mpl::true_
     {};
 
     ///////////////////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ namespace boost { namespace spirit { namespace traits
         // any container type will be converted into a list_type utree
         static void call(Attribute const& val, utree& attr, mpl::true_)
         {
-            typedef typename traits::container_iterator<Attribute const>::type 
+            typedef typename traits::container_iterator<Attribute const>::type
                 iterator_type;
 
             // make sure the attribute is a list, at least an empty one
@@ -296,7 +296,7 @@ namespace boost { namespace spirit { namespace traits
     {};
 
     ///////////////////////////////////////////////////////////////////////////
-    // this specialization makes sure strings get assigned as a whole and are 
+    // this specialization makes sure strings get assigned as a whole and are
     // not converted into a utree list
     template <>
     struct assign_to_container_from_value<utree, utf8_string_type>
@@ -310,11 +310,11 @@ namespace boost { namespace spirit { namespace traits
         }
     };
 
-    // this specialization keeps symbols from being transformed into strings  
+    // this specialization keeps symbols from being transformed into strings
     template<>
-    struct assign_to_container_from_value<utree, utf8_symbol_type> 
+    struct assign_to_container_from_value<utree, utf8_symbol_type>
     {
-        static void call (utf8_symbol_type const& val, utree& attr) 
+        static void call (utf8_symbol_type const& val, utree& attr)
         {
             if (attr.empty())
                 attr = val;
@@ -322,7 +322,7 @@ namespace boost { namespace spirit { namespace traits
                 push_back(attr, val);
         }
     };
-    
+
     template <>
     struct assign_to_container_from_value<utree, binary_string_type>
     {
@@ -336,9 +336,9 @@ namespace boost { namespace spirit { namespace traits
     };
 
     template<>
-    struct assign_to_container_from_value<utree, utf8_symbol_range_type> 
+    struct assign_to_container_from_value<utree, utf8_symbol_range_type>
     {
-        static void call (utf8_symbol_range_type const& val, utree& attr) 
+        static void call (utf8_symbol_range_type const& val, utree& attr)
         {
             if (attr.empty())
                 attr = val;
@@ -346,7 +346,7 @@ namespace boost { namespace spirit { namespace traits
                 push_back(attr, val);
         }
     };
-    
+
     template <>
     struct assign_to_container_from_value<utree, binary_range_type>
     {
@@ -395,7 +395,7 @@ namespace boost { namespace spirit { namespace traits
     {
         struct attribute_as_string_type
         {
-            typedef utf8_string_range_type type; 
+            typedef utf8_string_range_type type;
 
             static type call(utree const& attr)
             {
@@ -422,17 +422,17 @@ namespace boost { namespace spirit { namespace traits
 
     template <>
     struct attribute_as<std::string, utree>
-      : detail::attribute_as_string_type 
+      : detail::attribute_as_string_type
     {};
 
     template <>
     struct attribute_as<utf8_string_type, utree>
-      : detail::attribute_as_string_type 
+      : detail::attribute_as_string_type
     {};
 
     template <>
     struct attribute_as<utf8_string_range_type, utree>
-      : detail::attribute_as_string_type 
+      : detail::attribute_as_string_type
     {};
 
     ///////////////////////////////////////////////////////////////////////////
@@ -440,7 +440,7 @@ namespace boost { namespace spirit { namespace traits
     {
         struct attribute_as_symbol_type
         {
-            typedef utf8_symbol_range_type type; 
+            typedef utf8_symbol_range_type type;
 
             static type call(utree const& attr)
             {
@@ -466,14 +466,14 @@ namespace boost { namespace spirit { namespace traits
 
     template <>
     struct attribute_as<utf8_symbol_type, utree>
-      : detail::attribute_as_symbol_type 
+      : detail::attribute_as_symbol_type
     {};
 
     template <>
     struct attribute_as<utf8_symbol_range_type, utree>
-      : detail::attribute_as_symbol_type 
+      : detail::attribute_as_symbol_type
     {};
-    
+
     template <typename Attribute>
     struct attribute_as<Attribute, utree::list_type>
       : attribute_as<Attribute, utree>
@@ -484,7 +484,7 @@ namespace boost { namespace spirit { namespace traits
     {
         struct attribute_as_binary_string_type
         {
-            typedef binary_range_type type; 
+            typedef binary_range_type type;
 
             static type call(utree const& attr)
             {
@@ -510,16 +510,16 @@ namespace boost { namespace spirit { namespace traits
 
     template <>
     struct attribute_as<binary_string_type, utree>
-      : detail::attribute_as_binary_string_type 
+      : detail::attribute_as_binary_string_type
     {};
 
     template <>
     struct attribute_as<binary_range_type, utree>
-      : detail::attribute_as_binary_string_type 
+      : detail::attribute_as_binary_string_type
     {};
 
     ///////////////////////////////////////////////////////////////////////////
-    // push_back support for utree 
+    // push_back support for utree
     template <typename T>
     struct push_back_container<utree, T>
     {
@@ -605,15 +605,15 @@ namespace boost { namespace spirit { namespace traits
     // or a grammar exposes an utree as it's attribute
     namespace detail
     {
-        // Checks whether the exposed Attribute allows to handle utree or 
-        // utree::list_type directly. Returning mpl::false_ from this meta 
+        // Checks whether the exposed Attribute allows to handle utree or
+        // utree::list_type directly. Returning mpl::false_ from this meta
         // function will force a new utree instance to be created for each
         // invocation of the embedded parser.
 
-        // The purpose of using utree::list_type as an attribute is to force a 
+        // The purpose of using utree::list_type as an attribute is to force a
         // new sub-node in the result.
         template <typename Attribute, typename Enable = void>
-        struct handles_utree_list_container 
+        struct handles_utree_list_container
           : mpl::and_<
                 mpl::not_<is_same<utree::list_type, Attribute> >,
                 traits::is_container<Attribute> >
@@ -696,15 +696,15 @@ namespace boost { namespace spirit { namespace traits
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        // Checks whether the exposed Attribute allows to handle utree or 
-        // utree::list_type directly. Returning mpl::false_ from this meta 
+        // Checks whether the exposed Attribute allows to handle utree or
+        // utree::list_type directly. Returning mpl::false_ from this meta
         // function will force a new utree instance to be created for each
         // invocation of the embedded parser.
 
-        // The purpose of using utree::list_type as an attribute is to force a 
+        // The purpose of using utree::list_type as an attribute is to force a
         // new sub-node in the result.
         template <typename Attribute, typename Enable = void>
-        struct handles_utree_container 
+        struct handles_utree_container
           : mpl::and_<
                 mpl::not_<is_same<utree, Attribute> >,
                 traits::is_container<Attribute> >
@@ -816,12 +816,12 @@ namespace boost { namespace spirit { namespace traits
     // where a 'real' variant (in the context of karma)
     template <>
     struct not_is_variant<utree, karma::domain>
-      : mpl::false_ 
+      : mpl::false_
     {};
 
     template <>
     struct not_is_variant<utree::list_type, karma::domain>
-      : mpl::false_ 
+      : mpl::false_
     {};
 
     // The specializations below tell Spirit to verify whether an attribute

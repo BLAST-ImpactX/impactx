@@ -3,12 +3,12 @@
  * Copyright (c) 1998-2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
- 
+
  /*
   *   LOCATION:    see http://www.boost.org for most recent version.
   *   FILE         regex_split.hpp
@@ -103,7 +103,7 @@ bool split_pred<OutputIterator, charT, Traits1, Alloc1>::operator()
 
 template <class OutputIterator, class charT, class Traits1, class Alloc1, class Traits2>
 std::size_t regex_split(OutputIterator out,
-                   std::basic_string<charT, Traits1, Alloc1>& s, 
+                   std::basic_string<charT, Traits1, Alloc1>& s,
                    const basic_regex<charT, Traits2>& e,
                    match_flag_type flags,
                    std::size_t max_split)
@@ -119,7 +119,7 @@ std::size_t regex_split(OutputIterator out,
    regex_grep(pred, i, j, e, flags);
    //
    // if there is still input left, do a final push as long as max_split
-   // is not exhausted, and we're not splitting sub-expressions rather 
+   // is not exhausted, and we're not splitting sub-expressions rather
    // than whitespace:
    if(max_split && (last != s.end()) && (e.mark_count() == 0))
    {
@@ -138,7 +138,7 @@ std::size_t regex_split(OutputIterator out,
 
 template <class OutputIterator, class charT, class Traits1, class Alloc1, class Traits2>
 inline std::size_t regex_split(OutputIterator out,
-                   std::basic_string<charT, Traits1, Alloc1>& s, 
+                   std::basic_string<charT, Traits1, Alloc1>& s,
                    const basic_regex<charT, Traits2>& e,
                    match_flag_type flags = match_default)
 {
@@ -170,5 +170,3 @@ inline std::size_t regex_split(OutputIterator out,
 } // namespace boost
 
 #endif
-
-

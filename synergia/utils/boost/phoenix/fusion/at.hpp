@@ -14,7 +14,7 @@
 #include <boost/phoenix/core/expression.hpp>
 #include <boost/phoenix/core/meta_grammar.hpp>
 #include <boost/type_traits/remove_reference.hpp>
-    
+
 BOOST_PHOENIX_DEFINE_EXPRESSION(
     (boost)(phoenix)(at_c)
   , (proto::terminal<proto::_>)

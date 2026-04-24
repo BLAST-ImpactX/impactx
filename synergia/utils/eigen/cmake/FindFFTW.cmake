@@ -2,7 +2,7 @@
 #
 # Usage:
 #   find_package(FFTW [REQUIRED] [QUIET] )
-#     
+#
 # It sets the following variables:
 #   FFTW_FOUND               ... true if fftw is found on the system
 #   FFTW_LIBRARIES           ... full path to fftw library
@@ -117,4 +117,3 @@ find_package_handle_standard_args(FFTW DEFAULT_MSG
                                   FFTW_INCLUDES FFTW_LIBRARIES)
 
 mark_as_advanced(FFTW_INCLUDES FFTW_LIBRARIES FFTW_LIB FFTWF_LIB FFTWL_LIB)
-

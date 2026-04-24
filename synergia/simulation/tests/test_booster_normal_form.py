@@ -3,8 +3,6 @@
 # this tests that the normal form can be created and applied
 # for a simplified Booster model.
 
-import pytest
-import numpy
 import synergia
 
 simple_booster_src = """
@@ -34,7 +32,7 @@ d5: drift, l=0.6;
 
 ! these drifts pad the RF cavities right after dmagunn beginning the long straight
 
-drlnna: drift, l=0.21;  
+drlnna: drift, l=0.21;
 drlnnb: drift, l=0.12;
 drlnnc: drift, l=0.25;
 drlnnd: drift, l=0.111;

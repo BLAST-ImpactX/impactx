@@ -62,7 +62,7 @@ namespace boost { namespace spirit { namespace traits
     struct handles_container<qi::reference<Subject>, Attribute, Context
       , Iterator>
       : handles_container<typename remove_const<Subject>::type
-        , Attribute, Context, Iterator> 
+        , Attribute, Context, Iterator>
     {};
 }}}
 

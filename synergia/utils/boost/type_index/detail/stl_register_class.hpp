@@ -37,4 +37,3 @@ inline const stl_type_index::type_info_t& stl_construct_typeid_ref(const T*) noe
 /// @endcond
 
 #endif // BOOST_TYPE_INDEX_STL_REGISTER_CLASS_HPP
-

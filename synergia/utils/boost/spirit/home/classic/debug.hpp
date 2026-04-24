@@ -78,12 +78,12 @@
     //  parser_name() functions (see parser_names.hpp).
     //
     //  Additionally, the macros BOOST_SPIRIT_DEBUG_RULE, SPIRIT_DEBUG_NODE and
-    //  BOOST_SPIRIT_DEBUG_GRAMMAR enable/disable the tracing of the 
-    //  correspondingnode accordingly to the PP constant 
+    //  BOOST_SPIRIT_DEBUG_GRAMMAR enable/disable the tracing of the
+    //  correspondingnode accordingly to the PP constant
     //  BOOST_SPIRIT_DEBUG_TRACENODE.
     //
-    //  The macros BOOST_SPIRIT_DEBUG_TRACE_RULE, BOOST_SPIRIT_DEBUG_TRACE_NODE 
-    //  and BOOST_SPIRIT_DEBUG_TRACE_GRAMMAR allow to specify a flag to define, 
+    //  The macros BOOST_SPIRIT_DEBUG_TRACE_RULE, BOOST_SPIRIT_DEBUG_TRACE_NODE
+    //  and BOOST_SPIRIT_DEBUG_TRACE_GRAMMAR allow to specify a flag to define,
     //  whether the corresponding node is to be traced or not.
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -151,4 +151,3 @@
 #endif // BOOST_SPIRIT_DEBUG
 
 #endif
-

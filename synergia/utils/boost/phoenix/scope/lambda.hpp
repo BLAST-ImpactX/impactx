@@ -30,7 +30,7 @@ BOOST_PHOENIX_DEFINE_EXPRESSION(
 
 BOOST_PHOENIX_DEFINE_EXPRESSION(
     (boost)(phoenix)(lambda)
-  , (proto::terminal<proto::_>) // OuterEnv 
+  , (proto::terminal<proto::_>) // OuterEnv
     (proto::terminal<proto::_>) // Locals
     (proto::terminal<proto::_>) // Map
     (meta_grammar)              // Lambda
@@ -78,7 +78,7 @@ namespace boost { namespace phoenix
                     >::type
                 >::type
                 map_type;
-            
+
             typedef
                 typename proto::detail::uncvref<
                     typename result_of::env<Context>::type
@@ -130,13 +130,13 @@ namespace boost { namespace phoenix
                     >::type
                 >::type
                 map_type;
-            
+
             typedef
                 typename proto::detail::uncvref<
                     typename result_of::env<Context>::type
                 >::type
                 env_type;
-            
+
                 scoped_environment<
                 env_type
               , outer_env_type
@@ -236,7 +236,7 @@ namespace boost { namespace phoenix
                     typename proto::result_of::value<Vars>::type
                      >::type
                      vars_type;
-            
+
             typedef typename
                 detail::result_of::initialize_locals<
                     vars_type
@@ -306,7 +306,7 @@ namespace boost { namespace phoenix
     struct default_actions::when<rule::lambda_actor, Dummy>
         : call<lambda_actor_eval, Dummy>
     {};
-    
+
     template <typename Locals = vector0<>,
               typename Map = detail::map_local_index_to_tuple<>,
               typename Dummy = void>

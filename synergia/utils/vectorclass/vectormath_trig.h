@@ -245,7 +245,7 @@ static inline VTYPE sincos_f(VTYPE* cosret, VTYPE const xx) {
     typedef decltype(roundi(xx)) ITYPE;          // integer vector type
     //typedef decltype(nan_code(xx)) UITYPE;       // unsigned integer vector type
     typedef decltype(xx < xx) BVTYPE;            // boolean vector type
-    
+
 #if INSTRSET < 8  // no FMA
     const float input_limit = 1.E5f;             // lower overflow limit without FMA
 #else
@@ -368,7 +368,7 @@ static inline Vec8f sincos(Vec8f * cosret, Vec8f const x) {
 
 static inline Vec8f tan(Vec8f const x) {
     return sincos_f<Vec8f, 4>(0, x);
-} 
+}
 
 static inline Vec8f sinpi(Vec8f const x) {
     return sincos_f<Vec8f, 9>(0, x);

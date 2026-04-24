@@ -70,4 +70,3 @@
 #endif // BOOST_SPIRIT_DEBUG
 
 #endif // BOOST_SPIRIT_CORE_MAIN_HPP
-

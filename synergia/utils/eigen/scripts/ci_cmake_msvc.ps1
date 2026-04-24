@@ -12,7 +12,7 @@ param ($EIGEN_CI_ROOTDIR,
        )
 
 function Get-ScriptDirectory { Split-Path $MyInvocation.ScriptName }
-       
+
 # Set defaults if not already set.
 IF (!$EIGEN_CI_ROOTDIR)               { $EIGEN_CI_ROOTDIR               = Join-Path (Get-ScriptDirectory) '..' }
 IF (!$EIGEN_CI_BUILDDIR)              { $EIGEN_CI_BUILDDIR              = ".build" }
@@ -62,4 +62,3 @@ IF ($EIGEN_CI_BUILD_TARGET) {
   # building the rest, then try to build again with a single thread.
   cmake --build . --target $EIGEN_CI_BUILD_TARGET -- -k0 || cmake --build . --target $EIGEN_CI_BUILD_TARGET -- -k0 -j1
 }
-

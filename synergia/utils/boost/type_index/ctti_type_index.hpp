@@ -15,7 +15,7 @@
 /// boost::typeindex::ctti_type_index class can be used as a drop-in replacement
 /// for std::type_index.
 ///
-/// It is used in situations when typeid() method is not available or 
+/// It is used in situations when typeid() method is not available or
 /// BOOST_TYPE_INDEX_FORCE_NO_RTTI_COMPATIBILITY macro is defined.
 
 #include <boost/type_index/type_index_facade.hpp>
@@ -45,7 +45,7 @@ namespace detail {
 /// \class ctti_data
 /// Standard-layout class with private constructors and assignment operators.
 ///
-/// You can not work with this class directly. The  purpose of this class is to hold type info 
+/// You can not work with this class directly. The  purpose of this class is to hold type info
 /// \b when \b RTTI \b is \b off and allow ctti_type_index construction from itself.
 ///
 /// \b Example:
@@ -201,4 +201,3 @@ inline std::size_t ctti_type_index::hash_code() const noexcept {
 }} // namespace boost::typeindex
 
 #endif // BOOST_TYPE_INDEX_CTTI_TYPE_INDEX_HPP
-

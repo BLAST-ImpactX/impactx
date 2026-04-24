@@ -23,7 +23,7 @@ Matrix<typename Scalar, int RowsAtCompileTime, int ColsAtCompileTime>
     See \ref TopicScalarTypes "Scalar types" for a list of all supported
     scalar types and for how to extend support to new types.
 \li \c RowsAtCompileTime and \c ColsAtCompileTime are the number of rows
-    and columns of the matrix as known at compile time (see 
+    and columns of the matrix as known at compile time (see
     \ref TutorialMatrixDynamic "below" for what to do if the number is not
     known at compile time).
 
@@ -151,7 +151,7 @@ The numbering starts at 0. This example is self-explanatory:
 \verbinclude tut_matrix_coefficient_accessors.out
 </td></tr></table>
 
-Note that the syntax `m(index)` 
+Note that the syntax `m(index)`
 is not restricted to vectors, it is also available for general matrices, meaning index-based access
 in the array of coefficients. This however depends on the matrix's storage order. All Eigen matrices default to
 column-major storage order, but this can be changed to row-major, see \ref TopicStorageOrders "Storage orders".

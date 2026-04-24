@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c)      2011 Thomas Heller
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_ARGUMENT_PHEONIX_MARCH_25_2011_1841PM)
@@ -22,14 +22,14 @@
 namespace boost { namespace spirit { namespace lex
 {
     ///////////////////////////////////////////////////////////////////////////
-    //  The value_context is used as a noop Phoenix actor to create the 
+    //  The value_context is used as a noop Phoenix actor to create the
     //  placeholder '_val' (see below). It is a noop actor because it is used
-    //  as a placeholder only, while it is being converted either to a 
-    //  value_getter (if used as a rvalue) or to a value_setter (if used as a 
-    //  lvalue). The conversion is achieved by specializing and overloading a 
+    //  as a placeholder only, while it is being converted either to a
+    //  value_getter (if used as a rvalue) or to a value_setter (if used as a
+    //  lvalue). The conversion is achieved by specializing and overloading a
     //  couple of the Phoenix templates from the Phoenix expression composition
     //  engine (see the end of this file).
-    struct value_context 
+    struct value_context
     {
         typedef mpl::true_ no_nullary;
 
@@ -54,14 +54,14 @@ namespace boost { namespace spirit { namespace lex
     template <typename> struct value_setter;
 
     ///////////////////////////////////////////////////////////////////////////
-    //  The state_context is used as a noop Phoenix actor to create the 
+    //  The state_context is used as a noop Phoenix actor to create the
     //  placeholder '_state' (see below). It is a noop actor because it is used
-    //  as a placeholder only, while it is being converted either to a 
-    //  state_getter (if used as a rvalue) or to a state_setter (if used as a 
-    //  lvalue). The conversion is achieved by specializing and overloading a 
+    //  as a placeholder only, while it is being converted either to a
+    //  state_getter (if used as a rvalue) or to a state_setter (if used as a
+    //  lvalue). The conversion is achieved by specializing and overloading a
     //  couple of the Phoenix templates from the Phoenix expression composition
     //  engine (see the end of this file).
-    struct state_context 
+    struct state_context
     {
         typedef mpl::true_ no_nullary;
 
@@ -108,10 +108,10 @@ namespace boost { namespace phoenix
           : mpl::false_
         {};
     }
-    
+
     template <typename Dummy>
     struct is_custom_terminal<boost::spirit::lex::value_context, Dummy>: mpl::true_ {};
-    
+
     template <typename Dummy>
     struct custom_terminal<boost::spirit::lex::value_context, Dummy>
       : proto::call<
@@ -164,7 +164,7 @@ namespace boost { namespace phoenix
                 >::make(phoenix::as_actor<Expr>::convert(expr));
         }
     };
-    
+
     namespace result_of
     {
         template <>
@@ -172,10 +172,10 @@ namespace boost { namespace phoenix
           : mpl::false_
         {};
     }
-    
+
     template <typename Dummy>
     struct is_custom_terminal<boost::spirit::lex::state_context, Dummy>: mpl::true_ {};
-    
+
     template <typename Dummy>
     struct custom_terminal<boost::spirit::lex::state_context, Dummy>
       : proto::call<
@@ -228,7 +228,7 @@ namespace boost { namespace phoenix
                 >::make(phoenix::as_actor<Expr>::convert(expr));
         }
     };
-    
+
     namespace result_of
     {
         template <>
@@ -236,10 +236,10 @@ namespace boost { namespace phoenix
           : mpl::false_
         {};
     }
-    
+
     template <typename Dummy>
     struct is_custom_terminal<boost::spirit::lex::eoi_getter, Dummy>: mpl::true_ {};
-    
+
     template <typename Dummy>
     struct custom_terminal<boost::spirit::lex::eoi_getter, Dummy>
       : proto::call<

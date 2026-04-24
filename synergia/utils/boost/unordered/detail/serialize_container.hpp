@@ -22,7 +22,7 @@ namespace detail{
 
 /* serialize_container(ar,x,v) serializes any of the unordered associative
  * containers in Boost.Unordered. Iterator serialization is also supported
- * through the following protocol: 
+ * through the following protocol:
  *  - At saving time, for each iterator it in [x.begin(),x.end()),
  *    serialization_track(ar,it) is ADL-called to instruct the archive to
  *    track the positions internally pointed to by the iterator via
@@ -178,7 +178,7 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
 
 template<typename Container,bool IsSet,bool IsSaving>
 struct load_or_save_container;
-  
+
 template<typename Set,bool IsSaving>
 struct load_or_save_container<Set,true,IsSaving>:
   load_or_save_unordered_set<Set,IsSaving>{};

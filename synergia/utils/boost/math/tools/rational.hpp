@@ -327,7 +327,3 @@ inline V evaluate_rational(const std::array<T,N>& a, const std::array<U,N>& b, c
 } // namespace boost
 
 #endif // BOOST_MATH_TOOLS_RATIONAL_HPP
-
-
-
-

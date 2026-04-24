@@ -96,8 +96,8 @@ namespace boost { namespace spirit { namespace qi
     struct state_switcher
       : primitive_parser<state_switcher<State> >
     {
-        typedef typename 
-            remove_const<typename traits::char_type_of<State>::type>::type 
+        typedef typename
+            remove_const<typename traits::char_type_of<State>::type>::type
         char_type;
         typedef std::basic_string<char_type> string_type;
 
@@ -145,7 +145,7 @@ namespace boost { namespace spirit { namespace qi
             template <typename State>
             reset_state_on_exit(Iterator& it_, State state_)
               : it(it_)
-              , state(set_lexer_state(it_, traits::get_c_string(state_))) 
+              , state(set_lexer_state(it_, traits::get_c_string(state_)))
             {}
 
             ~reset_state_on_exit()
@@ -168,7 +168,7 @@ namespace boost { namespace spirit { namespace qi
     // afterwards. This parser gets used for the in_state(...)[p] construct.
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename State>
-    struct state_switcher_context 
+    struct state_switcher_context
       : unary_parser<state_switcher_context<Subject, State> >
     {
         typedef Subject subject_type;
@@ -187,7 +187,7 @@ namespace boost { namespace spirit { namespace qi
               , typename add_reference<State>::type state)
           : subject(subject), state(state) {}
 
-        // The following conversion constructors are needed to make the 
+        // The following conversion constructors are needed to make the
         // in_state_switcher template usable
         template <typename String>
         state_switcher_context(
@@ -262,7 +262,7 @@ namespace boost { namespace spirit { namespace traits
         , typename Context, typename Iterator>
     struct handles_container<qi::state_switcher_context<Subject, State>
           , Attribute, Context, Iterator>
-      : unary_handles_container<Subject, Attribute, Context, Iterator> {}; 
+      : unary_handles_container<Subject, Attribute, Context, Iterator> {};
 }}}
 
 #endif

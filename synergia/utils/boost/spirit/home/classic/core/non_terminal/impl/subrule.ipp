@@ -139,4 +139,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace boost::spirit::impl
 
 #endif
-

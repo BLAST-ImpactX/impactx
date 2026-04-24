@@ -86,4 +86,3 @@ struct add<T1, T2, /* signed */ true>
 } // namespace boost
 
 #endif // BOOST_RANDOM_DETAIL_SIGNED_UNSIGNED_TOOLS
-

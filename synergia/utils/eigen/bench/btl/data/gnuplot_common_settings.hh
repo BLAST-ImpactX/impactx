@@ -84,4 +84,3 @@ set rmargin -1
 set tmargin -1
 set locale "C"
 set xrange [4:1024]
-

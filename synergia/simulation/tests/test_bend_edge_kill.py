@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import sys, os
 import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 macroparticles = 25
 realparticles = 4.0e10
@@ -12,11 +12,12 @@ nturns = 1
 
 mp = synergia.foundation.pconstants.mp
 xoffs = 0.0005
-#xpoffs = 0.0001 # need an xp offset to generate edge kick
+# xpoffs = 0.0001 # need an xp offset to generate edge kick
 xpoffs = 0.0
 yoffs = 0.0005
 
 ##########################################################################################
+
 
 # prop_fixture is a propagator
 @pytest.fixture
@@ -37,9 +38,11 @@ endsequence;
 
     return propagator
 
+
 ##########################################################################################
 
-#@pytest.fixture
+
+# @pytest.fixture
 def prop_fixture_noentrykick():
     channel_madx = """
 beam, particle=proton,energy=0.8+pmass;
@@ -57,9 +60,11 @@ endsequence;
 
     return propagator
 
+
 ##########################################################################################
 
-#@pytest.fixture
+
+# @pytest.fixture
 def prop_fixture_noexitkick():
     channel_madx = """
 beam, particle=proton,energy=0.8+pmass;
@@ -77,7 +82,9 @@ endsequence;
 
     return propagator
 
+
 ##########################################################################################
+
 
 @pytest.fixture
 def prop_fixture_nokick():
@@ -97,7 +104,9 @@ endsequence;
 
     return propagator
 
+
 ##########################################################################################
+
 
 def create_simulator(ref_part):
     sim = synergia.simulation.Bunch_simulator.create_single_bunch_simulator(
@@ -118,11 +127,15 @@ def create_simulator(ref_part):
     bunch.checkin_particles()
     return sim
 
+
 ##########################################################################################
+
 
 def test_edge1(prop_fixture_edgekick):
 
-    sim1 = create_simulator(prop_fixture_edgekick.get_lattice().get_reference_particle())
+    sim1 = create_simulator(
+        prop_fixture_edgekick.get_lattice().get_reference_particle()
+    )
     bunch1 = sim1.get_bunch()
 
     bunch1.checkout_particles()
@@ -136,7 +149,7 @@ def test_edge1(prop_fixture_edgekick):
         0, synergia.utils.parallel_utils.LoggerV.INFO_TURN, True
     )
     prop_fixture_edgekick.propagate(sim1, simlog, nturns)
-    
+
     bunch1.checkout_particles()
     lp1 = bunch1.get_particles_numpy()
 
@@ -148,11 +161,13 @@ def test_edge1(prop_fixture_edgekick):
         for iy in range(5):
             # print(f'{ix}, {iy} ({lpinit[5*ix+iy, 0]}, {lpinit[5*ix+iy, 2]}): lp1[{5*ix+iy}, 3]: ', lp1[5*ix+iy, 3])
             if iy == 2:
-                assert lp1[5*ix+2, 3] == pytest.approx(0.0, abs=1.0e-15)
+                assert lp1[5 * ix + 2, 3] == pytest.approx(0.0, abs=1.0e-15)
             else:
-                assert abs(lp1[5*ix+iy, 3]) > 1.0e-12
+                assert abs(lp1[5 * ix + iy, 3]) > 1.0e-12
+
 
 ##########################################################################################
+
 
 def test_edge2(prop_fixture_nokick):
 
@@ -170,25 +185,27 @@ def test_edge2(prop_fixture_nokick):
         0, synergia.utils.parallel_utils.LoggerV.INFO_TURN, True
     )
     prop_fixture_nokick.propagate(sim1, simlog, nturns)
-    
+
     bunch1.checkout_particles()
     lp1 = bunch1.get_particles_numpy()
 
     # with no edge effects, there should be no particles with significant py
     for ix in range(5):
         for iy in range(5):
-            #print(f'{ix}, {iy} ({lpinit[5*ix+iy, 0]}, {lpinit[5*ix+iy, 2]}): lp1[{5*ix+iy}, 3]: ', lp1[5*ix+iy, 3])
-            assert abs(lp1[5*ix+iy, 3]) == pytest.approx(0.0, abs=1.0e-15)
+            # print(f'{ix}, {iy} ({lpinit[5*ix+iy, 0]}, {lpinit[5*ix+iy, 2]}): lp1[{5*ix+iy}, 3]: ', lp1[5*ix+iy, 3])
+            assert abs(lp1[5 * ix + iy, 3]) == pytest.approx(0.0, abs=1.0e-15)
 
 
 ##########################################################################################
 ### it seems like the current implementation of bends does not perform edge kicks$%^&&*!!
+
 
 def main():
     pf1 = prop_fixture_edgekick()
     pf2 = prop_fixture_nokick()
     test_edge1(pf1)
     test_edge2(pf2)
+
 
 if __name__ == "__main__":
     main()

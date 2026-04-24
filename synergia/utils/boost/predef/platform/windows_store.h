@@ -37,7 +37,7 @@ for Windows Store development.
 #   undef BOOST_PLAT_WINDOWS_STORE
 #   define BOOST_PLAT_WINDOWS_STORE BOOST_VERSION_NUMBER_AVAILABLE
 #endif
- 
+
 #if BOOST_PLAT_WINDOWS_STORE
 #   define BOOST_PLAT_WINDOWS_STORE_AVAILABLE
 #   include <boost/predef/detail/platform_detected.h>

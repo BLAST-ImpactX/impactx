@@ -18,7 +18,7 @@
 namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
-    // This one is the function that the user can call directly in order 
+    // This one is the function that the user can call directly in order
     // to create a customized attr_cast component
     template <typename Expr>
     typename enable_if<proto::is_expr<Expr>

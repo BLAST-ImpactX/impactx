@@ -5,13 +5,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -22,7 +22,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -45,7 +45,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -69,13 +69,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -86,7 +86,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -109,7 +109,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -133,13 +133,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -150,7 +150,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -173,7 +173,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -197,13 +197,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -214,7 +214,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -237,7 +237,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -261,13 +261,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -278,7 +278,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -301,7 +301,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -325,13 +325,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -342,7 +342,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -365,7 +365,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -389,13 +389,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -406,7 +406,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -429,7 +429,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -453,13 +453,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -470,7 +470,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -493,7 +493,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -517,13 +517,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -534,7 +534,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -557,7 +557,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -581,13 +581,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -598,7 +598,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -621,7 +621,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -645,13 +645,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -662,7 +662,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -685,7 +685,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -709,13 +709,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -726,7 +726,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -749,7 +749,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -773,13 +773,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -790,7 +790,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -813,7 +813,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -837,13 +837,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -854,7 +854,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -877,7 +877,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -901,13 +901,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -918,7 +918,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -941,7 +941,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -965,13 +965,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -982,7 +982,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1005,7 +1005,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1029,13 +1029,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1046,7 +1046,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1069,7 +1069,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1093,13 +1093,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1110,7 +1110,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1133,7 +1133,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1157,13 +1157,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1174,7 +1174,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1197,7 +1197,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1221,13 +1221,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1238,7 +1238,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1261,7 +1261,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1285,13 +1285,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1302,7 +1302,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1325,7 +1325,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1349,13 +1349,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1366,7 +1366,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1389,7 +1389,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1413,13 +1413,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1430,7 +1430,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1453,7 +1453,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1477,13 +1477,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1494,7 +1494,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1517,7 +1517,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1541,13 +1541,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1558,7 +1558,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1581,7 +1581,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1605,13 +1605,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1622,7 +1622,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1645,7 +1645,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1669,13 +1669,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1686,7 +1686,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1709,7 +1709,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1733,13 +1733,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1750,7 +1750,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1773,7 +1773,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1797,13 +1797,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1814,7 +1814,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1837,7 +1837,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1861,13 +1861,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1878,7 +1878,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1901,7 +1901,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1925,13 +1925,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -1942,7 +1942,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1965,7 +1965,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -1989,13 +1989,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2006,7 +2006,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2029,7 +2029,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2053,13 +2053,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2070,7 +2070,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2093,7 +2093,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2117,13 +2117,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2134,7 +2134,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2157,7 +2157,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2181,13 +2181,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2198,7 +2198,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2221,7 +2221,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2245,13 +2245,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2262,7 +2262,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2285,7 +2285,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2309,13 +2309,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2326,7 +2326,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2349,7 +2349,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2373,13 +2373,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2390,7 +2390,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2413,7 +2413,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2437,13 +2437,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2454,7 +2454,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2477,7 +2477,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2501,13 +2501,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2518,7 +2518,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2541,7 +2541,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2565,13 +2565,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2582,7 +2582,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2605,7 +2605,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2629,13 +2629,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2646,7 +2646,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2669,7 +2669,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2693,13 +2693,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2710,7 +2710,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2733,7 +2733,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2757,13 +2757,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2774,7 +2774,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2797,7 +2797,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2821,13 +2821,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2838,7 +2838,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2861,7 +2861,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2885,13 +2885,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2902,7 +2902,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2925,7 +2925,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2949,13 +2949,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -2966,7 +2966,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -2989,7 +2989,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -3013,13 +3013,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -3030,7 +3030,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -3053,7 +3053,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -3077,13 +3077,13 @@
                         );
                 }
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -3094,7 +3094,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef
@@ -3117,7 +3117,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
                 typedef

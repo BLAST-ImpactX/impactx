@@ -99,11 +99,11 @@ namespace boost
 #ifdef __STDCPP_FLOAT128_T__
            typename std::conditional<std::is_same<std::float128_t, T1P>::value || std::is_same<std::float128_t, T2P>::value, // either long double?
             std::float128_t,
-#endif 
+#endif
 #ifdef BOOST_MATH_USE_FLOAT128
            typename std::conditional<std::is_same<__float128, T1P>::value || std::is_same<__float128, T2P>::value, // either long double?
             __float128,
-#endif 
+#endif
              typename std::conditional<std::is_same<long double, T1P>::value || std::is_same<long double, T2P>::value, // either long double?
                long double, // then result type is long double.
 #ifdef __STDCPP_FLOAT64_T__
@@ -308,4 +308,3 @@ namespace boost
 } // namespace boost
 
 #endif // BOOST_MATH_PROMOTION_HPP
-

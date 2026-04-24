@@ -2,7 +2,7 @@
     Copyright (c) 2001-2011 Joel de Guzman
     Copyright (c) 2006 Dan Marsden
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_VALUE_AT_IMPL_20060124_2129)
@@ -20,7 +20,7 @@
 #include <boost/config.hpp>
 
 namespace boost { namespace fusion {
-    
+
     struct zip_view_tag;
 
     namespace detail
@@ -47,7 +47,7 @@ namespace boost { namespace fusion {
 #endif
         };
     }
-    
+
     namespace extension
     {
         template<typename Tag>
@@ -60,7 +60,7 @@ namespace boost { namespace fusion {
             struct apply
             {
                 typedef typename result_of::transform<
-                    typename Sequence::sequences, 
+                    typename Sequence::sequences,
                     detail::poly_value_at<N> >::type values;
                 typedef typename result_of::as_vector<values>::type type;
             };

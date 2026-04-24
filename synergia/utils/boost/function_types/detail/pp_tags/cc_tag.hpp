@@ -13,5 +13,3 @@
     typedef detail::encode_bits<0,BOOST_FT_cc_id> bits;
     typedef detail::constant<BOOST_FT_cc_mask> mask;
   };
-
-

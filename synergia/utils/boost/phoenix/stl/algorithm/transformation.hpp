@@ -102,7 +102,7 @@ namespace boost { namespace phoenix { namespace impl
     {
         template <typename Sig>
         struct result;
-        
+
         template<typename This, class R, class OutorI1, class ForOut>
         struct result<This(R&, OutorI1, ForOut)>
             : detail::decay_array<OutorI1>
@@ -163,7 +163,7 @@ namespace boost { namespace phoenix { namespace impl
         {};
 
         template<class R, class O, class T>
-        typename detail::decay_array<O>::type 
+        typename detail::decay_array<O>::type
         operator()(R& r, O o, T const& what, T const& with) const
         {
             return std::replace_copy(detail::begin_(r), detail::end_(r), o, what, with);
@@ -649,7 +649,7 @@ namespace boost { namespace phoenix { namespace impl
     {
         template <typename Sig>
         struct result;
-        
+
         template <typename This, class R1, class R2>
         struct result<This(R1&, R2&)>
             : range_iterator<R2>
@@ -699,7 +699,7 @@ namespace boost { namespace phoenix { namespace impl
         }
     };
 
-    struct merge 
+    struct merge
     {
         template <typename Sig>
         struct result;
@@ -736,7 +736,7 @@ namespace boost { namespace phoenix { namespace impl
         }
     };
 
-    struct inplace_merge 
+    struct inplace_merge
     {
         typedef void result_type;
 
@@ -762,7 +762,7 @@ namespace boost { namespace phoenix { namespace impl
         {
             return std::next_permutation(detail::begin_(r), detail::end_(r));
         }
-    
+
         template<class R, class C>
         bool operator()(R& r, C c) const
         {
@@ -779,7 +779,7 @@ namespace boost { namespace phoenix { namespace impl
         {
             return std::prev_permutation(detail::begin_(r), detail::end_(r));
         }
-    
+
         template<class R, class C>
         bool operator()(R& r, C c) const
         {
@@ -828,7 +828,7 @@ namespace boost { namespace phoenix { namespace impl
         operator()(R& r, I i, T t, C1 c1, C2 c2) const
         {
             return std::inner_product(
-                detail::begin_(r), detail::end_(r), i, 
+                detail::begin_(r), detail::end_(r), i,
                 t, c1, c2);
         }
     };
@@ -869,7 +869,7 @@ namespace boost { namespace phoenix { namespace impl
     {
         template <typename Sig>
         struct result;
-        
+
         template <typename This, class R, class I>
         struct result<This(R&, I)>
             : detail::decay_array<I>
@@ -894,7 +894,7 @@ namespace boost { namespace phoenix { namespace impl
         {
             return std::adjacent_difference(
                 detail::begin_(r), detail::end_(r), i, c);
-        }    
+        }
     };
 
     struct push_heap

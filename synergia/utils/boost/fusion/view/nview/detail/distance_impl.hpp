@@ -11,7 +11,7 @@
 #include <boost/fusion/support/config.hpp>
 #include <boost/fusion/iterator/distance.hpp>
 
-namespace boost { namespace fusion 
+namespace boost { namespace fusion
 {
     struct nview_iterator_tag;
 

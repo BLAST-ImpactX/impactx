@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2009 Hartmut Kaiser
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
@@ -37,7 +37,7 @@ namespace boost { namespace fusion
 #ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
             template <typename T>
             BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
-            typename add_reference<T>::type 
+            typename add_reference<T>::type
             operator()(T& x) const
             {
                 return x;
@@ -59,13 +59,13 @@ namespace boost { namespace fusion
             struct result;
 
             template<typename U>
-            struct result<addconstref(U)> 
-              : add_reference<typename add_const<U>::type> 
+            struct result<addconstref(U)>
+              : add_reference<typename add_const<U>::type>
             {};
 
             template <typename T>
             BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
-            typename add_reference<typename add_const<T>::type>::type 
+            typename add_reference<typename add_const<T>::type>::type
             operator()(T& x) const
             {
                 return x;
@@ -73,7 +73,7 @@ namespace boost { namespace fusion
 
             template <typename T>
             BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
-            typename add_reference<typename add_const<T>::type>::type 
+            typename add_reference<typename add_const<T>::type>::type
             operator()(T const& x) const
             {
                 return x;
@@ -101,12 +101,12 @@ namespace boost { namespace fusion
             is_const<Sequence>, detail::addconstref, detail::addref
         >::type transform_type;
         typedef transform_view<Sequence, transform_type> transform_view_type;
-        typedef typename result_of::as_vector<transform_view_type>::type 
+        typedef typename result_of::as_vector<transform_view_type>::type
             sequence_type;
 
         BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
         explicit nview(Sequence& val)
-          : seq(sequence_type(transform_view_type(val, transform_type()))) 
+          : seq(sequence_type(transform_view_type(val, transform_type())))
         {}
 
         sequence_type seq;
@@ -118,5 +118,3 @@ namespace boost { namespace fusion
 #include <boost/fusion/view/nview/detail/nview_impl.hpp>
 
 #endif
-
-

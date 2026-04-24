@@ -63,7 +63,7 @@ namespace boost { namespace spirit { namespace qi
         template <typename F>
         bool parse_container(F f) const
         {
-            // in order to succeed we need to match at least one element 
+            // in order to succeed we need to match at least one element
             if (f (left))
                 return false;
 
@@ -130,7 +130,7 @@ namespace boost { namespace spirit { namespace traits
     template <typename Left, typename Right, typename Attribute
       , typename Context, typename Iterator>
     struct handles_container<qi::list<Left, Right>, Attribute, Context
-          , Iterator> 
+          , Iterator>
       : mpl::true_ {};
 }}}
 

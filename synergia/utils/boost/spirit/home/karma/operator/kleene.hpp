@@ -45,8 +45,8 @@ namespace boost { namespace spirit { namespace karma
     struct base_kleene : unary_generator<Derived>
     {
     private:
-        // Ignore return value in relaxed mode (failing subject generators 
-        // are just skipped). This allows to selectively generate items in 
+        // Ignore return value in relaxed mode (failing subject generators
+        // are just skipped). This allows to selectively generate items in
         // the provided attribute.
         template <typename F, typename Attribute>
         bool generate_subject(F f, Attribute const&, mpl::false_) const
@@ -63,8 +63,8 @@ namespace boost { namespace spirit { namespace karma
             return !f(subject);
         }
 
-        // There is no way to distinguish a failed generator from a 
-        // generator to be skipped. We assume the user takes responsibility 
+        // There is no way to distinguish a failed generator from a
+        // generator to be skipped. We assume the user takes responsibility
         // for ending the loop if no attribute is specified.
         template <typename F>
         bool generate_subject(F f, unused_type, mpl::false_) const
@@ -108,8 +108,8 @@ namespace boost { namespace spirit { namespace karma
                 typename add_const<Attribute>::type
             >::type iterator_type;
 
-            typedef 
-                typename traits::make_indirect_iterator<iterator_type>::type 
+            typedef
+                typename traits::make_indirect_iterator<iterator_type>::type
             indirect_iterator_type;
             typedef detail::pass_container<
                 fail_function, Attribute, indirect_iterator_type, mpl::false_>
@@ -118,7 +118,7 @@ namespace boost { namespace spirit { namespace karma
             iterator_type it = traits::begin(attr);
             iterator_type end = traits::end(attr);
 
-            pass_container pass(fail_function(sink, ctx, d), 
+            pass_container pass(fail_function(sink, ctx, d),
                 indirect_iterator_type(it), indirect_iterator_type(end));
 
             // kleene fails only if the underlying output fails
@@ -140,7 +140,7 @@ namespace boost { namespace spirit { namespace karma
     };
 
     template <typename Subject>
-    struct kleene 
+    struct kleene
       : base_kleene<Subject, mpl::false_, kleene<Subject> >
     {
         typedef base_kleene<Subject, mpl::false_, kleene> base_kleene_;
@@ -150,7 +150,7 @@ namespace boost { namespace spirit { namespace karma
     };
 
     template <typename Subject>
-    struct strict_kleene 
+    struct strict_kleene
       : base_kleene<Subject, mpl::true_, strict_kleene<Subject> >
     {
         typedef base_kleene<Subject, mpl::true_, strict_kleene> base_kleene_;
@@ -165,12 +165,12 @@ namespace boost { namespace spirit { namespace karma
     namespace detail
     {
         template <typename Subject, bool strict_mode = false>
-        struct make_kleene 
+        struct make_kleene
           : make_unary_composite<Subject, kleene>
         {};
 
         template <typename Subject>
-        struct make_kleene<Subject, true> 
+        struct make_kleene<Subject, true>
           : make_unary_composite<Subject, strict_kleene>
         {};
     }
@@ -196,13 +196,13 @@ namespace boost { namespace spirit { namespace traits
     template <typename Subject, typename Attribute, typename Context
       , typename Iterator>
     struct handles_container<karma::kleene<Subject>, Attribute
-          , Context, Iterator> 
+          , Context, Iterator>
       : mpl::true_ {};
 
     template <typename Subject, typename Attribute, typename Context
       , typename Iterator>
     struct handles_container<karma::strict_kleene<Subject>, Attribute
-          , Context, Iterator> 
+          , Context, Iterator>
       : mpl::true_ {};
 }}}
 

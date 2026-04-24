@@ -24,9 +24,9 @@ and verify the issue you're about to submit isn't a duplicate. -->
 
 ### Minimal Example
 <!-- If possible, please create a minimal example here that exhibits the problematic behavior.
-You can also link to [godbolt](https://godbolt.org). But please note that you need to click 
-the "Share" button in the top right-hand corner of the godbolt page where you reproduce the sample 
-code to get the share link instead of in your browser address bar. 
+You can also link to [godbolt](https://godbolt.org). But please note that you need to click
+the "Share" button in the top right-hand corner of the godbolt page where you reproduce the sample
+code to get the share link instead of in your browser address bar.
 
 You can read [the guidelines on stackoverflow](https://stackoverflow.com/help/minimal-reproducible-example)
 on how to create a good minimal example. -->
@@ -40,7 +40,7 @@ on how to create a good minimal example. -->
 
 1. first step
 2. second step
-3. ... 
+3. ...
 
 ### What is the current *bug* behavior?
 <!-- Describe what actually happens. -->
@@ -60,10 +60,10 @@ on how to create a good minimal example. -->
 <!-- Please share any benchmark scripts - either standalone, or using [Google Benchmark](https://github.com/google/benchmark). -->
 
 ### Anything else that might help
-<!-- It will be better to provide us more information to help narrow down the cause. 
-Including but not limited to the following: 
-- lines of code that might help us diagnose the problem. 
+<!-- It will be better to provide us more information to help narrow down the cause.
+Including but not limited to the following:
+- lines of code that might help us diagnose the problem.
 - potential ways to address the issue.
-- last known working/first broken version (release number or commit hash). --> 
+- last known working/first broken version (release number or commit hash). -->
 
 - [ ] Have a plan to fix this issue.

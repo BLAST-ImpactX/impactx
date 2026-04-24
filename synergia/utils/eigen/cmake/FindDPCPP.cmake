@@ -9,7 +9,7 @@ if("${DPCPP_SYCL_TARGET}" STREQUAL "amdgcn-amd-amdhsa" AND
                        " please specify in DPCPP_SYCL_ARCH")
 endif()
 
-set(DPCPP_USER_FLAGS "" CACHE STRING 
+set(DPCPP_USER_FLAGS "" CACHE STRING
     "Additional user-specified compiler flags for DPC++")
 
 get_filename_component(DPCPP_BIN_DIR ${CMAKE_CXX_COMPILER} DIRECTORY)

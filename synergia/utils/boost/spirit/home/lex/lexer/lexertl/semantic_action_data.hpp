@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_LEXER_SEMANTIC_ACTION_DATA_JUN_10_2009_0417PM)
@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace boost { namespace spirit { namespace lex { namespace lexertl
-{ 
+{
     namespace detail
     {
         ///////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
         struct semantic_actions;
 
         // This specialization of semantic_actions will be used if the token
-        // type (lexer definition) does not support states, which simplifies 
-        // the data structures used to store the semantic action function 
+        // type (lexer definition) does not support states, which simplifies
+        // the data structures used to store the semantic action function
         // objects.
         template <typename Iterator, typename Data>
         struct semantic_actions<Iterator, mpl::false_, Data>
@@ -36,10 +36,10 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
 
             // add a semantic action function object
             template <typename F>
-            void add_action(std::size_t unique_id, std::size_t, F act) 
+            void add_action(std::size_t unique_id, std::size_t, F act)
             {
                 if (actions_.size() <= unique_id)
-                    actions_.resize(unique_id + 1); 
+                    actions_.resize(unique_id + 1);
 
                 actions_[unique_id] = act;
             }
@@ -50,10 +50,10 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
               , Data& data) const
             {
                 // if there is nothing to invoke, continue with 'match'
-                if (unique_id >= actions_.size() || !actions_[unique_id]) 
+                if (unique_id >= actions_.size() || !actions_[unique_id])
                     return pass_flags::pass_normal;
 
-                // Note: all arguments might be changed by the invoked semantic 
+                // Note: all arguments might be changed by the invoked semantic
                 //       action
                 BOOST_SCOPED_ENUM(pass_flags) match = pass_flags::pass_normal;
                 actions_[unique_id](data.get_first(), end, match, id, data);
@@ -61,11 +61,11 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
             }
 
             std::vector<functor_wrapper_type> actions_;
-        }; 
+        };
 
         // This specialization of semantic_actions will be used if the token
         // type (lexer definition) needs to support states, resulting in a more
-        // complex data structure needed for storing the semantic action 
+        // complex data structure needed for storing the semantic action
         // function objects.
         template <typename Iterator, typename Data>
         struct semantic_actions<Iterator, mpl::true_, Data>
@@ -76,14 +76,14 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
 
             // add a semantic action function object
             template <typename F>
-            void add_action(std::size_t unique_id, std::size_t state, F act) 
+            void add_action(std::size_t unique_id, std::size_t state, F act)
             {
                 if (actions_.size() <= state)
-                    actions_.resize(state + 1); 
+                    actions_.resize(state + 1);
 
                 std::vector<functor_wrapper_type>& actions (actions_[state]);
                 if (actions.size() <= unique_id)
-                    actions.resize(unique_id + 1); 
+                    actions.resize(unique_id + 1);
 
                 actions[unique_id] = act;
             }
@@ -99,13 +99,13 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
 
                 // if there is nothing to invoke, continue with 'match'
                 std::vector<functor_wrapper_type> const& actions = actions_[state];
-                if (unique_id >= actions.size() || !actions[unique_id]) 
+                if (unique_id >= actions.size() || !actions[unique_id])
                     return pass_flags::pass_normal;
 
-                // set token value 
+                // set token value
                 data.set_end(end);
 
-                // Note: all arguments might be changed by the invoked semantic 
+                // Note: all arguments might be changed by the invoked semantic
                 //       action
                 BOOST_SCOPED_ENUM(pass_flags) match = pass_flags::pass_normal;
                 actions[unique_id](data.get_first(), end, match, id, data);
@@ -113,7 +113,7 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
             }
 
             std::vector<std::vector<functor_wrapper_type> > actions_;
-        }; 
+        };
     }
 
 }}}}

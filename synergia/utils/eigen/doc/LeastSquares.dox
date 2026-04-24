@@ -31,7 +31,7 @@ computing least squares solutions:
 
 This is example from the page \link TutorialLinearAlgebra Linear algebra and decompositions \endlink.
 If you just need to solve the least squares problem, but are not interested in the SVD per se, a
-faster alternative method is CompleteOrthogonalDecomposition. 
+faster alternative method is CompleteOrthogonalDecomposition.
 
 
 \section LeastSquaresQR Using the QR decomposition

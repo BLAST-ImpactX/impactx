@@ -1,8 +1,8 @@
 //  This file was automatically generated on Wed Mar  3 08:46:11 2021
 //  by libs/config/tools/generate.cpp
 //  Copyright John Maddock 2002-4.
-//  Use, modification and distribution are subject to the 
-//  Boost Software License, Version 1.0. (See accompanying file 
+//  Use, modification and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See http://www.boost.org/libs/config for the most recent version.//

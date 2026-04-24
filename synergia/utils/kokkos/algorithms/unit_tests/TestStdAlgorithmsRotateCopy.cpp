@@ -141,10 +141,10 @@ void verify_data(ViewTypeFrom view_from, ViewTypeTest view_test,
   for (std::size_t i = 0; i < ext; ++i) {
     ASSERT_EQ(view_test_h(i), std_gold_h[i]);
     // std::cout << "i= " << i << " "
-    // 	      << "from: " << view_from_h(i) << " "
-    // 	      << "mine: " << view_test_h(i) << " "
-    // 	      << "std: " << std_gold_h[i]
-    // 	      << '\n';
+    //        << "from: " << view_from_h(i) << " "
+    //        << "mine: " << view_test_h(i) << " "
+    //        << "std: " << std_gold_h[i]
+    //        << '\n';
   }
 }
 

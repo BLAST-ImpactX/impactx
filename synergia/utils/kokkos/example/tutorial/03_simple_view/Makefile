@@ -10,7 +10,7 @@ ifneq (,$(findstring Cuda,$(KOKKOS_DEVICES)))
 CXX = ${KOKKOS_PATH}/bin/nvcc_wrapper
 CXXFLAGS = -O3
 LINK = ${CXX}
-LDFLAGS = 
+LDFLAGS =
 EXE = 03_simple_view.cuda
 KOKKOS_DEVICES = "Cuda,OpenMP"
 KOKKOS_ARCH = "SNB,Kepler35"
@@ -18,7 +18,7 @@ else
 CXX = g++
 CXXFLAGS = -O3
 LINK = ${CXX}
-LDFLAGS =  
+LDFLAGS =
 EXE = 03_simple_view.host
 KOKKOS_DEVICES = "OpenMP"
 KOKKOS_ARCH = "SNB"
@@ -42,7 +42,7 @@ test: $(EXE)
 $(EXE): $(OBJ) $(KOKKOS_LINK_DEPENDS)
 	$(LINK) $(KOKKOS_LDFLAGS) $(LDFLAGS) $(EXTRA_PATH) $(OBJ) $(KOKKOS_LIBS) $(LIB) -o $(EXE)
 
-clean: kokkos-clean 
+clean: kokkos-clean
 	rm -f *.o *.cuda *.host
 
 # Compilation rules

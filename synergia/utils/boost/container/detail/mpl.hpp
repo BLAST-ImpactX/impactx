@@ -141,4 +141,3 @@ using require_nonallocator_t = typename enable_if_c<!is_allocator<T>::value, T>:
 #include <boost/container/detail/config_end.hpp>
 
 #endif   //#ifndef BOOST_CONTAINER_CONTAINER_DETAIL_MPL_HPP
-

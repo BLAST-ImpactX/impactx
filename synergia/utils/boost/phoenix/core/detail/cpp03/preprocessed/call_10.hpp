@@ -5,15 +5,15 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 1>
             : proto::transform_impl<Expr, State, Data>
@@ -40,14 +40,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 2>
             : proto::transform_impl<Expr, State, Data>
@@ -74,14 +74,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 3>
             : proto::transform_impl<Expr, State, Data>
@@ -108,14 +108,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 4>
             : proto::transform_impl<Expr, State, Data>
@@ -142,14 +142,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 5>
             : proto::transform_impl<Expr, State, Data>
@@ -176,14 +176,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 6>
             : proto::transform_impl<Expr, State, Data>
@@ -210,14 +210,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 7>
             : proto::transform_impl<Expr, State, Data>
@@ -244,14 +244,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 8>
             : proto::transform_impl<Expr, State, Data>
@@ -278,14 +278,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 9>
             : proto::transform_impl<Expr, State, Data>
@@ -312,14 +312,14 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
-        
+
+
+
+
+
+
+
+
         template <typename Fun, typename Expr, typename State, typename Data>
         struct call_impl<Fun, Expr, State, Data, 10>
             : proto::transform_impl<Expr, State, Data>

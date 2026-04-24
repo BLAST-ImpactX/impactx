@@ -24,46 +24,46 @@ namespace boost { namespace function_types { namespace detail {
 
 #if !BOOST_WORKAROUND(BOOST_BORLANDC, <= 0x582)
 
-template<typename T> struct cv_traits 
+template<typename T> struct cv_traits
 { typedef non_cv tag; typedef T type; };
-template<typename T> struct cv_traits<T &>     
+template<typename T> struct cv_traits<T &>
 { typedef non_cv tag; typedef T type; };
-template<typename T> struct cv_traits<T *>    
+template<typename T> struct cv_traits<T *>
 { typedef non_cv tag; typedef T type; };
-template<typename T> struct cv_traits<T * const> 
+template<typename T> struct cv_traits<T * const>
 { typedef non_cv tag; typedef T type; };
-template<typename T> struct cv_traits<T * volatile> 
+template<typename T> struct cv_traits<T * volatile>
 { typedef non_cv tag; typedef T type; };
-template<typename T> struct cv_traits<T * const volatile> 
+template<typename T> struct cv_traits<T * const volatile>
 { typedef non_cv tag; typedef T type; };
 
-template<typename T> struct cv_traits<T const> 
+template<typename T> struct cv_traits<T const>
 { typedef const_non_volatile tag; typedef T type; };
 template<typename T> struct cv_traits<T const &>
 { typedef const_non_volatile tag; typedef T type; };
-template<typename T> struct cv_traits<T const *> 
+template<typename T> struct cv_traits<T const *>
 { typedef const_non_volatile tag; typedef T type; };
-template<typename T> struct cv_traits<T const * const> 
+template<typename T> struct cv_traits<T const * const>
 { typedef const_non_volatile tag; typedef T type; };
-template<typename T> struct cv_traits<T const * volatile> 
+template<typename T> struct cv_traits<T const * volatile>
 { typedef const_non_volatile tag; typedef T type; };
-template<typename T> struct cv_traits<T const * const volatile> 
+template<typename T> struct cv_traits<T const * const volatile>
 { typedef const_non_volatile tag; typedef T type; };
 
-template<typename T> struct cv_traits<T volatile>  
+template<typename T> struct cv_traits<T volatile>
 { typedef volatile_non_const tag; typedef T type; };
-template<typename T> struct cv_traits<T volatile &>  
+template<typename T> struct cv_traits<T volatile &>
 { typedef volatile_non_const tag; typedef T type; };
-template<typename T> struct cv_traits<T volatile *> 
+template<typename T> struct cv_traits<T volatile *>
 { typedef volatile_non_const tag; typedef T type; };
-template<typename T> struct cv_traits<T volatile * const> 
+template<typename T> struct cv_traits<T volatile * const>
 { typedef volatile_non_const tag; typedef T type; };
-template<typename T> struct cv_traits<T volatile * volatile> 
+template<typename T> struct cv_traits<T volatile * volatile>
 { typedef volatile_non_const tag; typedef T type; };
-template<typename T> struct cv_traits<T volatile * const volatile> 
+template<typename T> struct cv_traits<T volatile * const volatile>
 { typedef volatile_non_const tag; typedef T type; };
 
-template<typename T> struct cv_traits<T const volatile>   
+template<typename T> struct cv_traits<T const volatile>
 { typedef cv_qualified tag; typedef T type; };
 template<typename T> struct cv_traits<T const volatile &>
 { typedef cv_qualified tag; typedef T type; };
@@ -105,14 +105,14 @@ template<typename T>
 struct cv_code
 {
   static T _t;
-  BOOST_STATIC_CONSTANT(std::size_t, value = 
+  BOOST_STATIC_CONSTANT(std::size_t, value =
       sizeof(::boost::function_types::detail::switch_cv(
          ::boost::function_types::detail::ref_to_ptr(_t) ) ));
 };
 
-template<typename T> struct cv_traits 
+template<typename T> struct cv_traits
 {
-  typedef typename boost::function_types::detail::cv_tag_impl< 
+  typedef typename boost::function_types::detail::cv_tag_impl<
     ::boost::function_types::detail::cv_code<T>::value >::type
   tag;
 
@@ -120,13 +120,12 @@ template<typename T> struct cv_traits
   // to work
   typedef typename boost::remove_cv<
               typename boost::remove_pointer<
-                  typename boost::remove_reference<T>::type 
-              >::type 
-          >::type type; 
+                  typename boost::remove_reference<T>::type
+              >::type
+          >::type type;
 };
 #endif
 
 } } } // namespace boost::function_types::detail
 
 #endif
- 

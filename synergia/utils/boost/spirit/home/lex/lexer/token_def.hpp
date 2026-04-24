@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_TOKEN_DEF_MAR_13_2007_0145PM)
@@ -49,7 +49,7 @@ namespace boost { namespace spirit { namespace lex
     struct token_def
       : proto::extends<
             typename proto::terminal<
-                lex::reference<token_def<Attribute, Char, Idtype> const, Idtype> 
+                lex::reference<token_def<Attribute, Char, Idtype> const, Idtype>
             >::type
           , token_def<Attribute, Char, Idtype> >
       , qi::parser<token_def<Attribute, Char, Idtype> >
@@ -68,8 +68,8 @@ namespace boost { namespace spirit { namespace lex
         template <typename Context, typename Iterator>
         struct attribute
         {
-            //  The return value of the token_def is either the specified 
-            //  attribute type, or the pair of iterators from the match of the 
+            //  The return value of the token_def is either the specified
+            //  attribute type, or the pair of iterators from the match of the
             //  corresponding token (if no attribute type has been specified),
             //  or unused_type (if omit has been specified).
             typedef typename Iterator::base_iterator_type iterator_type;
@@ -93,17 +93,17 @@ namespace boost { namespace spirit { namespace lex
             qi::skip_over(first, last, skipper);   // always do a pre-skip
 
             if (first != last) {
-                typedef typename 
-                    std::iterator_traits<Iterator>::value_type 
+                typedef typename
+                    std::iterator_traits<Iterator>::value_type
                 token_type;
 
-                //  If the following assertion fires you probably forgot to  
+                //  If the following assertion fires you probably forgot to
                 //  associate this token definition with a lexer instance.
                 BOOST_ASSERT(std::size_t(~0) != token_state_);
 
                 token_type const& t = *first;
-                if (token_id_ == t.id() && 
-                    (all_states_id == token_state_ || token_state_ == t.state())) 
+                if (token_id_ == t.id() &&
+                    (all_states_id == token_state_ || token_state_ == t.state()))
                 {
                     spirit::traits::assign_to(t, attr);
                     ++first;
@@ -116,14 +116,14 @@ namespace boost { namespace spirit { namespace lex
         template <typename Context>
         info what(Context& /*context*/) const
         {
-            if (0 == def_.which()) 
+            if (0 == def_.which())
                 return info("token_def", boost::get<string_type>(def_));
 
             return info("token_def", boost::get<char_type>(def_));
         }
 
         ///////////////////////////////////////////////////////////////////////
-        // Lex interface: collect token definitions and put it into the 
+        // Lex interface: collect token definitions and put it into the
         // provided lexer def
         template <typename LexerDef, typename String>
         void collect(LexerDef& lexdef, String const& state
@@ -131,10 +131,10 @@ namespace boost { namespace spirit { namespace lex
         {
             std::size_t state_id = lexdef.add_state(state.c_str());
 
-            // If the following assertion fires you are probably trying to use 
-            // a single token_def instance in more than one lexer state. This 
-            // is not possible. Please create a separate token_def instance 
-            // from the same regular expression for each lexer state it needs 
+            // If the following assertion fires you are probably trying to use
+            // a single token_def instance in more than one lexer state. This
+            // is not possible. Please create a separate token_def instance
+            // from the same regular expression for each lexer state it needs
             // to be associated with.
             BOOST_ASSERT(
                 (std::size_t(~0) == token_state_ || state_id == token_state_) &&
@@ -167,12 +167,12 @@ namespace boost { namespace spirit { namespace lex
         typedef std::basic_string<char_type> string_type;
 
         // Lex interface: constructing token definitions
-        token_def() 
+        token_def()
           : proto_base_type(terminal_type::make(reference_(*this)))
           , def_('\0'), token_id_()
           , unique_id_(std::size_t(~0)), token_state_(std::size_t(~0)) {}
 
-        token_def(token_def const& rhs) 
+        token_def(token_def const& rhs)
           : proto_base_type(terminal_type::make(reference_(*this)))
           , def_(rhs.def_), token_id_(rhs.token_id_)
           , unique_id_(rhs.unique_id_), token_state_(rhs.token_state_) {}
@@ -206,15 +206,15 @@ namespace boost { namespace spirit { namespace lex
             return *this;
         }
 
-        // general accessors 
+        // general accessors
         Idtype const& id() const { return token_id_; }
         void id(Idtype const& id) { token_id_ = id; }
         std::size_t unique_id() const { return unique_id_; }
 
-        string_type definition() const 
-        { 
-            return (0 == def_.which()) ? 
-                boost::get<string_type>(def_) : 
+        string_type definition() const
+        {
+            return (0 == def_.which()) ?
+                boost::get<string_type>(def_) :
                 string_type(1, boost::get<char_type>(def_));
         }
         std::size_t state() const { return token_state_; }

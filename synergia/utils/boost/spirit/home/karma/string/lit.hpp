@@ -73,7 +73,7 @@ namespace boost { namespace spirit
           , terminal_ex<tag::lit, fusion::vector1<A0> >
           , typename enable_if<traits::is_string<A0> >::type>
       : mpl::true_ {};
-}} 
+}}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace boost { namespace spirit { namespace karma
@@ -103,14 +103,14 @@ namespace boost { namespace spirit { namespace karma
         template <typename OutputIterator, typename Context, typename Delimiter
           , typename Attribute>
         static bool
-        generate(OutputIterator& sink, Context& context, Delimiter const& d, 
+        generate(OutputIterator& sink, Context& context, Delimiter const& d,
             Attribute const& attr)
         {
             if (!traits::has_optional_value(attr))
                 return false;
 
             typedef typename attribute<Context>::type attribute_type;
-            return 
+            return
                 karma::detail::string_generate(sink
                   , traits::extract_from<attribute_type>(attr, context)
                   , char_encoding(), Tag()) &&
@@ -120,7 +120,7 @@ namespace boost { namespace spirit { namespace karma
         // this lit has no attribute attached, it needs to have been
         // initialized from a direct literal
         template <typename OutputIterator, typename Context, typename Delimiter>
-        static bool generate(OutputIterator&, Context&, Delimiter const&, 
+        static bool generate(OutputIterator&, Context&, Delimiter const&,
             unused_type const&)
         {
             // It is not possible (doesn't make sense) to use string without
@@ -183,17 +183,17 @@ namespace boost { namespace spirit { namespace karma
             {
                 return false;
             }
-            return detail::string_generate(sink, str_, char_encoding(), Tag()) && 
+            return detail::string_generate(sink, str_, char_encoding(), Tag()) &&
                    karma::delimit_out(sink, d);      // always do post-delimiting
         }
 
-        // A string("...") without any associated attribute just emits its 
+        // A string("...") without any associated attribute just emits its
         // immediate literal
         template <typename OutputIterator, typename Context, typename Delimiter>
         bool generate(OutputIterator& sink, Context&, Delimiter const& d
           , unused_type) const
         {
-            return detail::string_generate(sink, str_, char_encoding(), Tag()) && 
+            return detail::string_generate(sink, str_, char_encoding(), Tag()) &&
                    karma::delimit_out(sink, d);      // always do post-delimiting
         }
 
@@ -216,9 +216,9 @@ namespace boost { namespace spirit { namespace karma
         tag::char_code<tag::string, CharEncoding>
       , Modifiers>
     {
-        static bool const lower = 
+        static bool const lower =
             has_modifier<Modifiers, tag::char_code_base<tag::lower> >::value;
-        static bool const upper = 
+        static bool const upper =
             has_modifier<Modifiers, tag::char_code_base<tag::upper> >::value;
 
         typedef any_string<
@@ -233,7 +233,7 @@ namespace boost { namespace spirit { namespace karma
         }
     };
 
-    // string literal 
+    // string literal
     template <typename T, typename Modifiers>
     struct make_primitive<T, Modifiers
       , typename enable_if<traits::is_string<T> >::type>
@@ -267,9 +267,9 @@ namespace boost { namespace spirit { namespace karma
           , bool no_attribute>
         struct make_string_direct
         {
-            static bool const lower = 
+            static bool const lower =
                 has_modifier<Modifiers, tag::char_code_base<tag::lower> >::value;
-            static bool const upper = 
+            static bool const upper =
                 has_modifier<Modifiers, tag::char_code_base<tag::upper> >::value;
 
             typedef typename add_const<A0>::type const_string;

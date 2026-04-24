@@ -1,16 +1,16 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0
@@ -28,13 +28,13 @@
               , a0
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1
@@ -52,13 +52,13 @@
               , a0 , a1
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2
@@ -76,13 +76,13 @@
               , a0 , a1 , a2
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2 , typename A3
@@ -100,13 +100,13 @@
               , a0 , a1 , a2 , a3
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2 , typename A3 , typename A4
@@ -124,13 +124,13 @@
               , a0 , a1 , a2 , a3 , a4
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5
@@ -148,13 +148,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6
@@ -172,13 +172,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7
@@ -196,13 +196,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename F
       , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8

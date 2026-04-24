@@ -55,7 +55,7 @@ namespace traits {
    template <class T>
    struct make_unsigned
    // \cond show_private
-      : public make_unsigned_imp < T, boost::is_integral<T>::value > 
+      : public make_unsigned_imp < T, boost::is_integral<T>::value >
       // \endcond
    {};
    // \cond show_private
@@ -85,7 +85,7 @@ namespace traits {
    template <class T>
    struct make_unsigned_or_unbounded
       // \cond show_private
-      : public make_unsigned_or_unbounded_imp < T, boost::is_integral<T>::value > 
+      : public make_unsigned_or_unbounded_imp < T, boost::is_integral<T>::value >
       // \endcond
    {};
    /** \brief Traits class that indicates whether type T is an integer

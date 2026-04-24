@@ -17,8 +17,8 @@
 namespace boost { namespace spirit { namespace traits
 {
     ///////////////////////////////////////////////////////////////////////////
-    //  This file contains the attribute to string conversion utility. The 
-    //  utility provided also accept spirit's unused_type; all no-ops. Compiler 
+    //  This file contains the attribute to string conversion utility. The
+    //  utility provided also accept spirit's unused_type; all no-ops. Compiler
     //  optimization will easily strip these away.
     ///////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ namespace boost { namespace spirit { namespace traits
     {
         return unused;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Attribute>
     inline bool valid_as(Attribute const& attr)

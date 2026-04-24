@@ -26,56 +26,56 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     {
         return intersection<A, B>(a.derived(), b.derived());
     }
-    
+
     template <typename A>
     inline intersection<A, chlit<char> >
     operator&(parser<A> const& a, char b)
     {
         return intersection<A, chlit<char> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline intersection<chlit<char>, B>
     operator&(char a, parser<B> const& b)
     {
         return intersection<chlit<char>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline intersection<A, strlit<char const*> >
     operator&(parser<A> const& a, char const* b)
     {
         return intersection<A, strlit<char const*> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline intersection<strlit<char const*>, B>
     operator&(char const* a, parser<B> const& b)
     {
         return intersection<strlit<char const*>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline intersection<A, chlit<wchar_t> >
     operator&(parser<A> const& a, wchar_t b)
     {
         return intersection<A, chlit<wchar_t> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline intersection<chlit<wchar_t>, B>
     operator&(wchar_t a, parser<B> const& b)
     {
         return intersection<chlit<wchar_t>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline intersection<A, strlit<wchar_t const*> >
     operator&(parser<A> const& a, wchar_t const* b)
     {
         return intersection<A, strlit<wchar_t const*> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline intersection<strlit<wchar_t const*>, B>
     operator&(wchar_t const* a, parser<B> const& b)

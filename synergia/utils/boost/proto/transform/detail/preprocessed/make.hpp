@@ -43,11 +43,11 @@
         {
             return construct_<Type>()();
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object >
     struct make<Object()>
       : transform<make<Object()> >
@@ -55,15 +55,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -145,11 +145,11 @@
         {
             return construct_<Type>()(a0);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0>
     struct make<Object(A0)>
       : transform<make<Object(A0)> >
@@ -157,15 +157,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -180,10 +180,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0>
     struct make<Object(A0...)>
       : transform<make<Object(A0...)> >
@@ -196,7 +196,7 @@
                   , A0
                   , detail::expand_pattern_rest_0<
                         Object
-                        
+
                     >
                 >::type
             >::template impl<Expr, State, Data>
@@ -269,11 +269,11 @@
         {
             return construct_<Type>()(a0 , a1);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1>
     struct make<Object(A0 , A1)>
       : transform<make<Object(A0 , A1)> >
@@ -281,15 +281,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -304,10 +304,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1>
     struct make<Object(A0 , A1...)>
       : transform<make<Object(A0 , A1...)> >
@@ -393,11 +393,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2>
     struct make<Object(A0 , A1 , A2)>
       : transform<make<Object(A0 , A1 , A2)> >
@@ -405,15 +405,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -428,10 +428,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2>
     struct make<Object(A0 , A1 , A2...)>
       : transform<make<Object(A0 , A1 , A2...)> >
@@ -517,11 +517,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3>
     struct make<Object(A0 , A1 , A2 , A3)>
       : transform<make<Object(A0 , A1 , A2 , A3)> >
@@ -529,15 +529,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -552,10 +552,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3>
     struct make<Object(A0 , A1 , A2 , A3...)>
       : transform<make<Object(A0 , A1 , A2 , A3...)> >
@@ -641,11 +641,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3 , a4);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct make<Object(A0 , A1 , A2 , A3 , A4)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4)> >
@@ -653,15 +653,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -676,10 +676,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct make<Object(A0 , A1 , A2 , A3 , A4...)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4...)> >
@@ -765,11 +765,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3 , a4 , a5);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5)> >
@@ -777,15 +777,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -800,10 +800,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5...)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5...)> >
@@ -889,11 +889,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3 , a4 , a5 , a6);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6)> >
@@ -901,15 +901,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -924,10 +924,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6...)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6...)> >
@@ -1013,11 +1013,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7)> >
@@ -1025,15 +1025,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -1048,10 +1048,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7...)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7...)> >
@@ -1137,11 +1137,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8)> >
@@ -1149,15 +1149,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -1172,10 +1172,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8...)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8...)> >
@@ -1261,11 +1261,11 @@
         {
             return construct_<Type>()(a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9);
         }
-    } 
-    
-    
-    
-    
+    }
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9)> >
@@ -1273,15 +1273,15 @@
         template<typename Expr, typename State, typename Data>
         struct impl : transform_impl<Expr, State, Data>
         {
-            
+
             typedef typename detail::make_if_<Object, Expr, State, Data>::type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -1296,10 +1296,10 @@
             }
         };
     };
-    
-    
-    
-    
+
+
+
+
     template<typename Object , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
     struct make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9...)>
       : transform<make<Object(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9...)> >

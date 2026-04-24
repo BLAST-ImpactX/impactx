@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// \file deduce_domain.hpp
-/// Contains definition of deduce_domain\<\> class templates 
+/// Contains definition of deduce_domain\<\> class templates
 /// for finding the domain that is common among the specified
 /// domains
 //

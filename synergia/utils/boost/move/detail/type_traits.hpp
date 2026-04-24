@@ -189,7 +189,7 @@
 #   endif
 
 //    BOOST_MOVE_HAS_TRIVIAL_MOVE_CONSTRUCTOR
-#   if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) 
+#   if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 #   if BOOST_MOVE_HAS_TRAIT(is_constructible) && BOOST_MOVE_HAS_TRAIT(is_trivially_constructible)
 #     define BOOST_MOVE_HAS_TRIVIAL_MOVE_CONSTRUCTOR(T) (__is_constructible(T, T&&) && __is_trivially_constructible(T, T&&))
@@ -971,7 +971,7 @@ struct is_copy_constructible
    //
    // error: function *function_name* cannot be referenced -- it is a deleted function
    // static yes_type test(U&, decltype(U(boost::declval<U&>()))* = 0);
-   //                                                        ^ 
+   //                                                        ^
    // MSVC 12.0 (Visual 2013) has problems when the copy constructor has been deleted. See:
    // https://connect.microsoft.com/VisualStudio/feedback/details/800328/std-is-copy-constructible-is-broken
    #if defined(BOOST_MOVE_TT_CXX11_IS_COPY_CONSTRUCTIBLE)
@@ -1007,14 +1007,14 @@ struct is_copy_assignable
 //
 // error: function *function_name* cannot be referenced -- it is a deleted function
 // static boost::type_traits::yes_type test(T1&, decltype(T1(boost::declval<T1&>()))* = 0);
-//                                                        ^ 
+//                                                        ^
 //
 // MSVC 12.0 (Visual 2013) has problems when the copy constructor has been deleted. See:
 // https://connect.microsoft.com/VisualStudio/feedback/details/800328/std-is-copy-constructible-is-broken
 #if defined(BOOST_MOVE_TT_CXX11_IS_COPY_ASSIGNABLE)
    typedef char yes_type;
    struct no_type { char dummy[2]; };
-   
+
    template <class U>   static typename add_reference<U>::type source();
    template <class U>   static decltype(source<U&>() = source<const U&>(), yes_type() ) test(int);
    template <class>     static no_type test(...);
@@ -1062,7 +1062,7 @@ template<class T>
 struct is_trivially_copy_assignable
 {
    static const bool value = BOOST_MOVE_IS_TRIVIALLY_COPY_ASSIGNABLE(T);
-};                             
+};
 
 //////////////////////////////////////
 //       is_trivially_move_assignable
@@ -1276,7 +1276,7 @@ struct aligned_storage_impl
 
 template<class T, std::size_t Len>
 union aligned_union
-{   
+{
    T aligner;
    unsigned char data[Len > sizeof(T) ? Len : sizeof(T)];
 };

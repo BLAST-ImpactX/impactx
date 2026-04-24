@@ -18,14 +18,14 @@ dispatch_example2.cpp: Uses separate namespaces for each version.
                        This is the recommended method for cases with multiple functions,
                        classes, objects, etc.
 
-The code has two sections: 
+The code has two sections:
 
 Dispatched code: This code is compiled multiple times to generate multiple instances
 of the compiled code, each one optimized for a different instruction set. The
 dispatched code section contains the speed-critical part of the program.
 
 Common code: This code is compiled only once, using the lowest instruction set.
-The common code section contains the dispatcher, startup code, user interface, and 
+The common code section contains the dispatcher, startup code, user interface, and
 other parts of the program that do not need advanced optimization.
 
 To compile this code, do as in this example:
@@ -145,7 +145,7 @@ namespace DISPATCHED_NAMESPACE {
 /**********************************************************************************
                              Common code
 
-Everything in this section is compiled only once, using the lowest instruction set. 
+Everything in this section is compiled only once, using the lowest instruction set.
 
 The dispatcher must be placed here. Program main(), user interface, and other
 less critical parts of the code are also placed in the common code section.

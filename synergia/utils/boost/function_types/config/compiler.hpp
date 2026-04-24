@@ -21,7 +21,7 @@
 #   ifdef BOOST_FT_AUTODETECT_CALLING_CONVENTIONS
 
       // enable clrcall calling covention (call to .NET managed code) when
-      // compiling with /clr 
+      // compiling with /clr
 #     if BOOST_MSVC >= 1400 && defined(__cplusplus_cli)
 #       ifndef BOOST_FT_CC_CLRCALL
 #       define BOOST_FT_CC_CLRCALL callable_builtin
@@ -43,7 +43,7 @@
 #           pragma message("INFO| BOOST_FT_CONFIG_OK.")
 #         endif
 #         endif
-#       else 
+#       else
           // ...introduced in version 8
 #         ifndef BOOST_FT_CC_THISCALL
 #         define BOOST_FT_CC_THISCALL non_variadic|member|callable_builtin
@@ -64,7 +64,7 @@
 #       // see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20439
 #       // see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29328
 #       if BOOST_WORKAROUND(__GNUC__,BOOST_TESTED_AT(4))
-#         ifndef BOOST_FT_CC_IMPLICIT 
+#         ifndef BOOST_FT_CC_IMPLICIT
 #         define BOOST_FT_CC_IMPLICIT member|callable_builtin
 #         endif
 #         define BOOST_FT_COMMON_X86_CCs non_member|callable_builtin
@@ -113,4 +113,3 @@
 
 
 #endif
-

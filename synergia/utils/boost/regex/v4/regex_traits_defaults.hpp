@@ -62,8 +62,8 @@ namespace boost{ namespace BOOST_REGEX_DETAIL_NS{
 template <class charT>
 inline bool is_extended(charT c)
 {
-   typedef typename make_unsigned<charT>::type unsigned_type; 
-   return (sizeof(charT) > 1) && (static_cast<unsigned_type>(c) >= 256u); 
+   typedef typename make_unsigned<charT>::type unsigned_type;
+   return (sizeof(charT) > 1) && (static_cast<unsigned_type>(c) >= 256u);
 }
 inline bool is_extended(char)
 { return false; }

@@ -113,18 +113,18 @@ struct substitute<
     , ::boost::recursive_variant_
       BOOST_MPL_AUX_LAMBDA_ARITY_PARAM(Arity)
     >
-{   
+{
     typedef ::boost::variant<
-        typename enable_recursive<   
-              T0              
-            , RecursiveVariant               
-            , mpl::true_                     
+        typename enable_recursive<
+              T0
+            , RecursiveVariant
+            , mpl::true_
         >::type,
-        typename enable_recursive<   
-              TN              
-            , RecursiveVariant               
-            , mpl::true_                     
-        >::type...  
+        typename enable_recursive<
+              TN
+            , RecursiveVariant
+            , mpl::true_
+        >::type...
     > type;
 };
 

@@ -15,7 +15,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 #include <bitset>
-#include <climits> 
+#include <climits>
 #include <boost/spirit/home/support/char_set/range_run.hpp>
 
 namespace boost { namespace spirit { namespace support { namespace detail
@@ -246,4 +246,3 @@ namespace boost { namespace spirit { namespace support { namespace detail
 }}}}
 
 #endif
-

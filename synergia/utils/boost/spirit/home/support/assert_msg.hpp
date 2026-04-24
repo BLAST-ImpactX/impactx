@@ -51,4 +51,3 @@
             TemplateParam, TemplateParam >::value), Msg, Types)
 
 #endif
-

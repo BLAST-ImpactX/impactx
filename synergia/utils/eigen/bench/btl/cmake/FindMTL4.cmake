@@ -28,4 +28,3 @@ find_package_handle_standard_args(MTL4 DEFAULT_MSG MTL4_INCLUDE_DIR)
 mark_as_advanced(MTL4_INCLUDE_DIR)
 
 endif()
-

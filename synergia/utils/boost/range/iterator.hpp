@@ -26,32 +26,32 @@
 namespace boost
 {
 
-#if BOOST_WORKAROUND(BOOST_MSVC, == 1310)  
+#if BOOST_WORKAROUND(BOOST_MSVC, == 1310)
 
-    namespace range_detail_vc7_1  
-    {  
-       template< typename C, typename Sig = void(C) >  
-       struct range_iterator  
-       {  
-           typedef BOOST_RANGE_DEDUCED_TYPENAME   
-               mpl::eval_if_c< is_const<C>::value,   
-                               range_const_iterator< typename remove_const<C>::type >,  
-                               range_mutable_iterator<C> >::type type;  
-       };  
-    
-       template< typename C, typename T >  
-       struct range_iterator< C, void(T[]) >  
-       {  
-           typedef T* type;  
-       };       
-    }  
-    
+    namespace range_detail_vc7_1
+    {
+       template< typename C, typename Sig = void(C) >
+       struct range_iterator
+       {
+           typedef BOOST_RANGE_DEDUCED_TYPENAME
+               mpl::eval_if_c< is_const<C>::value,
+                               range_const_iterator< typename remove_const<C>::type >,
+                               range_mutable_iterator<C> >::type type;
+       };
+
+       template< typename C, typename T >
+       struct range_iterator< C, void(T[]) >
+       {
+           typedef T* type;
+       };
+    }
+
     template< typename C, typename Enabler=void >
     struct range_iterator
     {
 
-        typedef BOOST_RANGE_DEDUCED_TYPENAME  
-               range_detail_vc7_1::range_iterator<C>::type type;  
+        typedef BOOST_RANGE_DEDUCED_TYPENAME
+               range_detail_vc7_1::range_iterator<C>::type type;
 
     };
 

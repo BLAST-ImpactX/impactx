@@ -38,7 +38,7 @@ old to support UWP.
 #   undef BOOST_PLAT_WINDOWS_DESKTOP
 #   define BOOST_PLAT_WINDOWS_DESKTOP BOOST_VERSION_NUMBER_AVAILABLE
 #endif
- 
+
 #if BOOST_PLAT_WINDOWS_DESKTOP
 #   define BOOST_PLAT_WINDOWS_DESKTOP_AVAILABLE
 #   include <boost/predef/detail/platform_detected.h>

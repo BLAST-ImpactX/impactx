@@ -116,7 +116,7 @@ public:
         _mm_store_ph (p, xmm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 16
     void store_nt(void * p) const {
@@ -470,7 +470,7 @@ Vec8h nan_vec<Vec8h>(uint32_t payload) {
         uf.i = 0x7E00 | (payload & 0x01FF);
         return Vec8h(uf.f);
     }
-} 
+}
 
 // Function nan8h: returns a vector where all elements are NAN (quiet)
 static inline Vec8h nan8h(int n = 0x10) {
@@ -492,7 +492,7 @@ static inline _Float16 horizontal_add(Vec8h const a) {
     //return _mm_reduce_add_ph(a);
     __m128h b = _mm_castps_ph(_mm_movehl_ps(_mm_castph_ps(a), _mm_castph_ps(a)));
     __m128h c = _mm_add_ph(a, b);
-    __m128h d = _mm_castps_ph(_mm_movehdup_ps( _mm_castph_ps(c)));    
+    __m128h d = _mm_castps_ph(_mm_movehdup_ps( _mm_castph_ps(c)));
     __m128h e = _mm_add_ph(c, d);
     __m128h f = _mm_castsi128_ph(_mm_shufflelo_epi16(_mm_castph_si128(e), 1));
     __m128h g = _mm_add_sh(e, f);
@@ -672,9 +672,9 @@ template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7>
 static inline Vec8h change_sign(Vec8h const a) {
     if constexpr ((i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7) == 0) return a;
     __m128i mask = constant4ui<
-        (i0 ? 0x8000 : 0) | (i1 ? 0x80000000 : 0), 
-        (i2 ? 0x8000 : 0) | (i3 ? 0x80000000 : 0), 
-        (i4 ? 0x8000 : 0) | (i5 ? 0x80000000 : 0), 
+        (i0 ? 0x8000 : 0) | (i1 ? 0x80000000 : 0),
+        (i2 ? 0x8000 : 0) | (i3 ? 0x80000000 : 0),
+        (i4 ? 0x8000 : 0) | (i5 ? 0x80000000 : 0),
         (i6 ? 0x8000 : 0) | (i7 ? 0x80000000 : 0) >();
     return  _mm_castps_ph(_mm_xor_ps(_mm_castph_ps(a), _mm_castsi128_ps(mask)));     // flip sign bits
 }
@@ -706,7 +706,7 @@ static inline Vec8f to_float (Vec8h h) {
 // reduce precision: Vec8f -> Vec8h
 static inline Vec8h to_float16 (Vec8f f) {
     return _mm_castsi128_ph(_mm256_cvtps_ph(f, 0));
-} 
+}
 #endif
 
 /*****************************************************************************
@@ -831,7 +831,7 @@ public:
         ymm = _mm256_setr_ph (f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);
     }
     // Constructor to build from two Vec8h:
-    Vec16h(Vec8h const a0, Vec8h const a1) {     
+    Vec16h(Vec8h const a0, Vec8h const a1) {
         ymm = _mm256_castps_ph(_mm256_insertf128_ps(_mm256_castps128_ps256(_mm_castph_ps(a0)),_mm_castph_ps(a1),1));
     }
     // Constructor to convert from type __m256h used in intrinsics:
@@ -870,7 +870,7 @@ public:
         _mm256_store_ph (p, ymm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 32
     void store_nt(void * p) const {
@@ -1230,7 +1230,7 @@ Vec16h nan_vec<Vec16h>(uint32_t payload) {
         uf.i = 0x7E00 | (payload & 0x01FF);
         return Vec16h(uf.f);
     }
-} 
+}
 
 // Function nan16h: returns a vector where all elements are NAN (quiet)
 static inline Vec16h nan16h(int n = 0x10) {
@@ -1420,18 +1420,18 @@ static inline Vec16h exp2(Vec16s const n) {
 
 // change signs on vectors Vec16h
 // Each index i0 - i15 is 1 for changing sign on the corresponding element, 0 for no change
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15>
 Vec16h change_sign(Vec16h const a) {
     if constexpr ((i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7 | i8 | i9 | i10 | i11 | i12 | i13 | i14 | i15) == 0) return a;
     __m256i mask = constant8ui<
-        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0), 
-        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0), 
-        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0), 
-        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0), 
-        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0), 
-        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0), 
-        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0), 
+        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0),
+        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0),
+        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0),
+        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0),
+        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0),
+        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0),
+        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0),
         (i14 ? 0x8000 : 0) | (i15 ? 0x80000000 : 0) >();
     return  _mm256_castps_ph(_mm256_xor_ps(_mm256_castph_ps(a), _mm256_castsi256_ps(mask)));     // flip sign bits
 }
@@ -1494,7 +1494,7 @@ static inline Vec16h extend_z(Vec8h a) {
 *
 *****************************************************************************/
 // permute vector Vec16h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15>
 Vec16h permute16(Vec16h const a) {
     return _mm256_castsi256_ph (
@@ -1510,7 +1510,7 @@ Vec16h permute16(Vec16h const a) {
 *****************************************************************************/
 
 // permute and blend Vec16h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15>
 Vec16h blend16(Vec16h const a, Vec16h const b) {
     return _mm256_castsi256_ph (
@@ -1587,7 +1587,7 @@ public:
         f16, f17, f18, f19, f20, f21, f22, f23, f24, f25, f26, f27, f28, f29, f30, f31);
     }
     // Constructor to build from two Vec16h:
-    Vec32h(Vec16h const a0, Vec16h const a1) {     
+    Vec32h(Vec16h const a0, Vec16h const a1) {
         zmm = _mm512_castps_ph(_mm512_insertf32x8(_mm512_castps256_ps512(_mm256_castph_ps(a0)),_mm256_castph_ps(a1),1));
     }
     // Constructor to convert from type __m512h used in intrinsics:
@@ -1626,7 +1626,7 @@ public:
         _mm512_store_ph (p, zmm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 64
     void store_nt(void * p) const {
@@ -1986,7 +1986,7 @@ Vec32h nan_vec<Vec32h>(uint32_t payload) {
         uf.i = 0x7E00 | (payload & 0x01FF);
         return Vec32h(uf.f);
     }
-} 
+}
 
 // Function nan32h: returns a vector where all elements are NAN (quiet)
 static inline Vec32h nan32h(int n = 0x10) {
@@ -1998,7 +1998,7 @@ static inline Vec32us nan_code(Vec32h const x) {
     Vec32us a = Vec32us(_mm512_castph_si512(x));
     Vec32us const n = 0x3FF;
     return select(is_nan(x), a & n, Vec32us(0));
-} 
+}
 
 
 // General arithmetic functions, etc.
@@ -2174,7 +2174,7 @@ static inline Vec32h exp2(Vec32s const n) {
 
 // change signs on vectors Vec32h
 // Each index i0 - i31 is 1 for changing sign on the corresponding element, 0 for no change
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15,
 int i16, int i17, int i18, int i19, int i20, int i21, int i22, int i23,
 int i24, int i25, int i26, int i27, int i28, int i29, int i30, int i31 >
@@ -2183,21 +2183,21 @@ Vec32h change_sign(Vec32h const a) {
     i16 | i17 | i18 | i19 | i20 | i21 | i22 | i23 | i24 | i25 | i26 | i27 | i28 | i29 | i30 | i31)
     == 0) return a;
     __m512i mask = constant16ui<
-        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0), 
-        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0), 
-        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0), 
-        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0), 
-        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0), 
-        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0), 
-        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0), 
-        (i14 ? 0x8000 : 0) | (i15 ? 0x80000000 : 0),        
-        (i16 ? 0x8000 : 0) | (i17 ? 0x80000000 : 0), 
-        (i18 ? 0x8000 : 0) | (i19 ? 0x80000000 : 0), 
-        (i20 ? 0x8000 : 0) | (i21 ? 0x80000000 : 0), 
-        (i22 ? 0x8000 : 0) | (i23 ? 0x80000000 : 0), 
-        (i24 ? 0x8000 : 0) | (i25 ? 0x80000000 : 0), 
-        (i26 ? 0x8000 : 0) | (i27 ? 0x80000000 : 0), 
-        (i28 ? 0x8000 : 0) | (i29 ? 0x80000000 : 0), 
+        (i0  ? 0x8000 : 0) | (i1  ? 0x80000000 : 0),
+        (i2  ? 0x8000 : 0) | (i3  ? 0x80000000 : 0),
+        (i4  ? 0x8000 : 0) | (i5  ? 0x80000000 : 0),
+        (i6  ? 0x8000 : 0) | (i7  ? 0x80000000 : 0),
+        (i8  ? 0x8000 : 0) | (i9  ? 0x80000000 : 0),
+        (i10 ? 0x8000 : 0) | (i11 ? 0x80000000 : 0),
+        (i12 ? 0x8000 : 0) | (i13 ? 0x80000000 : 0),
+        (i14 ? 0x8000 : 0) | (i15 ? 0x80000000 : 0),
+        (i16 ? 0x8000 : 0) | (i17 ? 0x80000000 : 0),
+        (i18 ? 0x8000 : 0) | (i19 ? 0x80000000 : 0),
+        (i20 ? 0x8000 : 0) | (i21 ? 0x80000000 : 0),
+        (i22 ? 0x8000 : 0) | (i23 ? 0x80000000 : 0),
+        (i24 ? 0x8000 : 0) | (i25 ? 0x80000000 : 0),
+        (i26 ? 0x8000 : 0) | (i27 ? 0x80000000 : 0),
+        (i28 ? 0x8000 : 0) | (i29 ? 0x80000000 : 0),
         (i30 ? 0x8000 : 0) | (i31 ? 0x80000000 : 0) >();
     return  _mm512_castps_ph(_mm512_xor_ps(_mm512_castph_ps(a), _mm512_castsi512_ps(mask)));     // flip sign bits
 }
@@ -2243,7 +2243,7 @@ static inline Vec32h extend_z(Vec16h a) {
 *
 *****************************************************************************/
 // permute vector Vec32h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15,
 int i16, int i17, int i18, int i19, int i20, int i21, int i22, int i23,
 int i24, int i25, int i26, int i27, int i28, int i29, int i30, int i31 >
@@ -2262,7 +2262,7 @@ Vec32h permute32(Vec32h const a) {
 *****************************************************************************/
 
 // permute and blend Vec32h
-template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7, 
+template <int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7,
 int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15,
 int i16, int i17, int i18, int i19, int i20, int i21, int i22, int i23,
 int i24, int i25, int i26, int i27, int i28, int i29, int i30, int i31 >
@@ -2307,7 +2307,7 @@ static inline Vec32h lookup(Vec32s const index, void const * table) {
 
 // pow(2,n)
 template <typename V>
-V vh_pow2n (V const n) {           
+V vh_pow2n (V const n) {
     typedef decltype(roundi(n)) VI;              // corresponding integer vector type
     const _Float16 pow2_10 =  1024.;             // 2^10
     const _Float16 bias = 15.;                   // bias in exponent
@@ -2473,7 +2473,7 @@ VTYPE sincos_h(VTYPE * cosret, VTYPE const xx) {
     // Find quadrant
     if constexpr ((SC & 8) != 0) {               // sinpi
         xa = select(xa > VTYPE(32000.f), VTYPE(0.f), xa); // avoid overflow when multiplying by 2
-        y = round(xa * VTYPE(2.0f)); 
+        y = round(xa * VTYPE(2.0f));
     }
     else {                                       // sin
         xa = select(xa > VTYPE(314.25f), VTYPE(0.f), xa); // avoid meaningless results for high x
@@ -2492,8 +2492,8 @@ VTYPE sincos_h(VTYPE * cosret, VTYPE const xx) {
         x = nmul_add(y, VTYPE(0.5f), xa) * VTYPE(pi);
     }
     else {                                       // sin
-        // Reduce by extended precision modular arithmetic    
-        x = nmul_add(y, dp2h, nmul_add(y, dp1h, xa)); 
+        // Reduce by extended precision modular arithmetic
+        x = nmul_add(y, dp2h, nmul_add(y, dp1h, xa));
     }
 
     // Taylor expansion of sin and cos, valid for -pi/4 <= x <= pi/4
@@ -2540,7 +2540,7 @@ VTYPE sincos_h(VTYPE * cosret, VTYPE const xx) {
 
 static inline Vec8h exp(Vec8h const x) {
     return exp_h<Vec8h, 0, 0>(x);
-} 
+}
 static inline Vec8h exp2(Vec8h const x) {
     return exp_h<Vec8h, 0, 2>(x);
 }
@@ -2558,7 +2558,7 @@ static inline Vec8h cos(Vec8h const x) {
 }
 static inline Vec8h sincos(Vec8h * cosret, Vec8h const x) {
     return sincos_h<Vec8h, 3>(cosret, x);
-} 
+}
 static inline Vec8h tan(Vec8h const x) {
     return sincos_h<Vec8h, 4>(0, x);
 }
@@ -2589,7 +2589,7 @@ static inline Vec16h exp10(Vec16h const x) {
 }
 static inline Vec16h expm1(Vec16h const x) {
     return exp_h<Vec16h, 1, 0>(x);
-} 
+}
 static inline Vec16h sin(Vec16h const x) {
     return sincos_h<Vec16h, 1>(0, x);
 }
@@ -2598,7 +2598,7 @@ static inline Vec16h cos(Vec16h const x) {
 }
 static inline Vec16h sincos(Vec16h * cosret, Vec16h const x) {
     return sincos_h<Vec16h, 3>(cosret, x);
-} 
+}
 static inline Vec16h tan(Vec16h const x) {
     return sincos_h<Vec16h, 4>(0, x);
 }
@@ -2610,7 +2610,7 @@ static inline Vec16h cospi(Vec16h const x) {
 }
 static inline Vec16h sincospi(Vec16h * cosret, Vec16h const x) {
     return sincos_h<Vec16h, 11>(cosret, x);
-} 
+}
 static inline Vec16h tanpi(Vec16h const x) {
     return sincos_h<Vec16h, 12>(0, x);
 }
@@ -2639,7 +2639,7 @@ static inline Vec32h cos(Vec32h const x) {
 }
 static inline Vec32h sincos(Vec32h * cosret, Vec32h const x) {
     return sincos_h<Vec32h, 3>(cosret, x);
-} 
+}
 static inline Vec32h tan(Vec32h const x) {
     return sincos_h<Vec32h, 4>(0, x);
 }
@@ -2651,7 +2651,7 @@ static inline Vec32h cospi(Vec32h const x) {
 }
 static inline Vec32h sincospi(Vec32h * cosret, Vec32h const x) {
     return sincos_h<Vec32h, 11>(cosret, x);
-} 
+}
 static inline Vec32h tanpi(Vec32h const x) {
     return sincos_h<Vec32h, 12>(0, x);
 }

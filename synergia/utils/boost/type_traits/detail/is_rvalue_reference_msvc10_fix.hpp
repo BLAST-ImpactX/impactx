@@ -1,5 +1,5 @@
 
-//  (C) Copyright John Maddock 2018. 
+//  (C) Copyright John Maddock 2018.
 //  Use, modification and distribution are subject to the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt).
@@ -40,4 +40,3 @@ template <class R, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5> s
 } // namespace boost
 
 #endif // BOOST_TT_IS_REFERENCE_HPP_INCLUDED
-

@@ -103,5 +103,3 @@ add_subdirectory(libs/STL)
 add_subdirectory(libs/blaze)
 
 add_subdirectory(data)
-
-

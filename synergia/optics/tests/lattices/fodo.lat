@@ -1,16 +1,16 @@
 ! File fodo.lat
-! 
+!
 ! Written for the January, 2007 USPAS.
 ! To be used in conjunction with CHEF.
-! 
+!
 ! Send complaints to the author: Leo Michelotti
-! 
+!
 ! Modified by James Amundson to remove the beam statement and
 ! increase the quadrupole length.
 ! ------------------
 ! Parameters
 ! ------------------
-focus    :=   7                   ! [m]     : focal length of equivalent 
+focus    :=   7                   ! [m]     : focal length of equivalent
                                   !         :   thin quad
 sepn     :=  10                   ! [m]     : distance between quad centers
 length   :=   2.0                 ! [m]     : quadrupole length

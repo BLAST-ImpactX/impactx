@@ -981,4 +981,3 @@ struct is_noexcept_error_policy
 }}} // namespaces
 
 #endif // BOOST_MATH_POLICY_HPP
-

@@ -144,9 +144,9 @@ void verify_data(ResultIt result_it, ViewType view, ViewHostType data_view_host,
   for (std::size_t i = 0; i < ext; ++i) {
     ASSERT_EQ(view_h(i), data_view_host[i]);
     // std::cout << "i= " << i << " "
-    // 	      << "mine: " << view_h(i) << " "
-    // 	      << "std: " << data_view_host(i)
-    // 	      << '\n';
+    //        << "mine: " << view_h(i) << " "
+    //        << "std: " << data_view_host(i)
+    //        << '\n';
   }
 }
 

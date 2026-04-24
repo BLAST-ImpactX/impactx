@@ -133,4 +133,3 @@ BOOST_PP_EXPAND(#) undef BOOST_FT_cc
 BOOST_PP_EXPAND(#) undef BOOST_FT_cc_id
 
 #endif
-

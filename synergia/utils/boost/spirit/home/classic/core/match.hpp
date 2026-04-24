@@ -192,4 +192,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 
 #endif
 #include <boost/spirit/home/classic/core/impl/match.ipp>
-

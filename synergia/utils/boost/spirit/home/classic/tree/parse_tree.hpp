@@ -25,7 +25,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 template <
     typename IteratorT,
     typename NodeFactoryT,
-    typename T 
+    typename T
 >
 struct pt_match_policy :
     public common_tree_match_policy<
@@ -123,8 +123,8 @@ namespace impl {
     struct tree_policy_selector<pt_match_policy<IteratorT, NodeFactoryT, T> >
     {
         typedef pt_tree_policy<
-            pt_match_policy<IteratorT, NodeFactoryT, T>, 
-            NodeFactoryT, 
+            pt_match_policy<IteratorT, NodeFactoryT, T>,
+            NodeFactoryT,
             T
         > type;
     };
@@ -199,7 +199,7 @@ const gen_pt_node_parser_gen gen_pt_node_d = gen_pt_node_parser_gen();
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <
-    typename NodeFactoryT, typename IteratorT, typename ParserT, 
+    typename NodeFactoryT, typename IteratorT, typename ParserT,
     typename SkipT
 >
 inline tree_parse_info<IteratorT, NodeFactoryT>
@@ -292,4 +292,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

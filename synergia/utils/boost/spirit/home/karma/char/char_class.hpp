@@ -24,8 +24,8 @@
 #include <boost/spirit/home/karma/detail/generate_to.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit 
-{ 
+namespace boost { namespace spirit
+{
     ///////////////////////////////////////////////////////////////////////////
     // Enablers
     ///////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ namespace boost { namespace spirit
 ///////////////////////////////////////////////////////////////////////////////
 namespace boost { namespace spirit { namespace karma
 {
-    // hoist the char classification namespaces into karma sub-namespaces of 
+    // hoist the char classification namespaces into karma sub-namespaces of
     // the same name
     namespace ascii { using namespace boost::spirit::ascii; }
     namespace iso8859_1 { using namespace boost::spirit::iso8859_1; }
@@ -50,8 +50,8 @@ namespace boost { namespace spirit { namespace karma
     namespace unicode { using namespace boost::spirit::unicode; }
 #endif
 
-    // Import the standard namespace into the karma namespace. This allows 
-    // for default handling of all character/string related operations if not 
+    // Import the standard namespace into the karma namespace. This allows
+    // for default handling of all character/string related operations if not
     // prefixed with a character set namespace.
     using namespace boost::spirit::standard;
 
@@ -61,7 +61,7 @@ namespace boost { namespace spirit { namespace karma
     ///////////////////////////////////////////////////////////////////////////
     //
     //  char_class
-    //      generates a single character if it matches the given character 
+    //      generates a single character if it matches the given character
     //      class
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -166,19 +166,19 @@ namespace boost { namespace spirit { namespace karma
         struct make_char_class : mpl::identity<Tag> {};
 
         template <>
-        struct make_char_class<tag::alpha, true, false> 
+        struct make_char_class<tag::alpha, true, false>
           : mpl::identity<tag::lower> {};
 
         template <>
-        struct make_char_class<tag::alpha, false, true> 
+        struct make_char_class<tag::alpha, false, true>
           : mpl::identity<tag::upper> {};
 
         template <>
-        struct make_char_class<tag::alnum, true, false> 
+        struct make_char_class<tag::alnum, true, false>
           : mpl::identity<tag::lowernum> {};
 
         template <>
-        struct make_char_class<tag::alnum, false, true> 
+        struct make_char_class<tag::alnum, false, true>
           : mpl::identity<tag::uppernum> {};
     }
 
@@ -186,9 +186,9 @@ namespace boost { namespace spirit { namespace karma
     template <typename CharClass, typename CharEncoding, typename Modifiers>
     struct make_primitive<tag::char_code<CharClass, CharEncoding>, Modifiers>
     {
-        static bool const lower = 
+        static bool const lower =
             has_modifier<Modifiers, tag::char_code_base<tag::lower> >::value;
-        static bool const upper = 
+        static bool const upper =
             has_modifier<Modifiers, tag::char_code_base<tag::upper> >::value;
 
         typedef tag::char_code<

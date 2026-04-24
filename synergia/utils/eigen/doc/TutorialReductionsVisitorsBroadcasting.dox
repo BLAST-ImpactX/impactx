@@ -81,11 +81,11 @@ TODO
 In the meantime you can have a look at the DenseBase::redux() function.
 
 \section TutorialReductionsVisitorsBroadcastingVisitors Visitors
-Visitors are useful when one wants to obtain the location of a coefficient inside 
-a Matrix or Array. The simplest examples are 
-\link MatrixBase::maxCoeff() maxCoeff(&x,&y) \endlink and 
+Visitors are useful when one wants to obtain the location of a coefficient inside
+a Matrix or Array. The simplest examples are
+\link MatrixBase::maxCoeff() maxCoeff(&x,&y) \endlink and
 \link MatrixBase::minCoeff() minCoeff(&x,&y)\endlink, which can be used to find
-the location of the greatest or smallest coefficient in a Matrix or 
+the location of the greatest or smallest coefficient in a Matrix or
 Array.
 
 The arguments passed to a visitor are pointers to the variables where the
@@ -104,12 +104,12 @@ row and column position are to be stored. These variables should be of type
 Both functions also return the value of the minimum or maximum coefficient.
 
 \section TutorialReductionsVisitorsBroadcastingPartialReductions Partial reductions
-Partial reductions are reductions that can operate column- or row-wise on a Matrix or 
-Array, applying the reduction operation on each column or row and 
-returning a column or row vector with the corresponding values. Partial reductions are applied 
+Partial reductions are reductions that can operate column- or row-wise on a Matrix or
+Array, applying the reduction operation on each column or row and
+returning a column or row vector with the corresponding values. Partial reductions are applied
 with \link DenseBase::colwise() colwise() \endlink or \link DenseBase::rowwise() rowwise() \endlink.
 
-A simple example is obtaining the maximum of the elements 
+A simple example is obtaining the maximum of the elements
 in each column in a given matrix, storing the result in a row vector:
 
 <table class="example">
@@ -164,17 +164,17 @@ then
 \mbox{m.colwise().sum()} = \begin{bmatrix} 4 & 3 & 13 & 11 \end{bmatrix}
 \f]
 
-The \link DenseBase::maxCoeff() maxCoeff() \endlink reduction is finally applied 
-to obtain the column index where the maximum sum is found, 
+The \link DenseBase::maxCoeff() maxCoeff() \endlink reduction is finally applied
+to obtain the column index where the maximum sum is found,
 which is the column index 2 (third column) in this case.
 
 
 \section TutorialReductionsVisitorsBroadcastingBroadcasting Broadcasting
-The concept behind broadcasting is similar to partial reductions, with the difference that broadcasting 
-constructs an expression where a vector (column or row) is interpreted as a matrix by replicating it in 
+The concept behind broadcasting is similar to partial reductions, with the difference that broadcasting
+constructs an expression where a vector (column or row) is interpreted as a matrix by replicating it in
 one direction.
 
-A simple example is to add a certain column vector to each column in a matrix. 
+A simple example is to add a certain column vector to each column in a matrix.
 This can be accomplished with:
 
 <table class="example">
@@ -194,10 +194,10 @@ form a four-by-two matrix which is then added to \c mat:
 + \begin{bmatrix} 0 & 0 & 0 & 0 \\ 1 & 1 & 1 & 1 \end{bmatrix}
 = \begin{bmatrix} 1 & 2 & 6 & 9 \\ 4 & 2 & 8 & 3 \end{bmatrix}.
 \f]
-The operators <tt>-=</tt>, <tt>+</tt> and <tt>-</tt> can also be used column-wise and row-wise. On arrays, we 
-can also use the operators <tt>*=</tt>, <tt>/=</tt>, <tt>*</tt> and <tt>/</tt> to perform coefficient-wise 
+The operators <tt>-=</tt>, <tt>+</tt> and <tt>-</tt> can also be used column-wise and row-wise. On arrays, we
+can also use the operators <tt>*=</tt>, <tt>/=</tt>, <tt>*</tt> and <tt>/</tt> to perform coefficient-wise
 multiplication and division column-wise or row-wise. These operators are not available on matrices because it
-is not clear what they would do. If you want multiply column 0 of a matrix \c mat with \c v(0), column 1 with 
+is not clear what they would do. If you want multiply column 0 of a matrix \c mat with \c v(0), column 1 with
 \c v(1), and so on, then use <tt>mat = mat * v.asDiagonal()</tt>.
 
 It is important to point out that the vector to be added column-wise or row-wise must be of type Vector,
@@ -218,7 +218,7 @@ To perform the same operation row-wise we can do:
 </td></tr></table>
 
 \subsection TutorialReductionsVisitorsBroadcastingBroadcastingCombined Combining broadcasting with other operations
-Broadcasting can also be combined with other operations, such as Matrix or Array operations, 
+Broadcasting can also be combined with other operations, such as Matrix or Array operations,
 reductions and partial reductions.
 
 Now that broadcasting, reductions and partial reductions have been introduced, we can dive into a more advanced example that finds
@@ -234,7 +234,7 @@ computing the squared Euclidean distance with the partial reduction named \link 
 \verbinclude Tutorial_ReductionsVisitorsBroadcasting_broadcast_1nn.out
 </td></tr></table>
 
-The line that does the job is 
+The line that does the job is
 \code
   (m.colwise() - v).colwise().squaredNorm().minCoeff(&index);
 \endcode
@@ -243,7 +243,7 @@ We will go step by step to understand what is happening:
 
   - <tt>m.colwise() - v</tt> is a broadcasting operation, subtracting <tt>v</tt> from each column in <tt>m</tt>. The result of this operation
 is a new matrix whose size is the same as matrix <tt>m</tt>: \f[
-  \mbox{m.colwise() - v} = 
+  \mbox{m.colwise() - v} =
   \begin{bmatrix}
     -1 & 21 & 4 & 7 \\
      0 & 8  & 4 & -1

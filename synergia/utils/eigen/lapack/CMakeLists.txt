@@ -48,7 +48,7 @@ if(EIGEN_ENABLE_LAPACK_TESTS)
   if(NOT EXISTS ${eigen_full_path_to_reference_lapack})
     # Download lapack and install sources and testing at the right place
     message(STATUS "Download lapack_addons_3.4.1.tgz...")
-    
+
     file(DOWNLOAD "http://downloads.tuxfamily.org/eigen/lapack_addons_3.4.1.tgz"
                   "${CMAKE_CURRENT_SOURCE_DIR}/lapack_addons_3.4.1.tgz"
                   INACTIVITY_TIMEOUT 15
@@ -56,7 +56,7 @@ if(EIGEN_ENABLE_LAPACK_TESTS)
                   STATUS download_status
                   EXPECTED_MD5 ab5742640617e3221a873aba44bbdc93
                   SHOW_PROGRESS)
-                  
+
     message(STATUS ${download_status})
     list(GET download_status 0 download_status_num)
     set(download_status_num 0)
@@ -67,9 +67,9 @@ if(EIGEN_ENABLE_LAPACK_TESTS)
       message(STATUS "Download of lapack_addons_3.4.1.tgz failed, LAPACK unit tests won't be enabled")
       set(EIGEN_ENABLE_LAPACK_TESTS false)
     endif()
-                  
+
   endif()
-  
+
   get_filename_component(eigen_full_path_to_reference_lapack "./reference/" ABSOLUTE)
   if(EXISTS ${eigen_full_path_to_reference_lapack})
     set(EigenLapack_funcfilenames
@@ -78,7 +78,7 @@ if(EIGEN_ENABLE_LAPACK_TESTS)
         spotrs.f  dpotrs.f  cpotrs.f  zpotrs.f
         sgetrf.f  dgetrf.f  cgetrf.f  zgetrf.f
         sgetrs.f  dgetrs.f  cgetrs.f  zgetrs.f)
-    
+
     file(GLOB ReferenceLapack_SRCS0 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "reference/*.f")
     foreach(filename1 IN LISTS ReferenceLapack_SRCS0)
       string(REPLACE "reference/" "" filename ${filename1})
@@ -89,8 +89,8 @@ if(EIGEN_ENABLE_LAPACK_TESTS)
       endif()
     endforeach()
   endif()
-  
-  
+
+
 endif()
 
 endif()
@@ -121,7 +121,7 @@ endforeach()
 
 get_filename_component(eigen_full_path_to_testing_lapack "./testing/" ABSOLUTE)
 if(EXISTS ${eigen_full_path_to_testing_lapack})
-  
+
   # The following comes from lapack/TESTING/CMakeLists.txt
   # Get Python
   find_package(PythonInterp)
@@ -136,7 +136,7 @@ if(EXISTS ${eigen_full_path_to_testing_lapack})
   set(BUILD_DOUBLE      true)
   set(BUILD_COMPLEX     true)
   set(BUILD_COMPLEX16E  true)
-  
+
   if(MSVC_VERSION)
 #  string(REPLACE "/STACK:10000000" "/STACK:900000000000000000"
 #    CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
@@ -157,8 +157,8 @@ if(EXISTS ${eigen_full_path_to_testing_lapack})
       add_test(NAME LAPACK-${testName}
         COMMAND "${CMAKE_COMMAND}"
         -DTEST=$<TARGET_FILE:${target}>
-        -DINPUT=${TEST_INPUT} 
-        -DOUTPUT=${TEST_OUTPUT} 
+        -DINPUT=${TEST_INPUT}
+        -DOUTPUT=${TEST_OUTPUT}
         -DINTDIR=${CMAKE_CFG_INTDIR}
         -P "${LAPACK_SOURCE_DIR}/testing/runtest.cmake")
     endif()

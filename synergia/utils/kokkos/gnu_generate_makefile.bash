@@ -109,7 +109,7 @@ do
         echo "Invalid compiler by --compiler command: '${COMPILER}'"
         exit
       fi
-      # ... valid compiler, ensure absolute path set 
+      # ... valid compiler, ensure absolute path set
       WCOMPATH=$(command -v $COMPILER)
       COMPDIR=$(dirname $WCOMPATH)
       COMPNAME=$(basename $WCOMPATH)
@@ -204,7 +204,7 @@ do
       echo "                                force_uvm, use_ldg, enable_lambda, rdc, enable_constexpr"
       echo "--with-hpx-options=[OPT]:     Additional options to HPX:"
       echo "                                enable_async_dispatch"
-      echo "--gcc-toolchain=/Path/To/GccRoot:  Set the gcc toolchain to use with clang (e.g. /usr)" 
+      echo "--gcc-toolchain=/Path/To/GccRoot:  Set the gcc toolchain to use with clang (e.g. /usr)"
       echo "--make-j=[NUM]:               DEPRECATED: call make with appropriate"
       echo "                                -j flag"
       exit 0
@@ -243,7 +243,7 @@ if [ ${#COMPILER} -gt 0 ]; then
 elif
    [ ${#COMPILER} -eq 0 ] && [[ ${KOKKOS_DEVICES} =~ .*Cuda.* ]]; then
   COMPILER="${KOKKOS_PATH}/bin/nvcc_wrapper"
-  KOKKOS_SETTINGS="${KOKKOS_SETTINGS} CXX=${COMPILER}"   
+  KOKKOS_SETTINGS="${KOKKOS_SETTINGS} CXX=${COMPILER}"
 elif
    [ ${#COMPILER} -eq 0 ] && [[ ${KOKKOS_DEVICES} =~ .*Hip.* ]]; then
   COMPILER=hipcc
@@ -420,4 +420,3 @@ echo -e "\t\$(MAKE) -C core/perf_test clean" >> Makefile
 echo -e "\t\$(MAKE) -C containers/unit_tests clean" >> Makefile
 echo -e "\t\$(MAKE) -C containers/performance_tests clean" >> Makefile
 echo -e "\t\$(MAKE) -C algorithms/unit_tests clean" >> Makefile
-

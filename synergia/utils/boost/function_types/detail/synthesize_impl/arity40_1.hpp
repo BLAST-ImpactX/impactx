@@ -9,7 +9,7 @@
 // no include guards, this file is intended for multiple inclusion
 
 // input:  BOOST_FT_syntax     type macro to use
-// input:  BOOST_FT_cc         empty or cc specifier 
+// input:  BOOST_FT_cc         empty or cc specifier
 // input:  BOOST_FT_ell        empty or "..."
 // input:  BOOST_FT_cv         empty or cv qualifiers
 // input:  BOOST_FT_flags      single decimal integer encoding the flags
@@ -27,9 +27,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,31)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 32 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 32 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -66,9 +66,9 @@ typedef typename mpl::next< iter_28 > ::type iter_29;
 typedef typename mpl::next< iter_29 > ::type iter_30;
 typedef typename mpl::next< iter_30 > ::type iter_31;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,31) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,31)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -108,9 +108,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,32)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 33 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 33 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -148,9 +148,9 @@ typedef typename mpl::next< iter_29 > ::type iter_30;
 typedef typename mpl::next< iter_30 > ::type iter_31;
 typedef typename mpl::next< iter_31 > ::type iter_32;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,32) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,32)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -191,9 +191,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,33)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 34 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 34 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -232,9 +232,9 @@ typedef typename mpl::next< iter_30 > ::type iter_31;
 typedef typename mpl::next< iter_31 > ::type iter_32;
 typedef typename mpl::next< iter_32 > ::type iter_33;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,33) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,33)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -276,9 +276,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,34)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 35 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 35 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -318,9 +318,9 @@ typedef typename mpl::next< iter_31 > ::type iter_32;
 typedef typename mpl::next< iter_32 > ::type iter_33;
 typedef typename mpl::next< iter_33 > ::type iter_34;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,34) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,34)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -363,9 +363,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,35)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 , T34 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 36 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 36 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -406,9 +406,9 @@ typedef typename mpl::next< iter_32 > ::type iter_33;
 typedef typename mpl::next< iter_33 > ::type iter_34;
 typedef typename mpl::next< iter_34 > ::type iter_35;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,35) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,35)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -452,9 +452,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,36)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 , T34 , T35 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 37 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 37 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -496,9 +496,9 @@ typedef typename mpl::next< iter_33 > ::type iter_34;
 typedef typename mpl::next< iter_34 > ::type iter_35;
 typedef typename mpl::next< iter_35 > ::type iter_36;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,36) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,36)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -543,9 +543,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,37)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 , T34 , T35 , T36 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 38 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 38 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -588,9 +588,9 @@ typedef typename mpl::next< iter_34 > ::type iter_35;
 typedef typename mpl::next< iter_35 > ::type iter_36;
 typedef typename mpl::next< iter_36 > ::type iter_37;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,37) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,37)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -636,9 +636,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,38)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 , T34 , T35 , T36 , T37 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 39 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 39 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -682,9 +682,9 @@ typedef typename mpl::next< iter_35 > ::type iter_36;
 typedef typename mpl::next< iter_36 > ::type iter_37;
 typedef typename mpl::next< iter_37 > ::type iter_38;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,38) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,38)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -731,9 +731,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,39)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 , T34 , T35 , T36 , T37 , T38 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 40 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 40 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -778,9 +778,9 @@ typedef typename mpl::next< iter_36 > ::type iter_37;
 typedef typename mpl::next< iter_37 > ::type iter_38;
 typedef typename mpl::next< iter_38 > ::type iter_39;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,39) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,39)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -828,9 +828,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,40)
 {
 typedef BOOST_FT_syntax(BOOST_FT_cc,type BOOST_PP_EMPTY) (T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29 , T30 , T31 , T32 , T33 , T34 , T35 , T36 , T37 , T38 , T39 BOOST_FT_ell) BOOST_FT_cv ;
 };
-template< > 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 41 > 
-{ 
+template< >
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, 41 >
+{
 template<typename S> struct synthesize_impl_i
 {
 private:
@@ -876,9 +876,9 @@ typedef typename mpl::next< iter_37 > ::type iter_38;
 typedef typename mpl::next< iter_38 > ::type iter_39;
 typedef typename mpl::next< iter_39 > ::type iter_40;
 public:
-typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,40) 
-< typename mpl::deref< iter_0 > ::type 
-, typename detail::cv_traits< 
+typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,40)
+< typename mpl::deref< iter_0 > ::type
+, typename detail::cv_traits<
 typename mpl::deref< iter_1 > ::type > ::type
 , typename mpl::deref< iter_2 > ::type
 , typename mpl::deref< iter_3 > ::type
@@ -924,4 +924,3 @@ typename mpl::deref< iter_1 > ::type > ::type
 };
 # undef BOOST_FT_make_type
 # undef BOOST_FT_make_type_impl
-

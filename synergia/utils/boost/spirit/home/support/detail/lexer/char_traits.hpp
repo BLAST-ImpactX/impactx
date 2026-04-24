@@ -30,7 +30,7 @@ struct char_traits<char>
 {
     typedef char char_type;
     typedef unsigned char index_type;
-        
+
     static index_type call (char ch)
     {
         return static_cast<index_type>(ch);

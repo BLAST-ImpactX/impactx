@@ -1,9 +1,9 @@
 //  Boost compiler configuration selection header file
 
-//  (C) Copyright John Maddock 2001 - 2003. 
-//  (C) Copyright Jens Maurer 2001 - 2002. 
-//  Use, modification and distribution are subject to the 
-//  Boost Software License, Version 1.0. (See accompanying file 
+//  (C) Copyright John Maddock 2001 - 2003.
+//  (C) Copyright Jens Maurer 2001 - 2002.
+//  Use, modification and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
@@ -13,7 +13,7 @@
 
 // First, check if __has_include is available and <version> include can be located,
 // otherwise include <cstddef> to determine if some version of STLport is in use as the std lib
-// (do not rely on this header being included since users can short-circuit this header 
+// (do not rely on this header being included since users can short-circuit this header
 //  if they know whose std lib they are using.)
 #if defined(__cplusplus) && defined(__has_include)
 #  if __has_include(<version>)
@@ -40,11 +40,11 @@
 #else
 
 // If our std lib was not some version of STLport, and has not otherwise
-// been detected, then include <utility> as it is about 
+// been detected, then include <utility> as it is about
 // the smallest of the std lib headers that includes real C++ stuff.
-// Some std libs do not include their C++-related macros in <cstddef> 
+// Some std libs do not include their C++-related macros in <cstddef>
 // so this additional include makes sure we get those definitions.
-// Note: do not rely on this header being included since users can short-circuit this 
+// Note: do not rely on this header being included since users can short-circuit this
 // #include if they know whose std lib they are using.
 #if !defined(__LIBCOMO__) && !defined(__STD_RWCOMPILER_H__) && !defined(_RWSTD_VER)\
    && !defined(_LIBCPP_VERSION) && !defined(__GLIBCPP__) && !defined(__GLIBCXX__)\
@@ -118,4 +118,3 @@
 #  include "boost/config/stdlib/modena.hpp"
 #  include "boost/config/stdlib/dinkumware.hpp"
 #endif
-

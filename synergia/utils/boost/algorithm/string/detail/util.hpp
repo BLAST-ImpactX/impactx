@@ -21,7 +21,7 @@ namespace boost {
 
 //  empty container  -----------------------------------------------//
 
-            //  empty_container 
+            //  empty_container
             /*
                 This class represents always empty container,
                 containing elements of type CharT.
@@ -29,9 +29,9 @@ namespace boost {
                 It is supposed to be used in a const version only
             */
             template< typename CharT >
-            struct empty_container 
+            struct empty_container
             {
-                typedef empty_container<CharT> type;        
+                typedef empty_container<CharT> type;
                 typedef CharT value_type;
                 typedef std::size_t size_type;
                 typedef std::ptrdiff_t difference_type;
@@ -40,7 +40,7 @@ namespace boost {
                 typedef const value_type* iterator;
                 typedef const value_type* const_iterator;
 
-                
+
                 // Operations
                 const_iterator begin() const
                 {
@@ -62,14 +62,14 @@ namespace boost {
                     return 0;
                 }
             };
-    
+
 //  bounded copy algorithm  -----------------------------------------------//
 
             // Bounded version of the std::copy algorithm
             template<typename InputIteratorT, typename OutputIteratorT>
             inline OutputIteratorT bounded_copy(
-                InputIteratorT First, 
-                InputIteratorT Last, 
+                InputIteratorT First,
+                InputIteratorT Last,
                 OutputIteratorT DestFirst,
                 OutputIteratorT DestLast )
             {
@@ -86,8 +86,8 @@ namespace boost {
 //  iterator range utilities -----------------------------------------//
 
             // copy range functor
-            template< 
-                typename SeqT, 
+            template<
+                typename SeqT,
                 typename IteratorT=BOOST_STRING_TYPENAME SeqT::const_iterator >
             struct copy_iterator_rangeF
             {

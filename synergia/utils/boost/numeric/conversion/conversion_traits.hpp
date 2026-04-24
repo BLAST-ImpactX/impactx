@@ -6,7 +6,7 @@
 //  See library home page at http://www.boost.org/libs/numeric/conversion
 //
 // Contact the author at: fernando_cacciola@hotmail.com
-// 
+//
 #ifndef BOOST_NUMERIC_CONVERSION_CONVERSION_TRAITS_FLC_12NOV2002_HPP
 #define BOOST_NUMERIC_CONVERSION_CONVERSION_TRAITS_FLC_12NOV2002_HPP
 
@@ -18,8 +18,8 @@ namespace boost { namespace numeric
 {
 
 template<class T, class S>
-struct conversion_traits 
-    : convdetail::get_conversion_traits<T,S>::type 
+struct conversion_traits
+    : convdetail::get_conversion_traits<T,S>::type
 {
 } ;
 
@@ -28,5 +28,3 @@ struct conversion_traits
 #endif
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
-

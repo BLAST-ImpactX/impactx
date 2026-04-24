@@ -21,7 +21,7 @@ namespace boost { namespace spirit
     ///////////////////////////////////////////////////////////////////////////
     // We do not import fusion ::unused_type anymore to avoid boost::fusion
     // being turned into an associate namespace for boost::spirit, as this
-    // interferes with ADL in unexpected ways. We rather copy the full 
+    // interferes with ADL in unexpected ways. We rather copy the full
     // unused_type implementation from boost::fusion.
     ///////////////////////////////////////////////////////////////////////////
     struct unused_type

@@ -162,14 +162,14 @@ if(BLA_VENDOR MATCHES "Intel*")
     if(BLAS_DIR)
       set(BLAS_mkl.h_INCLUDE_DIRS "BLAS_mkl.h_INCLUDE_DIRS-NOTFOUND")
       find_path(BLAS_mkl.h_INCLUDE_DIRS
-	NAMES mkl.h
-	HINTS ${BLAS_DIR}
-	PATH_SUFFIXES include)
+    NAMES mkl.h
+    HINTS ${BLAS_DIR}
+    PATH_SUFFIXES include)
     else()
       set(BLAS_mkl.h_INCLUDE_DIRS "BLAS_mkl.h_INCLUDE_DIRS-NOTFOUND")
       find_path(BLAS_mkl.h_INCLUDE_DIRS
-	NAMES mkl.h
-	HINTS ${_inc_env})
+    NAMES mkl.h
+    HINTS ${_inc_env})
     endif()
   endif()
   mark_as_advanced(BLAS_mkl.h_INCLUDE_DIRS)
@@ -297,7 +297,7 @@ foreach(blas_lib ${BLAS_LIBRARIES})
     else()
       get_filename_component(a_blas_lib_dir "${blas_lib}" PATH)
       if (EXISTS "${a_blas_lib_dir}")
-	list(APPEND BLAS_LIBRARY_DIRS "${a_blas_lib_dir}" )
+    list(APPEND BLAS_LIBRARY_DIRS "${a_blas_lib_dir}" )
       endif()
     endif()
   endif()
@@ -313,8 +313,8 @@ if(BLA_VENDOR MATCHES "Intel*")
   if(BLA_VENDOR MATCHES "Intel10_64lp*")
     if(NOT BLASEXT_FIND_QUIETLY)
       message(STATUS "BLAS found is Intel MKL:"
-	"\n   we manage two lists of libs, one sequential and one parallel if found"
-	"\n   (see BLAS_SEQ_LIBRARIES and BLAS_PAR_LIBRARIES)")
+    "\n   we manage two lists of libs, one sequential and one parallel if found"
+    "\n   (see BLAS_SEQ_LIBRARIES and BLAS_PAR_LIBRARIES)")
       message(STATUS "BLAS sequential libraries stored in BLAS_SEQ_LIBRARIES")
     endif()
     find_package_handle_standard_args(BLASEXT DEFAULT_MSG
@@ -323,10 +323,10 @@ if(BLA_VENDOR MATCHES "Intel*")
       BLAS_INCLUDE_DIRS)
     if(BLAS_PAR_LIBRARIES)
       if(NOT BLASEXT_FIND_QUIETLY)
-	message(STATUS "BLAS parallel libraries stored in BLAS_PAR_LIBRARIES")
+    message(STATUS "BLAS parallel libraries stored in BLAS_PAR_LIBRARIES")
       endif()
       find_package_handle_standard_args(BLASEXT DEFAULT_MSG
-	BLAS_PAR_LIBRARIES)
+    BLAS_PAR_LIBRARIES)
     endif()
   else()
     if(NOT BLASEXT_FIND_QUIETLY)

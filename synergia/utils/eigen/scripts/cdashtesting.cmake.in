@@ -26,7 +26,7 @@ include("${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake")
 foreach(subproject ${CTEST_PROJECT_SUBPROJECTS})
   message("")
   message("Process ${subproject}")
-  
+
   set_property(GLOBAL PROPERTY SubProject ${subproject})
   set_property(GLOBAL PROPERTY Label ${subproject})
 
@@ -41,9 +41,9 @@ foreach(subproject ${CTEST_PROJECT_SUBPROJECTS})
 
   ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}" INCLUDE_LABEL "${subproject}" )
   # runs only tests that have a LABELS property matching "${subproject}"
-  
+
   ctest_coverage(BUILD "${CTEST_BINARY_DIRECTORY}" LABELS "${subproject}" )
-  
+
   ctest_submit(PARTS Test)
-  
+
 endforeach()

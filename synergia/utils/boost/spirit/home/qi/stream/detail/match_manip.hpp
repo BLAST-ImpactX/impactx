@@ -34,8 +34,8 @@ namespace boost { namespace spirit { namespace qi { namespace detail
       , typename Skipper = unused_type, typename Attribute = unused_type const>
     struct match_manip
     {
-        // This assertion makes sure we don't hit the only code path which is 
-        // not implemented (because it isn't needed), where both, the 
+        // This assertion makes sure we don't hit the only code path which is
+        // not implemented (because it isn't needed), where both, the
         // expression and the attribute need to be held as a copy.
         BOOST_SPIRIT_ASSERT_MSG(!CopyExpr::value || !CopyAttr::value
             , error_invalid_should_not_happen, ());
@@ -95,7 +95,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         // Report invalid expression error as early as possible.
         // If you got an error_invalid_expression error message here,
         // then the expression (expr) is not a valid spirit qi expression.
-        // Did you intend to use the auto_ facilities while forgetting to 
+        // Did you intend to use the auto_ facilities while forgetting to
         // #include <boost/spirit/include/qi_match_auto.hpp>?
         BOOST_SPIRIT_ASSERT_MATCH(qi::domain, Expr);
     };
@@ -119,7 +119,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         // Report invalid expression error as early as possible.
         // If you got an error_invalid_expression error message here,
         // then the expression (expr) is not a valid spirit qi expression.
-        // Did you intend to use the auto_ facilities while forgetting to 
+        // Did you intend to use the auto_ facilities while forgetting to
         // #include <boost/spirit/include/qi_match_auto.hpp>?
         BOOST_SPIRIT_ASSERT_MATCH(qi::domain, Expr);
     };

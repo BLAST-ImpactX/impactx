@@ -307,7 +307,7 @@ def generate_matched_bunch_transverse(lattice_simulator, emit_x, emit_y,
         bunch = Bunch(lattice_simulator.get_lattice().get_reference_particle(),
                       num_macro_particles, num_real_particles, comm,
                       z_period_length)
-    
+
     if comm.has_this_rank():
         dist = Random_distribution(seed, comm)
         populate_6d(dist, bunch, means, covariance_matrix)
@@ -380,5 +380,3 @@ def generate_two_particles(lattice_simulator, coordP1, coordP2, num_real_particl
 
 
     #return retval
-
-

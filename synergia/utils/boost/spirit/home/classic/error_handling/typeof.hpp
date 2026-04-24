@@ -30,4 +30,3 @@ BOOST_TYPEOF_REGISTER_TYPE(BOOST_SPIRIT_CLASSIC_NS::error_status<>)
 
 
 #endif
-

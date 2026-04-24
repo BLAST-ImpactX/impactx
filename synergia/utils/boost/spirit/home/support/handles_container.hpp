@@ -33,10 +33,10 @@ namespace boost { namespace spirit { namespace traits
 
     template <typename Left, typename Right, typename Attribute
             , typename Context, typename Iterator>
-    struct binary_handles_container 
+    struct binary_handles_container
       : mpl::or_<
             handles_container<Left, Attribute, Context, Iterator>
-          , handles_container<Right, Attribute, Context, Iterator> > 
+          , handles_container<Right, Attribute, Context, Iterator> >
     {};
 
     template <typename Elements, typename Attribute, typename Context
@@ -46,9 +46,9 @@ namespace boost { namespace spirit { namespace traits
             is_same<
                 typename mpl::find_if<
                     Elements, handles_container<mpl::_, Attribute
-                                              , Context, Iterator> 
+                                              , Context, Iterator>
                 >::type
-              , typename mpl::end<Elements>::type> > 
+              , typename mpl::end<Elements>::type> >
     {};
 }}}
 

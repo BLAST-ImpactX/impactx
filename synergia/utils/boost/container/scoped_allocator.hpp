@@ -18,7 +18,7 @@
 #define BOOST_CONTAINER_ALLOCATOR_SCOPED_ALLOCATOR_HPP
 
 #if defined (_MSC_VER)
-#  pragma once 
+#  pragma once
 #endif
 
 #include <boost/container/detail/config_begin.hpp>
@@ -848,7 +848,7 @@ class scoped_allocator_adaptor
 template<bool ZeroInner>
 struct scoped_allocator_operator_equal
 {
-   //Optimize equal outer allocator types with 
+   //Optimize equal outer allocator types with
    //allocator_traits::equal which uses is_always_equal
    template<class IA>
    inline static bool equal_outer(const IA &l, const IA &r)

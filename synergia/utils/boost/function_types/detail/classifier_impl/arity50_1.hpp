@@ -9,7 +9,7 @@
 // no include guards, this file is intended for multiple inclusion
 
 // input:  BOOST_FT_syntax     type macro to use
-// input:  BOOST_FT_cc         empty or cc specifier 
+// input:  BOOST_FT_cc         empty or cc specifier
 // input:  BOOST_FT_ell        empty or "..."
 // input:  BOOST_FT_cv         empty or cv qualifiers
 // input:  BOOST_FT_flags      single decimal integer encoding the flags

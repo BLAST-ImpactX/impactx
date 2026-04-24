@@ -1,8 +1,8 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2001-2011 Joel de Guzman
 //  Copyright (c) 2009 Carl Barron
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_PP_IS_ITERATING)
@@ -47,9 +47,9 @@ namespace boost { namespace spirit { namespace qi
       , Expr const& expr
       , BOOST_PP_ENUM_BINARY_PARAMS(N, A, & attr))
     {
-        // Make sure the iterator is at least a forward_iterator. If you got an 
+        // Make sure the iterator is at least a forward_iterator. If you got an
         // compilation error here, then you are using an input_iterator while
-        // calling this function, you need to supply at least a 
+        // calling this function, you need to supply at least a
         // forward_iterator instead.
         BOOST_CONCEPT_ASSERT((ForwardIterator<Iterator>));
 
@@ -91,9 +91,9 @@ namespace boost { namespace spirit { namespace qi
       , BOOST_SCOPED_ENUM(skip_flag) post_skip
       , BOOST_PP_ENUM_BINARY_PARAMS(N, A, & attr))
     {
-        // Make sure the iterator is at least a forward_iterator. If you got an 
+        // Make sure the iterator is at least a forward_iterator. If you got an
         // compilation error here, then you are using an input_iterator while
-        // calling this function, you need to supply at least a 
+        // calling this function, you need to supply at least a
         // forward_iterator instead.
         BOOST_CONCEPT_ASSERT((ForwardIterator<Iterator>));
 
@@ -174,4 +174,3 @@ namespace boost { namespace spirit { namespace qi
 #undef N
 
 #endif
-

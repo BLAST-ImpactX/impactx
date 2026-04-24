@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import pytest
-import numpy
+
 import synergia
 
 
@@ -108,11 +108,13 @@ def test_modify_reference_particle_energy(prop_fixture):
         == new_energy
     )
 
+
 def test_set_get_checkpoint(prop_fixture):
     init_period = prop_fixture["propagator"].get_checkpoint_period()
     cp_period = init_period + 1
     prop_fixture["propagator"].set_checkpoint_period(cp_period)
     assert cp_period == prop_fixture["propagator"].get_checkpoint_period()
+
 
 def test_set_get_final_checkpoint(prop_fixture):
     init_fcp = prop_fixture["propagator"].get_final_checkpoint()

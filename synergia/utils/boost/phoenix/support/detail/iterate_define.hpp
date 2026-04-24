@@ -135,7 +135,7 @@
 #define BOOST_PHOENIX_M2(_, N, TUPLE)                                           \
     BOOST_PP_COMMA_IF(N) BOOST_PP_TUPLE_ELEM(BOOST_PHOENIX_ITERATION, N, TUPLE) \
 /**/
-    
+
 #define BOOST_PHOENIX_M3(_, N, TUPLE)                                           \
     BOOST_PP_COMMA_IF(N) BOOST_PP_TUPLE_ELEM(BOOST_PHOENIX_ITERATION, N, TUPLE) a ## N\
 /**/

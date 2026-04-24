@@ -34,8 +34,8 @@ static void test_simple_concatenation(const Eigen::SyclDevice& sycl_device) {
   Eigen::array<IndexType, 3> rightRange = {{rightDim1, rightDim2, rightDim3}};
 
   // IndexType concatDim1 = 3;
-  //	IndexType concatDim2 = 3;
-  //	IndexType concatDim3 = 1;
+  //    IndexType concatDim2 = 3;
+  //    IndexType concatDim3 = 1;
   // Eigen::array<IndexType, 3> concatRange = {{concatDim1, concatDim2, concatDim3}};
 
   Tensor<DataType, 3, DataLayout, IndexType> left(leftRange);

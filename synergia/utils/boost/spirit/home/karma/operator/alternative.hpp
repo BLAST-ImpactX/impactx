@@ -85,7 +85,7 @@ namespace boost { namespace spirit { namespace karma
     template <typename Elements, typename Strict, typename Derived>
     struct base_alternative : nary_generator<Derived>
     {
-        typedef typename traits::alternative_properties<Elements>::type 
+        typedef typename traits::alternative_properties<Elements>::type
             properties;
 
         template <typename Context, typename Iterator = unused_type>
@@ -136,10 +136,10 @@ namespace boost { namespace spirit { namespace karma
     };
 
     template <typename Elements>
-    struct alternative 
+    struct alternative
       : base_alternative<Elements, mpl::false_, alternative<Elements> >
     {
-        typedef base_alternative<Elements, mpl::false_, alternative> 
+        typedef base_alternative<Elements, mpl::false_, alternative>
             base_alternative_;
 
         alternative(Elements const& elements)
@@ -147,10 +147,10 @@ namespace boost { namespace spirit { namespace karma
     };
 
     template <typename Elements>
-    struct strict_alternative 
+    struct strict_alternative
       : base_alternative<Elements, mpl::true_, strict_alternative<Elements> >
     {
-        typedef base_alternative<Elements, mpl::true_, strict_alternative> 
+        typedef base_alternative<Elements, mpl::true_, strict_alternative>
             base_alternative_;
 
         strict_alternative(Elements const& elements)
@@ -163,12 +163,12 @@ namespace boost { namespace spirit { namespace karma
     namespace detail
     {
         template <typename Elements, bool strict_mode = false>
-        struct make_alternative 
+        struct make_alternative
           : make_nary_composite<Elements, alternative>
         {};
 
         template <typename Elements>
-        struct make_alternative<Elements, true> 
+        struct make_alternative<Elements, true>
           : make_nary_composite<Elements, strict_alternative>
         {};
     }

@@ -554,7 +554,7 @@ public:
 
   template<typename F>
     typename boost::enable_if_< !boost::is_function<F>::value, bool >::type
-	contains(const F& f) const
+    contains(const F& f) const
     {
       if (const F* fp = this->template target<F>())
       {
@@ -566,7 +566,7 @@ public:
 
   template<typename Fn>
     typename boost::enable_if_< boost::is_function<Fn>::value, bool >::type
-	contains(Fn& f) const
+    contains(Fn& f) const
     {
       typedef Fn* F;
       if (const F* fp = this->template target<F>())

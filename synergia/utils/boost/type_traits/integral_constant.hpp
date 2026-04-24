@@ -1,6 +1,6 @@
-//  (C) Copyright John Maddock 2015. 
-//  Use, modification and distribution are subject to the 
-//  Boost Software License, Version 1.0. (See accompanying file 
+//  (C) Copyright John Maddock 2015.
+//  Use, modification and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef BOOST_TYPE_TRAITS_INTEGRAL_CONSTANT_HPP
@@ -68,7 +68,7 @@ namespace boost{
 
    template <class T, T val>
    T const integral_constant<T, val>::value;
-      
+
    template <bool val>
    struct integral_constant<bool, val>
    {

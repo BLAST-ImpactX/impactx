@@ -251,7 +251,7 @@ template< class T, class R > struct sp_enable_if_auto_ptr
 template< class T, class R > struct sp_enable_if_auto_ptr< std::auto_ptr< T >, R >
 {
     typedef R type;
-}; 
+};
 
 #endif
 
@@ -778,13 +778,13 @@ public:
         BOOST_ASSERT( px != 0 );
         return *px;
     }
-    
+
     typename boost::detail::sp_member_access< T >::type operator-> () const BOOST_SP_NOEXCEPT_WITH_ASSERT
     {
         BOOST_ASSERT( px != 0 );
         return px;
     }
-    
+
     typename boost::detail::sp_array_access< T >::type operator[] ( std::ptrdiff_t i ) const BOOST_SP_NOEXCEPT_WITH_ASSERT
     {
         BOOST_ASSERT( px != 0 );

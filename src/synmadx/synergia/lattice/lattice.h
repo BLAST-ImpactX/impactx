@@ -97,7 +97,7 @@ public:
     {
        if (!reference_particle.has_value()) {
             throw std::runtime_error("reference particle not set- did you forget a BEAM? statement?");
-       }    
+       }
     }
 
     /// Get the Lattice reference particle (const)
@@ -107,7 +107,7 @@ public:
         // only returns if valid
         return reference_particle.value();
     }
-        
+
     Reference_particle& get_reference_particle()
     {
         check_reference_particle_value(reference_particle);

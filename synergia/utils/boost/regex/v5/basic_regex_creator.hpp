@@ -3,8 +3,8 @@
  * Copyright (c) 2004
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -114,7 +114,7 @@ public:
       m_empty = false;
    }
    void negate()
-   { 
+   {
       m_negate = true;
       //m_empty = false;
    }
@@ -178,7 +178,7 @@ private:
    bool                      m_empty;           // whether we've added anything yet
    std::set<digraph_type>    m_equivalents;     // a list of equivalence classes
 };
-   
+
 template <class charT, class traits>
 class basic_regex_creator
 {
@@ -226,7 +226,7 @@ public:
    void finalize(const charT* p1, const charT* p2);
 protected:
    regex_data<charT, traits>*    m_pdata;              // pointer to the basic_regex_data struct we are filling in
-   const ::boost::regex_traits_wrapper<traits>&  
+   const ::boost::regex_traits_wrapper<traits>&
                                  m_traits;             // convenience reference to traits class
    re_syntax_base*               m_last_state;         // the last state we added
    bool                          m_icase;              // true for case insensitive matches
@@ -259,7 +259,7 @@ private:
 
 template <class charT, class traits>
 basic_regex_creator<charT, traits>::basic_regex_creator(regex_data<charT, traits>* data)
-   : m_pdata(data), m_traits(*(data->m_ptraits)), m_last_state(0), m_icase(false), m_repeater_id(0), 
+   : m_pdata(data), m_traits(*(data->m_ptraits)), m_last_state(0), m_icase(false), m_repeater_id(0),
    m_has_backrefs(false), m_bad_repeats(0), m_has_recursions(false), m_word_mask(0), m_mask_space(0), m_lower_mask(0), m_upper_mask(0), m_alpha_mask(0)
 {
    m_pdata->m_data.clear();
@@ -275,11 +275,11 @@ basic_regex_creator<charT, traits>::basic_regex_creator(regex_data<charT, traits
    m_upper_mask = m_traits.lookup_classname(u, u + 5);
    m_alpha_mask = m_traits.lookup_classname(a, a + 5);
    m_pdata->m_word_mask = m_word_mask;
-   BOOST_REGEX_ASSERT(m_word_mask != 0); 
-   BOOST_REGEX_ASSERT(m_mask_space != 0); 
-   BOOST_REGEX_ASSERT(m_lower_mask != 0); 
-   BOOST_REGEX_ASSERT(m_upper_mask != 0); 
-   BOOST_REGEX_ASSERT(m_alpha_mask != 0); 
+   BOOST_REGEX_ASSERT(m_word_mask != 0);
+   BOOST_REGEX_ASSERT(m_mask_space != 0);
+   BOOST_REGEX_ASSERT(m_lower_mask != 0);
+   BOOST_REGEX_ASSERT(m_upper_mask != 0);
+   BOOST_REGEX_ASSERT(m_alpha_mask != 0);
 }
 
 template <class charT, class traits>
@@ -350,7 +350,7 @@ inline re_syntax_base* basic_regex_creator<charT, traits>::append_set(
    const basic_char_set<charT, traits>& char_set)
 {
    typedef std::integral_constant<bool, (sizeof(charT) == 1) > truth_type;
-   return char_set.has_digraphs() 
+   return char_set.has_digraphs()
       ? append_set(char_set, static_cast<std::integral_constant<bool, false>*>(0))
       : append_set(char_set, static_cast<truth_type*>(0));
 }
@@ -363,7 +363,7 @@ re_syntax_base* basic_regex_creator<charT, traits>::append_set(
    typedef typename basic_char_set<charT, traits>::list_iterator item_iterator;
    typedef typename basic_char_set<charT, traits>::set_iterator  set_iterator;
    typedef typename traits::char_class_type m_type;
-   
+
    re_set_long<m_type>* result = static_cast<re_set_long<m_type>*>(append_state(syntax_element_long_set, sizeof(re_set_long<m_type>)));
    //
    // fill in the basics:
@@ -811,7 +811,7 @@ void basic_regex_creator<charT, traits>::fixup_recursions(re_syntax_base* state)
                      //
                      static_cast<re_jump*>(state)->alt.p = p;
                      ok = true;
-                     // 
+                     //
                      // Now scan the target for nested repeats:
                      //
                      p = p->next.p;
@@ -1013,7 +1013,7 @@ int basic_regex_creator<charT, traits>::calculate_backstep(re_syntax_base* state
             re_repeat* rep = static_cast<re_repeat *>(state);
             // adjust the type of the state to allow for faster matching:
             state->type = this->get_repeat_type(state);
-            if((state->type == syntax_element_dot_rep) 
+            if((state->type == syntax_element_dot_rep)
                || (state->type == syntax_element_char_rep)
                || (state->type == syntax_element_short_set_rep))
             {
@@ -1414,8 +1414,8 @@ template <class charT, class traits>
 void basic_regex_creator<charT, traits>::set_all_masks(unsigned char* bits, unsigned char mask)
 {
    //
-   // set mask in all of bits elements, 
-   // if bits[0] has mask_init not set then we can 
+   // set mask in all of bits elements,
+   // if bits[0] has mask_init not set then we can
    // optimise this to a call to memset:
    //
    if(bits)
@@ -1507,7 +1507,7 @@ syntax_element_type basic_regex_creator<charT, traits>::get_repeat_type(re_synta
 template <class charT, class traits>
 void basic_regex_creator<charT, traits>::probe_leading_repeat(re_syntax_base* state)
 {
-   // enumerate our states, and see if we have a leading repeat 
+   // enumerate our states, and see if we have a leading repeat
    // for which failed search restarts can be optimized;
    do
    {

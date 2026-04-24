@@ -29,4 +29,3 @@ find_package_handle_standard_args(Tvmet DEFAULT_MSG TVMET_INCLUDE_DIR)
 mark_as_advanced(TVMET_INCLUDE_DIR)
 
 endif()
-

@@ -5,13 +5,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 2>
         {
@@ -106,13 +106,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 3>
         {
@@ -207,13 +207,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 4>
         {
@@ -308,13 +308,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 5>
         {
@@ -409,13 +409,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 6>
         {
@@ -510,13 +510,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 7>
         {
@@ -611,13 +611,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 8>
         {
@@ -712,13 +712,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 9>
         {
@@ -813,13 +813,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 10>
         {
@@ -914,13 +914,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 11>
         {
@@ -1015,13 +1015,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 12>
         {
@@ -1116,13 +1116,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 13>
         {
@@ -1217,13 +1217,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 14>
         {
@@ -1318,13 +1318,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 15>
         {
@@ -1419,13 +1419,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 16>
         {
@@ -1520,13 +1520,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 17>
         {
@@ -1621,13 +1621,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 18>
         {
@@ -1722,13 +1722,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 19>
         {
@@ -1823,13 +1823,13 @@
                     );
             }
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename TryCatch, typename Exception, typename Capture, typename Expr>
         struct catch_push_back<TryCatch, Exception, Capture, Expr, 20>
         {
@@ -1924,4 +1924,3 @@
                     );
             }
         };
-    

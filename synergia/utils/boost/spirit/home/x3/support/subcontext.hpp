@@ -23,7 +23,7 @@ namespace boost { namespace spirit { namespace x3
         template <typename Context>
         subcontext(Context const& /*context*/)
         {}
-        
+
         template <typename ID_>
         unused_type
         get(ID_) const

@@ -66,7 +66,7 @@ namespace boost { namespace spirit { namespace karma
         bool generate(OutputIterator& sink, Context& ctx
           , Delimiter const& d, Attribute const& attr) const
         {
-            if (traits::has_optional_value(attr)) 
+            if (traits::has_optional_value(attr))
                 subject.generate(sink, ctx, d, traits::optional_value(attr));
             return sink_is_good(sink);
         }

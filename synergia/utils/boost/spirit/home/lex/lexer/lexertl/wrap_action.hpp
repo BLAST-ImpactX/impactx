@@ -19,15 +19,15 @@
 #include <boost/phoenix/bind.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit { namespace lex { namespace lexertl 
-{ 
+namespace boost { namespace spirit { namespace lex { namespace lexertl
+{
     namespace detail
     {
         template <typename FunctionType, typename Iterator, typename Context
           , typename IdType>
         struct wrap_action
         {
-            // plain functions with 5 arguments, function objects (including 
+            // plain functions with 5 arguments, function objects (including
             // phoenix actors) are not touched at all
             template <typename F>
             static FunctionType call(F const& f)
@@ -106,8 +106,8 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
                 return phoenix::bind(pf, f, _1, _2, _3, _4, _5);
             }
 
-            // we assume that either both iterators are to be passed to the 
-            // semantic action or none iterator at all (i.e. it's not possible 
+            // we assume that either both iterators are to be passed to the
+            // semantic action or none iterator at all (i.e. it's not possible
             // to have a lexer semantic action function taking one arguments).
 
             // semantic actions with 0 argument
@@ -133,7 +133,7 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
             }
         };
 
-        // specialization allowing to skip wrapping for lexer types not 
+        // specialization allowing to skip wrapping for lexer types not
         // supporting semantic actions
         template <typename Iterator, typename Context, typename Idtype>
         struct wrap_action<unused_type, Iterator, Context, Idtype>

@@ -719,6 +719,3 @@ class format_date_parser
 } } //namespace
 
 #endif
-
-
-

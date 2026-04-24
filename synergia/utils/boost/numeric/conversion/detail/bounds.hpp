@@ -6,7 +6,7 @@
 //  See library home page at http://www.boost.org/libs/numeric/conversion
 //
 // Contact the author at: fernando_cacciola@hotmail.com
-// 
+//
 #ifndef BOOST_NUMERIC_CONVERSION_BOUNDS_DETAIL_FLC_12NOV2002_HPP
 #define BOOST_NUMERIC_CONVERSION_BOUNDS_DETAIL_FLC_12NOV2002_HPP
 
@@ -22,7 +22,7 @@ namespace boost { namespace numeric { namespace boundsdetail
       typedef std::numeric_limits<N> limits ;
 
     public :
-    
+
       static N lowest  () { return limits::min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
       static N highest () { return limits::max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
       static N smallest() { return static_cast<N>(1); }
@@ -34,7 +34,7 @@ namespace boost { namespace numeric { namespace boundsdetail
       typedef std::numeric_limits<N> limits ;
 
     public :
-    
+
       static N lowest  () { return static_cast<N>(-limits::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) ; }
       static N highest () { return limits::max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
       static N smallest() { return limits::min BOOST_PREVENT_MACRO_SUBSTITUTION (); }

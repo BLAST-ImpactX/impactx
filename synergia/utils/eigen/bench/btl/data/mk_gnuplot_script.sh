@@ -19,8 +19,8 @@ for FILE in $DATA_FILE
 do
      if [ $FILE != $LAST ]
      then
-	BASE=${FILE##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
-	echo "'"$FILE"'" title "'"$TITLE"'" ",\\" >>  $WHAT.gnuplot
+    BASE=${FILE##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
+    echo "'"$FILE"'" title "'"$TITLE"'" ",\\" >>  $WHAT.gnuplot
      fi
 done
 BASE=${LAST##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
@@ -36,8 +36,8 @@ for FILE in $DATA_FILE
 do
      if [ $FILE != $LAST ]
      then
-	BASE=${FILE##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
-	echo "'"$FILE"'" title "'"$TITLE"'" ",\\" >>  $WHAT.gnuplot
+    BASE=${FILE##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
+    echo "'"$FILE"'" title "'"$TITLE"'" ",\\" >>  $WHAT.gnuplot
      fi
 done
 BASE=${LAST##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
@@ -51,8 +51,8 @@ for FILE in $DATA_FILE
 do
      if [ $FILE != $LAST ]
      then
-	BASE=${FILE##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
-	echo "'"$FILE"'" title "'"$TITLE"'" ",\\" >>  $WHAT.gnuplot
+    BASE=${FILE##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
+    echo "'"$FILE"'" title "'"$TITLE"'" ",\\" >>  $WHAT.gnuplot
      fi
 done
 BASE=${LAST##*/} ; BASE=${FILE##*/} ; AVANT=bench_${WHAT}_ ; REDUC=${BASE##*$AVANT} ; TITLE=${REDUC%.dat}
@@ -62,7 +62,3 @@ echo "'"$LAST"'" title "'"$TITLE"'" >>  $WHAT.gnuplot
 gnuplot -persist < $WHAT.gnuplot
 
 rm $WHAT.gnuplot
-
-
-
-

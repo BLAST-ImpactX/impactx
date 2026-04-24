@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEXERTL_ITERATOR_TOKENISER_MARCH_22_2007_0859AM)
@@ -18,7 +18,7 @@
 #include <vector>
 
 namespace boost { namespace spirit { namespace lex { namespace lexertl
-{ 
+{
     ///////////////////////////////////////////////////////////////////////////
     template<typename Iterator>
     class basic_iterator_tokeniser
@@ -32,7 +32,7 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
           , std::size_t &dfa_state_, bool& bol_, Iterator &start_token_
           , Iterator const& end_, std::size_t& unique_id_)
         {
-            if (start_token_ == end_) 
+            if (start_token_ == end_)
             {
                 unique_id_ = boost::lexer::npos;
                 return 0;
@@ -72,14 +72,14 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
                 }
                 else
                 {
-                    typedef typename 
-                        std::iterator_traits<Iterator>::value_type 
+                    typedef typename
+                        std::iterator_traits<Iterator>::value_type
                     value_type;
-                    typedef typename 
-                        boost::lexer::char_traits<value_type>::index_type 
+                    typedef typename
+                        boost::lexer::char_traits<value_type>::index_type
                     index_type;
 
-                    index_type index = 
+                    index_type index =
                         boost::lexer::char_traits<value_type>::call(*curr_++);
                     bol = (index == '\n') ? true : false;
                     std::size_t const state_ = ptr_[
@@ -186,14 +186,14 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
                 }
                 else
                 {
-                    typedef typename 
-                        std::iterator_traits<Iterator>::value_type 
+                    typedef typename
+                        std::iterator_traits<Iterator>::value_type
                     value_type;
-                    typedef typename 
-                        boost::lexer::char_traits<value_type>::index_type 
+                    typedef typename
+                        boost::lexer::char_traits<value_type>::index_type
                     index_type;
 
-                    index_type index = 
+                    index_type index =
                         boost::lexer::char_traits<value_type>::call(*curr_++);
                     bol = (index == '\n') ? true : false;
                     std::size_t const state_ = ptr_[

@@ -49,10 +49,10 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typedef binary_parser_category          parser_category_t;
         typedef difference_parser_gen           parser_generator_t;
         typedef binary<A, B, parser<self_t> >   base_t;
-    
+
         difference(A const& a, B const& b)
         : base_t(a, b) {}
-    
+
         template <typename ScannerT>
         typename parser_result<self_t, ScannerT>::type
         parse(ScannerT const& scan) const
@@ -70,7 +70,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
                     return hl;
                 }
             }
-    
+
             return scan.no_match();
         }
     };
@@ -78,20 +78,20 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
 #pragma warning(pop)
 #endif
-    
+
     struct difference_parser_gen
     {
         template <typename A, typename B>
-        struct result 
+        struct result
         {
-            typedef 
+            typedef
                 difference<
                     typename as_parser<A>::type
                   , typename as_parser<B>::type
-                > 
+                >
             type;
         };
-    
+
         template <typename A, typename B>
         static difference<
             typename as_parser<A>::type
@@ -104,39 +104,39 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
                     (as_parser<A>::convert(a), as_parser<B>::convert(b));
         }
     };
-    
+
     template <typename A, typename B>
     difference<A, B>
     operator-(parser<A> const& a, parser<B> const& b);
-    
+
     template <typename A>
     difference<A, chlit<char> >
     operator-(parser<A> const& a, char b);
-    
+
     template <typename B>
     difference<chlit<char>, B>
     operator-(char a, parser<B> const& b);
-    
+
     template <typename A>
     difference<A, strlit<char const*> >
     operator-(parser<A> const& a, char const* b);
-    
+
     template <typename B>
     difference<strlit<char const*>, B>
     operator-(char const* a, parser<B> const& b);
-    
+
     template <typename A>
     difference<A, chlit<wchar_t> >
     operator-(parser<A> const& a, wchar_t b);
-    
+
     template <typename B>
     difference<chlit<wchar_t>, B>
     operator-(wchar_t a, parser<B> const& b);
-    
+
     template <typename A>
     difference<A, strlit<wchar_t const*> >
     operator-(parser<A> const& a, wchar_t const* b);
-    
+
     template <typename B>
     difference<strlit<wchar_t const*>, B>
     operator-(wchar_t const* a, parser<B> const& b);

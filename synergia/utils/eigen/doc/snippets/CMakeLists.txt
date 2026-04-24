@@ -6,7 +6,7 @@ foreach(snippet_src ${snippets_SRCS})
   get_filename_component(snippet ${snippet_src} NAME_WE)
   set(compile_snippet_target compile_${snippet})
   set(compile_snippet_src ${compile_snippet_target}.cpp)
-  
+
   file(READ ${snippet_src} snippet_source_code)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compile_snippet.cpp.in
                 ${CMAKE_CURRENT_BINARY_DIR}/${compile_snippet_src})

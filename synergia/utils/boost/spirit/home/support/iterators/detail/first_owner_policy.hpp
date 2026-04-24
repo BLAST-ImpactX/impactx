@@ -1,6 +1,6 @@
 //  Copyright (c) 2001, Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,7 +17,7 @@ namespace boost { namespace spirit { namespace iterator_policies
     //  Implementation of an OwnershipPolicy used by multi_pass
     //  This ownership policy dictates that the first iterator created will
     //  determine the lifespan of the shared components.  This works well for
-    //  spirit, since no dynamic allocation of iterators is done, and all 
+    //  spirit, since no dynamic allocation of iterators is done, and all
     //  copies are make on the stack.
     //
     //  There is a caveat about using this policy together with the std_deque
@@ -44,7 +44,7 @@ namespace boost { namespace spirit { namespace iterator_policies
             // to, so don't swap first.  swap is only called from operator=
 
             template <typename MultiPass>
-            static bool is_unique(MultiPass const&) 
+            static bool is_unique(MultiPass const&)
             {
                 return false; // no way to know, so always return false
             }

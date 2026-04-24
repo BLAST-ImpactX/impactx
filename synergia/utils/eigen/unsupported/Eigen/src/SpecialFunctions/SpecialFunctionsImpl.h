@@ -879,7 +879,7 @@ struct igammac_impl {
   EIGEN_DEVICE_FUNC static Scalar run(Scalar a, Scalar x) {
     /*  igamc()
      *
-     *	Incomplete gamma integral (modified for Eigen)
+     *  Incomplete gamma integral (modified for Eigen)
      *
      *
      *
@@ -1205,9 +1205,9 @@ struct zeta_impl_series<double> {
 template <typename Scalar>
 struct zeta_impl {
   EIGEN_DEVICE_FUNC static Scalar run(Scalar x, Scalar q) {
-    /*							zeta.c
+    /*                          zeta.c
      *
-     *	Riemann zeta function of two arguments
+     *  Riemann zeta function of two arguments
      *
      *
      *
@@ -1422,9 +1422,9 @@ struct betainc_impl {
   EIGEN_STATIC_ASSERT((internal::is_same<Scalar, Scalar>::value == false), THIS_TYPE_IS_NOT_SUPPORTED)
 
   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE Scalar run(Scalar, Scalar, Scalar) {
-    /*	betaincf.c
+    /*  betaincf.c
      *
-     *	Incomplete beta integral
+     *  Incomplete beta integral
      *
      *
      * SYNOPSIS:

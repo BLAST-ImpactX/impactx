@@ -43,7 +43,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         template <typename Component, typename Attribute>
         bool operator()(Component const& component, Attribute& attr) const
         {
-            // if this is not the first component in the expect chain we 
+            // if this is not the first component in the expect chain we
             // need to flush any multi_pass iterator we might be acting on
             if (!is_first)
                 spirit::traits::clear_queue(first);
@@ -70,7 +70,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         template <typename Component>
         bool operator()(Component const& component) const
         {
-            // if this is not the first component in the expect chain we 
+            // if this is not the first component in the expect chain we
             // need to flush any multi_pass iterator we might be acting on
             if (!is_first)
                 spirit::traits::clear_queue(first);

@@ -15,16 +15,16 @@ TEST_CASE("line_expansion")
     using namespace synergia;
 
     std::string str = R"(
-        a: rbend; 
-        b: rbend; 
-        c: rbend; 
-        d: rbend; 
-        e: rbend; 
-        f: rbend; 
-        g: rbend; 
+        a: rbend;
+        b: rbend;
+        c: rbend;
+        d: rbend;
+        e: rbend;
+        f: rbend;
+        g: rbend;
         h: rbend;
-	    r: line=(g,h); 
-        s: line=(c,r,d); 
+        r: line=(g,h);
+        s: line=(c,r,d);
         t: line=(,,, 2*s 2*(e,f),,-s,,,, ,-(a,b),,);
     )";
 

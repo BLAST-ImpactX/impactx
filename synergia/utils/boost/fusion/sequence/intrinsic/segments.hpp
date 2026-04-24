@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2006 Eric Niebler
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(BOOST_FUSION_SEGMENTS_04052005_1141)
@@ -34,7 +34,7 @@ namespace boost { namespace fusion
         {
             template <typename Sequence>
             struct apply : Sequence::template segments<Sequence> {};
-        }; 
+        };
 
         template <>
         struct segments_impl<iterator_range_tag>;

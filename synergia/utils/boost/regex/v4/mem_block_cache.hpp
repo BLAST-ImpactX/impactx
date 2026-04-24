@@ -2,8 +2,8 @@
  * Copyright (c) 2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -180,4 +180,3 @@ inline void BOOST_REGEX_CALL put_mem_block(void* p)
 #endif
 
 #endif
-

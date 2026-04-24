@@ -19,7 +19,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct skipper_iteration_policy;
 
     template <typename BaseT = iteration_policy>
-    struct no_skipper_iteration_policy; 
+    struct no_skipper_iteration_policy;
 
     template <typename ParserT, typename BaseT = iteration_policy>
     class skip_parser_iteration_policy;
@@ -29,4 +29,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

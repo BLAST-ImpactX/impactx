@@ -40,7 +40,7 @@ UWP and is deprecated.  Use one of the other `BOOST_PLAT_WINDOWS_*`definitions i
 #   undef BOOST_PLAT_WINDOWS_RUNTIME
 #   define BOOST_PLAT_WINDOWS_RUNTIME BOOST_VERSION_NUMBER_AVAILABLE
 #endif
- 
+
 #if BOOST_PLAT_WINDOWS_RUNTIME
 #   define BOOST_PLAT_WINDOWS_RUNTIME_AVAILABLE
 #   include <boost/predef/detail/platform_detected.h>

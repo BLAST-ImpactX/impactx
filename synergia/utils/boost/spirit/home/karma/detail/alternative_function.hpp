@@ -122,7 +122,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
 
             // make sure, the content of the passed variant matches our
             // expectations
-            typename traits::optional_attribute<Attribute>::type attr_ = 
+            typename traits::optional_attribute<Attribute>::type attr_ =
                 traits::optional_value(attr);
             if (!component_type::is_compatible(spirit::traits::which(attr_)))
                 return false;
@@ -170,7 +170,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
                 detail::disable_counting<OutputIterator> nocounting(sink);
                 r = generate::call(component, sink, ctx, delim, attr, failed);
             }
-            if (r) 
+            if (r)
                 buffering.buffer_copy();
             return r;
         }
@@ -179,7 +179,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         template <typename Component>
         bool operator()(buffer_directive<Component> const& component)
         {
-            typedef typename 
+            typedef typename
                 traits::attribute_of<Component, Context>::type
             expected_type;
             typedef alternative_generate<
@@ -227,7 +227,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
                 detail::disable_counting<OutputIterator> nocounting(sink);
                 r = generate::call(component, sink, ctx, delim, attr, failed);
             }
-            if (r && !failed) 
+            if (r && !failed)
             {
                 buffering.buffer_copy();
                 return true;

@@ -27,7 +27,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     //
     ///////////////////////////////////////////////////////////////////////////
     template <
-        typename T0 
+        typename T0
       , typename T1
       , typename T2
       , bool EmbedByValue

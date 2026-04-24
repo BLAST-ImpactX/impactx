@@ -3,8 +3,8 @@
  * Copyright (c) 1998-2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -27,10 +27,10 @@ namespace boost{
 // find all non-overlapping matches within the sequence first last:
 //
 template <class Predicate, class BidiIterator, class charT, class traits>
-inline unsigned int regex_grep(Predicate foo, 
-                               BidiIterator first, 
-                               BidiIterator last, 
-                               const basic_regex<charT, traits>& e, 
+inline unsigned int regex_grep(Predicate foo,
+                               BidiIterator first,
+                               BidiIterator last,
+                               const basic_regex<charT, traits>& e,
                                match_flag_type flags = match_default)
 {
    if(e.flags() & regex_constants::failbit)
@@ -77,16 +77,16 @@ inline unsigned int regex_grep(Predicate foo,
 // regex_grep convenience interfaces:
 //
 template <class Predicate, class charT, class traits>
-inline unsigned int regex_grep(Predicate foo, const charT* str, 
-                        const basic_regex<charT, traits>& e, 
+inline unsigned int regex_grep(Predicate foo, const charT* str,
+                        const basic_regex<charT, traits>& e,
                         match_flag_type flags = match_default)
 {
    return regex_grep(foo, str, str + traits::length(str), e, flags);
 }
 
 template <class Predicate, class ST, class SA, class charT, class traits>
-inline unsigned int regex_grep(Predicate foo, const std::basic_string<charT, ST, SA>& s, 
-                 const basic_regex<charT, traits>& e, 
+inline unsigned int regex_grep(Predicate foo, const std::basic_string<charT, ST, SA>& s,
+                 const basic_regex<charT, traits>& e,
                  match_flag_type flags = match_default)
 {
    return regex_grep(foo, s.begin(), s.end(), e, flags);
@@ -95,4 +95,3 @@ inline unsigned int regex_grep(Predicate foo, const std::basic_string<charT, ST,
 } // namespace boost
 
 #endif  // BOOST_REGEX_V5_REGEX_GREP_HPP
-

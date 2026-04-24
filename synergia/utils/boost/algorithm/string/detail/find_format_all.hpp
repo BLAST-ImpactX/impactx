@@ -26,7 +26,7 @@ namespace boost {
 
 // find_format_all_copy (iterator variant) implementation ---------------------------//
 
-           template< 
+           template<
                 typename OutputIteratorT,
                 typename InputT,
                 typename FinderT,
@@ -40,12 +40,12 @@ namespace boost {
                 FormatterT Formatter,
                 const FindResultT& FindResult,
                 const FormatResultT& FormatResult )
-            {       
-                typedef BOOST_STRING_TYPENAME 
-                    range_const_iterator<InputT>::type input_iterator_type; 
+            {
+                typedef BOOST_STRING_TYPENAME
+                    range_const_iterator<InputT>::type input_iterator_type;
 
                 typedef find_format_store<
-                        input_iterator_type, 
+                        input_iterator_type,
                         FormatterT,
                         FormatResultT > store_type;
 
@@ -74,7 +74,7 @@ namespace boost {
                 return Output;
             }
 
-            template< 
+            template<
                 typename OutputIteratorT,
                 typename InputT,
                 typename FinderT,
@@ -86,9 +86,9 @@ namespace boost {
                 FinderT Finder,
                 FormatterT Formatter,
                 const FindResultT& FindResult )
-            {   
+            {
                 if( ::boost::algorithm::detail::check_find_result(Input, FindResult) ) {
-                    return ::boost::algorithm::detail::find_format_all_copy_impl2( 
+                    return ::boost::algorithm::detail::find_format_all_copy_impl2(
                         Output,
                         Input,
                         Finder,
@@ -102,8 +102,8 @@ namespace boost {
 
  // find_format_all_copy implementation ----------------------------------------------//
 
-           template< 
-                typename InputT, 
+           template<
+                typename InputT,
                 typename FinderT,
                 typename FormatterT,
                 typename FindResultT,
@@ -115,11 +115,11 @@ namespace boost {
                 const FindResultT& FindResult,
                 const FormatResultT& FormatResult)
             {
-                typedef BOOST_STRING_TYPENAME 
-                    range_const_iterator<InputT>::type input_iterator_type; 
+                typedef BOOST_STRING_TYPENAME
+                    range_const_iterator<InputT>::type input_iterator_type;
 
                 typedef find_format_store<
-                        input_iterator_type, 
+                        input_iterator_type,
                         FormatterT,
                         FormatResultT > store_type;
 
@@ -151,8 +151,8 @@ namespace boost {
                 return Output;
             }
 
-            template< 
-                typename InputT, 
+            template<
+                typename InputT,
                 typename FinderT,
                 typename FormatterT,
                 typename FindResultT >
@@ -175,30 +175,30 @@ namespace boost {
             }
 
  // find_format_all implementation ------------------------------------------------//
-        
+
             template<
                 typename InputT,
                 typename FinderT,
                 typename FormatterT,
                 typename FindResultT,
                 typename FormatResultT >
-            inline void find_format_all_impl2( 
+            inline void find_format_all_impl2(
                 InputT& Input,
                 FinderT Finder,
                 FormatterT Formatter,
                 FindResultT FindResult,
                 FormatResultT FormatResult)
             {
-                typedef BOOST_STRING_TYPENAME 
-                    range_iterator<InputT>::type input_iterator_type; 
+                typedef BOOST_STRING_TYPENAME
+                    range_iterator<InputT>::type input_iterator_type;
                 typedef find_format_store<
-                        input_iterator_type, 
+                        input_iterator_type,
                         FormatterT,
                         FormatResultT > store_type;
 
                 // Create store for the find result
                 store_type M( FindResult, FormatResult, Formatter );
-          
+
                 // Instantiate replacement storage
                 std::deque<
                     BOOST_STRING_TYPENAME range_value<InputT>::type> Storage;
@@ -206,17 +206,17 @@ namespace boost {
                 // Initialize replacement iterators
                 input_iterator_type InsertIt=::boost::begin(Input);
                 input_iterator_type SearchIt=::boost::begin(Input);
-                
+
                 while( M )
                 {
                     // process the segment
-                    InsertIt=process_segment( 
+                    InsertIt=process_segment(
                         Storage,
                         Input,
                         InsertIt,
                         SearchIt,
                         M.begin() );
-                    
+
                     // Adjust search iterator
                     SearchIt=M.end();
 
@@ -228,13 +228,13 @@ namespace boost {
                 }
 
                 // process the last segment
-                InsertIt=::boost::algorithm::detail::process_segment( 
+                InsertIt=::boost::algorithm::detail::process_segment(
                     Storage,
                     Input,
                     InsertIt,
                     SearchIt,
                     ::boost::end(Input) );
-                
+
                 if ( Storage.empty() )
                 {
                     // Truncate input
@@ -252,7 +252,7 @@ namespace boost {
                 typename FinderT,
                 typename FormatterT,
                 typename FindResultT >
-            inline void find_format_all_impl( 
+            inline void find_format_all_impl(
                 InputT& Input,
                 FinderT Finder,
                 FormatterT Formatter,

@@ -1,16 +1,16 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1
@@ -44,13 +44,13 @@
               , a0 , a1
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2
@@ -84,13 +84,13 @@
               , a0 , a1 , a2
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3
@@ -124,13 +124,13 @@
               , a0 , a1 , a2 , a3
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4
@@ -164,13 +164,13 @@
               , a0 , a1 , a2 , a3 , a4
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5
@@ -204,13 +204,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6
@@ -244,13 +244,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7
@@ -284,13 +284,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8
@@ -324,13 +324,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9
@@ -364,13 +364,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10
@@ -404,13 +404,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11
@@ -444,13 +444,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12
@@ -484,13 +484,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12 , typename T13
@@ -524,13 +524,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12 , typename T13 , typename T14
@@ -564,13 +564,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12 , typename T13 , typename T14 , typename T15
@@ -604,13 +604,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12 , typename T13 , typename T14 , typename T15 , typename T16
@@ -644,13 +644,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12 , typename T13 , typename T14 , typename T15 , typename T16 , typename T17
@@ -684,13 +684,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , typename T11 , typename T12 , typename T13 , typename T14 , typename T15 , typename T16 , typename T17 , typename T18

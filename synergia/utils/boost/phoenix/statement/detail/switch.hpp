@@ -92,7 +92,7 @@
               , mpl::false_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
 
@@ -124,7 +124,7 @@
               , mpl::true_
             ) const
             {
-                typedef 
+                typedef
                     typename proto::result_of::flatten<Cases const&>::type
                     flat_view_type;
 

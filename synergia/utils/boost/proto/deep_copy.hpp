@@ -160,4 +160,3 @@ namespace boost { namespace proto
 }}
 
 #endif // BOOST_PROTO_COMPILER_DEEP_COPY_HPP_EAN_11_21_2006
-

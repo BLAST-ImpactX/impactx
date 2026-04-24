@@ -32,7 +32,7 @@ constexpr bool isinf BOOST_MATH_PREVENT_MACRO_SUBSTITUTION(T x) noexcept
     else
     {
         using boost::math::isinf;
-        
+
         if constexpr (!std::is_integral_v<T>)
         {
             return (isinf)(x);

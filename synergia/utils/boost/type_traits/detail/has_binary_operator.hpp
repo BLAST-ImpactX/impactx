@@ -276,4 +276,3 @@ struct BOOST_TT_TRAIT_NAME : public integral_constant<bool, (::boost::detail::BO
 #if defined(BOOST_MSVC)
 #   pragma warning ( pop )
 #endif
-

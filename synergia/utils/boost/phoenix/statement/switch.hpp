@@ -126,7 +126,7 @@ namespace boost { namespace phoenix {
     struct switch_eval
     {
         typedef void result_type;
-        
+
         template <typename Context>
         result_type
         operator()(Context const &) const
@@ -172,7 +172,7 @@ namespace boost { namespace phoenix {
                         boost::phoenix::eval(proto::child_c<1>(cases), ctx);
                 }
             }
-            
+
             template <typename Context, typename Cond, typename Cases>
             result_type
             evaluate(
@@ -193,7 +193,7 @@ namespace boost { namespace phoenix {
             // Bring in the evaluation functions
             #include <boost/phoenix/statement/detail/switch.hpp>
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::switch_, Dummy>
         : call<switch_eval>
@@ -266,7 +266,7 @@ namespace boost { namespace phoenix {
             {
                 return expression::switch_<Cond, Cases>::make(cond, cases);
             }
-            
+
             template <typename Cases>
             typename expression::switch_<
                 Cond
@@ -297,4 +297,3 @@ namespace boost { namespace phoenix {
 #endif
 
 #endif
-

@@ -81,4 +81,3 @@ clean: kokkos-clean
 
 gtest-all.o:$(GTEST_PATH)/gtest/gtest-all.cc
 	$(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -c $(GTEST_PATH)/gtest/gtest-all.cc
-

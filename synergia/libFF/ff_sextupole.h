@@ -21,7 +21,7 @@ namespace FF_sextupole
         double length = slice.get_right() - slice.get_left();
 
         // strength
-        double k[2] = { 
+        double k[2] = {
             element.get_double_attribute("k2", 0.0),
             element.get_double_attribute("k2s", 0.0)
         };
@@ -41,8 +41,8 @@ namespace FF_sextupole
         Reference_particle const & ref_b = bunch.get_reference_particle();
 
         double brho_l = ref_l.get_momentum() / ref_l.get_charge();  // GV/c
-        double brho_b = ref_b.get_momentum() 
-                        * (1.0 + ref_b.get_state()[Bunch::dpop]) 
+        double brho_b = ref_b.get_momentum()
+                        * (1.0 + ref_b.get_state()[Bunch::dpop])
                         / ref_l.get_charge();  // GV/c
 
         double scale = brho_l / brho_b;

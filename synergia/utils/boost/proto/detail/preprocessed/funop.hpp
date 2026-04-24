@@ -5,8 +5,8 @@
     //  Copyright 2008 Eric Niebler. Distributed under the Boost
     //  Software License, Version 1.0. (See accompanying file
     //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-    
-    
+
+
     template<typename Expr, typename Domain >
     struct funop0
     {
@@ -15,34 +15,34 @@
           , tag::function
           , list1<
                 Expr &
-                
+
             >
         >::type type;
         BOOST_FORCEINLINE
         static type const call(
             Expr &e
-            
+
         )
         {
             type that = {
                 e
-                
+
             };
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename This, typename Domain>
     struct funop<Expr(), This, Domain>
       : funop0<
             typename detail::same_cv<Expr, This>::type
           , Domain
-            
+
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0>
     struct funop1
     {
@@ -67,8 +67,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0, typename This, typename Domain>
     struct funop<Expr(A0), This, Domain>
       : funop1<
@@ -77,8 +77,8 @@
             , typename remove_reference<A0 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1>
     struct funop2
     {
@@ -103,8 +103,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1, typename This, typename Domain>
     struct funop<Expr(A0 , A1), This, Domain>
       : funop2<
@@ -113,8 +113,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2>
     struct funop3
     {
@@ -139,8 +139,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2), This, Domain>
       : funop3<
@@ -149,8 +149,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type , typename remove_reference<A2 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2 , typename A3>
     struct funop4
     {
@@ -175,8 +175,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2 , typename A3, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2 , A3), This, Domain>
       : funop4<
@@ -185,8 +185,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type , typename remove_reference<A2 >::type , typename remove_reference<A3 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct funop5
     {
@@ -211,8 +211,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2 , typename A3 , typename A4, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2 , A3 , A4), This, Domain>
       : funop5<
@@ -221,8 +221,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type , typename remove_reference<A2 >::type , typename remove_reference<A3 >::type , typename remove_reference<A4 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct funop6
     {
@@ -247,8 +247,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2 , A3 , A4 , A5), This, Domain>
       : funop6<
@@ -257,8 +257,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type , typename remove_reference<A2 >::type , typename remove_reference<A3 >::type , typename remove_reference<A4 >::type , typename remove_reference<A5 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct funop7
     {
@@ -283,8 +283,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2 , A3 , A4 , A5 , A6), This, Domain>
       : funop7<
@@ -293,8 +293,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type , typename remove_reference<A2 >::type , typename remove_reference<A3 >::type , typename remove_reference<A4 >::type , typename remove_reference<A5 >::type , typename remove_reference<A6 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct funop8
     {
@@ -319,8 +319,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7), This, Domain>
       : funop8<
@@ -329,8 +329,8 @@
             , typename remove_reference<A0 >::type , typename remove_reference<A1 >::type , typename remove_reference<A2 >::type , typename remove_reference<A3 >::type , typename remove_reference<A4 >::type , typename remove_reference<A5 >::type , typename remove_reference<A6 >::type , typename remove_reference<A7 >::type
         >
     {};
-    
-    
+
+
     template<typename Expr, typename Domain , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct funop9
     {
@@ -355,8 +355,8 @@
             return that;
         }
     };
-    
-    
+
+
     template<typename Expr , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8, typename This, typename Domain>
     struct funop<Expr(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8), This, Domain>
       : funop9<

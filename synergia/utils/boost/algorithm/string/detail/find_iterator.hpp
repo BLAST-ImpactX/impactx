@@ -18,7 +18,7 @@
 #include <boost/function.hpp>
 
 namespace boost {
-    namespace algorithm { 
+    namespace algorithm {
         namespace detail {
 
 //  find_iterator base -----------------------------------------------//
@@ -32,10 +32,10 @@ namespace boost {
                 typedef IteratorT input_iterator_type;
                 typedef iterator_range<IteratorT> match_type;
                 typedef function2<
-                    match_type, 
-                    input_iterator_type, 
+                    match_type,
+                    input_iterator_type,
                     input_iterator_type> finder_type;
-                
+
             protected:
             // Protected construction/destruction
 
@@ -52,7 +52,7 @@ namespace boost {
                     m_Finder = Other.m_Finder;
                     return *this;
                 })
-                
+
                 // Constructor
                 template<typename FinderT>
                 find_iterator_base( FinderT Finder, int ) :
@@ -62,7 +62,7 @@ namespace boost {
                 BOOST_DEFAULTED_FUNCTION(~find_iterator_base(), {})
 
                 // Find operation
-                match_type do_find( 
+                match_type do_find(
                     input_iterator_type Begin,
                     input_iterator_type End ) const
                 {

@@ -68,14 +68,14 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
 //  Deprecated interface. Use push_back_a
     template<typename T>
-    inline ref_value_actor<T,push_back_action> 
+    inline ref_value_actor<T,push_back_action>
     append(T& ref_)
     {
         return ref_value_actor<T,push_back_action>(ref_);
     }
 
     template<typename T>
-    inline ref_value_actor<T,push_back_action> 
+    inline ref_value_actor<T,push_back_action>
     push_back_a(T& ref_)
     {
         return ref_value_actor<T,push_back_action>(ref_);
@@ -85,7 +85,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typename T,
         typename ValueT
     >
-    inline ref_const_ref_actor<T,ValueT,push_back_action> 
+    inline ref_const_ref_actor<T,ValueT,push_back_action>
     push_back_a(
         T& ref_,
         ValueT const& value_

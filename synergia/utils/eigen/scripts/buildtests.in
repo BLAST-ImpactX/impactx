@@ -19,4 +19,3 @@ else
   @CMAKE_MAKE_PROGRAM@ $targets_to_make @EIGEN_TEST_BUILD_FLAGS@
 fi
 exit $?
-

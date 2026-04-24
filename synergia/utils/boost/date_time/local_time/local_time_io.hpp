@@ -37,14 +37,14 @@ namespace local_time {
   operator<<(std::basic_ostream<CharT, TraitsT>& os, const local_date_time& ldt)
   {
     boost::io::ios_flags_saver iflags(os);
-    typedef local_date_time time_type;//::utc_time_type typename 
+    typedef local_date_time time_type;//::utc_time_type typename
     typedef date_time::time_facet<time_type, CharT> custom_time_facet;
     std::ostreambuf_iterator<CharT> oitr(os);
 
     if(std::has_facet<custom_time_facet>(os.getloc())) {
-      std::use_facet<custom_time_facet>(os.getloc()).put(oitr, 
-                                                         os, 
-                                                         os.fill(), 
+      std::use_facet<custom_time_facet>(os.getloc()).put(oitr,
+                                                         os,
+                                                         os.fill(),
                                                          ldt);
     }
     else {
@@ -73,7 +73,7 @@ namespace local_time {
 
         // intermediate objects
         std::basic_string<CharT> tz_str;
-        utc_time_type pt(not_a_date_time); 
+        utc_time_type pt(not_a_date_time);
 
         std::istreambuf_iterator<CharT,Traits> sit(is), str_end;
         if(std::has_facet<time_input_facet>(is.getloc())) {
@@ -100,7 +100,7 @@ namespace local_time {
       catch(...) {
         // mask tells us what exceptions are turned on
         std::ios_base::iostate exception_mask = is.exceptions();
-        // if the user wants exceptions on failbit, we'll rethrow our 
+        // if the user wants exceptions on failbit, we'll rethrow our
         // date_time exception & set the failbit
         if(std::ios_base::failbit & exception_mask) {
           try { is.setstate(std::ios_base::failbit); }
@@ -131,7 +131,7 @@ namespace local_time {
     }
     else {
       //instantiate a custom facet for dealing with periods since the user
-      //has not put one in the stream so far.  This is for efficiency 
+      //has not put one in the stream so far.  This is for efficiency
       //since we would always need to reconstruct for every time period
       //if the local did not already exist.  Of course this will be overridden
       //if the user imbues as some later point.

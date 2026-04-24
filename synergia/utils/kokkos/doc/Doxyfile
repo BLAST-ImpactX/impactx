@@ -19,7 +19,7 @@ BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ALWAYS_DETAILED_SEC    = YES
 FULL_PATH_NAMES        = NO
-STRIP_FROM_PATH        = 
+STRIP_FROM_PATH        =
 INTERNAL_DOCS          = NO
 CLASS_DIAGRAMS         = YES
 SOURCE_BROWSER         = YES
@@ -37,7 +37,7 @@ INLINE_INHERITED_MEMB  = YES
 INLINE_INFO            = YES
 SORT_MEMBER_DOCS       = NO
 TAB_SIZE               = 2
-ENABLED_SECTIONS       = 
+ENABLED_SECTIONS       =
 SORT_BRIEF_DOCS        = NO
 GENERATE_TODOLIST      = YES
 GENERATE_TESTLIST      = YES
@@ -66,14 +66,14 @@ INPUT                  = index.doc ../classic ../core/src ../containers/src ../l
 FILE_PATTERNS          = *.hpp *.cpp *.cuh *.cu
 RECURSIVE              = NO
 EXCLUDE_PATTERNS       = *.x *.o *.out
-EXAMPLE_PATH           = 
+EXAMPLE_PATH           =
 EXAMPLE_RECURSIVE       = YES
 EXAMPLE_PATTERNS       = *.cpp *.hpp
-IMAGE_PATH             = 
-INPUT_FILTER           = 
+IMAGE_PATH             =
+INPUT_FILTER           =
 ALPHABETICAL_INDEX     = YES
 COLS_IN_ALPHA_INDEX    = 4
-IGNORE_PREFIX          = 
+IGNORE_PREFIX          =
 #
 # What diagrams are created
 #
@@ -89,16 +89,16 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
-INCLUDE_FILE_PATTERNS  = 
+INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS DOXYGEN_USE_ONLY
 INCLUDE_PATH           = ../src
-EXPAND_AS_DEFINED      = 
+EXPAND_AS_DEFINED      =
 #
 # Links to other packages
 #
 TAGFILES               = ../../common/tag_files/teuchos.tag=../../../teuchos/doc/html ../../common/tag_files/epetra.tag=../../../epetra/doc/html \
                          ../../common/tag_files/belos.tag=../../../belos/doc/html ../../common/tag_files/anasazi.tag=../../../anasazi/doc/html \
-                         ../../common/tag_files/kokkos.tag=../../../kokkos/doc/html 
+                         ../../common/tag_files/kokkos.tag=../../../kokkos/doc/html
 GENERATE_TAGFILE       = ../../common/tag_files/kokkos.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = NO
@@ -107,7 +107,7 @@ EXTERNAL_GROUPS        = NO
 #
 PERL_PATH              = /usr/bin/perl
 HAVE_DOT               = YES
-DOT_PATH               = 
+DOT_PATH               =
 MAX_DOT_GRAPH_WIDTH    = 1024
 MAX_DOT_GRAPH_HEIGHT   = 1024
 #

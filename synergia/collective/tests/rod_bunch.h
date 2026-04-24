@@ -200,4 +200,3 @@ struct Rod_bunch_fixture_highgamma_offaxis: public Rod_bunch_fixture_highgamma {
     bunch.checkout_particles();
   }
 };
-

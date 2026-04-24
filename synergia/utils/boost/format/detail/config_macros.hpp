@@ -28,7 +28,7 @@
 #error "boost::format uses a local macro that is already defined."
 #endif
 
-// specific workarounds. each header can define BOOS_IO_STD if it 
+// specific workarounds. each header can define BOOS_IO_STD if it
 // needs. (e.g. because of IO_NEEDS_USING_DECLARATION)
 #include <boost/format/detail/workarounds_gcc-2_95.hpp>
 #include <boost/format/detail/workarounds_stlport.hpp>
@@ -79,12 +79,12 @@ namespace boost {
 #endif
 
 
-// ***  hide std::locale if it doesnt exist. 
+// ***  hide std::locale if it doesnt exist.
 // this typedef is either std::locale or int, avoids placing ifdefs everywhere
 namespace boost { namespace io { namespace detail {
 #if ! defined(BOOST_NO_STD_LOCALE)
     typedef BOOST_IO_STD locale locale_t;
-#else 
+#else
     typedef int          locale_t;
 #endif
 } } }

@@ -63,7 +63,7 @@ template <>
 struct swap_selector<false>
 {
     template <class T>
-    static void optional_swap ( optional<T>& x, optional<T>& y ) 
+    static void optional_swap ( optional<T>& x, optional<T>& y )
     //BOOST_NOEXCEPT_IF(::boost::is_nothrow_move_constructible<T>::value && BOOST_NOEXCEPT_EXPR(boost::core::invoke_swap(*x, *y)))
     {
         if (x)

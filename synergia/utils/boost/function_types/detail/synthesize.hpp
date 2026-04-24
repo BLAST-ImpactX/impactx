@@ -43,15 +43,15 @@ struct synthesize_func
     < Seq
     , ::boost::function_types::detail::bits
       < detail::retag_default_cc
-        < function_types::tag<nv_dcc_func, Tag> > 
-      >::value 
+        < function_types::tag<nv_dcc_func, Tag> >
+      >::value
     >
 { };
 
 template<typename Seq, typename Tag>
 struct synthesize_mfp
   : detail::synthesize_impl
-    < Seq 
+    < Seq
     , ::boost::function_types::detail::bits
       < detail::retag_default_cc
         < function_types::tag
@@ -76,4 +76,3 @@ struct synthesize_mop
 } } } // namespace ::boost::function_types::detail
 
 #endif
-

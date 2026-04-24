@@ -17,7 +17,7 @@ A Map object has a type defined by its %Eigen equivalent:
 \code
 Map<Matrix<typename Scalar, int RowsAtCompileTime, int ColsAtCompileTime> >
 \endcode
-Note that, in this default case, a Map requires just a single template parameter.  
+Note that, in this default case, a Map requires just a single template parameter.
 
 To construct a Map variable, you need two other pieces of information: a pointer to the region of memory defining the array of coefficients, and the desired shape of the matrix or vector.  For example, to define a matrix of \c float with sizes determined at compile time, you might do the following:
 \code

@@ -135,7 +135,7 @@ namespace boost { namespace proto
     struct basic_default_generator
       : proto::use_basic_expr<default_generator>
     {};
-    
+
     /// \brief A generator that wraps expressions passed
     /// to it in the specified extension wrapper.
     ///

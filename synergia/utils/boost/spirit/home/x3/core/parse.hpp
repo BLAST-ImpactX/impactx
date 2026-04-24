@@ -108,7 +108,7 @@ namespace boost { namespace spirit { namespace x3
         // iterator instead.
         BOOST_CONCEPT_ASSERT((boost_concepts::ReadableIteratorConcept<Iterator>));
         BOOST_CONCEPT_ASSERT((boost_concepts::ForwardTraversalConcept<Iterator>));
-        
+
         static_assert(!std::is_same<Skipper, unused_type>::value,
             "Error! Skipper cannot be unused_type.");
 
@@ -177,7 +177,7 @@ namespace boost { namespace spirit { namespace x3
         Iterator first = first_;
         return phrase_parse_main(first, last, p, s, unused, post_skip);
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Skipper>
     struct phrase_parse_context

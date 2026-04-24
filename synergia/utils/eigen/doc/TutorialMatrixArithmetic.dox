@@ -100,7 +100,7 @@ As for basic arithmetic operators, \c transpose() and \c adjoint() simply return
 <td>
 \verbinclude tut_arithmetic_transpose_aliasing.out
 </td></tr></table>
-This is the so-called \ref TopicAliasing "aliasing issue". In "debug mode", i.e., when \ref TopicAssertions "assertions" have not been disabled, such common pitfalls are automatically detected. 
+This is the so-called \ref TopicAliasing "aliasing issue". In "debug mode", i.e., when \ref TopicAssertions "assertions" have not been disabled, such common pitfalls are automatically detected.
 
 For \em in-place transposition, as for instance in <tt>a = a.transpose()</tt>, simply use the \link DenseBase::transposeInPlace() transposeInPlace()\endlink  function:
 <table class="example">

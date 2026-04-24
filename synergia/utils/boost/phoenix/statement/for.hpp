@@ -12,7 +12,7 @@
 #include <boost/phoenix/core/call.hpp>
 #include <boost/phoenix/core/expression.hpp>
 #include <boost/phoenix/core/meta_grammar.hpp>
-    
+
 BOOST_PHOENIX_DEFINE_EXPRESSION(
     (boost)(phoenix)(for_)
   , (meta_grammar) // Cond
@@ -47,12 +47,12 @@ namespace boost { namespace phoenix
                 boost::phoenix::eval(do_it, ctx);
         }
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::for_, Dummy>
         : call<for_eval, Dummy>
     {};
-    
+
     template <typename Init, typename Cond, typename Step>
     struct for_gen
     {

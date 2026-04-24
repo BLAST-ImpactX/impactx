@@ -19,7 +19,7 @@
 // bit 6: member function pointer
 // bit 7: member object pointer
 
-#define BOOST_FT_type_mask                            0x000000ff // 1111 1111 
+#define BOOST_FT_type_mask                            0x000000ff // 1111 1111
 #define BOOST_FT_callable_builtin                     0x00000001 // 0000 0001
 #define BOOST_FT_non_member                           0x00000002 // 0000 0010
 #define BOOST_FT_function                             0x00000007 // 0000 0111
@@ -41,11 +41,10 @@
 #define BOOST_FT_default_cc                           0x00008000
 #define BOOST_FT_cc_mask                              0x00ff8000
 
-#define BOOST_FT_kind_mask                            0x000000fc 
+#define BOOST_FT_kind_mask                            0x000000fc
 
 #define BOOST_FT_flags_mask                           0x00000fff
 #define BOOST_FT_full_mask                            0x00ff0fff
 
 #define BOOST_FT_arity_shift                          24
 #define BOOST_FT_arity_mask                           0x7f000000
-

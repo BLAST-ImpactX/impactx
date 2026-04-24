@@ -83,7 +83,7 @@ function merge
 {
   count1=`echo $1 |  wc -w`
   count2=`echo $2 |  wc -w`
-  
+
   if [ $count1 == $count2 ]; then
     a=( $1 ); b=( $2 )
     res=""
@@ -99,12 +99,12 @@ function merge
   fi
 }
 
-function test_current 
+function test_current
 {
   rev=$1
   scalar=$2
   name=$3
-  
+
   prev=""
   if [ -e "$name.backup" ]; then
     prev=`grep $rev "$name.backup" | cut -d ' ' -f 2-`
@@ -154,12 +154,12 @@ do
     git checkout $rev2 > /dev/null
     actual_rev=`git rev-parse --short HEAD`
     cd ..
-    
+
     test_current $actual_rev float                  $WORKING_DIR_PREFIX"s"$bench
     test_current $actual_rev double                 $WORKING_DIR_PREFIX"d"$bench
     test_current $actual_rev "std::complex<double>" $WORKING_DIR_PREFIX"c"$bench
   fi
-  
+
 done
 
 echo "Float:"

@@ -57,7 +57,7 @@ namespace FF_kicker
 
         if ( close_to_zero(length) )
         {
-            // the reference time is calculated with the design reference 
+            // the reference time is calculated with the design reference
             // particle which is relative to the p-lattice.
             // also update the reference particle
             pp::get_reference_cdt_zero(ref_lattice, k);
@@ -90,10 +90,10 @@ namespace FF_kicker
                 double ref_cdt = pp::get_reference_cdt_simple(
                         ref_lattice, length, k);
 
-                pp::apply_simple_kick(bunch, ParticleGroup::regular, 
+                pp::apply_simple_kick(bunch, ParticleGroup::regular,
                         pref, mass, ref_cdt, length, sk);
 
-                pp::apply_simple_kick(bunch, ParticleGroup::spectator, 
+                pp::apply_simple_kick(bunch, ParticleGroup::spectator,
                         pref, mass, ref_cdt, length, sk);
             }
             else

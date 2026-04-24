@@ -2,10 +2,10 @@
 #define GREG_DURATION_HPP___
 
 /* Copyright (c) 2002,2003, 2020 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
+ * Use, modification and distribution is subject to the
  * Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
- * Author: Jeff Garland, Bart Garst 
+ * Author: Jeff Garland, Bart Garst
  * $Date$
  */
 
@@ -79,7 +79,7 @@ namespace gregorian {
       base_type::operator-= (rhs);
       return *this;
     }
-    
+
     BOOST_CXX14_CONSTEXPR friend
     date_duration operator- (date_duration rhs, date_duration const& lhs);
 
@@ -89,7 +89,7 @@ namespace gregorian {
       base_type::operator+= (rhs);
       return *this;
     }
-    
+
     BOOST_CXX14_CONSTEXPR friend
     date_duration operator+ (date_duration rhs, date_duration const& lhs);
 
@@ -105,7 +105,7 @@ namespace gregorian {
       base_type::operator/= (divisor);
       return *this;
     }
-    
+
     BOOST_CXX14_CONSTEXPR friend date_duration operator/ (date_duration rhs, int lhs);
 
     //! Returns the smallest duration -- used by to calculate 'end'
@@ -113,16 +113,16 @@ namespace gregorian {
     {
       return date_duration(base_type::unit().get_rep());
     }
-  };      
+  };
 
-  inline BOOST_CXX14_CONSTEXPR 
+  inline BOOST_CXX14_CONSTEXPR
   date_duration operator- (date_duration rhs, date_duration const& lhs)
     {
       rhs -= lhs;
       return rhs;
     }
 
-  inline BOOST_CXX14_CONSTEXPR 
+  inline BOOST_CXX14_CONSTEXPR
   date_duration operator+ (date_duration rhs, date_duration const& lhs)
     {
       rhs += lhs;

@@ -20,7 +20,7 @@ namespace boost {
 
 template <typename T>
 struct is_stateless
- : public integral_constant<bool,  
+ : public integral_constant<bool,
       (::boost::has_trivial_constructor<T>::value
       && ::boost::has_trivial_copy<T>::value
       && ::boost::has_trivial_destructor<T>::value

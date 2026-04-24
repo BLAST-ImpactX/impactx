@@ -647,7 +647,7 @@ namespace boost { namespace fusion
             struct apply
             {
                 typedef typename Sequence::segments_type const &type;
-                            
+
                 static type call(Sequence &sequence)
                 {
                     return sequence.segs_;

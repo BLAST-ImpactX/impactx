@@ -48,4 +48,3 @@ $(EXE): $(SRC) $(KOKKOS_LINK_DEPENDS) $(KOKKOS_CPP_DEPENDS)
 
 clean: kokkos-clean
 	rm -f *.o *.cuda *.host
-

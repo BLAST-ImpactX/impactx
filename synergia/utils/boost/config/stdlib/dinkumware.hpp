@@ -56,7 +56,7 @@
 #  ifndef _CPPLIB_VER
       // Updated Dinkum library defines this, and provides
       // its own min and max definitions, as does MTA version.
-#     ifndef __MTA__ 
+#     ifndef __MTA__
 #        define BOOST_NO_STD_MIN_MAX
 #     endif
 #     define BOOST_NO_MS_INT64_NUMERIC_LIMITS
@@ -64,7 +64,7 @@
 #endif
 
 //
-// std extension namespace is stdext for vc7.1 and later, 
+// std extension namespace is stdext for vc7.1 and later,
 // the same applies to other compilers that sit on top
 // of vc7.1 (Intel and Comeau):
 //
@@ -88,10 +88,10 @@
 
 #if ((defined(BOOST_MSVC) && BOOST_MSVC >= 1400) || (defined(__clang__) && defined(_MSC_VER))) && (_MSC_VER < 1800)
 // Fix for VC++ 8.0 on up ( I do not have a previous version to test )
-// or clang-cl. If exceptions are off you must manually include the 
-// <exception> header before including the <typeinfo> header. Admittedly 
-// trying to use Boost libraries or the standard C++ libraries without 
-// exception support is not suggested but currently clang-cl ( v 3.4 ) 
+// or clang-cl. If exceptions are off you must manually include the
+// <exception> header before including the <typeinfo> header. Admittedly
+// trying to use Boost libraries or the standard C++ libraries without
+// exception support is not suggested but currently clang-cl ( v 3.4 )
 // does not support exceptions and must be compiled with exceptions off.
 #if !_HAS_EXCEPTIONS
 #include <exception>
@@ -99,7 +99,7 @@
 #include <typeinfo>
 #if !_HAS_EXCEPTIONS
 #  define BOOST_NO_STD_TYPEINFO
-#endif  
+#endif
 #endif
 #if defined(__ghs__) && !_HAS_NAMESPACE
 #  define BOOST_NO_STD_TYPEINFO
@@ -216,7 +216,7 @@
 #  define BOOST_NO_CXX11_ADDRESSOF
 #endif
 
-// Bug specific to VC14, 
+// Bug specific to VC14,
 // See https://connect.microsoft.com/VisualStudio/feedback/details/1348277/link-error-when-using-std-codecvt-utf8-utf16-char16-t
 // and discussion here: http://blogs.msdn.com/b/vcblog/archive/2014/11/12/visual-studio-2015-preview-now-available.aspx?PageIndex=2
 #if defined(_CPPLIB_VER) && (_CPPLIB_VER == 650) && (!defined(_MSVC_STL_VERSION) || (_MSVC_STL_VERSION < 142))

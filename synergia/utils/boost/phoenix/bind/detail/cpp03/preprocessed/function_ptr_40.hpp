@@ -1,16 +1,16 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<2, Dummy>
     {
@@ -28,13 +28,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<3, Dummy>
     {
@@ -52,13 +52,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<4, Dummy>
     {
@@ -76,13 +76,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<5, Dummy>
     {
@@ -100,13 +100,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<6, Dummy>
     {
@@ -124,13 +124,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<7, Dummy>
     {
@@ -148,13 +148,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<8, Dummy>
     {
@@ -172,13 +172,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<9, Dummy>
     {
@@ -196,13 +196,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<10, Dummy>
     {
@@ -220,13 +220,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<11, Dummy>
     {
@@ -244,13 +244,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<12, Dummy>
     {
@@ -268,13 +268,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<13, Dummy>
     {
@@ -292,13 +292,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<14, Dummy>
     {
@@ -316,13 +316,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<15, Dummy>
     {
@@ -340,13 +340,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<16, Dummy>
     {
@@ -364,13 +364,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<17, Dummy>
     {
@@ -388,13 +388,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<18, Dummy>
     {
@@ -412,13 +412,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<19, Dummy>
     {
@@ -436,13 +436,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<20, Dummy>
     {
@@ -460,13 +460,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<21, Dummy>
     {
@@ -484,13 +484,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<22, Dummy>
     {
@@ -508,13 +508,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<23, Dummy>
     {
@@ -532,13 +532,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<24, Dummy>
     {
@@ -556,13 +556,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<25, Dummy>
     {
@@ -580,13 +580,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<26, Dummy>
     {
@@ -604,13 +604,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<27, Dummy>
     {
@@ -628,13 +628,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<28, Dummy>
     {
@@ -652,13 +652,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<29, Dummy>
     {
@@ -676,13 +676,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<30, Dummy>
     {
@@ -700,13 +700,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<31, Dummy>
     {
@@ -724,13 +724,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<32, Dummy>
     {
@@ -748,13 +748,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<33, Dummy>
     {
@@ -772,13 +772,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<34, Dummy>
     {
@@ -796,13 +796,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<35, Dummy>
     {
@@ -820,13 +820,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<36, Dummy>
     {
@@ -844,13 +844,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<37, Dummy>
     {
@@ -868,13 +868,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<38, Dummy>
     {
@@ -892,13 +892,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<39, Dummy>
     {
@@ -916,13 +916,13 @@
             FP fp;
         };
     };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <typename Dummy>
     struct function_ptr_impl<40, Dummy>
     {

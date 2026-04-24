@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_FORMAT_MANIP_MAY_01_2007_1211PM)
@@ -19,18 +19,18 @@
 #include <iosfwd>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit { namespace karma 
+namespace boost { namespace spirit { namespace karma
 {
     ///////////////////////////////////////////////////////////////////////////
     template <typename Expr>
-    inline typename detail::format<Expr>::type 
+    inline typename detail::format<Expr>::type
     format(Expr const& expr)
     {
         return detail::format<Expr>::call(expr);
     }
 
     template <typename Expr, typename Attribute>
-    inline detail::format_manip<Expr, mpl::false_, mpl::false_, unused_type, Attribute> 
+    inline detail::format_manip<Expr, mpl::false_, mpl::false_, unused_type, Attribute>
     format(
         Expr const& expr
       , Attribute const& attr)
@@ -47,18 +47,18 @@ namespace boost { namespace spirit { namespace karma
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Expr, typename Delimiter>
-    inline typename detail::format_delimited<Expr, Delimiter>::type 
+    inline typename detail::format_delimited<Expr, Delimiter>::type
     format_delimited(
         Expr const& expr
       , Delimiter const& d
-      , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit = 
+      , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit =
             delimit_flag::dont_predelimit)
     {
         return detail::format_delimited<Expr, Delimiter>::call(expr, d, pre_delimit);
     }
 
     template <typename Expr, typename Delimiter, typename Attribute>
-    inline detail::format_manip<Expr, mpl::false_, mpl::false_, Delimiter, Attribute> 
+    inline detail::format_manip<Expr, mpl::false_, mpl::false_, Delimiter, Attribute>
     format_delimited(
         Expr const& xpr
       , Delimiter const& d
@@ -77,7 +77,7 @@ namespace boost { namespace spirit { namespace karma
     }
 
     template <typename Expr, typename Delimiter, typename Attribute>
-    inline detail::format_manip<Expr, mpl::false_, mpl::false_, Delimiter, Attribute> 
+    inline detail::format_manip<Expr, mpl::false_, mpl::false_, Delimiter, Attribute>
     format_delimited(
         Expr const& xpr
       , Delimiter const& d
@@ -95,8 +95,8 @@ namespace boost { namespace spirit { namespace karma
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template<typename Char, typename Traits, typename Derived> 
-    inline std::basic_ostream<Char, Traits> & 
+    template<typename Char, typename Traits, typename Derived>
+    inline std::basic_ostream<Char, Traits> &
     operator<< (std::basic_ostream<Char, Traits> &os, generator<Derived> const& g)
     {
         typedef traits::properties_of<
@@ -115,5 +115,4 @@ namespace boost { namespace spirit { namespace karma
     }
 }}}
 
-#endif 
-
+#endif

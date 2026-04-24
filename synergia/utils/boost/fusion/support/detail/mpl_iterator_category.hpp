@@ -1,13 +1,13 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_MPL_ITERATOR_CATEGORY_07212005_0923)
 #define FUSION_MPL_ITERATOR_CATEGORY_07212005_0923
 
-namespace boost { namespace mpl 
+namespace boost { namespace mpl
 {
     struct forward_iterator_tag;
     struct bidirectional_iterator_tag;
@@ -25,7 +25,7 @@ namespace boost { namespace fusion { namespace detail
 {
     template <typename Category>
     struct mpl_iterator_category;
-    
+
     template <>
     struct mpl_iterator_category<mpl::forward_iterator_tag>
     {

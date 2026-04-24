@@ -8,19 +8,19 @@
 //  See http://www.boost.org for most recent version.
 
 //  Old versions of vxWorks (namely everything below 6.x) are
-//  absolutely unable to use boost. Old STLs and compilers 
-//  like (GCC 2.96) . Do not even think of getting this to work, 
+//  absolutely unable to use boost. Old STLs and compilers
+//  like (GCC 2.96) . Do not even think of getting this to work,
 //  a miserable failure will  be guaranteed!
 //
 //  VxWorks supports C++ linkage in the kernel with
-//  DKMs (Downloadable Kernel Modules). But, until recently 
+//  DKMs (Downloadable Kernel Modules). But, until recently
 //  the kernel used a C89 library with no
-//  wide character support and no guarantee of ANSI C. 
-//  Regardless of the C library the same Dinkum 
-//  STL library is used in both contexts. 
+//  wide character support and no guarantee of ANSI C.
+//  Regardless of the C library the same Dinkum
+//  STL library is used in both contexts.
 //
-//  Similarly the Dinkum abridged STL that supports the loosely specified 
-//  embedded C++ standard has not been tested and is unlikely to work 
+//  Similarly the Dinkum abridged STL that supports the loosely specified
+//  embedded C++ standard has not been tested and is unlikely to work
 //  on anything but the simplest library.
 // ====================================================================
 //
@@ -38,10 +38,10 @@
 // which could easily pose a serious problem for a real time process.
 //
 // To change the default properties for POSIX-semaphores in VxWorks 7
-// enable core > CORE_USER Menu > DEFAULT_PTHREAD_PRIO_INHERIT 
-//  
-// In VxWorks 6.x so as to integrate with boost. 
-// - Edit the file 
+// enable core > CORE_USER Menu > DEFAULT_PTHREAD_PRIO_INHERIT
+//
+// In VxWorks 6.x so as to integrate with boost.
+// - Edit the file
 //   installDir/vxworks-6.x/target/usr/src/posix/pthreadLib.c
 // - Around line 917 there should be the definition of the default
 //   mutex attributes:
@@ -141,7 +141,7 @@
 #  define BOOST_THREAD_USES_GETPAGESIZE
 #endif
 
-#if (_WRS_VXWORKS_MAJOR < 7) 
+#if (_WRS_VXWORKS_MAJOR < 7)
 // vxWorks-around: <time.h> #defines CLOCKS_PER_SEC as sysClkRateGet() but
 //                 miserably fails to #include the required <sysLib.h> to make
 //                 sysClkRateGet() available! So we manually include it here.
@@ -272,11 +272,11 @@ inline int gettimeofday(struct timeval *tv, void * /*tzv*/) {
 } // extern "C"
 #endif
 
-/* 
+/*
  * moved to os/utils/unix/freind_h/times.h in VxWorks 7
  * to avoid conflict with MPL operator times
  */
-#if (_WRS_VXWORKS_MAJOR < 7) 
+#if (_WRS_VXWORKS_MAJOR < 7)
 #  ifdef __cplusplus
 
 // vxWorks provides neither struct tms nor function times()!
@@ -329,9 +329,9 @@ namespace std {
   using ::truncate;
   using ::symlink;
   using ::readlink;
-#  if (_WRS_VXWORKS_MAJOR < 7)  
+#  if (_WRS_VXWORKS_MAJOR < 7)
     using ::gettimeofday;
-#  endif  
+#  endif
 }
 #endif // __cplusplus
 
@@ -364,15 +364,15 @@ typedef int              locale_t;                     // locale_t is a POSIX-ex
 // vxWorks lies about XSI conformance, there is no nl_types.h:
 #undef BOOST_HAS_NL_TYPES_H
 
-// vxWorks 7 adds C++11 support 
+// vxWorks 7 adds C++11 support
 // however it is optional, and does not match exactly the support determined
-// by examining the Dinkum STL version and GCC version (or ICC and DCC) 
+// by examining the Dinkum STL version and GCC version (or ICC and DCC)
 #if !( defined( _WRS_CONFIG_LANG_LIB_CPLUS_CPLUS_USER_2011) || defined(_WRS_CONFIG_LIBCPLUS_STD))
 #  define BOOST_NO_CXX11_ADDRESSOF      // C11 addressof operator on memory location
 #  define BOOST_NO_CXX11_ALLOCATOR
 #  define BOOST_NO_CXX11_ATOMIC_SMART_PTR
 #  define BOOST_NO_CXX11_NUMERIC_LIMITS  // max_digits10 in test/../print_helper.hpp
-#  define BOOST_NO_CXX11_SMART_PTR 
+#  define BOOST_NO_CXX11_SMART_PTR
 #  define BOOST_NO_CXX11_STD_ALIGN
 
 
@@ -381,7 +381,7 @@ typedef int              locale_t;                     // locale_t is a POSIX-ex
 #  define BOOST_NO_CXX11_HDR_CHRONO
 #  define BOOST_NO_CXX11_HDR_CONDITION_VARIABLE
 #  define BOOST_NO_CXX11_HDR_FORWARD_LIST  //serialization/test/test_list.cpp
-#  define BOOST_NO_CXX11_HDR_FUNCTIONAL 
+#  define BOOST_NO_CXX11_HDR_FUNCTIONAL
 #  define BOOST_NO_CXX11_HDR_FUTURE
 #  define BOOST_NO_CXX11_HDR_MUTEX
 #  define BOOST_NO_CXX11_HDR_RANDOM      //math/../test_data.hpp
@@ -390,11 +390,11 @@ typedef int              locale_t;                     // locale_t is a POSIX-ex
 #  define BOOST_NO_CXX14_HDR_SHARED_MUTEX
 #  define BOOST_NO_CXX11_HDR_SYSTEM_ERROR
 #  define BOOST_NO_CXX11_HDR_THREAD
-#  define BOOST_NO_CXX11_HDR_TYPEINDEX 
+#  define BOOST_NO_CXX11_HDR_TYPEINDEX
 #  define BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#  define BOOST_NO_CXX11_HDR_TUPLE 
+#  define BOOST_NO_CXX11_HDR_TUPLE
 #  define BOOST_NO_CXX11_HDR_UNORDERED_MAP
-#  define BOOST_NO_CXX11_HDR_UNORDERED_SET 
+#  define BOOST_NO_CXX11_HDR_UNORDERED_SET
 #else
 #  ifndef  BOOST_SYSTEM_NO_DEPRECATED
 #    define BOOST_SYSTEM_NO_DEPRECATED  // workaround link error in spirit
@@ -409,14 +409,13 @@ typedef int              locale_t;                     // locale_t is a POSIX-ex
 // affects some typeof tests
 #undef V7
 
-// use fake poll() from Unix layer in ASIO to get full functionality 
+// use fake poll() from Unix layer in ASIO to get full functionality
 // most libraries will use select() but this define allows 'iostream' functionality
 // which is based on poll() only
 #if (_WRS_VXWORKS_MAJOR > 6)
 #  ifndef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 #    define BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 #  endif
-#else 
+#else
 #  define BOOST_ASIO_DISABLE_SERIAL_PORT
 #endif
-

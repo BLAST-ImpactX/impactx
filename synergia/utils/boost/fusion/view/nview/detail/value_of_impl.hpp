@@ -28,7 +28,7 @@ namespace boost { namespace fusion
         struct value_of_impl<nview_iterator_tag>
         {
             template <typename Iterator>
-            struct apply 
+            struct apply
             {
                 typedef typename Iterator::first_type first_type;
                 typedef typename Iterator::sequence_type sequence_type;

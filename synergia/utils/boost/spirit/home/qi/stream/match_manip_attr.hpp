@@ -43,7 +43,7 @@ namespace boost { namespace spirit { namespace qi
     inline detail::match_manip<Expr, mpl::false_, mpl::true_, unused_type
       , fusion::vector<
             BOOST_PP_ENUM(N, BOOST_SPIRIT_QI_ATTRIBUTE_REFERENCE, A)
-        > > 
+        > >
     match(
         Expr const& xpr
       , BOOST_PP_ENUM_BINARY_PARAMS(N, A, & attr))
@@ -70,7 +70,7 @@ namespace boost { namespace spirit { namespace qi
     inline detail::match_manip<Expr, mpl::false_, mpl::true_, Skipper
       , fusion::vector<
             BOOST_PP_ENUM(N, BOOST_SPIRIT_QI_ATTRIBUTE_REFERENCE, A)
-        > > 
+        > >
     phrase_match(
         Expr const& xpr
       , Skipper const& s
@@ -100,7 +100,7 @@ namespace boost { namespace spirit { namespace qi
     inline detail::match_manip<Expr, mpl::false_, mpl::true_, Skipper
       , fusion::vector<
             BOOST_PP_ENUM(N, BOOST_SPIRIT_QI_ATTRIBUTE_REFERENCE, A)
-        > > 
+        > >
     phrase_match(
         Expr const& xpr
       , Skipper const& s
@@ -130,4 +130,3 @@ namespace boost { namespace spirit { namespace qi
 #undef N
 
 #endif
-

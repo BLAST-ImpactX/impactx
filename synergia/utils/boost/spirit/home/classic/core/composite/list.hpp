@@ -29,36 +29,36 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     template <typename A, typename B>
     sequence<A, kleene_star<sequence<B, A> > >
     operator%(parser<A> const& a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, kleene_star<sequence<chlit<char>, A> > >
     operator%(parser<A> const& a, char b);
-    
+
     template <typename B>
     sequence<chlit<char>, kleene_star<sequence<B, chlit<char> > > >
     operator%(char a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, kleene_star<sequence<strlit<char const*>, A> > >
     operator%(parser<A> const& a, char const* b);
-    
+
     template <typename B>
     sequence<strlit<char const*>,
         kleene_star<sequence<B, strlit<char const*> > > >
     operator%(char const* a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, kleene_star<sequence<chlit<wchar_t>, A> > >
     operator%(parser<A> const& a, wchar_t b);
-    
+
     template <typename B>
     sequence<chlit<wchar_t>, kleene_star<sequence<B, chlit<wchar_t> > > >
     operator%(wchar_t a, parser<B> const& b);
-    
+
     template <typename A>
     sequence<A, kleene_star<sequence<strlit<wchar_t const*>, A> > >
     operator%(parser<A> const& a, wchar_t const* b);
-    
+
     template <typename B>
     sequence<strlit<wchar_t const*>,
         kleene_star<sequence<B, strlit<wchar_t const*> > > >

@@ -155,7 +155,7 @@ public:
     void store_a(void * p) const {
         Vec16i x = Vec16i(Vec8i(z0),Vec8i(z1));
         x.store_a(p);
-    } 
+    }
     // Member function storing to aligned uncached memory (non-temporal store).
     // Note: Will generate runtime error if p is not aligned by 64
     void store_nt(void * p) const {

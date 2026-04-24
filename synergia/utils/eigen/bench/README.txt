@@ -50,6 +50,3 @@ $ ./bench_multi_compilers.sh ompbench.cxxlist ompbenchmark.cpp
     double, 128x128: 0.0547509s 0.0435519s  => x1.25714 (2)
     double, 512x512: 0.829436s 0.424438s  => x1.9542 (2)
     double, 1024x1024: 14.5243s 10.7735s  => x1.34815 (2)
-
-
-

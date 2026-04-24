@@ -15,7 +15,7 @@ namespace boost { namespace spirit {
 BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
     template <
-        typename MatchPolicyT, 
+        typename MatchPolicyT,
         typename NodeFactoryT,
         typename T = nil_t
     >
@@ -36,4 +36,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

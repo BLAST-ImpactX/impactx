@@ -296,4 +296,3 @@ namespace boost
 } // namespace boost
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_LCAST_UNSIGNED_CONVERTERS_HPP
-

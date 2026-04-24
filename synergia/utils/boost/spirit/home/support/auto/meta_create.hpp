@@ -37,13 +37,13 @@ namespace boost { namespace spirit { namespace traits
     struct meta_create;
 
     ///////////////////////////////////////////////////////////////////////////
-    // This allows to query whether a valid mapping exists for the given data 
+    // This allows to query whether a valid mapping exists for the given data
     // type to a component in the given domain
     template <typename Domain, typename T, typename Enable = void>
     struct meta_create_exists : mpl::false_ {};
 }}}
 
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
@@ -56,8 +56,8 @@ namespace boost { namespace spirit
         struct remove_const_ref
           : remove_const<typename remove_reference<T>::type> {};
 
-// starting with Boost V1.42 fusion::fold has been changed to be compatible 
-// with mpl::fold (the sequence of template parameters for the meta-function 
+// starting with Boost V1.42 fusion::fold has been changed to be compatible
+// with mpl::fold (the sequence of template parameters for the meta-function
 // object has been changed)
 #if BOOST_VERSION < 104200
         ///////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ namespace boost { namespace spirit
             {
 #endif
                 typedef typename remove_const_ref<T2>::type left_type;
-                typedef typename 
+                typedef typename
                     spirit::traits::meta_create<Domain, T1>::type
                 right_type;
 
@@ -129,7 +129,7 @@ namespace boost { namespace spirit
             {
 #endif
                 typedef typename remove_const_ref<T1>::type left_type;
-                typedef typename 
+                typedef typename
                     spirit::traits::meta_create<Domain, T2>::type
                 right_type;
 
@@ -180,7 +180,7 @@ namespace boost { namespace spirit
     template <typename Sequence, typename OpTag, typename Domain>
     struct make_nary_proto_expr
     {
-        typedef detail::nary_proto_expr_function<OpTag, Domain> 
+        typedef detail::nary_proto_expr_function<OpTag, Domain>
             make_proto_expr;
 
         typedef typename fusion::result_of::fold<
@@ -196,9 +196,9 @@ namespace boost { namespace spirit
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        // Starting with newer versions of Proto, all Proto expressions are at 
+        // Starting with newer versions of Proto, all Proto expressions are at
         // the same time Fusion sequences. This is the correct behavior, but
-        // we need to distinguish between Fusion sequences and Proto 
+        // we need to distinguish between Fusion sequences and Proto
         // expressions. This meta-function does exactly that.
         template <typename T>
         struct is_fusion_sequence_but_not_proto_expr

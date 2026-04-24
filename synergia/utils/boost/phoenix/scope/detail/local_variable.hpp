@@ -44,7 +44,7 @@ namespace boost { namespace phoenix
         {
             template <typename Locals, typename Context>
             struct initialize_locals;
-            
+
             template <typename Context>
             struct initialize_locals<vector0<>, Context>
             {
@@ -88,7 +88,7 @@ namespace boost { namespace phoenix
     #define M2(Z, N, D)                                                         \
         eval(locals. BOOST_PP_CAT(a, N), ctx)                                   \
     /**/
-        
+
     #define M0(Z, N, D)                                                         \
         template <BOOST_PHOENIX_typename_A(N), typename Context>                \
         BOOST_PP_CAT(vector, N)<BOOST_PP_ENUM(N, M1, _)>                        \
@@ -124,7 +124,7 @@ namespace boost { namespace phoenix
 
             BOOST_PP_REPEAT(BOOST_PHOENIX_LOCAL_LIMIT, BOOST_PHOENIX_MAP_LOCAL_DISPATCH, _)
         };
-        
+
         template<typename T>
         T* generate_pointer();
 
@@ -140,7 +140,7 @@ namespace boost { namespace phoenix
             typedef mpl::int_<value> type;
         };
 
-        
+
         template <typename Local, typename Env>
         struct apply_local;
 

@@ -2,32 +2,32 @@
 #include "synergia/utils/parallel_utils.h"
 
 #if 0
-void 
+void
 Bunch_train::find_parent_comm()
 {
   try{
     if (bunches.size()>0) {
         // check if all bunches has the same parent communicator
         MPI_Comm comm_test=bunches[0]->get_comm().get_parent_sptr()->get();
-	for (size_t i = 1; i < bunches.size(); ++i) {
- 	      int result;
- 	      MPI_Comm_compare( comm_test, bunches[i]->get_comm().get_parent_sptr()->get(), &result);
- 	      if (result != MPI_IDENT) {
-             	throw std::runtime_error("Bunch_train, find_parent_comm_sptr: bunches have different parrent comunicator");
- 	      } 
- 	} 
- 	parent_comm_sptr=bunches[0]->get_comm().get_parent_sptr();
+    for (size_t i = 1; i < bunches.size(); ++i) {
+          int result;
+          MPI_Comm_compare( comm_test, bunches[i]->get_comm().get_parent_sptr()->get(), &result);
+          if (result != MPI_IDENT) {
+                throw std::runtime_error("Bunch_train, find_parent_comm_sptr: bunches have different parrent comunicator");
+          }
+    }
+    parent_comm_sptr=bunches[0]->get_comm().get_parent_sptr();
     }
     else{
-	 throw std::runtime_error(
-	    "Bunch_train, find_parent_comm_sptr: number of bunches is zero, there is no commuicator");
-    }   
+     throw std::runtime_error(
+        "Bunch_train, find_parent_comm_sptr: number of bunches is zero, there is no commuicator");
+    }
     has_parent_comm=true;
   }
   catch (std::exception const& e) {
          std::cout<<e.what()<<std::endl;
          MPI_Abort(MPI_COMM_WORLD, 333);
-  }  
+  }
 }
 #endif
 
@@ -35,13 +35,13 @@ void
 Bunch_train::calculates_counts_and_offsets_for_impedance()
 {
 #if 0
-   
+
   try{
-     if (!has_parent_comm) find_parent_comm_sptr(); 
+     if (!has_parent_comm) find_parent_comm_sptr();
      int size_parent=parent_comm_sptr->get_size();
      proc_counts_imped.resize(size_parent);
-     proc_offsets_imped.resize(size_parent); 
- 	  counts_and_offsets_for_impedance(*parent_comm_sptr, bunches.size(), proc_offsets_imped, proc_counts_imped);
+     proc_offsets_imped.resize(size_parent);
+      counts_and_offsets_for_impedance(*parent_comm_sptr, bunches.size(), proc_offsets_imped, proc_counts_imped);
   }
   catch (std::exception const& e) {
         std::cout<<e.what()<<std::endl;
@@ -54,7 +54,7 @@ Bunch_train::calculates_counts_and_offsets_for_impedance()
 Commxx
 Bunch_train::get_parent_comm()
 {
-  if (!has_parent_comm) find_parent_comm(); 
+  if (!has_parent_comm) find_parent_comm();
   return parent_comm;
 }
 #endif
@@ -81,7 +81,7 @@ Bunch_train::set_bucket_indices()
 }
 
 #if 0
-Bunch_train::Bunch_train(Bunches const& bunches, double spacing) 
+Bunch_train::Bunch_train(Bunches const& bunches, double spacing)
     : bunches(bunches)
     , spacings(std::vector<double >(bunches.size() - 1, spacing))
     , has_parent_comm(false)
@@ -210,7 +210,7 @@ Bunch_train::update_bunch_total_num()
         nums[i] = bunches[i].get_local_num();
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, &nums[0], nb, MPI_INT, MPI_SUM, 
+    MPI_Allreduce(MPI_IN_PLACE, &nums[0], nb, MPI_INT, MPI_SUM,
             get_parent_comm());
 
     for (int i=0; i<nb; ++i)

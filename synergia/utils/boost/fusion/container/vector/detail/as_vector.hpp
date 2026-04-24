@@ -66,5 +66,3 @@ BOOST_FUSION_BARRIER_END
 
 #endif
 #endif
-
-

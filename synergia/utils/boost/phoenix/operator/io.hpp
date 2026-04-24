@@ -86,7 +86,7 @@ namespace boost { namespace phoenix
         return proto::make_expr<
             proto::tag::shift_right, phoenix_domain>(a0, a1);
     }
-    
+
     using proto::exprns_::operator<<;
     using proto::exprns_::operator>>;
 }}

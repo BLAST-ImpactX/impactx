@@ -823,7 +823,7 @@ using allocator_rebind_t = typename allocator_rebind<A, T>::type;
 # pragma warning(pop)
 #elif defined(BOOST_GCC) && BOOST_GCC >= 40600
 # pragma GCC diagnostic pop
-#endif  
+#endif
 #if defined(_STL_RESTORE_DEPRECATED_WARNING)
 _STL_RESTORE_DEPRECATED_WARNING
 #endif

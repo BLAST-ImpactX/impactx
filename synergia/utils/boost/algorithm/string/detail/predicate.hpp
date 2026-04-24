@@ -20,13 +20,13 @@ namespace boost {
 
 //  ends_with predicate implementation ----------------------------------//
 
-            template< 
-                typename ForwardIterator1T, 
+            template<
+                typename ForwardIterator1T,
                 typename ForwardIterator2T,
                 typename PredicateT>
-            inline bool ends_with_iter_select( 
-                ForwardIterator1T Begin, 
-                ForwardIterator1T End, 
+            inline bool ends_with_iter_select(
+                ForwardIterator1T Begin,
+                ForwardIterator1T End,
                 ForwardIterator2T SubBegin,
                 ForwardIterator2T SubEnd,
                 PredicateT Comp,
@@ -43,13 +43,13 @@ namespace boost {
                 return pit==SubBegin;
             }
 
-            template< 
-                typename ForwardIterator1T, 
+            template<
+                typename ForwardIterator1T,
                 typename ForwardIterator2T,
                 typename PredicateT>
-            inline bool ends_with_iter_select( 
-                ForwardIterator1T Begin, 
-                ForwardIterator1T End, 
+            inline bool ends_with_iter_select(
+                ForwardIterator1T Begin,
+                ForwardIterator1T End,
                 ForwardIterator2T SubBegin,
                 ForwardIterator2T SubEnd,
                 PredicateT Comp,
@@ -62,7 +62,7 @@ namespace boost {
                 }
 
                 iterator_range<ForwardIterator1T> Result
-                    =last_finder( 
+                    =last_finder(
                         ::boost::make_iterator_range(SubBegin, SubEnd),
                         Comp)(Begin, End);
 

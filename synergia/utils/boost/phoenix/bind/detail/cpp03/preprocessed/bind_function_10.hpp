@@ -1,16 +1,16 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1
@@ -44,13 +44,13 @@
               , a0 , a1
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2
@@ -84,13 +84,13 @@
               , a0 , a1 , a2
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3
@@ -124,13 +124,13 @@
               , a0 , a1 , a2 , a3
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4
@@ -164,13 +164,13 @@
               , a0 , a1 , a2 , a3 , a4
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5
@@ -204,13 +204,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6
@@ -244,13 +244,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7
@@ -284,13 +284,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8

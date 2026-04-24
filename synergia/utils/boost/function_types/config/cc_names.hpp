@@ -17,10 +17,10 @@
   (( FASTCALL           , fastcall_cc , BOOST_PP_IDENTITY(__fastcall) ))\
   (( CLRCALL            , clrcall_cc  , BOOST_PP_IDENTITY(__clrcall ) ))\
   (( THISCALL           , thiscall_cc , BOOST_PP_IDENTITY(__thiscall) ))\
-  (( IMPLICIT_THISCALL  , thiscall_cc , BOOST_PP_EMPTY                )) 
+  (( IMPLICIT_THISCALL  , thiscall_cc , BOOST_PP_EMPTY                ))
 
 // append user-defined cc names to builtin ones
-#ifdef BOOST_FT_CC_NAMES 
+#ifdef BOOST_FT_CC_NAMES
 #   define BOOST_FT_CC_NAMES_SEQ BOOST_FT_BUILTIN_CC_NAMES BOOST_FT_CC_NAMES
 #   define BOOST_FT_CC_PREPROCESSING 1
 #else
@@ -28,4 +28,3 @@
 #endif
 
 #endif
-

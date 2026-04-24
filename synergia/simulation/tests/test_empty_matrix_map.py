@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import sys, os
-import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 macroparticles = 16
 realparticles = 4.0e10

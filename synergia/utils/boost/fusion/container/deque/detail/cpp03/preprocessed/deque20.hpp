@@ -427,7 +427,7 @@ deque(T_0 && t0 , T_1 && t1 , T_2 && t2 , T_3 && t3 , T_4 && t4 , T_5 && t5 , T_
             base::operator=(std::forward<T>( rhs));
             return *this;
         }
-        
+
         BOOST_CXX14_CONSTEXPR BOOST_FUSION_GPU_ENABLED
         deque&
         operator=(deque const& rhs)

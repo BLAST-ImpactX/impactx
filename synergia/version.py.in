@@ -14,4 +14,4 @@ python_interp_version = (
 mpi_library_version = "${SYNERGIA_MPI_LIBRARY_VERSION}"
 
 hdf5_library_version = "${HDF5_VERSION}"
-hdf5_library_version_tuple = tuple(int(i.split("-")[0]) for i in hdf5_library_version.split(".")) 
+hdf5_library_version_tuple = tuple(int(i.split("-")[0]) for i in hdf5_library_version.split("."))

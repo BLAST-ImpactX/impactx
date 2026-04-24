@@ -15,7 +15,7 @@
 namespace boost { namespace spirit { namespace x3 { namespace traits
 {
     ///////////////////////////////////////////////////////////////////////////
-    // is_parser<T>: metafunction that evaluates to mpl::true_ if a type T 
+    // is_parser<T>: metafunction that evaluates to mpl::true_ if a type T
     // can be used as a parser, mpl::false_ otherwise
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Enable = void>

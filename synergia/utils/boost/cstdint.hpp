@@ -80,7 +80,7 @@
 
 # endif
 
-#if defined(__QNX__) && defined(__EXT_QNX) 
+#if defined(__QNX__) && defined(__EXT_QNX)
 
 // QNX (Dinkumware stdlib) defines these as non-standard names.
 // Reflect to the standard names.
@@ -550,7 +550,3 @@ INT#_C macros if they're not already defined (John Maddock).
 # endif // Borland/Microsoft specific width suffixes
 
 #endif // INT#_C macros.
-
-
-
-

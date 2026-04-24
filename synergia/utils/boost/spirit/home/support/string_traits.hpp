@@ -158,16 +158,16 @@ namespace boost { namespace spirit { namespace traits
         template <typename T>
         static T const* call (T* str)
         {
-            return (T const*)str; 
+            return (T const*)str;
         }
 
         template <typename T>
         static T const* call (T const* str)
         {
-            return str; 
+            return str;
         }
-    }; 
-    
+    };
+
     // Forwarder that strips const
     template <typename T>
     struct extract_c_string<T const>
@@ -216,7 +216,7 @@ namespace boost { namespace spirit { namespace traits
             return str.c_str();
         }
     };
-    
+
     template <typename T>
     typename extract_c_string<T*>::char_type const*
     get_c_string (T* str)
@@ -230,7 +230,7 @@ namespace boost { namespace spirit { namespace traits
     {
         return extract_c_string<T const*>::call(str);
     }
-    
+
     template <typename String>
     typename extract_c_string<String>::char_type const*
     get_c_string (String& str)
@@ -333,7 +333,7 @@ namespace result_of
 
         typedef typename mpl::if_<
             is_const<char_type>
-          , char_type const 
+          , char_type const
           , char_type
         >::type* type;
     };

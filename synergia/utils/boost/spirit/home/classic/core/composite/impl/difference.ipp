@@ -26,56 +26,56 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     {
         return difference<A, B>(a.derived(), b.derived());
     }
-    
+
     template <typename A>
     inline difference<A, chlit<char> >
     operator-(parser<A> const& a, char b)
     {
         return difference<A, chlit<char> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline difference<chlit<char>, B>
     operator-(char a, parser<B> const& b)
     {
         return difference<chlit<char>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline difference<A, strlit<char const*> >
     operator-(parser<A> const& a, char const* b)
     {
         return difference<A, strlit<char const*> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline difference<strlit<char const*>, B>
     operator-(char const* a, parser<B> const& b)
     {
         return difference<strlit<char const*>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline difference<A, chlit<wchar_t> >
     operator-(parser<A> const& a, wchar_t b)
     {
         return difference<A, chlit<wchar_t> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline difference<chlit<wchar_t>, B>
     operator-(wchar_t a, parser<B> const& b)
     {
         return difference<chlit<wchar_t>, B>(a, b.derived());
     }
-    
+
     template <typename A>
     inline difference<A, strlit<wchar_t const*> >
     operator-(parser<A> const& a, wchar_t const* b)
     {
         return difference<A, strlit<wchar_t const*> >(a.derived(), b);
     }
-    
+
     template <typename B>
     inline difference<strlit<wchar_t const*>, B>
     operator-(wchar_t const* a, parser<B> const& b)

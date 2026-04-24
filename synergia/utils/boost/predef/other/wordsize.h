@@ -40,7 +40,7 @@ the `wordsize.h` header will also include all the architecture headers.
 #if !defined(BOOST_ARCH_WORD_BITS_32)
 #   define BOOST_ARCH_WORD_BITS_32 BOOST_VERSION_NUMBER_NOT_AVAILABLE
 #elif !defined(BOOST_ARCH_WORD_BITS)
-#	  define BOOST_ARCH_WORD_BITS 32
+#     define BOOST_ARCH_WORD_BITS 32
 #endif
 
 #if !defined(BOOST_ARCH_WORD_BITS_16)

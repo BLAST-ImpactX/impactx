@@ -88,10 +88,10 @@ namespace boost
    }
 
    template <class T, class U = T, class Ret = boost::binary_op_detail::dont_care>
-   struct has_minus : 
+   struct has_minus :
       public boost::binary_op_detail::has_minus_void_ptr_filter<
-         T, U, Ret, 
-         boost::is_void<typename remove_pointer<typename remove_reference<T>::type>::type>::value 
+         T, U, Ret,
+         boost::is_void<typename remove_pointer<typename remove_reference<T>::type>::type>::value
          || boost::is_void<typename remove_pointer<typename remove_reference<U>::type>::type>::value> {};
 
 

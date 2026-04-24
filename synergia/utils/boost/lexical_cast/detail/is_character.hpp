@@ -49,4 +49,3 @@ using is_character = boost::integral_constant<
 }}
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_IS_CHARACTER_HPP
-

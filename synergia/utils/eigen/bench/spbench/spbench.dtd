@@ -11,7 +11,7 @@
       <!ELEMENT PATTERN (#PCDATA)>  <!-- Is structural pattern symmetric or not -->
       <!ELEMENT SYMMETRY (#PCDATA)> <!-- symmmetry with numerical values -->
       <!ELEMENT POSDEF (#PCDATA)> <!-- Is the matrix positive definite or not -->
-      <!ELEMENT ARITHMETIC (#PCDATA)> 
+      <!ELEMENT ARITHMETIC (#PCDATA)>
       <!ELEMENT RHS (SOURCE)>  <!-- A matrix can have one or more right hand side associated. -->
         <!ELEMENT SOURCE (#PCDATA)> <!-- Source of the right hand side, either generated or provided -->
     <!ELEMENT SOLVER_STAT (PARAMS*,TIME,ERROR,ITER?)>

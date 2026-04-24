@@ -226,4 +226,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 #include <boost/spirit/home/classic/iterator/impl/file_iterator.ipp> /* implementation */
 
 #endif /* BOOST_SPIRIT_FILE_ITERATOR_HPP */
-

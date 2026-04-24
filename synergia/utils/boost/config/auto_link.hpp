@@ -497,7 +497,7 @@ BOOST_LIB_SUFFIX:     Static/import libraries extension (".lib", ".a") for the c
 #if defined(BOOST_LIB_NAME)
 #  undef BOOST_LIB_NAME
 #endif
-// Don't undef this one: it can be set by the user and should be the 
+// Don't undef this one: it can be set by the user and should be the
 // same for all libraries:
 //#if defined(BOOST_LIB_TOOLSET)
 //#  undef BOOST_LIB_TOOLSET

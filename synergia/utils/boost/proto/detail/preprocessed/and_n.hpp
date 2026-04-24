@@ -5,9 +5,9 @@
     //  Copyright 2008 Eric Niebler. Distributed under the Boost
     //  Software License, Version 1.0. (See accompanying file
     //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-    
-    
-    
+
+
+
     template<bool B, typename P0>
     struct and_2
       : mpl::bool_<P0::value>
@@ -28,17 +28,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d);
                 return Gimpl1()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1>
     struct and_3
       : and_2<
@@ -62,17 +62,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d);
                 return Gimpl2()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2>
     struct and_4
       : and_3<
@@ -96,17 +96,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d);
                 return Gimpl3()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2 , typename P3>
     struct and_5
       : and_4<
@@ -130,17 +130,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d); Gimpl3()(e,s,d);
                 return Gimpl4()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2 , typename P3 , typename P4>
     struct and_6
       : and_5<
@@ -164,17 +164,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d); Gimpl3()(e,s,d); Gimpl4()(e,s,d);
                 return Gimpl5()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2 , typename P3 , typename P4 , typename P5>
     struct and_7
       : and_6<
@@ -198,17 +198,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d); Gimpl3()(e,s,d); Gimpl4()(e,s,d); Gimpl5()(e,s,d);
                 return Gimpl6()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2 , typename P3 , typename P4 , typename P5 , typename P6>
     struct and_8
       : and_7<
@@ -232,17 +232,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d); Gimpl3()(e,s,d); Gimpl4()(e,s,d); Gimpl5()(e,s,d); Gimpl6()(e,s,d);
                 return Gimpl7()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2 , typename P3 , typename P4 , typename P5 , typename P6 , typename P7>
     struct and_9
       : and_8<
@@ -266,17 +266,17 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d); Gimpl3()(e,s,d); Gimpl4()(e,s,d); Gimpl5()(e,s,d); Gimpl6()(e,s,d); Gimpl7()(e,s,d);
                 return Gimpl8()(e,s,d);
             }
         };
-    
-    
-    
+
+
+
     template<bool B, typename P0 , typename P1 , typename P2 , typename P3 , typename P4 , typename P5 , typename P6 , typename P7 , typename P8>
     struct and_10
       : and_9<
@@ -300,10 +300,10 @@
               , typename _and_impl::data_param d
             ) const
             {
-                
-                
-                
-                
+
+
+
+
                 Gimpl0()(e,s,d); Gimpl1()(e,s,d); Gimpl2()(e,s,d); Gimpl3()(e,s,d); Gimpl4()(e,s,d); Gimpl5()(e,s,d); Gimpl6()(e,s,d); Gimpl7()(e,s,d); Gimpl8()(e,s,d);
                 return Gimpl9()(e,s,d);
             }

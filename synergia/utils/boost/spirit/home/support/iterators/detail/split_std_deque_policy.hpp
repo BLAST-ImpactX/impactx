@@ -1,6 +1,6 @@
 //  Copyright (c) 2001 Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -19,10 +19,10 @@ namespace boost { namespace spirit { namespace iterator_policies
     //  class split_std_deque
     //
     //  Implementation of the StoragePolicy used by multi_pass
-    //  This stores all data in a std::vector (despite its name), and keeps an 
-    //  offset to the current position. It stores all the data unless there is 
+    //  This stores all data in a std::vector (despite its name), and keeps an
+    //  offset to the current position. It stores all the data unless there is
     //  only one iterator using the queue.
-    // 
+    //
     ///////////////////////////////////////////////////////////////////////////
     struct split_std_deque
     {
@@ -46,11 +46,11 @@ namespace boost { namespace spirit { namespace iterator_policies
                 boost::core::invoke_swap(queued_position, x.queued_position);
             }
 
-            // This is called when the iterator is dereferenced.  It's a 
-            // template method so we can recover the type of the multi_pass 
+            // This is called when the iterator is dereferenced.  It's a
+            // template method so we can recover the type of the multi_pass
             // iterator and call advance_input and input_is_valid.
             template <typename MultiPass>
-            static typename MultiPass::reference 
+            static typename MultiPass::reference
             dereference(MultiPass const& mp)
             {
                 queue_type& queue = mp.shared()->queued_elements;
@@ -94,8 +94,8 @@ namespace boost { namespace spirit { namespace iterator_policies
                     // check if this is the only iterator
                     if (size >= threshold && MultiPass::is_unique(mp))
                     {
-                        // free up the memory used by the queue. we avoid 
-                        // clearing the queue on every increment, though, 
+                        // free up the memory used by the queue. we avoid
+                        // clearing the queue on every increment, though,
                         // because this would be too time consuming
                         queue.clear();
                         mp.queued_position = 0;
@@ -125,13 +125,13 @@ namespace boost { namespace spirit { namespace iterator_policies
             template <typename MultiPass>
             static bool is_eof(MultiPass const& mp)
             {
-                return mp.queued_position == mp.shared()->queued_elements.size() 
+                return mp.queued_position == mp.shared()->queued_elements.size()
                     && MultiPass::input_at_eof(mp);
             }
 
             // called by operator==
             template <typename MultiPass>
-            static bool equal_to(MultiPass const& mp, MultiPass const& x) 
+            static bool equal_to(MultiPass const& mp, MultiPass const& x)
             {
                 return mp.queued_position == x.queued_position;
             }
@@ -148,24 +148,23 @@ namespace boost { namespace spirit { namespace iterator_policies
 
         protected:
             mutable typename queue_type::size_type queued_position;
-        }; 
+        };
 
         ///////////////////////////////////////////////////////////////////////
         template <typename Value>
         struct shared
         {
-            shared() 
+            shared()
             {
-                queued_elements.reserve(threshold); 
+                queued_elements.reserve(threshold);
             }
 
             typedef std::vector<Value> queue_type;
             queue_type queued_elements;
-        }; 
+        };
 
     }; // split_std_deque
 
 }}}
 
 #endif
-

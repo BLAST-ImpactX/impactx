@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,7 +17,7 @@
 #include <boost/spirit/home/support/iterators/detail/combine_policies.hpp>
 #include <boost/spirit/home/support/iterators/multi_pass.hpp>
 
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
     template <typename Elem, typename Traits = std::char_traits<Elem> >
@@ -32,7 +32,7 @@ namespace boost { namespace spirit
               , iterator_policies::no_check
 #endif
               , iterator_policies::istream
-              , iterator_policies::split_std_deque> 
+              , iterator_policies::split_std_deque>
         >
     {
     private:
@@ -46,7 +46,7 @@ namespace boost { namespace spirit
               , iterator_policies::no_check
 #endif
               , iterator_policies::istream
-              , iterator_policies::split_std_deque> 
+              , iterator_policies::split_std_deque>
         > base_type;
 
     public:

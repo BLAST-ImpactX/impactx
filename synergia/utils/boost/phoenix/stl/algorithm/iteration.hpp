@@ -1,8 +1,8 @@
-// Copyright 2005 Daniel Wallin. 
+// Copyright 2005 Daniel Wallin.
 // Copyright 2005 Joel de Guzman.
-// Copyright 2005 Dan Marsden. 
+// Copyright 2005 Dan Marsden.
 //
-// Use, modification and distribution is subject to the Boost Software 
+// Use, modification and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
@@ -40,7 +40,7 @@ namespace boost { namespace phoenix {
 
             template<class R, class F>
             F const operator()(R& r, F const& fn) const
-            {        
+            {
                 return std::for_each(detail::begin_(r), detail::end_(r), fn);
             }
         };
@@ -49,18 +49,18 @@ namespace boost { namespace phoenix {
         {
             template <typename Sig>
             struct result;
-            
+
             template<typename This, class R, class I>
             struct result<This(R&, I)>
                 : result<This(R&, I const &)>
             {};
-            
+
             template<typename This, class R, class I>
             struct result<This(R&, I &)>
             {
                 typedef I type;
             };
-            
+
             template<typename This, class R, class I, class C>
             struct result<This(R&, I, C)>
                 : result<This(R&, I const &, C)>

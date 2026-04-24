@@ -38,16 +38,16 @@ namespace boost { namespace spirit { namespace qi
             reset_on_exit(Iterator&) {}
         };
 
-        // For 'retry' or 'fail' error handlers we need to inhibit the flushing 
-        // of the internal multi_pass buffers which otherwise might happen at 
-        // deterministic expectation points inside the encapsulated right hand 
+        // For 'retry' or 'fail' error handlers we need to inhibit the flushing
+        // of the internal multi_pass buffers which otherwise might happen at
+        // deterministic expectation points inside the encapsulated right hand
         // side of rule.
         template <typename Iterator>
         struct reset_on_exit<Iterator, true>
         {
             reset_on_exit(Iterator& it)
               : it_(it)
-              , inhibit_clear_queue_(spirit::traits::inhibit_clear_queue(it)) 
+              , inhibit_clear_queue_(spirit::traits::inhibit_clear_queue(it))
             {
                 spirit::traits::inhibit_clear_queue(it_, true);
             }
@@ -87,7 +87,7 @@ namespace boost { namespace spirit { namespace qi
           , Context& context, Skipper const& skipper) const
         {
             typedef qi::detail::reset_on_exit<Iterator
-              , traits::is_multi_pass<Iterator>::value && 
+              , traits::is_multi_pass<Iterator>::value &&
                   (action == retry || action == fail)> on_exit_type;
 
             on_exit_type on_exit(first);
@@ -118,16 +118,16 @@ namespace boost { namespace spirit { namespace qi
                     // multi_pass as the underlying iterator, one of your error
                     // handlers forced its guarded rule to 'fail' or 'retry',
                     // and the error handler has not been instantiated using
-                    // either 'fail' or 'retry' in the first place. Please see 
+                    // either 'fail' or 'retry' in the first place. Please see
                     // the multi_pass docs for more information.
                     switch (r)
                     {
-                        case fail: 
+                        case fail:
                             BOOST_ASSERT(
                                 !traits::is_multi_pass<Iterator>::value ||
                                     action == retry || action == fail);
                             return false;
-                        case retry: 
+                        case retry:
                             BOOST_ASSERT(
                                 !traits::is_multi_pass<Iterator>::value ||
                                     action == retry || action == fail);

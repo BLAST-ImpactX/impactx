@@ -1,17 +1,37 @@
 #!/usr/bin/env python
 
 from __future__ import division
-from pyparsing import Word, alphas, ParseException, Literal, CaselessLiteral, \
-Combine, Optional, nums, Or, Forward, ZeroOrMore, StringEnd, alphanums, \
-restOfLine, empty, delimitedList, LineEnd, Group, QuotedString, dblQuotedString, \
-removeQuotes, sglQuotedString, OneOrMore, ParserElement
 
-import sys
-import re
+import inspect
 import math
 import operator
-import inspect
-import types
+import sys
+
+from pyparsing import (
+    CaselessLiteral,
+    Combine,
+    Forward,
+    Group,
+    LineEnd,
+    Literal,
+    OneOrMore,
+    Optional,
+    ParseException,
+    ParserElement,
+    StringEnd,
+    Word,
+    ZeroOrMore,
+    alphanums,
+    alphas,
+    dblQuotedString,
+    delimitedList,
+    empty,
+    nums,
+    removeQuotes,
+    restOfLine,
+    sglQuotedString,
+)
+
 
 class Printable:
     def _enum_to_string(self, enum, val):
@@ -22,26 +42,27 @@ class Printable:
         return str(val)
 
     def __repr__(self):
-        retval = '<'
+        retval = "<"
         first = True
         for member in inspect.getmembers(self):
             name = member[0]
-            if name[0] != '_':
+            if name[0] != "_":
                 if first:
                     first = False
                 else:
-                    retval += ','
-                retval += name + ':'
+                    retval += ","
+                retval += name + ":"
                 val = getattr(self, name)
                 str_val = None
-                if hasattr(self, '_enum_types'):
+                if hasattr(self, "_enum_types"):
                     if name in self._enum_types:
                         str_val = self._enum_to_string(self._enum_types[name], val)
                 if not str_val:
                     str_val = str(val)
                 retval += str_val
-        retval += '>'
+        retval += ">"
         return retval
+
 
 class Stack_type:
     floatnumber = 1
@@ -53,52 +74,60 @@ class Stack_type:
     subscript_ident = 7
     range = 8
 
+
 class Stack_item(Printable):
     def __init__(self, type, value):
         self.type = type
-        self._enum_types = {'type' : Stack_item}
+        self._enum_types = {"type": Stack_item}
         self.value = value
+
 
 class Subscript_ident(Printable):
     def __init__(self, ident, subscript):
         self.ident = ident
         self.subscript = subscript
 
+
 class Expression_parser:
-    def __init__(self, uninitialized_warn=True,
-                 uninitialized_exception=False):
+    def __init__(self, uninitialized_warn=True, uninitialized_exception=False):
         self.uninitialized_warn = uninitialized_warn
         self.uninitialized_exception = uninitialized_exception
         self.bnf = self._construct_bnf()
-        self.operators = {"+" : operator.add,
-                          "-" : operator.sub,
-                          "*" : operator.mul,
-                          "/" : operator.truediv,
-                          "^" : operator.pow}
+        self.operators = {
+            "+": operator.add,
+            "-": operator.sub,
+            "*": operator.mul,
+            "/": operator.truediv,
+            "^": operator.pow,
+        }
         # self.functions values are of the form [function, number of arguments]
-        self.functions = {"sqrt" : [math.sqrt, 1],
-                           "log" : [math.log, 1],
-                           "exp" : [math.exp, 1],
-                           "sin" : [math.sin, 1],
-                           "cos" : [math.cos, 1],
-                           "tan" : [math.tan, 1],
-                           "asin" : [math.asin, 1],
-                           "abs" : [abs, 1],
-                           "max" : [max, 2],
-                           "min" : [min, 2]}
-        self.constants = {"pi" : math.pi,
-                          "twopi" : 2.0 * math.pi,
-                          "degrad" : 180.0 / math.pi,
-                          "raddeg" : math.pi / 180.0,
-                          "e" : math.e,
-                          "emass" : 0.51099906e-3,
-                          "pmass" : 0.93827231,
-                          "clight" : 2.99792458e8}
+        self.functions = {
+            "sqrt": [math.sqrt, 1],
+            "log": [math.log, 1],
+            "exp": [math.exp, 1],
+            "sin": [math.sin, 1],
+            "cos": [math.cos, 1],
+            "tan": [math.tan, 1],
+            "asin": [math.asin, 1],
+            "abs": [abs, 1],
+            "max": [max, 2],
+            "min": [min, 2],
+        }
+        self.constants = {
+            "pi": math.pi,
+            "twopi": 2.0 * math.pi,
+            "degrad": 180.0 / math.pi,
+            "raddeg": math.pi / 180.0,
+            "e": math.e,
+            "emass": 0.51099906e-3,
+            "pmass": 0.93827231,
+            "clight": 2.99792458e8,
+        }
         self.reset()
 
     def _construct_bnf(self):
         point = Literal(".")
-        e = CaselessLiteral('e') | CaselessLiteral('d')
+        e = CaselessLiteral("e") | CaselessLiteral("d")
         plus = Literal("+")
         minus = Literal("-")
         mult = Literal("*")
@@ -114,14 +143,12 @@ class Expression_parser:
         number = Word(nums)
         integer = Combine(Optional(plusorminus) + number)
         self.integer = integer
-        floatnumber = (Combine(((integer + \
-                                 Optional(point + Optional(number))) |  \
-                               (point + number)) + \
-                               Optional(e + integer)) | \
-                       Optional(plusorminus) + Combine(point + number) + \
-                        Optional(e + integer))
+        floatnumber = Combine(
+            ((integer + Optional(point + Optional(number))) | (point + number))
+            + Optional(e + integer)
+        ) | Optional(plusorminus) + Combine(point + number) + Optional(e + integer)
         self.floatnumber = floatnumber
-        ident = Word(alphas, alphanums + '_' + '.' + "'")
+        ident = Word(alphas, alphanums + "_" + "." + "'")
         self.ident = ident
         subscript_ident = Group(ident + lbrack + ident + rbrack)
         hash = Literal("#")
@@ -130,29 +157,41 @@ class Expression_parser:
         self.range = range
 
         expr = Forward()
-        atom = (Optional(minus) +
-                ((floatnumber)("floatnumber").setParseAction(self._push_floatnumber) | \
-                 (range)("range").setParseAction(self._push_range) | \
-                 (ident + lpar + delimitedList(expr) + rpar)("function").setParseAction(self._push_function) | \
-                 (subscript_ident)("subscript_ident").setParseAction(self._push_subscript_ident) | \
-                 (ident)("ident").setParseAction(self._push_ident) | \
-                (lpar + expr.suppress() + rpar))).setParseAction(self._push_uminus)
+        atom = (
+            Optional(minus)
+            + (
+                (floatnumber)("floatnumber").setParseAction(self._push_floatnumber)
+                | (range)("range").setParseAction(self._push_range)
+                | (ident + lpar + delimitedList(expr) + rpar)(
+                    "function"
+                ).setParseAction(self._push_function)
+                | (subscript_ident)("subscript_ident").setParseAction(
+                    self._push_subscript_ident
+                )
+                | (ident)("ident").setParseAction(self._push_ident)
+                | (lpar + expr.suppress() + rpar)
+            )
+        ).setParseAction(self._push_uminus)
 
         # by defining exponentiation as "atom [ ^ factor ]..." instead of
         # "atom [ ^ atom ]...", we get right-to-left exponents, instead of
         # left-to-right, that is, 2^3^2 = 2^(3^2), not (2^3)^2.
         factor = Forward()
-        factor << atom + ZeroOrMore((expop + factor).setParseAction(self._push_operator))
+        factor << atom + ZeroOrMore(
+            (expop + factor).setParseAction(self._push_operator)
+        )
 
-        term = factor + ZeroOrMore((multop + factor).setParseAction(self._push_operator))
+        term = factor + ZeroOrMore(
+            (multop + factor).setParseAction(self._push_operator)
+        )
         expr << term + ZeroOrMore((addop + term).setParseAction(self._push_operator))
 
         return expr
 
     def _push_floatnumber(self, strg, loc, toks):
         numstr = toks[0]
-        numstr = numstr.replace('d', 'e')
-        numstr = numstr.replace('D', 'e')
+        numstr = numstr.replace("d", "e")
+        numstr = numstr.replace("D", "e")
         self.stack.append(Stack_item(Stack_type.floatnumber, float(numstr)))
 
     def _push_ident(self, strg, loc, toks):
@@ -161,14 +200,15 @@ class Expression_parser:
     def _push_subscript_ident(self, strg, loc, toks):
         ident = toks[0][0].lower()
         subscript = toks[0][1].lower()
-        self.stack.append(Stack_item(Stack_type.subscript_ident,
-                                     Subscript_ident(ident, subscript)))
+        self.stack.append(
+            Stack_item(Stack_type.subscript_ident, Subscript_ident(ident, subscript))
+        )
 
     def _push_function(self, strg, loc, toks):
         self.stack.append(Stack_item(Stack_type.function, toks[0].lower()))
 
     def _push_uminus(self, strg, loc, toks):
-        if toks and toks[0] == '-':
+        if toks and toks[0] == "-":
             self.stack.append(Stack_item(Stack_type.unary_minus, None))
 
     def _push_operator(self, strg, loc, toks):
@@ -204,8 +244,9 @@ class Expression_parser:
                     raise ParseException('variable "%s" unitialized' % op.value)
                 if self.uninitialized_warn:
                     print(
-                     'warning: variable "%s" uninitialized, treating as 0.0' \
-                     % op.value)
+                        'warning: variable "%s" uninitialized, treating as 0.0'
+                        % op.value
+                    )
                 return 0.0
         elif op.type == Stack_type.str:
             return op.value
@@ -216,8 +257,9 @@ class Expression_parser:
                 if op.value.subscript in attributes:
                     retval = attributes[op.value.subscript]
             if retval == None:
-                raise RuntimeError("Unknown subscript %s[%s]" % \
-                    (op.value.ident, op.value.subscript))
+                raise RuntimeError(
+                    "Unknown subscript %s[%s]" % (op.value.ident, op.value.subscript)
+                )
             return retval
         elif op.type == Stack_type.range:
             retval = op.value
@@ -232,10 +274,12 @@ class Expression_parser:
         result = self.bnf.parseString(text)
         return self.stack
 
+
 class Command(Printable):
     def __init__(self, name, attributes):
         self.name = name
         self.attributes = attributes
+
 
 class Mad8_parser:
     def __init__(self):
@@ -247,18 +291,18 @@ class Mad8_parser:
         self.commands = []
         self.labels = {}
         self.lines = {}
-        self.no_eval_attributes = ['particle', 'type', 'filename']
+        self.no_eval_attributes = ["particle", "type", "filename"]
 
     def _construct_bnf(self):
-        colon = Literal(':')
-        equals = Literal('=')
-        semicolon = Literal(';')
-        bang = Literal('!')
-        minus = Literal('-')
-        times = Literal('*')
-        ampersand = Literal('&')
-        lpar = Literal('(').suppress()
-        rpar = Literal(')').suppress()
+        colon = Literal(":")
+        equals = Literal("=")
+        semicolon = Literal(";")
+        bang = Literal("!")
+        minus = Literal("-")
+        times = Literal("*")
+        ampersand = Literal("&")
+        lpar = Literal("(").suppress()
+        rpar = Literal(")").suppress()
 
         ident = self.expression_parser.ident
         expr = self.expression_parser.bnf
@@ -266,45 +310,55 @@ class Mad8_parser:
         floatnumber = self.expression_parser.floatnumber
         range = self.expression_parser.range
 
-        var_assign = (equals | colon + equals |
-                      colon + CaselessLiteral('constant') + equals).suppress()
-        attr_assign = Literal('=')
-        str = dblQuotedString.setParseAction(removeQuotes) | \
-            sglQuotedString.setParseAction(removeQuotes)
+        var_assign = (
+            equals | colon + equals | colon + CaselessLiteral("constant") + equals
+        ).suppress()
+        attr_assign = Literal("=")
+        str = dblQuotedString.setParseAction(
+            removeQuotes
+        ) | sglQuotedString.setParseAction(removeQuotes)
         str.setParseAction(self._handle_str)
-        attr_value = (str | expr)
-        attr = ((ident | floatnumber)  + Optional(attr_assign + attr_value) | \
-                Group(Literal('-') + ident))
+        attr_value = str | expr
+        attr = (ident | floatnumber) + Optional(attr_assign + attr_value) | Group(
+            Literal("-") + ident
+        )
         attr.setParseAction(self._handle_attr)
-        attr_delim = Literal(',').suppress()
-        command = ident + Optional(attr_delim + \
-                                   ((ident + range) | \
-                                    range | \
-                                    OneOrMore(delimitedList(attr))))
+        attr_delim = Literal(",").suppress()
+        command = ident + Optional(
+            attr_delim + ((ident + range) | range | OneOrMore(delimitedList(attr)))
+        )
         command.setParseAction(self._handle_command)
-#signedmodifierdef = Group(Optional(Literal('-')) + ident) + Optional(Literal("=") + expr)
-#signedmodifierdef.setParseAction(handleModifier)
-        var_assign = (ident + var_assign + expr)
+        # signedmodifierdef = Group(Optional(Literal('-')) + ident) + Optional(Literal("=") + expr)
+        # signedmodifierdef.setParseAction(handleModifier)
+        var_assign = ident + var_assign + expr
         var_assign.setParseAction(self._handle_var_assign)
-        labeled_command = (ident + colon + ident +
-                          Optional(attr_delim + OneOrMore(delimitedList(attr))))
+        labeled_command = (
+            ident
+            + colon
+            + ident
+            + Optional(attr_delim + OneOrMore(delimitedList(attr)))
+        )
         labeled_command.setParseAction(self._handle_labeled_command)
 
-        multiple_ident = (Optional(minus) + Optional(Group(integer + times)) +
-                          (ident | lpar + Group(delimitedList(ident)) + rpar))
-        line = (CaselessLiteral("line") + attr_assign + lpar +
-                Group(multiple_ident +
-                      ZeroOrMore(Optional(attr_delim) + multiple_ident)) +
-                rpar)
-        labeled_line = (ident + colon + line)
+        multiple_ident = (
+            Optional(minus)
+            + Optional(Group(integer + times))
+            + (ident | lpar + Group(delimitedList(ident)) + rpar)
+        )
+        line = (
+            CaselessLiteral("line")
+            + attr_assign
+            + lpar
+            + Group(multiple_ident + ZeroOrMore(Optional(attr_delim) + multiple_ident))
+            + rpar
+        )
+        labeled_line = ident + colon + line
         labeled_line.setParseAction(self._handle_labeled_line)
 
         empty.setWhitespaceChars(" \t")
-        entry = ((var_assign |
-                 labeled_line |
-                 labeled_command |
-                 command |
-                 empty) + (semicolon | LineEnd().suppress()))
+        entry = (var_assign | labeled_line | labeled_command | command | empty) + (
+            semicolon | LineEnd().suppress()
+        )
 
         bnf = ZeroOrMore(entry) + StringEnd()
         comment = bang + restOfLine
@@ -317,32 +371,32 @@ class Mad8_parser:
     def _handle_var_assign(self, str, loc, toks):
         var = toks[0].lower()
         stack = self.expression_parser.stack
-        value = self.expression_parser.evaluate_stack(stack, self.variables,
-                                                      self.labels)
+        value = self.expression_parser.evaluate_stack(
+            stack, self.variables, self.labels
+        )
         self.variables[var] = value
 
     def _handle_attr(self, str, loc, toks):
-        if hasattr(toks[0], 'asList'):
+        if hasattr(toks[0], "asList"):
             attribute = "".join(toks[0]).lower()
         else:
             attribute = toks[0].lower()
-#        if attribute == 'range':
-#            value = toks[2] + toks[3] + toks[4]
+        #        if attribute == 'range':
+        #            value = toks[2] + toks[3] + toks[4]
         if len(toks) > 1:
             stack = self.expression_parser.stack
             if attribute in self.no_eval_attributes:
                 value = stack.pop().value
             else:
-                value = self.expression_parser.evaluate_stack(stack,
-                                                              self.variables,
-                                                              self.labels)
+                value = self.expression_parser.evaluate_stack(
+                    stack, self.variables, self.labels
+                )
         else:
             value = None
         self._attributes[attribute] = value
 
     def _handle_str(self, str, loc, toks):
-        self.expression_parser.stack.append(Stack_item(Stack_type.str,
-                                                       toks[0]))
+        self.expression_parser.stack.append(Stack_item(Stack_type.str, toks[0]))
 
     def _handle_command(self, str, loc, toks):
         name = toks[0].lower()
@@ -358,11 +412,11 @@ class Mad8_parser:
     def _downcase_nested_list(self, lst):
         retval = []
         for elem in lst:
-            if hasattr(elem, 'asList'):
+            if hasattr(elem, "asList"):
                 is_multiplier = False
                 if len(elem) == 2:
-                    if elem[1] == '*':
-                        retval.append(elem[0] + '*')
+                    if elem[1] == "*":
+                        retval.append(elem[0] + "*")
                         is_multiplier = True
                 if not is_multiplier:
                     retval.append(self._downcase_nested_list(elem))
@@ -379,10 +433,11 @@ class Mad8_parser:
         self.expression_parser.reset()
         result = self.bnf.parseString(text)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     filename = sys.argv[1]
     mp = Mad8_parser()
-    mp.parse(open(filename, 'r').read())
+    mp.parse(open(filename, "r").read())
     print("variables =", mp.variables)
     print("labels =", mp.labels)
     print("lines =", mp.lines)

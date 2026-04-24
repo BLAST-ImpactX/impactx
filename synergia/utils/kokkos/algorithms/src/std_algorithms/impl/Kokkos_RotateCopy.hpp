@@ -63,8 +63,8 @@ OutputIterator rotate_copy_exespace_impl(
   /*
     algorithm is implemented as follows:
 
-    first 	   n_first		last
-    |		      |                  |
+    first      n_first      last
+    |             |                  |
     o  o  o  o  o  o  o  o  o  o  o  o
 
     dest+0 -> first_n

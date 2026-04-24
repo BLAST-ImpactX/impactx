@@ -21,7 +21,7 @@
 namespace boost
 {
     namespace range_detail
-    {  
+    {
         template< class T >
         struct holder
         {
@@ -37,7 +37,7 @@ namespace boost
             holder2( T t, T u ) : val1(t), val2(u)
             { }
         };
-        
+
         template< template<class> class Holder >
         struct forwarder
         {
@@ -69,8 +69,8 @@ namespace boost
         };
 
 
-    } 
-        
+    }
+
 }
 
 #ifdef BOOST_MSVC

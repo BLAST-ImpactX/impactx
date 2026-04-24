@@ -60,7 +60,7 @@ namespace boost { namespace spirit { namespace qi
                     {
                         return p;
                     }
-                   
+
                     if (i->second.data)
                     {
                         return i->second.data;

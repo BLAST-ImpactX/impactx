@@ -3,12 +3,12 @@
  * Copyright (c) 2004 John Maddock
  * Copyright 2011 Garmin Ltd. or its subsidiaries
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
- 
+
  /*
   *   LOCATION:    see http://www.boost.org for most recent version.
   *   FILE         cpp_regex_traits.hpp
@@ -42,14 +42,14 @@
 #pragma warning(disable:4786 4251)
 #endif
 
-namespace boost{ 
+namespace boost{
 
 //
 // forward declaration is needed by some compilers:
 //
 template <class charT>
 class cpp_regex_traits;
-   
+
 namespace BOOST_REGEX_DETAIL_NS{
 
 //
@@ -175,8 +175,8 @@ struct cpp_regex_traits_base
    }
    bool operator==(const cpp_regex_traits_base& b)const
    {
-      return (m_pctype == b.m_pctype) 
-         && (m_pmessages == b.m_pmessages) 
+      return (m_pctype == b.m_pctype)
+         && (m_pmessages == b.m_pmessages)
          && (m_pcollate == b.m_pcollate);
    }
 };
@@ -252,7 +252,7 @@ void cpp_regex_traits_char_layer<charT>::init()
    if((!cat_name.empty()) && (this->m_pmessages != 0))
    {
       cat = this->m_pmessages->open(
-         cat_name, 
+         cat_name,
          this->m_locale);
       if((int)cat < 0)
       {
@@ -303,7 +303,7 @@ void cpp_regex_traits_char_layer<charT>::init()
 }
 
 template <class charT>
-typename cpp_regex_traits_char_layer<charT>::string_type 
+typename cpp_regex_traits_char_layer<charT>::string_type
    cpp_regex_traits_char_layer<charT>::get_default_message(regex_constants::syntax_type i)
 {
    const char* ptr = get_default_syntax(i);
@@ -427,14 +427,14 @@ template <class charT>
 typename cpp_regex_traits_implementation<charT>::char_class_type const cpp_regex_traits_implementation<charT>::mask_horizontal;
 
 template <class charT>
-typename cpp_regex_traits_implementation<charT>::string_type 
+typename cpp_regex_traits_implementation<charT>::string_type
    cpp_regex_traits_implementation<charT>::transform_primary(const charT* p1, const charT* p2) const
 {
    //
    // PRECONDITIONS:
    //
    // A bug in gcc 3.2 (and maybe other versions as well) treats
-   // p1 as a null terminated string, for efficiency reasons 
+   // p1 as a null terminated string, for efficiency reasons
    // we work around this elsewhere, but just assert here that
    // we adhere to gcc's (buggy) preconditions...
    //
@@ -507,14 +507,14 @@ typename cpp_regex_traits_implementation<charT>::string_type
 }
 
 template <class charT>
-typename cpp_regex_traits_implementation<charT>::string_type 
+typename cpp_regex_traits_implementation<charT>::string_type
    cpp_regex_traits_implementation<charT>::transform(const charT* p1, const charT* p2) const
 {
    //
    // PRECONDITIONS:
    //
    // A bug in gcc 3.2 (and maybe other versions as well) treats
-   // p1 as a null terminated string, for efficiency reasons 
+   // p1 as a null terminated string, for efficiency reasons
    // we work around this elsewhere, but just assert here that
    // we adhere to gcc's (buggy) preconditions...
    //
@@ -578,7 +578,7 @@ typename cpp_regex_traits_implementation<charT>::string_type
 
 
 template <class charT>
-typename cpp_regex_traits_implementation<charT>::string_type 
+typename cpp_regex_traits_implementation<charT>::string_type
    cpp_regex_traits_implementation<charT>::lookup_collatename(const charT* p1, const charT* p2) const
 {
    typedef typename std::map<string_type, string_type>::const_iterator iter_type;
@@ -609,7 +609,7 @@ void cpp_regex_traits_implementation<charT>::init()
    if((!cat_name.empty()) && (this->m_pmessages != 0))
    {
       cat = this->m_pmessages->open(
-         cat_name, 
+         cat_name,
          this->m_locale);
       if((int)cat < 0)
       {
@@ -626,8 +626,8 @@ void cpp_regex_traits_implementation<charT>::init()
       //
       // Error messages:
       //
-      for(boost::regex_constants::error_type i = static_cast<boost::regex_constants::error_type>(0); 
-         i <= boost::regex_constants::error_unknown; 
+      for(boost::regex_constants::error_type i = static_cast<boost::regex_constants::error_type>(0);
+         i <= boost::regex_constants::error_unknown;
          i = static_cast<boost::regex_constants::error_type>(i + 1))
       {
          const char* p = get_default_error_string(i);
@@ -648,7 +648,7 @@ void cpp_regex_traits_implementation<charT>::init()
       //
       // Custom class names:
       //
-      static const char_class_type masks[16] = 
+      static const char_class_type masks[16] =
       {
          static_cast<unsigned_native_mask_type>(std::ctype<charT>::alnum),
          static_cast<unsigned_native_mask_type>(std::ctype<charT>::alpha),
@@ -682,10 +682,10 @@ void cpp_regex_traits_implementation<charT>::init()
 }
 
 template <class charT>
-typename cpp_regex_traits_implementation<charT>::char_class_type 
+typename cpp_regex_traits_implementation<charT>::char_class_type
    cpp_regex_traits_implementation<charT>::lookup_classname_imp(const charT* p1, const charT* p2) const
 {
-   static const char_class_type masks[22] = 
+   static const char_class_type masks[22] =
    {
       0,
       static_cast<unsigned_native_mask_type>(std::ctype<char>::alnum),
@@ -706,8 +706,8 @@ typename cpp_regex_traits_implementation<charT>::char_class_type
       cpp_regex_traits_implementation<charT>::mask_unicode,
       static_cast<unsigned_native_mask_type>(std::ctype<char>::upper),
       cpp_regex_traits_implementation<charT>::mask_vertical,
-      static_cast<unsigned_native_mask_type>(std::ctype<char>::alnum) | cpp_regex_traits_implementation<charT>::mask_word, 
-      static_cast<unsigned_native_mask_type>(std::ctype<char>::alnum) | cpp_regex_traits_implementation<charT>::mask_word, 
+      static_cast<unsigned_native_mask_type>(std::ctype<char>::alnum) | cpp_regex_traits_implementation<charT>::mask_word,
+      static_cast<unsigned_native_mask_type>(std::ctype<char>::alnum) | cpp_regex_traits_implementation<charT>::mask_word,
       static_cast<unsigned_native_mask_type>(std::ctype<char>::xdigit),
    };
    if(!m_custom_class_names.empty())
@@ -800,9 +800,9 @@ public:
    {
       typedef typename std::ctype<charT>::mask ctype_mask;
 
-      static const ctype_mask mask_base = 
+      static const ctype_mask mask_base =
          static_cast<ctype_mask>(
-            std::ctype<charT>::alnum 
+            std::ctype<charT>::alnum
             | std::ctype<charT>::alpha
             | std::ctype<charT>::cntrl
             | std::ctype<charT>::digit
@@ -814,7 +814,7 @@ public:
             | std::ctype<charT>::upper
             | std::ctype<charT>::xdigit);
 
-      if((f & mask_base) 
+      if((f & mask_base)
          && (m_pimpl->m_pctype->is(
             static_cast<ctype_mask>(f & mask_base), c)))
          return true;
@@ -822,14 +822,14 @@ public:
          return true;
       else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_word) && (c == '_'))
          return true;
-      else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_blank) 
+      else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_blank)
          && m_pimpl->m_pctype->is(std::ctype<charT>::space, c)
          && !BOOST_REGEX_DETAIL_NS::is_separator(c))
          return true;
-      else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_vertical) 
+      else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_vertical)
          && (::boost::BOOST_REGEX_DETAIL_NS::is_separator(c) || (c == '\v')))
          return true;
-      else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_horizontal) 
+      else if((f & BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_horizontal)
          && this->isctype(c, std::ctype<charT>::space) && !this->isctype(c, BOOST_REGEX_DETAIL_NS::cpp_regex_traits_implementation<charT>::mask_vertical))
          return true;
 #ifdef __CYGWIN__

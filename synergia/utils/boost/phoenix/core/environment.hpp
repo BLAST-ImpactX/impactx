@@ -18,7 +18,7 @@
 
 #include <typeinfo>
 
-namespace boost { namespace phoenix 
+namespace boost { namespace phoenix
 {
     struct unused {};
 
@@ -29,7 +29,7 @@ namespace boost { namespace phoenix
         {
             typedef vector2<Env, Actions> type;
         };
-        
+
         template <typename Env, typename Actions>
         struct make_context
             : context<Env, Actions>
@@ -45,7 +45,7 @@ namespace boost { namespace phoenix
                 >::type
                 type;
         };
-        
+
         template <typename Context>
         struct actions
         {
@@ -155,7 +155,7 @@ namespace boost { namespace phoenix
                 return fusion::at_c<0>(ctx);
             }
         };
-        
+
         struct actions
         {
             BOOST_PROTO_CALLABLE()
@@ -236,7 +236,7 @@ namespace boost { namespace phoenix
         vector2<Env &, Actions const &> e = {env, actions};
         return e;
     }
-    
+
     template <typename Env, typename Actions>
     inline
     typename result_of::context<Env &, Actions const&>::type const
@@ -253,7 +253,7 @@ namespace boost { namespace phoenix
         vector2<Env const&, Actions &> e = {env, actions};
         return e;
     }
-    
+
     template <typename Env, typename Actions>
     inline
     typename result_of::context<Env const &, Actions &>::type const
@@ -261,7 +261,7 @@ namespace boost { namespace phoenix
     {
         return context(env, actions);
     }
-    
+
     template <typename Env, typename Actions>
     inline
     typename result_of::context<Env &, Actions &>::type const
@@ -270,7 +270,7 @@ namespace boost { namespace phoenix
         vector2<Env &, Actions &> e = {env, actions};
         return e;
     }
-    
+
     template <typename Env, typename Actions>
     inline
     typename result_of::context<Env &, Actions &>::type const
@@ -414,7 +414,7 @@ namespace boost { namespace phoenix
           , typename Dummy = void
         >
         struct make_env;
-        
+
     #define M0(Z, N, D)                                                         \
         template <BOOST_PHOENIX_typename_A(N)>                                  \
         struct make_env<BOOST_PHOENIX_A(N)>                                     \
@@ -466,4 +466,3 @@ namespace boost { namespace phoenix
 }}
 
 #endif
-

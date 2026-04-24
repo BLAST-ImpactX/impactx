@@ -3,12 +3,10 @@
 import sys
 
 sys.path.append("../../..")
-import local_paths
 
 from mpi4py import MPI
+
 from synergia.utils import Commxx
-import synergia
-import numpy
 
 
 def test_commxx():

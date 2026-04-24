@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// \file static_const.hpp
-/// Contains definition of static_const for declaring static constants that 
+/// Contains definition of static_const for declaring static constants that
 //
 //  Copyright 2008 Eric Niebler. Distributed under the Boost
 //  Software License, Version 1.0. (See accompanying file

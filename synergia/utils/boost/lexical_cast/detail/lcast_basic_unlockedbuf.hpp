@@ -70,4 +70,3 @@ namespace boost { namespace detail { namespace lcast {
 }}} // namespace boost::detail::lcast
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_CONVERTER_LEXICAL_BASIC_UNLOCKEDBUF_HPP
-

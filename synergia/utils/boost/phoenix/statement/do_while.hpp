@@ -34,7 +34,7 @@ namespace boost { namespace phoenix
             while (boost::phoenix::eval(cond, ctx));
         }
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::do_while, Dummy>
         : call<do_while_eval, Dummy>

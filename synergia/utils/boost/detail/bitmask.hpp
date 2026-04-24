@@ -55,4 +55,3 @@
   { return !!x; }
 
 #endif // BOOST_BITMASK_HPP
-

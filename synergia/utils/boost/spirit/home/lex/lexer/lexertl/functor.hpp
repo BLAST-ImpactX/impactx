@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_LEX_LEXER_FUNCTOR_NOV_18_2007_1112PM)
@@ -20,40 +20,40 @@
 #define BOOST_SPIRIT_STATIC_EOF 1
 #define BOOST_SPIRIT_EOF_PREFIX static
 #else
-#define BOOST_SPIRIT_EOF_PREFIX 
+#define BOOST_SPIRIT_EOF_PREFIX
 #endif
 
 namespace boost { namespace spirit { namespace lex { namespace lexertl
-{ 
+{
     ///////////////////////////////////////////////////////////////////////////
     //
-    //  functor is a template usable as the functor object for the 
-    //  multi_pass iterator allowing to wrap a lexertl based dfa into a 
+    //  functor is a template usable as the functor object for the
+    //  multi_pass iterator allowing to wrap a lexertl based dfa into a
     //  iterator based interface.
-    //  
+    //
     //    Token:      the type of the tokens produced by this functor
     //                this needs to expose a constructor with the following
     //                prototype:
     //
-    //                Token(std::size_t id, std::size_t state, 
+    //                Token(std::size_t id, std::size_t state,
     //                      Iterator start, Iterator end)
     //
     //                where 'id' is the token id, state is the lexer state,
-    //                this token has been matched in, and 'first' and 'end'  
-    //                mark the start and the end of the token with respect 
+    //                this token has been matched in, and 'first' and 'end'
+    //                mark the start and the end of the token with respect
     //                to the underlying character stream.
     //    FunctorData:
-    //                this is expected to encapsulate the shared part of the 
+    //                this is expected to encapsulate the shared part of the
     //                functor (see lex/lexer/lexertl/functor_data.hpp for an
     //                example and documentation).
     //    Iterator:   the type of the underlying iterator
     //    SupportsActors:
     //                this is expected to be a mpl::bool_, if mpl::true_ the
-    //                functor invokes functors which (optionally) have 
+    //                functor invokes functors which (optionally) have
     //                been attached to the token definitions.
     //    SupportState:
     //                this is expected to be a mpl::bool_, if mpl::true_ the
-    //                functor supports different lexer states, 
+    //                functor supports different lexer states,
     //                otherwise no lexer state is supported.
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -65,8 +65,8 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
     class functor
     {
     public:
-        typedef typename 
-            std::iterator_traits<Iterator>::value_type 
+        typedef typename
+            std::iterator_traits<Iterator>::value_type
         char_type;
 
     private:
@@ -136,9 +136,9 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
             typedef typename result_type::id_type id_type;
 
             shared& data = mp.shared()->ftor;
-            for(;;) 
+            for(;;)
             {
-                if (data.get_first() == data.get_last()) 
+                if (data.get_first() == data.get_last())
 #if defined(BOOST_SPIRIT_STATIC_EOF)
                     return result = eof;
 #else
@@ -161,7 +161,7 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
                     for (std::size_t i = 0; i < 10 && it != data.get_last(); ++it, ++i)
                         next += *it;
 
-                    std::cerr << "Not matched, in state: " << state 
+                    std::cerr << "Not matched, in state: " << state
                               << ", lookahead: >" << next << "<" << std::endl;
 #endif
                     return result = result_type(0);
@@ -181,17 +181,17 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
                     for (std::size_t i = 0; i < 10 && it != data.get_last(); ++it, ++i)
                         next += *it;
 
-                    std::cerr << "Matched: " << id << ", in state: " 
-                              << state << ", string: >" 
+                    std::cerr << "Matched: " << id << ", in state: "
+                              << state << ", string: >"
                               << std::basic_string<char_type>(data.get_first(), end) << "<"
                               << ", lookahead: >" << next << "<" << std::endl;
                     if (data.get_state() != state) {
-                        std::cerr << "Switched to state: " 
+                        std::cerr << "Switched to state: "
                                   << data.get_state() << std::endl;
                     }
                 }
 #endif
-                // account for a possibly pending lex::more(), i.e. moving 
+                // account for a possibly pending lex::more(), i.e. moving
                 // data.first_ back to the start of the previously matched token.
                 bool adjusted = data.adjust_start();
 
@@ -200,25 +200,25 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
 
                 // invoke attached semantic actions, if defined, might change
                 // state, id, data.first_, and/or end
-                BOOST_SCOPED_ENUM(pass_flags) pass = 
+                BOOST_SCOPED_ENUM(pass_flags) pass =
                     data.invoke_actions(state, id, unique_id, end);
 
                 if (data.has_value()) {
                     // return matched token using the token value as set before
-                    // using data.set_value(), advancing 'data.first_' past the 
+                    // using data.set_value(), advancing 'data.first_' past the
                     // matched sequence
                     assign_on_exit<Iterator> on_exit(data.get_first(), end);
                     return result = result_type(id_type(id), state, data.get_value());
                 }
                 else if (pass_flags::pass_normal == pass) {
-                    // return matched token, advancing 'data.first_' past the 
+                    // return matched token, advancing 'data.first_' past the
                     // matched sequence
                     assign_on_exit<Iterator> on_exit(data.get_first(), end);
                     return result = result_type(id_type(id), state, data.get_first(), end);
                 }
                 else if (pass_flags::pass_fail == pass) {
 #if defined(BOOST_SPIRIT_LEXERTL_DEBUG)
-                    std::cerr << "Matching forced to fail" << std::endl; 
+                    std::cerr << "Matching forced to fail" << std::endl;
 #endif
                     // if the data.first_ got adjusted above, revert this adjustment
                     if (adjusted)
@@ -235,7 +235,7 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
                 }
 
 #if defined(BOOST_SPIRIT_LEXERTL_DEBUG)
-                std::cerr << "Token ignored, continuing matching" << std::endl; 
+                std::cerr << "Token ignored, continuing matching" << std::endl;
 #endif
             // if this token needs to be ignored, just repeat the matching,
             // while starting right after the current match
@@ -243,33 +243,33 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
             }
         }
 
-        // set_state are propagated up to the iterator interface, allowing to 
-        // manipulate the current lexer state through any of the exposed 
+        // set_state are propagated up to the iterator interface, allowing to
+        // manipulate the current lexer state through any of the exposed
         // iterators.
         template <typename MultiPass>
-        static std::size_t set_state(MultiPass& mp, std::size_t state) 
-        { 
+        static std::size_t set_state(MultiPass& mp, std::size_t state)
+        {
             std::size_t oldstate = mp.shared()->ftor.get_state();
             mp.shared()->ftor.set_state(state);
 
 #if defined(BOOST_SPIRIT_LEXERTL_DEBUG)
-            std::cerr << "Switching state from: " << oldstate 
+            std::cerr << "Switching state from: " << oldstate
                       << " to: " << state
                       << std::endl;
 #endif
-            return oldstate; 
+            return oldstate;
         }
 
         template <typename MultiPass>
-        static std::size_t get_state(MultiPass& mp) 
-        { 
+        static std::size_t get_state(MultiPass& mp)
+        {
             return mp.shared()->ftor.get_state();
         }
 
         template <typename MultiPass>
-        static std::size_t 
-        map_state(MultiPass const& mp, char_type const* statename)  
-        { 
+        static std::size_t
+        map_state(MultiPass const& mp, char_type const* statename)
+        {
             return mp.shared()->ftor.get_state_id(statename);
         }
 
@@ -286,7 +286,7 @@ namespace boost { namespace spirit { namespace lex { namespace lexertl
       , template <typename, typename, typename, typename> class FunctorData
       , typename Iterator, typename SupportsActors, typename SupportsState>
     typename functor<Token, FunctorData, Iterator, SupportsActors, SupportsState>::result_type const
-        functor<Token, FunctorData, Iterator, SupportsActors, SupportsState>::eof = 
+        functor<Token, FunctorData, Iterator, SupportsActors, SupportsState>::eof =
             typename functor<Token, FunctorData, Iterator, SupportsActors
               , SupportsState>::result_type();
 #endif

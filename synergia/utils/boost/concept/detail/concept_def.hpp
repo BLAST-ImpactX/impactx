@@ -26,9 +26,8 @@
     };                                                                          \
                                                                                 \
     template < BOOST_PP_SEQ_FOR_EACH_I(BOOST_CONCEPT_typename,~,params) >       \
-    struct name                                                                
-    
+    struct name
+
 // Helper for BOOST_concept, above.
 # define BOOST_CONCEPT_typename(r, ignored, index, t) \
     BOOST_PP_COMMA_IF(index) typename t
-

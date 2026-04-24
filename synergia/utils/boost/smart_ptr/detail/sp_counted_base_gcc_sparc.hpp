@@ -95,7 +95,7 @@ inline int32_t atomic_conditional_increment( int32_t * pw )
         {
             return r;
         }
-    }    
+    }
 }
 
 class BOOST_SYMBOL_VISIBLE sp_counted_base

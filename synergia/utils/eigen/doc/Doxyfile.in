@@ -231,7 +231,7 @@ ALIASES                = "only_for_vectors=This is only for vectors (either row-
                          "cpp14=<span class='cpp14'>[c++14]</span>" \
                          "cpp17=<span class='cpp17'>[c++17]</span>" \
                          "newin{1}=<span class='newin3x'>New in %Eigen \1.</span>"
-                         
+
 
 ALIASES += "eigenAutoToc=  "
 ALIASES += "eigenManualPage=\defgroup"
@@ -783,7 +783,7 @@ EXCLUDE_SYMBOLS        = internal::* \
                          Flagged* \
                          *InnerIterator* \
                          DenseStorage<* \
-                         
+
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or
 # directories that contain example code fragments that are included (see
@@ -982,7 +982,7 @@ HTML_FOOTER            = "${Eigen_BINARY_DIR}/doc/eigendoxy_footer.html"
 # the style sheet file to the HTML output directory, so don't put your own
 # style sheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        = 
+HTML_STYLESHEET        =
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1737,7 +1737,7 @@ DOT_NUM_THREADS        = 0
 # the DOTFONTPATH environment variable or by setting DOT_FONTPATH to the
 # directory containing the font.
 
-DOT_FONTNAME           = 
+DOT_FONTNAME           =
 
 # The DOT_FONTSIZE tag can be used to set the size of the font of dot graphs.
 # The default size is 10pt.

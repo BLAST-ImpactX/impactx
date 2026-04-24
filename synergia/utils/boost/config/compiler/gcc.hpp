@@ -243,7 +243,7 @@
 // C++0x features in 4.7.n and later
 //
 #if (BOOST_GCC_VERSION < 40700) || !defined(BOOST_GCC_CXX11)
-// Note that while constexpr is partly supported in gcc-4.6 it's a 
+// Note that while constexpr is partly supported in gcc-4.6 it's a
 // pre-std version with several bugs:
 #  define BOOST_NO_CXX11_CONSTEXPR
 #  define BOOST_NO_CXX11_FINAL
@@ -383,4 +383,3 @@
 //#     warning "boost: Unknown compiler version - please run the configure tests and report the results"
 #  endif
 #endif
-

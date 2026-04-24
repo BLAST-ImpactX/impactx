@@ -54,7 +54,7 @@ struct ast_match_policy :
             T
         >
     common_tree_match_policy_;
-    
+
     ast_match_policy()
     {
     }
@@ -169,8 +169,8 @@ struct ast_tree_policy :
         else
         {
             match_t newmatch(m.length(),
-                m.trees.empty() ? 
-                    factory_t::empty_node() : 
+                m.trees.empty() ?
+                    factory_t::empty_node() :
                     factory_t::create_node(first, last, false));
 
             std::swap(newmatch.trees.begin()->children, m.trees);
@@ -200,8 +200,8 @@ namespace impl {
     struct tree_policy_selector<ast_match_policy<IteratorT, NodeFactoryT, T> >
     {
         typedef ast_tree_policy<
-            ast_match_policy<IteratorT, NodeFactoryT, T>, 
-            NodeFactoryT, 
+            ast_match_policy<IteratorT, NodeFactoryT, T>,
+            NodeFactoryT,
             T
         > type;
     };
@@ -290,7 +290,7 @@ const node_parser_gen<root_node_op> root_node_d =
 //
 ///////////////////////////////////////////////////////////////////////////////
 template <
-    typename AstFactoryT, typename IteratorT, typename ParserT, 
+    typename AstFactoryT, typename IteratorT, typename ParserT,
     typename SkipT
 >
 inline tree_parse_info<IteratorT, AstFactoryT>
@@ -329,7 +329,7 @@ ast_parse(
     typedef node_val_data_factory<nil_t> default_factory_t;
     return ast_parse(first_, last_, parser, skip_, default_factory_t());
 }
-  
+
 //////////////////////////////////
 template <typename IteratorT, typename ParserT>
 inline tree_parse_info<IteratorT>
@@ -384,4 +384,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

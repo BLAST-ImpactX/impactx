@@ -24,7 +24,7 @@ namespace boost { namespace spirit {
 BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
     // chset.hpp
-    template<typename CharT> class chset;        
+    template<typename CharT> class chset;
 
     // functor_parser.hpp
     template<typename FunctorT> struct functor_parser;
@@ -38,7 +38,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     template<typename CharT> struct rxstrlit;
 
     // flush_multi_pass.hpp
-    class flush_multi_pass_parser;  
+    class flush_multi_pass_parser;
 
     // scoped_lock.hpp
     template<class MutexT, class ParserT> struct scoped_lock_parser;
@@ -146,5 +146,3 @@ BOOST_TYPEOF_REGISTER_TEMPLATE(BOOST_SPIRIT_CLASSIC_NS::grammar_def, 3)
 
 
 #endif
-
-

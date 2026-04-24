@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -27,20 +27,20 @@ namespace boost { namespace spirit { namespace iterator_policies
     //  class split_functor_input
     //  Implementation of the InputPolicy used by multi_pass
     //  split_functor_input gets tokens from a functor
-    // 
+    //
     //  This policy should be used when the functor holds two parts of data: a
-    //  unique part (unique for each instance of the iterator) and a shared 
+    //  unique part (unique for each instance of the iterator) and a shared
     //  part (to be shared between the different copies of the same iterator).
-    //  Using this policy allows to merge the shared part of the functor with 
-    //  the shared part of the iterator data, saving one pointer and one 
+    //  Using this policy allows to merge the shared part of the functor with
+    //  the shared part of the iterator data, saving one pointer and one
     //  allocation per iterator instance.
     //
-    //  The Functor template parameter of this policy is expected to be a 
+    //  The Functor template parameter of this policy is expected to be a
     //  std::pair<unique, shared>, where 'unique' and 'shared' represent the
     //  respective parts of the functor itself.
     //
     //  Note: the unique part of the functor must have a typedef for result_type
-    //        It also must have a static variable of type result_type defined 
+    //        It also must have a static variable of type result_type defined
     //        to represent EOF that is called eof.
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -51,8 +51,8 @@ namespace boost { namespace spirit { namespace iterator_policies
           , bool FunctorIsEmpty = is_empty<typename Functor::first_type>::value>
         class unique;
 
-        // the unique part of the functor is empty, do not include the functor 
-        // as a member at all to avoid unnecessary padding bytes to be included 
+        // the unique part of the functor is empty, do not include the functor
+        // as a member at all to avoid unnecessary padding bytes to be included
         // into the generated structure
         template <typename Functor>
         class unique<Functor, true> // : public detail::default_input_policy
@@ -94,20 +94,20 @@ namespace boost { namespace spirit { namespace iterator_policies
 
             // test, whether we reached the end of the underlying stream
             template <typename MultiPass>
-            static bool input_at_eof(MultiPass const& mp) 
+            static bool input_at_eof(MultiPass const& mp)
             {
                 return mp.shared()->curtok == functor_type::eof;
             }
 
             template <typename MultiPass>
-            static bool input_is_valid(MultiPass const&, value_type const& t) 
+            static bool input_is_valid(MultiPass const&, value_type const& t)
             {
                 using namespace split_functor_input_is_valid_test_;
                 return token_is_valid(t);
             }
 
             template <typename MultiPass>
-            static void destroy(MultiPass& mp) 
+            static void destroy(MultiPass& mp)
             {
                 functor_type::destroy(mp);
             }
@@ -156,7 +156,7 @@ namespace boost { namespace spirit { namespace iterator_policies
             }
 
             template <typename MultiPass>
-            static bool input_is_valid(MultiPass const&, value_type const& t) 
+            static bool input_is_valid(MultiPass const&, value_type const& t)
             {
                 using namespace split_functor_input_is_valid_test_;
                 return token_is_valid(t);
@@ -164,7 +164,7 @@ namespace boost { namespace spirit { namespace iterator_policies
 
             // test, whether we reached the end of the underlying stream
             template <typename MultiPass>
-            static bool input_at_eof(MultiPass const& mp) 
+            static bool input_at_eof(MultiPass const& mp)
             {
                 return mp.shared()->curtok == mp.ftor.eof;
             }

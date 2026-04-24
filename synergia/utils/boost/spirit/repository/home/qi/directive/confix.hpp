@@ -1,6 +1,6 @@
 //  Copyright (c) 2009 Chris Hoeppler
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_REPOSITORY_QI_CONFIX_JUN_22_2009_1041AM)
@@ -24,7 +24,7 @@
 #include <boost/mpl/or.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
     // Enablers
@@ -38,7 +38,7 @@ namespace boost { namespace spirit
 
     // enables *lazy* confix(..., ...)[]
     template <>
-    struct use_lazy_directive<qi::domain, repository::tag::confix, 2> 
+    struct use_lazy_directive<qi::domain, repository::tag::confix, 2>
       : mpl::true_ {};
 
 }}
@@ -144,9 +144,8 @@ namespace boost { namespace spirit { namespace traits
       : mpl::or_<
             has_semantic_action<Subject>
           , has_semantic_action<Prefix>
-          , has_semantic_action<Suffix> 
+          , has_semantic_action<Suffix>
         > {};
 }}}
 
 #endif
-

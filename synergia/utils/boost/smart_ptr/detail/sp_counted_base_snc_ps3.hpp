@@ -90,7 +90,7 @@ inline uint32_t atomic_conditional_increment( uint32_t * pw )
         {
             return r;
         }
-    }    
+    }
 }
 
 class BOOST_SYMBOL_VISIBLE sp_counted_base

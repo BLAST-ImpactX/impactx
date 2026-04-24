@@ -1,6 +1,6 @@
 #!/usr/bin/env python
+
 import synergia
-import pytest
 
 lattice_empty_matrix = """
 m: matrix, l=0;

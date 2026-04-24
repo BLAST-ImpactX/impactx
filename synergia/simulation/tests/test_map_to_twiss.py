@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-import sys
-import os
 import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 
 def test_map_to_twiss():

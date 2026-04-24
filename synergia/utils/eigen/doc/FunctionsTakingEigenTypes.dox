@@ -149,7 +149,7 @@ When trying to execute the following code
 MatrixXf C = MatrixXf::Zero(3,6);
 cov(x,y, C.block(0,0,3,3));
 \endcode
-the compiler will fail, because it is not possible to convert the expression returned by \c MatrixXf::block() into a non-const \c MatrixXf&. This is the case because the compiler wants to protect you from writing your result to a temporary object. In this special case this protection is not intended -- we want to write to a temporary object. So how can we overcome this problem? 
+the compiler will fail, because it is not possible to convert the expression returned by \c MatrixXf::block() into a non-const \c MatrixXf&. This is the case because the compiler wants to protect you from writing your result to a temporary object. In this special case this protection is not intended -- we want to write to a temporary object. So how can we overcome this problem?
 
 The solution which is preferred at the moment is based on a little \em hack. One needs to pass a const reference to the matrix and internally the constness needs to be cast away. The correct implementation for C98 compliant compilers would be
 \code
@@ -197,7 +197,7 @@ void cov(const MatrixBase<Derived>& x, const MatrixBase<Derived>& y, MatrixBase<
   const RowVectorType y_mean = y.colwise().sum() / num_observations;
 
   MatrixBase<OtherDerived>& C = const_cast< MatrixBase<OtherDerived>& >(C_);
-  
+
   C.derived().resize(x.cols(),x.cols()); // resize the derived object
   C = (x.rowwise() - x_mean).transpose() * (y.rowwise() - y_mean) / num_observations;
 }

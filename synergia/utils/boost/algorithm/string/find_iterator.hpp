@@ -31,12 +31,12 @@
 */
 
 namespace boost {
-    namespace algorithm { 
+    namespace algorithm {
 
 //  find_iterator -----------------------------------------------//
 
         //! find_iterator
-        /*!    
+        /*!
             Find iterator encapsulates a Finder and allows
             for incremental searching in a string.
             Each increment moves the iterator to the next match.
@@ -47,7 +47,7 @@ namespace boost {
             the current match.
         */
         template<typename IteratorT>
-        class find_iterator : 
+        class find_iterator :
             public iterator_facade<
                 find_iterator<IteratorT>,
                 const iterator_range<IteratorT>,
@@ -62,9 +62,9 @@ namespace boost {
         // typedefs
 
             typedef detail::find_iterator_base<IteratorT> base_type;
-            typedef BOOST_STRING_TYPENAME 
+            typedef BOOST_STRING_TYPENAME
                 base_type::input_iterator_type input_iterator_type;
-            typedef BOOST_STRING_TYPENAME 
+            typedef BOOST_STRING_TYPENAME
                 base_type::match_type match_type;
 
         public:
@@ -156,7 +156,7 @@ namespace boost {
                 return bEof || bOtherEof ? bEof==bOtherEof :
                     (
                         m_Match==Other.m_Match &&
-                        m_End==Other.m_End 
+                        m_End==Other.m_End
                     );
             }
 
@@ -171,9 +171,9 @@ namespace boost {
             */
             bool eof() const
             {
-                return 
-                    this->is_null() || 
-                    ( 
+                return
+                    this->is_null() ||
+                    (
                         m_Match.begin() == m_End &&
                         m_Match.end() == m_End
                     );
@@ -190,7 +190,7 @@ namespace boost {
          *    Construct a find iterator to iterate through the specified string
          */
         template<typename RangeT, typename FinderT>
-        inline find_iterator< 
+        inline find_iterator<
             BOOST_STRING_TYPENAME range_iterator<RangeT>::type>
         make_find_iterator(
             RangeT& Collection,
@@ -203,7 +203,7 @@ namespace boost {
 //  split iterator -----------------------------------------------//
 
         //! split_iterator
-        /*!    
+        /*!
             Split iterator encapsulates a Finder and allows
             for incremental searching in a string.
             Unlike the find iterator, split iterator iterates
@@ -215,7 +215,7 @@ namespace boost {
             the current match.
         */
         template<typename IteratorT>
-        class split_iterator : 
+        class split_iterator :
             public iterator_facade<
                 split_iterator<IteratorT>,
                 const iterator_range<IteratorT>,
@@ -230,16 +230,16 @@ namespace boost {
         // typedefs
 
             typedef detail::find_iterator_base<IteratorT> base_type;
-            typedef BOOST_STRING_TYPENAME 
+            typedef BOOST_STRING_TYPENAME
                 base_type::input_iterator_type input_iterator_type;
-            typedef BOOST_STRING_TYPENAME 
+            typedef BOOST_STRING_TYPENAME
                 base_type::match_type match_type;
 
         public:
             //! Default constructor
             /*!
                 Construct null iterator. All null iterators are equal.
-    
+
                 \post eof()==true
             */
             split_iterator() :
@@ -389,7 +389,7 @@ namespace boost {
          *    Construct a split iterator to iterate through the specified collection
          */
         template<typename RangeT, typename FinderT>
-        inline split_iterator< 
+        inline split_iterator<
             BOOST_STRING_TYPENAME range_iterator<RangeT>::type>
         make_split_iterator(
             RangeT& Collection,

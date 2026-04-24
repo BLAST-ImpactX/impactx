@@ -498,10 +498,10 @@ class inner
 
     private:
         struct Data {
-            Data(InputT const &input_) 
+            Data(InputT const &input_)
             :   input(input_), was_initialized(false)
             {}
-            
+
             InputT input;
             value_type curtok;
             bool was_initialized;
@@ -776,7 +776,7 @@ struct iterator_base_creator
 }}
 
 ///////////////////////////////////////////////////////////////////////////////
-// class template multi_pass 
+// class template multi_pass
 ///////////////////////////////////////////////////////////////////////////////
 
 // The default multi_pass instantiation uses a ref-counted std_deque scheme.
@@ -1106,7 +1106,7 @@ operator==(const multi_pass<InputT, InputPolicy, OwnershipPolicy, CheckingPolicy
 {
     bool is_eof_ = SP::is_eof(*this);
     bool y_is_eof_ = SP::is_eof(y);
-    
+
     if (is_eof_ && y_is_eof_)
     {
         return true;  // both are EOF
@@ -1215,12 +1215,12 @@ bool operator<=(
 
 ///// Generator function
 template <typename InputT>
-inline multi_pass<InputT, 
+inline multi_pass<InputT,
     multi_pass_policies::input_iterator, multi_pass_policies::ref_counted,
     multi_pass_policies::buf_id_check, multi_pass_policies::std_deque>
 make_multi_pass(InputT i)
 {
-    return multi_pass<InputT, 
+    return multi_pass<InputT,
         multi_pass_policies::input_iterator, multi_pass_policies::ref_counted,
         multi_pass_policies::buf_id_check, multi_pass_policies::std_deque>(i);
 }

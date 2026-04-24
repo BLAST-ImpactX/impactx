@@ -70,9 +70,9 @@ namespace boost { namespace spirit { namespace karma
         bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d
           , Attribute const& attr) const
         {
-            // We need to actually compile the output operation as we don't 
-            // have any other means to verify, whether the passed attribute is 
-            // compatible with the subject. 
+            // We need to actually compile the output operation as we don't
+            // have any other means to verify, whether the passed attribute is
+            // compatible with the subject.
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 # pragma warning(push)

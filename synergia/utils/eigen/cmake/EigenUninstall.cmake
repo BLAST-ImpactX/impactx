@@ -35,6 +35,3 @@ else()
   message(STATUS "Probably make install has not been performed")
   message(STATUS "   or install_manifest.txt has been deleted.")
 endif()
-
-
-

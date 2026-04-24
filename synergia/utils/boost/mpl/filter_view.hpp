@@ -4,8 +4,8 @@
 
 // Copyright Aleksey Gurtovoy 2000-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -27,7 +27,7 @@ template<
     >
 struct filter_view
 {
- private:    
+ private:
     typedef typename lambda<Predicate>::type pred_;
     typedef typename begin<Sequence>::type first_;
     typedef typename end<Sequence>::type last_;

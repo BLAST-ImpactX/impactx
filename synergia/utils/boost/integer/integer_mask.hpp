@@ -5,7 +5,7 @@
 //  accompanying file LICENSE_1_0.txt or copy at
 //  https://www.boost.org/LICENSE_1_0.txt)
 
-//  See https://www.boost.org for updates, documentation, and revision history. 
+//  See https://www.boost.org for updates, documentation, and revision history.
 
 #ifndef BOOST_INTEGER_INTEGER_MASK_HPP
 #define BOOST_INTEGER_INTEGER_MASK_HPP

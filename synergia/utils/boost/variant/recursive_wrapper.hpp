@@ -44,7 +44,7 @@ public: // structors
     recursive_wrapper(const recursive_wrapper& operand);
     recursive_wrapper(const T& operand);
 
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     recursive_wrapper(recursive_wrapper&& operand);
     recursive_wrapper(T&& operand);
 #endif
@@ -74,8 +74,8 @@ public: // modifiers
         p_ = temp;
     }
 
-    
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES 
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     recursive_wrapper& operator=(recursive_wrapper&& rhs) BOOST_NOEXCEPT
     {
         swap(rhs);
@@ -123,7 +123,7 @@ recursive_wrapper<T>::recursive_wrapper(const T& operand)
 {
 }
 
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 template <typename T>
 recursive_wrapper<T>::recursive_wrapper(recursive_wrapper&& operand)
     : p_(new T( detail::variant::move(operand.get()) ))

@@ -23,13 +23,13 @@
                 >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0>
         struct actor<Expr, A0>
         {
@@ -45,13 +45,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1>
         struct actor<Expr, A0 , A1>
         {
@@ -67,13 +67,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2>
         struct actor<Expr, A0 , A1 , A2>
         {
@@ -89,13 +89,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3>
         struct actor<Expr, A0 , A1 , A2 , A3>
         {
@@ -111,13 +111,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
         struct actor<Expr, A0 , A1 , A2 , A3 , A4>
         {
@@ -133,13 +133,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
         struct actor<Expr, A0 , A1 , A2 , A3 , A4 , A5>
         {
@@ -155,13 +155,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
         struct actor<Expr, A0 , A1 , A2 , A3 , A4 , A5 , A6>
         {
@@ -177,13 +177,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
         struct actor<Expr, A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7>
         {
@@ -199,13 +199,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
         struct actor<Expr, A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8>
         {
@@ -221,13 +221,13 @@
                     >::result_type
                 type;
         };
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Expr, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
         struct actor<Expr, A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9>
         {

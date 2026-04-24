@@ -22,7 +22,7 @@ namespace boost { namespace phoenix
         (post_inc)
         (post_dec)
     )
-    
+
     BOOST_PHOENIX_BINARY_OPERATORS(
         (plus_assign)
         (minus_assign)

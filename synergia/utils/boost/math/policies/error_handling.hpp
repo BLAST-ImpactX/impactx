@@ -892,4 +892,3 @@ std::pair<T, T> pair_from_single(const T& val) BOOST_MATH_NOEXCEPT(T)
 }} // namespaces boost/math
 
 #endif // BOOST_MATH_POLICY_ERROR_HANDLING_HPP
-

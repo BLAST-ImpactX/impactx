@@ -358,7 +358,7 @@ static inline uint32_t bit_scan_reverse(uint64_t a) {
     else return bit_scan_reverse(uint32_t(ahi)) + 32;
 }
 #endif
-#endif 
+#endif
 
 // Same function, for compile-time constants
 constexpr int bit_scan_reverse_const(uint64_t const n) {

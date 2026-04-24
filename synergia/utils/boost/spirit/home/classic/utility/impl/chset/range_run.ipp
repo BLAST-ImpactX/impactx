@@ -181,7 +181,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
                         left_iter->last = r.first-1;
                     }
                 }
-                
+
                 iterator i = iter;
                 while (i != run.end() && r.includes(*i))
                     i++;

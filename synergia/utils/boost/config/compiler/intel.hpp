@@ -325,7 +325,7 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 
 //
 // C++0x features
-// For each feature we need to check both the Intel compiler version, 
+// For each feature we need to check both the Intel compiler version,
 // and the version of MSVC or GCC that we are emulating.
 // See http://software.intel.com/en-us/articles/c0x-features-supported-by-intel-c-compiler/
 // for a list of which features were implemented in which Intel releases.
@@ -465,7 +465,7 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 
 // BOOST_NO_CXX11_NOEXCEPT
 #if (BOOST_INTEL_CXX_VERSION >= 1500) && (!defined(BOOST_INTEL_GCC_VERSION) || (BOOST_INTEL_GCC_VERSION >= 40600)) && (!defined(_MSC_VER) || (_MSC_VER >= 9999))
-// Available in earlier Intel release, but generates errors when used with 
+// Available in earlier Intel release, but generates errors when used with
 // conditional exception specifications, for example in multiprecision:
 #  undef BOOST_NO_CXX11_NOEXCEPT
 #endif
@@ -574,4 +574,3 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 //#     pragma message("boost: Unknown compiler version - please run the configure tests and report the results")
 #  endif
 #endif
-

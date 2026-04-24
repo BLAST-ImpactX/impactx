@@ -152,10 +152,10 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         //
         ///////////////////////////////////////////////////////////////////////
 #if defined(BOOST_MSVC)
-#pragma warning(push) 
+#pragma warning(push)
 #pragma warning(disable:4127) //conditional expression is constant
 #endif
-        
+
         template <typename T, int Radix>
         struct positive_accumulate
         {

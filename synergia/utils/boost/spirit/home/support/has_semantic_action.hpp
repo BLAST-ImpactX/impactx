@@ -25,11 +25,11 @@ namespace boost { namespace spirit { namespace traits
       : mpl::false_ {};
 
     template <typename Subject>
-    struct unary_has_semantic_action 
+    struct unary_has_semantic_action
       : has_semantic_action<Subject> {};
 
     template <typename Left, typename Right>
-    struct binary_has_semantic_action 
+    struct binary_has_semantic_action
       : mpl::or_<has_semantic_action<Left>, has_semantic_action<Right> > {};
 
     template <typename Elements>
@@ -37,10 +37,10 @@ namespace boost { namespace spirit { namespace traits
       : mpl::not_<
             is_same<
                 typename mpl::find_if<
-                    Elements, has_semantic_action<mpl::_> 
+                    Elements, has_semantic_action<mpl::_>
                 >::type
               , typename mpl::end<Elements>::type
-            > 
+            >
         > {};
 }}}
 

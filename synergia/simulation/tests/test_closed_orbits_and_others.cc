@@ -96,7 +96,7 @@ TEST_CASE("closed_orbit_at_nonzero_dpp")
     constexpr double dpp=4.0e-4;
     auto closed_orbit_state = Lattice_simulator::calculate_closed_orbit(lattice, dpp);
     for (int i=0; i<6; ++i) {
-        std::cout << std::setprecision(17) << i << ": " << closed_orbit_state[i] << std::endl;    
+        std::cout << std::setprecision(17) << i << ": " << closed_orbit_state[i] << std::endl;
     }
 
     CHECK (closed_orbit_state[0] == Approx(0.00072931911596656749)); // previous run

@@ -330,7 +330,7 @@ extern "C" {
     extern __m128  V_VECTORCALL2 __svml_sincosf4   (__m128);  // cos returned in xmm1
     extern __m128d V_VECTORCALL2 __svml_sincos2    (__m128d); // cos returned in xmm1
     extern __m128  V_VECTORCALL __svml_tanf4       (__m128);
-    extern __m128d V_VECTORCALL __svml_tan2        (__m128d);    
+    extern __m128d V_VECTORCALL __svml_tan2        (__m128d);
     extern __m128  V_VECTORCALL __svml_sinpif4     (__m128);
     extern __m128d V_VECTORCALL __svml_sinpi2      (__m128d);
     extern __m128  V_VECTORCALL __svml_cospif4     (__m128);

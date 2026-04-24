@@ -314,7 +314,3 @@ inline typename tools::promote_args<T>::type expm1(T x)
 } // namespace boost
 
 #endif // BOOST_MATH_HYPOT_INCLUDED
-
-
-
-

@@ -1,7 +1,7 @@
 /*=============================================================================
     Copyright (c) 2001-2011 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_EMPTY_09162005_0335)
@@ -25,7 +25,7 @@ namespace boost { namespace fusion
         struct empty_impl
         {
             template <typename Sequence>
-            struct apply 
+            struct apply
                 : mpl::bool_<(result_of::size<Sequence>::value == 0)>
             {};
         };
@@ -44,7 +44,7 @@ namespace boost { namespace fusion
     namespace result_of
     {
         template <typename Sequence>
-        struct empty 
+        struct empty
             : extension::empty_impl<typename detail::tag_of<Sequence>::type>::
                 template apply<Sequence>
         {};

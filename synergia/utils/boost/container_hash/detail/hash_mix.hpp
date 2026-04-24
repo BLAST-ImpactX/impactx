@@ -22,11 +22,11 @@ template<std::size_t Bits> struct hash_mix_impl;
 // from Murmur3 by Austin Appleby, which uses the following function as
 // its "final mix":
 //
-//	k ^= k >> 33;
-//	k *= 0xff51afd7ed558ccd;
-//	k ^= k >> 33;
-//	k *= 0xc4ceb9fe1a85ec53;
-//	k ^= k >> 33;
+//  k ^= k >> 33;
+//  k *= 0xff51afd7ed558ccd;
+//  k ^= k >> 33;
+//  k *= 0xc4ceb9fe1a85ec53;
+//  k ^= k >> 33;
 //
 // (https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp)
 //
@@ -34,11 +34,11 @@ template<std::size_t Bits> struct hash_mix_impl;
 // by changing the constants. The most well known improvement is the
 // so-called "variant 13" function by David Stafford:
 //
-//	k ^= k >> 30;
-//	k *= 0xbf58476d1ce4e5b9;
-//	k ^= k >> 27;
-//	k *= 0x94d049bb133111eb;
-//	k ^= k >> 31;
+//  k ^= k >> 30;
+//  k *= 0xbf58476d1ce4e5b9;
+//  k ^= k >> 27;
+//  k *= 0x94d049bb133111eb;
+//  k ^= k >> 31;
 //
 // (https://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html)
 //
@@ -48,19 +48,19 @@ template<std::size_t Bits> struct hash_mix_impl;
 // We use Jon Maiga's implementation from
 // http://jonkagstrom.com/mx3/mx3_rev2.html
 //
-// 	x ^= x >> 32;
-//	x *= 0xe9846af9b1a615d;
-//	x ^= x >> 32;
-//	x *= 0xe9846af9b1a615d;
-//	x ^= x >> 28;
+//  x ^= x >> 32;
+//  x *= 0xe9846af9b1a615d;
+//  x ^= x >> 32;
+//  x *= 0xe9846af9b1a615d;
+//  x ^= x >> 28;
 //
 // An equally good alternative is Pelle Evensen's Moremur:
 //
-//	x ^= x >> 27;
-//	x *= 0x3C79AC492BA7B653;
-//	x ^= x >> 33;
-//	x *= 0x1C69B3F74AC4AE35;
-//	x ^= x >> 27;
+//  x ^= x >> 27;
+//  x *= 0x3C79AC492BA7B653;
+//  x ^= x >> 33;
+//  x *= 0x1C69B3F74AC4AE35;
+//  x ^= x >> 27;
 //
 // (https://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html)
 

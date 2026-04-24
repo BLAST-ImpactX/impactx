@@ -21,7 +21,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     struct non_lexeme;
 
     template <
-        typename OpenT, typename ExprT, typename CloseT, 
+        typename OpenT, typename ExprT, typename CloseT,
         typename CategoryT = plain_parser_category,
         typename NestedT = non_nested, typename LexemeT = non_lexeme
     >
@@ -35,5 +35,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-
-

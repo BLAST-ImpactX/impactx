@@ -38,12 +38,12 @@ namespace boost { namespace spirit
     // enables delimit(d)[g], where d is a generator
     template <typename T>
     struct use_directive<karma::domain
-          , terminal_ex<tag::delimit, fusion::vector1<T> > > 
+          , terminal_ex<tag::delimit, fusion::vector1<T> > >
       : boost::spirit::traits::matches<karma::domain, T> {};
 
     // enables *lazy* delimit(d)[g]
     template <>
-    struct use_lazy_directive<karma::domain, tag::delimit, 1> 
+    struct use_lazy_directive<karma::domain, tag::delimit, 1>
       : mpl::true_ {};
 
 }}
@@ -79,8 +79,8 @@ namespace boost { namespace spirit { namespace karma
           , Attribute const& attr) const
         {
             //  The delimit_space generator simply dispatches to the embedded
-            //  generator while supplying either the delimiter which has been 
-            //  used before a surrounding verbatim[] directive or a single 
+            //  generator while supplying either the delimiter which has been
+            //  used before a surrounding verbatim[] directive or a single
             //  space as the new delimiter to use (if no surrounding verbatim[]
             //  was specified).
             return subject.generate(sink, ctx
@@ -100,7 +100,7 @@ namespace boost { namespace spirit { namespace karma
     //  The delimit_generator is used for delimit(d)[...] directives.
     ///////////////////////////////////////////////////////////////////////////
     template <typename Subject, typename Delimiter>
-    struct delimit_generator 
+    struct delimit_generator
       : unary_generator<delimit_generator<Subject, Delimiter> >
     {
         typedef Subject subject_type;

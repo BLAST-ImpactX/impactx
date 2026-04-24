@@ -117,7 +117,7 @@ namespace date_time {
       }
       return 13; // intentionally out of range - name not found
     }
- 
+
 
     //! Generic function to parse a delimited date (eg: 2002-02-10)
     /*! Accepted formats are: "2003-02-10" or " 2003-Feb-10" or
@@ -339,4 +339,3 @@ namespace date_time {
 
 
 #endif
-

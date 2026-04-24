@@ -45,7 +45,7 @@ namespace boost { namespace proto
             not_a_valid_type()
             {}
         };
-        
+
         template<typename Tag, typename Arg>
         struct address_of_hack
         {
@@ -162,7 +162,7 @@ namespace boost { namespace proto
         explicit unexpr(Expr const &e)
           : Expr(e)
         {}
-        
+
         using Expr::operator =;
     };
 

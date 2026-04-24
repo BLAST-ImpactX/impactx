@@ -2,7 +2,7 @@
 #define POSIX_TIME_SYSTEM_HPP___
 
 /* Copyright (c) 2002,2003 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
+ * Use, modification and distribution is subject to the
  * Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
  * Author: Jeff Garland
@@ -17,11 +17,11 @@
 
 
 namespace boost {
-namespace posix_time { 
+namespace posix_time {
 
 #ifdef BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG
 
-#if (defined(BOOST_DATE_TIME_NO_MEMBER_INIT)) //help bad compilers 
+#if (defined(BOOST_DATE_TIME_NO_MEMBER_INIT)) //help bad compilers
   typedef date_time::split_timedate_system<posix_time_system_config, 1000000000> posix_time_system;
 #else
   typedef date_time::split_timedate_system<posix_time_system_config> posix_time_system;
@@ -38,31 +38,3 @@ namespace posix_time {
 
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

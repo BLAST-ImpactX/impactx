@@ -39,7 +39,7 @@ else
       cat .runtest.log
       echo -e $black
       exit 1;
-    fi      
+    fi
   fi
   echo -e $green Test $1 passed$black
 fi

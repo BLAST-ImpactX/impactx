@@ -24,10 +24,10 @@
 #include <boost/algorithm/string/compare.hpp>
 
 /*! \file
-    Defines Finder generators. Finder object is a functor which is able to 
+    Defines Finder generators. Finder object is a functor which is able to
     find a substring matching a specific criteria in the input.
-    Finders are used as a pluggable components for replace, find 
-    and split facilities. This header contains generator functions 
+    Finders are used as a pluggable components for replace, find
+    and split facilities. This header contains generator functions
     for finders provided in this library.
 */
 
@@ -35,8 +35,8 @@ namespace boost {
     namespace algorithm {
 
 //  Finder generators ------------------------------------------//
-        
-        //! "First" finder 
+
+        //! "First" finder
         /*!
             Construct the \c first_finder. The finder searches for the first
             occurrence of the string in a given input.
@@ -51,9 +51,9 @@ namespace boost {
             is_equal>
         first_finder( const RangeT& Search )
         {
-            return 
+            return
                 detail::first_finderF<
-                    BOOST_STRING_TYPENAME 
+                    BOOST_STRING_TYPENAME
                         range_const_iterator<RangeT>::type,
                         is_equal>( ::boost::as_literal(Search), is_equal() ) ;
         }
@@ -66,12 +66,12 @@ namespace boost {
         inline detail::first_finderF<
             BOOST_STRING_TYPENAME range_const_iterator<RangeT>::type,
             PredicateT>
-        first_finder( 
+        first_finder(
             const RangeT& Search, PredicateT Comp )
         {
-            return 
+            return
                 detail::first_finderF<
-                    BOOST_STRING_TYPENAME 
+                    BOOST_STRING_TYPENAME
                         range_const_iterator<RangeT>::type,
                     PredicateT>( ::boost::as_literal(Search), Comp );
         }
@@ -91,9 +91,9 @@ namespace boost {
             is_equal>
         last_finder( const RangeT& Search )
         {
-            return 
+            return
                 detail::last_finderF<
-                    BOOST_STRING_TYPENAME 
+                    BOOST_STRING_TYPENAME
                         range_const_iterator<RangeT>::type,
                     is_equal>( ::boost::as_literal(Search), is_equal() );
         }
@@ -107,9 +107,9 @@ namespace boost {
             PredicateT>
         last_finder( const RangeT& Search, PredicateT Comp )
         {
-            return 
+            return
                 detail::last_finderF<
-                    BOOST_STRING_TYPENAME 
+                    BOOST_STRING_TYPENAME
                         range_const_iterator<RangeT>::type,
                     PredicateT>( ::boost::as_literal(Search), Comp ) ;
         }
@@ -128,13 +128,13 @@ namespace boost {
         inline detail::nth_finderF<
             BOOST_STRING_TYPENAME range_const_iterator<RangeT>::type,
             is_equal>
-        nth_finder( 
-            const RangeT& Search, 
+        nth_finder(
+            const RangeT& Search,
             int Nth)
         {
-            return 
+            return
                 detail::nth_finderF<
-                    BOOST_STRING_TYPENAME 
+                    BOOST_STRING_TYPENAME
                         range_const_iterator<RangeT>::type,
                     is_equal>( ::boost::as_literal(Search), Nth, is_equal() ) ;
         }
@@ -146,14 +146,14 @@ namespace boost {
         inline detail::nth_finderF<
             BOOST_STRING_TYPENAME range_const_iterator<RangeT>::type,
             PredicateT>
-        nth_finder( 
-            const RangeT& Search, 
-            int Nth, 
+        nth_finder(
+            const RangeT& Search,
+            int Nth,
             PredicateT Comp )
         {
-            return 
+            return
                 detail::nth_finderF<
-                    BOOST_STRING_TYPENAME 
+                    BOOST_STRING_TYPENAME
                         range_const_iterator<RangeT>::type,
                     PredicateT>( ::boost::as_literal(Search), Nth, Comp );
         }
@@ -162,7 +162,7 @@ namespace boost {
         /*!
             Construct the \c head_finder. The finder returns a head of a given
             input. The head is a prefix of a string up to n elements in
-            size. If an input has less then n elements, whole input is 
+            size. If an input has less then n elements, whole input is
             considered a head.
             The result is given as an \c iterator_range delimiting the match.
 
@@ -174,12 +174,12 @@ namespace boost {
         {
             return detail::head_finderF(N);
         }
-        
+
         //! "Tail" finder
         /*!
             Construct the \c tail_finder. The finder returns a tail of a given
             input. The tail is a suffix of a string up to n elements in
-            size. If an input has less then n elements, whole input is 
+            size. If an input has less then n elements, whole input is
             considered a head.
             The result is given as an \c iterator_range delimiting the match.
 
@@ -194,14 +194,14 @@ namespace boost {
 
         //! "Token" finder
         /*!
-            Construct the \c token_finder. The finder searches for a token 
-            specified by a predicate. It is similar to std::find_if 
+            Construct the \c token_finder. The finder searches for a token
+            specified by a predicate. It is similar to std::find_if
             algorithm, with an exception that it return a range of
             instead of a single iterator.
 
-            If "compress token mode" is enabled, adjacent matching tokens are 
-            concatenated into one match. Thus the finder can be used to 
-            search for continuous segments of characters satisfying the 
+            If "compress token mode" is enabled, adjacent matching tokens are
+            concatenated into one match. Thus the finder can be used to
+            search for continuous segments of characters satisfying the
             given predicate.
 
             The result is given as an \c iterator_range delimiting the match.
@@ -212,8 +212,8 @@ namespace boost {
         */
         template< typename PredicateT >
         inline detail::token_finderF<PredicateT>
-        token_finder( 
-            PredicateT Pred, 
+        token_finder(
+            PredicateT Pred,
             token_compress_mode_type eCompress=token_compress_off )
         {
             return detail::token_finderF<PredicateT>( Pred, eCompress );
@@ -221,9 +221,9 @@ namespace boost {
 
         //! "Range" finder
         /*!
-            Construct the \c range_finder. The finder does not perform 
-            any operation. It simply returns the given range for 
-            any input. 
+            Construct the \c range_finder. The finder does not perform
+            any operation. It simply returns the given range for
+            any input.
 
             \param Begin Beginning of the range
             \param End End of the range
@@ -239,7 +239,7 @@ namespace boost {
         }
 
         //! "Range" finder
-        /*!       
+        /*!
             \overload
         */
         template< typename ForwardIteratorT >

@@ -3,10 +3,9 @@
 import sys
 
 sys.path.append("../../..")
-import local_paths
 
-from synergia.optics import linear_one_turn_map
 from synergia.lattice import Mad8_reader
+from synergia.optics import linear_one_turn_map
 from synergia.simulation import (
     Dummy_collective_operator,
     Lattice_simulator,

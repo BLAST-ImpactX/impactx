@@ -80,7 +80,7 @@ namespace boost {
 
         //! is_less functor
         /*!
-            Convenient version of standard std::less. Operation is templated, therefore it is 
+            Convenient version of standard std::less. Operation is templated, therefore it is
             not required to specify the exact types upon the construction
          */
         struct is_less
@@ -133,7 +133,7 @@ namespace boost {
 
         //! is_not_greater functor
         /*!
-            Convenient version of standard std::not_greater_to. Operation is templated, therefore it is 
+            Convenient version of standard std::not_greater_to. Operation is templated, therefore it is
             not required to specify the exact types upon the construction
          */
         struct is_not_greater

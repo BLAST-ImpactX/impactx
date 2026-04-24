@@ -42,24 +42,24 @@
  * BICGSTABL[shape="plaintext"];
  * BICGSTAB[shape="plaintext"];
  *
- *	A1 -> A2 [label="yes"];
- *	A2 -> CG [label="yes"];
- *	A2 -> A3 [label="no"];
- *	A3 -> SYMMLQ [label="yes"];
- *	A3 -> MINRES [label="no"];
+ *  A1 -> A2 [label="yes"];
+ *  A2 -> CG [label="yes"];
+ *  A2 -> A3 [label="no"];
+ *  A3 -> SYMMLQ [label="yes"];
+ *  A3 -> MINRES [label="no"];
  *
- *	A1 -> A4 [label="no"];
- *	A4 -> A5 [label="yes"];
- *	A5 -> GCR [label="yes"];
- *	A5 -> GMRES [label="no"];
+ *  A1 -> A4 [label="no"];
+ *  A4 -> A5 [label="yes"];
+ *  A5 -> GCR [label="yes"];
+ *  A5 -> GMRES [label="no"];
  *
- *	A4 -> A6 [label="no"];
- *	A6 -> A8 [label="yes"];
- *	A6 -> A7 [label="no"];
- *	A7 -> BICGSTABL [label="yes"];
- *	A7 -> BICGSTAB [label="no"];
- *	A8 -> IDRSTABL [label="yes"];
- *	A8 -> IDRS [label="no"];
+ *  A4 -> A6 [label="no"];
+ *  A6 -> A8 [label="yes"];
+ *  A6 -> A7 [label="no"];
+ *  A7 -> BICGSTABL [label="yes"];
+ *  A7 -> BICGSTAB [label="no"];
+ *  A8 -> IDRSTABL [label="yes"];
+ *  A8 -> IDRS [label="no"];
  * }
  * \enddot
  * \code

@@ -2,7 +2,7 @@
     Copyright (c) 2001-2011 Joel de Guzman
     Copyright (c) 2005-2006 Dan Marsden
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(BOOST_FUSION_CATEGORY_OF_IMPL_20060217_2141)
@@ -24,9 +24,9 @@ namespace boost { namespace fusion {
             // assumes T is an mpl sequence
             // there should be no way this will ever be
             // called where T is an mpl iterator
-        
+
             BOOST_STATIC_ASSERT(mpl::is_sequence<T>::value);
-            typedef typename 
+            typedef typename
                 mpl_iterator_category<
                     typename mpl::begin<T>::type::category
                 >::type

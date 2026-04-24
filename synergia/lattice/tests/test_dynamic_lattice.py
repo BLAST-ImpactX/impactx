@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from synergia.lattice import Lattice, Lattice_element, MadX_reader
-from synergia.foundation import Reference_particle
 import pytest
+
+from synergia.lattice import MadX_reader
 
 lattice_str = """
     start = 0.35;

@@ -3,12 +3,12 @@
  * Copyright (c) 1998-2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
- 
+
  /*
   *   LOCATION:    see http://www.boost.org for most recent version.
   *   FILE         match_flags.hpp
@@ -53,7 +53,7 @@ typedef enum _match_flags
    match_continuous = match_not_null << 1,           /* each grep match must continue from */
                                                      /* uninterrupted from the previous one */
    match_partial = match_continuous << 1,            /* find partial matches */
-   
+
    match_stop = match_partial << 1,                  /* stop after first match (grep) V3 only */
    match_not_initial_null = match_stop,              /* don't match initial null, V4 only */
    match_all = match_stop << 1,                      /* must find the whole of input even if match_any is set */
@@ -76,12 +76,12 @@ typedef enum _match_flags
    format_is_if = format_first_only << 1,            /* internal use only. */
    format_literal = format_is_if << 1,               /* treat string as a literal */
 
-   match_not_any = match_not_bol | match_not_eol | match_not_bob 
-      | match_not_eob | match_not_bow | match_not_eow | match_not_dot_newline 
+   match_not_any = match_not_bol | match_not_eol | match_not_bob
+      | match_not_eob | match_not_bow | match_not_eow | match_not_dot_newline
       | match_not_dot_null | match_prev_avail | match_init | match_not_null
-      | match_continuous | match_partial | match_stop | match_not_initial_null 
+      | match_continuous | match_partial | match_stop | match_not_initial_null
       | match_stop | match_all | match_perl | match_posix | match_nosubs
-      | match_extra | match_single_line | match_unused1 | match_unused2 
+      | match_extra | match_single_line | match_unused1 | match_unused2
       | match_unused3 | match_max | format_perl | format_default | format_sed
       | format_all | format_no_copy | format_first_only | format_is_if
       | format_literal
@@ -158,4 +158,3 @@ using regex_constants::format_first_only;
 } /* namespace boost */
 #endif /* __cplusplus */
 #endif /* include guard */
-

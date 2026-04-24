@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_PP_IS_ITERATING)
@@ -37,14 +37,14 @@
     BOOST_PP_CAT(A, n) const&
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit { namespace karma 
+namespace boost { namespace spirit { namespace karma
 {
     ///////////////////////////////////////////////////////////////////////////
     template <typename Expr, BOOST_PP_ENUM_PARAMS(N, typename A)>
     inline detail::format_manip<Expr, mpl::false_, mpl::true_, unused_type
       , fusion::vector<
             BOOST_PP_ENUM(N, BOOST_SPIRIT_KARMA_ATTRIBUTE_REFERENCE, A)
-        > > 
+        > >
     format(Expr const& xpr, BOOST_PP_ENUM_BINARY_PARAMS(N, A, const& attr))
     {
         using karma::detail::format_manip;
@@ -69,7 +69,7 @@ namespace boost { namespace spirit { namespace karma
     inline detail::format_manip<Expr, mpl::false_, mpl::true_, Delimiter
       , fusion::vector<
             BOOST_PP_ENUM(N, BOOST_SPIRIT_KARMA_ATTRIBUTE_REFERENCE, A)
-        > > 
+        > >
     format_delimited(Expr const& xpr, Delimiter const& d
       , BOOST_SCOPED_ENUM(delimit_flag) pre_delimit
       , BOOST_PP_ENUM_BINARY_PARAMS(N, A, const& attr))
@@ -96,7 +96,7 @@ namespace boost { namespace spirit { namespace karma
     inline detail::format_manip<Expr, mpl::false_, mpl::true_, Delimiter
       , fusion::vector<
             BOOST_PP_ENUM(N, BOOST_SPIRIT_KARMA_ATTRIBUTE_REFERENCE, A)
-        > > 
+        > >
     format_delimited(Expr const& xpr, Delimiter const& d
       , BOOST_PP_ENUM_BINARY_PARAMS(N, A, const& attr))
     {
@@ -121,5 +121,4 @@ namespace boost { namespace spirit { namespace karma
 #undef BOOST_SPIRIT_KARMA_ATTRIBUTE_REFERENCE
 #undef N
 
-#endif 
-
+#endif

@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -26,9 +26,9 @@ namespace boost { namespace spirit { namespace iterator_policies
     //  class functor_input
     //  Implementation of the InputPolicy used by multi_pass
     //  functor_input gets tokens from a functor
-    // 
+    //
     //  Note: the functor must have a typedef for result_type
-    //        It also must have a static variable of type result_type defined 
+    //        It also must have a static variable of type result_type defined
     //        to represent EOF that is called eof.
     //
     ///////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ namespace boost { namespace spirit { namespace iterator_policies
             template <typename MultiPass>
             static void advance_input(MultiPass& mp)
             {
-                // if mp.shared is NULL then this instance of the multi_pass 
+                // if mp.shared is NULL then this instance of the multi_pass
                 // represents a end iterator
                 BOOST_ASSERT(0 != mp.shared());
                 mp.shared()->curtok = mp.ftor();
@@ -79,13 +79,13 @@ namespace boost { namespace spirit { namespace iterator_policies
 
             // test, whether we reached the end of the underlying stream
             template <typename MultiPass>
-            static bool input_at_eof(MultiPass const& mp) 
+            static bool input_at_eof(MultiPass const& mp)
             {
                 return mp.shared()->curtok == mp.ftor.eof;
             }
 
             template <typename MultiPass>
-            static bool input_is_valid(MultiPass const&, value_type const& t) 
+            static bool input_is_valid(MultiPass const&, value_type const& t)
             {
                 using namespace is_valid_test_;
                 return token_is_valid(t);

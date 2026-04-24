@@ -37,7 +37,7 @@
 namespace boost {
 namespace random {
 namespace detail {
-    
+
 
 #ifdef BOOST_MSVC
 #pragma warning(push)
@@ -62,7 +62,7 @@ T generate_uniform_int(
       random::detail::subtract<base_result>()((eng.max)(), (eng.min)());
 
     if(range == 0) {
-      return min_value;    
+      return min_value;
     } else if(brange == range) {
       // this will probably never happen in real life
       // basically nothing to do; just take care we don't overflow / underflow
@@ -124,16 +124,16 @@ T generate_uniform_int(
           }
 
           // Postcondition: mult <= range
-          // 
+          //
           // limit*(brange+1)<=range+1                   def. of limit       (1)
           // mult<=limit                                 loop condition      (2)
           // Therefore mult*(brange+1)<=range+1          by (1), (2)         (3)
           // mult*(brange+1)!=range+1                    preceding if        (4)
           // Therefore mult*(brange+1)<range+1           by (3), (4)         (5)
-          // 
+          //
           // Postcondition: result < mult
           //
-          // See the second postcondition on the change to result. 
+          // See the second postcondition on the change to result.
           mult *= range_type(brange)+range_type(1);
         }
         // loop postcondition: range/mult < brange+1
@@ -401,7 +401,7 @@ public:
      */
     BOOST_RANDOM_DETAIL_EQUALITY_OPERATOR(uniform_int_distribution, lhs, rhs)
     { return lhs._min == rhs._min && lhs._max == rhs._max; }
-    
+
     /**
      * Returns true if the two distributions may produce different sequences
      * of values given equal generators.

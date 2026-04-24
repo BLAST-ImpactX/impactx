@@ -26,6 +26,3 @@ namespace boost{ namespace math
 } // namespace boost
 
 #endif // BOOST_MATH_TOOLS_REAL_CAST_HPP
-
-
-

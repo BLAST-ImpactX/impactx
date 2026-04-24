@@ -64,7 +64,7 @@ namespace boost { namespace phoenix
             typedef
                 typename proto::detail::uncvref<Expr>::type
                      expr_type;
-            
+
             typedef typename
                 detail::result_of::initialize_locals<
                     vars_type
@@ -109,8 +109,8 @@ namespace boost { namespace phoenix
                     typename proto::result_of::value<Map>::type
                 >::type
                 map_type;
-            
-            typedef typename 
+
+            typedef typename
                 detail::result_of::initialize_locals<
                     vars_type
                   , Context

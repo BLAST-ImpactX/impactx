@@ -1,8 +1,8 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2009 Francois Barel
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_PARAMETERIZED_AUGUST_09_2009_0601AM)
@@ -69,7 +69,7 @@ namespace boost { namespace spirit { namespace traits
     struct handles_container<karma::parameterized_nonterminal<Subject, Params>
           , Attribute, Context, Iterator>
       : handles_container<typename remove_const<Subject>::type
-        , Attribute, Context, Iterator> 
+        , Attribute, Context, Iterator>
     {};
 }}}
 

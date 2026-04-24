@@ -24,20 +24,20 @@ namespace boost { namespace phoenix
         };
     };
 }}
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0>
     struct vector1
     {
         typedef A0 member_type0; A0 a0;
-        
+
         typedef mpl::int_<1> size_type;
         static const int size_value = 1;
         typedef
@@ -64,20 +64,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector1 ) (A0)
   , (A0, a0)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1>
     struct vector2
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1;
-        
+
         typedef mpl::int_<2> size_type;
         static const int size_value = 2;
         typedef
@@ -104,20 +104,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector2 ) (A0) (A1)
   , (A0, a0) (A1, a1)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2>
     struct vector3
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2;
-        
+
         typedef mpl::int_<3> size_type;
         static const int size_value = 3;
         typedef
@@ -144,20 +144,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector3 ) (A0) (A1) (A2)
   , (A0, a0) (A1, a1) (A2, a2)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3>
     struct vector4
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3;
-        
+
         typedef mpl::int_<4> size_type;
         static const int size_value = 4;
         typedef
@@ -184,20 +184,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector4 ) (A0) (A1) (A2) (A3)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct vector5
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4;
-        
+
         typedef mpl::int_<5> size_type;
         static const int size_value = 5;
         typedef
@@ -224,20 +224,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector5 ) (A0) (A1) (A2) (A3) (A4)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct vector6
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5;
-        
+
         typedef mpl::int_<6> size_type;
         static const int size_value = 6;
         typedef
@@ -264,20 +264,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector6 ) (A0) (A1) (A2) (A3) (A4) (A5)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct vector7
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6;
-        
+
         typedef mpl::int_<7> size_type;
         static const int size_value = 7;
         typedef
@@ -304,20 +304,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector7 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct vector8
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7;
-        
+
         typedef mpl::int_<8> size_type;
         static const int size_value = 8;
         typedef
@@ -344,20 +344,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector8 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct vector9
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8;
-        
+
         typedef mpl::int_<9> size_type;
         static const int size_value = 9;
         typedef
@@ -384,20 +384,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector9 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
     struct vector10
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9;
-        
+
         typedef mpl::int_<10> size_type;
         static const int size_value = 10;
         typedef
@@ -424,20 +424,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector10 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10>
     struct vector11
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10;
-        
+
         typedef mpl::int_<11> size_type;
         static const int size_value = 11;
         typedef
@@ -464,20 +464,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector11 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11>
     struct vector12
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11;
-        
+
         typedef mpl::int_<12> size_type;
         static const int size_value = 12;
         typedef
@@ -504,20 +504,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector12 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12>
     struct vector13
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12;
-        
+
         typedef mpl::int_<13> size_type;
         static const int size_value = 13;
         typedef
@@ -544,20 +544,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector13 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13>
     struct vector14
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13;
-        
+
         typedef mpl::int_<14> size_type;
         static const int size_value = 14;
         typedef
@@ -584,20 +584,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector14 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14>
     struct vector15
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14;
-        
+
         typedef mpl::int_<15> size_type;
         static const int size_value = 15;
         typedef
@@ -624,20 +624,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector15 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15>
     struct vector16
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15;
-        
+
         typedef mpl::int_<16> size_type;
         static const int size_value = 16;
         typedef
@@ -664,20 +664,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector16 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16>
     struct vector17
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16;
-        
+
         typedef mpl::int_<17> size_type;
         static const int size_value = 17;
         typedef
@@ -704,20 +704,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector17 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17>
     struct vector18
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17;
-        
+
         typedef mpl::int_<18> size_type;
         static const int size_value = 18;
         typedef
@@ -744,20 +744,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector18 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18>
     struct vector19
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18;
-        
+
         typedef mpl::int_<19> size_type;
         static const int size_value = 19;
         typedef
@@ -784,20 +784,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector19 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19>
     struct vector20
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19;
-        
+
         typedef mpl::int_<20> size_type;
         static const int size_value = 20;
         typedef
@@ -824,20 +824,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector20 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20>
     struct vector21
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20;
-        
+
         typedef mpl::int_<21> size_type;
         static const int size_value = 21;
         typedef
@@ -864,20 +864,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector21 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21>
     struct vector22
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21;
-        
+
         typedef mpl::int_<22> size_type;
         static const int size_value = 22;
         typedef
@@ -904,20 +904,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector22 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22>
     struct vector23
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22;
-        
+
         typedef mpl::int_<23> size_type;
         static const int size_value = 23;
         typedef
@@ -944,20 +944,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector23 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23>
     struct vector24
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23;
-        
+
         typedef mpl::int_<24> size_type;
         static const int size_value = 24;
         typedef
@@ -984,20 +984,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector24 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24>
     struct vector25
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24;
-        
+
         typedef mpl::int_<25> size_type;
         static const int size_value = 25;
         typedef
@@ -1024,20 +1024,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector25 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23) (A24)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23) (A24, a24)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25>
     struct vector26
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24; typedef A25 member_type25; A25 a25;
-        
+
         typedef mpl::int_<26> size_type;
         static const int size_value = 26;
         typedef
@@ -1064,20 +1064,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector26 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23) (A24) (A25)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23) (A24, a24) (A25, a25)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26>
     struct vector27
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24; typedef A25 member_type25; A25 a25; typedef A26 member_type26; A26 a26;
-        
+
         typedef mpl::int_<27> size_type;
         static const int size_value = 27;
         typedef
@@ -1104,20 +1104,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector27 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23) (A24) (A25) (A26)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23) (A24, a24) (A25, a25) (A26, a26)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27>
     struct vector28
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24; typedef A25 member_type25; A25 a25; typedef A26 member_type26; A26 a26; typedef A27 member_type27; A27 a27;
-        
+
         typedef mpl::int_<28> size_type;
         static const int size_value = 28;
         typedef
@@ -1144,20 +1144,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector28 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23) (A24) (A25) (A26) (A27)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23) (A24, a24) (A25, a25) (A26, a26) (A27, a27)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28>
     struct vector29
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24; typedef A25 member_type25; A25 a25; typedef A26 member_type26; A26 a26; typedef A27 member_type27; A27 a27; typedef A28 member_type28; A28 a28;
-        
+
         typedef mpl::int_<29> size_type;
         static const int size_value = 29;
         typedef
@@ -1184,20 +1184,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector29 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23) (A24) (A25) (A26) (A27) (A28)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23) (A24, a24) (A25, a25) (A26, a26) (A27, a27) (A28, a28)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29>
     struct vector30
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24; typedef A25 member_type25; A25 a25; typedef A26 member_type26; A26 a26; typedef A27 member_type27; A27 a27; typedef A28 member_type28; A28 a28; typedef A29 member_type29; A29 a29;
-        
+
         typedef mpl::int_<30> size_type;
         static const int size_value = 30;
         typedef
@@ -1224,20 +1224,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT_NO_PARTIAL(
   , ( boost::phoenix::vector30 ) (A0) (A1) (A2) (A3) (A4) (A5) (A6) (A7) (A8) (A9) (A10) (A11) (A12) (A13) (A14) (A15) (A16) (A17) (A18) (A19) (A20) (A21) (A22) (A23) (A24) (A25) (A26) (A27) (A28) (A29)
   , (A0, a0) (A1, a1) (A2, a2) (A3, a3) (A4, a4) (A5, a5) (A6, a6) (A7, a7) (A8, a8) (A9, a9) (A10, a10) (A11, a11) (A12, a12) (A13, a13) (A14, a14) (A15, a15) (A16, a16) (A17, a17) (A18, a18) (A19, a19) (A20, a20) (A21, a21) (A22, a22) (A23, a23) (A24, a24) (A25, a25) (A26, a26) (A27, a27) (A28, a28) (A29, a29)
 )
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 namespace boost { namespace phoenix
 {
     template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29 , typename A30>
     struct vector31
     {
         typedef A0 member_type0; A0 a0; typedef A1 member_type1; A1 a1; typedef A2 member_type2; A2 a2; typedef A3 member_type3; A3 a3; typedef A4 member_type4; A4 a4; typedef A5 member_type5; A5 a5; typedef A6 member_type6; A6 a6; typedef A7 member_type7; A7 a7; typedef A8 member_type8; A8 a8; typedef A9 member_type9; A9 a9; typedef A10 member_type10; A10 a10; typedef A11 member_type11; A11 a11; typedef A12 member_type12; A12 a12; typedef A13 member_type13; A13 a13; typedef A14 member_type14; A14 a14; typedef A15 member_type15; A15 a15; typedef A16 member_type16; A16 a16; typedef A17 member_type17; A17 a17; typedef A18 member_type18; A18 a18; typedef A19 member_type19; A19 a19; typedef A20 member_type20; A20 a20; typedef A21 member_type21; A21 a21; typedef A22 member_type22; A22 a22; typedef A23 member_type23; A23 a23; typedef A24 member_type24; A24 a24; typedef A25 member_type25; A25 a25; typedef A26 member_type26; A26 a26; typedef A27 member_type27; A27 a27; typedef A28 member_type28; A28 a28; typedef A29 member_type29; A29 a29; typedef A30 member_type30; A30 a30;
-        
+
         typedef mpl::int_<31> size_type;
         static const int size_value = 31;
         typedef

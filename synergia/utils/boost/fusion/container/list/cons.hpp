@@ -2,7 +2,7 @@
     Copyright (c) 2001-2011 Joel de Guzman
     Copyright (c) 2005 Eric Niebler
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #if !defined(FUSION_CONS_07172005_0843)
@@ -64,7 +64,7 @@ namespace boost { namespace fusion
             typename detail::call_param<Car>::type in_car
           , typename detail::call_param<Cdr>::type in_cdr)
             : car(in_car), cdr(in_cdr) {}
-        
+
         template <typename Car2, typename Cdr2>
         BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
         cons(cons<Car2, Cdr2> const& rhs)
@@ -145,4 +145,3 @@ namespace boost { namespace fusion
 }}
 
 #endif
-

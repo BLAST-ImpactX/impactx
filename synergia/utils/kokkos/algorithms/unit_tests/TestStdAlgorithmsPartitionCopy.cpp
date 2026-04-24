@@ -135,16 +135,16 @@ void verify_data(const std::string& name, ResultType my_result,
   for (std::size_t i = 0; i < std_diff_true; ++i) {
     ASSERT_EQ(std_vec_true[i], view_dest_true_h(i));
     // std::cout << "i= " << i << " "
-    // 	      << " std_true = " << std_vec_true[i] << " "
-    // 	      << " mine     = " << view_dest_true_h(i) << '\n';
+    //        << " std_true = " << std_vec_true[i] << " "
+    //        << " mine     = " << view_dest_true_h(i) << '\n';
   }
 
   auto view_dest_false_h = create_host_space_copy(view_dest_false);
   for (std::size_t i = 0; i < std_diff_false; ++i) {
     ASSERT_EQ(std_vec_false[i], view_dest_false_h(i));
     // std::cout << "i= " << i << " "
-    // 	      << " std_false = " << std_vec_false[i] << " "
-    // 	      << " mine     = " << view_dest_false_h(i) << '\n';
+    //        << " std_false = " << std_vec_false[i] << " "
+    //        << " mine     = " << view_dest_false_h(i) << '\n';
   }
 
   if (name == "empty") {

@@ -49,7 +49,7 @@ In the case your own application is multithreaded, and multiple threads make cal
 int main(int argc, char** argv)
 {
   Eigen::initParallel();
-  
+
   ...
 }
 \endcode

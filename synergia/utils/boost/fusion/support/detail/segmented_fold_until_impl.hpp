@@ -321,7 +321,7 @@ namespace boost { namespace fusion
                   , Fun
                 >
             impl;
-            
+
             typedef typename impl::type type;
             typedef typename impl::continue_type continue_type;
 
@@ -347,7 +347,7 @@ namespace boost { namespace fusion
             typedef
                 segmented_fold_until_iterate_skip_empty<Begin, End, State, Context, Fun, empty_type::value>
             impl;
-            
+
             typedef typename impl::type type;
             typedef typename impl::continue_type continue_type;
 

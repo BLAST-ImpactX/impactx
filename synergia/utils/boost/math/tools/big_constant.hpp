@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace boost{ namespace math{ 
+namespace boost{ namespace math{
 
 namespace tools{
 
@@ -95,4 +95,3 @@ inline constexpr T make_big_value(largest_float, const char* s, std::false_type 
 }}} // namespaces
 
 #endif
-

@@ -82,9 +82,9 @@ namespace boost { namespace fusion
             BOOST_STATIC_ASSERT((!result_of::equal_to<seq_first_type, seq_last_type>::value));
 
             typedef First FirstType;
-            typedef typename 
+            typedef typename
                 fusion_default_help<
-                    Last 
+                    Last
                   , typename compute_erase_last<Sequence, First>::type
                 >::type
             LastType;
@@ -102,7 +102,7 @@ namespace boost { namespace fusion
     inline typename
         lazy_enable_if<
             traits::is_sequence<Sequence>
-          , typename result_of::erase<Sequence const, First> 
+          , typename result_of::erase<Sequence const, First>
         >::type
     erase(Sequence const& seq, First const& first)
     {
@@ -137,4 +137,3 @@ namespace boost { namespace fusion
 }}
 
 #endif
-

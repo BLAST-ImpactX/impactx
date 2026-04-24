@@ -21,10 +21,10 @@ namespace boost { namespace spirit { namespace x3
         static bool const has_attribute = true;
 
         constexpr real_parser()
-        	: policies() {}
+            : policies() {}
 
         constexpr real_parser(RealPolicies const& policies)
-        	: policies(policies) {}
+            : policies(policies) {}
 
         template <typename Iterator, typename Context>
         bool parse(Iterator& first, Iterator const& last

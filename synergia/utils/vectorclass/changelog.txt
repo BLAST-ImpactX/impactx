@@ -16,7 +16,7 @@ Change log for Vector class library
   * new add-on package with container class and matrix class templates
   * major improvements in add-on package 'complex'
   * minor improvements in add-on packages 'random' and 'vector3d'
-  
+
 2021-08-18 version 2.01.04
   * fix bug in elementtype for Vec8uq
   * improved optimization of permute functions in MS compiler by using constexpr

@@ -82,7 +82,7 @@ namespace sbend_impl
                 if (sp.ledge)
                 {
                     // slot
-                    FF_algorithm::slot_unit( 
+                    FF_algorithm::slot_unit(
                             p(i,0), p(i,1), p(i,2), p(i,3), p(i,4), p(i,5),
                             sp.ce1, sp.se1, sp.pref_b, sp.m_b );
 
@@ -99,15 +99,15 @@ namespace sbend_impl
                     if (sp.ledgekick)
                     {
                         FF_algorithm::edge_unit(
-                            p(i,2), p(i,1), p(i,3), 
-                            sp.us_edge_k_x, sp.us_edge_k_y, 0); 
-                    } 
+                            p(i,2), p(i,1), p(i,3),
+                            sp.us_edge_k_x, sp.us_edge_k_y, 0);
+                    }
                 }
 
                 // bend
                 FF_algorithm::bend_unit(
                         p(i,0), p(i,1), p(i,2), p(i,3), p(i,4), p(i,5),
-                        dphi, sp.strength, sp.pref_b, sp.m_b, sp.ref_cdt, 
+                        dphi, sp.strength, sp.pref_b, sp.m_b, sp.ref_cdt,
                         phase, term );
 
                 if (sp.redge)
@@ -118,7 +118,7 @@ namespace sbend_impl
                     if (sp.redgekick)
                     {
                         FF_algorithm::edge_unit(
-                            p(i,2), p(i,1), p(i,3), 
+                            p(i,2), p(i,1), p(i,3),
                             sp.ds_edge_k_x, sp.ds_edge_k_y, 0);
                     }
 
@@ -174,7 +174,7 @@ namespace sbend_impl
                 if (sp.ledge)
                 {
                     // slot
-                    FF_algorithm::slot_unit<gsv_t>( 
+                    FF_algorithm::slot_unit<gsv_t>(
                             p0, p1, p2, p3, p4, p5,
                             sp.ce1, sp.se1, sp.pref_b, sp.m_b );
 
@@ -197,7 +197,7 @@ namespace sbend_impl
                 // bend
                 FF_algorithm::bend_unit<gsv_t>(
                         p0, p1, p2, p3, p4, p5,
-                        dphi, sp.strength, sp.pref_b, sp.m_b, sp.ref_cdt, 
+                        dphi, sp.strength, sp.pref_b, sp.m_b, sp.ref_cdt,
                         phase, term );
 
                 if (sp.redge)
@@ -207,9 +207,9 @@ namespace sbend_impl
                     // FF_algorithm::edge_unit<gsv_t>(p2, p1, p3, p5, sp.ds_edge_k_p);
                     if (sp.redgekick)
                     {
-                        FF_algorithm::edge_unit<gsv_t>( 
-                            p2, p1, p3, sp.ds_edge_k_x, sp.ds_edge_k_y, 0); 
-		            }
+                        FF_algorithm::edge_unit<gsv_t>(
+                            p2, p1, p3, sp.ds_edge_k_x, sp.ds_edge_k_y, 0);
+                    }
 
                     // slot
                     FF_algorithm::slot_unit<gsv_t>(
@@ -311,8 +311,8 @@ namespace sbend_impl
                     if (sp.ledgekick)
                     {
                         FF_algorithm::edge_unit(
-                            p(i,2), p(i,1), p(i,3), 
-                            sp.us_edge_k_x, sp.us_edge_k_y, 0); 
+                            p(i,2), p(i,1), p(i,3),
+                            sp.us_edge_k_x, sp.us_edge_k_y, 0);
                     }
 
                     // bend edge (thin, but with face angle)
@@ -323,8 +323,8 @@ namespace sbend_impl
 
                 // bend body
                 FF_algorithm::bend_yoshida6<typename BP::part_t,
-                    fa::thin_cf_kick_5<typename BP::part_t>, 5> ( 
-                            p(i,0), p(i,1), p(i,2), 
+                    fa::thin_cf_kick_5<typename BP::part_t>, 5> (
+                            p(i,0), p(i,1), p(i,2),
                             p(i,3), p(i,4), p(i,5),
                             sp.pref_b, sp.m_b, step_ref_cdt,
                             step_kl, step_dphi, step_phase, step_term,
@@ -343,8 +343,8 @@ namespace sbend_impl
                     if (sp.redgekick)
                     {
                         FF_algorithm::edge_unit(
-                            p(i,2), p(i,1), p(i,3), 
-                            sp.ds_edge_k_x, sp.ds_edge_k_y, 0); 
+                            p(i,2), p(i,1), p(i,3),
+                            sp.ds_edge_k_x, sp.ds_edge_k_y, 0);
                     }
 
                     // slot
@@ -449,8 +449,8 @@ namespace sbend_impl
                     if (sp.ledgekick)
                     {
                         FF_algorithm::edge_unit<gsv_t>(
-                                p2, p1, p3, 
-                                sp.us_edge_k_x, sp.us_edge_k_y, 0); 
+                                p2, p1, p3,
+                                sp.us_edge_k_x, sp.us_edge_k_y, 0);
                     }
 
                     // bend edge (thin, but with face angle)
@@ -460,8 +460,8 @@ namespace sbend_impl
                 }
 
                 // bend body
-                FF_algorithm::bend_yoshida6<gsv_t, 
-                    fa::thin_cf_kick_5<gsv_t>, 5> ( 
+                FF_algorithm::bend_yoshida6<gsv_t,
+                    fa::thin_cf_kick_5<gsv_t>, 5> (
                             p0, p1, p2, p3, p4, p5,
                             sp.pref_b, sp.m_b, step_ref_cdt,
                             step_kl, step_dphi, step_phase, step_term,
@@ -480,8 +480,8 @@ namespace sbend_impl
                     if (sp.redgekick)
                     {
                         FF_algorithm::edge_unit<gsv_t>(
-                            p2, p1, p3, 
-                            sp.ds_edge_k_x, sp.ds_edge_k_y, 0); 
+                            p2, p1, p3,
+                            sp.ds_edge_k_x, sp.ds_edge_k_y, 0);
                     }
 
                     // slot
@@ -501,13 +501,13 @@ namespace sbend_impl
     };
 
     inline void prop_reference(
-            Reference_particle & ref_l, 
+            Reference_particle & ref_l,
             SbendParams & sp )
     {
         double pref_l = ref_l.get_momentum();
         double    m_l = ref_l.get_mass();
 
-        // propagate the reference particle, and set the edge kick strength 
+        // propagate the reference particle, and set the edge kick strength
         // from the reference particle
         double    x_l = ref_l.get_state()[Bunch::x];
         double   xp_l = ref_l.get_state()[Bunch::xp];
@@ -521,10 +521,10 @@ namespace sbend_impl
 
         double dphi =  -(sp.angle - (sp.e1 + sp.e2));
 
-        Kokkos::complex<double> phase = 
+        Kokkos::complex<double> phase =
             std::exp(std::complex<double>(0.0, -dphi));
 
-        Kokkos::complex<double> term  = 
+        Kokkos::complex<double> term  =
             std::complex<double>(0.0, sp.length / sp.angle) *
             std::complex<double>(1.0 - cos(sp.angle), - sin(sp.angle)) *
             std::complex<double>(cos(sp.e2), -sin(sp.e2));
@@ -533,7 +533,7 @@ namespace sbend_impl
         {
             // slot
             FF_algorithm::slot_unit(
-                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l, 
+                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     sp.ce1, sp.se1, pref_l, m_l);
 
             double p_l = 1.0 + dpop_l;
@@ -542,7 +542,7 @@ namespace sbend_impl
             sp.us_edge_k_x = sp.us_edge_k_p * (xp_l/zp_l);
             sp.us_edge_k_y = sp.us_edge_k_p * (yp_l/zp_l);
 
-            // edge kick that is in accordance with 
+            // edge kick that is in accordance with
             // method 1 (chef fixed angle)
             // double brho_l = pref_l / PH_CNV_brho_to_p;
             // sp.us_edge_k = sp.strength * tan(atan2(xp_l, zp_l)) / brho_l;
@@ -553,7 +553,7 @@ namespace sbend_impl
             // in accordance with method 3
             if (sp.ledgekick)
             {
-                FF_algorithm::edge_unit(y_l, xp_l, yp_l, 
+                FF_algorithm::edge_unit(y_l, xp_l, yp_l,
                     sp.us_edge_k_x/sp.scale, sp.us_edge_k_y/sp.scale, 0);
             }
 
@@ -561,7 +561,7 @@ namespace sbend_impl
 
         FF_algorithm::bend_complete(
                 x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
-                dphi, sp.strength, pref_l, m_l, 0.0/*ref cdt*/, 
+                dphi, sp.strength, pref_l, m_l, 0.0/*ref cdt*/,
                 phase, term);
 
         if (sp.redge)
@@ -572,7 +572,7 @@ namespace sbend_impl
             sp.ds_edge_k_x = sp.ds_edge_k_p * (xp_l/zp_l);
             sp.ds_edge_k_y = sp.ds_edge_k_p * (yp_l/zp_l);
 
-            // edge kick that is in accordance with 
+            // edge kick that is in accordance with
             // method 1 (chef fixed angle)
             // double brho_l = pref_l / PH_CNV_brho_to_p;
             // sp.ds_edge_k = - sp.strength * tan(atan2(xp_l, zp_l)) / brho_l;
@@ -582,13 +582,13 @@ namespace sbend_impl
             // it to the lattice reference
             if (sp.redgekick)
             {
-                FF_algorithm::edge_unit(y_l, xp_l, yp_l, 
+                FF_algorithm::edge_unit(y_l, xp_l, yp_l,
                     sp.ds_edge_k_x/sp.scale, sp.ds_edge_k_y/sp.scale, 0);
             }
 
             // slot
             FF_algorithm::slot_unit(
-                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l, 
+                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     sp.ce2, sp.se2, pref_l, m_l);
         }
 
@@ -597,13 +597,13 @@ namespace sbend_impl
     }
 
     inline void prop_reference_cf(
-            Reference_particle & ref_l, 
+            Reference_particle & ref_l,
             SbendParams & sp )
     {
         double pref_l = ref_l.get_momentum();
         double    m_l = ref_l.get_mass();
 
-        // propagate the reference particle, and set the edge kick strength 
+        // propagate the reference particle, and set the edge kick strength
         // from the reference particle
         double    x_l = ref_l.get_state()[Bunch::x];
         double   xp_l = ref_l.get_state()[Bunch::xp];
@@ -624,11 +624,11 @@ namespace sbend_impl
         Kokkos::complex<double> phase_e1 = FF_algorithm::bend_edge_phase(sp.e1);
         Kokkos::complex<double> phase_e2 = FF_algorithm::bend_edge_phase(sp.e2);
 
-        Kokkos::complex<double> step_phase[4] = { 
+        Kokkos::complex<double> step_phase[4] = {
             fa::sbend_unit_phase(by6::c1, step_angle),
             fa::sbend_unit_phase(by6::c2, step_angle),
             fa::sbend_unit_phase(by6::c3, step_angle),
-            fa::sbend_unit_phase(by6::c4, step_angle) 
+            fa::sbend_unit_phase(by6::c4, step_angle)
         };
 
         Kokkos::complex<double> step_term[4] = {
@@ -649,7 +649,7 @@ namespace sbend_impl
         {
             // slot
             FF_algorithm::slot_unit(
-                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l, 
+                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     sp.ce1, sp.se1, pref_l, m_l);
 
             double p_l = 1.0 + dpop_l;
@@ -663,18 +663,18 @@ namespace sbend_impl
             //FF_algorithm::edge_unit(y_l, xp_l, yp_l, dpop_l, us_edge_k_p/scale);
             if (sp.ledgekick)
             {
-                FF_algorithm::edge_unit(y_l, xp_l, yp_l, 
+                FF_algorithm::edge_unit(y_l, xp_l, yp_l,
                     sp.us_edge_k_x/sp.scale, sp.us_edge_k_y/sp.scale, 0);
             }
 
             // bend edge (thin)
             FF_algorithm::bend_edge(
-                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l, 
+                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     sp.e1, phase_e1, sp.strength, pref_l, m_l);
         }
 
-        FF_algorithm::bend_yoshida6<double, 
-            FF_algorithm::thin_cf_kick_5<double>, 5> ( 
+        FF_algorithm::bend_yoshida6<double,
+            FF_algorithm::thin_cf_kick_5<double>, 5> (
                     x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     pref_l, m_l, 0.0 /* step ref_cdt */,
                     step_kl, step_dphi, step_phase, step_term,
@@ -686,7 +686,7 @@ namespace sbend_impl
             if (sp.redgekick)
             {
                 FF_algorithm::bend_edge(
-                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l, 
+                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     sp.e2, phase_e2, sp.strength, pref_l, m_l);
             }
 
@@ -699,12 +699,12 @@ namespace sbend_impl
             // edge
             //FF_algorithm::edge_unit(y_l, yp_l, ds_edge_k);
             //FF_algorithm::edge_unit(y_l, xp_l, yp_l, dpop_l, ds_edge_k_p/scale);
-            FF_algorithm::edge_unit(y_l, xp_l, yp_l, 
+            FF_algorithm::edge_unit(y_l, xp_l, yp_l,
                     sp.ds_edge_k_x/sp.scale, sp.ds_edge_k_y/sp.scale, 0);
 
             // slot
             FF_algorithm::slot_unit(
-                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l, 
+                    x_l, xp_l, y_l, yp_l, cdt_l, dpop_l,
                     sp.ce2, sp.se2, pref_l, m_l);
         }
 
@@ -739,26 +739,26 @@ namespace sbend_impl
                 gsv_t  y(&p(i, 2));
                 gsv_t yp(&p(i, 3));
 
-                if (k[2] || k[3])   
+                if (k[2] || k[3])
                     FF_algorithm::thin_quadrupole_unit(x, xp, y, yp, k.data+2);
 
-                if (k[4] || k[5])   
+                if (k[4] || k[5])
                     FF_algorithm::thin_sextupole_unit(x, xp, y, yp, k.data+4);
 
-                if (k[6] || k[7])   
+                if (k[6] || k[7])
                     FF_algorithm::thin_octupole_unit(x, xp, y, yp, k.data+6);
 
-                if (k[8] || k[9])   
+                if (k[8] || k[9])
                     FF_algorithm::thin_magnet_unit(x, xp, y, yp, k.data+8, 5);
 
 #if 0
-                if (k[10] || k[11]) 
+                if (k[10] || k[11])
                     FF_algorithm::thin_magnet_unit(x, xp, y, yp, k.data+10, 6);
 
-                if (k[12] || k[13]) 
+                if (k[12] || k[13])
                     FF_algorithm::thin_magnet_unit(x, xp, y, yp, k.data+12, 7);
 
-                if (k[14] || k[15]) 
+                if (k[14] || k[15])
                     FF_algorithm::thin_magnet_unit(x, xp, y, yp, k.data+14, 8);
 #endif
 
@@ -828,7 +828,7 @@ inline void apply(Lattice_element_slice const& slice, BunchT & bunch)
     // error multipole terms
     kt::arr_t<double, 2*max_mp_order> kn;
 
-    // multipole moments 
+    // multipole moments
     // kn[2] ... kn[2*max_mp_order-1]
     bool has_mp = false;
 
@@ -843,7 +843,7 @@ inline void apply(Lattice_element_slice const& slice, BunchT & bunch)
         kn[i*2+0] = ele.get_double_attribute(b_attr, 0.0);
         kn[i*2+1] = ele.get_double_attribute(a_attr, 0.0);
 
-        if (kn[i*2+0] || kn[i*2+1]) 
+        if (kn[i*2+0] || kn[i*2+1])
         {
             has_mp = true;
 
@@ -864,7 +864,7 @@ inline void apply(Lattice_element_slice const& slice, BunchT & bunch)
     }
 
 
-    sp.scale = ref_l.get_momentum() / 
+    sp.scale = ref_l.get_momentum() /
         (ref_b.get_momentum() * (1.0 + ref_b.get_state()[Bunch::dpop]));
 
     if (!sp.redge) sp.e2 = 0;

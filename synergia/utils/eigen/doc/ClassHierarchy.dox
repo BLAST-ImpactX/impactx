@@ -28,12 +28,12 @@ types.
 These are the classes that you need to know about if you want to write functions that accept or return Eigen
 objects.
 
-  - Matrix means plain dense matrix. If \c m is a \c %Matrix, then, for instance, \c m+m is no longer a 
+  - Matrix means plain dense matrix. If \c m is a \c %Matrix, then, for instance, \c m+m is no longer a
     \c %Matrix, it is a "matrix expression".
   - MatrixBase means dense matrix expression. This means that a \c %MatrixBase is something that can be
-    added, matrix-multiplied, LU-decomposed, QR-decomposed... All matrix expression classes, including 
+    added, matrix-multiplied, LU-decomposed, QR-decomposed... All matrix expression classes, including
     \c %Matrix itself, inherit \c %MatrixBase.
-  - Array means plain dense array. If \c x is an \c %Array, then, for instance, \c x+x is no longer an 
+  - Array means plain dense array. If \c x is an \c %Array, then, for instance, \c x+x is no longer an
     \c %Array, it is an "array expression".
   - ArrayBase means dense array expression. This means that an \c %ArrayBase is something that can be
     added, array-multiplied, and on which you can perform all sorts of array operations... All array
@@ -50,15 +50,15 @@ less interesting for users of the Eigen library.
 
   - PlainObjectBase means dense (matrix or array) plain object, i.e. something that stores its own dense
     array of coefficients. This is where, for instance, the \link PlainObjectBase::resize() resize() \endlink
-    methods go. \c %PlainObjectBase is inherited by \c %Matrix and by \c %Array. But above, we said that 
+    methods go. \c %PlainObjectBase is inherited by \c %Matrix and by \c %Array. But above, we said that
     \c %Matrix inherits \c %MatrixBase and \c %Array inherits \c %ArrayBase. So does that mean multiple
     inheritance? No, because \c %PlainObjectBase \e itself inherits \c %MatrixBase or \c %ArrayBase depending
-    on whether we are in the matrix or array case. When we said above that \c %Matrix inherited 
+    on whether we are in the matrix or array case. When we said above that \c %Matrix inherited
     \c %MatrixBase, we omitted to say it does so indirectly via \c %PlainObjectBase. Same for \c %Array.
   - DenseCoeffsBase means something that has dense coefficient accessors. It is a base class for
     \c %DenseBase. The reason for \c %DenseCoeffsBase to exist is that the set of available coefficient
     accessors is very different depending on whether a dense expression has direct memory access or not (the
-    \c DirectAccessBit flag). For example, if \c x is a plain matrix, then \c x has direct access, and 
+    \c DirectAccessBit flag). For example, if \c x is a plain matrix, then \c x has direct access, and
     \c x.transpose() and \c x.block(...) also have direct access, because their coefficients can be read right
     off memory, but for example, \c x+x does not have direct memory access, because obtaining any of its
     coefficients requires a computation (an addition), it can't be just read off memory.

@@ -301,7 +301,7 @@ namespace boost { namespace detail { namespace lcast {
         bool stream_in(lcast::exact<char> x)                    { return shl_char(x.payload); }
         bool stream_in(lcast::exact<unsigned char> x)           { return shl_char(static_cast<char>(x.payload)); }
         bool stream_in(lcast::exact<signed char> x)             { return shl_char(static_cast<char>(x.payload)); }
-        
+
         template <class C>
         typename boost::enable_if_c<boost::detail::is_character<C>::value, bool>::type
                 stream_in(lcast::exact<C> x)                    { return shl_char(x.payload); }
@@ -744,10 +744,9 @@ namespace boost { namespace detail { namespace lcast {
             return shr_using_base_class(output);
         }
     };
-    
+
 }}} // namespace boost::detail::lcast
 
 #undef BOOST_LCAST_NO_WCHAR_T
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_CONVERTER_LEXICAL_HPP
-

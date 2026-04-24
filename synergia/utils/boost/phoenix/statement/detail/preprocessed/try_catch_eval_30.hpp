@@ -5,13 +5,13 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -43,7 +43,7 @@
             {
                 boost::phoenix::eval(proto::child_c<0>(try_), ctx);
             }
-            
+
             catch(...)
             {
                 boost::phoenix::eval(
@@ -53,13 +53,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -101,13 +101,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -149,13 +149,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -197,13 +197,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -245,13 +245,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -293,13 +293,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -341,13 +341,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -389,13 +389,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -437,13 +437,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -485,13 +485,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -533,13 +533,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -581,13 +581,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -629,13 +629,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -677,13 +677,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -725,13 +725,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -773,13 +773,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -821,13 +821,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -869,13 +869,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -917,13 +917,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -965,13 +965,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1013,13 +1013,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1061,13 +1061,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1109,13 +1109,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1157,13 +1157,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1205,13 +1205,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1253,13 +1253,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1301,13 +1301,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1349,13 +1349,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28, typename Context>
         typename boost::enable_if<
             proto::matches<
@@ -1397,13 +1397,13 @@
                   , ctx);
             }
         }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
         template <typename Try, typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18 , typename A19 , typename A20 , typename A21 , typename A22 , typename A23 , typename A24 , typename A25 , typename A26 , typename A27 , typename A28 , typename A29, typename Context>
         typename boost::enable_if<
             proto::matches<

@@ -1,7 +1,7 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
 //  Copyright (c) 2001-2011 Joel de Guzman
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef BOOST_SPIRIT_KARMA_DIRECTIVE_UPPER_LOWER_CASE_HPP
@@ -50,7 +50,7 @@ namespace boost { namespace spirit
             Current
           , tag::char_code<tag::upper, CharEncoding>
           , typename enable_if<
-                has_modifier<Current, tag::char_code<tag::lower, CharEncoding> > 
+                has_modifier<Current, tag::char_code<tag::lower, CharEncoding> >
             >::type
           >
       : Current
@@ -58,7 +58,7 @@ namespace boost { namespace spirit
         compound_modifier()
           : Current() {}
 
-        compound_modifier(Current const& current, 
+        compound_modifier(Current const& current,
                 tag::char_code<tag::upper, CharEncoding> const&)
           : Current(current) {}
     };
@@ -68,7 +68,7 @@ namespace boost { namespace spirit
             Current
           , tag::char_code<tag::lower, CharEncoding>
           , typename enable_if<
-                has_modifier<Current, tag::char_code<tag::upper, CharEncoding> > 
+                has_modifier<Current, tag::char_code<tag::upper, CharEncoding> >
             >::type
           >
       : Current
@@ -76,7 +76,7 @@ namespace boost { namespace spirit
         compound_modifier()
           : Current() {}
 
-        compound_modifier(Current const& current, 
+        compound_modifier(Current const& current,
                 tag::char_code<tag::lower, CharEncoding> const&)
           : Current(current) {}
     };

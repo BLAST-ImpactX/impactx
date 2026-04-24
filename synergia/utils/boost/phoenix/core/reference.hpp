@@ -39,7 +39,7 @@ namespace boost { namespace phoenix
                 return e;
             }
         };
-        
+
         template <typename T>
         struct reference<T const>
             : expression::terminal<reference_wrapper<T const> >
@@ -97,7 +97,7 @@ namespace boost { namespace phoenix
             return r;
         }
     };
-    
+
     template<typename Expr>
     struct custom_terminal<boost::reference_wrapper<actor<Expr> > >
     {
@@ -121,7 +121,7 @@ namespace boost { namespace phoenix
             return boost::phoenix::eval(r, ctx);
         }
     };
-    
+
     template<typename Expr>
     struct custom_terminal<boost::reference_wrapper<actor<Expr> const> >
     {

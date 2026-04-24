@@ -60,7 +60,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     //
     ///////////////////////////////////////////////////////////////////////////
     struct parser_tag_base {};
-    
+
     ///////////////////////////////////////////////////////////////////////////
     //
     //  parser_address_tag class: tags a parser with its address
@@ -93,23 +93,23 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     class dynamic_parser_tag : public parser_tag_base
     {
     public:
-    
-        dynamic_parser_tag() 
+
+        dynamic_parser_tag()
         : tag(std::size_t(0)) {}
-        
-        parser_id 
+
+        parser_id
         id() const
-        { 
-            return 
-                tag.to_long() 
-                ? tag 
-                : parser_id(reinterpret_cast<std::size_t>(this)); 
+        {
+            return
+                tag.to_long()
+                ? tag
+                : parser_id(reinterpret_cast<std::size_t>(this));
         }
 
-        void set_id(parser_id id_) { tag = id_; } 
-        
+        void set_id(parser_id id_) { tag = id_; }
+
     private:
-    
+
         parser_id tag;
     };
 
@@ -119,4 +119,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

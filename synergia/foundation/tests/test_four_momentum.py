@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from synergia.foundation import Four_momentum
 import pytest
+
+from synergia.foundation import Four_momentum
 
 mass = 3.0
 total_energy = 27.4

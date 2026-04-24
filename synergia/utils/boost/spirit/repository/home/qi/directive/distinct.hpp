@@ -34,7 +34,7 @@
 #include <boost/fusion/include/vector.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace boost { namespace spirit 
+namespace boost { namespace spirit
 {
     ///////////////////////////////////////////////////////////////////////////
     // Enablers
@@ -48,7 +48,7 @@ namespace boost { namespace spirit
 
     // enables *lazy* distinct(...)[...]
     template <>
-    struct use_lazy_directive<qi::domain, repository::tag::distinct, 1> 
+    struct use_lazy_directive<qi::domain, repository::tag::distinct, 1>
       : mpl::true_ {};
 
 }}
@@ -66,7 +66,7 @@ namespace boost { namespace spirit { namespace repository {namespace qi
       : spirit::qi::unary_parser<distinct_parser<Subject, Tail, Modifier> >
     {
         template <typename Context, typename Iterator>
-        struct attribute 
+        struct attribute
           : traits::attribute_of<Subject, Context, Iterator>
         {};
 
@@ -142,4 +142,3 @@ namespace boost { namespace spirit { namespace traits
 }}}
 
 #endif
-

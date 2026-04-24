@@ -108,7 +108,7 @@ BOOST_PP_EXPAND(#) undef  BOOST_FT_syntax
 BOOST_PP_EXPAND(#) undef  BOOST_FT_mfp
 
 #   include <boost/function_types/detail/encoding/undef.hpp>
-#else 
+#else
 
 #   include BOOST_PP_ASSIGN_SLOT(1)
 
@@ -128,7 +128,7 @@ BOOST_PP_EXPAND(#)   define BOOST_FT_nullary_param BOOST_FT_NULLARY_PARAM
 
 #   if !( BOOST_PP_SLOT(1) & (BOOST_FT_volatile) )
 #     if !( BOOST_PP_SLOT(1) & (BOOST_FT_const) )
-BOOST_PP_EXPAND(#)   define BOOST_FT_cv 
+BOOST_PP_EXPAND(#)   define BOOST_FT_cv
 #     else
 BOOST_PP_EXPAND(#)   define BOOST_FT_cv const
 #     endif
@@ -149,4 +149,3 @@ BOOST_PP_EXPAND(#)   undef BOOST_FT_flags
 BOOST_PP_EXPAND(#) endif
 BOOST_PP_EXPAND(#) endif
 #endif
-

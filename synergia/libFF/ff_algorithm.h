@@ -1084,7 +1084,7 @@ namespace FF_algorithm {
                        double old_E,
                        double new_E)
     {
-    
+
         T p = T(old_pref) * (dpop + T(1.0));
         T E = sqrt(p * p + T(m * m));
 
@@ -1095,7 +1095,7 @@ namespace FF_algorithm {
         dpop = sqrt((E - T(m)) * (E + T(m))) / T(new_pref) - T(1.0);
 
     }
-        
+
     // adjust particle coordinates to use new reference energy
     template <typename T>
     KOKKOS_INLINE_FUNCTION void
@@ -1103,7 +1103,7 @@ namespace FF_algorithm {
     {
             p4 = p4 + T(offset);
     }
-        
+
     KOKKOS_INLINE_FUNCTION
     double
     factorial(int n)
@@ -1292,11 +1292,11 @@ namespace FF_algorithm {
                  double re_4_3,
                  double const* te)
     {
-	    T newx(x);
-	    T newxp(xp);
-	    T newy(y);
-	    T newyp(yp);
-	    
+        T newx(x);
+        T newxp(xp);
+        T newy(y);
+        T newyp(yp);
+
         // linear terms
         newxp = xp + T(re_2_1) * x;
         newyp = yp + T(re_4_3) * y;
@@ -1309,10 +1309,10 @@ namespace FF_algorithm {
         newyp = newyp + T(te[7]) * x * y * T(2) + T(te[8]) * x * yp * T(2) +
              T(te[9]) * y * xp * T(2);
 
-	x = newx;
-	xp = newxp;
-	y = newy;
-	yp = newyp;
+    x = newx;
+    xp = newxp;
+    y = newy;
+    yp = newyp;
     }
 
     template <class T>

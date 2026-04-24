@@ -601,9 +601,9 @@ namespace boost
     class BOOST_SYMBOL_VISIBLE thread::id
     {
     private:
-    
+
     #if !defined(BOOST_EMBTC)
-      
+
         friend inline
         std::size_t
         hash_value(const thread::id &v)
@@ -616,13 +616,13 @@ namespace boost
         }
 
     #else
-      
+
         friend
         std::size_t
         hash_value(const thread::id &v);
 
     #endif
-      
+
 #if defined BOOST_THREAD_PROVIDES_BASIC_THREAD_ID
 #if defined(BOOST_THREAD_PLATFORM_WIN32)
         typedef unsigned int data;
@@ -715,7 +715,7 @@ namespace boost
 #endif
 #endif
     };
-    
+
 #if defined(BOOST_EMBTC)
 
         inline

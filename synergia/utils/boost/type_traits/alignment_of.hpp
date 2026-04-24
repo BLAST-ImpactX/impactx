@@ -116,4 +116,3 @@ template<> struct alignment_of<void volatile> : integral_constant<std::size_t, 0
 #endif
 
 #endif // BOOST_TT_ALIGNMENT_OF_HPP_INCLUDED
-

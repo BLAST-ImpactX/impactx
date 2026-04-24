@@ -25,14 +25,14 @@ namespace boost { namespace phoenix
 {
     template <typename> struct if_actor;
 }}
-    
+
 BOOST_PHOENIX_DEFINE_EXPRESSION_EXT(
     if_actor
   , (boost)(phoenix)(if_)
   , (meta_grammar) // Cond
     (meta_grammar) // Then
 )
-    
+
 BOOST_PHOENIX_DEFINE_EXPRESSION(
     (boost)(phoenix)(if_else_statement)
   , (meta_grammar) // Cond
@@ -45,7 +45,7 @@ namespace boost { namespace phoenix
     ////////////////////////////////////////////////////////////////////////////
     // If-Else statements
     ////////////////////////////////////////////////////////////////////////////
-    
+
     // Function for evaluating lambdas like:
     // if_( foo )[ bar ]
     // and
@@ -53,7 +53,7 @@ namespace boost { namespace phoenix
     struct if_else_eval
     {
         typedef void result_type;
-        
+
         template<typename Cond, typename Then, typename Context>
         result_type
         operator()(Cond const & cond, Then const & then, Context const & ctx) const
@@ -61,7 +61,7 @@ namespace boost { namespace phoenix
             if(boost::phoenix::eval(cond, ctx))
                 boost::phoenix::eval(then, ctx);
         }
-        
+
         template<typename Cond, typename Then, typename Else, typename Context>
         result_type
         operator()(
@@ -77,12 +77,12 @@ namespace boost { namespace phoenix
                 boost::phoenix::eval(else_, ctx);
         }
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::if_, Dummy>
         : call<if_else_eval, Dummy>
     {};
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::if_else_statement, Dummy>
         : call<if_else_eval, Dummy>
@@ -155,7 +155,7 @@ namespace boost { namespace phoenix
     {
         return if_gen<Cond>(cond);
     }
- 
+
 }}
 
 #ifdef BOOST_MSVC

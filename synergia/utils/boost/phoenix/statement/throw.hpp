@@ -55,7 +55,7 @@ namespace boost { namespace phoenix
             throw boost::phoenix::eval(throw_expr, ctx);
         }
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::throw_, Dummy>
         : call<throw_eval>
@@ -68,19 +68,19 @@ namespace boost { namespace phoenix
     {
         return expression::throw_<ThrowExpr>::make(throw_expr);
     }
-    
+
     namespace detail
     {
         struct rethrow {};
     }
-    
+
     namespace expression
     {
         struct rethrow
             : expression::value<detail::rethrow>
         {};
     }
-    
+
     template<typename Dummy>
     struct is_custom_terminal<detail::rethrow, Dummy>
       : mpl::true_

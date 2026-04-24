@@ -6,7 +6,7 @@
 //  See library home page at http://www.boost.org/libs/numeric/conversion
 //
 // Contact the author at: fernando_cacciola@hotmail.com
-// 
+//
 #ifndef BOOST_NUMERIC_CONVERSION_CONVERTER_FLC_12NOV2002_HPP
 #define BOOST_NUMERIC_CONVERSION_CONVERTER_FLC_12NOV2002_HPP
 
@@ -15,7 +15,7 @@
 
 #include "boost/numeric/conversion/detail/converter.hpp"
 
-namespace boost { namespace numeric 
+namespace boost { namespace numeric
 {
 
 template<class T,
@@ -53,7 +53,7 @@ struct make_converter_from
   template<class T,
            class Traits       = conversion_traits<T,S>,
            class RawConverter = raw_converter<Traits>
-          > 
+          >
   struct to
   {
     typedef converter<T,S,Traits,OverflowHandler,Float2IntRounder,RawConverter,UserRangeChecker> type ;
@@ -64,5 +64,3 @@ struct make_converter_from
 } } // namespace boost::numeric
 
 #endif
-
-

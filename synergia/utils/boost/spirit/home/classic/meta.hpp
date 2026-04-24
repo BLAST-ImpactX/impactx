@@ -23,4 +23,3 @@
 #include <boost/spirit/home/classic/meta/traverse.hpp>
 
 #endif // BOOST_SPIRIT_CORE_MAIN_HPP
-

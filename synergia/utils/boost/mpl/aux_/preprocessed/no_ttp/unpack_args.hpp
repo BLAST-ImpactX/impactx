@@ -1,8 +1,8 @@
 
 // Copyright Aleksey Gurtovoy 2002-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -91,4 +91,3 @@ struct unpack_args
 BOOST_MPL_AUX_PASS_THROUGH_LAMBDA_SPEC(1, unpack_args)
 
 }}
-

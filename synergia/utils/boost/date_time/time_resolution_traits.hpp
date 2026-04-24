@@ -77,7 +77,7 @@ namespace date_time {
   // versions.  Yes, it's a mess.  Static assertions were not present
   // in the serialization code to protect against this possibility.
   //
-  // In Boost 1.67.0 the var_type was changed to boost::int64_t, 
+  // In Boost 1.67.0 the var_type was changed to boost::int64_t,
   // ensuring the output size is 64 bits, and the serialization version
   // was bumped.  Static assertions were added as well, protecting
   // future changes in this area.

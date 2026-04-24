@@ -1613,4 +1613,3 @@ inline V evaluate_rational_c_imp(const T* a, const U* b, const V& x, const std::
 }}}} // namespaces
 
 #endif // include guard
-

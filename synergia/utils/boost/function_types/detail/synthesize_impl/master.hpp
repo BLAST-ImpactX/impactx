@@ -39,9 +39,9 @@ struct BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,BOOST_FT_arity)
   typedef BOOST_FT_type ;
 };
 
-template<> 
-struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, BOOST_FT_n > 
-{ 
+template<>
+struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, BOOST_FT_n >
+{
   template<typename S> struct synthesize_impl_i
   {
   private:
@@ -53,10 +53,10 @@ struct synthesize_impl_o< BOOST_FT_flags, BOOST_FT_cc_id, BOOST_FT_n >
 #     include BOOST_PP_LOCAL_ITERATE()
 #   endif
   public:
-    typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,BOOST_FT_arity) 
-    < typename mpl::deref< BOOST_FT_iter(0) >::type 
+    typedef typename detail::BOOST_FT_make_type(BOOST_FT_flags,BOOST_FT_cc_id,BOOST_FT_arity)
+    < typename mpl::deref< BOOST_FT_iter(0) >::type
 #   if BOOST_FT_mfp
-    , typename detail::cv_traits< 
+    , typename detail::cv_traits<
           typename mpl::deref< BOOST_FT_iter(1) >::type >::type
 #   endif
 #   if BOOST_FT_n > (BOOST_FT_mfp+1)
@@ -84,4 +84,3 @@ BOOST_PP_EXPAND(#) undef BOOST_FT_make_type_impl
 #else
 #   error "attempt to use arity loop master file without loop"
 #endif
-

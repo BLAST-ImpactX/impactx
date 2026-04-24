@@ -53,7 +53,7 @@ namespace boost { namespace phoenix
             : mpl::false_
         {};
     }
-  
+
     namespace detail
     {
         struct scope_is_nullary_actions
@@ -78,7 +78,7 @@ namespace boost { namespace phoenix
         {
         };
     }
-    
+
     template<typename Key>
     struct is_custom_terminal<detail::local<Key> >
       : mpl::true_
@@ -103,7 +103,7 @@ namespace boost { namespace phoenix
                     typename result_of::env<Context>::type
                 >::type
                 env_type;
-                
+
                 typedef typename detail::apply_local<detail::local<Key>, env_type>::type type;
         };
 
@@ -116,9 +116,9 @@ namespace boost { namespace phoenix
                     typename result_of::env<Context>::type
                 >::type
                 env_type;
-                
+
                 typedef typename detail::apply_local<detail::local<Key>, env_type>::type return_type;
-            
+
             static const int index_value = detail::get_index<typename env_type::map_type, detail::local<Key> >::value;
 
             typedef detail::eval_local<Key> eval_local;

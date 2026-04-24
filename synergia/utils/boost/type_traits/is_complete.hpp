@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt).
 //
 //  See http://www.boost.org/libs/type_traits for most recent version including documentation.
- 
+
 #ifndef BOOST_TT_IS_COMPLETE_HPP_INCLUDED
 #define BOOST_TT_IS_COMPLETE_HPP_INCLUDED
 
@@ -78,7 +78,7 @@ namespace boost {
    {};
    template <class T>
    struct is_complete<T&> : boost::is_complete<T> {};
-   
+
 #else
 
       template <class T> struct is_complete

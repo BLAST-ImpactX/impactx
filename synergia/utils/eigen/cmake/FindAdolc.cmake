@@ -8,9 +8,9 @@ find_path(ADOLC_INCLUDES
   PATHS $ENV{ADOLCDIR} $ENV{ADOLCDIR}/include ${INCLUDE_INSTALL_DIR}
 )
 
-find_library(ADOLC_LIBRARIES 
-  adolc 
-  PATHS $ENV{ADOLCDIR} ${LIB_INSTALL_DIR} 
+find_library(ADOLC_LIBRARIES
+  adolc
+  PATHS $ENV{ADOLCDIR} ${LIB_INSTALL_DIR}
   PATH_SUFFIXES lib lib64)
 
 include(FindPackageHandleStandardArgs)

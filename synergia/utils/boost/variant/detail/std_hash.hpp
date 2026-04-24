@@ -43,4 +43,3 @@ namespace std {
 #endif // #if !defined(BOOST_VARIANT_DO_NOT_SPECIALIZE_STD_HASH) && !defined(BOOST_NO_CXX11_HDR_FUNCTIONAL)
 
 #endif // BOOST_VARIANT_DETAIL_STD_HASH_HPP
-

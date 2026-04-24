@@ -8,8 +8,8 @@
 
 // Copyright Aleksey Gurtovoy 2002-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -90,7 +90,7 @@ struct unpack_args
     {
 #else // BOOST_MPL_CFG_NO_NESTED_FORWARDING
     {
-        typedef typename aux::unpack_args_impl< 
+        typedef typename aux::unpack_args_impl<
               size<Args>::value
             , F
             , Args

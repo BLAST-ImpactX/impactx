@@ -1,8 +1,8 @@
 
 // Copyright Aleksey Gurtovoy 2001-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -136,4 +136,3 @@ BOOST_MPL_AUX_NA_SPEC_LAMBDA(5, inherit)
 BOOST_MPL_AUX_NA_SPEC_ARITY(5, inherit)
 BOOST_MPL_AUX_NA_SPEC_TEMPLATE_ARITY(5, 5, inherit)
 }}
-

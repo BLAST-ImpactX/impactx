@@ -1,16 +1,16 @@
 /*=============================================================================
     Copyright (c) 2001-2007 Joel de Guzman
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -127,13 +127,13 @@
               , a0
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -250,13 +250,13 @@
               , a0 , a1
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -373,13 +373,13 @@
               , a0 , a1 , a2
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -496,13 +496,13 @@
               , a0 , a1 , a2 , a3
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -619,13 +619,13 @@
               , a0 , a1 , a2 , a3 , a4
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -742,13 +742,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -865,13 +865,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -988,13 +988,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1111,13 +1111,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1234,13 +1234,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1357,13 +1357,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1480,13 +1480,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1603,13 +1603,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1726,13 +1726,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1849,13 +1849,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -1972,13 +1972,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2095,13 +2095,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2218,13 +2218,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2341,13 +2341,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2464,13 +2464,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2587,13 +2587,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2710,13 +2710,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2833,13 +2833,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -2956,13 +2956,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3079,13 +3079,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3202,13 +3202,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3325,13 +3325,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3448,13 +3448,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3571,13 +3571,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3694,13 +3694,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3817,13 +3817,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -3940,13 +3940,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -4063,13 +4063,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -4186,13 +4186,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -4309,13 +4309,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -4432,13 +4432,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -4555,13 +4555,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT
@@ -4678,13 +4678,13 @@
               , a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17 , a18 , a19 , a20 , a21 , a22 , a23 , a24 , a25 , a26 , a27 , a28 , a29 , a30 , a31 , a32 , a33 , a34 , a35 , a36 , a37
             );
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     template <
         typename RT
       , typename ClassT

@@ -23,7 +23,7 @@ namespace boost { namespace spirit
     // enables encoding
     template <typename CharEncoding>
     struct use_directive<
-            karma::domain, tag::char_code<tag::encoding, CharEncoding> > 
+            karma::domain, tag::char_code<tag::encoding, CharEncoding> >
       : mpl::true_ {};
 
     template <typename CharEncoding>

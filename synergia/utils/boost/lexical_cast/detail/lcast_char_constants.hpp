@@ -43,4 +43,3 @@ namespace boost
 
 
 #endif // BOOST_LEXICAL_CAST_DETAIL_LCAST_CHAR_CONSTANTS_HPP
-

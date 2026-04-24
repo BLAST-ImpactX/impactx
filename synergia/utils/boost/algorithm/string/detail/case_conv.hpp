@@ -88,9 +88,9 @@ namespace boost {
                 const RangeT& Input,
                 FunctorT Functor)
             {
-                return std::transform( 
-                    ::boost::begin(Input), 
-                    ::boost::end(Input), 
+                return std::transform(
+                    ::boost::begin(Input),
+                    ::boost::end(Input),
                     Output,
                     Functor);
             }
@@ -101,16 +101,16 @@ namespace boost {
                 const RangeT& Input,
                 FunctorT Functor)
             {
-                std::transform( 
-                    ::boost::begin(Input), 
-                    ::boost::end(Input), 
+                std::transform(
+                    ::boost::begin(Input),
+                    ::boost::end(Input),
                     ::boost::begin(Input),
                     Functor);
             }
 
             template<typename SequenceT, typename RangeT, typename FunctorT>
-            inline SequenceT transform_range_copy( 
-                const RangeT& Input, 
+            inline SequenceT transform_range_copy(
+                const RangeT& Input,
                 FunctorT Functor)
             {
                 return SequenceT(
@@ -118,7 +118,7 @@ namespace boost {
                         ::boost::begin(Input),
                         Functor),
                     ::boost::make_transform_iterator(
-                        ::boost::end(Input), 
+                        ::boost::end(Input),
                         Functor));
             }
 

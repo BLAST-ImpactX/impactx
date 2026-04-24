@@ -65,7 +65,7 @@ namespace boost { namespace phoenix
         struct catch_<A0, A1, void>
             : proto::binary_expr<tag::catch_, A0, A1>
         {};
-        
+
         template <typename A0>
         struct catch_all
             : proto::unary_expr<tag::catch_all, A0>
@@ -95,7 +95,7 @@ namespace boost { namespace phoenix
               , non_captured_catch
             >
         {};
-        
+
         struct catch_all
             : expression::catch_all<
                 meta_grammar
@@ -180,7 +180,7 @@ namespace boost { namespace phoenix
         // bring in the operator overloads
         #include <boost/phoenix/statement/detail/try_catch_eval.hpp>
     };
-    
+
     template <typename Dummy>
     struct default_actions::when<rule::try_catch, Dummy>
         : call<try_catch_eval, Dummy>
@@ -318,7 +318,7 @@ namespace boost { namespace phoenix
                   , Expr
                 >::type
                 catch_expr;
-            
+
             typedef
                 phoenix::expression::try_catch<
                     TryCatch
@@ -339,7 +339,7 @@ namespace boost { namespace phoenix
                     );
             }
         };
-        
+
         template <
             typename TryCatch
           , typename Expr
@@ -357,7 +357,7 @@ namespace boost { namespace phoenix
                   , Expr
                 >::type
                 catch_expr;
-            
+
             typedef
                 phoenix::expression::try_catch<
                     TryCatch

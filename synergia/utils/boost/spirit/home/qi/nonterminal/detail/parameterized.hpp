@@ -68,7 +68,7 @@ namespace boost { namespace spirit { namespace traits
     struct handles_container<qi::parameterized_nonterminal<Subject, Params>
           , Attribute, Context, Iterator>
       : handles_container<typename remove_const<Subject>::type
-        , Attribute, Context, Iterator> 
+        , Attribute, Context, Iterator>
     {};
 }}}
 

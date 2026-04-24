@@ -498,7 +498,7 @@ class bunch_t {
     // apply offset to every particle cdt
     void
     offset_bunch_particles_cdt(double offset);
-    
+
     // bucket index
     void
     set_bucket_index(int index)

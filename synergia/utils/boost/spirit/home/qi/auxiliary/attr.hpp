@@ -98,9 +98,7 @@ namespace boost { namespace spirit { namespace traits
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Attr, typename Context, typename Iterator>
     struct handles_container<qi::attr_parser<T>, Attr, Context, Iterator>
-      : traits::is_container<Attr> {}; 
+      : traits::is_container<Attr> {};
 }}}
 
 #endif
-
-

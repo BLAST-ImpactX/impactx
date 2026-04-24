@@ -39,8 +39,8 @@ public:
   // accessor
   string_t name() const;
   size_t   attribute_count() const;
-  string_t attribute_as_string(string_t const & name) const;  
-  double   attribute_as_number(string_t const & name) const;  
+  string_t attribute_as_string(string_t const & name) const;
+  double   attribute_as_number(string_t const & name) const;
 
   // modifier
   void set_name(string_t const & name);

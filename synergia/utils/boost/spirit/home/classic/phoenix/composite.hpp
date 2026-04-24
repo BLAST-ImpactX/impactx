@@ -1379,7 +1379,7 @@ namespace impl {
             typedef typename make_composite
                     <OperationT, actor<BaseT>, B>::composite_type
                 ret_t;
-            
+
             return ret_t(OperationT(), _0_, as_actor<B>::convert(_1_));
         }
     };

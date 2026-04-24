@@ -725,4 +725,3 @@ namespace boost { namespace spirit { namespace char_encoding
 #undef BOOST_CC_SPACE
 
 #endif
-

@@ -7,8 +7,8 @@
 
 // Copyright Aleksey Gurtovoy 2000-2004
 //
-// Distributed under the Boost Software License, Version 1.0. 
-// (See accompanying file LICENSE_1_0.txt or copy at 
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 // See http://www.boost.org/libs/mpl for documentation.
@@ -71,12 +71,12 @@
 
 namespace boost { namespace mpl {
 
-template< 
+template<
       typename Tag1
     , typename Tag2
 #if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
-    , BOOST_MPL_AUX_NTTP_DECL(int, tag1_) = BOOST_MPL_AUX_MSVC_VALUE_WKND(Tag1)::value 
-    , BOOST_MPL_AUX_NTTP_DECL(int, tag2_) = BOOST_MPL_AUX_MSVC_VALUE_WKND(Tag2)::value 
+    , BOOST_MPL_AUX_NTTP_DECL(int, tag1_) = BOOST_MPL_AUX_MSVC_VALUE_WKND(Tag1)::value
+    , BOOST_MPL_AUX_NTTP_DECL(int, tag2_) = BOOST_MPL_AUX_MSVC_VALUE_WKND(Tag2)::value
     >
 struct AUX778076_OP_IMPL_NAME
     : if_c<
@@ -98,7 +98,7 @@ struct AUX778076_OP_IMPL_NAME
 /// for Digital Mars C++/compilers with no CTPS/TTP support
 template<> struct AUX778076_OP_IMPL_NAME<na,na>
 {
-    template< typename U1, typename U2 > struct apply 
+    template< typename U1, typename U2 > struct apply
     {
         typedef apply type;
         BOOST_STATIC_CONSTANT(int, value = 0);
@@ -108,7 +108,7 @@ template<> struct AUX778076_OP_IMPL_NAME<na,na>
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
 template< typename Tag > struct AUX778076_OP_IMPL_NAME<na,Tag>
 {
-    template< typename U1, typename U2 > struct apply 
+    template< typename U1, typename U2 > struct apply
     {
         typedef apply type;
         BOOST_STATIC_CONSTANT(int, value = 0);
@@ -117,7 +117,7 @@ template< typename Tag > struct AUX778076_OP_IMPL_NAME<na,Tag>
 
 template< typename Tag > struct AUX778076_OP_IMPL_NAME<Tag,na>
 {
-    template< typename U1, typename U2 > struct apply 
+    template< typename U1, typename U2 > struct apply
     {
         typedef apply type;
         BOOST_STATIC_CONSTANT(int, value = 0);
@@ -126,7 +126,7 @@ template< typename Tag > struct AUX778076_OP_IMPL_NAME<Tag,na>
 #else
 template<> struct AUX778076_OP_IMPL_NAME<na,integral_c_tag>
 {
-    template< typename U1, typename U2 > struct apply 
+    template< typename U1, typename U2 > struct apply
     {
         typedef apply type;
         BOOST_STATIC_CONSTANT(int, value = 0);
@@ -135,7 +135,7 @@ template<> struct AUX778076_OP_IMPL_NAME<na,integral_c_tag>
 
 template<> struct AUX778076_OP_IMPL_NAME<integral_c_tag,na>
 {
-    template< typename U1, typename U2 > struct apply 
+    template< typename U1, typename U2 > struct apply
     {
         typedef apply type;
         BOOST_STATIC_CONSTANT(int, value = 0);
@@ -193,7 +193,7 @@ struct AUX778076_OP_NAME
 #   else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 /// forward declaration
-template< 
+template<
       typename BOOST_MPL_AUX_NA_PARAM(N1)
     , typename BOOST_MPL_AUX_NA_PARAM(N2)
     >
@@ -228,7 +228,7 @@ struct AUX778076_OP_NAME
         )
 };
 
-template< 
+template<
       typename N1
     , typename N2
     >
@@ -238,7 +238,7 @@ struct BOOST_PP_CAT(AUX778076_OP_NAME,2)
 
 #else // AUX778076_OP_ARITY == 2
 
-template< 
+template<
       typename BOOST_MPL_AUX_NA_PARAM(N1)
     , typename BOOST_MPL_AUX_NA_PARAM(N2)
     >

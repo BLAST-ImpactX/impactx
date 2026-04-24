@@ -82,4 +82,3 @@ namespace boost{ namespace math{ namespace tools{
 } // namespace boost
 
 #endif // BOOST_MATH_TOOLS_CONVERT_FROM_STRING_INCLUDED
-

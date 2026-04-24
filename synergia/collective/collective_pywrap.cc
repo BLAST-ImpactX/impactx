@@ -88,7 +88,7 @@ PYBIND11_MODULE(collective, m)
     .def_readwrite("bunch_spacing",
                    &Impedance_options::bunch_spacing,
                    "Bunch spacing (double, default to 1.0).")
-                   
+
      .def_readwrite("mwf_xlead",
                     &Impedance_options::mwf_xlead,
                     "factor to scale x leading wake")
@@ -96,19 +96,19 @@ PYBIND11_MODULE(collective, m)
      .def_readwrite("mwf_xtrail",
                     &Impedance_options::mwf_xtrail,
                     "factor to scale x trailing wake")
-                    
+
      .def_readwrite("mwf_ylead",
                     &Impedance_options::mwf_ylead,
                     "factor to scale y leading wake")
-                    
+
      .def_readwrite("mwf_ytrail",
                     &Impedance_options::mwf_ytrail,
                     "factor to scale y trailing wake")
-                    
+
      .def_readwrite("mwf_zwake",
                     &Impedance_options::mwf_zwake,
                     "factor to scale z (longitudinal) wake")
-                    
+
                     ; // terminates Impedance_options class wrappings
 
 

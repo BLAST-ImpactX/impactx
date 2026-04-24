@@ -18,13 +18,13 @@
             {
                 return phoenix::expression::mem_fun_ptr<Object, MemPtr>::make(obj, ptr);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -39,13 +39,13 @@
                   , A0
                 >::make(obj, ptr, a0);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -60,13 +60,13 @@
                   , A0 , A1
                 >::make(obj, ptr, a0 , a1);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -81,13 +81,13 @@
                   , A0 , A1 , A2
                 >::make(obj, ptr, a0 , a1 , a2);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -102,13 +102,13 @@
                   , A0 , A1 , A2 , A3
                 >::make(obj, ptr, a0 , a1 , a2 , a3);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -123,13 +123,13 @@
                   , A0 , A1 , A2 , A3 , A4
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -144,13 +144,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -165,13 +165,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -186,13 +186,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -207,13 +207,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -228,13 +228,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -249,13 +249,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -270,13 +270,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -291,13 +291,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -312,13 +312,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -333,13 +333,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -354,13 +354,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -375,13 +375,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17>
             typename phoenix::expression::mem_fun_ptr<
                 Object
@@ -396,13 +396,13 @@
                   , A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9 , A10 , A11 , A12 , A13 , A14 , A15 , A16 , A17
                 >::make(obj, ptr, a0 , a1 , a2 , a3 , a4 , a5 , a6 , a7 , a8 , a9 , a10 , a11 , a12 , a13 , a14 , a15 , a16 , a17);
             }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
             template <typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9 , typename A10 , typename A11 , typename A12 , typename A13 , typename A14 , typename A15 , typename A16 , typename A17 , typename A18>
             typename phoenix::expression::mem_fun_ptr<
                 Object

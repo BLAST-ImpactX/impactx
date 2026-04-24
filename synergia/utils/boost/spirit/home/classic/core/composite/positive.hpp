@@ -33,7 +33,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
     //
     ///////////////////////////////////////////////////////////////////////////
     struct positive_parser_gen;
-    
+
 #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
 #pragma warning(push)
 #pragma warning(disable:4512) //assignment operator could not be generated
@@ -47,10 +47,10 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typedef unary_parser_category       parser_category_t;
         typedef positive_parser_gen         parser_generator_t;
         typedef unary<S, parser<self_t> >   base_t;
-    
+
         positive(S const& a)
         : base_t(a) {}
-    
+
         template <typename ScannerT>
         typename parser_result<self_t, ScannerT>::type
         parse(ScannerT const& scan) const
@@ -58,7 +58,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             typedef typename parser_result<self_t, ScannerT>::type result_t;
             typedef typename ScannerT::iterator_t iterator_t;
             result_t hit = this->subject().parse(scan);
-    
+
             if (hit)
             {
                 for (;;)
@@ -82,15 +82,15 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
 #pragma warning(pop)
 #endif
-    
+
     struct positive_parser_gen
     {
         template <typename S>
-        struct result 
+        struct result
         {
             typedef positive<S> type;
         };
-    
+
         template <typename S>
         static positive<S>
         generate(parser<S> const& a)
@@ -98,7 +98,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
             return positive<S>(a.derived());
         }
     };
-    
+
     template <typename S>
     inline positive<S>
     operator+(parser<S> const& a);

@@ -5,9 +5,9 @@
     //  Copyright 2008 Eric Niebler. Distributed under the Boost
     //  Software License, Version 1.0. (See accompanying file
     //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-    
-    
-    
+
+
+
     template<typename Fun , typename A0>
     struct call<Fun(A0...)> : transform<call<Fun(A0...)> >
     {
@@ -15,19 +15,19 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A0
                   , detail::expand_pattern_rest_0<
                         Fun
-                        
+
                     >
                 >::type
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1>
     struct call<Fun(A0 , A1...)> : transform<call<Fun(A0 , A1...)> >
     {
@@ -35,7 +35,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A1
                   , detail::expand_pattern_rest_1<
                         Fun
@@ -45,9 +45,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2>
     struct call<Fun(A0 , A1 , A2...)> : transform<call<Fun(A0 , A1 , A2...)> >
     {
@@ -55,7 +55,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A2
                   , detail::expand_pattern_rest_2<
                         Fun
@@ -65,9 +65,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3>
     struct call<Fun(A0 , A1 , A2 , A3)> : transform<call<Fun(A0 , A1 , A2 , A3)> >
     {
@@ -77,13 +77,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -96,9 +96,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3>
     struct call<Fun(A0 , A1 , A2 , A3...)> : transform<call<Fun(A0 , A1 , A2 , A3...)> >
     {
@@ -106,7 +106,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A3
                   , detail::expand_pattern_rest_3<
                         Fun
@@ -116,9 +116,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct call<Fun(A0 , A1 , A2 , A3 , A4)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4)> >
     {
@@ -128,13 +128,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3; typedef typename when<_, A4>::template impl<Expr, State, Data> a4; typedef typename a4::result_type b4;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3 , b4)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -147,9 +147,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4>
     struct call<Fun(A0 , A1 , A2 , A3 , A4...)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4...)> >
     {
@@ -157,7 +157,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A4
                   , detail::expand_pattern_rest_4<
                         Fun
@@ -167,9 +167,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5)> >
     {
@@ -179,13 +179,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3; typedef typename when<_, A4>::template impl<Expr, State, Data> a4; typedef typename a4::result_type b4; typedef typename when<_, A5>::template impl<Expr, State, Data> a5; typedef typename a5::result_type b5;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3 , b4 , b5)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -198,9 +198,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5...)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5...)> >
     {
@@ -208,7 +208,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A5
                   , detail::expand_pattern_rest_5<
                         Fun
@@ -218,9 +218,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6)> >
     {
@@ -230,13 +230,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3; typedef typename when<_, A4>::template impl<Expr, State, Data> a4; typedef typename a4::result_type b4; typedef typename when<_, A5>::template impl<Expr, State, Data> a5; typedef typename a5::result_type b5; typedef typename when<_, A6>::template impl<Expr, State, Data> a6; typedef typename a6::result_type b6;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3 , b4 , b5 , b6)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -249,9 +249,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6...)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6...)> >
     {
@@ -259,7 +259,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A6
                   , detail::expand_pattern_rest_6<
                         Fun
@@ -269,9 +269,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7)> >
     {
@@ -281,13 +281,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3; typedef typename when<_, A4>::template impl<Expr, State, Data> a4; typedef typename a4::result_type b4; typedef typename when<_, A5>::template impl<Expr, State, Data> a5; typedef typename a5::result_type b5; typedef typename when<_, A6>::template impl<Expr, State, Data> a6; typedef typename a6::result_type b6; typedef typename when<_, A7>::template impl<Expr, State, Data> a7; typedef typename a7::result_type b7;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3 , b4 , b5 , b6 , b7)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -300,9 +300,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7...)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7...)> >
     {
@@ -310,7 +310,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A7
                   , detail::expand_pattern_rest_7<
                         Fun
@@ -320,9 +320,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8)> >
     {
@@ -332,13 +332,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3; typedef typename when<_, A4>::template impl<Expr, State, Data> a4; typedef typename a4::result_type b4; typedef typename when<_, A5>::template impl<Expr, State, Data> a5; typedef typename a5::result_type b5; typedef typename when<_, A6>::template impl<Expr, State, Data> a6; typedef typename a6::result_type b6; typedef typename when<_, A7>::template impl<Expr, State, Data> a7; typedef typename a7::result_type b7; typedef typename when<_, A8>::template impl<Expr, State, Data> a8; typedef typename a8::result_type b8;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3 , b4 , b5 , b6 , b7 , b8)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -351,9 +351,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8...)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8...)> >
     {
@@ -361,7 +361,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A8
                   , detail::expand_pattern_rest_8<
                         Fun
@@ -371,9 +371,9 @@
             >::template impl<Expr, State, Data>
         {};
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9)> >
     {
@@ -383,13 +383,13 @@
             typedef typename when<_, A0>::template impl<Expr, State, Data> a0; typedef typename a0::result_type b0; typedef typename when<_, A1>::template impl<Expr, State, Data> a1; typedef typename a1::result_type b1; typedef typename when<_, A2>::template impl<Expr, State, Data> a2; typedef typename a2::result_type b2; typedef typename when<_, A3>::template impl<Expr, State, Data> a3; typedef typename a3::result_type b3; typedef typename when<_, A4>::template impl<Expr, State, Data> a4; typedef typename a4::result_type b4; typedef typename when<_, A5>::template impl<Expr, State, Data> a5; typedef typename a5::result_type b5; typedef typename when<_, A6>::template impl<Expr, State, Data> a6; typedef typename a6::result_type b6; typedef typename when<_, A7>::template impl<Expr, State, Data> a7; typedef typename a7::result_type b7; typedef typename when<_, A8>::template impl<Expr, State, Data> a8; typedef typename a8::result_type b8; typedef typename when<_, A9>::template impl<Expr, State, Data> a9; typedef typename a9::result_type b9;
             typedef detail::poly_function_traits<Fun, Fun(b0 , b1 , b2 , b3 , b4 , b5 , b6 , b7 , b8 , b9)> function_traits;
             typedef typename function_traits::result_type result_type;
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             BOOST_FORCEINLINE
             result_type operator ()(
                 typename impl::expr_param e
@@ -402,9 +402,9 @@
             }
         };
     };
-    
-    
-    
+
+
+
     template<typename Fun , typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 , typename A9>
     struct call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9...)> : transform<call<Fun(A0 , A1 , A2 , A3 , A4 , A5 , A6 , A7 , A8 , A9...)> >
     {
@@ -412,7 +412,7 @@
         struct impl
           : call<
                 typename detail::expand_pattern<
-                    proto::arity_of<Expr>::value 
+                    proto::arity_of<Expr>::value
                   , A9
                   , detail::expand_pattern_rest_9<
                         Fun

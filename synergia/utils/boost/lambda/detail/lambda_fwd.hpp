@@ -13,28 +13,28 @@
 #ifndef BOOST_LAMBDA_FWD_HPP
 #define BOOST_LAMBDA_FWD_HPP
 
-namespace boost { 
-namespace lambda { 
+namespace boost {
+namespace lambda {
 
 namespace detail {
 
 template<class T> struct generate_error;
 
-}   
+}
 // -- placeholders --------------------------------------------
 
 template <int I> struct placeholder;
 
 // function_adaptors
-template <class Func> 
+template <class Func>
 struct function_adaptor;
 
 template <int I, class Act> class action;
 
-template <class Base> 
+template <class Base>
 class lambda_functor;
 
-template <class Act, class Args> 
+template <class Act, class Args>
 class lambda_functor_base;
 
 } // namespace lambda

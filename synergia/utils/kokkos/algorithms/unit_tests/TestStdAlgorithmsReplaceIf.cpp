@@ -135,9 +135,9 @@ void verify_data(ViewType1 data_view,  // contains data
   if (test_view_h.extent(0) > 0) {
     for (std::size_t i = 0; i < test_view_h.extent(0); ++i) {
       // std::cout << i << " " << std::setprecision(15)
-      // 		<< data_view_dc(i) << " "
-      // 		<< data_view_h(i) << " "
-      // 		<< test_view_h(i) << std::endl;
+      //        << data_view_dc(i) << " "
+      //        << data_view_h(i) << " "
+      //        << test_view_h(i) << std::endl;
       ASSERT_EQ(data_view_h(i), test_view_h(i));
     }
   }

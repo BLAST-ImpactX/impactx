@@ -44,9 +44,3 @@ if [ -n "$DATA_FILE" ]; then
 fi
 
 rm -R $WORK_DIR
-
-
-
-
-
-

@@ -27,7 +27,7 @@ std::map<int, Eigen::Vector4d>
 \endcode
 you need to use
 \code
-std::map<int, Eigen::Vector4d, std::less<int>, 
+std::map<int, Eigen::Vector4d, std::less<int>,
          Eigen::aligned_allocator<std::pair<const int, Eigen::Vector4d> > >
 \endcode
 Note that the third parameter `std::less<int>` is just the default value, but we have to include it because we want to specify the fourth parameter, which is the allocator type.
@@ -53,7 +53,7 @@ In order to avoid that, the only solution we saw was to specialize `std::vector`
 
 \subsection vector_spec An alternative - specializing std::vector for Eigen types
 
-As an alternative to the recommended approach described above, you have the option to specialize std::vector for Eigen types requiring alignment. 
+As an alternative to the recommended approach described above, you have the option to specialize std::vector for Eigen types requiring alignment.
 The advantage is that you won't need to declare std::vector all over with Eigen::aligned_allocator. One drawback on the other hand side is that
 the specialization needs to be defined before all code pieces in which e.g. `std::vector<Vector2d>` is used. Otherwise, without knowing the specialization
 the compiler will compile that particular instance with the default `std::allocator` and you program is most likely to crash.

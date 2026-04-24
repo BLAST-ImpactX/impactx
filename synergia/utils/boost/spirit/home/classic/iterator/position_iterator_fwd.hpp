@@ -18,12 +18,12 @@ namespace boost { namespace spirit {
 
 BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
 
-    template <typename String = std::string> 
+    template <typename String = std::string>
     struct file_position_base;
-    
+
     typedef file_position_base<std::string> file_position;
 
-    template <typename String = std::string> 
+    template <typename String = std::string>
     struct file_position_without_column_base;
 
     typedef file_position_without_column_base<std::string> file_position_without_column;
@@ -33,7 +33,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typename PositionT = file_position_base<
             std::basic_string<
                 typename std::iterator_traits<ForwardIteratorT>::value_type
-            > 
+            >
         >,
         typename SelfT = nil_t
     >
@@ -45,7 +45,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         typename PositionT = file_position_base<
             std::basic_string<
                 typename std::iterator_traits<ForwardIteratorT>::value_type
-            > 
+            >
         >
     >
     class position_iterator2;
@@ -57,4 +57,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace BOOST_SPIRIT_CLASSIC_NS
 
 #endif
-

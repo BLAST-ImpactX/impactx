@@ -154,7 +154,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         return impl::phrase_parser<SkipT>::
             parse(first, last, p.derived(), skip.derived());
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     //
     //  Parse function for null terminated strings using the skippers
@@ -178,4 +178,3 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_END
 }} // namespace boost::spirit
 
 #endif
-

@@ -18,10 +18,10 @@
 #include <boost/algorithm/string/compare.hpp>
 
 /*! \file
-    Defines basic split algorithms. 
+    Defines basic split algorithms.
     Split algorithms can be used to divide a string
     into several parts according to given criteria.
-    
+
     Each part is copied and added as a new element to the
     output container.
     Thus the result container must be able to hold copies
@@ -40,7 +40,7 @@ namespace boost {
         /*!
             This algorithm finds all occurrences of the search string
             in the input.
-            
+
             Each part is copied and added as a new element to the
             output container.
             Thus the result container must be able to hold copies
@@ -71,13 +71,13 @@ namespace boost {
             return ::boost::algorithm::iter_find(
                 Result,
                 Input,
-                ::boost::algorithm::first_finder(Search) );        
+                ::boost::algorithm::first_finder(Search) );
         }
 
-        //! Find all algorithm ( case insensitive ) 
+        //! Find all algorithm ( case insensitive )
         /*!
             This algorithm finds all occurrences of the search string
-            in the input. 
+            in the input.
             Each part is copied and added as a new element to the
             output container. Thus the result container must be able to hold copies
             of the matches (in a compatible structure like std::string) or
@@ -111,16 +111,16 @@ namespace boost {
             return ::boost::algorithm::iter_find(
                 Result,
                 Input,
-                ::boost::algorithm::first_finder(Search, is_iequal(Loc) ) );        
+                ::boost::algorithm::first_finder(Search, is_iequal(Loc) ) );
         }
 
 
 //  tokenize  -------------------------------------------------------------//
 
         //! Split algorithm
-        /*! 
+        /*!
             Tokenize expression. This function is equivalent to C strtok. Input
-            sequence is split into tokens, separated by separators. Separators 
+            sequence is split into tokens, separated by separators. Separators
             are given by means of the predicate.
 
             Each part is copied and added as a new element to the
@@ -130,12 +130,12 @@ namespace boost {
             a reference to it (e.g. using the iterator range class).
             Examples of such a container are \c std::vector<std::string>
             or \c std::list<boost::iterator_range<std::string::iterator>>
-    
-            \param Result A container that can hold copies of references to the substrings          
+
+            \param Result A container that can hold copies of references to the substrings
             \param Input A container which will be searched.
-            \param Pred A predicate to identify separators. This predicate is 
+            \param Pred A predicate to identify separators. This predicate is
                 supposed to return true if a given element is a separator.
-            \param eCompress If eCompress argument is set to token_compress_on, adjacent 
+            \param eCompress If eCompress argument is set to token_compress_on, adjacent
                 separators are merged together. Otherwise, every two separators
                 delimit a token.
             \return A reference the result
@@ -158,7 +158,7 @@ namespace boost {
             return ::boost::algorithm::iter_split(
                 Result,
                 Input,
-                ::boost::algorithm::token_finder( Pred, eCompress ) );         
+                ::boost::algorithm::token_finder( Pred, eCompress ) );
         }
 
     } // namespace algorithm
@@ -166,10 +166,9 @@ namespace boost {
     // pull names to the boost namespace
     using algorithm::find_all;
     using algorithm::ifind_all;
-    using algorithm::split;    
+    using algorithm::split;
 
 } // namespace boost
 
 
 #endif  // BOOST_STRING_SPLIT_HPP
-

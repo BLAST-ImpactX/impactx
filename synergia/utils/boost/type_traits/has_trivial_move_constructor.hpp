@@ -52,7 +52,7 @@ template <typename T> struct has_trivial_move_constructor : public integral_cons
 
 namespace boost {
 
-template <typename T> struct has_trivial_move_constructor 
+template <typename T> struct has_trivial_move_constructor
    : public integral_constant<bool, ::boost::is_pod<T>::value && !::boost::is_volatile<T>::value SOLARIS_EXTRA_CHECK>{};
 
 #undef SOLARIS_EXTRA_CHECK

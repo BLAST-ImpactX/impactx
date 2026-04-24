@@ -54,7 +54,7 @@
 
 //
 // define BOOST_TT_NO_CV_FUNC_TEST
-// if tests for cv-qualified member functions don't 
+// if tests for cv-qualified member functions don't
 // work in is_member_function_pointer
 //
 #if BOOST_WORKAROUND(__MWERKS__, < 0x3000) || BOOST_WORKAROUND(__IBMCPP__, <= 600)
@@ -86,7 +86,7 @@
 #  define BOOST_TT_HAS_ACCURATE_IS_FUNCTION
 #endif
 
-#if defined(_MSVC_LANG) && (_MSVC_LANG >= 201703) 
+#if defined(_MSVC_LANG) && (_MSVC_LANG >= 201703)
 #  define BOOST_TT_NO_DEDUCED_NOEXCEPT_PARAM
 #endif
 #if defined(__APPLE_CC__) && defined(__clang_major__) && (__clang_major__ == 9) && (__clang_minor__ == 0)
@@ -112,5 +112,3 @@
 #endif
 
 #endif // BOOST_TT_CONFIG_HPP_INCLUDED
-
-

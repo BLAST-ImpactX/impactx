@@ -67,4 +67,3 @@ template <class T> struct add_rvalue_reference
 }  // namespace boost
 
 #endif  // BOOST_TYPE_TRAITS_EXT_ADD_RVALUE_REFERENCE__HPP
-

@@ -124,7 +124,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         parse(ScannerT const& scan) const
         {
             typename ScannerT::iterator_t save(scan.first);
-            
+
             typedef typename no_actions_scanner<ScannerT>::policies_t
                 policies_t;
 

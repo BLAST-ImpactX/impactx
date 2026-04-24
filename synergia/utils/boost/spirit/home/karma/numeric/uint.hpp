@@ -40,7 +40,7 @@ namespace boost { namespace spirit
     namespace tag
     {
         template <typename T, unsigned Radix>
-        struct uint_generator 
+        struct uint_generator
         {
             BOOST_SPIRIT_IS_TAG()
         };

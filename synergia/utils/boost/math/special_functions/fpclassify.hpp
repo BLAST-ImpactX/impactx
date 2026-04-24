@@ -635,4 +635,3 @@ inline bool (isnan)(__float128 x)
 } // namespace math
 } // namespace boost
 #endif // BOOST_MATH_FPCLASSIFY_HPP
-

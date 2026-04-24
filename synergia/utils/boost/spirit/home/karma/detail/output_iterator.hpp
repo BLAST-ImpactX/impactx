@@ -1,6 +1,6 @@
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(BOOST_SPIRIT_KARMA_OUTPUT_ITERATOR_MAY_26_2007_0506PM)
@@ -26,21 +26,21 @@
 #include <boost/spirit/home/support/char_encoding/unicode.hpp>
 #endif
 
-namespace boost { namespace spirit { namespace karma { namespace detail 
+namespace boost { namespace spirit { namespace karma { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
     //  This class is used to keep track of the current position in the output.
     ///////////////////////////////////////////////////////////////////////////
-    class position_sink 
+    class position_sink
     {
     public:
         position_sink() : count(0), line(1), column(1) {}
         void tidy() { count = 0; line = 1; column = 1; }
 
         template <typename T>
-        void output(T const& value) 
+        void output(T const& value)
         {
-            ++count; 
+            ++count;
             if (value == '\n') {
                 ++line;
                 column = 1;
@@ -63,13 +63,13 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     struct position_policy
     {
         position_policy() {}
-        position_policy(position_policy const& rhs) 
+        position_policy(position_policy const& rhs)
           : track_position_data(rhs.track_position_data) {}
 
         template <typename T>
-        void output(T const& value) 
+        void output(T const& value)
         {
-            // track position in the output 
+            // track position in the output
             track_position_data.output(value);
         }
 
@@ -79,17 +79,17 @@ namespace boost { namespace spirit { namespace karma { namespace detail
             return track_position_data.get_count();
         }
 
-	// return the current line in the output
-	std::size_t get_line() const
-	{
-	    return track_position_data.get_line();
-	}
+    // return the current line in the output
+    std::size_t get_line() const
+    {
+        return track_position_data.get_line();
+    }
 
-	// return the current column in the output
-	std::size_t get_column() const
-	{
-	    return track_position_data.get_column();
-	}
+    // return the current column in the output
+    std::size_t get_column() const
+    {
+        return track_position_data.get_column();
+    }
 
     private:
         position_sink track_position_data;            // for position tracking
@@ -105,7 +105,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    //  This class is used to count the number of characters streamed into the 
+    //  This class is used to count the number of characters streamed into the
     //  output.
     ///////////////////////////////////////////////////////////////////////////
     template <typename OutputIterator>
@@ -113,21 +113,21 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     {
     public:
         counting_sink(OutputIterator& sink_, std::size_t count_ = 0
-              , bool enabled = true) 
+              , bool enabled = true)
           : count(count_), initial_count(count), prev_count(0), sink(sink_)
         {
             prev_count = sink.chain_counting(enabled ? this : NULL);
         }
-        ~counting_sink() 
+        ~counting_sink()
         {
-            if (prev_count)           // propagate count 
+            if (prev_count)           // propagate count
                 prev_count->update_count(count-initial_count);
             sink.chain_counting(prev_count);
         }
 
-        void output() 
+        void output()
         {
-            ++count; 
+            ++count;
         }
         std::size_t get_count() const { return count; }
 
@@ -162,7 +162,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         }
 
         template <typename T>
-        void output(T const&) 
+        void output(T const&)
         {
             // count characters, if appropriate
             if (NULL != count)
@@ -201,22 +201,22 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         buffer_sink()
           : width(0) {}
 
-        ~buffer_sink() 
+        ~buffer_sink()
         {
-            tidy(); 
+            tidy();
         }
 
-        void enable(std::size_t width_) 
+        void enable(std::size_t width_)
         {
             tidy();             // release existing buffer
             width = (width_ == std::size_t(-1)) ? 0 : width_;
-            buffer.reserve(width); 
+            buffer.reserve(width);
         }
 
-        void tidy() 
+        void tidy()
         {
-            buffer.clear(); 
-            width = 0; 
+            buffer.clear();
+            width = 0;
         }
 
         template <typename T>
@@ -227,13 +227,13 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         }
 
         template <typename OutputIterator_>
-        bool copy(OutputIterator_& sink, std::size_t maxwidth) const 
+        bool copy(OutputIterator_& sink, std::size_t maxwidth) const
         {
 #if defined(BOOST_MSVC)
 #pragma warning(push)
 #pragma warning(disable: 4267)
 #endif
-            typename std::basic_string<buffer_char_type>::const_iterator end = 
+            typename std::basic_string<buffer_char_type>::const_iterator end =
                 buffer.begin() + (std::min)(buffer.size(), maxwidth);
 
 #if defined(BOOST_MSVC)
@@ -246,13 +246,13 @@ namespace boost { namespace spirit { namespace karma { namespace detail
             return true;
         }
         template <typename RestIterator>
-        bool copy_rest(RestIterator& sink, std::size_t start_at) const 
+        bool copy_rest(RestIterator& sink, std::size_t start_at) const
         {
 #if defined(BOOST_MSVC)
 #pragma warning(push)
 #pragma warning(disable: 4267)
 #endif
-            typename std::basic_string<buffer_char_type>::const_iterator begin = 
+            typename std::basic_string<buffer_char_type>::const_iterator begin =
                 buffer.begin() + (std::min)(buffer.size(), start_at);
 
 #if defined(BOOST_MSVC)
@@ -265,7 +265,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
             return true;
         }
 
-        std::size_t buffer_size() const 
+        std::size_t buffer_size() const
         {
             return buffer.size();
         }
@@ -291,8 +291,8 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         }
 
         template <typename T>
-        bool output(T const& value) 
-        { 
+        bool output(T const& value)
+        {
             // buffer characters, if appropriate
             if (NULL != buffer) {
                 buffer->output(value);
@@ -313,7 +313,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         no_buffering_policy(no_buffering_policy const&) {}
 
         template <typename T>
-        bool output(T const& /*value*/) 
+        bool output(T const& /*value*/)
         {
             return true;
         }
@@ -323,7 +323,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
 
     ///////////////////////////////////////////////////////////////////////////
     //  forward declaration only
-    template <typename OutputIterator> 
+    template <typename OutputIterator>
     struct enable_buffering;
 
     template <typename OutputIterator, typename Properties
@@ -339,13 +339,13 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         typedef Tracking tracking_policy;
 
         output_iterator_base() {}
-        output_iterator_base(output_iterator_base const& rhs) 
+        output_iterator_base(output_iterator_base const& rhs)
           : buffering_policy(rhs), counting_policy(rhs), tracking_policy(rhs)
         {}
 
         template <typename T>
-        bool output(T const& value) 
-        { 
+        bool output(T const& value)
+        {
             this->counting_policy::output(value);
             this->tracking_policy::output(value);
             return this->buffering_policy::output(value);
@@ -360,15 +360,15 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         typedef Tracking tracking_policy;
 
         disabling_output_iterator() : do_output(true) {}
-        disabling_output_iterator(disabling_output_iterator const& rhs) 
+        disabling_output_iterator(disabling_output_iterator const& rhs)
           : buffering_policy(rhs), counting_policy(rhs), tracking_policy(rhs)
           , do_output(rhs.do_output)
         {}
 
         template <typename T>
-        bool output(T const& value) 
-        { 
-            if (!do_output) 
+        bool output(T const& value)
+        {
+            if (!do_output)
                 return false;
 
             this->counting_policy::output(value);
@@ -416,17 +416,17 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     //  Karma uses an output iterator wrapper for all output operations. This
     //  is necessary to avoid the dreaded 'scanner business' problem, i.e. the
-    //  dependency of rules and grammars on the used output iterator. 
+    //  dependency of rules and grammars on the used output iterator.
     //
-    //  By default the user supplied output iterator is wrapped inside an 
-    //  instance of this internal output_iterator class. 
+    //  By default the user supplied output iterator is wrapped inside an
+    //  instance of this internal output_iterator class.
     //
     //  This output_iterator class normally just forwards to the embedded user
     //  supplied iterator. But it is possible to enable additional functionality
     //  on demand, such as counting, buffering, and position tracking.
     ///////////////////////////////////////////////////////////////////////////
     template <typename OutputIterator, typename Properties, typename Derived>
-    class output_iterator 
+    class output_iterator
       : public make_output_iterator<OutputIterator, Properties, Derived>::type
     {
     private:
@@ -449,18 +449,18 @@ namespace boost { namespace spirit { namespace karma { namespace detail
         {}
 
         output_iterator& operator*() { return *this; }
-        output_iterator& operator++() 
-        { 
+        output_iterator& operator++()
+        {
             if (!this->base_iterator::has_buffer())
                 ++(*sink);           // increment only if not buffering
-            return *this; 
-        } 
-        output_iterator operator++(int) 
+            return *this;
+        }
+        output_iterator operator++(int)
         {
             if (!this->base_iterator::has_buffer()) {
                 output_iterator t(*this);
-                ++(*sink); 
-                return t; 
+                ++(*sink);
+                return t;
             }
             return *this;
         }
@@ -471,10 +471,10 @@ namespace boost { namespace spirit { namespace karma { namespace detail
 #pragma warning (disable: 4244)
 #endif
         template <typename T>
-        void operator=(T const& value) 
-        { 
+        void operator=(T const& value)
+        {
             if (this->base_iterator::output(value))
-                *(*sink) = value; 
+                *(*sink) = value;
         }
 #if defined(BOOST_MSVC)
 #pragma warning (pop)
@@ -499,7 +499,7 @@ namespace boost { namespace spirit { namespace karma { namespace detail
     {
     private:
         typedef output_iterator<karma::ostream_iterator<T, Elem, Traits>, Properties
-          , output_iterator<karma::ostream_iterator<T, Elem, Traits>, Properties> 
+          , output_iterator<karma::ostream_iterator<T, Elem, Traits>, Properties>
         > base_type;
         typedef karma::ostream_iterator<T, Elem, Traits> base_iterator_type;
         typedef std::basic_ostream<Elem, Traits> ostream_type;
@@ -646,5 +646,4 @@ namespace boost { namespace spirit { namespace karma { namespace detail
 
 }}}}
 
-#endif 
-
+#endif

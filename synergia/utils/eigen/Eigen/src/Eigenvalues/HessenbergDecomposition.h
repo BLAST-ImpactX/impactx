@@ -176,8 +176,8 @@ class HessenbergDecomposition {
 
   /** \brief Returns the internal representation of the decomposition
    *
-   *	\returns a const reference to a matrix with the internal representation
-   *	         of the decomposition.
+   *    \returns a const reference to a matrix with the internal representation
+   *             of the decomposition.
    *
    * \pre Either the constructor HessenbergDecomposition(const MatrixType&)
    * or the member function compute(const MatrixType&) has been called

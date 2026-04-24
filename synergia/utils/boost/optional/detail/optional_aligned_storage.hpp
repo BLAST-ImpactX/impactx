@@ -62,7 +62,7 @@ class aligned_storage
 
     T const& ref() const { return *ptr_ref(); }
     T &      ref()       { return *ptr_ref(); }
-  
+
 } ;
 
 } // namespace optional_detail

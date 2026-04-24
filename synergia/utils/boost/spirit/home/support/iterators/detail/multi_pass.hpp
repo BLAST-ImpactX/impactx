@@ -1,6 +1,6 @@
 //  Copyright (c) 2001 Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,14 +11,14 @@
 #include <boost/spirit/home/support/iterators/multi_pass_fwd.hpp>
 #include <boost/mpl/bool.hpp>
 #include <iterator>
-#include <algorithm> 
+#include <algorithm>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace boost { namespace spirit { namespace detail
 {
 
     ///////////////////////////////////////////////////////////////////////////
-    //  Default implementations of the different policies to be used with a 
+    //  Default implementations of the different policies to be used with a
     //  multi_pass iterator
     ///////////////////////////////////////////////////////////////////////////
     struct default_input_policy

@@ -164,7 +164,7 @@ namespace boost { namespace spirit { namespace karma
         typedef CharEncoding char_encoding;
 
         literal_char(char_type ch)
-          : ch (spirit::char_class::convert<char_encoding>::to(Tag(), ch)) 
+          : ch (spirit::char_class::convert<char_encoding>::to(Tag(), ch))
         {}
 
         template <typename Context, typename Unused>
@@ -184,7 +184,7 @@ namespace boost { namespace spirit { namespace karma
             return attr == ch;
         }
 
-        // A char_('x') without any associated attribute just emits its 
+        // A char_('x') without any associated attribute just emits its
         // immediate literal
         template <typename CharParam, typename Context>
         bool test(unused_type, CharParam& ch_, Context&) const
@@ -213,10 +213,10 @@ namespace boost { namespace spirit { namespace karma
 
         char_range(char_type from, char_type to)
           : from(spirit::char_class::convert<char_encoding>::to(Tag(), from))
-          , to(spirit::char_class::convert<char_encoding>::to(Tag(), to)) 
+          , to(spirit::char_class::convert<char_encoding>::to(Tag(), to))
         {}
 
-        // A char_('a', 'z') which has an associated attribute emits it only if 
+        // A char_('a', 'z') which has an associated attribute emits it only if
         // it matches the character range, otherwise it fails.
         template <typename Attribute, typename CharParam, typename Context>
         bool test(Attribute const& attr, CharParam& ch, Context&) const
@@ -302,7 +302,7 @@ namespace boost { namespace spirit { namespace karma
             }
         }
 
-        // A char_("a-z") which has an associated attribute emits it only if 
+        // A char_("a-z") which has an associated attribute emits it only if
         // it matches the character set, otherwise it fails.
         template <typename Attribute, typename CharParam, typename Context>
         bool test(Attribute const& attr, CharParam& ch, Context&) const

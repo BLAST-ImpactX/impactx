@@ -19,21 +19,21 @@
 #include <boost/function_types/is_callable_builtin.hpp>
 #include <boost/function_types/components.hpp>
 
-namespace boost 
-{ 
-  namespace function_types 
+namespace boost
+{
+  namespace function_types
   {
     using mpl::placeholders::_;
- 
+
     template< typename T, typename ClassTypeTransform = add_reference<_> >
     struct parameter_types;
 
     namespace detail
     {
-      template<typename T, typename ClassTypeTransform> 
+      template<typename T, typename ClassTypeTransform>
       struct parameter_types_impl
         : mpl::pop_front
-          < typename function_types::components<T,ClassTypeTransform>::types 
+          < typename function_types::components<T,ClassTypeTransform>::types
           >::type
       { };
     }
@@ -44,10 +44,9 @@ namespace boost
         , detail::parameter_types_impl<T,ClassTypeTransform>, boost::blank
         >::type
     {
-      BOOST_MPL_AUX_LAMBDA_SUPPORT(2,parameter_types,(T,ClassTypeTransform)) 
+      BOOST_MPL_AUX_LAMBDA_SUPPORT(2,parameter_types,(T,ClassTypeTransform))
     };
   }
 }
 
 #endif
-

@@ -51,7 +51,7 @@ namespace detail
             !is_same<unused_type, attribute_type>::value;
         static bool const handles_container =
             traits::is_container<attribute_type>::value;
-        
+
         constexpr attr_parser(Value const& value)
           : value_(value) {}
         constexpr attr_parser(Value&& value)
@@ -69,7 +69,7 @@ namespace detail
 
         Value value_;
     };
-    
+
     template <typename Value, std::size_t N>
     struct attr_parser<Value[N]> : parser<attr_parser<Value[N]>>
       , detail::array_helper<Value, N>
@@ -92,7 +92,7 @@ namespace detail
             return true;
         }
     };
-    
+
     template <typename Value>
     struct get_info<attr_parser<Value>>
     {

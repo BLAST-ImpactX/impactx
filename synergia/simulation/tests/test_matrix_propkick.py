@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import sys, os
 import numpy as np
-import synergia
 import pytest
+
+import synergia
 
 macroparticles = 40  # 8 particles in transverse ring x 5 longitudinal positions
 realparticles = 4.0e10

@@ -1,7 +1,7 @@
 
 SRC_DIR=${KOKKOS_PATH}/core/unit_test/configuration/test-code
 
-# List of parallel device types 
+# List of parallel device types
 MakeDevices=$1
 CMakeDevices=$2
 MakeArch=$3
@@ -108,4 +108,3 @@ else
   echo Make: "make -f ${SRC_DIR}/Makefile KOKKOS_DEVICES=$MakeDevices KOKKOS_ARCH=$MakeArch $MakeOptions CXX=$CXX KokkosCore_config.h"
   echo CMake: "cmake -DCMAKE_CXX_COMPILER=$CXX $CMakeDevices $CMakeArch $CMakeOptions $SRC_DIR"
 fi
-

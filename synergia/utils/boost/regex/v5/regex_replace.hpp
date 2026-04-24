@@ -3,8 +3,8 @@
  * Copyright (c) 1998-2009
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -28,8 +28,8 @@ template <class OutputIterator, class BidirectionalIterator, class traits, class
 OutputIterator regex_replace(OutputIterator out,
                          BidirectionalIterator first,
                          BidirectionalIterator last,
-                         const basic_regex<charT, traits>& e, 
-                         Formatter fmt, 
+                         const basic_regex<charT, traits>& e,
+                         Formatter fmt,
                          match_flag_type flags = match_default)
 {
    regex_iterator<BidirectionalIterator, charT, traits> i(first, last, e, flags);
@@ -60,7 +60,7 @@ OutputIterator regex_replace(OutputIterator out,
 
 template <class traits, class charT, class Formatter>
 std::basic_string<charT> regex_replace(const std::basic_string<charT>& s,
-                         const basic_regex<charT, traits>& e, 
+                         const basic_regex<charT, traits>& e,
                          Formatter fmt,
                          match_flag_type flags = match_default)
 {
@@ -73,5 +73,3 @@ std::basic_string<charT> regex_replace(const std::basic_string<charT>& s,
 } // namespace boost
 
 #endif  // BOOST_REGEX_V5_REGEX_REPLACE_HPP
-
-

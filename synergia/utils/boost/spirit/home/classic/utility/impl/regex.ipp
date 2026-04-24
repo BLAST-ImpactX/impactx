@@ -37,14 +37,14 @@ public:
     typedef rx_parser<CharT> self_t;
 
     rx_parser(CharT const *first, CharT const *last)
-    { 
-        rxstr = string_t(rx_prefix(CharT())) + string_t(first, last); 
+    {
+        rxstr = string_t(rx_prefix(CharT())) + string_t(first, last);
     }
 
     rx_parser(CharT const *first)
-    { 
-        rxstr = string_t(rx_prefix(CharT())) + 
-            string_t(first, impl::get_last(first)); 
+    {
+        rxstr = string_t(rx_prefix(CharT())) +
+            string_t(first, impl::get_last(first));
     }
 
     template <typename ScannerT>

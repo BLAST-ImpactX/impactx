@@ -21,8 +21,8 @@ namespace quad_impl
     template<class T>
     KOKKOS_INLINE_FUNCTION
     void cf_kick(T const&x, T& xp, T const& y, T& yp, T const&, double const* kL)
-    { 
-        FF_algorithm::thin_quadrupole_unit(x, xp, y, yp, kL); 
+    {
+        FF_algorithm::thin_quadrupole_unit(x, xp, y, yp, kL);
 
         if (kL[2] || kL[3])   FF_algorithm::thin_quadrupole_unit(x, xp, y, yp, kL+2);
         if (kL[4] || kL[5])   FF_algorithm::thin_sextupole_unit(x, xp, y, yp, kL+4);
@@ -150,9 +150,9 @@ namespace quad_impl
                 p(i, 2) -= yoff;
 
                 FF_algorithm::yoshida6<part_t, kick<part_t>, 1> (
-                            p(i,0), p(i,1), p(i,2), 
-                            p(i,3), p(i,4), p(i,5), 
-                            ref_p, ref_m, step_ref_t, 
+                            p(i,0), p(i,1), p(i,2),
+                            p(i,3), p(i,4), p(i,5),
+                            ref_p, ref_m, step_ref_t,
                             step_l, step_k, steps );
 
                 p(i, 0) += xoff;
@@ -193,9 +193,9 @@ namespace quad_impl
                 p0 = p0 - xoff;
                 p2 = p2 - yoff;
 
-                FF_algorithm::yoshida6<gsv_t, kick<gsv_t>, 1>( 
+                FF_algorithm::yoshida6<gsv_t, kick<gsv_t>, 1>(
                         p0, p1, p2, p3, p4, p5,
-                        ref_p, ref_m, step_ref_t, 
+                        ref_p, ref_m, step_ref_t,
                         step_l, step_k, steps );
 
                 p0 = p0 + xoff;
@@ -242,9 +242,9 @@ namespace quad_impl
                 p0 = p0 - xoff;
                 p2 = p2 - yoff;
 
-                FF_algorithm::yoshida6<gsv_t, cf_kick<gsv_t>, max_mp_order>( 
+                FF_algorithm::yoshida6<gsv_t, cf_kick<gsv_t>, max_mp_order>(
                         p0, p1, p2, p3, p4, p5,
-                        ref_p, ref_m, step_ref_t, 
+                        ref_p, ref_m, step_ref_t,
                         step_l, step_k.data, steps );
 
                 p0 = p0 + xoff;
@@ -261,7 +261,7 @@ namespace quad_impl
 
 
     inline double get_reference_cdt(
-            double length, int steps, 
+            double length, int steps,
             double const* kn,
             double xoff, double yoff,
             Reference_particle& ref)
@@ -352,7 +352,7 @@ namespace FF_quadrupole
             kn[1] = ck2.imag();
         }
 
-        // multipole moments 
+        // multipole moments
         // kn[2] ... kn[2*max_mp_order-1]
         bool has_mp = false;
 
@@ -367,7 +367,7 @@ namespace FF_quadrupole
             kn[i*2+0] = ele.get_double_attribute(b_attr, 0.0);
             kn[i*2+1] = ele.get_double_attribute(a_attr, 0.0);
 
-            if (kn[i*2+0] || kn[i*2+1]) 
+            if (kn[i*2+0] || kn[i*2+1])
             {
                 has_mp = true;
 
@@ -416,14 +416,14 @@ namespace FF_quadrupole
 
 #if LIBFF_USE_GSV
                 // thin quadrupole cant have mp components
-                PropQuadThinSimd<typename BunchT::bp_t> pqt{ 
+                PropQuadThinSimd<typename BunchT::bp_t> pqt{
                     bp.parts, bp.masks, {kn[0], kn[1]}, xoff, yoff };
 
                 auto range = Kokkos::RangePolicy<exec>(0, bp.size_in_gsv());
                 Kokkos::parallel_for(range, pqt);
 #else
                 auto range = Kokkos::RangePolicy<exec>(0, bp.size());
-                PropQuadThin<typename BunchT::bp_t> pqt{ 
+                PropQuadThin<typename BunchT::bp_t> pqt{
                     bp.parts, bp.masks, {kn[0], kn[1]}, xoff, yoff };
                 Kokkos::parallel_for(range, pqt);
 #endif
@@ -487,13 +487,13 @@ namespace FF_quadrupole
                     PropQuadSimd<typename BunchT::bp_t> pq1{
                         bp.parts, bp.masks, steps,
                         xoff, yoff, ref_p, ref_m,
-                        ref_t/steps, length/steps, 
+                        ref_t/steps, length/steps,
                         {k2[0], k2[1]}
                     };
 
                     Kokkos::parallel_for(range, pq1);
 
-                    PropCFQuadThinSimd<typename BunchT::bp_t> pqt{ 
+                    PropCFQuadThinSimd<typename BunchT::bp_t> pqt{
                         bp.parts, bp.masks, k2, xoff, yoff };
 
                     Kokkos::parallel_for(range, pqt);
@@ -501,7 +501,7 @@ namespace FF_quadrupole
                     PropQuadSimd<typename BunchT::bp_t> pq2{
                         bp.parts, bp.masks, steps,
                         xoff, yoff, ref_p, ref_m,
-                        ref_t/steps, length/steps, 
+                        ref_t/steps, length/steps,
                         {k2[0], k2[1]}
                     };
 
@@ -513,7 +513,7 @@ namespace FF_quadrupole
                     PropQuadSimd<typename BunchT::bp_t> pq{
                         bp.parts, bp.masks, steps,
                         xoff, yoff, ref_p, ref_m,
-                        ref_t/steps, length/steps, 
+                        ref_t/steps, length/steps,
                         {kn[0], kn[1]}
                     };
 

@@ -622,7 +622,7 @@ public:
         _mm256_store_ps(p, ymm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 32
     void store_nt(float * p) const {
@@ -1484,7 +1484,7 @@ public:
         _mm256_store_pd(p, ymm);
     }
     // Member function storing to aligned uncached memory (non-temporal store).
-    // This may be more efficient than store_a when storing large blocks of memory if it 
+    // This may be more efficient than store_a when storing large blocks of memory if it
     // is unlikely that the data will stay in the cache until it is read again.
     // Note: Will generate runtime error if p is not aligned by 32
     void store_nt(double * p) const {
@@ -2392,14 +2392,14 @@ static inline Vec8f extend_z(Vec4f a) {
 static inline Vec4d extend_z(Vec2d a) {
     return Vec4d(a, Vec2d(0));
 }
-#if INSTRSET < 10 
+#if INSTRSET < 10
 static inline Vec8fb extend_z(Vec4fb a) {
     return Vec8fb(a, Vec4fb(false));
 }
 static inline Vec4db extend_z(Vec2db a) {
     return Vec4db(a, Vec2db(false));
 }
-#endif // INSTRSET < 10 
+#endif // INSTRSET < 10
 #else
 
 static inline Vec8f extend_z(Vec4f a) {

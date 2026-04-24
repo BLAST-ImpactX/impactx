@@ -18,12 +18,12 @@
 
 
 # if defined __GNUC__
-#   if (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) 
+#   if (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
 #     define BOOST_REF_TO_FUNC_CONFLICTS_WITH_REF_TO_T
 #     define BOOST_LAMBDA_INCORRECT_BIND_OVERLOADING
 #   endif
 # endif  // __GNUC__
- 
+
 
 #if defined __KCC
 
@@ -32,10 +32,3 @@
 #endif  // __KCC
 
 #endif
-
-
-
-
-
-
-

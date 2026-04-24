@@ -3,8 +3,8 @@
  * Copyright (c) 2002
  * John Maddock
  *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
+ * Use, modification and distribution are subject to the
+ * Boost Software License, Version 1.0. (See accompanying file
  * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
@@ -13,7 +13,7 @@
   *   LOCATION:    see http://www.boost.org for most recent version.
   *   FILE         perl_matcher_common.cpp
   *   VERSION      see <boost/version.hpp>
-  *   DESCRIPTION: Definitions of perl_matcher member functions that are 
+  *   DESCRIPTION: Definitions of perl_matcher member functions that are
   *                specific to the recursive implementation.
   */
 
@@ -60,7 +60,7 @@ public:
 template <class BidiIterator, class Allocator, class traits>
 bool perl_matcher<BidiIterator, Allocator, traits>::match_all_states()
 {
-   static matcher_proc_type const s_match_vtable[34] = 
+   static matcher_proc_type const s_match_vtable[34] =
    {
       (&perl_matcher<BidiIterator, Allocator, traits>::match_startmark),
       &perl_matcher<BidiIterator, Allocator, traits>::match_endmark,
@@ -181,8 +181,8 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_startmark()
                seq& s1 = (*m_presult)[i].get_captures();
                const seq& s2 = tm[i].captures();
                s1.insert(
-                  s1.end(), 
-                  s2.begin(), 
+                  s1.end(),
+                  s2.begin(),
                   s2.end());
             }
          }
@@ -331,7 +331,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_rep()
    //
    repeater_count<BidiIterator> r(rep->state_id, &next_count, position, this->recursion_stack.size() ? this->recursion_stack.back().idx : INT_MIN + 3);
    //
-   // If we've had at least one repeat already, and the last one 
+   // If we've had at least one repeat already, and the last one
    // matched the NULL string then set the repeat count to
    // maximum:
    //
@@ -362,7 +362,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_rep()
       }
       return false;
    }
-   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);   
+   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);
    if(greedy)
    {
       // try and take the repeat if we can:
@@ -434,7 +434,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_dot_repeat_slow()
          return false;
       ++count;
    }
-   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);   
+   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);
    if(greedy)
    {
       // normal repeat:
@@ -496,7 +496,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_dot_repeat_fast()
 #pragma warning(push)
 #pragma warning(disable:4267)
 #endif
-   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);   
+   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);
    std::size_t count = (std::min)(static_cast<std::size_t>(::boost::BOOST_REGEX_DETAIL_NS::distance(position, last)), greedy ? rep->max : rep->min);
    if(rep->min > count)
    {
@@ -557,11 +557,11 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_char_repeat()
    //
    // start by working out how much we can skip:
    //
-   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);   
+   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);
    std::size_t count, desired;
    if(::boost::is_random_access_iterator<BidiIterator>::value)
    {
-      desired = 
+      desired =
          (std::min)(
             (std::size_t)(greedy ? rep->max : rep->min),
             (std::size_t)::boost::BOOST_REGEX_DETAIL_NS::distance(position, last));
@@ -661,7 +661,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_set_repeat()
    //
    // start by working out how much we can skip:
    //
-   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);   
+   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);
    std::size_t desired = greedy ? rep->max : rep->min;
    if(::boost::is_random_access_iterator<BidiIterator>::value)
    {
@@ -757,7 +757,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_long_set_repeat()
    //
    // start by working out how much we can skip:
    //
-   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);   
+   bool greedy = (rep->greedy) && (!(m_match_flags & regex_constants::match_any) || m_independent);
    std::size_t desired = greedy ? rep->max : rep->min;
    if(::boost::is_random_access_iterator<BidiIterator>::value)
    {
@@ -852,7 +852,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::backtrack_till_match(std::si
    BidiIterator backtrack = position;
    if(position == last)
    {
-      if(rep->can_be_null & mask_skip) 
+      if(rep->can_be_null & mask_skip)
       {
          pstate = rep->alt.p;
          if(match_all_states())
@@ -1086,7 +1086,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::skip_until_paren(int index, 
          }
          else
          {
-            // Unenclosed closing ), occurs when (*ACCEPT) is inside some other 
+            // Unenclosed closing ), occurs when (*ACCEPT) is inside some other
             // parenthesis which may or may not have other side effects associated with it.
             bool r = match_endmark();
             m_have_accept = true;
@@ -1128,4 +1128,3 @@ bool perl_matcher<BidiIterator, Allocator, traits>::skip_until_paren(int index, 
 #endif
 
 #endif
-

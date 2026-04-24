@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import pytest
-import numpy
 import synergia
 
 # This tests that the 3rd order maps for a set of common element types are not

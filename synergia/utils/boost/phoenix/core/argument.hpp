@@ -24,19 +24,19 @@ namespace boost { namespace phoenix
     //      function for evaluating argument placeholders like: _1
     //
     ////////////////////////////////////////////////////////////////////////////
-    
+
     template <int I>
     struct argument
         //: mpl::int_<I>
     {
         typedef typename mpl::int_<I>::value_type value_type;
         static const value_type value = mpl::int_<I>::value;
-        
+
         bool operator==(argument) const
         {
             return true;
         }
-        
+
         template <int I2>
         bool operator==(argument<I2>) const
         {

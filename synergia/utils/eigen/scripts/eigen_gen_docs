@@ -21,4 +21,3 @@ rsync -az --no-p --delete build/doc/html/ $USER@ssh.tuxfamily.org:eigen/eigen.tu
 ssh $USER@ssh.tuxfamily.org "chmod -R g+w /home/eigen/eigen.tuxfamily.org-web/htdocs/$UPLOAD_DIR" || { echo "perm failed"; exit 1; }
 
 echo "Uploaded successfully"
-

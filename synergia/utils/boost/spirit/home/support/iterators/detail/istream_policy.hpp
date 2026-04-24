@@ -1,6 +1,6 @@
 //  Copyright (c) 2001 Daniel C. Nuffer
 //  Copyright (c) 2001-2011 Hartmut Kaiser
-// 
+//
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,7 +15,7 @@ namespace boost { namespace spirit { namespace iterator_policies
     ///////////////////////////////////////////////////////////////////////////
     //  class istream
     //  Implementation of the InputPolicy used by multi_pass
-    // 
+    //
     //  The istream encapsulates an std::basic_istream
     ///////////////////////////////////////////////////////////////////////////
     struct istream
@@ -56,22 +56,22 @@ namespace boost { namespace spirit { namespace iterator_policies
             static void advance_input(MultiPass& mp)
             {
                 // We invalidate the currently cached input character to avoid
-                // reading more input from the underlying iterator than 
-                // required. Without this we would always read ahead one 
-                // character, even if this character never gets consumed by the 
+                // reading more input from the underlying iterator than
+                // required. Without this we would always read ahead one
+                // character, even if this character never gets consumed by the
                 // client.
                 mp.shared()->peek_one();
             }
 
             // test, whether we reached the end of the underlying stream
             template <typename MultiPass>
-            static bool input_at_eof(MultiPass const& mp) 
+            static bool input_at_eof(MultiPass const& mp)
             {
                 return mp.shared()->eof_reached_;
             }
 
             template <typename MultiPass>
-            static bool input_is_valid(MultiPass const& mp, value_type const&) 
+            static bool input_is_valid(MultiPass const& mp, value_type const&)
             {
                 return mp.shared()->initialized_;
             }
@@ -87,9 +87,9 @@ namespace boost { namespace spirit { namespace iterator_policies
             typedef typename T::char_type result_type;
 
         public:
-            explicit shared(T& input) 
+            explicit shared(T& input)
               : input_(input), curtok_(-1)
-              , initialized_(false), eof_reached_(false) 
+              , initialized_(false), eof_reached_(false)
             {
                 peek_one();   // istreams may be at eof right in the beginning
             }

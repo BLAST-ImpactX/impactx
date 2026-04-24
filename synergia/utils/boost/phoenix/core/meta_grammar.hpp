@@ -3,7 +3,7 @@
     Copyright (c) 2010 Eric Niebler
     Copyright (c) 2010 Thomas Heller
 
-    Distributed under the Boost Software License, Version 1.0. (See accompanying 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 #ifndef BOOST_PHOENIX_CORE_META_GRAMMAR_HPP
@@ -74,7 +74,7 @@ namespace boost { namespace phoenix
                 return what()(e, phoenix::env(s), actions(s));
             }
         };
-        
+
         template <typename Expr, typename State>
         struct impl<Expr, State, unused>
             : proto::transform_impl<Expr, State, unused>
@@ -138,7 +138,7 @@ namespace boost { namespace phoenix
         static evaluator const e = {};
         return e(expr, ctx);
     }
-    
+
     template <typename Expr, typename Context>
     inline
     typename meta_grammar::template impl<

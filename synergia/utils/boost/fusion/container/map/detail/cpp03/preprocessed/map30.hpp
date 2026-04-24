@@ -15,7 +15,7 @@ namespace boost { namespace fusion
     {
         struct category : random_access_traversal_tag, associative_tag {};
         typedef map_tag fusion_tag;
-        typedef fusion_sequence_tag tag; 
+        typedef fusion_sequence_tag tag;
         typedef mpl::false_ is_view;
         typedef vector<
             T0 , T1 , T2 , T3 , T4 , T5 , T6 , T7 , T8 , T9 , T10 , T11 , T12 , T13 , T14 , T15 , T16 , T17 , T18 , T19 , T20 , T21 , T22 , T23 , T24 , T25 , T26 , T27 , T28 , T29>
@@ -40,7 +40,7 @@ namespace boost { namespace fusion
     BOOST_FUSION_GPU_ENABLED
     explicit
     map(U0 && arg0
-    
+
 # if defined(BOOST_MSVC) && (BOOST_MSVC == 1700)
         , typename enable_if<is_same<U0, T0> >::type* = 0
 # endif

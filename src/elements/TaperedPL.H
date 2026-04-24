@@ -217,15 +217,6 @@ namespace impactx::elements
             T_Real lambday = 0_prt;
             T_Real lambdaz = 0_prt;
 
-            // normalize focusing strength units to MAD-X convention if needed
-           // amrex::ParticleReal g = m_k;
-           // if (m_unit == 1) {
-           //     g = m_k / refpart.rigidity_Tm();
-           // }
-
-            // access reference beta*gamma
-            //amrex::ParticleReal beta_gamma_ref = refpart.beta_gamma();
-
             // compute multipole magnetic field normalized by q/mc:
             T_Real const Bx = m_g * ( y + m_taper * x * y ) * m_gamma_ref * m_beta;
             T_Real const By = -m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * m_gamma_ref * m_beta;

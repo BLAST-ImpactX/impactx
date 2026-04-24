@@ -6,10 +6,38 @@
 #
 # -*- coding: utf-8 -*-
 
+import glob
+import re
+
 import matplotlib.pyplot as plt
-import numpy as np
 import openpmd_api as io
+import pandas as pd
 import scipy
+
+
+def read_file(file_pattern):
+    for filename in glob.glob(file_pattern):
+        df = pd.read_csv(filename, delimiter=r"\s+")
+        if "step" not in df.columns:
+            step = int(re.findall(r"[0-9]+", filename)[0])
+            df["step"] = step
+        yield df
+
+
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')
+
 
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
@@ -21,7 +49,7 @@ beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 # columns in rbc file
 # step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
 
-rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=4)
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 step = rbc[:, 0]
 s = rbc[:, 1]

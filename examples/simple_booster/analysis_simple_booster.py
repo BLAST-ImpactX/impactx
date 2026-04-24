@@ -5,14 +5,42 @@
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-
-import math
 
-import numpy as np
+import glob
+import math
+import re
+
 import openpmd_api as io
+import pandas as pd
 import scipy
 from booster_impactx_lattice import get_lattice
 
 from impactx import elements
+
+
+def read_file(file_pattern):
+    for filename in glob.glob(file_pattern):
+        df = pd.read_csv(filename, delimiter=r"\s+")
+        if "step" not in df.columns:
+            step = int(re.findall(r"[0-9]+", filename)[0])
+            df["step"] = step
+        yield df
+
+
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')
+
 
 # load the Booster lattice
 lattice = elements.KnownElementsList()
@@ -47,7 +75,7 @@ final = series.iterations[last_step].particles["beam"].to_df()
 
 beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 
-rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=4)
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
 step = rbc[:, 0]
 s = rbc[:, 1]

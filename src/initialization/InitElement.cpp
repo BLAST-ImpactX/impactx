@@ -215,6 +215,7 @@ namespace detail
             dipedge::Model const model = amrex::getEnum<dipedge::Model>(model_str);
             pp_element.queryAdd("location", location_str);
             dipedge::Location const location = amrex::getEnum<dipedge::Location>(location_str);
+            pp_element.queryAdd("modify_ref_part", modify_ref_part);
 
             if (R <= 0) {
                 throw std::runtime_error(element_name + ".R must be >0 but is: " + std::to_string(R));

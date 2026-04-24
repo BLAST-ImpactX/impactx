@@ -15,7 +15,7 @@ mp_mev = 1.0e-6 * m_p * c**2/eV
 total_Booster_charge = 6.7e12 # PIP-II full Booster
 active_buckets = 81 # 81 out of 84 buckets full
 
-turns = 1
+turns = 2
 
 emit_x = 16.0e-6 # normalized 95% emit
 emit_y = 16.0e-6
@@ -76,8 +76,15 @@ sim.add_particles(bunch_charge_C, distr, npart)
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
+# run a lattice with a single monitor to capture the initial beam
 sim.lattice.append(monitor)
-# load the Booster lattice
+sim.lattice.clear()
+sim.lattice.append(monitor)
+sim.periods = 1
+sim.track_particles()
+
+# clear the lattice and load the Booster lattice
+sim.lattice.clear()
 sim.lattice.extend(get_lattice())
 sim.lattice.append(monitor)
 

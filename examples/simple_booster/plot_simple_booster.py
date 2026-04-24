@@ -15,7 +15,6 @@ from booster_impactx_lattice import get_lattice
 
 from impactx import ImpactX, elements
 
-
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
@@ -26,7 +25,7 @@ beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 # columns in rbc file
 # step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
 
-rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=1)
+rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=4)
 
 step = rbc[:, 0]
 s = rbc[:, 1]
@@ -86,67 +85,60 @@ emittance_tn = rbc[:, 41]
 
 charge = rbc[:, 42] / scipy.constants.eV
 
-plt.figure()
+f, ax = plt.subplots(2, 2)
 plt.suptitle("sigmas vs. s")
-plt.subplot(221)
-plt.plot(s, sigma_x, label="sigma_x")
-plt.legend(loc="best")
-plt.subplot(222)
-plt.plot(s, sigma_y, label="sigma_y")
-plt.legend(loc="best")
-plt.subplot(223)
-plt.plot(s, sigma_t, label="sigma_t")
-plt.legend(loc="best")
-plt.subplot(224)
-plt.plot(s, sigma_pt, label="sigma_pt")
-plt.legend(loc='best')
+ax[0, 0].plot(s, sigma_x*1000, label="sigma_x [mm]")
+ax[0, 0].legend(loc="best")
+ax[0, 1].plot(s, sigma_y*1000, label="sigma_y [mm]")
+ax[0, 1].legend(loc="best")
+ax[1, 0].plot(s, sigma_t, label="sigma_t [m]")
+ax[1, 0].legend(loc="best")
+ax[1, 1].plot(s, sigma_pt*1000, label="sigma_pt [x1000]")
+ax[1, 1].legend(loc='best')
 
 plt.figure()
 plt.title("charge")
-plt.plot(s, charge, label="charge")
+plt.plot(s, charge, label="charge [C]")
 plt.legend(loc="best")
 
 f, ax = plt.subplots(3, 2)
-ax[0, 0].plot(s, min_x, label="min x")
+ax[0, 0].plot(s, min_x*1000, label="min x [mm]")
 ax[0, 0].legend(loc="best")
 
-ax[0, 1].plot(s, max_x, label="max x")
+ax[0, 1].plot(s, max_x*1000, label="max x [mm]")
 ax[0, 1].legend(loc="best")
 
-ax[1, 0].plot(s, min_y, label="min y")
+ax[1, 0].plot(s, min_y*1000, label="min y [mm]")
 ax[1, 0].legend(loc="best")
 
-ax[1, 1].plot(s, max_y, label="max y")
+ax[1, 1].plot(s, max_y*1000, label="max y [mm]")
 ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(s, min_t*beta_ref, label="min z")
+ax[2, 0].plot(s, min_t*beta_ref, label="min z [m]")
 ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(s, max_t*beta_ref, label="max z")
+ax[2, 1].plot(s, max_t*beta_ref, label="max z [m]")
 ax[2, 1].legend(loc="best")
 
 
 f, ax = plt.subplots(3, 2)
 
-ax[0, 0].plot(initial["position_x"], initial["momentum_x"], '.', label="initial x vs. px")
+ax[0, 0].plot(initial["position_x"]*1000, initial["momentum_x"]*1000, '.', label="initial x [mm] vs. px [mr]")
 ax[0, 0].legend(loc="best")
 
-ax[0, 1].plot(final["position_x"], final["momentum_x"], '.', label="final x vs. px")
+ax[0, 1].plot(final["position_x"]*1000, final["momentum_x"]*1000, '.', label="final x [mm] vs. px [mr]")
 ax[0, 1].legend(loc="best")
 
-ax[1, 0].plot(initial["position_y"], initial["momentum_y"], '.', label="initial y vs. py")
+ax[1, 0].plot(initial["position_y"]*1000, initial["momentum_y"]*1000, '.', label="initial y [mm] vs. py [mr]")
 ax[1, 0].legend(loc="best")
 
-ax[1, 1].plot(final["position_y"], final["momentum_y"], '.', label="final y vs. py")
+ax[1, 1].plot(final["position_y"]*1000, final["momentum_y"]*1000, '.', label="final y [mm] vs. py [mr]")
 ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(initial["position_t"], initial["momentum_t"], '.', label="initial t vs. pt")
+ax[2, 0].plot(initial["position_t"], initial["momentum_t"]*1000, '.', label="initial t [m] vs. pt [x1000]")
 ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(final["position_t"], final["momentum_t"], '.', label="final t vs. pt")
+ax[2, 1].plot(final["position_t"], final["momentum_t"]*1000, '.', label="final t [m] vs. pt [x1000]")
 ax[2, 1].legend(loc="best")
 
 plt.show()
-
-# clean shutdown
-sim.finalize()

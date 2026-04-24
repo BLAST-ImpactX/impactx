@@ -49,7 +49,7 @@ final = series.iterations[last_step].particles["beam"].to_df()
 
 beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 
-rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=1)
+rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=4)
 
 step = rbc[:, 0]
 s = rbc[:, 1]

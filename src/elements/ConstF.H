@@ -299,11 +299,10 @@ namespace impactx::elements
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-             // spin is unaffected
+            // spin is unaffected
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
-
         }
 
 

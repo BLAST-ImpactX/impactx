@@ -19,12 +19,6 @@ __all__: list[str] = [
     "Waterbag",
 ]
 
-class Empty:
-    def __init__(self) -> None:
-        """
-        Sets all values to zero.
-        """
-
 class Gaussian:
     def __init__(
         self,
@@ -53,34 +47,6 @@ class Gaussian:
     ) -> None:
         """
         A 6D Gaussian distribution
-        """
-
-class KVdist:
-    def __init__(
-        self,
-        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
-        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
-        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
-        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
-        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
-        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
-        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-    ) -> None:
-        """
-        A K-V distribution transversely + a uniform distribution
-        in t + a Gaussian distribution in pt
         """
 
 class Kurth4D:
@@ -141,6 +107,40 @@ class Kurth6D:
         C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
         """
 
+class KVdist:
+    def __init__(
+        self,
+        lambdaX: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaY: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaT: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPx: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPy: typing.SupportsFloat | typing.SupportsIndex,
+        lambdaPt: typing.SupportsFloat | typing.SupportsIndex,
+        muxpx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        muypy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        mutpt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanT: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        meanPt: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispX: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispY: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dispPy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+    ) -> None:
+        """
+        A K-V distribution transversely + a uniform distribution
+        in t + a Gaussian distribution in pt
+        """
+
+class Empty:
+    def __init__(self) -> None:
+        """
+        Sets all values to zero.
+        """
+
 class Semigaussian:
     def __init__(
         self,
@@ -166,22 +166,6 @@ class Semigaussian:
     ) -> None:
         """
         A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
-        """
-
-class SpinvMF:
-    @staticmethod
-    def inverse_Langevin(pmag: typing.SupportsFloat | typing.SupportsIndex) -> float:
-        """
-        This function evaluates the inverse Langevin function, in order to return the value of concentration (kappa) required to produce a given polarization magnitude.
-        """
-    def __init__(
-        self,
-        mux: typing.SupportsFloat | typing.SupportsIndex,
-        muy: typing.SupportsFloat | typing.SupportsIndex,
-        muz: typing.SupportsFloat | typing.SupportsIndex,
-    ) -> None:
-        """
-        A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin.
         """
 
 class Thermal:
@@ -255,4 +239,20 @@ class Waterbag:
     ) -> None:
         """
         A 6D Waterbag distribution
+        """
+
+class SpinvMF:
+    @staticmethod
+    def inverse_Langevin(pmag: typing.SupportsFloat | typing.SupportsIndex) -> float:
+        """
+        This function evaluates the inverse Langevin function, in order to return the value of concentration (kappa) required to produce a given polarization magnitude.
+        """
+    def __init__(
+        self,
+        mux: typing.SupportsFloat | typing.SupportsIndex,
+        muy: typing.SupportsFloat | typing.SupportsIndex,
+        muz: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None:
+        """
+        A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin.
         """

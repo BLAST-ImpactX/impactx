@@ -26,7 +26,7 @@ def test_element_push():
     npart = 10000
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
+    ref = sim.beam.ref
     ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
@@ -43,8 +43,8 @@ def test_element_push():
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    pc = sim.particle_container()
-    assert pc.total_number_of_particles() == npart
+    beam = sim.beam
+    assert beam.total_number_of_particles() == npart
 
     # init accelerator lattice
     drift = elements.Drift(name="drift1", ds=0.25)
@@ -61,12 +61,12 @@ def test_element_push():
     sim.track_particles()
 
     # Push manually through a few (unnamed) elements
-    elements.Quad(ds=1.0, k=1.0).push(pc)
-    elements.Drift(ds=0.5).push(pc)
-    elements.Quad(ds=1.0, k=-1.0).push(pc)
+    elements.Quad(ds=1.0, k=1.0).push(beam)
+    elements.Drift(ds=0.5).push(beam)
+    elements.Quad(ds=1.0, k=-1.0).push(beam)
 
     # alternative formulation
-    push(pc, elements.Drift(ds=0.25))
+    push(beam, elements.Drift(ds=0.25))
 
     # push only the reference particle
     assert ref.s == 3.0

@@ -54,6 +54,12 @@ namespace impactx::elements
             }
         }
 
+        /** Reverse the element (not supported for Source) */
+        void reverse ()
+        {
+            throw std::runtime_error("Source: reverse() is not supported.");
+        }
+
         /** Initialize/Load particles.
          *
          * Particles are relative to the reference particle.

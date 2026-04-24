@@ -30,7 +30,7 @@ namespace impactx::elements
 {
     struct Programmable
     : public mixin::Named,
-      public mixin::LinearTransport<Programmable>
+      public mixin::LinearTransport<Programmable, false>
       // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Programmable";
@@ -49,6 +49,12 @@ namespace impactx::elements
         )
           : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
         {}
+
+        /** Reverse the element (not supported for Programmable) */
+        void reverse ()
+        {
+            throw std::runtime_error("Programmable: reverse() is not supported.");
+        }
 
         /** Push all particles relative to the reference particle
          *

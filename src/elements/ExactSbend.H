@@ -96,6 +96,9 @@ namespace impactx::elements
             return m_B != 0_prt ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
         }
 
+        /** Reverse the element (negate ds and phi) */
+        void reverse () { Thick::reverse(); m_phi = -m_phi; }
+
         /** Push all particles */
         using BeamOptic::operator();
 

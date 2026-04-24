@@ -132,6 +132,9 @@ namespace impactx::elements
             m_vertices_y_h_data = vert.y.host_const().data();
         }
 
+        /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
+        void reverse () { /* no-op */ }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -273,14 +276,17 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * A polygon aperture (potentially) removes particles; it does not
+         * deflect or drift the beam, so the linear transport map is the
+         * identity.
+         *
+         * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
             return Map6x6::Identity();
         }
 

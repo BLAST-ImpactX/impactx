@@ -269,7 +269,9 @@ namespace impactx::elements
 
         }
 
-        /** This operator pushes the particle spin.
+        /** This operator pushes the particle spin and phase space.
+         *
+         * Note: the spin is unaffected by this element.
          *
          * @param x particle position in x
          * @param y particle position in y

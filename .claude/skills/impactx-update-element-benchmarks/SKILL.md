@@ -82,7 +82,8 @@ Use `PIPE_KWARGS` for elements that accept `aperture_x`/`aperture_y`, otherwise 
 
 An element is spin-capable iff its header under `src/elements/<Name>.H` inherits `public mixin::SpinTransport`. To find the current set in one shot:
 
-# via Grep tool
+```
+# via  tool
 Grep: "mixin::SpinTransport" under src/elements/ (files_with_matches)
 ```
 

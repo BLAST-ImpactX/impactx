@@ -454,7 +454,6 @@ if(ImpactX_PYTHON)
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
-            pyImpactX
             pyImpactX_python_sources
     )
 

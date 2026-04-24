@@ -301,6 +301,7 @@ def test_ChrAcc(sim):
     )
 
 
+# Spin is not affected by this element, no need to test variant
 def test_ConstF(sim):
     roundtrip(
         elements.ConstF(ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice, **PIPE_KWARGS),

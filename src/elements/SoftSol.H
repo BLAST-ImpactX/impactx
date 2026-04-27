@@ -288,6 +288,8 @@ namespace impactx::elements
 
             // initialize linear map (deviation) values
             refpart.map = decltype(refpart.map)::Identity();
+
+            // initialize the spin-orbit coupling matrix and the spin rotation vector
             refpart.spin_rotation_vector = {};
             refpart.spin_coupling = {};
 

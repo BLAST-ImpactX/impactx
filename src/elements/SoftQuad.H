@@ -279,6 +279,9 @@ namespace impactx::elements
             // initialize linear map (deviation) values
             refpart.map = decltype(refpart.map)::Identity();
 
+            // initialize the spin-orbit coupling matrix
+            refpart.spin_coupling = {};
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 

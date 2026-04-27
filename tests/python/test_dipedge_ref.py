@@ -142,11 +142,11 @@ def test_dipedge_modify_ref_part_false():
     # access reference particle
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py])
     vec_ref_pred = [0, 0, 0, 0]
-vec_ref_on_shell = (ref.px)**2 + (ref.py)**2 + (ref.pz)**2 - (ref.pt)**2 + 1.0
+    vec_ref_on_shell = (ref.px)**2 + (ref.py)**2 + (ref.pz)**2 - (ref.pt)**2 + 1.0
     atol = 1.0e-12
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
-np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)
+    np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)
 
 def test_dipedge_modify_ref_part_true():
     """
@@ -182,7 +182,7 @@ def test_dipedge_modify_ref_part_true():
     # access reference particle
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py])
     vec_ref_pred = [x_shift, px_shift, 0, 0]
-vec_ref_on_shell = (ref.px)**2 + (ref.py)**2 + (ref.pz)**2 - (ref.pt)**2 + 1.0
+    vec_ref_on_shell = (ref.px)**2 + (ref.py)**2 + (ref.pz)**2 - (ref.pt)**2 + 1.0
     atol = 1.0e-12
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)

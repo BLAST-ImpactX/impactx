@@ -316,7 +316,7 @@ namespace impactx::elements
                 amrex::ParticleReal const pnorm = std::sqrt(pt*pt-1_prt);
                 amrex::ParticleReal const dx_ref = -c3_ref;
                 amrex::ParticleReal const dpx_ref = c13_ref - c2_ref - c3_ref*c5_ref;
-                amrex::ParticleReal const dpz_ref = -1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm));
+                amrex::ParticleReal const dpz_ref = pnorm*(-1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm)));
 
                 // advance position and momentum (thin dipole)
                 refpart.x = x + (pz/pnorm)*dx_ref;

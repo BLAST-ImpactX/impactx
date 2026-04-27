@@ -187,3 +187,4 @@ vec_ref_on_shell = (ref.px)**2 + (ref.py)**2 + (ref.pz)**2 - (ref.pt)**2 + 1.0
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
     np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)
+    np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)

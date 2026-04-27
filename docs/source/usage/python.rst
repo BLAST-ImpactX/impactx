@@ -1225,10 +1225,10 @@ This module provides elements and methods for the accelerator lattice.
    trajectory.  For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with
    the true horizontal position (after including the effect of the fringe field).  To model this correction, we allow two options in the dipedge model:
 
-   * the default model, in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+   * the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
    this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
 
-   * an option in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+   * the option ``modify_ref_part = True``, in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
    this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
 
    :param psi: Pole face angle [radians]

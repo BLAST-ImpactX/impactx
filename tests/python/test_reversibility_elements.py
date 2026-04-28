@@ -631,6 +631,8 @@ def test_RFCavity(sim):
 # =============================================================================
 
 
+# todo the m_modify_ref_part=true parameter is not yet handled
+#   see https://github.com/BLAST-ImpactX/impactx/pull/1431
 @pytest.mark.parametrize(
     ("model", "g", "K2"),
     [

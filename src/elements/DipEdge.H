@@ -99,7 +99,7 @@ namespace impactx::elements
             amrex::ParticleReal K6,
             dipedge::Model model,
             dipedge::Location location,
-            bool modify_ref_part,
+            bool modify_ref_part = false,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -111,7 +111,11 @@ namespace impactx::elements
         {
         }
 
-        /** Reverse the element (negate psi and K2, swap entry/exit) */
+        /** Reverse the element (negate psi and K2, swap entry/exit)
+         *
+         * @todo the m_modify_ref_part=true parameter is not yet handled
+         *       see https://github.com/BLAST-ImpactX/impactx/pull/1431
+         */
         void reverse ()
         {
             m_psi = -m_psi;

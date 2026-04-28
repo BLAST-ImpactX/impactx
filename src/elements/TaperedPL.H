@@ -97,8 +97,6 @@ namespace impactx::elements
             }
 
             // additional constants needed for spin push
-            m_gamma_ref = refpart.gamma();
-            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
 
@@ -191,22 +189,22 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -218,8 +216,9 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // compute multipole magnetic field normalized by q/mc:
-            T_Real const Bx = m_g * ( y + m_taper * x * y ) * m_gamma_ref * m_beta;
-            T_Real const By = -m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * m_gamma_ref * m_beta;
+            amrex::ParticleReal gamma_ref = refpart.gamma();
+            T_Real const Bx = m_g * ( y + m_taper * x * y ) * gamma_ref * m_beta;
+            T_Real const By = -m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * gamma_ref * m_beta;
             T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:
@@ -231,7 +230,7 @@ namespace impactx::elements
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
@@ -240,10 +239,11 @@ namespace impactx::elements
             amrex::ParticleReal const h = 0.0_prt;
 
             // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+            amrex::ParticleReal gyro_anomaly = refpart.gyromagnetic_anomaly;
+            tbmt_precession_vector(x, ux, uy, uz, gamma, h, gyro_anomaly, Bx, By, Bz, Ex, Ey, Ez, lambdax, lambday, lambdaz);
 
             // push the spin vector using the generator just determined
-            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+            rotate_spin(lambdax, lambday, lambdaz, sx, sy, sz);
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
@@ -318,8 +318,6 @@ for beam-quality preservation between plasma-accelerator stages",
 
       private:
         // constants that are independent of the individually tracked particle
-        amrex::ParticleReal m_gamma_ref;      //! relativistic gamma
-        amrex::ParticleReal m_gyro_anomaly;   //! particle gyromagnetic anomaly
         amrex::ParticleReal m_beta;           //! relativistic beta
         amrex::ParticleReal m_ibeta;          //! inverse of beta
         amrex::ParticleReal m_g;              //! quadrupole strength

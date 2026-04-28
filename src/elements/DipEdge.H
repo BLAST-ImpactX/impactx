@@ -269,8 +269,10 @@ namespace impactx::elements
                amrex::ParticleReal const c3_ref = m_c3_times_1plusdelta;
                T_Real const dx_ref = (m_modify_ref_part) ? -c3_ref : 0_prt;
                T_Real const dpx_ref = (m_modify_ref_part) ? m_c13 - c2_ref - c3_ref*m_c5 : 0_prt;
+               T_Real const dt_ref = -c3_ref * dpx_ref / m_beta;
                xout -= dx_ref;
                pxout -= dpx_ref;
+               tout -= dt_ref;
 
                x = xout;
                px = pxout;
@@ -298,6 +300,7 @@ namespace impactx::elements
             // assign input reference particle values
             [[maybe_unused]] amrex::ParticleReal const x = refpart.x;
             [[maybe_unused]] amrex::ParticleReal const z = refpart.z;
+            [[maybe_unused]] amrex::ParticleReal const t = refpart.t;
             [[maybe_unused]] amrex::ParticleReal const px = refpart.px;
             [[maybe_unused]] amrex::ParticleReal const pz = refpart.pz;
             [[maybe_unused]] amrex::ParticleReal const pt = refpart.pt;
@@ -317,12 +320,15 @@ namespace impactx::elements
                 amrex::ParticleReal const dx_ref = -c3_ref;
                 amrex::ParticleReal const dpx_ref = c13_ref - c2_ref - c3_ref*c5_ref;
                 amrex::ParticleReal const dpz_ref = pnorm*(-1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm)));
+                amrex::ParticleReal const dt_ref = -c3_ref * dpx_ref / refpart.beta();
 
-                // advance position and momentum (thin dipole)
+                // advance position and momentum
                 refpart.x = x + (pz/pnorm)*dx_ref;
                 refpart.z = z - (px/pnorm)*dx_ref;
+                refpart.t = t + dt_ref;
                 refpart.px = px + (pz/pnorm)*dpx_ref + (px/pnorm)*dpz_ref;
                 refpart.pz = pz - (px/pnorm)*dpx_ref + (pz/pnorm)*dpz_ref;
+                // refpart.pt = pt;  // Unchanged
             }
 
         }

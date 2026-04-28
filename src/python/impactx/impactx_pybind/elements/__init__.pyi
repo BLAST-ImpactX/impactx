@@ -665,6 +665,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         K6: typing.SupportsFloat | typing.SupportsIndex = 0,
         model: str = "linear",
         location: str = "entry",
+        modify_ref_part: bool = False,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0,
         dy: typing.SupportsFloat | typing.SupportsIndex = 0,
         rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
@@ -793,6 +794,13 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     @model.setter
     def model(self, arg1: str) -> None: ...
+    @property
+    def modify_ref_part(self) -> bool:
+        """
+        Apply DipEdge to reference particle (boolean).
+        """
+    @modify_ref_part.setter
+    def modify_ref_part(self, arg1: bool) -> None: ...
     @property
     def psi(self) -> float:
         """

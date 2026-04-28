@@ -880,7 +880,8 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location)),
+                     std::make_pair("modify_ref_part", dip_edge.m_modify_ref_part)
                  );
              }
         )
@@ -900,7 +901,8 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location)),
+                     std::make_pair("modify_ref_part", dip_edge.m_modify_ref_part)
                  );
              }
         )
@@ -918,6 +920,7 @@ void init_elements(py::module& m)
             amrex::ParticleReal K6,
             std::string const & model,
             std::string const & location,
+            bool modify_ref_part,
             amrex::ParticleReal dx,
             amrex::ParticleReal dy,
             amrex::ParticleReal rotation_degree,
@@ -929,7 +932,7 @@ void init_elements(py::module& m)
 
                 dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
                 dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
-                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
+                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, modify_ref_part, dx, dy, rotation_degree, name);
             }),
             py::arg("psi"),
             py::arg("rc"),
@@ -944,6 +947,7 @@ void init_elements(py::module& m)
             py::arg("K6") = 0,
             py::arg("model") = "linear",
             py::arg("location") = "entry",
+            py::arg("modify_ref_part") = false,
             py::arg("dx") = 0,
             py::arg("dy") = 0,
             py::arg("rotation") = 0,
@@ -1022,6 +1026,11 @@ void init_elements(py::module& m)
                 dip_edge.m_location = amrex::getEnum<dipedge::Location>(location);
             },
             "Fringe field location (entry or exit)"
+        )
+        .def_property("modify_ref_part",
+            [](DipEdge & dip_edge) { return dip_edge.m_modify_ref_part; },
+            [](DipEdge & dip_edge, bool modify_ref_part) { dip_edge.m_modify_ref_part = modify_ref_part; },
+            "Apply DipEdge to reference particle (boolean)."
         )
 
     ;

@@ -384,7 +384,19 @@ when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
 By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while the corresponding default value of ``K2`` is set to 1).
 
-This requires these additional parameters:
+Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference trajectory.
+
+For a beam, this will result in a centroid offset that will produce centroid oscillations in the  downstream beamline.
+In practice, this can be avoided by aligning the downstream elements with the true horizontal position (after including the effect of the fringe field).
+To model this correction, we allow two options in the dipedge model:
+
+* the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+* the option ``modify_ref_part = True`` in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
+This element requires these additional parameters:
 
 * ``<element_name>.psi`` (``float``, in radians) the pole face rotation angle
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
@@ -399,6 +411,7 @@ This requires these additional parameters:
 * ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
 * ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
+* ``<element_name>.modify_ref_part`` (``boolean``) apply fringe field to the reference particle ``true`` or ``false`` (default)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane

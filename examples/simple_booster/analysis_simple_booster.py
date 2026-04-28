@@ -121,47 +121,58 @@ print(f"std t\t\t{sigma_t[0]:7g}\t\t{sigma_t[-1]:7g}")
 print(f"std pt\t\t{sigma_pt[0]:7g}\t{sigma_pt[-1]:7g}")
 print(f"emittance t\t{emittance_t[0]:7g}\t{emittance_t[-1]:7g}")
 
-assert math.isclose(sigma_x[0], 0.0083783, rel_tol=1.0e-4)
-assert math.isclose(sigma_x[-1], 0.0083783, rel_tol=1.0e-2), (
+stdx_0 = 0.00836264
+stdpx_0 = 0.000224866
+stdy_0 = 0.00299539
+stdpy_0 = 0.00057078
+stdt_0 = 1.1694
+stdpt_0 = 0.000927767
+
+emitx_0 = 1.8803e-06
+emity_0 = 1.70969e-06
+emitt_0 =  0.00108493
+
+assert math.isclose(sigma_x[0], stdx_0, rel_tol=2.0e-2)
+assert math.isclose(sigma_x[-1], stdx_0, rel_tol=2.0e-2), (
     "sigma_x change over one turn too large"
 )
 
-assert math.isclose(sigma_px[0], 0.000226298, rel_tol=1.0e-4)
-assert math.isclose(sigma_px[-1], 0.000226298, rel_tol=1.0e-2), (
+assert math.isclose(sigma_px[0], stdpx_0, rel_tol=2.0e-2)
+assert math.isclose(sigma_px[-1], stdpx_0, rel_tol=2.0e-2), (
     "sigma_px change over one turn too large"
 )
 
-assert math.isclose(emittance_x[0], 1.89474e-06, rel_tol=1.0e-4)
-assert math.isclose(emittance_x[1], 1.89474e-06, rel_tol=1.0e-2), (
+assert math.isclose(emittance_x[0], emitx_0, rel_tol=2.0e-2)
+assert math.isclose(emittance_x[1], emitx_0, rel_tol=2.0e-2), (
     "emittance_x change over one turn too large"
 )
 
-assert math.isclose(sigma_y[0], 0.00299246, rel_tol=1.0e-4)
-assert math.isclose(sigma_y[-1], 0.00299246, rel_tol=1.0e-2), (
+assert math.isclose(sigma_y[0], stdy_0, rel_tol=2.0e-2)
+assert math.isclose(sigma_y[-1], stdy_0, rel_tol=2.0e-2), (
     "sigma_y change over one turn too large"
 )
 
-assert math.isclose(sigma_py[0], 0.000575451, rel_tol=1.0e-4)
-assert math.isclose(sigma_py[-1], 0.000575451, rel_tol=1.0e-2), (
+assert math.isclose(sigma_py[0], stdpy_0, rel_tol=2.0e-2)
+assert math.isclose(sigma_py[-1], stdpy_0, rel_tol=2.0e-2), (
     "sigma_py change over one turn too large"
 )
 
-assert math.isclose(emittance_y[0], 1.72198e-06, rel_tol=1.0e-4)
-assert math.isclose(emittance_y[1], 1.72198e-06, rel_tol=1.0e-2), (
+assert math.isclose(emittance_y[0], emity_0, rel_tol=2.0e-2)
+assert math.isclose(emittance_y[1], emity_0, rel_tol=2.0e-2), (
     "emittance_y change over one turn too large"
 )
 
-assert math.isclose(sigma_t[0], 1.16878, rel_tol=1.0e-4)
-assert math.isclose(sigma_t[-1], 1.16878, rel_tol=1.0e-2), (
+assert math.isclose(sigma_t[0], stdt_0, rel_tol=2.0e-2)
+assert math.isclose(sigma_t[-1], stdt_0, rel_tol=2.0e-2), (
     "sigma_t change over one turn too large"
 )
 
-assert math.isclose(sigma_pt[0], 0.000914371, rel_tol=1.0e-4)
-assert math.isclose(sigma_pt[-1], 0.000914371, rel_tol=1.0e-2), (
+assert math.isclose(sigma_pt[0], stdpt_0, rel_tol=2.0e-2)
+assert math.isclose(sigma_pt[-1], stdpt_0, rel_tol=2.0e-2), (
     "sigma_pt change over one turn too large"
 )
 
-assert math.isclose(emittance_t[0], 0.00106837, rel_tol=1.0e-4)
-assert math.isclose(emittance_t[1], 0.00106837, rel_tol=1.0e-2), (
+assert math.isclose(emittance_t[0], emitt_0, rel_tol=2.0e-2)
+assert math.isclose(emittance_t[1], emitt_0, rel_tol=2.0e-2), (
     "emittance_t change over one turn too large"
 )

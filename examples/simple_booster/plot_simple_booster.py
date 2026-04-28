@@ -6,10 +6,41 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import glob
+import re
+
 import matplotlib.pyplot as plt
 import openpmd_api as io
+import pandas as pd
 import scipy
+
+
+def read_file(file_pattern):
+    for filename in glob.glob(file_pattern):
+        df = pd.read_csv(filename, delimiter=r"\s+")
+        if "step" not in df.columns:
+            step = int(re.findall(r"[0-9]+", filename)[0])
+            df["step"] = step
+        else:
+            df = df[df["step"] != "step"]
+        df = df.apply(pd.to_numeric)
+        yield df
+
+
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')
+
 
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
@@ -21,65 +52,25 @@ beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
 # columns in rbc file
 # step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
 
-rbc = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=4)
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
-step = rbc[:, 0]
-s = rbc[:, 1]
+s = rbc["s"]
 
-mean_x = rbc[:, 2]
-min_x = rbc[:, 3]
-max_x = rbc[:, 4]
+min_x = rbc["min_x"]
+max_x = rbc["max_x"]
 
-mean_y = rbc[:, 5]
-min_y = rbc[:, 6]
-max_y = rbc[:, 7]
+min_y = rbc["min_y"]
+max_y = rbc["max_y"]
 
-mean_t = rbc[:, 8]
-min_t = rbc[:, 9]
-max_t = rbc[:, 10]
+min_t = rbc["min_t"]
+max_t = rbc["max_t"]
 
-sigma_x = rbc[:, 11]
-sigma_y = rbc[:, 12]
-sigma_t = rbc[:, 13]
+sigma_x = rbc["sigma_x"]
+sigma_y = rbc["sigma_y"]
+sigma_t = rbc["sigma_t"]
+sigma_pt = rbc["sigma_pt"]
 
-mean_px = rbc[:, 14]
-min_px = rbc[:, 15]
-max_px = rbc[:, 16]
-
-mean_py = rbc[:, 17]
-min_py = rbc[:, 18]
-max_py = rbc[:, 19]
-
-mean_pt = rbc[:, 20]
-min_pt = rbc[:, 21]
-max_pt = rbc[:, 22]
-
-sigma_px = rbc[:, 23]
-sigma_py = rbc[:, 24]
-sigma_pt = rbc[:, 25]
-
-emittance_x = rbc[:, 26]
-emittance_y = rbc[:, 27]
-emittance_t = rbc[:, 28]
-
-alpha_x = rbc[:, 29]
-alpha_y = rbc[:, 30]
-alpha_t = rbc[:, 31]
-
-beta_x = rbc[:, 32]
-beta_y = rbc[:, 33]
-beta_t = rbc[:, 34]
-
-dispersion_x = rbc[:, 35]
-dispersion_px = rbc[:, 36]
-dispersion_y = rbc[:, 37]
-dispersion_py = rbc[:, 38]
-
-emittance_xn = rbc[:, 39]
-emittance_yn = rbc[:, 40]
-emittance_tn = rbc[:, 41]
-
-charge = rbc[:, 42] / scipy.constants.eV
+charge = rbc["charge_C"] / scipy.constants.eV
 
 plt.figure()
 plt.suptitle("sigmas vs. s")
@@ -94,7 +85,7 @@ plt.plot(s, sigma_t, label="sigma_t")
 plt.legend(loc="best")
 plt.subplot(224)
 plt.plot(s, sigma_pt, label="sigma_pt")
-plt.legend(loc='best')
+plt.legend(loc="best")
 
 plt.figure()
 plt.title("charge")
@@ -114,31 +105,37 @@ ax[1, 0].legend(loc="best")
 ax[1, 1].plot(s, max_y, label="max y")
 ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(s, min_t*beta_ref, label="min z")
+ax[2, 0].plot(s, min_t * beta_ref, label="min z")
 ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(s, max_t*beta_ref, label="max z")
+ax[2, 1].plot(s, max_t * beta_ref, label="max z")
 ax[2, 1].legend(loc="best")
 
 
 f, ax = plt.subplots(3, 2)
 
-ax[0, 0].plot(initial["position_x"], initial["momentum_x"], '.', label="initial x vs. px")
+ax[0, 0].plot(
+    initial["position_x"], initial["momentum_x"], ".", label="initial x vs. px"
+)
 ax[0, 0].legend(loc="best")
 
-ax[0, 1].plot(final["position_x"], final["momentum_x"], '.', label="final x vs. px")
+ax[0, 1].plot(final["position_x"], final["momentum_x"], ".", label="final x vs. px")
 ax[0, 1].legend(loc="best")
 
-ax[1, 0].plot(initial["position_y"], initial["momentum_y"], '.', label="initial y vs. py")
+ax[1, 0].plot(
+    initial["position_y"], initial["momentum_y"], ".", label="initial y vs. py"
+)
 ax[1, 0].legend(loc="best")
 
-ax[1, 1].plot(final["position_y"], final["momentum_y"], '.', label="final y vs. py")
+ax[1, 1].plot(final["position_y"], final["momentum_y"], ".", label="final y vs. py")
 ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(initial["position_t"], initial["momentum_t"], '.', label="initial t vs. pt")
+ax[2, 0].plot(
+    initial["position_t"], initial["momentum_t"], ".", label="initial t vs. pt"
+)
 ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(final["position_t"], final["momentum_t"], '.', label="final t vs. pt")
+ax[2, 1].plot(final["position_t"], final["momentum_t"], ".", label="final t vs. pt")
 ax[2, 1].legend(loc="best")
 
 plt.show()

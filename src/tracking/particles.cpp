@@ -11,6 +11,7 @@
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/CollectLost.H"
+#include "particles/ParticleBoundary.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
 #include "diagnostics/DiagnosticOutput.H"
@@ -149,6 +150,9 @@ namespace impactx
 
                     // push all particles with external maps
                     push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
+
+                    // Apply optional particle boundary conditions
+                    particles::ParticleBoundary(*amr_data->track_particles.m_particle_container);
 
                     // move "lost" particles to another particle container
                     collect_lost_particles(*amr_data->track_particles.m_particle_container);

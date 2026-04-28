@@ -26,7 +26,7 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
@@ -41,14 +41,14 @@ distr = distribution.Waterbag(
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+m1 = elements.BeamMonitor("m1", backend="h5")
 
 # design the accelerator lattice
 sim.lattice.extend(
     [
-        monitor,
+        m1,
         elements.Sol(name="sol1", ds=3.820395, ks=0.8223219329893234),
-        monitor,
+        m1,
     ]
 )
 

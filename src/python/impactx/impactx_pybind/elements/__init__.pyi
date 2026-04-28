@@ -57,112 +57,6 @@ __all__: list[str] = [
     "transformation",
 ]
 
-class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex,
-        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        shift_odd_x: bool = False,
-        shape: str = "rectangular",
-        action: str = "transmit",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        A short collimator element applying a transverse aperture boundary.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def action(self) -> str:
-        """
-        action type (transmit, absorb)
-        """
-    @action.setter
-    def action(self, arg1: str) -> None: ...
-    @property
-    def aperture_x(self) -> float:
-        """
-        maximum horizontal coordinate
-        """
-    @aperture_x.setter
-    def aperture_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def aperture_y(self) -> float:
-        """
-        maximum vertical coordinate
-        """
-    @aperture_y.setter
-    def aperture_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_x(self) -> float:
-        """
-        horizontal period for repeated aperture masking
-        """
-    @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_y(self) -> float:
-        """
-        vertical period for repeated aperture masking
-        """
-    @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def shape(self) -> str:
-        """
-        aperture type (rectangular, elliptical)
-        """
-    @shape.setter
-    def shape(self, arg1: str) -> None: ...
-    @property
-    def shift_odd_x(self) -> bool:
-        """
-        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
-        """
-    @shift_odd_x.setter
-    def shift_odd_x(self, arg1: bool) -> None: ...
-
 class BeamMonitor(mixin.Thin):
     def __init__(
         self,
@@ -194,6 +88,11 @@ class BeamMonitor(mixin.Thin):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -272,18 +171,23 @@ class BeamMonitor(mixin.Thin):
     @tn.setter
     def tn(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
+class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
-        V: typing.SupportsFloat | typing.SupportsIndex,
-        k: typing.SupportsFloat | typing.SupportsIndex,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        shift_odd_x: bool = False,
+        shape: str = "rectangular",
+        action: str = "transmit",
         dx: typing.SupportsFloat | typing.SupportsIndex = 0,
         dy: typing.SupportsFloat | typing.SupportsIndex = 0,
         rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
         name: str | None = None,
     ) -> None:
         """
-        A short linear RF cavity element at zero-crossing for bunching.
+        A short collimator element applying a transverse aperture boundary.
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
@@ -306,75 +210,10 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def V(self) -> float:
+    def reverse(self) -> None:
         """
-        Normalized RF voltage drop V = Emax*L/(c*Brho)
-        """
-    @V.setter
-    def V(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def k(self) -> float:
-        """
-        Wavenumber of RF in 1/m
-        """
-    @k.setter
-    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-
-class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        rc: typing.SupportsFloat | typing.SupportsIndex,
-        k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
-        """
-        An ideal combined function bend (sector bend with quadrupole component).
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -394,89 +233,54 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | None,
     ]: ...
     @property
-    def k(self) -> float:
+    def action(self) -> str:
         """
-        Quadrupole strength in m^(-2) (MADX convention) = (gradient in T/m) / (rigidity in T-m) k > 0 horizontal focusing k < 0 horizontal defocusing
+        action type (transmit, absorb)
         """
-    @k.setter
-    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @action.setter
+    def action(self, arg1: str) -> None: ...
     @property
-    def rc(self) -> float:
+    def aperture_x(self) -> float:
         """
-        Radius of curvature in m
+        maximum horizontal coordinate
         """
-    @rc.setter
-    def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-
-class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        ez: typing.SupportsFloat | typing.SupportsIndex,
-        bz: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
-        """
-        A region of Uniform Acceleration, with chromatic effects included.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
+    @aperture_x.setter
+    def aperture_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
-    def bz(self) -> float:
+    def aperture_y(self) -> float:
         """
-        magnetic field strength in 1/m
+        maximum vertical coordinate
         """
-    @bz.setter
-    def bz(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @aperture_y.setter
+    def aperture_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
-    def ez(self) -> float:
+    def repeat_x(self) -> float:
         """
-        electric field strength in 1/m
+        horizontal period for repeated aperture masking
         """
-    @ez.setter
-    def ez(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @repeat_x.setter
+    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def repeat_y(self) -> float:
+        """
+        vertical period for repeated aperture masking
+        """
+    @repeat_y.setter
+    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def shape(self) -> str:
+        """
+        aperture type (rectangular, elliptical)
+        """
+    @shape.setter
+    def shape(self, arg1: str) -> None: ...
+    @property
+    def shift_odd_x(self) -> bool:
+        """
+        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+        """
+    @shift_odd_x.setter
+    def shift_odd_x(self, arg1: bool) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -514,61 +318,10 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-
-class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        k: typing.SupportsFloat | typing.SupportsIndex,
-        unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
+    def reverse(self) -> None:
         """
-        An active Plasma Lens with chromatic effects included.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -587,20 +340,6 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
-    @property
-    def k(self) -> float:
-        """
-        focusing strength in 1/m^2 (or T/m)
-        """
-    @k.setter
-    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def unit(self) -> int:
-        """
-        unit specification for focusing strength
-        """
-    @unit.setter
-    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -640,6 +379,11 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -671,6 +415,156 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     @unit.setter
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+
+class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        An active Plasma Lens with chromatic effects included.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def k(self) -> float:
+        """
+        focusing strength in 1/m^2 (or T/m)
+        """
+    @k.setter
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        unit specification for focusing strength
+        """
+    @unit.setter
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+
+class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        ez: typing.SupportsFloat | typing.SupportsIndex,
+        bz: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        A region of Uniform Acceleration, with chromatic effects included.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def bz(self) -> float:
+        """
+        magnetic field strength in 1/m
+        """
+    @bz.setter
+    def bz(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def ez(self) -> float:
+        """
+        electric field strength in 1/m
+        """
+    @ez.setter
+    def ez(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -710,6 +604,11 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -794,6 +693,11 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -904,6 +808,78 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     @rc.setter
     def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
+class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        flag: str = "entry",
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A thin quadrupole fringe field element. Flag must be "entry" or "exit".
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def k(self) -> float:
+        """
+        quadrupole focusing strength (1/meter^2 OR T/m)
+        """
+    @k.setter
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        unit specification for quad strength
+        """
+    @unit.setter
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+
 class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
@@ -940,49 +916,10 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-
-class Empty(mixin.Named, mixin.Thin):
-    def __init__(self) -> None:
+    def reverse(self) -> None:
         """
-        This element does nothing.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1001,86 +938,6 @@ class Empty(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
-
-class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
-        """
-        A thick combined function bending magnet using the exact nonlinear Hamiltonian.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def int_order(self) -> int:
-        """
-        order of symplectic integration used for particle push in applied fields
-        """
-    @int_order.setter
-    def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-    @property
-    def mapsteps(self) -> int:
-        """
-        number of integration steps per slice used for particle push in the applied fields
-        """
-    @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-    @property
-    def unit(self) -> int:
-        """
-        unit specification for multipole strength
-        """
-    @unit.setter
-    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
@@ -1117,6 +974,11 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1176,6 +1038,96 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def int_order(self) -> int:
+        """
+        order of symplectic integration used for particle push in applied fields
+        """
+    @int_order.setter
+    def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def mapsteps(self) -> int:
+        """
+        number of integration steps per slice used for particle push in the applied fields
+        """
+    @mapsteps.setter
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        unit specification for multipole strength
+        """
+    @unit.setter
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+
+class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        int_order: typing.SupportsInt | typing.SupportsIndex = 2,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        A thick combined function bending magnet using the exact nonlinear Hamiltonian.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1255,6 +1207,11 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ) -> None:
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
         """
     def to_dict(
         self,
@@ -1344,6 +1301,11 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
         Radius of curvature in m
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self, in_degrees: bool = False
     ) -> dict[
@@ -1375,135 +1337,6 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     @phi.setter
     def phi(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-
-class FilteredElementsList:
-    """
-    Result of ``KnownElementsList.select(...)`` or chained ``.select()`` calls: a filtered
-    view of the same underlying lattice.
-
-    Indexing (``self[i]``) returns elements from the original ``KnownElementsList``; changing
-    fields on those elements modifies the lattice in place. You can narrow the filter again with
-    ``.select(...)`` (AND logic between chained calls). After ``delete``, ``replace_each``, or
-    ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
-    not be used.
-    """
-    def __getitem__(self, key): ...
-    def __init__(self, original_list, indices): ...
-    def __iter__(self): ...
-    def __len__(self): ...
-    def __repr__(self): ...
-    def __str__(self): ...
-    def _require_valid(self) -> None:
-        """
-        Raise if this view was invalidated after a lattice mutation.
-        """
-    def count_by_kind(self, kind_pattern) -> int:
-        """
-        Count elements of a specific kind in the filtered list.
-
-        Args:
-            kind_pattern: The element kind to count. Can be:
-                - String name (e.g., "Drift", "Quad") - supports exact match
-                - Regex pattern (e.g., r".*Quad") - supports pattern matching
-                - Element type (e.g., elements.Drift) - supports exact type match
-
-        Returns:
-            int: Number of elements of the specified kind.
-        """
-    def delete(self) -> None:
-        """
-        Remove selected elements from the underlying lattice. Invalidates this and all other
-        live selections on the same lattice. Returns None.
-        """
-    def get_kinds(self) -> list[type]:
-        """
-        Get all unique element kinds in the filtered list.
-
-        Returns:
-            list[type]: List of unique element types (sorted by name).
-        """
-    def has_kind(self, kind_pattern) -> bool:
-        """
-        Check if filtered list contains elements of a specific kind.
-
-        Args:
-            kind_pattern: The element kind to check for. Can be:
-                - String name (e.g., "Drift", "Quad") - supports exact match
-                - Regex pattern (e.g., r".*Quad") - supports pattern matching
-                - Element type (e.g., elements.Drift) - supports exact type match
-
-        Returns:
-            bool: True if at least one element of the specified kind exists.
-        """
-    def replace_each(self, element, *, keep_name=True, keep_ds=False):
-        """
-        Replace each selected element with a copy of ``element``, optionally keeping name and
-        ``ds`` from the replaced element (``keep_ds`` defaults to False). Invalidates prior views;
-        returns a new selection over the same indices.
-        """
-    def replace_with_drifts(
-        self, *, model="match", keep_alignment=True, keep_aperture=False
-    ):
-        """
-        Replace each selected element with a drift of the matching physics family.
-
-        When ``model="match"``: ``Exact*`` elements become ``ExactDrift``, ``Chr*`` elements
-        become ``ChrDrift``, and all other (linear) elements become ``Drift``. When
-        ``model`` is ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses
-        that drift model. Names and segment length ``ds`` are always taken from the replaced
-        element.
-
-        By default, alignment errors (dx, dy, rotation) are preserved and apertures are
-        cleared. Use ``keep_alignment=False`` to zero alignment errors, or
-        ``keep_aperture=True`` to preserve aperture_x/aperture_y.
-        """
-    def select(self, *, kind=None, name=None):
-        """
-        Apply filtering to this filtered list.
-
-        This method applies additional filtering to an already filtered list,
-        maintaining references to the original elements and enabling chaining.
-
-        **Filtering Logic:**
-
-        - **Within a single filter**: OR logic (e.g., ``kind=["Drift", "Quad"]`` matches Drift OR Quad)
-        - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1"`` matches Quad OR named "quad1")
-        - **Chaining filters**: AND logic (e.g., ``lattice.select(kind="Drift").select(name="drift1")`` matches Drift AND named "drift1")
-
-        :param kind: Element type(s) to filter by. Can be a single string/type or a list/tuple
-                     of strings/types for OR-based filtering. String values support exact matches
-                     and regex patterns. Examples: "Drift", r".*Quad", elements.Drift, ["Drift", r".*Quad"], [elements.Drift, elements.Quad]
-        :type kind: str or type or list[str | type] or tuple[str | type, ...] or None, optional
-
-        :param name: Element name(s) to filter by. Can be a single string, regex pattern string, or
-                     a list/tuple of strings and/or regex pattern strings for OR-based filtering.
-                     Examples: "quad1", r"quad\\d+", ["quad1", "quad2"], [r"quad\\d+", "bend1"]
-        :type name: str or list[str] or tuple[str, ...] or None, optional
-
-        :return: FilteredElementsList containing references to original elements
-        :rtype: FilteredElementsList
-
-        :raises TypeError: If kind/name parameters have wrong types
-
-        **Examples:**
-
-        Additional filtering on already filtered results:
-
-        .. code-block:: python
-
-            drift_elements = lattice.select(
-                kind="Drift"
-            )  # or lattice.select(kind=elements.Drift)
-            first_drift = drift_elements.select(
-                name="drift1"
-            )  # Further filter drifts by name
-            quad_elements = lattice.select(
-                kind="Quad"
-            )  # or lattice.select(kind=elements.Quad)
-            strong_quads = quad_elements.select(
-                name=r"quad\\d+"
-            )  # Filter quads by regex pattern
-        """
 
 class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
@@ -1540,6 +1373,11 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         """
         Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
         """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1571,6 +1409,1681 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     @ykick.setter
     def ykick(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        multipole: typing.SupportsInt | typing.SupportsIndex,
+        K_normal: typing.SupportsFloat | typing.SupportsIndex,
+        K_skew: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A general thin multipole element.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def K_normal(self) -> float:
+        """
+        Integrated normal multipole coefficient (1/meter^m)
+        """
+    @K_normal.setter
+    def K_normal(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def K_skew(self) -> float:
+        """
+        Integrated skew multipole coefficient (1/meter^m)
+        """
+    @K_skew.setter
+    def K_skew(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def multipole(self) -> int:
+        """
+        index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+        """
+    @multipole.setter
+    def multipole(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Empty(mixin.Named, mixin.Thin):
+    def __init__(self) -> None:
+        """
+        This element does nothing.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+
+class Marker(mixin.Named, mixin.Thin):
+    def __init__(self, name: str) -> None:
+        """
+        This named element does nothing.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+
+class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        knll: typing.SupportsFloat | typing.SupportsIndex,
+        cnll: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        Single short segment of the nonlinear magnetic insert element.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def cnll(self) -> float:
+        """
+        distance of singularities from the origin (m)
+        """
+    @cnll.setter
+    def cnll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def knll(self) -> float:
+        """
+        integrated strength of the nonlinear lens (m)
+        """
+    @knll.setter
+    def knll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        angle: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A rotation in the x-y plane.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self, in_degrees: bool = False
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def angle(self) -> float:
+        """
+        Rotation angle (rad).
+        """
+    @angle.setter
+    def angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        vertices_x: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        vertices_y: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        min_radius2: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        shift_odd_x: bool = False,
+        action: str = "transmit",
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A short collimator element described by a polygon with vertices given by their x and y coordinates.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def action(self) -> str:
+        """
+        action type (transmit, absorb)
+        """
+    @action.setter
+    def action(self, arg1: str) -> None: ...
+    @property
+    def min_radius2(self) -> float:
+        """
+        All particles with radius squared smaller than min_radius2 pass the aperture
+        """
+    @min_radius2.setter
+    def min_radius2(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
+    @property
+    def repeat_x(self) -> float:
+        """
+        horizontal period for repeated aperture masking
+        """
+    @repeat_x.setter
+    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def repeat_y(self) -> float:
+        """
+        vertical period for repeated aperture masking
+        """
+    @repeat_y.setter
+    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def shift_odd_x(self) -> bool:
+        """
+        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+        """
+    @shift_odd_x.setter
+    def shift_odd_x(self, arg1: bool) -> None: ...
+
+class Programmable(mixin.Named):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        A programmable beam optics element.
+        """
+    def __repr__(self) -> str: ...
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def beam_particles(
+        self,
+    ) -> collections.abc.Callable[
+        [impactx.impactx_pybind.ImpactXParIter, impactx.impactx_pybind.RefPart], None
+    ]:
+        """
+        hook for beam particles (pti, RefPart)
+        """
+    @beam_particles.setter
+    def beam_particles(
+        self,
+        arg1: collections.abc.Callable[
+            [impactx.impactx_pybind.ImpactXParIter, impactx.impactx_pybind.RefPart],
+            None,
+        ],
+    ) -> None: ...
+    @property
+    def ds(self) -> float: ...
+    @ds.setter
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def nslice(self) -> int: ...
+    @nslice.setter
+    def nslice(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def push(
+        self,
+    ) -> collections.abc.Callable[
+        [
+            impactx.impactx_pybind.ImpactXParticleContainer,
+            typing.SupportsInt | typing.SupportsIndex,
+            typing.SupportsInt | typing.SupportsIndex,
+        ],
+        None,
+    ]:
+        """
+        hook for push of whole container (pc, step, period)
+        """
+    @push.setter
+    def push(
+        self,
+        arg1: collections.abc.Callable[
+            [
+                impactx.impactx_pybind.ImpactXParticleContainer,
+                typing.SupportsInt | typing.SupportsIndex,
+                typing.SupportsInt | typing.SupportsIndex,
+            ],
+            None,
+        ],
+    ) -> None: ...
+    @property
+    def ref_particle(
+        self,
+    ) -> collections.abc.Callable[[impactx.impactx_pybind.RefPart], None]:
+        """
+        hook for reference particle (RefPart)
+        """
+    @ref_particle.setter
+    def ref_particle(
+        self, arg1: collections.abc.Callable[[impactx.impactx_pybind.RefPart], None]
+    ) -> None: ...
+    @property
+    def threadsafe(self) -> bool:
+        """
+        allow threading via OpenMP for the particle iterator loop, default=False (note: if OMP backend is active)
+        """
+    @threadsafe.setter
+    def threadsafe(self, arg1: bool) -> None: ...
+
+class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        A Quadrupole magnet.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def k(self) -> float:
+        """
+        Quadrupole strength in m^(-2) (MADX convention) = (gradient in T/m) / (rigidity in T-m) k > 0 horizontal focusing k < 0 horizontal defocusing
+        """
+    @k.setter
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        *,
+        ds,
+        escale,
+        freq,
+        phase,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_on_axis=None,
+        ncoef=None,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
+        """
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+
+        An RF cavity.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def escale(self) -> float:
+        """
+        scaling factor for on-axis RF electric field in 1/m = (peak on-axis electric field Ez in MV/m) / (particle rest energy in MeV)
+        """
+    @escale.setter
+    def escale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def freq(self) -> float:
+        """
+        RF frequency in Hz
+        """
+    @freq.setter
+    def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def mapsteps(self) -> int:
+        """
+        number of integration steps per slice used for map and reference particle push in applied fields
+        """
+    @mapsteps.setter
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def phase(self) -> float:
+        """
+        RF driven phase in degrees
+        """
+    @phase.setter
+    def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        An ideal sector bend.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def rc(self, ref: impactx.impactx_pybind.RefPart = None) -> float:
+        """
+        Radius of curvature in m
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+
+class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        An ideal combined function bend (sector bend with quadrupole component).
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def k(self) -> float:
+        """
+        Quadrupole strength in m^(-2) (MADX convention) = (gradient in T/m) / (rigidity in T-m) k > 0 horizontal focusing k < 0 horizontal defocusing
+        """
+    @k.setter
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def rc(self) -> float:
+        """
+        Radius of curvature in m
+        """
+    @rc.setter
+    def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        V: typing.SupportsFloat | typing.SupportsIndex,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A short linear RF cavity element at zero-crossing for bunching.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def V(self) -> float:
+        """
+        Normalized RF voltage drop V = Emax*L/(c*Brho)
+        """
+    @V.setter
+    def V(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def k(self) -> float:
+        """
+        Wavenumber of RF in 1/m
+        """
+    @k.setter
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        V: typing.SupportsFloat | typing.SupportsIndex,
+        freq: typing.SupportsFloat | typing.SupportsIndex,
+        phase: typing.SupportsFloat | typing.SupportsIndex = -90.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A short RF cavity element.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def V(self) -> float:
+        """
+        Normalized RF voltage V = maximum energy gain/(m*c^2)
+        """
+    @V.setter
+    def V(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def freq(self) -> float:
+        """
+        RF frequency in Hz
+        """
+    @freq.setter
+    def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def phase(self) -> float:
+        """
+        RF synchronous phase in degrees (phase = 0 corresponds to maximum energy gain, phase = -90 corresponds go zero energy gain for bunching)
+        """
+    @phase.setter
+    def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        *,
+        ds,
+        bscale,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        field_on_axis=None,
+        ncoef=None,
+        unit=0,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
+        """
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsFloat | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+
+        A soft-edge solenoid.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def bscale(self) -> float:
+        """
+        Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0) or magnetic field Bz in T (SI units, if unit = 1)
+        """
+    @bscale.setter
+    def bscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def mapsteps(self) -> int:
+        """
+        number of integration steps per slice used for map and reference particle push in applied fields
+        """
+    @mapsteps.setter
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        specification of units for scaling of the on-axis longitudinal magnetic field
+        """
+    @unit.setter
+    def unit(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Source(mixin.Named, mixin.Thin):
+    def __init__(
+        self,
+        distribution: str,
+        openpmd_path: str,
+        active_once: bool = True,
+        name: str | None = None,
+    ) -> None:
+        """
+        A particle source.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def active_once(self) -> bool:
+        """
+        Inject particles only for the first lattice period.
+        """
+    @active_once.setter
+    def active_once(self, arg1: bool) -> None: ...
+    @property
+    def distribution(self) -> str:
+        """
+        Distribution type of particles in the source
+        """
+    @distribution.setter
+    def distribution(self, arg1: str) -> None: ...
+    @property
+    def series_name(self) -> str:
+        """
+        Path to openPMD series as accepted by openPMD_api.Series
+        """
+    @series_name.setter
+    def series_name(self, arg1: str) -> None: ...
+
+class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        ds: typing.SupportsFloat | typing.SupportsIndex,
+        ks: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
+        name: str | None = None,
+    ) -> None:
+        """
+        An ideal hard-edge Solenoid magnet.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def ks(self) -> float:
+        """
+        Solenoid strength in m^(-1) (MADX convention) in (magnetic field Bz in T) / (rigidity in T-m)
+        """
+    @ks.setter
+    def ks(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class PRot(mixin.Named, mixin.Thin):
+    def __init__(
+        self,
+        phi_in: typing.SupportsFloat | typing.SupportsIndex,
+        phi_out: typing.SupportsFloat | typing.SupportsIndex,
+        name: str | None = None,
+    ) -> None:
+        """
+        An exact pole-face rotation in the x-z plane. Both angles are in degrees.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self, in_degrees: bool = False
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def phi_in(self) -> float:
+        """
+        angle of the reference particle with respect to the longitudinal (z) axis in the original frame in radian
+        """
+    @phi_in.setter
+    def phi_in(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def phi_out(self) -> float:
+        """
+        angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in radian
+        """
+    @phi_out.setter
+    def phi_out(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __init__(
+        self,
+        *,
+        ds,
+        gscale,
+        cos_coefficients=None,
+        sin_coefficients=None,
+        z=None,
+        gradient_on_axis=None,
+        ncoef=None,
+        dx=0,
+        dy=0,
+        rotation=0,
+        aperture_x=0,
+        aperture_y=0,
+        mapsteps=1,
+        nslice=1,
+        name=None,
+    ):
+        """
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+
+        A soft-edge quadrupole.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def gscale(self) -> float:
+        """
+        Scaling factor for on-axis field gradient in inverse meters
+        """
+    @gscale.setter
+    def gscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def mapsteps(self) -> int:
+        """
+        number of integration steps per slice used for map and reference particle push in applied fields
+        """
+    @mapsteps.setter
+    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+
+class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        theta: typing.SupportsFloat | typing.SupportsIndex,
+        rc: typing.SupportsFloat | typing.SupportsIndex,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A thin kick model of a dipole bend.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self, in_degrees: bool = False
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def theta(self) -> float:
+        """
+        Bend angle (radian)
+        """
+    @theta.setter
+    def theta(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __init__(
+        self,
+        k: typing.SupportsFloat | typing.SupportsIndex,
+        taper: typing.SupportsFloat | typing.SupportsIndex,
+        unit: typing.SupportsInt | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        A thin nonlinear plasma lens with transverse (horizontal) taper
+
+                     .. math::
+
+                        B_x = g \\left( y + \\frac{xy}{D_x} \\right), \\quad \\quad B_y = -g \\left(x + \\frac{x^2 + y^2}{2 D_x} \\right)
+
+                     where :math:`g` is the (linear) field gradient in T/m and :math:`D_x` is the targeted horizontal dispersion in m.
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def k(self) -> float:
+        """
+        integrated focusing strength in m^(-1) (if unit = 0) or integrated focusing strength in T (if unit = 1)
+        """
+    @k.setter
+    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def taper(self) -> float:
+        """
+        horizontal taper parameter in m^(-1) = 1 / (target horizontal dispersion in m)
+        """
+    @taper.setter
+    def taper(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def unit(self) -> int:
+        """
+        specification of units for plasma lens focusing strength
+        """
+    @unit.setter
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+
+class LinearMap(mixin.Named, mixin.Alignment):
+    def __init__(
+        self,
+        R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        (A user-provided linear map, represented as a 6x6 transport matrix.)
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def R(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linear map as a 6x6 transport matrix
+        """
+    @R.setter
+    def R(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def ds(self) -> float:
+        """
+        segment length in m
+        """
+    @ds.setter
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def nslice(self) -> int:
+        """
+        one, because we do not support slicing of this element
+        """
+    @property
+    def symplectic(self) -> bool:
+        """
+        Check if the transport map is symplectic.
+
+        A matrix R is symplectic if R^T J R = J, where J is the
+        standard 6x6 skew-symmetric symplectic form (also called Omega).
+        """
+
+class SpinMap(mixin.Named, mixin.Alignment):
+    def __init__(
+        self,
+        v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
+        A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        name: str | None = None,
+    ) -> None:
+        """
+        (A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)
+        """
+    def __repr__(self) -> str: ...
+    def finalize(self) -> None: ...
+    @typing.overload
+    def push(
+        self,
+        pc: impactx.impactx_pybind.ImpactXParticleContainer,
+        step: typing.SupportsInt | typing.SupportsIndex = 0,
+        period: typing.SupportsInt | typing.SupportsIndex = 0,
+    ) -> None:
+        """
+        Push first the reference particle, then all other particles.
+        """
+    @typing.overload
+    def push(
+        self,
+        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> None:
+        """
+        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
+        """
+    def reverse(self) -> None:
+        """
+        Reverse the element in-place so that pushing particles through
+        it reverses the effect of the original element.
+        """
+    def to_dict(
+        self,
+    ) -> dict[
+        str,
+        float
+        | int
+        | int
+        | bool
+        | str
+        | list[float]
+        | list[int]
+        | list[int]
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+        | None,
+    ]: ...
+    @property
+    def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        spin-orbit coupling generator of rotation as a 3x6 matrix
+        """
+    @A.setter
+    def A(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def ds(self) -> float:
+        """
+        segment length in m
+        """
+    @ds.setter
+    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def nslice(self) -> int:
+        """
+        one, because we do not support slicing of this element
+        """
+    @property
+    def v(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
+        """
+        design axis-angle generator of spin rotation as a 3x1 vector
+        """
+    @v.setter
+    def v(
+        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+    ) -> None: ...
 
 class KnownElementsList:
     def __getitem__(
@@ -1837,6 +3350,46 @@ class KnownElementsList:
     def load_file(self, filename, nslice=1):
         """
         Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+        .. warning::
+
+           Our MAD-X and PALS parsers are under active development
+           and provided as a preview. Please check any loaded lattice
+           files very carefully. Please report your experience and bugs
+           on our `issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+        """
+    def map_trace(self, ref: impactx.impactx_pybind.RefPart) -> list:
+        """
+        Trace the cumulative 6x6 linear transport map element by element.
+
+        The reference particle is passed by value (intentional copy); the
+        caller's reference particle is not modified in place. This matches
+        the convention used by ``transfer_map``.
+
+        This per-element trace is what ``sim.twiss()`` consumes to transport
+        Twiss functions through the lattice.
+
+        If you only need the final cumulative map at the lattice exit,
+        prefer ``transfer_map(ref)`` instead of indexing the last entry
+        of ``map_trace(ref)``.
+
+        :param ref: A reference particle.
+        :return: A list of dictionaries, one per lattice element plus a
+            leading entry for the starting position. Each entry contains:
+
+            * ``s``    -- integrated path length along the reference orbit,
+              in meters;
+            * ``name`` -- user-supplied element name (empty string if not
+              named);
+            * ``type`` -- element type string (e.g. ``"Drift"``,
+              ``"Quad"``, ``"Sbend"``);
+            * ``M``    -- cumulative 6x6 linear transport map from the
+              start of the lattice to the exit of this element (a
+              ``Map6x6`` instance; call ``.to_numpy()`` for a standard
+              C-ordered NumPy array).
+
+            The first entry always has the identity map at the starting
+            ``s``; the last entry contains the same map as ``transfer_map``.
         """
     def plot_survey(
         self, ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc"
@@ -2037,1462 +3590,150 @@ class KnownElementsList:
         fallback_identity_map: bool = False,
     ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
         """
-        Calculate the transfer map of the elements in the list.
+        Calculate the end-to-end transfer map of the elements in the list.
+
+        Currently only the linear transfer map is implemented (``order="linear"``);
+        the ``order`` parameter is reserved for future higher-order extensions.
+        In linear mode the 6x6 map is composed element by element, using each
+        element's analytic per-slice linear transport map.
+
+        Collective effects like space charge, Coherent/Incoherent Synchrotron
+        Radiation (CSR/ISR), and wakefield effects are not applied here; the
+        returned map describes the purely linear single-particle dynamics of the
+        design lattice.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+
+        :param ref: reference particle at the starting s
+        :param order: So far, only the calculation of linear transfer maps is supported.
+        :param fallback_identity_map: For elements with an undefined transfer map in the lattice, assume the identity matrix.
         """
 
-class LinearMap(mixin.Named, mixin.Alignment):
-    def __init__(
-        self,
-        R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        (A user-provided linear map, represented as a 6x6 transport matrix.)
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def R(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
-        """
-        linear map as a 6x6 transport matrix
-        """
-    @R.setter
-    def R(
-        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    ) -> None: ...
-    @property
-    def ds(self) -> float:
-        """
-        segment length in m
-        """
-    @ds.setter
-    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def nslice(self) -> int:
-        """
-        one, because we do not support slicing of this element
-        """
-    @property
-    def symplectic(self) -> bool:
-        """
-        Check if the transport map is symplectic.
+class FilteredElementsList:
+    """
+    Result of ``KnownElementsList.select(...)`` or chained ``.select()`` calls: a filtered
+    view of the same underlying lattice.
 
-        A matrix R is symplectic if R^T J R = J, where J is the
-        standard 6x6 skew-symmetric symplectic form (also called Omega).
+    Indexing (``self[i]``) returns elements from the original ``KnownElementsList``; changing
+    fields on those elements modifies the lattice in place. You can narrow the filter again with
+    ``.select(...)`` (AND logic between chained calls). After ``delete``, ``replace_each``, or
+    ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
+    not be used.
+    """
+    def __getitem__(self, key): ...
+    def __init__(self, original_list, indices): ...
+    def __iter__(self): ...
+    def __len__(self): ...
+    def __repr__(self): ...
+    def __str__(self): ...
+    def _require_valid(self) -> None:
         """
+        Raise if this view was invalidated after a lattice mutation.
+        """
+    def count_by_kind(self, kind_pattern) -> int:
+        """
+        Count elements of a specific kind in the filtered list.
 
-class Marker(mixin.Named, mixin.Thin):
-    def __init__(self, name: str) -> None:
-        """
-        This named element does nothing.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
+        Args:
+            kind_pattern: The element kind to count. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
 
-class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        multipole: typing.SupportsInt | typing.SupportsIndex,
-        K_normal: typing.SupportsFloat | typing.SupportsIndex,
-        K_skew: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
+        Returns:
+            int: Number of elements of the specified kind.
         """
-        A general thin multipole element.
+    def delete(self) -> None:
         """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
+        Remove selected elements from the underlying lattice. Invalidates this and all other
+        live selections on the same lattice. Returns None.
         """
-        Push first the reference particle, then all other particles.
+    def get_kinds(self) -> list[type]:
         """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def K_normal(self) -> float:
-        """
-        Integrated normal multipole coefficient (1/meter^m)
-        """
-    @K_normal.setter
-    def K_normal(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def K_skew(self) -> float:
-        """
-        Integrated skew multipole coefficient (1/meter^m)
-        """
-    @K_skew.setter
-    def K_skew(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def multipole(self) -> int:
-        """
-        index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
-        """
-    @multipole.setter
-    def multipole(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        Get all unique element kinds in the filtered list.
 
-class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        knll: typing.SupportsFloat | typing.SupportsIndex,
-        cnll: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
+        Returns:
+            list[type]: List of unique element types (sorted by name).
         """
-        Single short segment of the nonlinear magnetic insert element.
+    def has_kind(self, kind_pattern) -> bool:
         """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def cnll(self) -> float:
-        """
-        distance of singularities from the origin (m)
-        """
-    @cnll.setter
-    def cnll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def knll(self) -> float:
-        """
-        integrated strength of the nonlinear lens (m)
-        """
-    @knll.setter
-    def knll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        Check if filtered list contains elements of a specific kind.
 
-class PRot(mixin.Named, mixin.Thin):
-    def __init__(
-        self,
-        phi_in: typing.SupportsFloat | typing.SupportsIndex,
-        phi_out: typing.SupportsFloat | typing.SupportsIndex,
-        name: str | None = None,
-    ) -> None:
-        """
-        An exact pole-face rotation in the x-z plane. Both angles are in degrees.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self, in_degrees: bool = False
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def phi_in(self) -> float:
-        """
-        angle of the reference particle with respect to the longitudinal (z) axis in the original frame in radian
-        """
-    @phi_in.setter
-    def phi_in(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def phi_out(self) -> float:
-        """
-        angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in radian
-        """
-    @phi_out.setter
-    def phi_out(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        Args:
+            kind_pattern: The element kind to check for. Can be:
+                - String name (e.g., "Drift", "Quad") - supports exact match
+                - Regex pattern (e.g., r".*Quad") - supports pattern matching
+                - Element type (e.g., elements.Drift) - supports exact type match
 
-class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        angle: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
+        Returns:
+            bool: True if at least one element of the specified kind exists.
         """
-        A rotation in the x-y plane.
+    def replace_each(self, element, *, keep_name=True, keep_ds=False):
         """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
+        Replace each selected element with a copy of ``element``, optionally keeping name and
+        ``ds`` from the replaced element (``keep_ds`` defaults to False). Invalidates prior views;
+        returns a new selection over the same indices.
         """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self, in_degrees: bool = False
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def angle(self) -> float:
-        """
-        Rotation angle (rad).
-        """
-    @angle.setter
-    def angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-
-class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        vertices_x: collections.abc.Sequence[
-            typing.SupportsFloat | typing.SupportsIndex
-        ],
-        vertices_y: collections.abc.Sequence[
-            typing.SupportsFloat | typing.SupportsIndex
-        ],
-        min_radius2: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        shift_odd_x: bool = False,
-        action: str = "transmit",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        A short collimator element described by a polygon with vertices given by their x and y coordinates.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def action(self) -> str:
-        """
-        action type (transmit, absorb)
-        """
-    @action.setter
-    def action(self, arg1: str) -> None: ...
-    @property
-    def min_radius2(self) -> float:
-        """
-        All particles with radius squared smaller than min_radius2 pass the aperture
-        """
-    @min_radius2.setter
-    def min_radius2(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
-    ) -> None: ...
-    @property
-    def repeat_x(self) -> float:
-        """
-        horizontal period for repeated aperture masking
-        """
-    @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_y(self) -> float:
-        """
-        vertical period for repeated aperture masking
-        """
-    @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def shift_odd_x(self) -> bool:
-        """
-        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
-        """
-    @shift_odd_x.setter
-    def shift_odd_x(self, arg1: bool) -> None: ...
-
-class Programmable(mixin.Named):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
-        """
-        A programmable beam optics element.
-        """
-    def __repr__(self) -> str: ...
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def beam_particles(
-        self,
-    ) -> collections.abc.Callable[
-        [impactx.impactx_pybind.ImpactXParIter, impactx.impactx_pybind.RefPart], None
-    ]:
-        """
-        hook for beam particles (pti, RefPart)
-        """
-    @beam_particles.setter
-    def beam_particles(
-        self,
-        arg1: collections.abc.Callable[
-            [impactx.impactx_pybind.ImpactXParIter, impactx.impactx_pybind.RefPart],
-            None,
-        ],
-    ) -> None: ...
-    @property
-    def ds(self) -> float: ...
-    @ds.setter
-    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def nslice(self) -> int: ...
-    @nslice.setter
-    def nslice(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-    @property
-    def push(
-        self,
-    ) -> collections.abc.Callable[
-        [
-            impactx.impactx_pybind.ImpactXParticleContainer,
-            typing.SupportsInt | typing.SupportsIndex,
-            typing.SupportsInt | typing.SupportsIndex,
-        ],
-        None,
-    ]:
-        """
-        hook for push of whole container (pc, step, period)
-        """
-    @push.setter
-    def push(
-        self,
-        arg1: collections.abc.Callable[
-            [
-                impactx.impactx_pybind.ImpactXParticleContainer,
-                typing.SupportsInt | typing.SupportsIndex,
-                typing.SupportsInt | typing.SupportsIndex,
-            ],
-            None,
-        ],
-    ) -> None: ...
-    @property
-    def ref_particle(
-        self,
-    ) -> collections.abc.Callable[[impactx.impactx_pybind.RefPart], None]:
-        """
-        hook for reference particle (RefPart)
-        """
-    @ref_particle.setter
-    def ref_particle(
-        self, arg1: collections.abc.Callable[[impactx.impactx_pybind.RefPart], None]
-    ) -> None: ...
-    @property
-    def threadsafe(self) -> bool:
-        """
-        allow threading via OpenMP for the particle iterator loop, default=False (note: if OMP backend is active)
-        """
-    @threadsafe.setter
-    def threadsafe(self, arg1: bool) -> None: ...
-
-class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
-        """
-        A Quadrupole magnet.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def k(self) -> float:
-        """
-        Quadrupole strength in m^(-2) (MADX convention) = (gradient in T/m) / (rigidity in T-m) k > 0 horizontal focusing k < 0 horizontal defocusing
-        """
-    @k.setter
-    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-
-class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        k: typing.SupportsFloat | typing.SupportsIndex,
-        unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        flag: str = "entry",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        A thin quadrupole fringe field element. Flag must be "entry" or "exit".
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def k(self) -> float:
-        """
-        quadrupole focusing strength (1/meter^2 OR T/m)
-        """
-    @k.setter
-    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def unit(self) -> int:
-        """
-        unit specification for quad strength
-        """
-    @unit.setter
-    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-
-class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        *,
-        ds,
-        escale,
-        freq,
-        phase,
-        cos_coefficients=None,
-        sin_coefficients=None,
-        z=None,
-        field_on_axis=None,
-        ncoef=None,
-        dx=0,
-        dy=0,
-        rotation=0,
-        aperture_x=0,
-        aperture_y=0,
-        mapsteps=1,
-        nslice=1,
-        name=None,
+    def replace_with_drifts(
+        self, *, model="match", keep_alignment=True, keep_aperture=False
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        Replace each selected element with a drift of the matching physics family.
 
-        An RF cavity.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def escale(self) -> float:
-        """
-        scaling factor for on-axis RF electric field in 1/m = (peak on-axis electric field Ez in MV/m) / (particle rest energy in MeV)
-        """
-    @escale.setter
-    def escale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def freq(self) -> float:
-        """
-        RF frequency in Hz
-        """
-    @freq.setter
-    def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def mapsteps(self) -> int:
-        """
-        number of integration steps per slice used for map and reference particle push in applied fields
-        """
-    @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-    @property
-    def phase(self) -> float:
-        """
-        RF driven phase in degrees
-        """
-    @phase.setter
-    def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        When ``model="match"``: ``Exact*`` elements become ``ExactDrift``, ``Chr*`` elements
+        become ``ChrDrift``, and all other (linear) elements become ``Drift``. When
+        ``model`` is ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses
+        that drift model. Names and segment length ``ds`` are always taken from the replaced
+        element.
 
-class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        rc: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
+        By default, alignment errors (dx, dy, rotation) are preserved and apertures are
+        cleared. Use ``keep_alignment=False`` to zero alignment errors, or
+        ``keep_aperture=True`` to preserve aperture_x/aperture_y.
         """
-        An ideal sector bend.
+    def select(self, *, kind=None, name=None):
         """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def rc(self, ref: impactx.impactx_pybind.RefPart = None) -> float:
-        """
-        Radius of curvature in m
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
+        Apply filtering to this filtered list.
 
-class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        V: typing.SupportsFloat | typing.SupportsIndex,
-        freq: typing.SupportsFloat | typing.SupportsIndex,
-        phase: typing.SupportsFloat | typing.SupportsIndex = -90.0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        A short RF cavity element.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def V(self) -> float:
-        """
-        Normalized RF voltage V = maximum energy gain/(m*c^2)
-        """
-    @V.setter
-    def V(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def freq(self) -> float:
-        """
-        RF frequency in Hz
-        """
-    @freq.setter
-    def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def phase(self) -> float:
-        """
-        RF synchronous phase in degrees (phase = 0 corresponds to maximum energy gain, phase = -90 corresponds go zero energy gain for bunching)
-        """
-    @phase.setter
-    def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        This method applies additional filtering to an already filtered list,
+        maintaining references to the original elements and enabling chaining.
 
-class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        *,
-        ds,
-        gscale,
-        cos_coefficients=None,
-        sin_coefficients=None,
-        z=None,
-        gradient_on_axis=None,
-        ncoef=None,
-        dx=0,
-        dy=0,
-        rotation=0,
-        aperture_x=0,
-        aperture_y=0,
-        mapsteps=1,
-        nslice=1,
-        name=None,
-    ):
-        """
-        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        **Filtering Logic:**
 
-        A soft-edge quadrupole.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def gscale(self) -> float:
-        """
-        Scaling factor for on-axis field gradient in inverse meters
-        """
-    @gscale.setter
-    def gscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def mapsteps(self) -> int:
-        """
-        number of integration steps per slice used for map and reference particle push in applied fields
-        """
-    @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+        - **Within a single filter**: OR logic (e.g., ``kind=["Drift", "Quad"]`` matches Drift OR Quad)
+        - **Between different filters**: OR logic (e.g., ``kind="Quad", name="quad1"`` matches Quad OR named "quad1")
+        - **Chaining filters**: AND logic (e.g., ``lattice.select(kind="Drift").select(name="drift1")`` matches Drift AND named "drift1")
 
-class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        *,
-        ds,
-        bscale,
-        cos_coefficients=None,
-        sin_coefficients=None,
-        z=None,
-        field_on_axis=None,
-        ncoef=None,
-        unit=0,
-        dx=0,
-        dy=0,
-        rotation=0,
-        aperture_x=0,
-        aperture_y=0,
-        mapsteps=1,
-        nslice=1,
-        name=None,
-    ):
-        """
-        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsFloat | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 1, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        :param kind: Element type(s) to filter by. Can be a single string/type or a list/tuple
+                     of strings/types for OR-based filtering. String values support exact matches
+                     and regex patterns. Examples: "Drift", r".*Quad", elements.Drift, ["Drift", r".*Quad"], [elements.Drift, elements.Quad]
+        :type kind: str or type or list[str | type] or tuple[str | type, ...] or None, optional
 
-        A soft-edge solenoid.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def bscale(self) -> float:
-        """
-        Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0) or magnetic field Bz in T (SI units, if unit = 1)
-        """
-    @bscale.setter
-    def bscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def mapsteps(self) -> int:
-        """
-        number of integration steps per slice used for map and reference particle push in applied fields
-        """
-    @mapsteps.setter
-    def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-    @property
-    def unit(self) -> int:
-        """
-        specification of units for scaling of the on-axis longitudinal magnetic field
-        """
-    @unit.setter
-    def unit(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        :param name: Element name(s) to filter by. Can be a single string, regex pattern string, or
+                     a list/tuple of strings and/or regex pattern strings for OR-based filtering.
+                     Examples: "quad1", r"quad\\d+", ["quad1", "quad2"], [r"quad\\d+", "bend1"]
+        :type name: str or list[str] or tuple[str, ...] or None, optional
 
-class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
-    def __init__(
-        self,
-        ds: typing.SupportsFloat | typing.SupportsIndex,
-        ks: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
-        nslice: typing.SupportsInt | typing.SupportsIndex = 1,
-        name: str | None = None,
-    ) -> None:
-        """
-        An ideal hard-edge Solenoid magnet.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def ks(self) -> float:
-        """
-        Solenoid strength in m^(-1) (MADX convention) in (magnetic field Bz in T) / (rigidity in T-m)
-        """
-    @ks.setter
-    def ks(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+        :return: FilteredElementsList containing references to original elements
+        :rtype: FilteredElementsList
 
-class Source(mixin.Named, mixin.Thin):
-    def __init__(
-        self,
-        distribution: str,
-        openpmd_path: str,
-        active_once: bool = True,
-        name: str | None = None,
-    ) -> None:
-        """
-        A particle source.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def active_once(self) -> bool:
-        """
-        Inject particles only for the first lattice period.
-        """
-    @active_once.setter
-    def active_once(self, arg1: bool) -> None: ...
-    @property
-    def distribution(self) -> str:
-        """
-        Distribution type of particles in the source
-        """
-    @distribution.setter
-    def distribution(self, arg1: str) -> None: ...
-    @property
-    def series_name(self) -> str:
-        """
-        Path to openPMD series as accepted by openPMD_api.Series
-        """
-    @series_name.setter
-    def series_name(self, arg1: str) -> None: ...
+        :raises TypeError: If kind/name parameters have wrong types
 
-class SpinMap(mixin.Named, mixin.Alignment):
-    def __init__(
-        self,
-        v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
-        A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        (A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
-        """
-        spin-orbit coupling generator of rotation as a 3x6 matrix
-        """
-    @A.setter
-    def A(
-        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-    ) -> None: ...
-    @property
-    def ds(self) -> float:
-        """
-        segment length in m
-        """
-    @ds.setter
-    def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def nslice(self) -> int:
-        """
-        one, because we do not support slicing of this element
-        """
-    @property
-    def v(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
-        """
-        design axis-angle generator of spin rotation as a 3x1 vector
-        """
-    @v.setter
-    def v(
-        self, arg1: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-    ) -> None: ...
+        **Examples:**
 
-class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        k: typing.SupportsFloat | typing.SupportsIndex,
-        taper: typing.SupportsFloat | typing.SupportsIndex,
-        unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        A thin nonlinear plasma lens with transverse (horizontal) taper
+        Additional filtering on already filtered results:
 
-                     .. math::
+        .. code-block:: python
 
-                        B_x = g \\left( y + \\frac{xy}{D_x} \\right), \\quad \\quad B_y = -g \\left(x + \\frac{x^2 + y^2}{2 D_x} \\right)
-
-                     where :math:`g` is the (linear) field gradient in T/m and :math:`D_x` is the targeted horizontal dispersion in m.
+            drift_elements = lattice.select(
+                kind="Drift"
+            )  # or lattice.select(kind=elements.Drift)
+            first_drift = drift_elements.select(
+                name="drift1"
+            )  # Further filter drifts by name
+            quad_elements = lattice.select(
+                kind="Quad"
+            )  # or lattice.select(kind=elements.Quad)
+            strong_quads = quad_elements.select(
+                name=r"quad\\d+"
+            )  # Filter quads by regex pattern
         """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self,
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def k(self) -> float:
-        """
-        integrated focusing strength in m^(-1) (if unit = 0) or integrated focusing strength in T (if unit = 1)
-        """
-    @k.setter
-    def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def taper(self) -> float:
-        """
-        horizontal taper parameter in m^(-1) = 1 / (target horizontal dispersion in m)
-        """
-    @taper.setter
-    def taper(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def unit(self) -> int:
-        """
-        specification of units for plasma lens focusing strength
-        """
-    @unit.setter
-    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
-
-class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
-    def __init__(
-        self,
-        theta: typing.SupportsFloat | typing.SupportsIndex,
-        rc: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        name: str | None = None,
-    ) -> None:
-        """
-        A thin kick model of a dipole bend.
-        """
-    def __repr__(self) -> str: ...
-    def finalize(self) -> None: ...
-    @typing.overload
-    def push(
-        self,
-        pc: impactx.impactx_pybind.ImpactXParticleContainer,
-        step: typing.SupportsInt | typing.SupportsIndex = 0,
-        period: typing.SupportsInt | typing.SupportsIndex = 0,
-    ) -> None:
-        """
-        Push first the reference particle, then all other particles.
-        """
-    @typing.overload
-    def push(
-        self,
-        cm: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ref: impactx.impactx_pybind.RefPart,
-    ) -> None:
-        """
-        Linear push of the covariance matrix through an element. Expects that the reference particle was advanced first.
-        """
-    def to_dict(
-        self, in_degrees: bool = False
-    ) -> dict[
-        str,
-        float
-        | int
-        | int
-        | bool
-        | str
-        | list[float]
-        | list[int]
-        | list[int]
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-        | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-        | None,
-    ]: ...
-    @property
-    def theta(self) -> float:
-        """
-        Bend angle (radian)
-        """
-    @theta.setter
-    def theta(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...

@@ -78,6 +78,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -154,9 +157,11 @@ namespace impactx::elements
             }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
             m_cos_ktds = cos_ktds;
+            // In SP, this O(beta*gamma^2) coefficient pairs with the inverse-scaled term below.
             m_const_t = -m_kt * betgam2 * sin_ktds;
             // intermediate quantity - to avoid division by zero
             amrex::ParticleReal const sinct = m_kt > 0 ? std::sin(m_kt * slice_ds) / m_kt : slice_ds;
+            // In SP, the longitudinal (t, pt) block is the numerically sensitive part of ConstF.
             m_const_pt = sinct / betgam2;
         }
 

@@ -32,7 +32,7 @@ namespace impactx::elements
     struct ThinDipole
     : public mixin::Named,
       public mixin::BeamOptic<ThinDipole>,
-      public mixin::LinearTransport<ThinDipole>,
+      public mixin::LinearTransport<ThinDipole, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize,
@@ -71,6 +71,9 @@ namespace impactx::elements
           m_rc(rc)
         {
         }
+
+        /** Reverse the element (negate bending angle) */
+        void reverse () { m_theta = -m_theta; }
 
         /** Push all particles */
         using BeamOptic::operator();

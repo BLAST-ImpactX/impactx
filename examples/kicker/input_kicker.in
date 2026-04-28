@@ -21,10 +21,10 @@ beam.mutpt = 0.0
 ###############################################################################
 # Beamline: lattice elements and segments
 ###############################################################################
-lattice.elements = monitor hkick vkick monitor
+lattice.elements = m1 hkick vkick m1
 
-monitor.type = beam_monitor
-monitor.backend = h5
+m1.type = beam_monitor
+m1.backend = h5
 
 hkick.type = kicker
 hkick.xkick = 2.0e-3      # 2 mrad horizontal kick

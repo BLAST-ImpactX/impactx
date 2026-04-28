@@ -32,6 +32,16 @@ namespace impactx::elements::mixin
             // nothing to do: this is a zero-length element
         }
 
+        /** Reverse the element (no-op for zero-length elements)
+         *
+         * After calling this method, pushing particles through the element
+         * reverses the effect of the original element.
+         */
+        void reverse ()
+        {
+            // no-op base for zero-length elements
+        }
+
         /** Number of slices used for the application of space charge
          *
          * @return one, because this is a zero-length element

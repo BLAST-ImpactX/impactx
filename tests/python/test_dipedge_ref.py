@@ -141,7 +141,6 @@ def test_dipedge_modify_ref_part_false():
     vec_part_pred = [x_shift, px_shift, 0.0, 0.0, t_shift, 0.0]
 
     # access reference particle
-    beta = ref.beta
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py, ref.t])
     vec_ref_pred = [0, 0, 0, 0, 0]
     vec_ref_on_shell = (

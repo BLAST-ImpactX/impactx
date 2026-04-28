@@ -114,7 +114,7 @@ stdpt_0 = 0.000927767
 
 emitx_0 = 1.8803e-06
 emity_0 = 1.70969e-06
-emitt_0 =  0.00108493
+emitt_0 = 0.00108493
 
 assert math.isclose(sigma_x.iloc[0], stdx_0, rel_tol=2.0e-2)
 assert math.isclose(sigma_x.iloc[-1], stdx_0, rel_tol=2.0e-2), (

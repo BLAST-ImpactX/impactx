@@ -7,6 +7,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+
 from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
@@ -56,7 +57,14 @@ nz = 401  # number of longitudinal sampling points to be used
 g = 0.07  # gap parameter (in meters)
 L_hardedge = 1.0  # length in the hard-edge limit
 zdata = np.linspace(zmin, zmax, nz)
-bdata = 1.0 / 2.0 * ( np.tanh((zdata + L_hardedge/2.0)/g) - np.tanh((zdata - L_hardedge/2.0)/g) )
+bdata = (
+    1.0
+    / 2.0
+    * (
+        np.tanh((zdata + L_hardedge / 2.0) / g)
+        - np.tanh((zdata - L_hardedge / 2.0) / g)
+    )
+)
 
 # hard-edge lattice
 quad1_he = elements.Quad(name="quad1", ds=1.0, k=1.0, nslice=ns)
@@ -96,7 +104,7 @@ drift2 = elements.Drift(name="drift2", ds=0.0, nslice=ns)
 
 # assign a fodo segment
 sim.lattice.extend([monitor, drift1, quad1, drift2, quad2, drift1, monitor])
-#sim.lattice.extend([monitor, drift1_he, quad1_he, drift2_he, quad2_he, drift1_he, monitor])
+# sim.lattice.extend([monitor, drift1_he, quad1_he, drift2_he, quad2_he, drift1_he, monitor])
 
 # run simulation
 sim.track_particles()

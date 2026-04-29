@@ -2048,4 +2048,4 @@ add_impactx_test(fodo-softedge.py
     ON    # ImpactX MPI-parallel
     examples/quadrupole_softedge/analysis_fodo_softedge.py
     OFF  # no plot script yet
-)   
+)

@@ -528,17 +528,17 @@ namespace impactx::elements
                      By += 1_prt/2_prt*((rho*rho-1_prt)/2_prt - y_scl*y_scl - ln_rho)*kn + y_scl*ln_rho*ks;
                      break;
                   case 4:  // octupole-like contribution
-                     Bx += -y_scl/(6_prt*rho)*(-3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl + 3*rho*rho*ln_rho)*kn  
+                     Bx += -y_scl/(6_prt*rho)*(-3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl + 3*rho*rho*ln_rho)*kn
                            +1_prt/(6_prt*rho)*(3_prt*(rho*rho+1_prt)/4_prt*(rho*rho-1_prt)/2_prt - 3_prt*(rho*rho-1_prt)/2_prt*y_scl*y_scl - 1.5_prt*rho*rho*ln_rho)*ks;
                      By += 1_prt/6_prt*(-3_prt*(rho*rho-1_prt)/2_prt + 3_prt*((rho*rho+1_prt)/2_prt - y_scl*y_scl)*ln_rho)*kn
                            +y_scl/6_prt*(3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl - 3_prt*ln_rho)*ks;
                      break;
                   case 5:  // decapole-like contribution
                      Bx += -y_scl/(24_prt*rho)*(3_prt*(rho*rho+1_prt)*(rho*rho-1_prt)/2_prt - 2_prt*(rho*rho-1_prt)*y_scl*y_scl - 6_prt*rho*rho*ln_rho)*kn
-                           +1_prt/(24_prt*rho)*(-3_prt*(5_prt*powi<4>(rho)-4_prt*rho*rho-1_prt)/8_prt + 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)        
+                           +1_prt/(24_prt*rho)*(-3_prt*(5_prt*powi<4>(rho)-4_prt*rho*rho-1_prt)/8_prt + 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)
                            +3_prt/2_prt*(2_prt+rho*rho-4_prt*y_scl*y_scl)*rho*rho*ln_rho)*ks;
-                     By += 1_prt/24_prt*(3_prt*(powi<4>(rho)+4_prt*rho*rho-5_prt)/8_prt - 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)                  
-                           -3_prt*(0.5_prt+rho*rho-2_prt*y_scl*y_scl)*ln_rho)*kn + y_scl/24_prt*(-6_prt*(rho*rho-1_prt)+4_prt*(3_prt*(rho*rho+1_prt)/2_prt          
+                     By += 1_prt/24_prt*(3_prt*(powi<4>(rho)+4_prt*rho*rho-5_prt)/8_prt - 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)
+                           -3_prt*(0.5_prt+rho*rho-2_prt*y_scl*y_scl)*ln_rho)*kn + y_scl/24_prt*(-6_prt*(rho*rho-1_prt)+4_prt*(3_prt*(rho*rho+1_prt)/2_prt
                            -y_scl*y_scl)*ln_rho)*ks;
                      break;
                 // default:

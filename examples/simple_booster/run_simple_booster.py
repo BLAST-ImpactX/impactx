@@ -14,6 +14,7 @@ from impactx import ImpactX, distribution, elements, twiss
 mp_mev = 1.0e-6 * m_p * c**2 / eV
 total_Booster_charge = 6.7e12  # PIP-II full Booster
 active_buckets = 81  # 81 out of 84 buckets full
+harmonic_number = 84
 
 turns = 2
 
@@ -41,8 +42,20 @@ sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
 
+
 # domain decomposition & space charge mesh
 sim.init_grids()
+
+# set the bucket length so that particles can be phase wrapped
+booster_lattice = get_lattice()
+total_s = sum(element.ds for element in booster_lattice)
+print(f"Read Booster lattice, {len(booster_lattice)} elements, len = {total_s}")
+
+bucket_length = total_s/harmonic_number
+print("bucket_length: ", bucket_length)
+sim.particle_container().set_bucket_length(bucket_length)
+
+sim.particle_bc = "periodic"
 
 # load a 800 MeV proton beam
 

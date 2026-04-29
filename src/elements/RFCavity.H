@@ -324,11 +324,8 @@ namespace impactx::elements
             // convert spin-orbit coupling map from dynamic to static units
             for (int i=1; i<4; i++) {
                for (int j=1; j<7; j++) {
-                  if( j % 2 == 0)
-                     scale_in = bgi;
-                  else
-                     scale_in = 1.0_prt;
-                  refpart.spin_coupling(i, j) = refpart.spin_coupling(i, j) * scale_in;
+                  if (j % 2 == 0)
+                     refpart.spin_coupling(i, j) *= bgi;
                }
             }
 

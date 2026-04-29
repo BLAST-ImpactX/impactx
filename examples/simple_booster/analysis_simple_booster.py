@@ -146,17 +146,5 @@ assert math.isclose(emittance_y.iloc[1], emity_0, rel_tol=2.0e-2), (
     "emittance_y change over one turn too large"
 )
 
-assert math.isclose(sigma_t.iloc[0], stdt_0, rel_tol=2.0e-2)
-assert math.isclose(sigma_t.iloc[-1], stdt_0, rel_tol=2.0e-2), (
-    "sigma_t change over one turn too large"
-)
-
-assert math.isclose(sigma_pt.iloc[0], stdpt_0, rel_tol=2.0e-2)
-assert math.isclose(sigma_pt.iloc[-1], stdpt_0, rel_tol=2.0e-2), (
-    "sigma_pt change over one turn too large"
-)
-
-assert math.isclose(emittance_t.iloc[0], emitt_0, rel_tol=2.0e-2)
-assert math.isclose(emittance_t.iloc[1], emitt_0, rel_tol=2.0e-2), (
-    "emittance_t change over one turn too large"
-)
+# longitudinal distribution is not matched and executes
+# synchrotron dipole and quadrupole oscillations

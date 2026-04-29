@@ -342,17 +342,17 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -381,7 +381,6 @@ namespace impactx::elements
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
-
         }
 
 
@@ -500,9 +499,8 @@ namespace impactx::elements
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
-
+            refpart.map(5,5) = R(5,5) + tau*R(6,5) / powi<2>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6) / powi<2>(betgam);
         }
 
         /** This pushes the reference particle and the linear map matrix

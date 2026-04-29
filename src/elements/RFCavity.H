@@ -323,10 +323,9 @@ namespace impactx::elements
 
             // convert spin-orbit coupling map from dynamic to static units
             for (int i=1; i<4; i++) {
-               for (int j=1; j<7; j++) {
-                  if (j % 2 == 0)
-                     refpart.spin_coupling(i, j) *= bgi;
-               }
+                for (int j=2; j<7; j+=2) {
+                    refpart.spin_coupling(i, j) *= bgi;
+                }
             }
 
             // advance integrated path length

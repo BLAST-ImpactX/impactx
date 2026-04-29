@@ -31,15 +31,16 @@ The matched Twiss parameters determined by both Synergia and MAD-X at entry are:
 
 The initial beam parameters follow the PIP-II Booster beam at injection
 as described in the Conceptual Design
-Report. The beam consists of protons at kinetic energy 800 MeV.
+Report. The beam consists of protons at kinetic energy 800 MeV with emittances
+specified as:
 
-+------------------------+-----------------------------------------------+
-| :math:`\epsilon_{x}`   | :math:`16 \pi \mathrm{mm-mr}` normalized 95%  |
-+------------------------+-----------------------------------------------+
-| :math:`\epsilon_{y}`   | :math:`16 \pi \mathrm{mm-mr}` normalized 95%  |
-+------------------------+-----------------------------------------------+
-| :math:`\epsilon_{L}`   | :math:`0.1 \mathrm{eV-s}` 97%                 |
-+------------------------+-----------------------------------------------+
++------------------------+--------------------------------------+
+| :math:`\epsilon_{x}`   | :math:`16 \pi` mm-mr normalized 95%  |
++------------------------+--------------------------------------+
+| :math:`\epsilon_{y}`   | :math:`16 \pi` mm-mr normalized 95%  |
++------------------------+--------------------------------------+
+| :math:`\epsilon_{L}`   | 0.1 eV-s 97%                         |
++------------------------+--------------------------------------+
 
 
 
@@ -74,7 +75,7 @@ We run the following script to analyze correctness:
       :language: python3
       :caption: You can copy this file from ``examples/fodo/analysis_booster_simple.py``.
 
-The second moments of the particle distribution after the FODO cell
+The second moments of the transverse particle distribution after the FODO cell
 should coincide with the second moments of the particle distribution
 before the FODO cell, to within the level expected due to noise due to statistical sampling.
 

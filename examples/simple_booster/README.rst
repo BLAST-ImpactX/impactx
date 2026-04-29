@@ -61,7 +61,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: run_simple_booster.py
           :language: python3
           :caption: You can copy this file from ``examples/simple_booster/run_simple_booster.py``. The file `booster_impactx_lattice.py` from the same directory is also required.
-   
+
 
 
 Analyze

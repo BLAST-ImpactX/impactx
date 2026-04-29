@@ -1920,7 +1920,7 @@ This module provides elements and methods for the accelerator lattice.
 
 .. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
 
-   A soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`. 
+   A soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
    **or** raw on-axis field/gradient data (``z``, ``gradient_on_axis``, ``ncoef``), not both.

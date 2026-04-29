@@ -724,8 +724,8 @@ This requires these additional parameters:
 
 The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
 describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
-``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale`` 
-has units of inverse meters squared. 
+``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
+has units of inverse meters squared.
 
 This requires these additional parameters:
 
@@ -772,7 +772,7 @@ This requires these additional parameters:
 
 The units used for the on-axis longitudinal electric field are described in the documentation of ``escale`` below.  For example, if the values used to
 describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
-``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case, 
+``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case,
 ``escale`` has units of inverse meters.
 
 This requires these additional parameters:
@@ -871,7 +871,7 @@ This requires these additional parameters:
 
 The units used for the on-axis longitudinal magnetic field data are determined by the parameter ``unit``.  For example, if the values used to
 describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``field_on_axis``) attain a peak on-axis value of 1, then the parameter
-``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic 
+``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic
 rigidity.
 
 This requires these additional parameters:

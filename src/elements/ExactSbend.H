@@ -267,7 +267,6 @@ namespace impactx::elements
             amrex::ParticleReal const pz = refpart.pz;
             amrex::ParticleReal const t = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
@@ -305,8 +304,8 @@ namespace impactx::elements
 
             }
 
-            // advance integrated path length
-            refpart.s = s + slice_ds;
+            // advance integrated path length using compensated summation
+            refpart.s += slice_ds;
         }
 
         /** This pushes the covariance matrix. */

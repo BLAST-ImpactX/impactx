@@ -4,6 +4,7 @@
 #
 target_sources(pyImpactX
   PRIVATE
+    CompensatedReal.cpp
     distribution.cpp
     elements.cpp
     flatten_rho.cpp

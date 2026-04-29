@@ -36,8 +36,8 @@ def test_element_insert():
         filter(lambda el: el.to_dict()["type"] == "BeamMonitor", fodo)
     )
 
-    assert len(fodo) == 63
-    assert len(inserted_monitors) == 29
+    assert len(fodo) == 64
+    assert len(inserted_monitors) == 30
 
     # clean shutdown
     monitor.finalize()

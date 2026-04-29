@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "elements/transformation/Insert.H"
+#include "CompensatedReal.H"
 
 #include <stdexcept>
 #include <type_traits>
@@ -36,8 +37,9 @@ namespace impactx::elements::transformation
 
         std::list<elements::KnownElements> new_list;
 
-        double s = 0.0;  // in meters   // TODO: if we can avoid a global s, we can avoid wasting significant digits for long lattices
-        double s_next_insert = ds;  // in meters
+        // using compensated arithmetic for precision in long sums along s
+        CompensatedReal<double> s(0.0);  // in meters
+        CompensatedReal<double> s_next_insert(ds);  // in meters
 
         while (!list.empty())
         {
@@ -46,7 +48,7 @@ namespace impactx::elements::transformation
             list.pop_front();
 
             // check where the current element ends
-            double cur_s_out;  // in meters
+            CompensatedReal<double> cur_s_out;  // in meters
             std::visit([&s, &cur_s_out](auto &&cur_element)
             {
                 cur_s_out = s + cur_element.ds();
@@ -55,7 +57,7 @@ namespace impactx::elements::transformation
             // case 1: current element is thick and ends after next insert
             if (s_next_insert < cur_s_out)
             {
-                double const s_rel_insert = s_next_insert - s;
+                CompensatedReal<double> const s_rel_insert = s_next_insert - s;
 
                 // split element and shorten each part
                 elements::KnownElements cur_element_leftover = cur_element_variant;

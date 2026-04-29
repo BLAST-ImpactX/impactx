@@ -272,7 +272,7 @@ namespace impactx::elements
             amrex::ParticleReal const z = refpart.z;
             amrex::ParticleReal const pz = refpart.pz;
             amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
+            amrex::ParticleReal const s = refpart.s.value();
             amrex::ParticleReal const sedge = refpart.sedge;
 
             // initialize linear map (deviation) values
@@ -323,8 +323,8 @@ namespace impactx::elements
                }
             }
 
-            // advance integrated path length
-            refpart.s = s + slice_ds;
+            // advance integrated path length using compensated summation
+            refpart.s += slice_ds;
         }
 
         /** This pushes the covariance matrix. */

@@ -10,6 +10,8 @@
 #ifndef IMPACTX_REFERENCE_PARTICLE_H
 #define IMPACTX_REFERENCE_PARTICLE_H
 
+#include "CompensatedReal.H"
+
 #include <ablastr/constant.H>
 
 #include <AMReX_BLassert.H>
@@ -31,7 +33,7 @@ namespace impactx
      */
     struct RefPart
     {
-        amrex::ParticleReal s = 0.0;  ///< integrated orbit path length, in meters
+        CompensatedParticleReal s{0.0};  ///< integrated (compensated sum) orbit path length, in meters
         amrex::ParticleReal x = 0.0;  ///< horizontal position x, in meters
         amrex::ParticleReal y = 0.0;  ///< vertical position y, in meters
         amrex::ParticleReal z = 0.0;  ///< longitudinal position z, in meters
@@ -69,7 +71,7 @@ namespace impactx
             auto old_mass = mass;
             auto old_charge = charge;
 
-            RefPart zero{};
+            RefPart zero;
             *this = zero;
 
             if (keep_mass) { mass = old_mass; }

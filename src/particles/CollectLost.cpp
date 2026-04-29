@@ -89,7 +89,7 @@ namespace impactx
         const int s_runtime_index = dest.GetRealCompIndex("s_lost") - dest.NArrayReal;
 
         RefPart const ref_part = source.GetRefParticle();
-        auto const s_lost = ref_part.s;
+        auto const s_lost = ref_part.s.value();
 
         // have to resize here, not in the constructor because grids have not
         // been built when constructor was called.

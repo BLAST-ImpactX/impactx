@@ -18,6 +18,7 @@ if os.name == "nt":
 
 # import core bindings to C++
 from . import impactx_pybind
+from .compensated import compensated_cumsum, compensated_sum  # noqa
 from .impactx_pybind import *  # noqa
 from .madx_to_impactx import read_beam  # noqa
 

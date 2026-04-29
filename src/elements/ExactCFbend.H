@@ -488,35 +488,69 @@ namespace impactx::elements
             const amrex::ParticleReal *const k_skew = m_k_skew_h_data;
 #endif
 
-            // a complex type with two T_Real
-            using Complex = amrex::GpuComplex<T_Real>;
-
-            // assign complex position and complex multipole strength
-            Complex const zeta(x, y);
+            // defined dimensionless variables scaled by radius of curvature
+            amrex::ParticleReal rho = 1_prt + x / m_rc;
+            amrex::ParticleReal y_scl = y / m_rc;
+            amrex::ParticleReal ln_rho = std::log(rho);
 
             // Initialization of magnetic field variables:
             T_Real Bx = 0_prt;
             T_Real By = 0_prt;
             T_Real Bz = 0_prt;
 
-            int factorial = 1;
-
             // loop over array of multipole coefficients
-            for (int m = 0; m < m_ncoef; m++) {
+            for (int m = 1; m < m_ncoef; m++) {
 
                // normalize units to MAD-X convention if needed
-               amrex::ParticleReal knormal_value = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
-               amrex::ParticleReal kskew_value = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
+               amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
-               // multipole contribution to magnetic field normalized by q/mc:
-               Complex alpha(knormal_value, kskew_value);
-               Complex kick = amrex::pow(zeta, m) * alpha;
-               Bx += kick.m_imag / factorial * m_beta * m_gamma_ref;
-               By += kick.m_real / factorial * m_beta * m_gamma_ref;
+               int n = m+1;  // multipole order
 
-               factorial *= m+1;
+               // define dimensionless multipole coefficients (scaled by radius of curvature)
+               kn = std::pow(m_rc, m) * kn;
+               ks = std::pow(m_rc, m) * ks;
+
+               // The expressions below are taken from Table XII of T. Zolkin, PRAB 20, 043501 (2017).
+
+               switch (n) {
+
+                  case 1:   // dipole-like contribution (not used - contributing to map 1)
+                     Bx += (1_prt/rho) * ks;
+                     By += kn;
+                     break;
+                  case 2:   // quadrupole-like contribution
+                     Bx += -y_scl/rho*kn + (rho*rho - 1_prt)/(2_prt*rho)*ks;
+                     By += ln_rho * kn + y_scl * ks;
+                     break;
+                  case 3:  // sextupole-like contribution
+                     Bx += y_scl*(rho*rho - 1_prt)/(2_prt*rho)*kn + 1_prt/(2_prt*rho)*(-(rho*rho-1_prt)/2_prt - y_scl*y_scl + rho*rho*ln_rho)*ks;
+                     By += 1_prt/2_prt*((rho*rho-1_prt)/2_prt - y_scl*y_scl - ln_rho)*kn + y_scl*ln_rho*ks;
+                     break;
+                  case 4:  // octupole-like contribution
+                     Bx += -y_scl/(6_prt*rho)*(-3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl + 3*rho*rho*ln_rho)*kn  
+                           +1_prt/(6_prt*rho)*(3_prt*(rho*rho+1_prt)/4_prt*(rho*rho-1_prt)/2_prt - 3_prt*(rho*rho-1_prt)/2_prt*y_scl*y_scl - 1.5_prt*rho*rho*ln_rho)*ks;
+                     By += 1_prt/6_prt*(-3_prt*(rho*rho-1_prt)/2_prt + 3_prt*((rho*rho+1_prt)/2_prt - y_scl*y_scl)*ln_rho)*kn
+                           +y_scl/6_prt*(3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl - 3_prt*ln_rho)*ks;
+                     break;
+                  case 5:  // decapole-like contribution
+                     Bx += -y_scl/(24_prt*rho)*(3_prt*(rho*rho+1_prt)*(rho*rho-1_prt)/2_prt - 2_prt*(rho*rho-1_prt)*y_scl*y_scl - 6_prt*rho*rho*ln_rho)*kn
+                           +1_prt/(24_prt*rho)*(-3_prt*(5_prt*powi<4>(rho)-4_prt*rho*rho-1_prt)/8_prt + 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)        
+                           +3_prt/2_prt*(2_prt+rho*rho-4_prt*y_scl*y_scl)*rho*rho*ln_rho)*ks;
+                     By += 1_prt/24_prt*(3_prt*(powi<4>(rho)+4_prt*rho*rho-5_prt)/8_prt - 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)                  
+                           -3_prt*(0.5_prt+rho*rho-2_prt*y_scl*y_scl)*ln_rho)*kn + y_scl/24_prt*(-6_prt*(rho*rho-1_prt)+4_prt*(3_prt*(rho*rho+1_prt)/2_prt          
+                           -y_scl*y_scl)*ln_rho)*ks;
+                     break;
+                // default:
+                //   TODO: print a warning here that order > 5 is not currently supported
+               }
 
             }
+
+            // Scaling magnetic field to units used in the T-BMT representation (e.g. q*B/mc).
+
+            Bx = Bx * m_beta * m_gamma_ref / m_rc;
+            By = By * m_beta * m_gamma_ref / m_rc;
 
             // Electric field normalized by q/mc^2:
             T_Real const Ex = 0.0_prt;

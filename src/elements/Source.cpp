@@ -25,7 +25,7 @@ namespace impactx::elements
     void
     Source::operator() (
         ImpactXParticleContainer & pc,
-        int,
+        int64_t,
         int period
     )
     {

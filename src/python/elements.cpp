@@ -12,6 +12,7 @@
 #include <AMReX_Enum.H>
 #include <AMReX_REAL.H>
 
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
@@ -69,7 +70,7 @@ namespace
         using Element = typename T_PyClass::type;  // py::class<T, options...>
 
         cl.def("push",
-            [](Element & el, ImpactXParticleContainer & pc, int step, int period) {
+            [](Element & el, ImpactXParticleContainer & pc, int64_t step, int period) {
                 el(pc, step, period);
             },
             py::arg("pc"), py::arg("step")=0, py::arg("period")=0,
@@ -1908,7 +1909,7 @@ void init_elements(py::module& m)
         .def_property("push",
               [](Programmable & p) { return p.m_push; },
               [](Programmable & p,
-                 std::function<void(ImpactXParticleContainer *, int, int)> new_hook
+                 std::function<void(ImpactXParticleContainer *, int64_t, int)> new_hook
               ) { p.m_push = std::move(new_hook); },
               "hook for push of whole container (pc, step, period)"
         )
@@ -2874,7 +2875,7 @@ void init_elements(py::module& m)
 
 
     // freestanding push function
-    m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),
+    m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int64_t, int>(&push),
         py::arg("pc"), py::arg("element"), py::arg("step")=0, py::arg("period")=0,
         "Push a whole particle beam (incl. reference particle) through an element"
     );

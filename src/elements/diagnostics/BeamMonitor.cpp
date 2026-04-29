@@ -214,7 +214,7 @@ namespace detail {
         std::vector<std::string> const & real_soa_names,
         std::vector<std::string> const & int_soa_names,
         RefPart const & ref_part,
-        int step
+        int64_t step
     ) {
 #ifdef ImpactX_USE_OPENPMD
         m_step = step;
@@ -304,7 +304,7 @@ namespace detail {
     void
     BeamMonitor::operator() (
         ImpactXParticleContainer & pc,
-        int step,
+        int64_t step,
         int period
     )
     {

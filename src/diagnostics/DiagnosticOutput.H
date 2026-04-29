@@ -13,6 +13,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/CovarianceMatrix.H"
 
+#include <cstdint>
 #include <string>
 
 
@@ -30,7 +31,7 @@ namespace impactx::diagnostics
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
         std::string file_name,
-        int step = 0,
+        int64_t step = 0,
         bool append = false
     );
 
@@ -48,7 +49,7 @@ namespace impactx::diagnostics
         Map6x6 const & cm,
         RefPart const & ref_part,
         std::string file_name,
-        int step = 0,
+        int64_t step = 0,
         bool append = false
     );
 
@@ -64,7 +65,7 @@ namespace impactx::diagnostics
     void DiagnosticOutput (
         RefPart const & ref_part,
         std::string file_name,
-        int step = 0,
+        int64_t step = 0,
         bool append = false
     );
 

@@ -14,6 +14,8 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/ReferenceParticle.H"
 
+#include <cstdint>
+
 
 namespace impactx
 {
@@ -27,7 +29,7 @@ namespace impactx
     void push (
         ImpactXParticleContainer & pc,
         elements::KnownElements & element_variant,
-        int step,
+        int64_t step,
         int period
     );
 

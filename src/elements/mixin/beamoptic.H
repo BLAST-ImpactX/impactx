@@ -19,6 +19,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 
+#include <cstdint>
 #include <type_traits>
 
 
@@ -442,7 +443,7 @@ namespace detail
          */
         void operator() (
             ImpactXParticleContainer & pc,
-            int step,
+            int64_t step,
             int period
         )
         {

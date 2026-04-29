@@ -17,6 +17,7 @@
 #include <AMReX_REAL.H>       // for ParticleReal
 #include <AMReX_Print.H>      // for PrintToFile
 
+#include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -105,7 +106,7 @@ namespace
     write_ref (
         amrex::AllPrintToFile & file_handler,
         impactx::RefPart const & ref_part,
-        int step
+        int64_t step
     )
     {
         amrex::ParticleReal const s = ref_part.s;
@@ -134,7 +135,7 @@ namespace
         amrex::AllPrintToFile & file_handler,
         std::unordered_map<std::string, amrex::ParticleReal> const & rbc,
         amrex::ParticleReal s,
-        int step
+        int64_t step
     )
     {
         // determine whether to output eigenemittances
@@ -184,7 +185,7 @@ namespace impactx::diagnostics
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
         std::string file_name,
-        int step,
+        int64_t step,
         bool append
     )
     {
@@ -209,7 +210,7 @@ namespace impactx::diagnostics
         Map6x6 const & cm,
         RefPart const & ref_part,
         std::string file_name,
-        int step,
+        int64_t step,
         bool append
     )
     {
@@ -229,7 +230,7 @@ namespace impactx::diagnostics
     void DiagnosticOutput (
         RefPart const & ref_part,
         std::string file_name,
-        int step,
+        int64_t step,
         bool append
     )
     {

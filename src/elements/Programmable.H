@@ -22,6 +22,7 @@
 //   SIMD will require better complex math support in vir-simd / C++26
 //   https://github.com/mattkretz/vir-simd/issues/42
 
+#include <cstdint>
 #include <functional>
 #include <stdexcept>
 
@@ -64,7 +65,7 @@ namespace impactx::elements
          */
         void operator() (
             ImpactXParticleContainer & pc,
-            int step,
+            int64_t step,
             int period
         ) const;
 
@@ -138,7 +139,7 @@ namespace impactx::elements
          */
         bool m_threadsafe = false;
 
-        std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
+        std::function<void(ImpactXParticleContainer *, int64_t, int)> m_push; //! hook for push of whole container (pc, step, period)
         std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
         std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
         std::function<void()> m_finalize; //! hook for finalize cleanup

@@ -11,6 +11,7 @@
 
 #include "elements/All.H"
 
+#include <cstdint>
 #include <optional>
 
 
@@ -27,7 +28,7 @@ namespace impactx
          * A state of internal simulation steps, increments also for space charge slice steps in elements.
          * We start in "step 0" (initial state).
          */
-        int m_step = 0;
+        int64_t m_step = 0;
 
         /** For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period) */
         int m_period = 0;

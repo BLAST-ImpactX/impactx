@@ -16,6 +16,7 @@
 #include "mixin/nofinalize.H"
 #include "mixin/thin.H"
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -70,7 +71,7 @@ namespace impactx::elements
          */
         void operator() (
             ImpactXParticleContainer & pc,
-            [[maybe_unused]] int step,
+            [[maybe_unused]] int64_t step,
             int period
         );
 

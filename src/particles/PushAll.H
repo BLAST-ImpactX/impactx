@@ -14,6 +14,8 @@
 
 #include <AMReX_BLProfiler.H>
 
+#include <cstdint>
+
 
 namespace impactx
 {
@@ -33,7 +35,7 @@ namespace impactx
     void push_all (
         ImpactXParticleContainer & pc,
         T_Element & element,
-        [[maybe_unused]] int step,
+        [[maybe_unused]] int64_t step,
         [[maybe_unused]] int period,
         [[maybe_unused]] bool omp_parallel = true
     )
@@ -79,13 +81,13 @@ namespace impactx
     extern template void impactx::push_all<ElementType>( \
         impactx::ImpactXParticleContainer &, \
         ElementType &, \
-        int, int, bool);
+        int64_t, int, bool);
 
 /** Explicit instantiation of push_all<T> — use in element .cpp files. */
 #define IMPACTX_PUSH_INSTANTIATE(ElementType) \
     template void impactx::push_all<ElementType>( \
         impactx::ImpactXParticleContainer &, \
         ElementType &, \
-        int, int, bool);
+        int64_t, int, bool);
 
 #endif // IMPACTX_PUSH_ALL_H

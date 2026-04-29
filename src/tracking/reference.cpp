@@ -20,6 +20,7 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_Print.H>
 
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 
@@ -38,7 +39,7 @@ namespace impactx
 
         // a global step for diagnostics including space charge slice steps in elements
         //   before we start the tracking loop, we are in "step 0" (initial state)
-        int & step = m_tracking_state.m_step;
+        int64_t & step = m_tracking_state.m_step;
         step = 0;
 
         // period in the lattice (e.g., turns)

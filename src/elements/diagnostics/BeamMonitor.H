@@ -19,6 +19,7 @@
 #include <AMReX_REAL.H>
 
 #include <any>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -106,7 +107,7 @@ namespace detail
             std::vector<std::string> const & real_soa_names,
             std::vector<std::string> const & int_soa_names,
             RefPart const & ref_part,
-            int step
+            int64_t step
         );
 
         /** Dump all particles.
@@ -119,7 +120,7 @@ namespace detail
          */
         void operator() (
             ImpactXParticleContainer & pc,
-            int step,
+            int64_t step,
             int period
         );
 
@@ -198,7 +199,7 @@ namespace detail
         std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
         std::string m_encoding; //! openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
         std::any m_series; //! openPMD::Series that holds potentially multiple outputs
-        int m_step = 0; //! global step for output
+        int64_t m_step = 0; //! global step for output
 
         int m_file_min_digits = 6; //! minimum number of digits to iteration number in file name
 

@@ -19,7 +19,7 @@ namespace impactx::elements
     void
     Programmable::operator() (
         ImpactXParticleContainer & pc,
-        int step,
+        int64_t step,
         int period
     ) const
     {

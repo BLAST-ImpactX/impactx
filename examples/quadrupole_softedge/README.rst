@@ -60,10 +60,10 @@ which allows the user to tune the rate of fringe field decay near the magnetic e
 
 The on-axis gradient of the quadrupoles is given by an analytical function, namely:
 
-:math:`\frac{k_0}{2}\left\{\tanh\left(\frac{z+z_0}{g}\right)-\tanh\left(\frac{z-z_0}{g}\right)\right\}`
+:math:`k(z)=\frac{k_0}{2}\left\{\tanh\left(\frac{z+z_0}{g}\right)-\tanh\left(\frac{z-z_0}{g}\right)\right\}`
 
 .. figure:: SoftEdge_FODO_Cell_Fig.png
-   :alt: Figure illustrating the layout of a FODO cell modeled using a hard edge (black) and soft-edge (red) quadrupole model.  Curves approximately represent the magnitude of the on-axis quadrupole gradient.
+   :caption: Figure illustrating the layout of a FODO cell modeled using a hard edge (black) and soft-edge (red) quadrupole model.  Curves approximately represent the magnitude of the on-axis quadrupole gradient.
 
 The effect of the soft fringe field decay on the linear focusing is small but visible.  In this test, the beam moments are compared against those used in the hard-edge limit.
 
@@ -75,7 +75,7 @@ Run
 
 This example can be run as:
 
-**Python** script: ``python3 run_fodo_softedge.py``
+* **Python** script: ``python3 run_fodo_softedge.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
@@ -83,9 +83,10 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_fodo_softedge.py
+       .. literalinclude:: run_fodo_softedge_tanh.py
           :language: python3
-          :caption: You can copy this file from ``examples/quadrupole_softedge/run_fodo_softedge.py``.
+          :caption: You can copy this file from ``examples/quadrupole_softedge/run_fodo_softedge_tanh.py``.
+
 
 Analyze
 

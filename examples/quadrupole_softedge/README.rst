@@ -53,7 +53,7 @@ We run the following script to analyze correctness:
 .. _examples-fodo-softedge:
 
 FODO Cell Using Soft-Edge Quadrupoles
-=======================================
+=====================================
 
 This is a modification of the example above, in which the quadrupoles have been replaced by soft-edge quadrupoles with an adjustable magnetic gap parameter,
 which allows the user to tune the rate of fringe field decay near the magnetic edge.  In the limit :math:`g\rightarrow 0`, this model approaches the model of an ideal (hard-edge) quadrupole.
@@ -63,7 +63,10 @@ The on-axis gradient of the quadrupoles is given by an analytical function, name
 :math:`k(z)=\frac{k_0}{2}\left\{\tanh\left(\frac{z+z_0}{g}\right)-\tanh\left(\frac{z-z_0}{g}\right)\right\}`
 
 .. figure:: SoftEdge_FODO_Cell_Fig.png
-   :caption: Figure illustrating the layout of a FODO cell modeled using a hard edge (black) and soft-edge (red) quadrupole model.  Curves approximately represent the magnitude of the on-axis quadrupole gradient.
+   :alt: Layout of a FODO cell modeled using a hard edge (black) and soft-edge (red) quadrupole model.
+
+   Figure illustrating the layout of a FODO cell modeled using a hard edge (black) and soft-edge (red) quadrupole model.
+   Curves approximately represent the magnitude of the on-axis quadrupole gradient.
 
 The effect of the soft fringe field decay on the linear focusing is small but visible.  In this test, the beam moments are compared against those used in the hard-edge limit.
 
@@ -89,7 +92,6 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
 
 Analyze
-
 -------
 
 We run the following script to analyze correctness:

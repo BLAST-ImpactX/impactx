@@ -37,9 +37,12 @@ namespace impactx::elements::mixin
      * using MyElementData = GPUDataRegistry<MyCoefficients>;
      * @endcode
      *
-     * @warning This template uses function-local static variables. To avoid ODR
-     *          violations (separate registry instances per translation unit), you
-     *          MUST add explicit instantiation control:
+     * @warning This template holds its registry map and ID counter in exported
+     *          inline static data members (`s_next_id`, `s_registry`). To
+     *          guarantee a single shared registry across every translation
+     *          unit and shared library, including downstream DSOs built with
+     *          `-fvisibility=hidden` and/or LTO (e.g. the Python bindings
+     *          module), you MUST add explicit instantiation control:
      *          - In the element header: `IMPACTX_GPUDATA_EXTERN(impactx::elements::MyElement)`
      *          - In the element .cpp:   `IMPACTX_GPUDATA_INSTANTIATE(impactx::elements::MyElement)`
      *
@@ -50,15 +53,23 @@ namespace impactx::elements::mixin
     {
         using DataType = T;  //!< The coefficient/data type stored in this registry
 
-        IMPACTX_EXPORT static int& next_id () {
-            static int id = 0;
-            return id;
-        }
+        // Storage for the registry's state.
+        //
+        // These are inline static data members of the class template (rather
+        // than function-local statics inside inline accessor functions) so
+        // that explicit instantiation of the struct (`template struct
+        // GPUDataRegistry<T>;`) provides one strong, vague-linkage definition
+        // per element type. Combined with `extern template struct` in element
+        // headers, this guarantees a single shared registry across every TU,
+        // including downstream shared libraries built with `-fvisibility=hidden`
+        // and/or LTO (e.g. the Python bindings module), where the previous
+        // function-local-static design produced a hidden duplicate per DSO and
+        // caused emplace/get to disagree across module boundaries.
+        IMPACTX_EXPORT inline static int s_next_id = 0;
+        IMPACTX_EXPORT inline static std::map<int, std::shared_ptr<T>> s_registry{};
 
-        IMPACTX_EXPORT static std::map<int, std::shared_ptr<T>>& registry () {
-            static std::map<int, std::shared_ptr<T>> reg;
-            return reg;
-        }
+        static int& next_id () { return s_next_id; }
+        static std::map<int, std::shared_ptr<T>>& registry () { return s_registry; }
 
         /** Allocate unique ID for a new element instance. */
         static int allocate_id () { return next_id()++; }
@@ -117,10 +128,13 @@ namespace impactx::elements::mixin
 
 /** Suppress implicit instantiation of GPUDataRegistry for an element type.
  *
- * GPUDataRegistry uses function-local static variables for its registry map and
- * ID counter. Without explicit instantiation control, different translation units
- * may each get their own copy of these statics, causing elements to be registered
- * in one registry instance but looked up in another (ODR violation).
+ * GPUDataRegistry holds its registry map and ID counter in exported inline
+ * static data members (`s_next_id`, `s_registry`). Without explicit
+ * instantiation control, different translation units, especially downstream
+ * shared libraries built with `-fvisibility=hidden` and/or LTO (e.g. the
+ * Python bindings module), could materialize a separate copy of these
+ * statics, causing elements to be registered in one registry instance but
+ * looked up in another (ODR violation).
  *
  * Use IMPACTX_GPUDATA_EXTERN in headers and IMPACTX_GPUDATA_INSTANTIATE in the
  * corresponding .cpp file to ensure a single shared registry across the program.
@@ -133,8 +147,8 @@ namespace impactx::elements::mixin
 
 /** Explicit instantiation of GPUDataRegistry for an element type.
  *
- * Provides the single definition of the registry's static variables.
- * Pair with IMPACTX_GPUDATA_EXTERN in the header.
+ * Provides the single definition of the registry's `s_next_id` / `s_registry`
+ * static data members. Pair with IMPACTX_GPUDATA_EXTERN in the header.
  *
  * @param ElementType The element class (must define `using DynamicData = ...`)
  */

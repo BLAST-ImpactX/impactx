@@ -124,6 +124,9 @@ namespace impactx::elements
             m_k_skew_h_data = coef.k_skew.host_const().data();
         }
 
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
+
         /** Push all particles */
         using BeamOptic::operator();
 

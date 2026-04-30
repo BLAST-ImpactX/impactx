@@ -25,7 +25,7 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
@@ -56,12 +56,14 @@ R1[1, 2] = ds1
 R1[3, 4] = ds1
 R1[5, 6] = ds1 / 16.6464  # ds / (beta*gamma^2)
 drift1 = elements.LinearMap(name="drift1", R=R1, ds=ds1)
+assert drift1.symplectic
 
 ds2 = 0.5
 R2[1, 2] = ds2
 R2[3, 4] = ds2
 R2[5, 6] = ds2 / 16.6464  # ds / (beta*gamma^2)
 drift2 = elements.LinearMap(name="drift2", R=R2, ds=ds2)
+assert drift2.symplectic
 
 # design the accelerator lattice)
 ns = 25  # number of slices per ds in the element

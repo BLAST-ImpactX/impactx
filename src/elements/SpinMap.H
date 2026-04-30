@@ -77,6 +77,22 @@ namespace impactx::elements
             m_ds = ds;
         }
 
+        /** Reverse the element (reverse orbit-dependent and design spin rotations) */
+        void reverse ()
+        {
+            throw std::runtime_error("SpinMap: reverse() is not yet supported.");
+
+            /* Reversibility: This works but is hacky
+            for (int i = 1; i <= 3; ++i) {
+                m_spin_rotation_vector(i) = -m_spin_rotation_vector(i);
+                for (int j = 1; j <= 6; ++j) {
+                    m_spin_orbit_coupling(i,j) = -m_spin_orbit_coupling(i,j);
+                }
+            }
+            m_reversed = !m_reversed;
+            */
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -189,6 +205,33 @@ namespace impactx::elements
             lambday = vectorout(2);
             lambdaz = vectorout(3);
 
+            /* Reversibility: This works but is hacky
+            T_Real const design_lambdax = m_spin_rotation_vector(1);
+            T_Real const design_lambday = m_spin_rotation_vector(2);
+            T_Real const design_lambdaz = m_spin_rotation_vector(3);
+
+            if (m_reversed) {
+                // The inverse map applies the inverse design rotation first,
+                // then the inverse orbit-dependent rotation.
+                rotate_spin(
+                    design_lambdax,
+                    design_lambday,
+                    design_lambdaz,
+                    sx, sy, sz
+                );
+                rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+            } else {
+                rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+                rotate_spin(
+                    design_lambdax,
+                    design_lambday,
+                    design_lambdaz,
+                    sx, sy, sz
+                );
+            }
+            */
+
+            { /* non-reversible block, replace with the above block to test */
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
@@ -199,6 +242,7 @@ namespace impactx::elements
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+            } /* end of non-reversible block, replace with the above block to test */
 
             // phase space push (the identity for this element)
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
@@ -224,6 +268,8 @@ namespace impactx::elements
         Vector3 m_spin_rotation_vector;  // 3x1 axis-angle vector for design spin rotation
         Map3x6 m_spin_orbit_coupling;  // 3x6 spin-orbit coupling matrix
         amrex::ParticleReal m_ds;  // finite ds allowed for bookkeeping, but we do not allow slicing
+        /* Reversibility: This works but is hacky */
+        // bool m_reversed = false;  // apply inverse spin rotations in reverse order after reverse()
     };
 
 } // namespace impactx

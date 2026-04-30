@@ -5,6 +5,10 @@ Parameters: Python
 
 This documents on how to use ImpactX as a Python script (``python3 run_script.py``).
 
+.. tip::
+
+   If you enjoy AI/LLM/agentic workflows, see our :ref:`AI (LLM)-Assisted Input File Design <ai_input_design>` section, too.
+
 Collective Effects & Overall Simulation Parameters
 --------------------------------------------------
 
@@ -203,6 +207,26 @@ Collective Effects & Overall Simulation Parameters
       mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
       When ``sim.isr_on_ref_part = True``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
 
+   .. py:property:: particle_bc
+
+      The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference
+      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.
+
+      Options:
+
+      * ``"open"`` (default): no action is applied at the boundary.
+
+      * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+
+      * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+
+      * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+
+        .. note::
+
+           The implementation works through linear order in the phase space variables.
+           If you have the need for a more precise implementation of reflecting boundaries, please `open an issue <https://github.com/BLAST-ImpactX/impactx/issues/new>`__.
+
    .. py:property:: spin
 
       Enable (``True``) or disable (``False``) particle spin tracking (default: ``False``).
@@ -267,6 +291,11 @@ Collective Effects & Overall Simulation Parameters
       :param float intensity: the beam intensity, given as bunch charge (C) for 3D or beam current (A) for 2D space charge
 
    .. py:method:: particle_container()
+
+      Access the beam particle container (:py:class:`impactx.ParticleContainer`).
+      Deprecated: use :py:attr:`beam`.
+
+   .. py:property:: beam
 
       Access the beam particle container (:py:class:`impactx.ParticleContainer`).
 
@@ -334,6 +363,12 @@ Collective Effects & Overall Simulation Parameters
 
       Run the envelope tracking simulation loop.
 
+      .. note::
+
+         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
+         Support for misalignments and feed-down effects in envelope tracking is in development.
+         Until then, misalignment options set on elements are silently ignored.
+
    .. py:method:: track_reference(ref)
 
       Run the reference orbit tracking simulation loop.
@@ -356,7 +391,7 @@ Collective Effects & Overall Simulation Parameters
       .. code-block:: python3
 
          def hook_before_period(sim):
-             beam = sim.particle_container()
+             beam = sim.beam
              turn = sim.tracking_period
              # Example: you could now manipulate elements in sim.lattice
              #          for the next turn.
@@ -464,15 +499,26 @@ Particles
    .. py:method:: ref_particle()
 
       Access the reference particle (:py:class:`impactx.RefPart`).
+      Deprecated: use :py:attr:`ref`.
 
       :return: return a data reference to the reference particle
       :rtype: impactx.RefPart
+
+   .. py:property:: ref
+
+      Access the reference particle (:py:class:`impactx.RefPart`).
 
    .. py:method:: set_ref_particle(refpart)
 
       Set reference particle attributes.
 
       :param impactx.RefPart refpart: a reference particle to copy all attributes from
+
+   .. py:method:: set_bucket_length(bucket_length)
+
+      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+
+      :param bucket_length: length of the longitudinal particle domain in m
 
    .. py:method:: beam_moments()
 
@@ -605,7 +651,7 @@ Particles
 
       .. code-block:: python
 
-         ref = sim.particle_container().ref_particle()
+         ref = sim.beam.ref
          ref.set_species("electron").set_kin_energy_MeV(2.0e3)
 
    .. py:method:: set_charge_qe(charge_qe)
@@ -623,6 +669,12 @@ Particles
    .. py:method:: load_file(madx_file)
 
       Load reference particle information from a MAD-X file.
+
+      .. warning::
+
+         Our MAD-X parser is under active development and provided as a preview.
+         Please check any loaded MAD-X beams very carefully.
+         Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
 
@@ -760,9 +812,15 @@ This module provides elements and methods for the accelerator lattice.
 
       Add a single element to the list.
 
-   .. py:method:: load_file(madx_file, nslice=1)
+   .. py:method:: load_file(filename, nslice=1)
 
       Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+      .. warning::
+
+         Our MAD-X and PALS parsers are under active development and provided as a preview.
+         Please check any loaded lattice files very carefully.
+         Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
       :param filename: filename to file with beamline elements
       :param nslice: number of slices used for the application of collective effects
@@ -837,7 +895,19 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:method:: transfer_map(ref, order="linear", fallback_identity_map=False)
 
-      Calculate the transfer map of the elements in the list.
+      Calculate the end-to-end transfer map of the elements in the list.
+
+      Currently only the linear transfer map is implemented (``order="linear"``);
+      the ``order`` parameter is reserved for future higher-order extensions.
+      In linear mode the 6x6 map is composed element by element, using each
+      element's analytic per-slice linear transport map.
+
+      Collective effects like space charge, Coherent/Incoherent Synchrotron
+      Radiation (CSR/ISR), and wakefield effects are not applied here; the
+      returned map describes the purely linear single-particle dynamics of the
+      design lattice.
+
+      Phase-space ordering in the returned matrix is ``(x, px, y, py, t, pt)``.
 
       .. dropdown:: Example
          :color: light
@@ -847,11 +917,46 @@ This module provides elements and methods for the accelerator lattice.
          .. literalinclude:: tests/python/test_lattice_optics.py
             :language: bash
 
-      :param ref: A reference particle.
+      :param ref: reference particle at the starting s
       :param order: So far, only the calculation of linear transfer maps is supported.
       :param fallback_identity_map: For elements with an undefined transfer map in the lattice, assume the identity matrix.
-      :return: The transfer map of all elements in the list.
+      :return: The end-to-end transfer map of the lattice.
       :rtype: Map6x6
+
+   .. py:method:: map_trace(ref)
+
+      Trace the cumulative 6x6 linear transport map element by element.
+
+      The reference particle is passed by value (intentional copy); the
+      caller's reference particle is not modified in place. This matches the
+      convention used by :py:meth:`~transfer_map`.
+
+      This per-element trace is what :py:meth:`~impactx.impactx_pybind.ImpactX.twiss`
+      consumes to transport Twiss functions through the lattice.
+
+      If you only need the final cumulative map at the lattice exit, prefer
+      :py:meth:`~transfer_map` instead of indexing the last entry of
+      :py:meth:`~map_trace`.
+
+      :param ref: A reference particle.
+      :return: A list of dictionaries, one per lattice element plus a leading
+               entry for the starting position. Each entry contains:
+
+               * ``s``    -- integrated path length along the reference
+                 orbit, in meters;
+               * ``name`` -- user-supplied element name (empty string if not
+                 named);
+               * ``type`` -- element type string (e.g. ``"Drift"``,
+                 ``"Quad"``, ``"Sbend"``);
+               * ``M``    -- cumulative 6x6 linear transport map from the
+                 start of the lattice to the exit of this element (a
+                 ``Map6x6`` instance; call ``.to_numpy()`` for a standard
+                 C-ordered NumPy array).
+
+               The first entry always has the identity map at the starting
+               ``s``; the last entry contains the same map as
+               :py:meth:`~transfer_map`.
+      :rtype: list[dict]
 
    .. py:method:: to_dicts()
 
@@ -1096,7 +1201,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -1122,6 +1227,16 @@ This module provides elements and methods for the accelerator lattice.
    By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
    the corresponding default value of ``K2`` is set to 1).
 
+   Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference
+   trajectory.  For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with
+   the true horizontal position (after including the effect of the fringe field).  To model this correction, we allow two options in the dipedge model:
+
+   * the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+   this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+   * the option ``modify_ref_part = True``, in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+   this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]
    :param g: Gap parameter [m]
@@ -1135,6 +1250,7 @@ This module provides elements and methods for the accelerator lattice.
    :param K6: Fringe field integral [unitless]
    :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
    :param location: the fringe field edge location: ``entry`` (default) or ``exit``
+   :param modify_ref_part: apply fringe field to the reference particle ``True`` or ``False`` (default)
    :param dx: horizontal translation error [m]
    :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]

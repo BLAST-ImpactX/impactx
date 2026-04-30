@@ -2012,3 +2012,32 @@ add_impactx_test(exact-quad-on-reference.py
     examples/symplectic_integration/analysis_exact_quad_on_reference.py
     OFF  # no additional analysis script needed
 )
+
+# Multipole tracking with spin ###################
+add_impactx_test(multipole-spin
+    examples/spin_tracking/input_multipole_spin.in
+    OFF   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_multipole_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(multipole-spin.py
+    examples/spin_tracking/run_multipole_spin.py
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_multipole_spin.py
+    OFF  # no additional analysis script needed
+)
+
+# Test of Periodic Phase-Wrapper ###################
+# without space charge
+add_impactx_test(phase-wrap
+    examples/phase_wrapper/input_phase_wrap.in
+    ON   # ImpactX MPI-parallel
+    examples/phase_wrapper/analysis_phase_wrap.py
+    OFF  # no plot script yet
+)
+add_impactx_test(phase-wrap.py
+    examples/phase_wrapper/run_phase_wrap.py
+    ON    # ImpactX MPI-parallel
+    examples/phase_wrapper/analysis_phase_wrap.py
+    OFF  # no plot script yet
+)

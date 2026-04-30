@@ -55,6 +55,16 @@ namespace impactx::elements::mixin
             return m_ds;
         }
 
+        /** Reverse the element (negate ds)
+         *
+         * After calling this method, pushing particles through the element
+         * reverses the effect of the original element.
+         */
+        void reverse ()
+        {
+            m_ds = -m_ds;
+        }
+
         amrex::ParticleReal m_ds; //! segment length in m
         int m_nslice; //! number of slices used for the application of space charge
     };

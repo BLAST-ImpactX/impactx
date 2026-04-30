@@ -7,6 +7,10 @@ This documents how to use ImpactX with an input file (``impactx input_file.in``)
 
 .. tip::
 
+   If you enjoy AI/LLM/agentic workflows, see our :ref:`AI (LLM)-Assisted Input File Design <ai_input_design>` section, too.
+
+.. tip::
+
    Input files use the AMReX `ParmParse <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parmparse>`__ syntax.
    A `parser <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parser>`__) is used for the right-hand-side of all input parameters that consist of one or more integers or floats, so expressions like ``beam.kin_energy = "2.+1."``, ``beam.lambdaY = beam.lambdaX`` and/or using :ref:`user-defined constants <running-cpp-parameters-parser>` are accepted.
 
@@ -21,9 +25,14 @@ Tracking Modes
   Mode that specifies how the beam is tracked:
 
   * ``particles`` (default): symplectic particle tracking
-  * ``envelope``: beam envelop (covariance matrix) tracking, through linearized transport maps
+  * ``envelope``: beam envelope (covariance matrix) tracking, through linearized transport maps
   * ``reference_orbit``: only tracking of the reference particle orbit
 
+  .. note::
+
+     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
+     Support for misalignments and feed-down effects in envelope tracking is in development.
+     Until then, misalignment options set on elements are silently ignored.
 
 .. _running-cpp-parameters-particle:
 
@@ -159,6 +168,9 @@ Initial Beam Distributions
     * ``beam.normalize`` (``float``, dimensionless) normalizing constant for core population
     * ``beam.normalize_halo`` (``float``, dimensionless) normalizing constant for halo population
     * ``beam.halo`` (``float``, dimensionless) fraction of charge in halo
+
+* ``beam.bucket_length`` (``float``, in meters)
+  length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions
 
 Initial Spin Distributions
 --------------------------
@@ -372,7 +384,19 @@ when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
 By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while the corresponding default value of ``K2`` is set to 1).
 
-This requires these additional parameters:
+Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference trajectory.
+
+For a beam, this will result in a centroid offset that will produce centroid oscillations in the  downstream beamline.
+In practice, this can be avoided by aligning the downstream elements with the true horizontal position (after including the effect of the fringe field).
+To model this correction, we allow two options in the dipedge model:
+
+* the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+* the option ``modify_ref_part = True`` in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
+This element requires these additional parameters:
 
 * ``<element_name>.psi`` (``float``, in radians) the pole face rotation angle
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
@@ -387,6 +411,7 @@ This requires these additional parameters:
 * ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
 * ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
+* ``<element_name>.modify_ref_part`` (``boolean``) apply fringe field to the reference particle ``true`` or ``false`` (default)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -1191,10 +1216,37 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
    ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
 
+.. _running-cpp-parameters-particle-bc:
+
+Particle Boundary Condition
+---------------------------
+
+The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference particle).
+For systems involving bunches that are long relative to the local size of the RF bucket, it is often necessary to capture the effect of particle slippage between adjacent buckets.
+To handle this effectively without tracking multiple bunches, a periodic particle boundary condition can be applied.
+
+* ``algo.particle_bc`` (``string`, optional, default: ``open``)
+
+  The type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.  Options:
+
+  * ``"open"`` (default): no action is applied at the boundary.
+
+  * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+
+  * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+
+  * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+
+    .. note::
+
+       The implementation works through linear order in the phase space variables.
+       If you have the need for a more precise implementation of reflecting boundaries, please `open an issue <https://github.com/BLAST-ImpactX/impactx/issues/new>`__.
+
+
 .. _running-cpp-parameters-spin:
 
 Spin Tracking
-^^^^^^^^^^^^^
+-------------
 
 Spin tracking is performed by updating the particle spin 3-vector in the presence of each element's electromagnetic fields, using methods based on the Thomas-BMT equation.
 By construction, all spin tracking methods rely on pushing particles using spin maps that lie in SO(3).  The algorithm implemented for each element is consistent with the algorithm

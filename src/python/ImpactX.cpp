@@ -8,6 +8,7 @@
 #include <ImpactX.H>
 #include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
+#include <particles/ParticleBoundary.H>
 
 #include <AMReX.H>
 #include <AMReX_ParmParse.H>
@@ -444,6 +445,26 @@ void init_ImpactX (py::module& m)
               "Currently MLMG solver looks for verbosity levels from 0-5. "
               "A higher number results in more verbose output."
         )
+        .def_property("particle_bc",
+            [](ImpactX & /* ix */) -> std::string {
+                return amrex::getEnumNameString(particles::get_particle_boundary_condition());
+            },
+            [](ImpactX & /* ix */, std::string const particle_bc) {
+                auto const valid_names = amrex::getEnumNameStrings<particles::ParticleBC>();
+                if (std::find(valid_names.begin(), valid_names.end(), particle_bc) == valid_names.end()) {
+                    std::string msg = "Particle boundary condition must be one of: ";
+                    for (auto const& name : valid_names) {
+                        msg += name + ", ";
+                    }
+                    msg.erase(msg.size() - 2);
+                    msg += " but is: " + particle_bc;
+                    throw std::runtime_error(msg);
+                }
+
+                amrex::ParmParse("algo").add("particle_bc", particle_bc);
+            },
+            "Optional methods to apply a longitudinal particle boundary condition."
+        )
         .def_property("diagnostics",
              [](ImpactX & /* ix */) {
                  return detail::get_or_throw<bool>("diag", "enable");
@@ -700,10 +721,26 @@ void init_ImpactX (py::module& m)
 
         .def("particle_container",
              [](ImpactX & ix) -> ImpactXParticleContainer & {
+                py::warnings::warn(
+                    "particle_container() is deprecated. Use sim.beam instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
                 return *ix.amr_data->track_particles.m_particle_container;
              },
              py::return_value_policy::reference_internal,
-             "Access the beam particle container."
+             "Access the beam particle container.\n\n"
+             "Deprecated: use ``sim.beam``."
+        )
+        // Getter-only property is intentional: it returns the live mutable
+        // ImpactXParticleContainer by reference.
+        // A writable property (with assignment) would be ambiguous:
+        // alias (Pythonic) or copy-in (safe) for the simulation-owned particle container.
+        .def_property_readonly("beam",
+            [](ImpactX & ix) -> ImpactXParticleContainer & {
+                return *ix.amr_data->track_particles.m_particle_container;
+            },
+            "Access the beam particle container."
         )
         .def(
             "rho",

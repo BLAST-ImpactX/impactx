@@ -5,6 +5,7 @@ target_sources(lib
     ImpactXParticleContainer.cpp
     Push.cpp
     SplitEqually.cpp
+    ParticleBoundary.cpp
 )
 
 add_subdirectory(spacecharge)

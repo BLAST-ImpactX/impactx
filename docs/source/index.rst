@@ -120,6 +120,7 @@ Development
    developers/doxygen
    developers/python
    developers/debugging
+   developers/how_to_develop_with_llms
 
 Maintenance
 -----------

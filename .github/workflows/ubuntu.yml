@@ -115,7 +115,7 @@ jobs:
     if: github.event.pull_request.draft == false
     env:
       CMAKE_GENERATOR: Ninja
-      CXXFLAGS: "-Werror -g1"
+      CXXFLAGS: "-Werror"
       OMP_NUM_THREADS: 2
     steps:
     - name: Free More Disk Space
@@ -164,7 +164,7 @@ jobs:
           -DImpactX_PYTHON=ON          \
           -DImpactX_SIMD=ON            \
           -DImpactX_TEST_CLEANUP=ON
-        cmake --build build -j 2
+        cmake --build build -j 4
 
     - name: run tests
       run: |

@@ -26,7 +26,7 @@ sim.init_grids()
 kin_energy_MeV = 230.0  # reference energy
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 # design the accelerator lattice

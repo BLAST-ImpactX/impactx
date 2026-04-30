@@ -24,21 +24,21 @@ sim.init_grids()
 kin_energy_MeV = 250.0  # reference energy
 
 #   reference particle
-pc = sim.particle_container()
-ref = pc.ref_particle()
+beam = sim.beam
+ref = beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   load particle bunch from file
-push(pc, elements.Source("openPMD", "../solenoid.py/diags/openPMD/monitor.h5"))
+push(beam, elements.Source("openPMD", "../solenoid.py/diags/openPMD/m1.h5"))
 
 # add beam diagnostics
-monitor = elements.BeamMonitor("monitor", backend="h5")
+m1 = elements.BeamMonitor("m1", backend="h5")
 
 # design the accelerator lattice
 sol1 = elements.Sol(name="sol1", ds=3.820395, ks=0.8223219329893234)
-sim.lattice.append(monitor)
+sim.lattice.append(m1)
 sim.lattice.extend([sol1] * 3)
-sim.lattice.append(monitor)
+sim.lattice.append(m1)
 
 # run simulation
 sim.track_particles()

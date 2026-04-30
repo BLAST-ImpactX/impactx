@@ -38,7 +38,7 @@ kin_energy_MeV = 2.1226695  # reference energy
 bunch_charge_C = 2.9824923076852509e-11  # used with space charge
 
 # reference particle
-ref = sim.particle_container().ref_particle()
+ref = sim.beam.ref
 ref.set_species("Hminus").set_kin_energy_MeV(kin_energy_MeV)
 
 # particle bunch

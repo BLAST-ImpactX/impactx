@@ -13,10 +13,10 @@ kin_energy_MeV = 2000.0
 bunch_charge_C = 1e-09
 npart = 10000
 
-pc = sim.particle_container()
+beam = sim.beam
 
 # Reference particle
-ref = pc.ref_particle()
+ref = beam.ref
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 distr = distribution.Waterbag(

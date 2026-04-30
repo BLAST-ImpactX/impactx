@@ -7,8 +7,6 @@
 
 #include <particles/Push.H>
 #include <elements/All.H>
-#include <elements/mixin/lineartransport.H>
-#include <elements/transformation/Insert.H>
 #include <particles/CovarianceMatrix.H>
 
 #include <AMReX_Enum.H>
@@ -103,6 +101,18 @@ namespace
     {
         register_beamoptics_push(cl);
         register_envelope_push(cl);
+    }
+
+    /** Register reverse() method */
+    template<typename T_PyClass>
+    void register_reverse (T_PyClass & cl)
+    {
+        using Element = typename T_PyClass::type;
+
+        cl.def("reverse", &Element::reverse,
+            "Reverse the element in-place so that pushing particles through\n"
+            "it reverses the effect of the original element."
+        );
     }
 
     /** Helper to format {key, value} pairs
@@ -251,6 +261,9 @@ namespace
         return ret;
     }
 }
+
+
+void init_lattice(py::module&);
 
 void init_elements(py::module& m)
 {
@@ -441,6 +454,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_BeamMonitor);
+    register_reverse(py_BeamMonitor);
 
     // beam optics
 
@@ -571,6 +585,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Aperture);
+    register_reverse(py_Aperture);
 
     py::class_<ChrDrift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrDrift(me, "ChrDrift");
     py_ChrDrift
@@ -606,6 +621,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrDrift);
+    register_reverse(py_ChrDrift);
 
     py::class_<ChrQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrQuad(me, "ChrQuad");
     py_ChrQuad
@@ -662,6 +678,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrQuad);
+    register_reverse(py_ChrQuad);
 
     py::class_<ChrPlasmaLens, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ChrPlasmaLens(me, "ChrPlasmaLens");
     py_ChrPlasmaLens
@@ -718,6 +735,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrPlasmaLens);
+    register_reverse(py_ChrPlasmaLens);
 
     py::class_<ChrAcc, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment> py_ChrAcc(me, "ChrAcc");
     py_ChrAcc
@@ -775,6 +793,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ChrAcc);
+    register_reverse(py_ChrAcc);
 
     py::class_<ConstF, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ConstF(me, "ConstF");
     py_ConstF
@@ -841,6 +860,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ConstF);
+    register_reverse(py_ConstF);
 
     py::class_<DipEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_DipEdge(me, "DipEdge");
     py_DipEdge
@@ -860,7 +880,8 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location)),
+                     std::make_pair("modify_ref_part", dip_edge.m_modify_ref_part)
                  );
              }
         )
@@ -880,7 +901,8 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location)),
+                     std::make_pair("modify_ref_part", dip_edge.m_modify_ref_part)
                  );
              }
         )
@@ -898,6 +920,7 @@ void init_elements(py::module& m)
             amrex::ParticleReal K6,
             std::string const & model,
             std::string const & location,
+            bool modify_ref_part,
             amrex::ParticleReal dx,
             amrex::ParticleReal dy,
             amrex::ParticleReal rotation_degree,
@@ -909,7 +932,7 @@ void init_elements(py::module& m)
 
                 dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
                 dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
-                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
+                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, modify_ref_part, dx, dy, rotation_degree, name);
             }),
             py::arg("psi"),
             py::arg("rc"),
@@ -924,6 +947,7 @@ void init_elements(py::module& m)
             py::arg("K6") = 0,
             py::arg("model") = "linear",
             py::arg("location") = "entry",
+            py::arg("modify_ref_part") = false,
             py::arg("dx") = 0,
             py::arg("dy") = 0,
             py::arg("rotation") = 0,
@@ -1003,9 +1027,15 @@ void init_elements(py::module& m)
             },
             "Fringe field location (entry or exit)"
         )
+        .def_property("modify_ref_part",
+            [](DipEdge & dip_edge) { return dip_edge.m_modify_ref_part; },
+            [](DipEdge & dip_edge, bool modify_ref_part) { dip_edge.m_modify_ref_part = modify_ref_part; },
+            "Apply DipEdge to reference particle (boolean)."
+        )
 
     ;
     register_push(py_DipEdge);
+    register_reverse(py_DipEdge);
 
     py::class_<QuadEdge, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_QuadEdge(me, "QuadEdge");
     py_QuadEdge
@@ -1068,6 +1098,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_QuadEdge);
+    register_reverse(py_QuadEdge);
 
     py::class_<Drift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Drift(me, "Drift");
     py_Drift
@@ -1103,6 +1134,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Drift);
+    register_reverse(py_Drift);
 
     py::class_<ExactDrift, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactDrift(me, "ExactDrift");
     py_ExactDrift
@@ -1138,6 +1170,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactDrift);
+    register_reverse(py_ExactDrift);
 
     py::class_<ExactMultipole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactMultipole(me, "ExactMultipole");
     py_ExactMultipole
@@ -1208,6 +1241,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactMultipole);
+    register_reverse(py_ExactMultipole);
 
     py::class_<ExactCFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactCFbend(me, "ExactCFbend");
     py_ExactCFbend
@@ -1282,6 +1316,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactCFbend);
+    register_reverse(py_ExactCFbend);
 
     py::class_<ExactQuad, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactQuad(me, "ExactQuad");
     py_ExactQuad
@@ -1355,6 +1390,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactQuad);
+    register_reverse(py_ExactQuad);
 
     py::class_<ExactSbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_ExactSbend(me, "ExactSbend");
     py_ExactSbend
@@ -1443,6 +1479,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ExactSbend);
+    register_reverse(py_ExactSbend);
 
     py::class_<Kicker, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Kicker(me, "Kicker");
     py_Kicker
@@ -1507,6 +1544,7 @@ void init_elements(py::module& m)
         // TODO unit
     ;
     register_push(py_Kicker);
+    register_reverse(py_Kicker);
 
     py::class_<Multipole, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Multipole(me, "Multipole");
     py_Multipole
@@ -1568,6 +1606,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Multipole);
+    register_reverse(py_Multipole);
 
     py::class_<Empty, elements::mixin::Named, elements::mixin::Thin> py_Empty(me, "Empty");
     py_Empty
@@ -1586,6 +1625,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Empty);
+    register_reverse(py_Empty);
 
     py::class_<Marker, elements::mixin::Named, elements::mixin::Thin> py_Marker(me, "Marker");
     py_Marker
@@ -1605,6 +1645,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Marker);
+    register_reverse(py_Marker);
 
     py::class_<NonlinearLens, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_NonlinearLens(me, "NonlinearLens");
     py_NonlinearLens
@@ -1654,6 +1695,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_NonlinearLens);
+    register_reverse(py_NonlinearLens);
 
     py::class_<PlaneXYRot, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
     py_PlaneXYRot
@@ -1720,6 +1762,7 @@ void init_elements(py::module& m)
         */
     ;
     register_push(py_PlaneXYRot);
+    register_reverse(py_PlaneXYRot);
 
     py::class_<PolygonAperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PolygonAperture(me, "PolygonAperture");
     py_PolygonAperture
@@ -1822,6 +1865,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_PolygonAperture);
+    register_reverse(py_PolygonAperture);
 
     py::class_<Programmable, elements::mixin::Named>(me, "Programmable", py::dynamic_attr())
         .def("__repr__",
@@ -1931,6 +1975,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Quad);
+    register_reverse(py_Quad);
 
     py::class_<RFCavity, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_RFCavity(me, "RFCavity");
     py_RFCavity
@@ -2013,6 +2058,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_RFCavity);
+    register_reverse(py_RFCavity);
 
     py::class_<Sbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sbend(me, "Sbend");
     py_Sbend
@@ -2060,6 +2106,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Sbend);
+    register_reverse(py_Sbend);
 
     py::class_<CFbend, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_CFbend(me, "CFbend");
     py_CFbend
@@ -2117,6 +2164,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_CFbend);
+    register_reverse(py_CFbend);
 
     py::class_<Buncher, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_Buncher(me, "Buncher");
     py_Buncher
@@ -2166,6 +2214,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Buncher);
+    register_reverse(py_Buncher);
 
     py::class_<ShortRF, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_ShortRF(me, "ShortRF");
     py_ShortRF
@@ -2224,6 +2273,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_ShortRF);
+    register_reverse(py_ShortRF);
 
     py::class_<SoftSolenoid, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SoftSolenoid(me, "SoftSolenoid");
     py_SoftSolenoid
@@ -2324,6 +2374,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_SoftSolenoid);
+    register_reverse(py_SoftSolenoid);
 
     py::class_<Source, elements::mixin::Named, elements::mixin::Thin> py_Source(me, "Source");
     py_Source
@@ -2376,6 +2427,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Source);
+    register_reverse(py_Source);
 
     py::class_<Sol, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_Sol(me, "Sol");
     py_Sol
@@ -2424,6 +2476,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_Sol);
+    register_reverse(py_Sol);
 
     py::class_<PRot, elements::mixin::Named, elements::mixin::Thin> py_PRot(me, "PRot");
     py_PRot
@@ -2497,6 +2550,7 @@ void init_elements(py::module& m)
         */
     ;
     register_push(py_PRot);
+    register_reverse(py_PRot);
 
     py::class_<SoftQuadrupole, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SoftQuadrupole(me, "SoftQuadrupole");
     py_SoftQuadrupole
@@ -2561,6 +2615,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_SoftQuadrupole);
+    register_reverse(py_SoftQuadrupole);
 
     py::class_<ThinDipole, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_ThinDipole(me, "ThinDipole");
     py_ThinDipole
@@ -2637,6 +2692,7 @@ void init_elements(py::module& m)
         */
     ;
     register_push(py_ThinDipole);
+    register_reverse(py_ThinDipole);
 
     py::class_<TaperedPL, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_TaperedPL(me, "TaperedPL");
     py_TaperedPL
@@ -2701,6 +2757,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_TaperedPL);
+    register_reverse(py_TaperedPL);
 
     py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment> py_LinearMap(me, "LinearMap");
     py_LinearMap
@@ -2748,8 +2805,14 @@ void init_elements(py::module& m)
             [](LinearMap & linearmap) { return linearmap.nslice(); },
             "one, because we do not support slicing of this element"
         )
+        .def_property_readonly("symplectic", &LinearMap::symplectic,
+            "Check if the transport map is symplectic.\n\n"
+            "A matrix R is symplectic if R^T J R = J, where J is the\n"
+            "standard 6x6 skew-symmetric symplectic form (also called Omega)."
+        )
      ;
      register_push(py_LinearMap);
+     register_reverse(py_LinearMap);
 
     py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment> py_SpinMap(me, "SpinMap");
     py_SpinMap
@@ -2807,6 +2870,7 @@ void init_elements(py::module& m)
         )
      ;
      register_push(py_SpinMap);
+     register_reverse(py_SpinMap);
 
 
     // freestanding push function
@@ -2819,133 +2883,14 @@ void init_elements(py::module& m)
         "Push the reference particle through an element"
     );
 
-
-    // all-element type list
-    using KnownElementsList = std::list<KnownElements>;
-    py::class_<KnownElementsList> kel(me, "KnownElementsList");
-    kel
-        .def(py::init<>())
-        .def(py::init<KnownElements>())
-        .def(py::init([](py::list const & l){
-            KnownElementsList v;
-            for (auto const & handle : l)
-                v.push_back(handle.cast<KnownElements>());
-            return v;  // return by value
-        }))
-
-        .def("append", [](KnownElementsList &v, KnownElements el) { v.emplace_back(std::move(el)); },
-             "Add a single element to the list.")
-
-        .def("extend",
-             [](KnownElementsList &v, KnownElementsList const & l) {
-                 for (auto const & el : l)
-                     v.push_back(el);
-                 return v;
-             },
-             "Add a list of elements to the list.")
-        .def("extend",
-             [](KnownElementsList &v, py::list const & l) {
-                 for (auto const & handle : l)
-                 {
-                     auto el = handle.cast<KnownElements>();
-                     v.push_back(el);
-                 }
-                 return v;
-             },
-             "Add a list of elements to the list."
-        )
-
-        .def("size", &KnownElementsList::size)
-        .def("clear", &KnownElementsList::clear,
-             "Clear the list to become empty.")
-        .def("is_empty", &KnownElementsList::empty)
-        .def("pop_back", &KnownElementsList::pop_back,
-             "Return and remove the last element of the list.")
-        .def("__len__", [](const KnownElementsList &v) { return v.size(); },
-             "The length of the list.")
-        .def("__iter__", [](KnownElementsList &v) {
-            return py::make_iterator(v.begin(), v.end());
-        }, py::keep_alive<0, 1>())  // Keep list alive while iterator is used
-        .def("__getitem__", [](KnownElementsList &v, size_t index) -> elements::KnownElements& {
-            if (index >= v.size()) {
-                throw std::out_of_range("Index out of range");
-            }
-            auto it = std::next(v.begin(), index);
-            return *it;  // return by reference
-        }, py::return_value_policy::reference_internal)
-
-        .def(
-            "transfer_map",
-            [](
-                KnownElementsList &v,
-                RefPart ref, // note: intentional copy
-                std::string order,
-                bool fallback_identity_map
-            )
-            {
-                if (order != "linear") {
-                    throw std::runtime_error("So far, only the calculation of linear transfer maps are supported in this function.");
-                }
-                Map6x6 linear_transfer_map = Map6x6::Identity();
-                for (auto & el_v : v)
-                {
-                    // advance reference particle
-                    std::visit([&ref](auto && el) {
-                        el(ref);
-                    }, el_v);
-
-                    // extract element transport map, handle fallback
-                    Map6x6 element_transport_map = Map6x6::Identity();
-                    int element_nslice;
-                    std::visit([&ref, &fallback_identity_map, &element_transport_map, &element_nslice](auto const & el) {
-                        using Element = std::decay_t<decltype(el)>;
-                        std::string not_impl_msg = "Undefined transfer map in lattice for element ";
-                        if (el.has_name()) not_impl_msg += el.name() + " ";
-                        not_impl_msg += std::string("of type ") + Element::type;
-
-                        if constexpr (std::is_base_of_v<elements::mixin::LinearTransport<Element>, Element>) {
-                            try {
-                                element_transport_map = el.transport_map(ref);
-                                element_nslice = el.nslice();
-                            } catch (std::exception const &) {
-                                if (!fallback_identity_map) {
-                                    throw std::runtime_error(not_impl_msg);
-                                }
-                            }
-                        } else {
-                            if (!fallback_identity_map) {
-                                throw std::runtime_error(not_impl_msg);
-                            }
-                        }
-                    }, el_v);
-
-                    // advance linear transfer map
-                    for (int n = 0; n < element_nslice; n++) {
-                        linear_transfer_map = element_transport_map * linear_transfer_map;
-                    }
-                }
-                return linear_transfer_map;
-            },
-            py::arg("ref"),
-            py::arg("order") = "linear",
-            py::arg("fallback_identity_map") = false,
-            "Calculate the transfer map of the elements in the list."
-            )
-    ;
-
-
-    // lattice transformations
-    py::module_ met = me.def_submodule(
-        "transformation",
-        "Transform and modify lattices"
-    );
-
-    met.def(
-        "insert_element_every_ds",
-        &impactx::elements::transformation::insert_element_every_ds,
-        py::arg("list"),
-        py::arg("ds"),
+    m.def("reverse", [](elements::KnownElements & el) {
+            std::visit([](auto && e) { e.reverse(); }, el);
+        },
         py::arg("element"),
-        "Insert an element every s into an element list"
+        "Reverse an element in-place so that pushing particles through\n"
+        "it reverses the effect of the original element."
     );
+
+    // init lattice next, under the elements sub-module
+    init_lattice(me);
 }

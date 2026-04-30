@@ -86,6 +86,14 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (swap entry/exit) */
+        void reverse ()
+        {
+            m_flag = (m_flag == Location::entry)
+                ? Location::exit
+                : Location::entry;
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 

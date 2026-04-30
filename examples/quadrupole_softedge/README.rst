@@ -62,6 +62,9 @@ The on-axis gradient of the quadrupoles is given by an analytical function, name
 
 :math:`\frac{k_0}{2}\left\{\tanh\left(\frac{z+z_0}{g}\right)-\tanh\left(\frac{z-z_0}{g}\right)\right\}`
 
+.. figure:: SoftEdge_FODO_Cell_Fig.png
+   :alt: Figure illustrating the layout of a FODO cell modeled using a hard edge (black) and soft-edge (red) quadrupole model.  Curves approximately represent the magnitude of the on-axis quadrupole gradient.
+
 The effect of the soft fringe field decay on the linear focusing is small but visible.  In this test, the beam moments are compared against those used in the hard-edge limit.
 
 The initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
@@ -72,7 +75,7 @@ Run
 
 This example can be run as:
 
-* **Python** script: ``python3 run_fodo_softedge.py``
+**Python** script: ``python3 run_fodo_softedge.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 

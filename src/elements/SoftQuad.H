@@ -20,6 +20,7 @@
 #include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
+#include "mixin/spintransport.H"
 #include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
@@ -114,6 +115,7 @@ namespace impactx::elements
       public mixin::Alignment,
       public mixin::NoFinalize,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "SoftQuadrupole";
@@ -284,6 +286,9 @@ namespace impactx::elements
             // initialize linear map (deviation) values
             refpart.map = decltype(refpart.map)::Identity();
 
+            // initialize the spin-orbit coupling matrix
+            refpart.spin_coupling = {};
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
@@ -325,6 +330,66 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // store the phase space variables in vector form
+            amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
+
+            // get the spin-orbit coupling matrix
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+
+            // use phase space variables to obtain the angle-axis generator of spin rotation
+            auto const out = A * v;
+
+            // update the angle-axis generator
+            lambdax = out[1];
+            lambday = out[2];
+            lambdaz = out[3];
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -441,9 +506,8 @@ namespace impactx::elements
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
-
+            refpart.map(5,5) = R(5,5) + tau*R(6,5) / powi<2>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6) / powi<2>(betgam);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -487,6 +551,19 @@ namespace impactx::elements
             refpart.map(4,2) = R(4,2) + tau*alpha*R(3,2);
             refpart.map(4,3) = R(4,3) + tau*alpha*R(3,3);
             refpart.map(4,4) = R(4,4) + tau*alpha*R(3,4);
+
+            // BELOW: if spin is needed only:
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
+            amrex::ParticleReal const gamma = refpart.gamma();
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+
+            // Update spin-orbit coupling matrix here
+            dA(1,3) = -(1_prt + G*gamma) * tau * alpha;
+            dA(2,1) = -(1_prt + G*gamma) * tau * alpha;
+
+            // update the spin-orbit coupling matrix here
+            refpart.spin_coupling = A + dA*R;
 
         }
 

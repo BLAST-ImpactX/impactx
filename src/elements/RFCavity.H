@@ -20,6 +20,7 @@
 #include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
+#include "mixin/spintransport.H"
 #include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
@@ -105,6 +106,7 @@ namespace impactx::elements
       public mixin::Alignment,
       public mixin::NoFinalize,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "RFCavity";
@@ -278,6 +280,9 @@ namespace impactx::elements
             // initialize linear map (deviation) values
             refpart.map = decltype(refpart.map)::Identity();
 
+            // initialize the spin-orbit coupling matrix
+            refpart.spin_coupling = {};
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
@@ -323,9 +328,76 @@ namespace impactx::elements
                }
             }
 
+            // convert spin-orbit coupling map from dynamic to static units
+            for (int i=1; i<4; i++) {
+                for (int j=2; j<7; j+=2) {
+                    refpart.spin_coupling(i, j) *= bgi;
+                }
+            }
+
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // store the phase space variables in vector form
+            amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
+
+            // get the spin-orbit coupling matrix
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+
+            // use phase space variables to obtain the angle-axis generator of spin rotation
+            auto const out = A * v;
+
+            // update the angle-axis generator
+            lambdax = out[1];
+            lambday = out[2];
+            lambdaz = out[3];
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -438,10 +510,34 @@ namespace impactx::elements
 
             // push the linear map equations
             amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
             refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
             refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
+
+            // BELOW: if spin is needed only:
+            // Define parameters and intermediate constants
+            using ablastr::constant::math::pi;
+            using ablastr::constant::SI::c;
+            amrex::ParticleReal const k = (2_prt*pi/c)*m_freq;
+            amrex::ParticleReal const phi = m_phase*(pi/180_prt);
+            amrex::ParticleReal const E0 = m_escale;
+            auto [ez, ezp, ezint] = RF_Efield(zeval);
+            amrex::ignore_unused(ezint);
+
+            // Update spin-orbit coupling matrix here
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal cos_term = std::cos(k*t+phi);
+            amrex::ParticleReal sin_term = std::sin(k*t+phi);
+            dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / std::sqrt(1_prt + powi<2>(pt)) + cos_term * (G + 1_prt/(1_prt - pt)) * ezp);
+            dA(1,4) = E0 * tau / std::sqrt(1_prt + powi<2>(pt)) * cos_term * (G + 1_prt/(1_prt - pt));
+            dA(2,1) = -dA(1,3);
+            dA(2,2) = -dA(1,4);
+
+            // update the spin-orbit coupling matrix here
+            refpart.spin_coupling = A + dA*R;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -491,6 +587,7 @@ namespace impactx::elements
             refpart.map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
             refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
             refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
+
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -542,6 +639,7 @@ namespace impactx::elements
 
             refpart.map(6,5) = M*R(5,5) + R(6,5);
             refpart.map(6,6) = M*R(5,6) + R(6,6);
+
         }
 
         amrex::ParticleReal m_escale; //! scaling factor for RF electric field

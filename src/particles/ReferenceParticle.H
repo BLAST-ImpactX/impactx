@@ -46,6 +46,8 @@ namespace impactx
 
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
         amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
+        amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> spin_coupling{}; ///< linearized spin-orbit coupling matrix
+        amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> spin_rotation_vector{}; ///< reference spin rotation vector
 
         /** Copy the reference particle
          *

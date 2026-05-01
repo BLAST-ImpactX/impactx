@@ -2041,3 +2041,11 @@ add_impactx_test(phase-wrap.py
     examples/phase_wrapper/analysis_phase_wrap.py
     OFF  # no plot script yet
 )
+
+# FODO Cell Using Soft-Edge Quadrupoles ###################
+add_impactx_test(fodo-softedge.py
+    examples/quadrupole_softedge/run_fodo_softedge_tanh.py
+    ON    # ImpactX MPI-parallel
+    examples/quadrupole_softedge/analysis_fodo_softedge.py
+    OFF  # no plot script yet
+)

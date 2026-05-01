@@ -720,10 +720,17 @@ This requires these additional parameters:
 ``quadrupole_softedge``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``quadrupole_softedge`` for a soft-edge quadrupole. This requires these additional parameters:
+``quadrupole_softedge`` for a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
+``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
+has units of inverse meters squared.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
-* ``<element_name>.gscale`` (``float``, in inverse meters) Scaling factor for on-axis magnetic field gradient
+* ``<element_name>.gscale`` (``float``, in inverse meters squared) Scaling factor for on-axis magnetic field gradient
 * ``<element_name>.cos_coefficients`` (array of ``float``) cos coefficients in Fourier expansion of the on-axis field gradient
   (optional); default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
 * ``<element_name>.sin_coefficients`` (array of ``float``) sin coefficients in Fourier expansion of the on-axis field gradient
@@ -761,7 +768,13 @@ This requires these additional parameters:
 ``rfcavity``
 ^^^^^^^^^^^^
 
-``rfcavity`` a radiofrequency cavity.
+``rfcavity`` a radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal electric field are described in the documentation of ``escale`` below.  For example, if the values used to
+describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case,
+``escale`` has units of inverse meters.
+
 This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
@@ -854,7 +867,14 @@ This requires these additional parameters:
 ``solenoid_softedge``
 ^^^^^^^^^^^^^^^^^^^^^
 
-``solenoid_softedge`` for a soft-edge solenoid. This requires these additional parameters:
+``solenoid_softedge`` for a soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal magnetic field data are determined by the parameter ``unit``.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``field_on_axis``) attain a peak on-axis value of 1, then the parameter
+``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic
+rigidity.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.bscale`` (``float``, in inverse meters) Scaling factor for on-axis longitudinal magnetic field

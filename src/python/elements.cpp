@@ -2029,7 +2029,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An RF cavity."
@@ -2322,7 +2322,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A soft-edge solenoid."
@@ -2596,7 +2596,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A soft-edge quadrupole."

@@ -144,7 +144,7 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree = 0,
             amrex::ParticleReal aperture_x = 0,
             amrex::ParticleReal aperture_y = 0,
-            int mapsteps = 1,
+            int mapsteps = 10,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )

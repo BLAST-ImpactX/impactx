@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -37,6 +38,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -133,6 +135,10 @@ namespace impactx::elements
             // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
             m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
+
+            // gyromagnetic constant (used during spin push)
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            m_gyro_const = 1_prt + G * refpart.gamma();
 
         }
 
@@ -363,6 +369,72 @@ namespace impactx::elements
             return R;
         }
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // store initial variables needed for spin push
+            T_Real ti = t;
+            T_Real pxi = px;
+            T_Real pyi = py;
+
+            // For this element, note that the time-of-flight from entry to
+            // exit is needed for evaluation of the spin map, so the phase
+            // space push is applied first, in order to obtain the change in t.
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+            T_Real dt = t - ti;
+            T_Real omega = 1_prt / (m_rc * (m_ibeta - pt));
+            amrex::ParticleReal omega_ref = 1_prt / (m_rc * m_ibeta);
+
+            // push the spin vector using the generator just determined (first factor)
+            // TODO:  Update labmdax, lambday, lambdaz to specify first map factor here.
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            lambday = -dt * (omega - omega_ref);
+
+            // push the spin vector using the generator just determined (second factor)
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+        }
+
+
         amrex::ParticleReal m_phi; //! bend angle in radians
         amrex::ParticleReal m_B;  //! magnetic field in T
 
@@ -370,6 +442,8 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_ibetagam2, m_rc, m_sin_phi, m_cos_phi;
+        amrex::ParticleReal m_gyro_const;
+
     };
 
 } // namespace impactx

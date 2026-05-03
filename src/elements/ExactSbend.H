@@ -137,8 +137,9 @@ namespace impactx::elements
             m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
             // gyromagnetic constant (used during spin push)
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            m_gyro_const = 1_prt + G * refpart.gamma();
+            m_gyro = refpart.gyromagnetic_anomaly;
+            m_beta_gamma = refpart.beta_gamma();
+            m_beta = refpart.beta();
 
         }
 
@@ -409,8 +410,11 @@ namespace impactx::elements
 
             // store initial variables needed for spin push
             T_Real ti = t;
-            T_Real pxi = px;
-            T_Real pyi = py;
+            T_Real Pnorm = sqrt(1_prt + pt*pt - 2_prt*pt*m_ibeta);
+            T_Real gamma = (1_prt - pt*m_beta)*refpart.gamma();
+            T_Real ux = px/Pnorm;
+            T_Real uy = py/Pnorm;
+            T_Real uz = sqrt(1_prt - ux*ux - uy*uy);
 
             // For this element, note that the time-of-flight from entry to
             // exit is needed for evaluation of the spin map, so the phase
@@ -419,9 +423,13 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
-            T_Real dt = t - ti;
-            T_Real omega = 1_prt / (m_rc * (m_ibeta - pt));
-            amrex::ParticleReal omega_ref = 1_prt / (m_rc * m_ibeta);
+            T_Real dt = t - ti + m_slice_ds*m_ibeta;
+            T_Real omega = 1_prt / m_rc * m_beta_gamma / gamma;
+            amrex::ParticleReal omega_ref = 1_prt / m_rc * m_beta;
+
+            lambdax = m_gyro * (gamma - 1_prt) * uy * ux * omega;
+            lambday = -m_gyro * gamma * omega + m_gyro * (gamma - 1_prt) * uy * uy * omega;
+            lambdax = m_gyro * (gamma - 1_prt) * uy * uz * omega;
 
             // push the spin vector using the generator just determined (first factor)
             // TODO:  Update labmdax, lambday, lambdaz to specify first map factor here.
@@ -442,7 +450,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_ibetagam2, m_rc, m_sin_phi, m_cos_phi;
-        amrex::ParticleReal m_gyro_const;
+        amrex::ParticleReal m_gyro, m_beta, m_beta_gamma;
 
     };
 

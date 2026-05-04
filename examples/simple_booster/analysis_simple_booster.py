@@ -71,11 +71,12 @@ assert math.isclose(total_s, expected_s, rel_tol=1.0e-4), (
 
 
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+first_step = list(series.iterations)[0]
+initial = series.iterations[first_step].particles["beam"].to_df()
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 
-beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
+beta_ref = series.iterations[first_step].particles["beam"].get_attribute("beta_ref")
 
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 

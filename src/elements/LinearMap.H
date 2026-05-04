@@ -42,6 +42,12 @@ namespace impactx::elements
         static constexpr auto type = "LinearMap";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr amrex::ParticleReal DEFAULT_ds = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** A thin element that applies a user-provided linear transport map R
          *  to the 6-vector of phase space coordinates (x,px,y,py,t,pt).
          *  Thus  x_final = R(1,1)*x + R(1,2)*px + R(1,3)*y + ...,
@@ -56,11 +62,11 @@ namespace impactx::elements
          */
         LinearMap (
             Map6x6 const & R,
-            amrex::ParticleReal ds = 0,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal ds = DEFAULT_ds,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree)

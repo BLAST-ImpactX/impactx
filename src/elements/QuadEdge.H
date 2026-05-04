@@ -18,6 +18,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
@@ -41,11 +42,17 @@ namespace impactx::elements
         static constexpr auto type = "QuadEdge";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        enum Location
-        {
-            entry = 1, //! for leading (entry) fringe field
-            exit = -1  //! for trailing (exit) fringe field
-        };
+        AMREX_ENUM_IN_CLASS(Location,
+            entry = 1,  //! for leading (entry) fringe field
+            exit = -1,  //! for trailing (exit) fringe field
+        );
+
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr Location DEFAULT_flag = Location::entry;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** Quadrupole entry or exit fringe field effects.
          *
@@ -73,12 +80,12 @@ namespace impactx::elements
          */
         QuadEdge (
             amrex::ParticleReal k,
-            int unit,
-            Location flag,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            Location flag = DEFAULT_flag,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

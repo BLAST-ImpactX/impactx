@@ -43,6 +43,11 @@ namespace impactx::elements
         static constexpr auto type = "Buncher";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** A short RF cavity element at zero crossing for bunching
          *
          * @param V Normalized RF voltage drop V = Emax*L/(c*Brho)
@@ -55,10 +60,10 @@ namespace impactx::elements
         Buncher (
             amrex::ParticleReal V,
             amrex::ParticleReal k,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

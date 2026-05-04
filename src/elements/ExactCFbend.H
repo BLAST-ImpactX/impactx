@@ -61,6 +61,17 @@ namespace impactx::elements
 
         using DynamicData = mixin::GPUDataRegistry<CFbendCoefficients>;
 
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
+        static constexpr int DEFAULT_int_order = 2;
+        static constexpr int DEFAULT_mapsteps = 1;
+        static constexpr int DEFAULT_nslice = 1;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** A general (thick) combined-function sector dipole whose field consists
          *  of a superposition of ideal curvilinear hard-edge multipoles.
          *  The magnet is treated using the exact Hamiltonian, which
@@ -90,16 +101,16 @@ namespace impactx::elements
             amrex::ParticleReal ds,
             std::vector<amrex::ParticleReal> k_normal,
             std::vector<amrex::ParticleReal> k_skew,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int int_order = 2,
-            int mapsteps = 1,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int int_order = DEFAULT_int_order,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),

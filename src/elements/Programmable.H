@@ -36,6 +36,10 @@ namespace impactx::elements
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr amrex::ParticleReal DEFAULT_ds = 0;
+        static constexpr int DEFAULT_nslice = 1;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** This element can be programmed
          *
          * @param ds Segment length in m
@@ -43,9 +47,9 @@ namespace impactx::elements
          * @param name a user defined and not necessarily unique name of the element
          */
         Programmable (
-            amrex::ParticleReal ds=0.0,
-            int nslice=1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal ds = DEFAULT_ds,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
           : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
         {}

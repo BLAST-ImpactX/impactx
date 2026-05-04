@@ -43,6 +43,15 @@ namespace impactx::elements
         static constexpr auto type = "ChrPlasmaLens";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
+        static constexpr int DEFAULT_nslice = 1;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** An active cylindrically symmetric plasma lens with chromatic focusing
          *
          * The Hamiltonian is expanded through second order in the
@@ -66,14 +75,14 @@ namespace impactx::elements
         ChrPlasmaLens (
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),

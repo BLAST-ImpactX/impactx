@@ -43,6 +43,12 @@ namespace impactx::elements
         static constexpr auto type = "TaperedPL";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** A short segment of a nonlinear plasma lens with a transverse taper.
          *
          * @param k  integrated plasma lens (linear) focusing strength in m^(-1)
@@ -61,11 +67,11 @@ namespace impactx::elements
         TaperedPL (
             amrex::ParticleReal k,
             amrex::ParticleReal taper,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

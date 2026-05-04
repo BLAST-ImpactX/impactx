@@ -388,9 +388,10 @@ void init_elements(py::module& m)
         )
         .def(py::init<std::string, std::string, std::string, int>(),
              py::arg("name"),
-             py::arg("backend") = "default",
-             py::arg("encoding") = "g",
-             py::arg("period_sample_intervals") = 1,
+             py::arg("backend") = diagnostics::BeamMonitor::DEFAULT_backend,
+             py::arg("encoding") = diagnostics::BeamMonitor::DEFAULT_encoding,
+             py::arg("period_sample_intervals") =
+                 diagnostics::BeamMonitor::DEFAULT_period_sample_intervals,
              "This element writes the particle beam out to openPMD data."
         )
         .def_property_readonly("name",
@@ -464,8 +465,8 @@ void init_elements(py::module& m)
              [](Aperture const & ap) {
                  return element_name(
                     ap,
-                    std::make_pair("shape", ap.shape_name(ap.m_shape)),
-                    std::make_pair("action", ap.action_name(ap.m_action))
+                    std::make_pair("shape", amrex::getEnumNameString(ap.m_shape)),
+                    std::make_pair("action", amrex::getEnumNameString(ap.m_action))
                 );
              }
         )
@@ -474,8 +475,8 @@ void init_elements(py::module& m)
                 using namespace amrex::literals;
                 return element_dict(
                     ap,
-                    std::make_pair("shape", ap.shape_name(ap.m_shape)),
-                    std::make_pair("action", ap.action_name(ap.m_action)),
+                    std::make_pair("shape", amrex::getEnumNameString(ap.m_shape)),
+                    std::make_pair("action", amrex::getEnumNameString(ap.m_action)),
                     std::make_pair("aperture_x", 1_prt / ap.m_inv_aperture_x),
                     std::make_pair("aperture_y", 1_prt / ap.m_inv_aperture_y),
                     std::make_pair("repeat_x", ap.m_repeat_x),
@@ -498,62 +499,42 @@ void init_elements(py::module& m)
                  std::optional<std::string> name
              )
              {
-                 if (shape != "rectangular" && shape != "elliptical")
-                     throw std::runtime_error(R"(shape must be "rectangular" or "elliptical")");
-
-                 if (action != "transmit" && action != "absorb")
-                     throw std::runtime_error(R"(action must be "transmit" or "absorb")");
-
-                 Aperture::Shape const s = shape == "rectangular" ?
-                     Aperture::Shape::rectangular :
-                     Aperture::Shape::elliptical;
-                 Aperture::Action const a = action == "transmit" ?
-                     Aperture::Action::transmit :
-                     Aperture::Action::absorb;
+                 Aperture::Shape const s = amrex::getEnum<Aperture::Shape>(shape);
+                 Aperture::Action const a = amrex::getEnum<Aperture::Action>(action);
                  return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, s, a, dx, dy, rotation_degree, name);
              }),
              py::arg("aperture_x"),
              py::arg("aperture_y"),
-             py::arg("repeat_x") = 0,
-             py::arg("repeat_y") = 0,
-             py::arg("shift_odd_x") = false,
-             py::arg("shape") = "rectangular",
-             py::arg("action") = "transmit",
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("repeat_x") = Aperture::DEFAULT_repeat_x,
+             py::arg("repeat_y") = Aperture::DEFAULT_repeat_y,
+             py::arg("shift_odd_x") = Aperture::DEFAULT_shift_odd_x,
+             py::arg("shape") = amrex::getEnumNameString(Aperture::DEFAULT_shape),
+             py::arg("action") = amrex::getEnumNameString(Aperture::DEFAULT_action),
+             py::arg("dx") = Aperture::DEFAULT_dx,
+             py::arg("dy") = Aperture::DEFAULT_dy,
+             py::arg("rotation") = Aperture::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A short collimator element applying a transverse aperture boundary."
         )
         .def_property("shape",
             [](Aperture & ap)
             {
-                return ap.shape_name(ap.m_shape);
+                return amrex::getEnumNameString(ap.m_shape);
             },
             [](Aperture & ap, std::string const & shape)
             {
-                if (shape != "rectangular" && shape != "elliptical")
-                    throw std::runtime_error(R"(shape must be "rectangular" or "elliptical")");
-
-                ap.m_shape = shape == "rectangular" ?
-                    Aperture::Shape::rectangular :
-                    Aperture::Shape::elliptical;
+                ap.m_shape = amrex::getEnum<Aperture::Shape>(shape);
             },
             "aperture type (rectangular, elliptical)"
         )
         .def_property("action",
             [](Aperture & ap)
             {
-                return ap.action_name(ap.m_action);
+                return amrex::getEnumNameString(ap.m_action);
             },
             [](Aperture & ap, std::string const & action)
             {
-                if (action != "transmit" && action != "absorb")
-                    throw std::runtime_error(R"(action must be "transmit" or "absorb")");
-
-                ap.m_action = action == "transmit" ?
-                    Aperture::Action::transmit :
-                    Aperture::Action::absorb;
+                ap.m_action = amrex::getEnum<Aperture::Action>(action);
             },
             "action type (transmit, absorb)"
         )
@@ -610,12 +591,12 @@ void init_elements(py::module& m)
                 std::optional<std::string>
              >(),
              py::arg("ds"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = ChrDrift::DEFAULT_dx,
+             py::arg("dy") = ChrDrift::DEFAULT_dy,
+             py::arg("rotation") = ChrDrift::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ChrDrift::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ChrDrift::DEFAULT_aperture_y,
+             py::arg("nslice") = ChrDrift::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A Drift with chromatic effects included."
         )
@@ -656,13 +637,13 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("k"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("unit") = ChrQuad::DEFAULT_unit,
+             py::arg("dx") = ChrQuad::DEFAULT_dx,
+             py::arg("dy") = ChrQuad::DEFAULT_dy,
+             py::arg("rotation") = ChrQuad::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ChrQuad::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ChrQuad::DEFAULT_aperture_y,
+             py::arg("nslice") = ChrQuad::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A Quadrupole magnet with chromatic effects included."
         )
@@ -713,13 +694,13 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("k"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("unit") = ChrPlasmaLens::DEFAULT_unit,
+             py::arg("dx") = ChrPlasmaLens::DEFAULT_dx,
+             py::arg("dy") = ChrPlasmaLens::DEFAULT_dy,
+             py::arg("rotation") = ChrPlasmaLens::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ChrPlasmaLens::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ChrPlasmaLens::DEFAULT_aperture_y,
+             py::arg("nslice") = ChrPlasmaLens::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "An active Plasma Lens with chromatic effects included."
         )
@@ -772,12 +753,12 @@ void init_elements(py::module& m)
              py::arg("ds"),
              py::arg("ez"),
              py::arg("bz"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = ChrAcc::DEFAULT_dx,
+             py::arg("dy") = ChrAcc::DEFAULT_dy,
+             py::arg("rotation") = ChrAcc::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ChrAcc::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ChrAcc::DEFAULT_aperture_y,
+             py::arg("nslice") = ChrAcc::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A region of Uniform Acceleration, with chromatic effects included."
         )
@@ -834,12 +815,12 @@ void init_elements(py::module& m)
              py::arg("kx"),
              py::arg("ky"),
              py::arg("kt"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = ConstF::DEFAULT_dx,
+             py::arg("dy") = ConstF::DEFAULT_dy,
+             py::arg("rotation") = ConstF::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ConstF::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ConstF::DEFAULT_aperture_y,
+             py::arg("nslice") = ConstF::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A linear Constant Focusing element."
         )
@@ -930,27 +911,27 @@ void init_elements(py::module& m)
                  if (R <= 0.0)
                      throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
 
-                dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
-                dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
+                DipEdge::Model const fm = amrex::getEnum<DipEdge::Model>(model);
+                DipEdge::Location const fl = amrex::getEnum<DipEdge::Location>(location);
                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, modify_ref_part, dx, dy, rotation_degree, name);
             }),
             py::arg("psi"),
             py::arg("rc"),
             py::arg("g"),
-            py::arg("R") = 1,
-            py::arg("K0") = ablastr::constant::math::pi*ablastr::constant::math::pi/6.0,
-            py::arg("K1") = 0,
-            py::arg("K2") = 1.0,
-            py::arg("K3") = 1.0/6.0,
-            py::arg("K4") = 0,
-            py::arg("K5") = 0,
-            py::arg("K6") = 0,
-            py::arg("model") = "linear",
-            py::arg("location") = "entry",
-            py::arg("modify_ref_part") = false,
-            py::arg("dx") = 0,
-            py::arg("dy") = 0,
-            py::arg("rotation") = 0,
+            py::arg("R") = DipEdge::DEFAULT_R,
+            py::arg("K0") = DipEdge::DEFAULT_K0,
+            py::arg("K1") = DipEdge::DEFAULT_K1,
+            py::arg("K2") = DipEdge::DEFAULT_K2,
+            py::arg("K3") = DipEdge::DEFAULT_K3,
+            py::arg("K4") = DipEdge::DEFAULT_K4,
+            py::arg("K5") = DipEdge::DEFAULT_K5,
+            py::arg("K6") = DipEdge::DEFAULT_K6,
+            py::arg("model") = amrex::getEnumNameString(DipEdge::DEFAULT_model),
+            py::arg("location") = amrex::getEnumNameString(DipEdge::DEFAULT_location),
+            py::arg("modify_ref_part") = DipEdge::DEFAULT_modify_ref_part,
+            py::arg("dx") = DipEdge::DEFAULT_dx,
+            py::arg("dy") = DipEdge::DEFAULT_dy,
+            py::arg("rotation") = DipEdge::DEFAULT_rotation_degree,
             py::arg("name") = py::none(),
             "Edge focusing associated with bend entry or exit."
         )
@@ -1016,14 +997,14 @@ void init_elements(py::module& m)
         .def_property("model",
             [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_model); },
             [](DipEdge & dip_edge, std::string const & model) {
-                dip_edge.m_model = amrex::getEnum<dipedge::Model>(model);
+                dip_edge.m_model = amrex::getEnum<DipEdge::Model>(model);
             },
             "Fringe field model (linear or nonlinear)"
         )
         .def_property("location",
             [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_location); },
             [](DipEdge & dip_edge, std::string const & location) {
-                dip_edge.m_location = amrex::getEnum<dipedge::Location>(location);
+                dip_edge.m_location = amrex::getEnum<DipEdge::Location>(location);
             },
             "Fringe field location (entry or exit)"
         )
@@ -1049,13 +1030,11 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](QuadEdge const & quadedge) {
-                std::string const flag_str = quadedge.m_flag == QuadEdge::Location::entry ?
-                    "entry" : "exit";
                 return element_dict(
                     quadedge,
                     std::make_pair("k", quadedge.m_k),
                     std::make_pair("unit", quadedge.m_unit),
-                    std::make_pair("flag", flag_str)
+                    std::make_pair("flag", amrex::getEnumNameString(quadedge.m_flag))
                 );
             }
         )
@@ -1069,20 +1048,15 @@ void init_elements(py::module& m)
                 std::optional<std::string> name
              )
              {
-                 if (flag != "entry" && flag != "exit")
-                     throw std::runtime_error(R"(flag must be "entry" or "exit")");
-
-                 QuadEdge::Location const fl = flag == "entry" ?
-                                            QuadEdge::Location::entry :
-                                            QuadEdge::Location::exit;
+                 QuadEdge::Location const fl = amrex::getEnum<QuadEdge::Location>(flag);
                  return new QuadEdge(k, unit, fl, dx, dy, rotation_degree, name);
              }),
              py::arg("k"),
-             py::arg("unit") = 0,
-             py::arg("flag") = "entry",
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("unit") = QuadEdge::DEFAULT_unit,
+             py::arg("flag") = amrex::getEnumNameString(QuadEdge::DEFAULT_flag),
+             py::arg("dx") = QuadEdge::DEFAULT_dx,
+             py::arg("dy") = QuadEdge::DEFAULT_dy,
+             py::arg("rotation") = QuadEdge::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              R"(A thin quadrupole fringe field element. Flag must be "entry" or "exit".)"
         )
@@ -1123,12 +1097,12 @@ void init_elements(py::module& m)
                 std::optional<std::string>
              >(),
              py::arg("ds"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = Drift::DEFAULT_dx,
+             py::arg("dy") = Drift::DEFAULT_dy,
+             py::arg("rotation") = Drift::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = Drift::DEFAULT_aperture_x,
+             py::arg("aperture_y") = Drift::DEFAULT_aperture_y,
+             py::arg("nslice") = Drift::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A drift."
         )
@@ -1159,12 +1133,12 @@ void init_elements(py::module& m)
                 std::optional<std::string>
              >(),
              py::arg("ds"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = ExactDrift::DEFAULT_dx,
+             py::arg("dy") = ExactDrift::DEFAULT_dy,
+             py::arg("rotation") = ExactDrift::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ExactDrift::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ExactDrift::DEFAULT_aperture_y,
+             py::arg("nslice") = ExactDrift::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A Drift using the exact nonlinear map."
         )
@@ -1212,15 +1186,15 @@ void init_elements(py::module& m)
              py::arg("ds"),
              py::arg("k_normal"),
              py::arg("k_skew"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("int_order") = 2,
-             py::arg("mapsteps") = 5,
-             py::arg("nslice") = 1,
+             py::arg("unit") = ExactMultipole::DEFAULT_unit,
+             py::arg("dx") = ExactMultipole::DEFAULT_dx,
+             py::arg("dy") = ExactMultipole::DEFAULT_dy,
+             py::arg("rotation") = ExactMultipole::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ExactMultipole::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ExactMultipole::DEFAULT_aperture_y,
+             py::arg("int_order") = ExactMultipole::DEFAULT_int_order,
+             py::arg("mapsteps") = ExactMultipole::DEFAULT_mapsteps,
+             py::arg("nslice") = ExactMultipole::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A thick Multipole magnet using the exact nonlinear Hamiltonian."
         )
@@ -1283,15 +1257,15 @@ void init_elements(py::module& m)
              py::arg("ds"),
              py::arg("k_normal"),
              py::arg("k_skew"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("int_order") = 2,
-             py::arg("mapsteps") = 5,
-             py::arg("nslice") = 1,
+             py::arg("unit") = ExactCFbend::DEFAULT_unit,
+             py::arg("dx") = ExactCFbend::DEFAULT_dx,
+             py::arg("dy") = ExactCFbend::DEFAULT_dy,
+             py::arg("rotation") = ExactCFbend::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ExactCFbend::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ExactCFbend::DEFAULT_aperture_y,
+             py::arg("int_order") = ExactCFbend::DEFAULT_int_order,
+             py::arg("mapsteps") = ExactCFbend::DEFAULT_mapsteps,
+             py::arg("nslice") = ExactCFbend::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A thick combined function bending magnet using the exact nonlinear Hamiltonian."
         )
@@ -1356,15 +1330,15 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("k"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("int_order") = 2,
-             py::arg("mapsteps") = 5,
-             py::arg("nslice") = 1,
+             py::arg("unit") = ExactQuad::DEFAULT_unit,
+             py::arg("dx") = ExactQuad::DEFAULT_dx,
+             py::arg("dy") = ExactQuad::DEFAULT_dy,
+             py::arg("rotation") = ExactQuad::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ExactQuad::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ExactQuad::DEFAULT_aperture_y,
+             py::arg("int_order") = ExactQuad::DEFAULT_int_order,
+             py::arg("mapsteps") = ExactQuad::DEFAULT_mapsteps,
+             py::arg("nslice") = ExactQuad::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A Quadrupole magnet using the exact nonlinear Hamiltonian."
         )
@@ -1444,13 +1418,13 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("phi"),
-             py::arg("B") = 0.0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("B") = ExactSbend::DEFAULT_B,
+             py::arg("dx") = ExactSbend::DEFAULT_dx,
+             py::arg("dy") = ExactSbend::DEFAULT_dy,
+             py::arg("rotation") = ExactSbend::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = ExactSbend::DEFAULT_aperture_x,
+             py::arg("aperture_y") = ExactSbend::DEFAULT_aperture_y,
+             py::arg("nslice") = ExactSbend::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "An ideal sector bend using the exact nonlinear map.  When B = 0, the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B."
         )
@@ -1494,13 +1468,11 @@ void init_elements(py::module& m)
         )
         .def("to_dict",
             [](Kicker const & kicker) {
-                std::string const unit_str = kicker.m_unit == Kicker::UnitSystem::Tm ?
-                    "T-m" : "dimensionless";
                 return element_dict(
                     kicker,
                     std::make_pair("xkick", kicker.m_xkick),
                     std::make_pair("ykick", kicker.m_ykick),
-                    std::make_pair("unit", unit_str)
+                    std::make_pair("unit", Kicker::unit_name(kicker.m_unit))
                 );
             }
         )
@@ -1514,20 +1486,15 @@ void init_elements(py::module& m)
                 std::optional<std::string> name
              )
              {
-                 if (unit != "dimensionless" && unit != "T-m")
-                     throw std::runtime_error(R"(unit must be "dimensionless" or "T-m")");
-
-                 Kicker::UnitSystem const u = unit == "dimensionless" ?
-                                            Kicker::UnitSystem::dimensionless :
-                                            Kicker::UnitSystem::Tm;
+                 Kicker::UnitSystem const u = Kicker::unit_from_name(unit);
                  return new Kicker(xkick, ykick, u, dx, dy, rotation_degree, name);
              }),
-                          py::arg("xkick"),
+             py::arg("xkick"),
              py::arg("ykick"),
-             py::arg("unit") = "dimensionless",
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("unit") = Kicker::unit_name(Kicker::DEFAULT_unit),
+             py::arg("dx") = Kicker::DEFAULT_dx,
+             py::arg("dy") = Kicker::DEFAULT_dy,
+             py::arg("rotation") = Kicker::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              R"(A thin transverse kicker element. Kicks are for unit "dimensionless" or in "T-m".)"
         )
@@ -1580,9 +1547,9 @@ void init_elements(py::module& m)
              py::arg("multipole"),
              py::arg("K_normal"),
              py::arg("K_skew"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("dx") = Multipole::DEFAULT_dx,
+             py::arg("dy") = Multipole::DEFAULT_dy,
+             py::arg("rotation") = Multipole::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A general thin multipole element."
         )
@@ -1677,9 +1644,9 @@ void init_elements(py::module& m)
              >(),
              py::arg("knll"),
              py::arg("cnll"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("dx") = NonlinearLens::DEFAULT_dx,
+             py::arg("dy") = NonlinearLens::DEFAULT_dy,
+             py::arg("rotation") = NonlinearLens::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "Single short segment of the nonlinear magnetic insert element."
         )
@@ -1740,9 +1707,9 @@ void init_elements(py::module& m)
                 std::optional<std::string>
              >(),
              py::arg("angle"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("dx") = PlaneXYRot::DEFAULT_dx,
+             py::arg("dy") = PlaneXYRot::DEFAULT_dy,
+             py::arg("rotation") = PlaneXYRot::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A rotation in the x-y plane."
         )
@@ -1803,26 +1770,22 @@ void init_elements(py::module& m)
                  std::optional<std::string> name
              )
              {
-                 PolygonAperture::Action pa_action;
-                 if (action == "transmit") {
-                    pa_action = PolygonAperture::Action::transmit;
-                 } else if (action == "absorb") {
-                    pa_action = PolygonAperture::Action::absorb;
-                 } else
-                     throw std::runtime_error(R"(action must be "transmit" or "absorb")");
-
-                 return new PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y, shift_odd_x, pa_action, dx, dy, rotation_degree, name);
+                 return new PolygonAperture(
+                     vertices_x, vertices_y, min_radius2, repeat_x, repeat_y, shift_odd_x,
+                     amrex::getEnum<PolygonAperture::Action>(action),
+                     dx, dy, rotation_degree, name
+                 );
              }),
              py::arg("vertices_x"),
              py::arg("vertices_y"),
-             py::arg("min_radius2")=0.0,
-             py::arg("repeat_x") = 0,
-             py::arg("repeat_y") = 0,
-             py::arg("shift_odd_x") = false,
-             py::arg("action") = "transmit",
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("min_radius2") = PolygonAperture::DEFAULT_min_radius2,
+             py::arg("repeat_x") = PolygonAperture::DEFAULT_repeat_x,
+             py::arg("repeat_y") = PolygonAperture::DEFAULT_repeat_y,
+             py::arg("shift_odd_x") = PolygonAperture::DEFAULT_shift_odd_x,
+             py::arg("action") = amrex::getEnumNameString(PolygonAperture::DEFAULT_action),
+             py::arg("dx") = PolygonAperture::DEFAULT_dx,
+             py::arg("dy") = PolygonAperture::DEFAULT_dy,
+             py::arg("rotation") = PolygonAperture::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A short collimator element described by a polygon with vertices given by their x and y coordinates."
         )
@@ -1833,12 +1796,7 @@ void init_elements(py::module& m)
             },
             [](PolygonAperture & ap, std::string const & action)
             {
-                if (action != "transmit" && action != "absorb")
-                    throw std::runtime_error(R"(action must be "transmit" or "absorb")");
-
-                ap.m_action = action == "transmit" ?
-                    PolygonAperture::Action::transmit :
-                    PolygonAperture::Action::absorb;
+                ap.m_action = amrex::getEnum<PolygonAperture::Action>(action);
             },
             "action type (transmit, absorb)"
         )
@@ -1887,8 +1845,8 @@ void init_elements(py::module& m)
                  int,
                  std::optional<std::string>
              >(),
-             py::arg("ds") = 0.0,
-             py::arg("nslice") = 1,
+             py::arg("ds") = Programmable::DEFAULT_ds,
+             py::arg("nslice") = Programmable::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A programmable beam optics element."
         )
@@ -1959,12 +1917,12 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("k"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = Quad::DEFAULT_dx,
+             py::arg("dy") = Quad::DEFAULT_dy,
+             py::arg("rotation") = Quad::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = Quad::DEFAULT_aperture_x,
+             py::arg("aperture_y") = Quad::DEFAULT_aperture_y,
+             py::arg("nslice") = Quad::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A Quadrupole magnet."
         )
@@ -2024,13 +1982,13 @@ void init_elements(py::module& m)
              py::arg("phase"),
              py::arg("cos_coefficients"),
              py::arg("sin_coefficients"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 10,
-             py::arg("nslice") = 1,
+             py::arg("dx") = RFCavity::DEFAULT_dx,
+             py::arg("dy") = RFCavity::DEFAULT_dy,
+             py::arg("rotation") = RFCavity::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = RFCavity::DEFAULT_aperture_x,
+             py::arg("aperture_y") = RFCavity::DEFAULT_aperture_y,
+             py::arg("mapsteps") = RFCavity::DEFAULT_mapsteps,
+             py::arg("nslice") = RFCavity::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "An RF cavity."
         )
@@ -2091,12 +2049,12 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("rc"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = Sbend::DEFAULT_dx,
+             py::arg("dy") = Sbend::DEFAULT_dy,
+             py::arg("rotation") = Sbend::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = Sbend::DEFAULT_aperture_x,
+             py::arg("aperture_y") = Sbend::DEFAULT_aperture_y,
+             py::arg("nslice") = Sbend::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "An ideal sector bend."
         )
@@ -2143,12 +2101,12 @@ void init_elements(py::module& m)
              py::arg("ds"),
              py::arg("rc"),
              py::arg("k"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = CFbend::DEFAULT_dx,
+             py::arg("dy") = CFbend::DEFAULT_dy,
+             py::arg("rotation") = CFbend::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = CFbend::DEFAULT_aperture_x,
+             py::arg("aperture_y") = CFbend::DEFAULT_aperture_y,
+             py::arg("nslice") = CFbend::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "An ideal combined function bend (sector bend with quadrupole component)."
         )
@@ -2196,9 +2154,9 @@ void init_elements(py::module& m)
              >(),
              py::arg("V"),
              py::arg("k"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("dx") = Buncher::DEFAULT_dx,
+             py::arg("dy") = Buncher::DEFAULT_dy,
+             py::arg("rotation") = Buncher::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A short linear RF cavity element at zero-crossing for bunching."
         )
@@ -2249,10 +2207,10 @@ void init_elements(py::module& m)
              >(),
              py::arg("V"),
              py::arg("freq"),
-             py::arg("phase") = -90.0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("phase") = ShortRF::DEFAULT_phase,
+             py::arg("dx") = ShortRF::DEFAULT_dx,
+             py::arg("dy") = ShortRF::DEFAULT_dy,
+             py::arg("rotation") = ShortRF::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A short RF cavity element."
         )
@@ -2316,14 +2274,14 @@ void init_elements(py::module& m)
              py::arg("bscale"),
              py::arg("cos_coefficients"),
              py::arg("sin_coefficients"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 10,
-             py::arg("nslice") = 1,
+             py::arg("unit") = SoftSolenoid::DEFAULT_unit,
+             py::arg("dx") = SoftSolenoid::DEFAULT_dx,
+             py::arg("dy") = SoftSolenoid::DEFAULT_dy,
+             py::arg("rotation") = SoftSolenoid::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = SoftSolenoid::DEFAULT_aperture_x,
+             py::arg("aperture_y") = SoftSolenoid::DEFAULT_aperture_y,
+             py::arg("mapsteps") = SoftSolenoid::DEFAULT_mapsteps,
+             py::arg("nslice") = SoftSolenoid::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A soft-edge solenoid."
         )
@@ -2406,7 +2364,7 @@ void init_elements(py::module& m)
          >(),
              py::arg("distribution"),
              py::arg("openpmd_path"),
-             py::arg("active_once") = true,
+             py::arg("active_once") = Source::DEFAULT_active_once,
              py::arg("name") = py::none(),
              "A particle source."
         )
@@ -2460,12 +2418,12 @@ void init_elements(py::module& m)
              >(),
              py::arg("ds"),
              py::arg("ks"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("nslice") = 1,
+             py::arg("dx") = Sol::DEFAULT_dx,
+             py::arg("dy") = Sol::DEFAULT_dy,
+             py::arg("rotation") = Sol::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = Sol::DEFAULT_aperture_x,
+             py::arg("aperture_y") = Sol::DEFAULT_aperture_y,
+             py::arg("nslice") = Sol::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "An ideal hard-edge Solenoid magnet."
         )
@@ -2591,13 +2549,13 @@ void init_elements(py::module& m)
              py::arg("gscale"),
              py::arg("cos_coefficients"),
              py::arg("sin_coefficients"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
-             py::arg("aperture_x") = 0,
-             py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 10,
-             py::arg("nslice") = 1,
+             py::arg("dx") = SoftQuadrupole::DEFAULT_dx,
+             py::arg("dy") = SoftQuadrupole::DEFAULT_dy,
+             py::arg("rotation") = SoftQuadrupole::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = SoftQuadrupole::DEFAULT_aperture_x,
+             py::arg("aperture_y") = SoftQuadrupole::DEFAULT_aperture_y,
+             py::arg("mapsteps") = SoftQuadrupole::DEFAULT_mapsteps,
+             py::arg("nslice") = SoftQuadrupole::DEFAULT_nslice,
              py::arg("name") = py::none(),
              "A soft-edge quadrupole."
         )
@@ -2665,9 +2623,9 @@ void init_elements(py::module& m)
              >(),
              py::arg("theta"),
              py::arg("rc"),
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("dx") = ThinDipole::DEFAULT_dx,
+             py::arg("dy") = ThinDipole::DEFAULT_dy,
+             py::arg("rotation") = ThinDipole::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "A thin kick model of a dipole bend."
         )
@@ -2726,10 +2684,10 @@ void init_elements(py::module& m)
              >(),
              py::arg("k"),
              py::arg("taper"),
-             py::arg("unit") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("unit") = TaperedPL::DEFAULT_unit,
+             py::arg("dx") = TaperedPL::DEFAULT_dx,
+             py::arg("dy") = TaperedPL::DEFAULT_dy,
+             py::arg("rotation") = TaperedPL::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              R"doc(A thin nonlinear plasma lens with transverse (horizontal) taper
 
@@ -2784,10 +2742,10 @@ void init_elements(py::module& m)
                 std::optional<std::string>
              >(),
              py::arg("R"),
-             py::arg("ds") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("ds") = LinearMap::DEFAULT_ds,
+             py::arg("dx") = LinearMap::DEFAULT_dx,
+             py::arg("dy") = LinearMap::DEFAULT_dy,
+             py::arg("rotation") = LinearMap::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "(A user-provided linear map, represented as a 6x6 transport matrix.)"
         )
@@ -2842,10 +2800,10 @@ void init_elements(py::module& m)
              >(),
              py::arg("v"),
              py::arg("A"),
-             py::arg("ds") = 0,
-             py::arg("dx") = 0,
-             py::arg("dy") = 0,
-             py::arg("rotation") = 0,
+             py::arg("ds") = SpinMap::DEFAULT_ds,
+             py::arg("dx") = SpinMap::DEFAULT_dx,
+             py::arg("dy") = SpinMap::DEFAULT_dy,
+             py::arg("rotation") = SpinMap::DEFAULT_rotation_degree,
              py::arg("name") = py::none(),
              "(A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)"
         )

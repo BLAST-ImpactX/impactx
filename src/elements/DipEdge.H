@@ -18,6 +18,8 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <ablastr/constant.H>
+
 #include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -30,18 +32,6 @@
 
 namespace impactx::elements
 {
-    namespace dipedge
-    {
-        AMREX_ENUM(Model,
-            linear,   //! for the linear fringe field model
-            nonlinear //! for the 6th order fringe field model
-        );
-        AMREX_ENUM(Location,
-            entry, //! for leading (entry) fringe field
-            exit  //! for trailing (exit) fringe field
-        );
-    }
-
     struct DipEdge
     : public mixin::Named,
       public mixin::BeamOptic<DipEdge>,
@@ -56,6 +46,33 @@ namespace impactx::elements
     {
         static constexpr auto type = "DipEdge";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        AMREX_ENUM_IN_CLASS(Model,
+            linear,   //! for the linear fringe field model
+            nonlinear, //! for the 6th order fringe field model
+        );
+
+        AMREX_ENUM_IN_CLASS(Location,
+            entry,  //! for leading (entry) fringe field
+            exit,   //! for trailing (exit) fringe field
+        );
+
+        static constexpr amrex::ParticleReal DEFAULT_R = 1;
+        static constexpr amrex::ParticleReal DEFAULT_K0 = ablastr::constant::math::pi *
+            ablastr::constant::math::pi / 6.0;
+        static constexpr amrex::ParticleReal DEFAULT_K1 = 0;
+        static constexpr amrex::ParticleReal DEFAULT_K2 = 1;
+        static constexpr amrex::ParticleReal DEFAULT_K3 = 1.0 / 6.0;
+        static constexpr amrex::ParticleReal DEFAULT_K4 = 0;
+        static constexpr amrex::ParticleReal DEFAULT_K5 = 0;
+        static constexpr amrex::ParticleReal DEFAULT_K6 = 0;
+        static constexpr Model DEFAULT_model = Model::linear;
+        static constexpr Location DEFAULT_location = Location::entry;
+        static constexpr bool DEFAULT_modify_ref_part = false;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** Edge focusing associated with bend entry or exit
          *
@@ -89,21 +106,21 @@ namespace impactx::elements
             amrex::ParticleReal psi,
             amrex::ParticleReal rc,
             amrex::ParticleReal g,
-            amrex::ParticleReal R,
-            amrex::ParticleReal K0,
-            amrex::ParticleReal K1,
-            amrex::ParticleReal K2,
-            amrex::ParticleReal K3,
-            amrex::ParticleReal K4,
-            amrex::ParticleReal K5,
-            amrex::ParticleReal K6,
-            dipedge::Model model,
-            dipedge::Location location,
-            bool modify_ref_part = false,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal R = DEFAULT_R,
+            amrex::ParticleReal K0 = DEFAULT_K0,
+            amrex::ParticleReal K1 = DEFAULT_K1,
+            amrex::ParticleReal K2 = DEFAULT_K2,
+            amrex::ParticleReal K3 = DEFAULT_K3,
+            amrex::ParticleReal K4 = DEFAULT_K4,
+            amrex::ParticleReal K5 = DEFAULT_K5,
+            amrex::ParticleReal K6 = DEFAULT_K6,
+            Model model = DEFAULT_model,
+            Location location = DEFAULT_location,
+            bool modify_ref_part = DEFAULT_modify_ref_part,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
@@ -120,9 +137,9 @@ namespace impactx::elements
         {
             m_psi = -m_psi;
             m_K2 = -m_K2;
-            m_location = (m_location == dipedge::Location::entry)
-                ? dipedge::Location::exit
-                : dipedge::Location::entry;
+            m_location = (m_location == Location::entry)
+                ? Location::exit
+                : Location::entry;
         }
 
         /** Push all particles */
@@ -165,7 +182,7 @@ namespace impactx::elements
             amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
 
             // the scale constant specifying entry or exit
-            amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
+            amrex::ParticleReal const loc = m_location == Location::entry ? 1_prt : -1_prt;
 
             m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
             m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
@@ -219,7 +236,7 @@ namespace impactx::elements
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            if (m_model == dipedge::Model::linear) {
+            if (m_model == Model::linear) {
                // apply linear model
                px = px + m_R21 * x;
                py = py + m_R43 * y;
@@ -309,9 +326,9 @@ namespace impactx::elements
             [[maybe_unused]] amrex::ParticleReal const pz = refpart.pz;
             [[maybe_unused]] amrex::ParticleReal const pt = refpart.pt;
 
-            if (m_modify_ref_part && m_model == dipedge::Model::nonlinear) {
+            if (m_modify_ref_part && m_model == Model::nonlinear) {
                 // calculate expensive terms
-                amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
+                amrex::ParticleReal const loc = m_location == Location::entry ? 1_prt : -1_prt;
                 auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
                 amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
                 amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
@@ -385,8 +402,8 @@ namespace impactx::elements
         amrex::ParticleReal m_K4; //! fringe field integral
         amrex::ParticleReal m_K5; //! fringe field integral
         amrex::ParticleReal m_K6; //! fringe field integral
-        dipedge::Model m_model; //! fringe field model: linear or nonlinear
-        dipedge::Location m_location; //! fringe field location: entry, or exit
+        Model m_model; //! fringe field model: linear or nonlinear
+        Location m_location; //! fringe field location: entry, or exit
         bool m_modify_ref_part; //! apply fringe field to reference particle (true/false)
 
       private:

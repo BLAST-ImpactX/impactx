@@ -19,6 +19,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
@@ -42,23 +43,25 @@ namespace impactx::elements
         static constexpr auto type = "Aperture";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        // TODO: make AMREX_ENUM and simplify @see shape_name implementation with it
-        enum Shape
-        {
-            rectangular,
-            elliptical
-        };
-        enum Action
-        {
-            transmit,
-            absorb
-        };
+        AMREX_ENUM_IN_CLASS(Shape,
+            rectangular,  //! rectangular aperture boundary
+            elliptical,   //! elliptical aperture boundary
+        );
 
-        static std::string
-        shape_name (Shape const & shape);
+        AMREX_ENUM_IN_CLASS(Action,
+            transmit,  //! transmit particles inside the aperture
+            absorb,    //! absorb particles inside the aperture
+        );
 
-        static std::string
-        action_name (Action const & action);
+        static constexpr amrex::ParticleReal DEFAULT_repeat_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_repeat_y = 0;
+        static constexpr bool DEFAULT_shift_odd_x = false;
+        static constexpr Shape DEFAULT_shape = Shape::rectangular;
+        static constexpr Action DEFAULT_action = Action::transmit;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A thin collimator element that applies a transverse aperture boundary.
          *  Particles outside the boundary are considered lost.
@@ -78,15 +81,15 @@ namespace impactx::elements
         Aperture (
             amrex::ParticleReal aperture_x,
             amrex::ParticleReal aperture_y,
-            amrex::ParticleReal repeat_x,
-            amrex::ParticleReal repeat_y,
-            bool shift_odd_x,
-            Shape shape,
-            Action action,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal repeat_x = DEFAULT_repeat_x,
+            amrex::ParticleReal repeat_y = DEFAULT_repeat_y,
+            bool shift_odd_x = DEFAULT_shift_odd_x,
+            Shape shape = DEFAULT_shape,
+            Action action = DEFAULT_action,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

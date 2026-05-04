@@ -31,6 +31,9 @@ namespace impactx::elements
         static constexpr auto type = "Source";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr bool DEFAULT_active_once = true;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** A particle source
          *
          * @param distribution Must read "openPMD" for this constructor
@@ -41,8 +44,8 @@ namespace impactx::elements
         Source (
             std::string distribution,
             std::string openpmd_path,
-            bool active_once = true,
-            std::optional<std::string> name = std::nullopt
+            bool active_once = DEFAULT_active_once,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           m_distribution(distribution),

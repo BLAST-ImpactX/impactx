@@ -42,6 +42,7 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** An exact pole face rotation in the x-z plane, from a frame
          *  in which the reference orbit has angle phi_in with the z-axis,
@@ -55,7 +56,7 @@ namespace impactx::elements
         PRot (
             amrex::ParticleReal phi_in,
             amrex::ParticleReal phi_out,
-            std::optional<std::string> name = std::nullopt
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           m_phi_in(phi_in * degree2rad),

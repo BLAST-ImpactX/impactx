@@ -46,6 +46,12 @@ namespace impactx::elements
         static constexpr auto type = "SpinMap";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr amrex::ParticleReal DEFAULT_ds = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** A thin element that applies a user-provided spin map M
          *  to the spin 3-vector (sx, sy, sz).  The map M is an
          *  orthogonal transformation expressed in Lie-algebraic
@@ -63,11 +69,11 @@ namespace impactx::elements
         SpinMap (
             Vector3 const & v,
             Map3x6 const & A,
-            amrex::ParticleReal ds = 0,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal ds = DEFAULT_ds,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree)

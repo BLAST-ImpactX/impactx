@@ -6,6 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
+import argparse
 import glob
 import re
 
@@ -42,12 +43,20 @@ def read_time_series(file_pattern):
     )  # .set_index('id')
 
 
+# options to run this script
+parser = argparse.ArgumentParser(description="Plot the FODO benchmark.")
+parser.add_argument(
+    "--save-png", action="store_true", help="non-interactive run: save to PNGs"
+)
+args = parser.parse_args()
+
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+first_step = list(series.iterations)[0]
+initial = series.iterations[first_step].particles["beam"].to_df()
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 
-beta_ref = series.iterations[1].particles["beam"].get_attribute("beta_ref")
+beta_ref = series.iterations[first_step].particles["beam"].get_attribute("beta_ref")
 
 # columns in rbc file
 # step s mean_x min_x max_x mean_y min_y max_y mean_t min_t max_t sigma_x sigma_y sigma_t mean_px min_px max_px mean_py min_py max_py mean_pt min_pt max_pt sigma_px sigma_py sigma_pt emittance_x emittance_y emittance_t alpha_x alpha_y alpha_t beta_x beta_y beta_t dispersion_x dispersion_px dispersion_y dispersion_py emittance_xn emittance_yn emittance_tn charge_C
@@ -72,70 +81,80 @@ sigma_pt = rbc["sigma_pt"]
 
 charge = rbc["charge_C"] / scipy.constants.eV
 
-plt.figure()
-plt.suptitle("sigmas vs. s")
-plt.subplot(221)
-plt.plot(s, sigma_x, label="sigma_x")
-plt.legend(loc="best")
-plt.subplot(222)
-plt.plot(s, sigma_y, label="sigma_y")
-plt.legend(loc="best")
-plt.subplot(223)
-plt.plot(s, sigma_t, label="sigma_t")
-plt.legend(loc="best")
-plt.subplot(224)
-plt.plot(s, sigma_pt, label="sigma_pt")
-plt.legend(loc="best")
+f, ax = plt.subplots(2, 2, sharex="row")
+#f.set_figheight(9)
+ax[0, 0].set_title(r"$\sigma_x$")
+ax[0, 0].plot(s, sigma_x*1000.0)
+#ax[0, 0].set_xlabel("s [m]")
+ax[0, 0].set_ylabel(r"$\sigma_x$ [mm]")
 
-plt.figure()
-plt.title("charge")
-plt.plot(s, charge, label="charge")
-plt.legend(loc="best")
+ax[0, 1].set_title(r"$\sigma_y$")
+ax[0, 1].plot(s, sigma_y*1000.0)
+#ax[0, 1].set_xlabel("s [m]")
+ax[0, 1].set_ylabel(r"$\sigma_y$ [mm]")
 
-f, ax = plt.subplots(3, 2)
-ax[0, 0].plot(s, min_x, label="min x")
-ax[0, 0].legend(loc="best")
+ax[1, 0].set_title(r"$\sigma_t$")
+ax[1, 0].plot(s, sigma_t, label=r"$sigma_t$ [m]")
+ax[1, 0].set_xlabel("s [m]")
+ax[1, 0].set_ylabel(r"$\sigma_t$ [m]")
 
-ax[0, 1].plot(s, max_x, label="max x")
-ax[0, 1].legend(loc="best")
+ax[1, 1].set_title(r"$\sigma_{pt}$")
+ax[1, 1].plot(s, sigma_pt*1000.0, label="sigma_pt")
+ax[1, 1].set_ylabel(r"$\sigma_{pt} \, [\times 1000]$")
+ax[1, 1].set_xlabel("s [m]")
 
-ax[1, 0].plot(s, min_y, label="min y")
-ax[1, 0].legend(loc="best")
+plt.tight_layout()
 
-ax[1, 1].plot(s, max_y, label="max y")
-ax[1, 1].legend(loc="best")
+if args.save_png:
+    plt.savefig("simple_booster_sigma.png")
+else:
+    plt.show()
 
-ax[2, 0].plot(s, min_t * beta_ref, label="min z")
-ax[2, 0].legend(loc="best")
+f, ax = plt.subplots(3, 2, figsize=(9.4, 7.2), sharex="row", sharey="row")
 
-ax[2, 1].plot(s, max_t * beta_ref, label="max z")
-ax[2, 1].legend(loc="best")
-
-
-f, ax = plt.subplots(3, 2)
-
-ax[0, 0].plot(
-    initial["position_x"], initial["momentum_x"], ".", label="initial x vs. px"
+ax[0, 0].set_title("x vs. px initial")
+ax[0, 0].scatter(
+    initial["position_x"]*1000, initial["momentum_x"]*1000, label="initial x vs. px"
 )
-ax[0, 0].legend(loc="best")
+ax[0, 0].set_xlabel("x [mm]")
+ax[0, 0].set_ylabel("px [x1000]")
+#ax[0, 0].legend(loc="best")
 
-ax[0, 1].plot(final["position_x"], final["momentum_x"], ".", label="final x vs. px")
-ax[0, 1].legend(loc="best")
+ax[0, 1].set_title("x vs. px final")
+ax[0, 1].scatter(final["position_x"]*1000, final["momentum_x"]*1000, label="final x vs. px")
+ax[0, 1].set_xlabel("x [mm]")
+#ax[0, 0].set_ylabel("px [x1000]")
+#ax[0, 1].legend(loc="best")
 
-ax[1, 0].plot(
-    initial["position_y"], initial["momentum_y"], ".", label="initial y vs. py"
+ax[1, 0].set_title("y vs. py initial")
+ax[1, 0].scatter(
+    initial["position_y"]*1000, initial["momentum_y"]*1000, label="initial y vs. py"
 )
-ax[1, 0].legend(loc="best")
+ax[1, 0].set_xlabel("y [mm]")
+ax[1, 0].set_ylabel("py [x1000]")
+#ax[1, 0].legend(loc="best")
 
-ax[1, 1].plot(final["position_y"], final["momentum_y"], ".", label="final y vs. py")
-ax[1, 1].legend(loc="best")
+ax[1, 1].set_title("y vs. py final")
+ax[1, 1].scatter(final["position_y"]*1000, final["momentum_y"]*1000, label="final y vs. py")
+ax[1, 1].set_xlabel("y [mm]")
+#ax[1, 1].legend(loc="best")
 
-ax[2, 0].plot(
-    initial["position_t"], initial["momentum_t"], ".", label="initial t vs. pt"
+ax[2, 0].set_title("t vs. pt initial")
+ax[2, 0].scatter(
+    initial["position_t"], initial["momentum_t"]*1000, label="initial t vs. pt"
 )
-ax[2, 0].legend(loc="best")
+ax[2, 0].set_xlabel("t [m]")
+ax[2, 0].set_ylabel("pt [x1000]")
+#ax[2, 0].legend(loc="best")
 
-ax[2, 1].plot(final["position_t"], final["momentum_t"], ".", label="final t vs. pt")
-ax[2, 1].legend(loc="best")
+ax[2, 1].set_title("t vs. pt final")
+ax[2, 1].scatter(final["position_t"], final["momentum_t"]*1000, label="final t vs. pt")
+ax[2, 1].set_xlabel("t [m]")
+#ax[2, 1].legend(loc="best")
 
-plt.show()
+plt.tight_layout()
+
+if args.save_png:
+    plt.savefig("simple_booster_scatter.png")
+else:
+    plt.show()

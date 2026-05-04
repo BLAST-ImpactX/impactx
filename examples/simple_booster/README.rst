@@ -62,7 +62,12 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
           :language: python3
           :caption: You can copy this file from ``examples/simple_booster/run_simple_booster.py``. The file `booster_impactx_lattice.py` from the same directory is also required.
 
+   .. tab-item:: MAD-X: Script
 
+       .. literalinclude:: sbbooster-cooked-rfon.madx
+          :language: text
+          :caption: Original MAD-X lattice file that describes the
+		    simple Booster model, available at ``examples/simple_booster/sbbooster-cooked-rfon.madx``.
 
 Analyze
 -------
@@ -71,9 +76,10 @@ We run the following script to analyze correctness:
 
 .. dropdown:: Script ``analysis_booster_simple.py``
 
-   .. literalinclude:: analysis_booster_simple.py
+   .. literalinclude:: analysis_simple_booster.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo/analysis_booster_simple.py``.
+
 
 The second moments of the transverse particle distribution after the FODO cell
 should coincide with the second moments of the particle distribution
@@ -91,124 +97,27 @@ You can run the following script to visualize the beam evolution over time:
       :language: python3
       :caption: You can copy this file from ``examples/fodo/plot_simple_booster.py``.
 
-.. figure:: https://user-images.githubusercontent.com/1353258/180287840-8561f6fd-278f-4856-abd8-04fbdb78c8ff.png
-   :alt: focusing, defocusing and preserved emittance in our FODO cell benchmark.
+.. figure:: simple_booster_sigma.png
+   :alt: beam sigmas as a function of s
 
-   FODO transversal beam width and emittance evolution
+   Evolution of beam sigmas over two turns in the simple Booster model.
 
-.. figure:: https://user-images.githubusercontent.com/1353258/180287845-eb0210a7-2500-4aa9-844c-67fb094329d3.png
-   :alt: focusing, defocusing and phase space rotation in our FODO cell benchmark.
+.. figure:: simple_booster_scatter.png
+   :alt: Phase space evolution in the simple Booster example.
 
-   FODO transversal beam width and phase space evolution
-
-
-.. _examples-fodo-envelope:
-
-FODO Cell Using Envelope Tracking
-=================================
-
-This identical to the FODO example, except that envelope tracking is used instead of particle tracking.
-
-Stable FODO cell with a zero-current phase advance of 67.8 degrees.
-
-The matched Twiss parameters at entry are:
-
-* :math:`\beta_\mathrm{x} = 2.82161941` m
-* :math:`\alpha_\mathrm{x} = -1.59050035`
-* :math:`\beta_\mathrm{y} = 2.82161941` m
-* :math:`\alpha_\mathrm{y} = 1.59050035`
-
-We use a 2 GeV electron beam with initial unnormalized rms emittance of 2 nm.
-
-The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected
-due to$
-
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+   Simple Booster initial and final phase space.
 
 
-Run
----
+Lattice Survey
+--------------
 
-This example can be run **either** as:
+Generate a survey of the layout of the Simple Booster machine
 
-* **Python** script: ``python3 run_fodo_envelope.py`` or
-* ImpactX **executable** using an input file: ``impactx input_fodo_envelope.in``
+.. dropdown:: Script ``plot_simple_booster_survey.py``
 
-For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
-
-.. tab-set::
-
-   .. tab-item:: Python: Script
-
-       .. literalinclude:: run_fodo_envelope.py
-          :language: python3
-          :caption: You can copy this file from ``examples/fodo/run_fodo_envelope.py``.
-
-   .. tab-item:: Executable: Input File
-
-       .. literalinclude:: input_fodo_envelope.in
-          :language: ini
-          :caption: You can copy this file from ``examples/fodo/input_fodo_envelope.in``.
-
-
-Analyze
--------
-
-We run the following script to analyze correctness:
-
-.. dropdown:: Script ``analysis_fodo_envelope.py``
-
-   .. literalinclude:: analysis_fodo_envelope.py
+   .. literalinclude:: plot_simple_booster_survey.py
       :language: python3
-      :caption: You can copy this file from ``examples/fodo/analysis_fodo_envelope.py``.
+      :caption: You can copy this file from ``examples/fodo/plot_simple_booster_survey.py``.
 
-
-.. _examples-fodo-exact:
-
-FODO Cell Using Nonlinear Tracking
-===================================
-
-This is identical to the example ``examples-fodo``, except that fully nonlinear tracking is used based on the exact relativistic Hamiltonian.
-
-The kinematic nonlinear effects are essentially negligible, so this is primarily a test that the nonlinear elements correctly reproduce the results of linear tracking.
-
-The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected due to
-noise due to the finite particle population.
-
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
-
-
-Run
----
-
-This example can be run **either** as:
-
-* **Python** script: ``python3 run_fodo_exact.py`` or
-* ImpactX **executable** using an input file: ``impactx input_fodo_exact.in``
-
-For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
-
-.. tab-set::
-
-   .. tab-item:: Python: Script
-
-       .. literalinclude:: run_fodo_exact.py
-          :language: python3
-          :caption: You can copy this file from ``examples/fodo/run_fodo_exact.py``.
-
-   .. tab-item:: Executable: Input File
-
-       .. literalinclude:: input_fodo_exact.in
-          :language: ini
-          :caption: You can copy this file from ``examples/fodo/input_fodo_exact.in``.
-
-
-Analyze
-
-We run the following script to analyze correctness:
-
-.. dropdown:: Script ``analysis_fodo_exact.py``
-
-   .. literalinclude:: analysis_fodo_exact.py
-      :language: python3
-      :caption: You can copy this file from ``examples/fodo/analysis_fodo_exact.py``.
+.. figure:: simple_booster_survey.png
+   :alt: Simple Booster lattice elements layout

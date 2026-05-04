@@ -51,7 +51,7 @@ booster_lattice = get_lattice()
 total_s = sum(element.ds for element in booster_lattice)
 print(f"Read Booster lattice, {len(booster_lattice)} elements, len = {total_s}")
 
-bucket_length = total_s/harmonic_number
+bucket_length = total_s / harmonic_number
 print("bucket_length: ", bucket_length)
 sim.particle_container().set_bucket_length(bucket_length)
 

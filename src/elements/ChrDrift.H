@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ChrDrift
@@ -44,14 +43,6 @@ namespace impactx::elements
     {
         static constexpr auto type = "ChrDrift";
         using PType = ImpactXParticleContainer::ParticleType;
-
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A drift with chromatic effects included
          *
@@ -222,7 +213,6 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -259,7 +249,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

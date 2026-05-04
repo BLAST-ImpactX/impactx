@@ -27,7 +27,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ChrPlasmaLens
@@ -44,13 +43,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr int DEFAULT_unit = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** An active cylindrically symmetric plasma lens with chromatic focusing
          *
@@ -252,7 +244,6 @@ namespace impactx::elements
                 tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
             }
             // advance longitudinal position and momentum
-
 
             // assign updated position & momenta
             x = xout;

@@ -51,7 +51,6 @@
 
 #include <variant>
 
-
 namespace impactx::elements
 {
     using KnownElements = std::variant<

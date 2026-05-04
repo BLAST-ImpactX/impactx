@@ -19,7 +19,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace impactx::elements
 {
     struct Source
@@ -32,7 +31,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr bool DEFAULT_active_once = true;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A particle source
          *

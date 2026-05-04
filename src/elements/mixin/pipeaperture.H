@@ -24,6 +24,9 @@ namespace impactx::elements::mixin
      */
     struct PipeAperture
     {
+        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
+
         /** A finite-length element with a constant elliptical aperture over s.
          *
          * @param aperture_x horizontal half-aperture size [m]

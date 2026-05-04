@@ -27,6 +27,10 @@ namespace impactx::elements::mixin
     {
         static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
 
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
+
         /** A finite-length element
          *
          * @param dx horizontal translation error in m

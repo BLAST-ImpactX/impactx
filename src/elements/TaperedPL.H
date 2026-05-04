@@ -26,7 +26,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct TaperedPL
@@ -44,10 +43,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr int DEFAULT_unit = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A short segment of a nonlinear plasma lens with a transverse taper.
          *

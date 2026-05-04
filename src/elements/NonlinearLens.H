@@ -29,7 +29,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct NonlinearLens
@@ -43,11 +42,6 @@ namespace impactx::elements
     {
         static constexpr auto type = "NonlinearLens";
         using PType = ImpactXParticleContainer::ParticleType;
-
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** Single short segment of the nonlinear magnetic insert element
          *

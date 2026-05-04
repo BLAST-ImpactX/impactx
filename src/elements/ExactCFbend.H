@@ -62,15 +62,8 @@ namespace impactx::elements
         using DynamicData = mixin::GPUDataRegistry<CFbendCoefficients>;
 
         static constexpr int DEFAULT_unit = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 1;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A general (thick) combined-function sector dipole whose field consists
          *  of a superposition of ideal curvilinear hard-edge multipoles.
@@ -450,7 +443,6 @@ namespace impactx::elements
             zeval += tau;
         }
 
-
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
@@ -518,8 +510,6 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
-
-
 
         /** This function returns the linear transport map.
          *
@@ -591,7 +581,6 @@ namespace impactx::elements
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
-
 
         int m_unit; //! unit specification for Multipole strength
         int m_int_order; //! order used for the symplectic integration (2 or 4)

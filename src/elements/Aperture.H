@@ -10,7 +10,6 @@
 #ifndef IMPACTX_APERTURE_H
 #define IMPACTX_APERTURE_H
 
-
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
@@ -27,7 +26,6 @@
 
 #include <cmath>
 #include <stdexcept>
-
 
 namespace impactx::elements
 {
@@ -58,10 +56,6 @@ namespace impactx::elements
         static constexpr bool DEFAULT_shift_odd_x = false;
         static constexpr Shape DEFAULT_shape = Shape::rectangular;
         static constexpr Action DEFAULT_action = Action::transmit;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A thin collimator element that applies a transverse aperture boundary.
          *  Particles outside the boundary are considered lost.

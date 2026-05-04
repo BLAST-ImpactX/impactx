@@ -27,7 +27,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct Multipole
@@ -45,11 +44,6 @@ namespace impactx::elements
     {
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;
-
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** compute factorial of multipole index
          *
@@ -204,7 +198,6 @@ namespace impactx::elements
         /** This pushes the reference particle. */
         using Thin::operator();
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -283,7 +276,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

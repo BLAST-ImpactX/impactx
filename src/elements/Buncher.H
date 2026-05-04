@@ -26,7 +26,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct Buncher
@@ -42,11 +41,6 @@ namespace impactx::elements
     {
         static constexpr auto type = "Buncher";
         using PType = ImpactXParticleContainer::ParticleType;
-
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A short RF cavity element at zero crossing for bunching
          *

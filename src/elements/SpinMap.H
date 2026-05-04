@@ -47,10 +47,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr amrex::ParticleReal DEFAULT_ds = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A thin element that applies a user-provided spin map M
          *  to the spin 3-vector (sx, sy, sz).  The map M is an
@@ -160,7 +156,6 @@ namespace impactx::elements
             return m_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -253,7 +248,6 @@ namespace impactx::elements
             // phase space push (the identity for this element)
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

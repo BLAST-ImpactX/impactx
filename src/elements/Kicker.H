@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace impactx::elements
 {
     struct Kicker
@@ -62,10 +61,6 @@ namespace impactx::elements
         }
 
         static constexpr UnitSystem DEFAULT_unit = UnitSystem::dimensionless;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A thin transverse kicker element, inducing a transverse
          *  momentum displacement from the reference orbit.

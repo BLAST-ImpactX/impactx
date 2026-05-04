@@ -20,7 +20,6 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 
-
 namespace impactx::elements
 {
     struct Marker

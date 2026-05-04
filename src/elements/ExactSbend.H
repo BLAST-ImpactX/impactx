@@ -27,7 +27,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ExactSbend
@@ -45,13 +44,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr amrex::ParticleReal DEFAULT_B = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** The body of an ideal sector bend, using the exact nonlinear transfer map.
          *  The map corresponds to the map described in:
@@ -110,7 +102,6 @@ namespace impactx::elements
 
         /** Push all particles */
         using BeamOptic::operator();
-
 
         /** Compute and cache the constants for the push.
          *

@@ -34,7 +34,6 @@
 #include <stdexcept>
 #include <vector>
 
-
 namespace impactx::elements
 {
 
@@ -69,15 +68,8 @@ namespace impactx::elements
         using DynamicData = mixin::GPUDataRegistry<MultipoleCoefficients>;
 
         static constexpr int DEFAULT_unit = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 1;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A general (thick) straight-axis magnetic element whose field consists
          *  of a superposition of ideal hard-edge multipoles.  Like the element
@@ -395,7 +387,6 @@ namespace impactx::elements
             zeval += tau;
         }
 
-
         /** This pushes particle spin in an ExactMultipole element over a
          *  single step of size tau, based on the Thomas-BMT equation.
          *
@@ -505,7 +496,6 @@ namespace impactx::elements
 
             zeval += 0_prt;
         }
-
 
         /** This pushes the reference particle.
          *
@@ -620,7 +610,6 @@ namespace impactx::elements
             return R;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param[in,out] x particle position in x
@@ -691,7 +680,6 @@ namespace impactx::elements
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

@@ -22,7 +22,6 @@
 
 #include <optional>
 
-
 namespace impactx::elements
 {
     struct Empty

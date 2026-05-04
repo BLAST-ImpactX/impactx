@@ -22,6 +22,8 @@ namespace impactx::elements::mixin
      */
     struct Thick
     {
+        static constexpr int DEFAULT_nslice = 1;
+
         /** A finite-length element
          *
          * @param ds Segment length in m

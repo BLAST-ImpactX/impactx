@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ChrQuad
@@ -46,13 +45,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr int DEFAULT_unit = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A Quadrupole magnet with chromatic focusing
          *
@@ -101,7 +93,6 @@ namespace impactx::elements
 
         /** Push all particles */
         using BeamOptic::operator();
-
 
         /** Compute and cache the constants for the push.
          *
@@ -220,7 +211,6 @@ namespace impactx::elements
                // pyout = py;
             }
 
-
             // advance longitudinal position and momentum
 
             if (m_g == 0.0)
@@ -301,8 +291,6 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
-
-
 
         /** This operator pushes the particle spin.
          *
@@ -385,7 +373,6 @@ lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_ome
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

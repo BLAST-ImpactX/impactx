@@ -29,7 +29,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct DipEdge
@@ -69,10 +68,6 @@ namespace impactx::elements
         static constexpr Model DEFAULT_model = Model::linear;
         static constexpr Location DEFAULT_location = Location::entry;
         static constexpr bool DEFAULT_modify_ref_part = false;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** Edge focusing associated with bend entry or exit
          *
@@ -307,7 +302,6 @@ namespace impactx::elements
             shift_out(x, y, px, py);
         }
 
-
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
@@ -353,7 +347,6 @@ namespace impactx::elements
             }
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

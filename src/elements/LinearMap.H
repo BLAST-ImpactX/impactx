@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include <type_traits>
 
-
 namespace impactx::elements
 {
     struct LinearMap
@@ -43,10 +42,6 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr amrex::ParticleReal DEFAULT_ds = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A thin element that applies a user-provided linear transport map R
          *  to the 6-vector of phase space coordinates (x,px,y,py,t,pt).
@@ -242,7 +237,6 @@ namespace impactx::elements
             return m_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -279,7 +273,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

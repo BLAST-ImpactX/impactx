@@ -38,7 +38,6 @@
 #include <tuple>
 #include <vector>
 
-
 namespace impactx::elements
 {
    /** Default Fourier coefficients
@@ -123,14 +122,7 @@ namespace impactx::elements
 
         using DynamicData = mixin::GPUDataRegistry<QuadrupoleFourierCoefficients>;
 
-        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
-        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
-        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
         static constexpr int DEFAULT_mapsteps = 10;
-        static constexpr int DEFAULT_nslice = 1;
-        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
 
         /** A soft-edge quadrupole
          *
@@ -340,7 +332,6 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -398,7 +389,6 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

@@ -69,7 +69,7 @@ namespace impactx::elements
 
         static constexpr int DEFAULT_unit = 0;
         static constexpr int DEFAULT_int_order = 2;
-        static constexpr int DEFAULT_mapsteps = 1;
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A general (thick) straight-axis magnetic element whose field consists
          *  of a superposition of ideal hard-edge multipoles.  Like the element

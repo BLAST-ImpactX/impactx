@@ -1338,7 +1338,7 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
@@ -1386,7 +1386,7 @@ This module provides elements and methods for the accelerator lattice.
       number of integration steps per slice used for symplectic integration
 
 
-.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -1589,7 +1589,7 @@ This module provides elements and methods for the accelerator lattice.
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.

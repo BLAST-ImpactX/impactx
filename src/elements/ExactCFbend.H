@@ -63,7 +63,7 @@ namespace impactx::elements
 
         static constexpr int DEFAULT_unit = 0;
         static constexpr int DEFAULT_int_order = 2;
-        static constexpr int DEFAULT_mapsteps = 1;
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A general (thick) combined-function sector dipole whose field consists
          *  of a superposition of ideal curvilinear hard-edge multipoles.

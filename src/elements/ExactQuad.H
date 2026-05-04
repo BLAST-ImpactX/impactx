@@ -47,7 +47,7 @@ namespace impactx::elements
 
         static constexpr int DEFAULT_unit = 0;
         static constexpr int DEFAULT_int_order = 2;
-        static constexpr int DEFAULT_mapsteps = 5;
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A Quadrupole magnet treated using the exact Hamiltonian, which
          *  includes all nonlinear kinematic effects.  Like the element Quad,

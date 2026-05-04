@@ -91,10 +91,11 @@ sim.add_particles(bunch_charge_C, distr, npart)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
-
-# run a lattice with a single monitor to capture the initial beam
-sim.lattice.append(monitor)
+zerodrift = elements.Drift(ds=0.0)
+# initial 0 length drift is to force initial phase wrapping
+# run a lattice with a single monitor to capture the initial beam.
 sim.lattice.clear()
+sim.lattice.append(zerodrift)
 sim.lattice.append(monitor)
 sim.periods = 1
 sim.track_particles()

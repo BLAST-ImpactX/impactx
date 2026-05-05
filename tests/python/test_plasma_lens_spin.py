@@ -5,7 +5,6 @@
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-
-import math
 
 import numpy as np
 
@@ -54,9 +53,9 @@ def _track_particle_tapered_pl(
     #   particle bunch
     distr = distribution.Gaussian(
         **twiss(
-            beta_x=0.392,   
-            beta_y=0.392,   
-            beta_t=1.0,   
+            beta_x=0.392,
+            beta_y=0.392,
+            beta_t=1.0,
             emitt_x=2.56e-8,
             emitt_y=2.56e-8,
             emitt_t=1e-06,
@@ -80,27 +79,23 @@ def _track_particle_tapered_pl(
 
     ns = 40  # number of slices per ds in the element
     monitor = elements.BeamMonitor("monitor", backend="h5")
-    APL = elements.ChrPlasmaLens(
-        name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns
-    )
+    APL = elements.ChrPlasmaLens(name="APL", ds=APL_length, k=APL_g, unit=1, nslice=ns)
 
     num_kicks = 20
     APL_length_slice = APL_length / num_kicks
 
     ThinTPL = elements.TaperedPL(
-        name="TPL", k=-APL_g*APL_length_slice, taper=0.0, unit=1
+        name="TPL", k=-APL_g * APL_length_slice, taper=0.0, unit=1
     )
 
-    dr1 = elements.ChrDrift(
-        name="dr", ds=-APL_length/(2*num_kicks), nslice=ns
-    )
+    dr1 = elements.ChrDrift(name="dr", ds=-APL_length / (2 * num_kicks), nslice=ns)
 
     invTPL = ([dr1, ThinTPL, dr1]) * (num_kicks)
 
     # Set the lattice
     sim.lattice.append(monitor)
     sim.lattice.append(APL)
-#    sim.lattice.extend(invTPL)
+    #    sim.lattice.extend(invTPL)
     sim.lattice.append(monitor)
 
     # run simulation
@@ -123,8 +118,10 @@ def test_tapered_pl_spin():
 
     # Run the ChrPlasmaLens/tracking APL test in focusing mode
     # (rigiditiy is also negative. Gradient given in [T/m])
-    rbc_in, rbc_out = _track_particle_tapered_pl(-1000, 1.0e-3, 100e-6, lensType="ChrPlasmaLens")
-    
+    rbc_in, rbc_out = _track_particle_tapered_pl(
+        -1000, 1.0e-3, 100e-6, lensType="ChrPlasmaLens"
+    )
+
     # access particle data
     sigmaxi = rbc_in["sigma_x"]
     sigmayi = rbc_in["sigma_y"]
@@ -135,7 +132,7 @@ def test_tapered_pl_spin():
     meansxi = rbc_in["mean_sx"]
     meansyi = rbc_in["mean_sy"]
     meanszi = rbc_in["mean_sz"]
-     
+
     sigmaxf = rbc_out["sigma_x"]
     sigmayf = rbc_out["sigma_y"]
     sigmatf = rbc_out["sigma_t"]
@@ -151,20 +148,19 @@ def test_tapered_pl_spin():
         [sigmaxf, sigmayf, sigmatf, emittancexf, emittanceyf, emittancetf],
         [sigmaxi, sigmayi, sigmati, emittancexi, emittanceyi, emittanceti],
         atol=1.0e-8,
-        rtol=0,   
+        rtol=0,
     )
     # test initial polarization
     np.testing.assert_allclose(
         [meansxi, meansyi, meanszi],
-        [ 0.6, 0.5, 0.4 ],
+        [0.6, 0.5, 0.4],
         atol=1.0e-9,
         rtol=0,
     )
     # test final polarization
     np.testing.assert_allclose(
-        [meansxf, meansyf, meanszf], 
-        [ 0.6, 0.5, 0.4 ],
+        [meansxf, meansyf, meanszf],
+        [0.6, 0.5, 0.4],
         atol=1.0e-9,
-        rtol=0,   
+        rtol=0,
     )
-

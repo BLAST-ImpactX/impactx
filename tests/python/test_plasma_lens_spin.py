@@ -95,7 +95,7 @@ def _track_particle_tapered_pl(
     # Set the lattice
     sim.lattice.append(monitor)
     sim.lattice.append(APL)
-    #    sim.lattice.extend(invTPL)
+    sim.lattice.extend(invTPL)
     sim.lattice.append(monitor)
 
     # run simulation

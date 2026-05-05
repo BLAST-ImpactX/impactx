@@ -359,15 +359,15 @@ namespace impactx::elements
             {
 
                 // horizontally focusing quad case
-                lambdax = -gyro_const * ( py*inv_delta1*(1_prt - cos_omega_ds) + y*omega*sin_omega_ds );
+                lambdax = +gyro_const * ( py*inv_delta1*(1_prt - cos_omega_ds) + y*omega*sin_omega_ds );
                 lambday = -gyro_const * ( px*inv_delta1*(1_prt - cos_omega_ds) + x*omega*sin_omega_ds );
 
             } else if (m_g < 0.0_prt)
             {
 
                 // horizontally defocusing quad case
-                lambdax = gyro_const * ( py*inv_delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
-                lambday = gyro_const * ( px*inv_delta1*(cosh_omega_ds - 1_prt) + x*omega*sinh_omega_ds );
+                lambdax = -gyro_const * ( py*inv_delta1*(cosh_omega_ds - 1_prt) + y*omega*sinh_omega_ds );
+                lambday = +gyro_const * ( px*inv_delta1*(cosh_omega_ds - 1_prt) + x*omega*sinh_omega_ds );
 
             } else {
                 // treat as a drift

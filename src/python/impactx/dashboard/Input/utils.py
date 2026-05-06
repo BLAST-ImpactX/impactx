@@ -15,6 +15,39 @@ from .defaults import DashboardDefaults
 
 class GeneralFunctions:
     @staticmethod
+    def reset_lattice_runtime_state() -> None:
+        """
+        Reset derived lattice state that is not covered by default inputs.
+        """
+
+        state.selected_lattice_list = []
+        state.lattice_elements_using_variables = {}
+        state.total_elements = 0
+        state.total_steps = 0
+        state.element_counts = {}
+        state.lattice_is_empty = True
+        state.total_length = None
+        state.min_length = None
+        state.max_length = None
+        state.avg_length = None
+        state.length_stats_content = []
+
+        for state_name in (
+            "selected_lattice_list",
+            "lattice_elements_using_variables",
+            "total_elements",
+            "total_steps",
+            "element_counts",
+            "lattice_is_empty",
+            "total_length",
+            "min_length",
+            "max_length",
+            "avg_length",
+            "length_stats_content",
+        ):
+            state.dirty(state_name)
+
+    @staticmethod
     def normalize_for_v_model(name: str) -> str:
         """
         Normalizes a name for use as a v-model variable name.
@@ -112,9 +145,11 @@ class GeneralFunctions:
             if input_section == "distribution_parameters":
                 state.dirty("distribution_type")
             elif input_section == "lattice_configuration":
-                state.selected_lattice_list = []
+                GeneralFunctions.reset_lattice_runtime_state()
                 state.variables = [{"name": "", "value": "", "error_message": ""}]
+                state.is_only_variable = True
                 state.dirty("variables")
+                state.dirty("is_only_variable")
             elif input_section == "space_charge":
                 state.dirty("max_level")
 
@@ -122,11 +157,16 @@ class GeneralFunctions:
             DashboardParser.reset_importing_states()
             state.update(DashboardDefaults.DEFAULT_VALUES)
             state.dirty("distribution_type")
-            state.selected_lattice_list = []
+            GeneralFunctions.reset_lattice_runtime_state()
             state.dirty("max_level")
             state.variables = [{"name": "", "value": "", "error_message": ""}]
+            state.is_only_variable = True
+            state.has_loaded_impactx_example = False
             state.dirty("variables")
-            state.selected_impactx_example = None
+            state.dirty("is_only_variable")
+            state.dirty("has_loaded_impactx_example")
+            state.impactx_example = None
+            state.dirty("impactx_example")
 
     @staticmethod
     def set_state_to_numeric(state_name: str) -> None:

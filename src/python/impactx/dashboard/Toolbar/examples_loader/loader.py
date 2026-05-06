@@ -12,6 +12,8 @@ from ...Input.utils import GeneralFunctions
 from ..file_imports.ui_populator import populate_impactx_simulation_file_to_ui
 
 state.impactx_example_list = []
+state.is_loading_impactx_example = False
+state.has_loaded_impactx_example = False
 
 IMPACTX_PYTHON_ROOT = Path(__file__).resolve().parents[3]
 
@@ -32,14 +34,28 @@ DASHBOARD_EXAMPLES = {
 class DashboardExamplesLoader:
     @state.change("impactx_example")
     def on_selected_impactx_example_change(**kwargs):
-        if state.impactx_example is None:
-            GeneralFunctions.reset_inputs("all")
-        if state.impactx_example in state.impactx_example_list:
+        if state.is_loading_impactx_example:
+            return
+
+        selected_example = state.impactx_example
+
+        if selected_example is None:
+            if state.has_loaded_impactx_example:
+                state.has_loaded_impactx_example = False
+                GeneralFunctions.reset_inputs("all")
+            return
+
+        if selected_example in state.impactx_example_list:
             example_script = DashboardExamplesLoader._get_example_content(
-                state.impactx_example
+                selected_example
             )
             if example_script:
-                populate_impactx_simulation_file_to_ui(example_script)
+                state.is_loading_impactx_example = True
+                try:
+                    populate_impactx_simulation_file_to_ui(example_script)
+                    state.has_loaded_impactx_example = True
+                finally:
+                    state.is_loading_impactx_example = False
 
     @staticmethod
     def get_examples_directory() -> Path:

@@ -8,17 +8,14 @@ License: BSD-3-Clause-LBNL
 
 from .... import html, state, vuetify
 from ....Input.components import CardBase
-from . import StatComponents, StatUtils
+from . import StatComponents, update_lattice_statistics
 
 
 def _update_statistics() -> None:
     """
     Update statistics based on the current selected lattice elements.
     """
-    state.total_elements = len(state.selected_lattice_list)
-    state.total_steps = StatUtils.update_total_steps()
-    state.element_counts = StatUtils.update_element_counts()
-    StatUtils.update_length_statistics()
+    update_lattice_statistics()
 
 
 @state.change("selected_lattice_list")

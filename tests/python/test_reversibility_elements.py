@@ -301,6 +301,7 @@ def test_ChrAcc(sim):
     )
 
 
+# Spin is not affected by this element, no need to test variant
 def test_ConstF(sim):
     roundtrip(
         elements.ConstF(ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice, **PIPE_KWARGS),
@@ -631,6 +632,8 @@ def test_RFCavity(sim):
 # =============================================================================
 
 
+# todo the m_modify_ref_part=true parameter is not yet handled
+#   see https://github.com/BLAST-ImpactX/impactx/pull/1431
 @pytest.mark.parametrize(
     ("model", "g", "K2"),
     [

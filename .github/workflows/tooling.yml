@@ -9,7 +9,7 @@ concurrency:
 jobs:
   clangsanitizer:
     name: Clang ASAN UBSAN
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event.pull_request.draft == false
     steps:
     - uses: actions/checkout@v6
@@ -54,9 +54,12 @@ jobs:
     - name: run tests
       env:
         ASAN_OPTIONS: detect_stack_use_after_return=1:detect_leaks=1:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_scope=1:fast_unwind_on_malloc=0
-        LD_LIBRARY_PATH: /usr/lib/clang/14/lib/linux/
-        LD_PRELOAD: /usr/lib/clang/14/lib/linux/libclang_rt.asan-x86_64.so
       run: |
+        # Resolve the ASAN runtime path from the active clang so this is
+        # not tied to a specific clang/Ubuntu version.
+        LIBASAN=$(clang -print-file-name=libclang_rt.asan-x86_64.so)
+        export LD_LIBRARY_PATH="$(dirname "${LIBASAN}")"
+        export LD_PRELOAD="${LIBASAN}"
         export LSAN_OPTIONS=suppressions="$(pwd)/.github/ci/sanitizer/clang/Leak.supp:use_tls=0"
         ctest --test-dir build -E AMReX --output-on-failure --label-exclude "slow|dashboard"
 

@@ -384,7 +384,19 @@ when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
 By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while the corresponding default value of ``K2`` is set to 1).
 
-This requires these additional parameters:
+Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference trajectory.
+
+For a beam, this will result in a centroid offset that will produce centroid oscillations in the  downstream beamline.
+In practice, this can be avoided by aligning the downstream elements with the true horizontal position (after including the effect of the fringe field).
+To model this correction, we allow two options in the dipedge model:
+
+* the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+* the option ``modify_ref_part = True`` in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
+This element requires these additional parameters:
 
 * ``<element_name>.psi`` (``float``, in radians) the pole face rotation angle
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
@@ -399,6 +411,7 @@ This requires these additional parameters:
 * ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
 * ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
 * ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
+* ``<element_name>.modify_ref_part`` (``boolean``) apply fringe field to the reference particle ``true`` or ``false`` (default)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -707,10 +720,17 @@ This requires these additional parameters:
 ``quadrupole_softedge``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``quadrupole_softedge`` for a soft-edge quadrupole. This requires these additional parameters:
+``quadrupole_softedge`` for a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
+``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
+has units of inverse meters squared.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
-* ``<element_name>.gscale`` (``float``, in inverse meters) Scaling factor for on-axis magnetic field gradient
+* ``<element_name>.gscale`` (``float``, in inverse meters squared) Scaling factor for on-axis magnetic field gradient
 * ``<element_name>.cos_coefficients`` (array of ``float``) cos coefficients in Fourier expansion of the on-axis field gradient
   (optional); default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
 * ``<element_name>.sin_coefficients`` (array of ``float``) sin coefficients in Fourier expansion of the on-axis field gradient
@@ -720,7 +740,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 ``quadedge``
@@ -748,7 +768,13 @@ This requires these additional parameters:
 ``rfcavity``
 ^^^^^^^^^^^^
 
-``rfcavity`` a radiofrequency cavity.
+``rfcavity`` a radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal electric field are described in the documentation of ``escale`` below.  For example, if the values used to
+describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case,
+``escale`` has units of inverse meters.
+
 This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
@@ -763,7 +789,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -841,7 +867,14 @@ This requires these additional parameters:
 ``solenoid_softedge``
 ^^^^^^^^^^^^^^^^^^^^^
 
-``solenoid_softedge`` for a soft-edge solenoid. This requires these additional parameters:
+``solenoid_softedge`` for a soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal magnetic field data are determined by the parameter ``unit``.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``field_on_axis``) attain a peak on-axis value of 1, then the parameter
+``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic
+rigidity.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.bscale`` (``float``, in inverse meters) Scaling factor for on-axis longitudinal magnetic field
@@ -859,7 +892,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 

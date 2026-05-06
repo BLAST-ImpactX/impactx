@@ -93,16 +93,16 @@ You can run the following script to visualize the beam evolution over time:
 
 .. dropdown:: Script ``plot_simple_booster.py``
 
-   .. literalinclude:: plot_simple_boooster.py
+   .. literalinclude:: plot_simple_booster.py
       :language: python3
       :caption: You can copy this file from ``examples/fodo/plot_simple_booster.py``.
 
-.. figure:: simple_booster_sigma.png
+.. figure:: simple_booster_sigma.jpg
    :alt: beam sigmas as a function of s
 
    Evolution of beam sigmas over two turns in the simple Booster model.
 
-.. figure:: simple_booster_scatter.png
+.. figure:: simple_booster_scatter.jpg
    :alt: Phase space evolution in the simple Booster example.
 
    Simple Booster initial and final phase space.

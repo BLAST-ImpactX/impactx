@@ -82,15 +82,14 @@ sigma_pt = rbc["sigma_pt"]
 charge = rbc["charge_C"] / scipy.constants.eV
 
 f, ax = plt.subplots(2, 2, sharex="row")
-# f.set_figheight(9)
+
 ax[0, 0].set_title(r"$\sigma_x$")
 ax[0, 0].plot(s, sigma_x * 1000.0)
-# ax[0, 0].set_xlabel("s [m]")
+
 ax[0, 0].set_ylabel(r"$\sigma_x$ [mm]")
 
 ax[0, 1].set_title(r"$\sigma_y$")
 ax[0, 1].plot(s, sigma_y * 1000.0)
-# ax[0, 1].set_xlabel("s [m]")
 ax[0, 1].set_ylabel(r"$\sigma_y$ [mm]")
 
 ax[1, 0].set_title(r"$\sigma_t$")
@@ -110,53 +109,35 @@ if args.save_png:
 else:
     plt.show()
 
-f, ax = plt.subplots(3, 2, figsize=(9.4, 7.2), sharex="row", sharey="row")
+f, ax = plt.subplots(2, 2, sharex="row", sharey="row")
 
 ax[0, 0].set_title("x vs. px initial")
-ax[0, 0].scatter(
-    initial["position_x"] * 1000, initial["momentum_x"] * 1000, label="initial x vs. px"
+ax[0, 0].plot(
+    initial["position_x"] * 1000, initial["momentum_x"] * 1000, ".", label="initial x vs. px",
 )
 ax[0, 0].set_xlabel("x [mm]")
 ax[0, 0].set_ylabel("px [x1000]")
-# ax[0, 0].legend(loc="best")
 
 ax[0, 1].set_title("x vs. px final")
-ax[0, 1].scatter(
-    final["position_x"] * 1000, final["momentum_x"] * 1000, label="final x vs. px"
+ax[0, 1].plot(
+    final["position_x"] * 1000, final["momentum_x"] * 1000, ".", label="final x vs. px",
 )
 ax[0, 1].set_xlabel("x [mm]")
-# ax[0, 0].set_ylabel("px [x1000]")
-# ax[0, 1].legend(loc="best")
 
 ax[1, 0].set_title("y vs. py initial")
-ax[1, 0].scatter(
-    initial["position_y"] * 1000, initial["momentum_y"] * 1000, label="initial y vs. py"
+ax[1, 0].plot(
+    initial["position_y"] * 1000, initial["momentum_y"] * 1000, ".", label="initial y vs. py",
 )
 ax[1, 0].set_xlabel("y [mm]")
 ax[1, 0].set_ylabel("py [x1000]")
 # ax[1, 0].legend(loc="best")
 
 ax[1, 1].set_title("y vs. py final")
-ax[1, 1].scatter(
-    final["position_y"] * 1000, final["momentum_y"] * 1000, label="final y vs. py"
+ax[1, 1].plot(
+    final["position_y"] * 1000, final["momentum_y"] * 1000, ".", label="final y vs. py",
 )
 ax[1, 1].set_xlabel("y [mm]")
-# ax[1, 1].legend(loc="best")
 
-ax[2, 0].set_title("t vs. pt initial")
-ax[2, 0].scatter(
-    initial["position_t"], initial["momentum_t"] * 1000, label="initial t vs. pt"
-)
-ax[2, 0].set_xlabel("t [m]")
-ax[2, 0].set_ylabel("pt [x1000]")
-# ax[2, 0].legend(loc="best")
-
-ax[2, 1].set_title("t vs. pt final")
-ax[2, 1].scatter(
-    final["position_t"], final["momentum_t"] * 1000, label="final t vs. pt"
-)
-ax[2, 1].set_xlabel("t [m]")
-# ax[2, 1].legend(loc="best")
 
 plt.tight_layout()
 

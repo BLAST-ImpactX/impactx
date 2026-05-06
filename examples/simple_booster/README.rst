@@ -67,7 +67,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: sbbooster-cooked-rfon.madx
           :language: text
           :caption: Original MAD-X lattice file that describes the
-		    simple Booster model, available at ``examples/simple_booster/sbbooster-cooked-rfon.madx``.
+            simple Booster model, available at ``examples/simple_booster/sbbooster-cooked-rfon.madx``.
 
 Analyze
 -------

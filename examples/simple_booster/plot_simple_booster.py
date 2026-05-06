@@ -113,20 +113,29 @@ f, ax = plt.subplots(2, 2, sharex="row", sharey="row")
 
 ax[0, 0].set_title("x vs. px initial")
 ax[0, 0].plot(
-    initial["position_x"] * 1000, initial["momentum_x"] * 1000, ".", label="initial x vs. px",
+    initial["position_x"] * 1000,
+    initial["momentum_x"] * 1000,
+    ".",
+    label="initial x vs. px",
 )
 ax[0, 0].set_xlabel("x [mm]")
 ax[0, 0].set_ylabel("px [x1000]")
 
 ax[0, 1].set_title("x vs. px final")
 ax[0, 1].plot(
-    final["position_x"] * 1000, final["momentum_x"] * 1000, ".", label="final x vs. px",
+    final["position_x"] * 1000,
+    final["momentum_x"] * 1000,
+    ".",
+    label="final x vs. px",
 )
 ax[0, 1].set_xlabel("x [mm]")
 
 ax[1, 0].set_title("y vs. py initial")
 ax[1, 0].plot(
-    initial["position_y"] * 1000, initial["momentum_y"] * 1000, ".", label="initial y vs. py",
+    initial["position_y"] * 1000,
+    initial["momentum_y"] * 1000,
+    ".",
+    label="initial y vs. py",
 )
 ax[1, 0].set_xlabel("y [mm]")
 ax[1, 0].set_ylabel("py [x1000]")
@@ -134,7 +143,10 @@ ax[1, 0].set_ylabel("py [x1000]")
 
 ax[1, 1].set_title("y vs. py final")
 ax[1, 1].plot(
-    final["position_y"] * 1000, final["momentum_y"] * 1000, ".", label="final y vs. py",
+    final["position_y"] * 1000,
+    final["momentum_y"] * 1000,
+    ".",
+    label="final y vs. py",
 )
 ax[1, 1].set_xlabel("y [mm]")
 

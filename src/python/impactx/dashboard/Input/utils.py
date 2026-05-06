@@ -161,9 +161,12 @@ class GeneralFunctions:
             state.dirty("max_level")
             state.variables = [{"name": "", "value": "", "error_message": ""}]
             state.is_only_variable = True
+            state.has_loaded_impactx_example = False
             state.dirty("variables")
             state.dirty("is_only_variable")
-            state.selected_impactx_example = None
+            state.dirty("has_loaded_impactx_example")
+            state.impactx_example = None
+            state.dirty("impactx_example")
 
     @staticmethod
     def set_state_to_numeric(state_name: str) -> None:

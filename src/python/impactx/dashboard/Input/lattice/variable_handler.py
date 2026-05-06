@@ -4,6 +4,7 @@ from ... import ctrl, html, state, vuetify
 from ...Input.components import CardComponents
 from ..utils import GeneralFunctions
 from ..validation import DashboardValidation, errors_tracker
+from ..visualization.lattice import update_lattice_statistics
 
 init_value = ""
 state.variables = [
@@ -34,19 +35,7 @@ class LatticeVariableHandler:
             - Even though the variable "ns" still exists in the variable configuration,
             the deleted element's index is now invalid.
         """
-        for lattice in state.lattice_elements_using_variables.values():
-            try:
-                lattice_id = lattice["element_reference"]
-                lattice_index = state.selected_lattice_list.index(lattice_id)
-            except ValueError:
-                continue  # skip the deleted elements
-
-            ctrl.updateLatticeElementParameters(
-                lattice_index,
-                lattice["parameter_name"],
-                lattice["ui_input"],
-                lattice["parameter_type"],
-            )
+        LatticeVariableHandler.update_lattice_parameter_bindings()
         LatticeVariableHandler.update_delete_availability()
 
     # -----------------------------------------------------------------------------
@@ -65,6 +54,7 @@ class LatticeVariableHandler:
         new_variable = {key: "" for key in state.variables[0]}
         state.variables.append(new_variable)
         state.dirty("variables")
+        LatticeVariableHandler.update_delete_availability()
 
     @staticmethod
     @ctrl.add("delete_variable")
@@ -78,6 +68,8 @@ class LatticeVariableHandler:
 
         state.variables.pop(index)
         state.dirty("variables")
+        LatticeVariableHandler.update_lattice_parameter_bindings()
+        LatticeVariableHandler.update_delete_availability()
 
     @staticmethod
     @ctrl.add("update_variable")
@@ -101,6 +93,7 @@ class LatticeVariableHandler:
         else:
             variable["value"] = GeneralFunctions.convert_to_numeric(event)
         state.dirty("variables")
+        LatticeVariableHandler.update_lattice_parameter_bindings()
 
     @staticmethod
     @ctrl.add("reset_variables")
@@ -113,6 +106,8 @@ class LatticeVariableHandler:
             {"name": init_value, "value": init_value, "error_message": init_value}
         ]
         state.dirty("variables")
+        LatticeVariableHandler.update_lattice_parameter_bindings()
+        LatticeVariableHandler.update_delete_availability()
 
     # -----------------------------------------------------------------------------
     # Methods
@@ -128,6 +123,28 @@ class LatticeVariableHandler:
 
         state.is_only_variable = True if len(state.variables) == 1 else False
         state.dirty("is_only_variable")
+
+    @staticmethod
+    def update_lattice_parameter_bindings() -> None:
+        """
+        Refresh lattice parameters whose UI input references dashboard variables.
+        """
+
+        for lattice in list(state.lattice_elements_using_variables.values()):
+            try:
+                lattice_id = lattice["element_reference"]
+                lattice_index = state.selected_lattice_list.index(lattice_id)
+            except ValueError:
+                continue  # skip deleted elements
+
+            ctrl.updateLatticeElementParameters(
+                lattice_index,
+                lattice["parameter_name"],
+                lattice["ui_input"],
+                lattice["parameter_type"],
+            )
+
+        update_lattice_statistics()
 
     @staticmethod
     def get_duplicate_indexes(new_name: str, current_index: int) -> list:

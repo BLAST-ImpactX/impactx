@@ -92,9 +92,7 @@ namespace impactx::elements
             Alignment::compute_constants(refpart);
 
             // normalize focusing strength units to MAD-X convention if needed
-            if (m_unit == 1) {
-                m_g = m_k / refpart.rigidity_Tm();
-            }
+            m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
             // additional constants needed for spin push
             m_beta = refpart.beta();
@@ -310,11 +308,6 @@ for beam-quality preservation between plasma-accelerator stages",
         amrex::ParticleReal m_k; //! linear focusing strength (field gradient)
         amrex::ParticleReal m_taper; //! horizontal taper parameter
         int m_unit;  //! units for linear focusing strength (field gradient)
-        // see: compute_factorial() to refresh
-        int m_mfactorial;  //! factorial of multipole index
-        // see: compute_constants() to refresh
-        amrex::GpuComplex<amrex::ParticleReal> m_alpha;
-        amrex::ParticleReal m_inv_factorial;
 
       private:
         // constants that are independent of the individually tracked particle

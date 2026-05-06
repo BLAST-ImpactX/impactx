@@ -17,8 +17,8 @@ then elongating the space between the two D magnets.
 The F and D magnets combine both bending and
 focussing(defocussing) functions to economomize on space which is quite limited.
 
-The lattice is read from the file 'booster_impactx_lattice.py' which is
-based on the original MAD-X file sbbooster-cooked-rfon.madx.
+The lattice is read from the file ``booster_impactx_lattice.py`` which is
+based on the original MAD-X file ``sbbooster-cooked-rfon.madx``.
 
 The matched Twiss parameters determined by both Synergia and MAD-X at entry are:
 
@@ -61,6 +61,12 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: run_simple_booster.py
           :language: python3
           :caption: You can copy this file from ``examples/simple_booster/run_simple_booster.py``. The file `booster_impactx_lattice.py` from the same directory is also required.
+
+   .. tab-item:: ImpactX Lattice
+
+      .. literalinclude:: booster_impactx_lattice.py
+         :language: python3
+         :caption: You can copy this file from ``examples/simple_booster/booster_impactx_lattice.py``.
 
    .. tab-item:: MAD-X: Script
 

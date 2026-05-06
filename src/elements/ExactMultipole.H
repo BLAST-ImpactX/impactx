@@ -482,6 +482,10 @@ namespace impactx::elements
             lambday *= tau;
             lambdaz *= tau;
 
+            amrex::Print() << "Bx, By, Bz = " << Bx << " " << By << " " << Bz << "\n";
+            amrex::Print() << "lambdax, lambday, lamdaz = " << lambdax << " " << lambday << " " << lambdaz << "\n";
+
+
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 

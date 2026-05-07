@@ -105,6 +105,22 @@ sim.lattice.extend(
     [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor]
 )
 
+def hook_before_slice(sim):
+    step = sim.tracking_step
+    s = sim.beam.ref.s
+    print()
+    print(
+        f"  Beam at  step={step:.2f}, s={s:.2f}m:",
+        flush=True,
+    )
+    beam = sim.beam.to_df()
+    # Filter on particle weight (collect test particles only)
+    for row in beam[beam["weighting"]==0.0].itertuples():
+        print("weight, idcpu, x = ")
+        print(row.weighting, row.idcpu, row.position_x)
+
+sim.hook["before_slice"] = hook_before_slice
+
 # run simulation
 sim.track_particles()
 

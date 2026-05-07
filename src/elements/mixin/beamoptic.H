@@ -118,8 +118,6 @@ namespace detail
             // SIMD: write back to memory
             using RealType = std::decay_t<decltype(x)>;
             using IdCpuType = std::decay_t<decltype(idcpu)>;
-            //static_assert(std::is_same_v<RealType, amrex::ParticleReal>, "SIMD push requires ParticleReal particle data!");
-            //static_assert(std::is_same_v<IdCpuType, uint64_t>, "SIMD push requires uint64_t particle data!");
             constexpr decltype(auto) P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
 
             store_1d<P_Method, 0>(x, m_part_x, i);
@@ -234,8 +232,6 @@ namespace detail
             {
                 using RealType = std::decay_t<decltype(x)>;
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
-                //static_assert(std::is_same_v<RealType, amrex::ParticleReal>, "SIMD push requires ParticleReal particle data!");
-                //static_assert(std::is_same_v<IdCpuType, uint64_t>, "SIMD push requires uint64_t particle data!");
                 constexpr decltype(auto) P_Method = &T_Element::template operator()<RealType, IdCpuType>;
 
                 store_1d<P_Method, 0>(x, m_part_x, i);

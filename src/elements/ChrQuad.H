@@ -327,6 +327,7 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
+            using namespace std; // for cmath(float)
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;

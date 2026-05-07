@@ -152,9 +152,6 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // input and output phase space vectors
             amrex::SmallVector<T_Real, 6, 1> vectorin{
                 x, px, y, py, t, pt
@@ -170,9 +167,6 @@ namespace impactx::elements
             py = vectorout(4);
             t = vectorout(5);
             pt = vectorout(6);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.

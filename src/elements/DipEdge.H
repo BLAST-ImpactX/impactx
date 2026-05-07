@@ -216,9 +216,6 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             if (m_model == dipedge::Model::linear) {
                // apply linear model
                px = px + m_R21 * x;
@@ -285,9 +282,6 @@ namespace impactx::elements
                t = tout;
                pt = ptout;
             }
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
 

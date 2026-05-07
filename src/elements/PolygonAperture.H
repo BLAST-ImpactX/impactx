@@ -173,8 +173,8 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
             [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
             [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
             T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
@@ -190,9 +190,6 @@ namespace impactx::elements
             using std::abs;
             using amrex::arg;
             using VBool = decltype(x>0_prt);
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // define intermediate variables
             amrex::ParticleReal const dx = m_repeat_x * 0.5_prt;
@@ -263,9 +260,6 @@ namespace impactx::elements
             // For absorb: invalidate if inside aperture
             auto const invalid_mask = m_action == Action::transmit ? !inside_aperture : inside_aperture;
             amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */

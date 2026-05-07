@@ -171,9 +171,6 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             namespace stdx = amrex::simd::stdx;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // access position data
             T_Real const xout = x;
             T_Real const yout = y;
@@ -246,12 +243,6 @@ namespace impactx::elements
                    }
                }
             }
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.

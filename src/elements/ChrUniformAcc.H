@@ -146,9 +146,6 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             namespace stdx = amrex::simd::stdx;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // initial conversion from static to dynamic units:
             px = px * m_bgi;
             py = py * m_bgi;
@@ -225,12 +222,6 @@ namespace impactx::elements
             px = px / m_bgf;
             py = py / m_bgf;
             pt = pt / m_bgf;
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.

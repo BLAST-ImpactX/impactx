@@ -128,9 +128,6 @@ namespace impactx::elements
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // access position data
             T_Real const xout = x;
             T_Real const yout = y;
@@ -159,9 +156,6 @@ namespace impactx::elements
             px = pxout;
             py = pyout;
             pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */

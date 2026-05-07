@@ -192,14 +192,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // coordinates within the multipole (not needed)
             //amrex::ParticleReal const s = refpart.s;
@@ -233,12 +230,6 @@ namespace impactx::elements
             py = particle(4);
             t = particle(5);
             pt = particle(6);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes a particle in an ExactMultipole element through
@@ -636,14 +627,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -673,12 +661,6 @@ namespace impactx::elements
             sx = particle_spin(1);
             sy = particle_spin(2);
             sz = particle_spin(3);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
 

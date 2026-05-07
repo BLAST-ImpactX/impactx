@@ -128,9 +128,6 @@ namespace impactx::elements
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // access reference particle values to find (beta*gamma)^2
             //amrex::ParticleReal const pt_ref = refpart.pt;
             //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
@@ -183,9 +180,6 @@ namespace impactx::elements
             px = pxout;
             py = pyout;
             pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */

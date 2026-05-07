@@ -244,6 +244,7 @@ namespace detail
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
                 m_element.shift_in(x, y, px, py);
+                m_element.rotate_in(sx, sy);
             }
 
             // push spin & phase space through element
@@ -257,6 +258,7 @@ namespace detail
             // shift back to the lab frame (compile-time gated)
             if constexpr (has_alignment) {
                 m_element.shift_out(x, y, px, py);
+                m_element.rotate_out(sx, sy);
             }
 
             // SIMD: write back to memory
@@ -267,7 +269,8 @@ namespace detail
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
                 constexpr auto P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
 
-                // shift_in/shift_out write x, y, px, py; apply_aperture writes idcpu.
+                // shift_in/shift_out write x, y, px, py; rotate_in/rotate_out
+                // write sx, sy; apply_aperture writes idcpu.
                 // These wrapper-modified slots must be stored regardless of the push
                 // method's argument constness.
                 constexpr bool wb_align    = has_alignment;
@@ -279,8 +282,8 @@ namespace detail
                 store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
                 store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
                 store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
-                store_pdata<P_Method, 6>             (sx,    m_part_sx,    i);
-                store_pdata<P_Method, 7>             (sy,    m_part_sy,    i);
+                store_pdata<P_Method, 6, wb_align>   (sx,    m_part_sx,    i);
+                store_pdata<P_Method, 7, wb_align>   (sy,    m_part_sy,    i);
                 store_pdata<P_Method, 8>             (sz,    m_part_sz,    i);
                 store_pdata<P_Method, 9, wb_aperture>(idcpu, m_part_idcpu, i);
             }

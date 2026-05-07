@@ -270,25 +270,17 @@ def test_ChrPlasmaLens(sim, unit, k):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **kwargs),
+        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad_marylie_unit(sim):
     roundtrip(
         elements.ChrQuad(ds=1.0, k=3.5, unit=1, nslice=nslice, **PIPE_KWARGS),
-        sim,
-    )
-
-
-@pytest.mark.parametrize("sim", [True], indirect=True, ids=["spin"])
-def test_ChrQuad_marylie_unit_spin(sim):
-    roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, unit=1, nslice=nslice),
         sim,
         spin=sim.spin,
     )
@@ -415,9 +407,8 @@ def test_ExactSbend(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **kwargs),
+        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -425,9 +416,8 @@ def test_Quad(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **kwargs),
+        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -509,9 +499,8 @@ def test_SoftSolenoid(sim, unit, bscale):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sol(ds=3.820395, ks=0.8223219329893234, **kwargs),
+        elements.Sol(ds=3.820395, ks=0.8223219329893234, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )

@@ -17,7 +17,7 @@ state.avg_length = 0
 state.total_steps = 0
 state.element_counts = {}
 state.length_stats_content = ""
-state.lattice_is_empty = len(state.selected_lattice_list) == 0
+state.lattice_is_empty = len(getattr(state, "selected_lattice_list", []) or []) == 0
 
 
 class LatticeVisualizerStatisticUtils:
@@ -32,7 +32,9 @@ class LatticeVisualizerStatisticUtils:
         """
         values = []
 
-        for element in state.selected_lattice_list:
+        selected_lattice_list = getattr(state, "selected_lattice_list", []) or []
+
+        for element in selected_lattice_list:
             for param in element.get("parameters", []):
                 if param.get("parameter_name", "").lower() == parameter_name.lower():
                     try:
@@ -75,7 +77,9 @@ class LatticeVisualizerStatisticUtils:
         :return: Dictionary of element counts indexed by element name.
         """
         counts = {}
-        for element in state.selected_lattice_list:
+        selected_lattice_list = getattr(state, "selected_lattice_list", []) or []
+
+        for element in selected_lattice_list:
             key = str(element["name"]).lower()
             # can't do += 1 because key is not already initialized
             counts[key] = counts.get(key, 0) + 1
@@ -99,6 +103,31 @@ class LatticeVisualizerStatisticUtils:
         """
         steps = LatticeVisualizerStatisticUtils._extract_parameter_values("nslice", int)
         return sum(steps)
+
+
+def update_lattice_statistics() -> None:
+    """
+    Recompute all lattice statistics from the current lattice state.
+    """
+    selected_lattice_list = getattr(state, "selected_lattice_list", []) or []
+
+    state.total_elements = len(selected_lattice_list)
+    state.total_steps = LatticeVisualizerStatisticUtils.update_total_steps()
+    state.element_counts = LatticeVisualizerStatisticUtils.update_element_counts()
+    LatticeVisualizerStatisticUtils.update_length_statistics()
+
+    for state_name in (
+        "total_elements",
+        "total_steps",
+        "element_counts",
+        "lattice_is_empty",
+        "total_length",
+        "min_length",
+        "max_length",
+        "avg_length",
+        "length_stats_content",
+    ):
+        state.dirty(state_name)
 
 
 class LatticeVisualizerStatisticComponents:

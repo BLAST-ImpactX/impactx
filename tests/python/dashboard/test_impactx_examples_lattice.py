@@ -124,3 +124,23 @@ def test_examples(dashboard) -> None:
     # test lattice builds w/example importing
     test_examples.dogleg_lattice()  # uses lattice.append() and lattice.extend()
     test_examples.chicane_lattice()  # uses .reverse()
+
+
+def test_example_selector(dashboard) -> None:
+    """
+    Exercise loading an example through the dashboard example selector state.
+    """
+
+    example_path = "fodo/run_fodo.py"
+
+    for _ in range(TIMEOUT):
+        examples = dashboard.get_state("impactx_example_list") or []
+        if example_path in examples:
+            break
+        time.sleep(1)
+    else:
+        raise AssertionError(f"{example_path} was not loaded into the examples list")
+
+    dashboard.set_state("impactx_example", example_path)
+    dashboard.assert_state("total_elements", 11)
+    dashboard.assert_state("total_length", "3.0m")

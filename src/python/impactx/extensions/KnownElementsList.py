@@ -1043,7 +1043,7 @@ def _lattice_eq(self, other):
     ``list`` convention.
     """
     if not hasattr(other, "__len__") or not hasattr(other, "__iter__"):
-        return NotImplemented
+        raise ValueError(f"{other} does not implement __len__ or __iter__")
     if len(self) != len(other):
         return False
     for a, b in zip(self, other):
@@ -1074,7 +1074,7 @@ def _lattice_isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=Non
         element's ``isclose``.
     """
     if not hasattr(other, "__len__") or not hasattr(other, "__iter__"):
-        return False
+        raise ValueError(f"{other} does not implement __len__ or __iter__")
     if len(self) != len(other):
         return False
     for a, b in zip(self, other):

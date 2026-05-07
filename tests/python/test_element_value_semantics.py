@@ -331,8 +331,10 @@ def test_lattice_eq_filtered_vs_filtered():
 def test_lattice_eq_foreign_type():
     a = _build_lattice()
     assert a != "lattice"
-    assert a != 42
-    assert a != None  # noqa: E711
+    with pytest.raises(ValueError):
+        assert a != 42
+    with pytest.raises(ValueError):
+        assert a != None  # noqa: E711
 
 
 def test_lattice_isclose_with_perturbation():
@@ -365,7 +367,8 @@ def test_lattice_isclose_length_mismatch():
 def test_lattice_isclose_foreign_type():
     a = _build_lattice()
     assert not a.isclose("lattice")
-    assert not a.isclose(None)
+    with pytest.raises(ValueError):
+        assert not a.isclose(None)
 
 
 def test_lattice_isclose_filtered_view():

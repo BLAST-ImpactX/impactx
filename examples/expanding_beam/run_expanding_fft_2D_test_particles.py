@@ -9,7 +9,7 @@
 import pandas as pd
 
 import amrex.space3d as amr
-from impactx import ImpactX, Config, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -93,9 +93,7 @@ for p_dpy in dpy:
 for p_dpt in dpt:
     dpt_podv.push_back(p_dpt)
 
-pc.add_n_particles(
-    dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, 0.0
-)
+pc.add_n_particles(dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, 0.0)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")

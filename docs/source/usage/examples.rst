@@ -134,6 +134,7 @@ Virtual Test Stands
 
    examples/cyclotron/README.rst
    examples/iota_lattice/README.rst
+   examples/simple_booster/README.rst
    examples/positron_channel/README.rst
    examples/pytorch_surrogate_model/README.rst
    examples/apochromatic/README.rst

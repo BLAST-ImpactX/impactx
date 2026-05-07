@@ -144,12 +144,12 @@ def test_tapered_pl_spin():
     meanszf = rbc_out["mean_sz"]
 
     # test round-trip for beam moments
-    #    np.testing.assert_allclose(
-    #        [sigmaxf, sigmayf, sigmatf, emittancexf, emittanceyf, emittancetf],
-    #        [sigmaxi, sigmayi, sigmati, emittancexi, emittanceyi, emittanceti],
-    #        atol=1.0e-8,
-    #        rtol=0,
-    #    )
+    np.testing.assert_allclose(
+        [sigmaxf, sigmayf, sigmatf, emittancexf, emittanceyf, emittancetf],
+        [sigmaxi, sigmayi, sigmati, emittancexi, emittanceyi, emittanceti],
+        atol=1.0e-8,
+        rtol=0,
+    )
     # test initial polarization
     np.testing.assert_allclose(
         [meansxi, meansyi, meanszi],

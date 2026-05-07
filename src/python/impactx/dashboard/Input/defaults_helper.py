@@ -97,15 +97,13 @@ class InputDefaultsHelper:
         :return: A list of tuples containing class names.
         """
 
-        # Container / utility classes that are not user-selectable elements.
-        _SKIP_CLASSES = {"KnownElementsList", "FilteredElementsList"}
-
+        element_list_types = getattr(module_name, "_ELEMENT_LIST_TYPES", ())
         results = []
         for name in dir(module_name):
-            if name in _SKIP_CLASSES:
-                continue
             attr = getattr(module_name, name)
-            if inspect.isclass(attr):
+            if inspect.isclass(attr) and not any(
+                attr is element_list_type for element_list_type in element_list_types
+            ):
                 results.append((name, attr))
         return results
 

@@ -57,6 +57,10 @@ register_KnownElementsList_extension(impactx_pybind.elements.KnownElementsList)
 # Public alias on the elements submodule (same class object as in extensions)
 impactx_pybind.elements.FilteredElementsList = FilteredElementsList
 FilteredElementsList.__module__ = impactx_pybind.elements.__name__
+impactx_pybind.elements._ELEMENT_LIST_TYPES = (  # Element list/view types, not element kinds.
+    impactx_pybind.elements.KnownElementsList,
+    FilteredElementsList,
+)
 
 # MAD-X file reader for reference particle
 RefPart.load_file = read_beam  # noqa

@@ -206,15 +206,17 @@ def test_nan_hashes_consistently():
 # ----------------------------------------------------------------------
 
 
-_SKIP = {"KnownElementsList", "FilteredElementsList"}
-
-
 def _patched_element_classes():
     for name in dir(elements):
-        if name in _SKIP or name.startswith("_"):
+        if name.startswith("_"):
             continue
         cls = getattr(elements, name)
         if not inspect.isclass(cls):
+            continue
+        if any(
+            cls is element_list_type
+            for element_list_type in elements._ELEMENT_LIST_TYPES
+        ):
             continue
         if not hasattr(cls, "to_dict"):
             continue

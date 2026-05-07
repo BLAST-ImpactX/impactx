@@ -31,12 +31,6 @@ import math
 _DEFAULT_RTOL = 1e-12
 _DEFAULT_ATOL = 0.0
 
-# Names in the elements module that should not receive these methods.
-# KnownElementsList / FilteredElementsList are containers, not elements;
-# they do not currently expose a singular ``to_dict``, but we list them
-# explicitly so the intent is unambiguous.
-_SKIP = frozenset({"KnownElementsList", "FilteredElementsList"})
-
 
 def _canon(v):
     """Map a ``to_dict()`` value to a hashable, type-tagged form.
@@ -208,11 +202,14 @@ def register_elements_value_semantics(elements_module):
     elements_module : module
         Typically ``impactx.impactx_pybind.elements``.
     """
+    element_list_types = getattr(elements_module, "_ELEMENT_LIST_TYPES", ())
     for name in dir(elements_module):
-        if name in _SKIP or name.startswith("_"):
+        if name.startswith("_"):
             continue
         cls = getattr(elements_module, name)
         if not inspect.isclass(cls):
+            continue
+        if any(cls is element_list_type for element_list_type in element_list_types):
             continue
         if not hasattr(cls, "to_dict"):
             continue

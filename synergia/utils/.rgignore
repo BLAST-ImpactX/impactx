@@ -1,8 +1,0 @@
-boost/
-cereal/
-eigen/
-kokkos/
-pybind11/
-json.h
-json.hpp
-catch.hpp

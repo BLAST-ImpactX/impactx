@@ -1,6 +1,0 @@
-#Official Tool: clang-format version 16.0.0
-BasedOnStyle: google
-SortIncludes: false
-AlignConsecutiveAssignments: true
-AllowShortCaseLabelsOnASingleLine: true
-AllowShortIfStatementsOnASingleLine: true

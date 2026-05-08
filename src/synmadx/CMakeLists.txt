@@ -22,7 +22,7 @@ set_target_properties(synmadx PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(synmadx PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/synergia/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/synergia/utils
 )
 
 target_compile_features(synmadx PUBLIC cxx_std_17)

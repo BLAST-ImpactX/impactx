@@ -1,4 +1,0 @@
-Checks: >
-  -bugprone-exception-escape
-
-InheritParentConfig: true

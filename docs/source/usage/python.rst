@@ -475,7 +475,7 @@ Particles
       :param keep_mass: do not reset the reference particle mass
       :param keep_charge: do not reset the reference particle charge
 
-   .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None)
+   .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None, sx=None, sy=None, sz=None)
 
       Add new particles to the container for fixed s.
 
@@ -495,6 +495,9 @@ Particles
       :param qm: charge over mass in 1/eV
       :param bunch_charge: total charge within a bunch in C
       :param w: weight of each particle: the macroparticle charge in units of the elementary charge `e` (i.e., how many real particles to represent)
+      :param sx: spin component in x (optional; if provided, sy and sz must also be provided)
+      :param sy: spin component in y (optional; if provided, sx and sz must also be provided)
+      :param sz: spin component in z (optional; if provided, sx and sy must also be provided)
 
    .. py:method:: ref_particle()
 

@@ -8,11 +8,12 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "diagnostics/DiagnosticOutput.H"
+#include "diagnostics/FilePrefix.H"
 #include "elements/mixin/dynamicdata.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "diagnostics/DiagnosticOutput.H"
 #include "particles/wakefields/HandleWakefield.H"
 
 #include <AMReX.H>
@@ -85,8 +86,8 @@ namespace impactx {
         // move old diagnostics out of the way
         bool diag_enable = true;
         amrex::ParmParse("diag").queryAdd("enable", diag_enable);
-        if (diag_enable) {
-            amrex::UtilCreateCleanDirectory("diags", true);
+        if (diag_enable && diagnostics::FilePrefixCanClean()) {
+            amrex::UtilCreateCleanDirectory(diagnostics::FilePrefix(), true);
         }
 
         // the particle container has been set to track the same Geometry as ImpactX

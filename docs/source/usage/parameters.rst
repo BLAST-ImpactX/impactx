@@ -238,7 +238,7 @@ If the same element name is used multiple times, then an output series is create
 * ``<element_name>.name`` (``string``, default value: ``<element_name>``)
 
   The output series name to use.
-  By default, output is created under ``diags/openPMD/<element_name>.<backend>``.
+  By default, output is created under ``<diag.file_prefix>/openPMD/<element_name>.<backend>``.
 
 * ``<element_name>.backend`` (``string``, default value: ``default``)
 
@@ -1356,13 +1356,25 @@ Diagnostics and output
   By default, diagnostics are computed and written at the beginning and end of the simulation.
   Enabling this flag will write diagnostics at every step and slice step.
 
+* ``diag.file_prefix`` (``string``, optional, default: ``diags``)
+
+  Root directory for diagnostic output.
+  By default, diagnostics are written in the folder ``diags/``.
+
+  Set to an empty string or ``.`` to write diagnostics in the current working directory.
+
+  By default, existing diagnostic directories are moved when a new simulation initializes.
+  Prefixes that resolve to the current working directory, the root directory,
+  or an ancestor of the current working directory are written as requested,
+  but are not moved out of the way during initialization.
+
 * ``diag.file_min_digits`` (``integer``, optional, default: ``6``)
 
   The minimum number of digits used for the step number appended to the diagnostic file names.
 
 * ``diag.backend`` (``string``, default value: ``default``)
 
-  Diagnostics for particles lost in apertures, stored as ``diags/openPMD/particles_lost.*`` at the end of the simulation.
+  Diagnostics for particles lost in apertures, stored as ``<diag.file_prefix>/openPMD/particles_lost.*`` at the end of the simulation.
   See the ``beam_monitor`` element for backend values.
 
 * ``diag.eigenemittances`` (``boolean``, optional, default: ``false``)

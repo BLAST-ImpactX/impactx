@@ -246,6 +246,17 @@ Collective Effects & Overall Simulation Parameters
       By default, diagnostics is performed at the beginning and end of the simulation.
       Enabling this flag will write diagnostics every step and slice step.
 
+   .. py:property:: diag_file_prefix
+
+      Root directory for diagnostic output (default: folder named ``"diags"``).
+
+      Set to ``""`` or ``"."`` to write diagnostics in the current working directory.
+
+      By default, existing diagnostic directories are moved when a new simulation initializes.
+      Prefixes that resolve to the current working directory, the root directory,
+      or an ancestor of the current working directory are written as requested,
+      but are not moved out of the way during initialization.
+
    .. py:property:: diag_file_min_digits
 
       The minimum number of digits (default: ``6``) used for the step

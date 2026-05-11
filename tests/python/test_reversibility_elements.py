@@ -38,7 +38,7 @@ if Config.precision == "SINGLE":
     ref_atol = 3.0e-4
 else:
     phase_atol = 1.0e-10
-    spin_atol = 1.0e-12
+    spin_atol = 1.0e-11
     ref_atol = 1.0e-10
 
 

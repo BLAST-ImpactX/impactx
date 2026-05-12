@@ -299,6 +299,55 @@ Collective Effects & Overall Simulation Parameters
 
       Access the beam particle container (:py:class:`impactx.ParticleContainer`).
 
+      For example, ``sim.beam.to_df(local=True)`` returns the local particles as a pandas DataFrame.
+      See :ref:`usage-howto-python-particle-data` for further data-access recipes.
+
+   .. py:method:: rho(lev)
+
+      Return the charge density :math:`\rho` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
+      Populated when space-charge is enabled (see :py:attr:`space_charge`).
+
+      :param int lev: mesh-refinement level.
+
+      .. note::
+
+         Field data are populated by the space-charge solve at each slice step.
+         They are most reliably read from inside a :py:attr:`hook` ``"after_element"`` callback
+         (the element's last slice has just solved) or right after :py:meth:`track_particles` returns.
+         See :ref:`usage-howto-python-field-data` and the
+         `pyAMReX MultiFab guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#fields>`__
+         for indexing details.
+
+   .. py:method:: phi(lev)
+
+      Return the scalar potential :math:`\phi` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
+      Populated when space-charge is enabled.
+      See lifetime caveats and indexing in :ref:`usage-howto-python-field-data`.
+
+      :param int lev: mesh-refinement level.
+
+   .. py:method:: space_charge_field(lev, comp)
+
+      Return one Cartesian component of the space-charge force as a pyAMReX ``MultiFab``.
+
+      :param int lev: mesh-refinement level.
+      :param str comp: field component to access (``"x"``, ``"y"``, or ``"z"``).
+
+      See lifetime caveats and indexing in :ref:`usage-howto-python-field-data`.
+
+   .. py:method:: Geom(lev)
+
+      Return the AMReX ``Geometry`` object for mesh-refinement level ``lev``.
+      Useful to query the physical domain extent and cell sizes for field data.
+
+   .. py:method:: boxArray(lev)
+
+      Return the AMReX ``BoxArray`` for mesh-refinement level ``lev``.
+
+   .. py:method:: DistributionMap(lev)
+
+      Return the AMReX ``DistributionMapping`` for mesh-refinement level ``lev``.
+
    .. py:property:: lattice
 
       Access the elements in the accelerator lattice.
@@ -398,6 +447,10 @@ Collective Effects & Overall Simulation Parameters
 
          sim.hook["before_period"] = hook_before_period
 
+      Full example: :ref:`Acceleration by RF Cavities <examples-rfcavity-ref-part-hook>`.
+
+      See :ref:`usage-howto-python-extend` for more callback recipes.
+
    .. py:property:: tracking_step
 
       For tracking hooks/callbacks, a global step of the simulation.
@@ -461,6 +514,12 @@ Collective Effects & Overall Simulation Parameters
 
 Particles
 ---------
+
+:py:class:`impactx.ParticleContainer` derives from a pyAMReX particle container.
+Many bulk-access methods used to read or modify the beam in-memory (such as :py:meth:`~impactx.ParticleContainer.to_df` for a pandas DataFrame, or iterating over particle tiles) come from there.
+For a full reference of the inherited compute API, see the `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
+
+For step-by-step recipes on how to access particle data live during a simulation, see :ref:`usage-howto-python-particle-data`.
 
 .. py:class:: impactx.ParticleContainer
 
@@ -562,6 +621,45 @@ Particles
    .. py:method:: redistribute()
 
       Redistribute particles in the current mesh in x, y, z.
+
+   .. py:method:: to_df(local=True)
+
+      Return all beam particles as a `pandas DataFrame <https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe>`__.
+
+      Columns correspond to the particle attributes
+      (``position_x``, ``position_y``, ``position_t``,
+      ``momentum_x``, ``momentum_y``, ``momentum_t``,
+      optional ``spin_x``, ``spin_y``, ``spin_z``,
+      plus ``qm``, ``w``, and the AMReX-internal ``cpu`` and ``id``).
+      Phase-space coordinates are relative to the reference particle (see :py:attr:`ref`).
+
+      :param bool local: if ``True`` (default), only particles on the current MPI rank are returned.
+                         If ``False``, particles are gathered to the root rank.
+      :return: particle data as a ``pandas.DataFrame``, or ``None`` on ranks without particles.
+
+      .. note::
+
+         The returned DataFrame is a *copy* of the particle data; modifying it does not write back to the simulation.
+         For in-place modification, iterate over particle tiles instead. See :ref:`usage-howto-python-particle-data` and
+         the `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
+
+   .. py:attribute:: iterator
+
+      Alias for :py:class:`impactx.ImpactXParIter`, the per-tile iterator used to access
+      particle data on a mesh-refinement level without copying.
+      The canonical usage is to import the iterator directly:
+
+      .. code-block:: python
+
+         from impactx import ImpactXParIter
+
+         for pti in ImpactXParIter(sim.beam, level=0):
+             soa = pti.soa().to_xp()  # NumPy (CPU) or CuPy (GPU)
+             x = soa.real["position_x"]
+             px = soa.real["momentum_x"]
+
+      See :ref:`usage-howto-python-particle-data` for full usage examples and
+      `pyAMReX particles <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__ for the underlying API.
 
 
 .. py:class:: impactx.RefPart
@@ -680,6 +778,24 @@ Particles
          Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
+
+
+.. py:class:: impactx.ImpactXParIter(particle_container, level)
+
+   Per-tile iterator over the beam particle data on a mesh-refinement level.
+   Yields direct (zero-copy) access to the particle Struct-of-Arrays on CPU or GPU and is the
+   recommended way to access particles in performance-critical paths.
+
+   :param impactx.ParticleContainer particle_container: the beam particle container (e.g. ``sim.beam``).
+   :param int level: mesh-refinement level (typically ``0``).
+
+   See :ref:`usage-howto-python-particle-data` for full usage examples and the
+   `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__
+   for the underlying API.
+
+.. py:class:: impactx.ImpactXParConstIter(particle_container, level)
+
+   Read-only variant of :py:class:`impactx.ImpactXParIter`.
 
 
 Initial Beam Phase Space Distributions
@@ -1510,10 +1626,24 @@ This module provides elements and methods for the accelerator lattice.
    A programmable beam optics element.
 
    This element can be programmed to receive callback hooks into Python functions.
+   See :ref:`usage-howto-python-extend` for a worked example.
 
    :param ds: Segment length in m.
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
+
+   .. note::
+
+      The ``Programmable`` element is intended for *replacing* a beamline element's
+      particle push with custom Python code (e.g. a non-linear kick, tabulated map,
+      or ML surrogate). The ``beam_particles`` callback is invoked per particle
+      tile for performance, so the beam is presented in chunks, not as a single
+      global container, which is a poor fit for observation/analysis.
+
+      For **in-situ analysis** of the beam, prefer a :py:attr:`~impactx.ImpactX.hook`
+      callback instead: ``sim.beam`` and methods like
+      :py:meth:`~impactx.ParticleContainer.to_df` give you the full beam in one place.
+      See :ref:`usage-howto-python-particle-data`.
 
    .. py:property:: push
 

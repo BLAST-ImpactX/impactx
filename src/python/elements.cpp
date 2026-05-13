@@ -2484,8 +2484,8 @@ void init_elements(py::module& m)
              [](PRot const & prot) {
                  return element_name(
                      prot,
-                     std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
-                     std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                     std::make_pair("phi_in", prot.m_phi_in / elements::mixin::Alignment::degree2rad),
+                     std::make_pair("phi_out", prot.m_phi_out / elements::mixin::Alignment::degree2rad)
                  );
              }
         )
@@ -2494,9 +2494,9 @@ void init_elements(py::module& m)
                 if (in_degrees) {
                     return element_dict(
                         prot,
-                        std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                        std::make_pair("phi_in", prot.m_phi_in / elements::mixin::Alignment::degree2rad),
                                                                      // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                        std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                        std::make_pair("phi_out", prot.m_phi_out / elements::mixin::Alignment::degree2rad)
                     );
                 } else {
                     // legacy: buggy radians instead of degrees
@@ -2538,13 +2538,13 @@ void init_elements(py::module& m)
         )
         /* BUG: this should be in degree
         .def_property("phi_in",
-            [](PRot & prot) { return prot.m_phi_in / PRot::degree2rad; },
-            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * PRot::degree2rad; },
+            [](PRot & prot) { return prot.m_phi_in / elements::mixin::Alignment::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * elements::mixin::Alignment::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees"
         )
         .def_property("phi_out",
-            [](PRot & prot) { return prot.m_phi_out / PRot::degree2rad; },
-            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * PRot::degree2rad; },
+            [](PRot & prot) { return prot.m_phi_out / elements::mixin::Alignment::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * elements::mixin::Alignment::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees"
         )
         */

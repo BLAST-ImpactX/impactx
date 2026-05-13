@@ -41,8 +41,6 @@ namespace impactx::elements
         static constexpr auto type = "ThinDipole";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
-
         /** A general thin-kick dipole element with chromatic effects
          *
          * This model is equivalent to the model described in Section 3.1 of

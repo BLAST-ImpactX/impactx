@@ -52,7 +52,7 @@ namespace impactx::diagnostics
             }
 
             constexpr int permission_flag_rwxrxrx = 0755;
-            std::string const file_prefix_string = file_prefix.string();
+            std::string const file_prefix_string = file_prefix.generic_string();
             if (!amrex::UtilCreateDirectory(file_prefix_string, permission_flag_rwxrxrx)) {
                 amrex::CreateDirectoryFailed(file_prefix_string);
             }
@@ -64,7 +64,7 @@ namespace impactx::diagnostics
     {
         std::string file_prefix = "diags";
         amrex::ParmParse("diag").queryAdd("file_prefix", file_prefix);
-        return normalize_file_prefix(file_prefix).string();
+        return normalize_file_prefix(file_prefix).generic_string();
     }
 
     std::string
@@ -74,7 +74,7 @@ namespace impactx::diagnostics
         create_file_prefix_directory(file_prefix);
 
         if (name.empty()) {
-            return file_prefix.string();
+            return file_prefix.generic_string();
         }
 
         bool const use_current_directory = file_prefix.empty() ||
@@ -83,7 +83,7 @@ namespace impactx::diagnostics
             ? std::filesystem::path(name)
             : file_prefix / std::filesystem::path(name);
 
-        return path.lexically_normal().string();
+        return path.lexically_normal().generic_string();
     }
 
     bool

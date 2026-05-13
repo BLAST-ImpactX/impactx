@@ -1588,7 +1588,7 @@ void init_elements(py::module& m)
         )
         .def_property("multipole",
             [](Multipole & multipole) { return multipole.m_multipole; },
-            [](Multipole & multipole, amrex::ParticleReal multipole_index) {
+            [](Multipole & multipole, int multipole_index) {
                 multipole.m_multipole = multipole_index;
                 multipole.compute_factorial();
             },
@@ -2364,7 +2364,7 @@ void init_elements(py::module& m)
         */
         .def_property("unit",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_unit; },
-            [](SoftSolenoid & soft_sol, amrex::ParticleReal unit) { soft_sol.m_unit = unit; },
+            [](SoftSolenoid & soft_sol, int unit) { soft_sol.m_unit = unit; },
             "specification of units for scaling of the on-axis longitudinal magnetic field"
         )
         .def_property("mapsteps",

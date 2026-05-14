@@ -1495,7 +1495,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
         """
     @multipole.setter
-    def multipole(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    def multipole(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class Empty(mixin.Named, mixin.Thin):
     def __init__(self) -> None:
@@ -2474,7 +2474,7 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         specification of units for scaling of the on-axis longitudinal magnetic field
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class Source(mixin.Named, mixin.Thin):
     def __init__(

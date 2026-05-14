@@ -475,6 +475,33 @@ def test_lattice_isclose_ignore_type_across_variants():
     assert a.isclose(b, ignore_attributes=["type"])
 
 
+def test_free_function_isclose_elements():
+    a = elements.Drift(ds=1.0, name="d1")
+    b = elements.Drift(ds=1.0 + 1e-15, name="d1")
+    assert elements.isclose(a, b)
+    assert elements.isclose(b, a)  # symmetric call form
+    assert elements.isclose(a, b, ignore_attributes="name")
+
+
+def test_free_function_isclose_lattice():
+    a = _build_lattice()
+    b = _build_lattice()
+    assert elements.isclose(a, b)
+
+
+def test_free_function_isclose_list_lhs():
+    # Plain Python list on the left: free function dispatches to the
+    # KnownElementsList on the right, so the call still works.
+    kel = _build_lattice()
+    py = [
+        elements.Drift(ds=1.0 + 1e-15, name="d1"),
+        elements.Quad(ds=0.3, k=2.5, name="q1"),
+        elements.Drift(ds=2.0, name="d2"),
+    ]
+    assert elements.isclose(py, kel)
+    assert elements.isclose(kel, py)
+
+
 def test_lattice_uses_identity_hash():
     # Containers do not get a value-based __hash__: the inherited identity
     # hash is preserved (so internal weak-reference tracking of filtered

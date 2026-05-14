@@ -199,9 +199,25 @@ def _element_isclose(
     return _dict_close(d1, d2, rtol, atol)
 
 
+def isclose(a, b, **kwargs):
+    """Free-function form of ``a.isclose(b)``.
+
+    Provided so the call site reads symmetrically in ``a`` and ``b``,
+    like :py:func:`math.isclose` / :py:func:`numpy.isclose`. Equivalent
+    to the method form; forwards ``rtol``, ``atol``, and
+    ``ignore_attributes``. Dispatches to ``b`` if ``a`` lacks
+    ``isclose`` (e.g., a plain Python ``list`` paired with a
+    ``KnownElementsList``).
+    """
+    if hasattr(a, "isclose"):
+        return a.isclose(b, **kwargs)
+    return b.isclose(a, **kwargs)
+
+
 def register_elements_value_semantics(elements_module):
     """Attach ``__eq__``, ``__hash__``, and ``isclose`` to every class
-    in ``elements_module`` that exposes a ``to_dict`` method.
+    in ``elements_module`` that exposes a ``to_dict`` method, and the
+    free-function ``isclose`` on the module itself.
 
     Parameters
     ----------
@@ -222,3 +238,4 @@ def register_elements_value_semantics(elements_module):
         # ``__hash__`` afterwards to keep instances hashable.
         cls.__hash__ = _element_hash
         cls.isclose = _element_isclose
+    elements_module.isclose = isclose

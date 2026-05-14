@@ -1249,6 +1249,24 @@ comparison methods. They derive directly from each element's ``to_dict()`` outpu
       # Lattice-wide comparison forwards ignore_attributes to each element.
       lattice_a.isclose(lattice_b, ignore_attributes=["name"])
 
+.. py:function:: impactx.elements.isclose(a, b, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+   Free-function form of :py:meth:`isclose`, equivalent to ``a.isclose(b, ...)``.
+   Accepts either two elements or two iterables of elements
+   (``KnownElementsList``, ``FilteredElementsList``, plain ``list``).
+
+   .. code-block:: python
+
+      from impactx import elements
+
+      # two elements
+      d1 = elements.Drift(ds=1.0, name="d1")
+      d2 = elements.Drift(ds=1.0 + 1e-15, name="d2")
+      elements.isclose(d1, d2, ignore_attributes="name")
+
+      # two lattices (KnownElementsList, FilteredElementsList, or plain list)
+      elements.isclose(lattice_a, lattice_b, ignore_attributes=["name"])
+
 
 Lattice Elements
 ----------------

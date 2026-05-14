@@ -13,7 +13,7 @@ namespace impactx::diagnostics
 {
     /** Root directory for diagnostic output.
      *
-     * This queries ParmParse every time so runtime changes to diag.file_prefix
+     * This queries ParmParse every time, so runtime changes to diag.file_prefix
      * are honored.
      * Empty string and "." mean the current working directory.
      */
@@ -23,7 +23,7 @@ namespace impactx::diagnostics
      */
     std::string FilePrefixPath (std::string const & name);
 
-    /** Whether diag.file_prefix can be moved out of the way during initialization.
+    /** Whether an existing diag.file_prefix directory may be renamed aside at initialization.
      *
      * Current-directory, root-directory, and ancestor-directory paths are not cleaned.
      */

@@ -1363,10 +1363,11 @@ Diagnostics and output
 
   Set to an empty string or ``.`` to write diagnostics in the current working directory.
 
-  By default, existing diagnostic directories are moved when a new simulation initializes.
-  Prefixes that resolve to the current working directory, the root directory,
-  or an ancestor of the current working directory are written as requested,
-  but are not moved out of the way during initialization.
+  If a directory at ``diag.file_prefix`` already exists when a simulation starts,
+  ImpactX renames it to ``<diag.file_prefix>.old.<suffix>`` to preserve prior results.
+  This is skipped when ``diag.file_prefix`` resolves to the current working directory,
+  the root directory, or an ancestor of the current working directory; in those cases
+  new output is written alongside existing files.
 
 * ``diag.file_min_digits`` (``integer``, optional, default: ``6``)
 

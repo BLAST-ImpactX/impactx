@@ -95,7 +95,7 @@ namespace impactx::particles::spacecharge
                 auto const phi_arr = space_charge_potential.at(lev)[pti].const_array();
 
                 // physical constants and reference quantities
-                amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
+                amrex::ParticleReal const c0_SI = 2.99792458e8_prt;  // TODO move out
                 amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
                 amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
                 amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
@@ -197,8 +197,8 @@ namespace impactx::particles::spacecharge
                             std::cerr << "Warning: Index out of range for 2.5D SC: " << idx << std::endl;
                        }
                        #endif
-                       amrex::ParticleReal const Fxy = (Qb_abs==0.0) ? 0.0 : beam_profile[idx] / Qb_abs;
-                       amrex::ParticleReal const Fz = (Qb_abs==0.0) ? 0.0 : beam_profile_slope[idx] * charge_abs / Qb_abs;
+                       amrex::ParticleReal const Fxy = (Qb_abs==0.0) ? 0.0_prt : beam_profile[idx] / Qb_abs;
+                       amrex::ParticleReal const Fz = (Qb_abs==0.0) ? 0.0_prt : beam_profile_slope[idx] * charge_abs / Qb_abs;
 
                        // push momentum
                        px += field_interp[0] * Fxy * push_consts * dr[2] / beta;

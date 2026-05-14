@@ -34,6 +34,8 @@ namespace impactx::diagnostics
     {
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(pc)");
 
+        using namespace amrex::literals; // for _prt
+
         // preparing to access reference particle data: RefPart
         RefPart const ref_part = pc.GetRefParticle();
         // reference particle charge in C
@@ -318,14 +320,14 @@ namespace impactx::diagnostics
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
         amrex::ParticleReal const e2_t = t_ms*pt_ms-tpt*tpt;
-        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
-        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
-        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
+        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0_prt;
+        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0_prt;
+        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0_prt;
         // Dispersion and dispersive beam moments
-        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0_prt);
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
@@ -490,6 +492,8 @@ namespace impactx::diagnostics
     {
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(cm)");
 
+        using namespace amrex::literals; // for _prt
+
         // reference particle relativistic beta*gamma
         amrex::ParticleReal const bg = ref_part.beta_gamma();
         amrex::ParticleReal const bg2 = bg*bg;
@@ -528,14 +532,14 @@ namespace impactx::diagnostics
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
         amrex::ParticleReal const e2_t = t_ms*pt_ms-tpt*tpt;
-        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
-        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
-        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
+        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0_prt;
+        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0_prt;
+        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0_prt;
         // Dispersion and dispersive beam moments
-        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0_prt);
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;

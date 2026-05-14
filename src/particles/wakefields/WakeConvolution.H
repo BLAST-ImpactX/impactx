@@ -27,7 +27,7 @@ namespace impactx::particles::wakefields
      * Used in eq. (21) of:
      * K. L.F. Bane, "Short-Range Dipole Wakefields in Accelerating Structures for the NLC," SLAC-PUB-9663, 2003
      */
-    constexpr amrex::Real alpha_1 = 0.4648;
+    constexpr amrex::Real alpha_1 = static_cast<amrex::Real>(0.4648);
 
     /** Step Function (Heavy-Side)
      *

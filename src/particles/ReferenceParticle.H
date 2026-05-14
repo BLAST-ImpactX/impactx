@@ -88,6 +88,8 @@ namespace impactx
         RefPart &
         set_species (std::string const & species_name)
         {
+            using namespace amrex::literals; // for _prt
+
             constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
             constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
             constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
@@ -100,19 +102,19 @@ namespace impactx
             if (species_name == "electron") {
                 qe = -1.0;
                 massE = m_e / MeV_inv_c2;
-                g_anomaly = 0.00115965218062;
+                g_anomaly = 0.00115965218062_prt;
             } else if (species_name == "positron") {
                 qe = 1.0;
                 massE = m_e / MeV_inv_c2;
-                g_anomaly = 0.00115965218062;
+                g_anomaly = 0.00115965218062_prt;
             } else if (species_name == "proton") {
                 qe = 1.0;
                 massE = m_p / MeV_inv_c2;
-                g_anomaly = 1.7928473446;
+                g_anomaly = 1.7928473446_prt;
             } else if (species_name == "Hminus") {
                 qe = -1.0;
-                massE = (m_p + 2.0 * m_e) / MeV_inv_c2;  // neglect ~14 eV/c^2 binding energy
-                g_anomaly = 1.7928473446;
+                massE = (m_p + 2.0_prt * m_e) / MeV_inv_c2;  // neglect ~14 eV/c^2 binding energy
+                g_anomaly = 1.7928473446_prt;
             }
             // [/known_species]
             else {

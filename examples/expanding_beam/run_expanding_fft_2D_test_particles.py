@@ -7,6 +7,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import amrex.space3d as amr
 from impactx import Config, ImpactX, distribution, elements
@@ -105,21 +106,18 @@ sim.lattice.extend(
     [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor]
 )
 
+sarr = []
+test_data = []
+mm_scale = 1.0e3
 
 def hook_before_slice(sim):
-    step = sim.tracking_step
     s = sim.beam.ref.s
-    print()
-    print(
-        f"  Beam at  step={step:.2f}, s={s:.2f}m:",
-        flush=True,
-    )
+    sarr.append(s)
     beam = sim.beam.to_df()
     # Filter on particle weight (collect test particles only)
     for row in beam[beam["weighting"] == 0.0].itertuples():
-        print("weight, idcpu, x = ")
-        print(row.weighting, row.idcpu, row.position_x)
-
+        # collect test particle data
+        test_data.append([s, row.idcpu, row.position_x*mm_scale, row.position_y*mm_scale])
 
 sim.hook["before_slice"] = hook_before_slice
 
@@ -128,3 +126,16 @@ sim.track_particles()
 
 # clean shutdown
 sim.finalize()
+
+df = pd.DataFrame(test_data, columns=["s", "id", "x", "y"])
+sorted_df = df.sort_values(by='id')
+
+n = len(sarr)
+for i in range(0, len(df), n):
+    subset = sorted_df.iloc[i : i + n]
+    plt.scatter(subset['s'], subset['x'], s=5)
+
+plt.xlabel("s [m]", fontsize=12)
+plt.ylabel("x [mm]", fontsize=12)
+plt.title("Test Particles: Horizontal Coordinates")
+plt.show()

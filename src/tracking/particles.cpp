@@ -9,7 +9,6 @@
  */
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
-#include "diagnostics/FilePrefix.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/CollectLost.H"
@@ -74,13 +73,12 @@ namespace impactx
 
             // print initial reference particle to file
             diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
-                                          diagnostics::FilePrefixPath("ref_particle"),
+                                          "ref_particle",
                                           step);
 
             // print the initial values of reduced beam characteristics
             diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
-                                          diagnostics::FilePrefixPath(
-                                              "reduced_beam_characteristics"));
+                                          "reduced_beam_characteristics");
 
         }
 
@@ -175,14 +173,13 @@ namespace impactx
                     if (diag_enable && slice_step_diagnostics) {
                         // print slice step reference particle to file
                         diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
-                                                      diagnostics::FilePrefixPath("ref_particle"),
+                                                      "ref_particle",
                                                       step,
                                                       true);
 
                         // print slice step reduced beam characteristics to file
                         diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
-                                                      diagnostics::FilePrefixPath(
-                                                          "reduced_beam_characteristics"),
+                                                      "reduced_beam_characteristics",
                                                       step,
                                                       true);
 
@@ -209,13 +206,12 @@ namespace impactx
         {
             // print final reference particle to file
             diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
-                                          diagnostics::FilePrefixPath("ref_particle_final"),
+                                          "ref_particle_final",
                                           step);
 
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
-                                          diagnostics::FilePrefixPath(
-                                              "reduced_beam_characteristics_final"),
+                                          "reduced_beam_characteristics_final",
                                           step);
 
             // output particles lost in apertures

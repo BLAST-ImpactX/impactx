@@ -9,7 +9,6 @@
  */
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
-#include "diagnostics/FilePrefix.H"
 #include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
@@ -83,11 +82,10 @@ namespace impactx
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            diagnostics::DiagnosticOutput(ref, diagnostics::FilePrefixPath("ref_particle"));
+            diagnostics::DiagnosticOutput(ref, "ref_particle");
 
             // print the initial values of reduced beam characteristics
-            diagnostics::DiagnosticOutput(
-                cm, ref, diagnostics::FilePrefixPath("reduced_beam_characteristics"));
+            diagnostics::DiagnosticOutput(cm, ref, "reduced_beam_characteristics");
 
         }
 
@@ -208,13 +206,11 @@ namespace impactx
                     if (diag_enable && slice_step_diagnostics)
                     {
                         // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(
-                            ref, diagnostics::FilePrefixPath("ref_particle"), step, true);
+                        diagnostics::DiagnosticOutput(ref, "ref_particle", step, true);
 
                         // print slice step reduced beam characteristics to file
                         diagnostics::DiagnosticOutput(
-                            cm, ref, diagnostics::FilePrefixPath("reduced_beam_characteristics"),
-                            step, true);
+                            cm, ref, "reduced_beam_characteristics", step, true);
 
                     }
 
@@ -239,12 +235,11 @@ namespace impactx
         if (diag_enable)
         {
             // print final reference particle to file
-            diagnostics::DiagnosticOutput(
-                ref, diagnostics::FilePrefixPath("ref_particle_final"), step);
+            diagnostics::DiagnosticOutput(ref, "ref_particle_final", step);
 
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(
-                cm, ref, diagnostics::FilePrefixPath("reduced_beam_characteristics_final"), step);
+                cm, ref, "reduced_beam_characteristics_final", step);
         }
     }
 } // namespace impactx

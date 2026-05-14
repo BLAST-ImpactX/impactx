@@ -9,7 +9,6 @@
  */
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
-#include "diagnostics/FilePrefix.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
@@ -64,7 +63,7 @@ namespace impactx
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            diagnostics::DiagnosticOutput(ref, diagnostics::FilePrefixPath("ref_particle"));
+            diagnostics::DiagnosticOutput(ref, "ref_particle");
 
         }
 
@@ -144,8 +143,7 @@ namespace impactx
                     if (diag_enable && slice_step_diagnostics)
                     {
                         // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(
-                            ref, diagnostics::FilePrefixPath("ref_particle"), step, true);
+                        diagnostics::DiagnosticOutput(ref, "ref_particle", step, true);
                     }
 
                     // inputs: unused parameters (e.g. typos) check after step 1 has finished
@@ -169,8 +167,7 @@ namespace impactx
         if (diag_enable)
         {
             // print final reference particle to file
-            diagnostics::DiagnosticOutput(
-                ref, diagnostics::FilePrefixPath("ref_particle_final"), step);
+            diagnostics::DiagnosticOutput(ref, "ref_particle_final", step);
         }
     }
 } // namespace impactx

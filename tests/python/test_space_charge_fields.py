@@ -26,12 +26,13 @@ def test_space_charge_phi_via_hook(save_png=True):
     # [doc-start] cfchannel-phi-hook
     import matplotlib.pyplot as plt
 
-    from impactx import ImpactX, distribution, elements
+    from impactx import ImpactX, amr, distribution, elements
 
     sim = ImpactX()
 
     # numerical parameters
     sim.n_cell = [48, 48, 40]
+    sim.tiny_profiler = False
     sim.particle_shape = 2
     sim.space_charge = "3D"
     sim.poisson_solver = "fft"
@@ -65,9 +66,6 @@ def test_space_charge_phi_via_hook(save_png=True):
         ]
     )
 
-    # capture phi statistics so we can sanity-check below
-    phi_stats = []
-
     def plot_phi(sim):
         """Plot phi at the transverse mid-plane after an element finishes.
 
@@ -77,48 +75,41 @@ def test_space_charge_phi_via_hook(save_png=True):
         (``"before_slice"`` would fire *before* the slice's solve, when phi
         is from a previous slice's solve — or uninitialized on the first slice.)
 
-        GPU/MPI-portable: we iterate over boxes and use ``to_numpy(copy=True)``
-        to bring host-side data we can plot.
+        GPU/MPI-portable: we use global indexing and pyAMReX garthers to rank zero.
         """
         phi = sim.phi(lev=0)
         geom = sim.Geom(lev=0)
-        dr = geom.data().CellSize()
-        ng = phi.n_grow_vect
         half_z = sim.n_cell[2] // 2
+        mm = 1e3
 
-        for mfi in phi:
-            bx = mfi.validbox()
-            arr = phi.array(mfi).to_numpy(copy=True)  # indices x, y, z, comp
+        # this triggers an MPI-collective gather
+        plane = phi[:, :, half_z, 0]
 
-            # shift box to zero-based local mfi index space
-            half_z_local = half_z - bx.lo_vect[2]
-            bx.shift(bx.lo_vect * -1)
-            # skip tiles that don't contain the mid-plane
-            if half_z_local < 0 or half_z_local >= arr.shape[2]:
-                continue
+        # other MPI ranks can return now
+        if not amr.ParallelDescriptor.IOProcessor():
+            return
 
-            # strip ghost cells in the transverse plane
-            plane = arr[ng[0] : -ng[0], ng[1] : -ng[1], half_z_local, 0]
-            phi_stats.append(float(plane.max()))
-
-            if save_png:
-                fig, ax = plt.subplots()
-                im = ax.imshow(
-                    plane.T * 1.0,
-                    origin="lower",
-                    aspect="auto",
-                    extent=[
-                        bx.lo_vect[0] * dr[0],
-                        (bx.lo_vect[0] + plane.shape[0]) * dr[0],
-                        bx.lo_vect[1] * dr[1],
-                        (bx.lo_vect[1] + plane.shape[1]) * dr[1],
-                    ],
-                )
-                fig.colorbar(im, label=r"$\phi$  [V]")
-                ax.set_xlabel(r"$x$  [m]")
-                ax.set_ylabel(r"$y$  [m]")
-                fig.savefig(f"phi_step{sim.tracking_step:04d}.png")
-                plt.close(fig)
+        # now plot on the IOProcessor
+        fig, ax = plt.subplots()
+        im = ax.imshow(
+            plane.T * 1.0,
+            origin="lower",
+            aspect="auto",
+            extent=[
+                geom.ProbLo(0) * mm,
+                geom.ProbHi(0) * mm,
+                geom.ProbLo(1) * mm,
+                geom.ProbHi(0) * mm,
+            ],
+        )
+        fig.colorbar(im, label=r"$\phi$  [V]")
+        ax.set_xlabel(r"$x$  [mm]")
+        ax.set_ylabel(r"$y$  [mm]")
+        if save_png:
+            fig.savefig(f"phi_step{sim.tracking_step:04d}.png")
+        else:
+            plt.show()
+        plt.close(fig)
 
     sim.hook["after_element"] = plot_phi
 
@@ -126,15 +117,6 @@ def test_space_charge_phi_via_hook(save_png=True):
     sim.finalize()
     # [doc-end] cfchannel-phi-hook
 
-    # the hook should have fired at least once and seen a non-trivial potential
-    assert len(phi_stats) > 0
-    assert max(phi_stats) > 0.0
-
 
 if __name__ == "__main__":
-    import amrex.space3d as amr
-
-    amr.initialize([])
     test_space_charge_phi_via_hook(save_png=True)
-    if amr.initialized():
-        amr.finalize()

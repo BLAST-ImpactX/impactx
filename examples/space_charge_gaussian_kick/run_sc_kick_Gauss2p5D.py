@@ -49,10 +49,8 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element
-L = 1.0 # drift length
-sim.lattice.extend(
-    [monitor, elements.Drift(name="d1", ds=L, nslice=ns), monitor]
-)
+L = 1.0  # drift length
+sim.lattice.extend([monitor, elements.Drift(name="d1", ds=L, nslice=ns), monitor])
 
 # run simulation
 sim.track_particles()

@@ -7,11 +7,12 @@
 # -*- coding: utf-8 -*-
 
 """
-Tests for the MAD-X CALL command support.
+Tests for the MAD-X parser: CALL command, line continuation, and general syntax.
 
 References:
     - https://github.com/BLAST-ImpactX/impactx/issues/512
     - http://madx.web.cern.ch/madx/webguide/manual.html (Chapter 5.2)
+    - MAD-X source: src/mad_write.c, src/mad_cmd.c, src/mad_parse.c
 """
 
 import math
@@ -534,3 +535,97 @@ B: LINE=(D1, D1);
 
     beamline = parser.getBeamline(line_name="b")
     assert [elem["type"] for elem in beamline] == ["drift", "drift"]
+
+
+# ---------------------------------------------------------------------------
+# Line continuation ('&' at end-of-line)
+# ---------------------------------------------------------------------------
+
+
+def test_continuation_in_expression():
+    """A long arithmetic expression split across lines with '&' parses
+    identically to the single-line form."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+LEN = 1 + 2 &
+    + 3 &
+    + 4;
+"""
+    )
+    assert parser.getVariable("len") == pytest.approx(10.0)
+
+
+def test_continuation_in_line_definition():
+    """A LINE = (...) definition split across multiple lines with '&'
+    expands to the same sequence as the one-line equivalent."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+BEAM, PARTICLE=ELECTRON, ENERGY=2.0;
+D1: DRIFT, L=0.1;
+QF: QUADRUPOLE, L=0.1, K1=1.0;
+QD: QUADRUPOLE, L=0.1, K1=-1.0;
+FODO: LINE=(D1, QF, &
+            D1, QD, &
+            D1, QF);
+USE, SEQUENCE=FODO;
+"""
+    )
+    beamline = parser.getBeamline()
+    assert len(beamline) == 6
+    assert [e["type"] for e in beamline] == [
+        "drift",
+        "quadrupole",
+        "drift",
+        "quadrupole",
+        "drift",
+        "quadrupole",
+    ]
+    assert beamline[1]["k1"] == pytest.approx(1.0)
+    assert beamline[3]["k1"] == pytest.approx(-1.0)
+
+
+def test_continuation_with_trailing_whitespace():
+    """Trailing spaces/tabs between the value and '&' are allowed."""
+    parser = MADXParser()
+    parser.parse_string("X = 1 &   \t  \n  + 2;\n")
+    assert parser.getVariable("x") == pytest.approx(3.0)
+
+
+def test_continuation_with_trailing_comment():
+    """A trailing line-comment ('!' or '//') after '&' is allowed and
+    ignored, matching MAD-X's read-then-strip behavior."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+Y = 10 & ! this is a continuation
+    + 5 & // and another one
+    + 1;
+"""
+    )
+    assert parser.getVariable("y") == pytest.approx(16.0)
+
+
+def test_continuation_chained():
+    """Five or more chained '&' continuations join into one statement."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+Z = 1 &
+  + 1 &
+  + 1 &
+  + 1 &
+  + 1 &
+  + 1;
+"""
+    )
+    assert parser.getVariable("z") == pytest.approx(6.0)
+
+
+def test_continuation_midline_raises():
+    """A '&' not at end-of-line (and not part of '&&') must raise
+    MADXInputError with a helpful message."""
+    parser = MADXParser()
+    with pytest.raises(MADXInputError, match="line-continuation"):
+        parser.parse_string("A = 1 & 2;\n")

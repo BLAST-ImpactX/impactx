@@ -89,25 +89,54 @@ ptf = final["momentum_t"]
 
 # Difference between value and prediction
 
-dpx = (pxf - px_predicted).abs().max()
-dpy = (pyf - py_predicted).abs().max()
-dpt = (ptf - pt_predicted).abs().max()
+dpx_max = (pxf - px_predicted).abs().max()
+dpy_max = (pyf - py_predicted).abs().max()
+dpt_max = (ptf - pt_predicted).abs().max()
 
-print("Difference between predicted and computed final momentum, absolute:")
-print("dpx", dpx)
-print("dpy", dpy)
-print("dpt", dpt)
+dpx_rms = np.sqrt( np.mean( np.square(pxf - px_predicted) ))
+dpy_rms = np.sqrt( np.mean( np.square(pyf - py_predicted) ))
+dpt_rms = np.sqrt( np.mean( np.square(ptf - pt_predicted) ))
 
-print("Difference between predicted and computed final momentum, relative:")
-print("dpx/px_max", dpx / px_max)
-print("dpy/py_max", dpy / py_max)
-print("dpt/pt_max", dpt / pt_max)
+print()
+print("Difference between predicted and computed final momentum, absolute rms:")
+print("dpx_rms", dpx_rms)
+print("dpy_rms", dpy_rms)
+print("dpt_rms", dpt_rms)
 
+print()
+print("Difference between predicted and computed final momentum, absolute max:")
+print("dpx_max", dpx_max)
+print("dpy_max", dpy_max)
+print("dpt_max", dpt_max)
+
+print()
+print("Difference between predicted and computed final momentum (rms), relative:")
+print("dpx_rms/px_max", dpx_rms / px_max)
+print("dpy_rms/py_max", dpy_rms / py_max)
+print("dpt_rms/pt_max", dpt_rms / pt_max)
+
+# Test maximum error:
 atol = 5.1e-2
 print(f"  tol={atol}")
 
 assert np.allclose(
-    [dpx / px_max, dpy / py_max],
+    [dpx_rms / px_max, dpy_rms / py_max],
+    [0.0, 0.0],
+    atol=atol,
+)
+
+print()
+print("Difference between predicted and computed final momentum (max), relative:")
+print("dpx_max/px_max", dpx_max / px_max)
+print("dpy_max/py_max", dpy_max / py_max)
+print("dpt_max/pt_max", dpt_max / pt_max)
+
+# Test maximum error:
+atol = 5.1e-2
+print(f"  tol={atol}")
+    
+assert np.allclose(
+    [dpx_max / px_max, dpy_max / py_max],
     [0.0, 0.0],
     atol=atol,
 )

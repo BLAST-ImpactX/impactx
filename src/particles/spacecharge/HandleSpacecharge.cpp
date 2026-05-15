@@ -33,8 +33,6 @@ namespace impactx::particles::spacecharge
         amrex::Real slice_ds
     )
     {
-        BL_PROFILE("impactx::particles::wakefields::HandleSpacecharge")
-
         auto space_charge = get_space_charge_algo();
 
         // turn off if disabled by user
@@ -42,6 +40,11 @@ namespace impactx::particles::spacecharge
 
         // turn off if less than 2 particles
         if (amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false) < 2) { return; }
+
+        BL_PROFILE("impactx::particles::wakefields::HandleSpacecharge")
+
+        // optional, user-defined function call
+        call_hook("before_spacecharge");
 
         if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
         {
@@ -124,6 +127,9 @@ namespace impactx::particles::spacecharge
         //
         // in original Impact, we gather and space-charge push in x',y',t ,
         // assuming that the distribution did not change
+
+        // optional, user-defined function call
+        call_hook("after_spacecharge");
     }
 
 } // namespace impactx::particles::spacecharge

@@ -66,10 +66,19 @@ bool ImpactX::early_param_check ()
     // see python.rst docs
     std::unordered_set<std::string> allowed_hook_names = {
         "before_period",
-        "after_period",
         "before_element",
+        "before_slice",
+        "before_wakefield",
+        "after_wakefield",
+        "before_isr",
+        "after_isr",
+        "before_spacecharge",
+        "after_spacecharge",
+        "before_boundary",
+        "after_boundary",
+        "after_slice",
         "after_element",
-        "before_slice"
+        "after_period"
     };
     for (auto const & pair : m_hook) {
         std::string const & key = pair.first;

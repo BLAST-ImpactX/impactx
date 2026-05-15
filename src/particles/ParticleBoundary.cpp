@@ -41,6 +41,9 @@ namespace impactx::particles {
 
         BL_PROFILE("impactx::particles::ParticleBoundary")
 
+        // optional, user-defined function call
+        call_hook("before_boundary");
+
         // Access bucket length and reference particle quantities
         using namespace amrex::literals;
         amrex::ParticleReal const bucket_length = pc.GetBucketLength();
@@ -142,5 +145,8 @@ namespace impactx::particles {
                  } // End switch (particle_bc)
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
+
+        // optional, user-defined function call
+        call_hook("after_boundary");
     }
 } // namespace impactx::particles

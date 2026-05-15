@@ -33,8 +33,6 @@ namespace impactx::particles::wakefields
         amrex::Real slice_ds
     )
     {
-        BL_PROFILE("impactx::particles::wakefields::HandleISR")
-
         amrex::ParmParse pp_algo("algo");
         bool isr = false;
         pp_algo.queryAdd("isr", isr);
@@ -45,6 +43,10 @@ namespace impactx::particles::wakefields
         // Enter loop if lattice has bend element
         if (isr && element_has_isr)
         {
+            BL_PROFILE("impactx::particles::wakefields::HandleISR")
+
+            // optional, user-defined function call
+            call_hook("before_isr");
 
             int isr_order = 1;
             pp_algo.queryAddWithParser("isr_order", isr_order);
@@ -54,6 +56,9 @@ namespace impactx::particles::wakefields
 
             // Call function to kick particles with wake
             impactx::particles::wakefields::ISRPush(particle_container, slice_ds, R, isr_order, isr_on_ref_part);
+
+            // optional, user-defined function call
+            call_hook("after_isr");
         }
     }
 

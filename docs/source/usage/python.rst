@@ -381,10 +381,19 @@ Collective Effects & Overall Simulation Parameters
       Supported hook locations names are:
 
       * ``"before_period"``: before each period (e.g., turn or channel period)
-      * ``"after_period"``: after each period (e.g., turn or channel period)
       * ``"before_element"``: before each element is entered
-      * ``"after_element"``: after each element is exited
       * ``"before_slice"``: before each element slice
+      * ``"before_wakefield"``: before the CSR wakefield calculation
+      * ``"after_wakefield"``: after the CSR wakefield calculation
+      * ``"before_isr"``: before the incoherent synchrotron radiation (ISR) kick
+      * ``"after_isr"``: after the incoherent synchrotron radiation (ISR) kick
+      * ``"before_spacecharge"``: before the space-charge calculation
+      * ``"after_spacecharge"``: after the space-charge calculation
+      * ``"before_boundary"``: before particle boundary conditions are applied
+      * ``"after_boundary"``: after particle boundary conditions are applied
+      * ``"after_slice"``: after each element slice
+      * ``"after_element"``: after each element is exited
+      * ``"after_period"``: after each period (e.g., turn or channel period)
 
       Example: Function hook that can be called before each turn (sim):
 

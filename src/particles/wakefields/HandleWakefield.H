@@ -39,8 +39,6 @@ namespace impactx::particles::wakefields
         bool print_wakefield = false
     )
     {
-        BL_PROFILE("impactx::particles::wakefields::HandleWakefield")
-
         amrex::ParmParse pp_algo("algo");
         bool csr = false;
         pp_algo.queryAdd("csr", csr);
@@ -51,9 +49,14 @@ namespace impactx::particles::wakefields
         // Enter loop if lattice has bend element
         if (csr && element_has_csr)
         {
+            BL_PROFILE("impactx::particles::wakefields::HandleWakefield")
+
 #ifndef ImpactX_USE_FFT
             throw std::runtime_error("algo.csr was requested but ImpactX was not compiled with FFT support. Recompile with ImpactX_FFT=ON.");
 #endif
+
+            // optional, user-defined function call
+            call_hook("before_wakefield");
 
             int csr_bins = 150;
             pp_algo.queryAddWithParser("csr_bins", csr_bins);
@@ -159,6 +162,9 @@ namespace impactx::particles::wakefields
 
             // Call function to kick particles with wake
             impactx::particles::wakefields::WakePush(particle_container, convolved_wakefield, slice_ds, bin_size, t_min);
+
+            // optional, user-defined function call
+            call_hook("after_wakefield");
         }
     }
 

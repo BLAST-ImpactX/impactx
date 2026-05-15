@@ -216,6 +216,9 @@ namespace impactx
                     // inputs: unused parameters (e.g. typos) check after step 1 has finished
                     if (!early_params_checked) { early_params_checked = early_param_check(); }
 
+                    // optional, user-defined function call
+                    call_hook("after_slice");
+
                 } // end in-element space-charge slice-step loop
 
                 // optional, user-defined function call

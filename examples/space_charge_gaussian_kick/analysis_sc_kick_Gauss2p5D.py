@@ -93,9 +93,9 @@ dpx_max = (pxf - px_predicted).abs().max()
 dpy_max = (pyf - py_predicted).abs().max()
 dpt_max = (ptf - pt_predicted).abs().max()
 
-dpx_rms = np.sqrt( np.mean( np.square(pxf - px_predicted) ))
-dpy_rms = np.sqrt( np.mean( np.square(pyf - py_predicted) ))
-dpt_rms = np.sqrt( np.mean( np.square(ptf - pt_predicted) ))
+dpx_rms = np.sqrt(np.mean(np.square(pxf - px_predicted)))
+dpy_rms = np.sqrt(np.mean(np.square(pyf - py_predicted)))
+dpt_rms = np.sqrt(np.mean(np.square(ptf - pt_predicted)))
 
 print()
 print("Difference between predicted and computed final momentum, absolute rms:")
@@ -134,7 +134,7 @@ print("dpt_max/pt_max", dpt_max / pt_max)
 # Test maximum error:
 atol = 5.1e-2
 print(f"  tol={atol}")
-    
+
 assert np.allclose(
     [dpx_max / px_max, dpy_max / py_max],
     [0.0, 0.0],

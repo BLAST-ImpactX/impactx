@@ -8,6 +8,7 @@
 import numpy as np
 import openpmd_api as io
 import scipy.constants as sc
+from scipy.special import expi
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -63,9 +64,15 @@ gauss_pdf_z = np.exp(-(zi**2) / (2.0 * sigmaz**2)) / (np.sqrt(2.0 * np.pi) * sig
 px_predicted = L * Kscale * gauss_pdf_z * xi * gauss_xy_factor
 py_predicted = L * Kscale * gauss_pdf_z * yi * gauss_xy_factor
 
+potential_xy_factor = expi( -ri_2 / (2.0 * sigmax**2) ) + 0.5 * np.log( 4.0 * sigmax / ri_2**2 ) - np.log(2.0 * sigmax**2)
+d_gauss_pdf_z = -zi / sigmaz**2 * gauss_pdf_z
+pz_predicted = -L * Kscale * potential_xy_factor * d_gauss_pdf_z
+pt_predicted = -beta * pz_predicted
+
 # Maximum momentum kick
 px_max = px_predicted.abs().max()
 py_max = py_predicted.abs().max()
+pt_max = pt_predicted.abs().max()
 
 # Final particle data
 
@@ -80,17 +87,17 @@ ptf = final["momentum_t"]
 
 dpx = (pxf - px_predicted).abs().max()
 dpy = (pyf - py_predicted).abs().max()
-# dpt = (ptf - pti).abs().max()
+dpt = (ptf - pt_predicted).abs().max()
 
 print("Difference between predicted and computed final momentum, absolute:")
 print("dpx", dpx)
 print("dpy", dpy)
-# print("dpt", dpt)
+print("dpt", dpt)
 
 print("Difference between predicted and computed final momentum, relative:")
 print("dpx/px_max", dpx / px_max)
 print("dpy/py_max", dpy / py_max)
-# print("dpt", dpt)
+print("dpt/pt_max", dpt / pt_max)
 
 atol = 5.1e-2
 print(f"  tol={atol}")

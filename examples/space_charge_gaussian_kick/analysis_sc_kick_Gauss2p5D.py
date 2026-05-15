@@ -54,7 +54,7 @@ ti = initial["position_t"]
 pti = initial["momentum_t"]
 zi = beta * ti
 
-# Predicted momentum kick
+# Predicted momentum kick, from J. Qiang, Phys. Rev. Accel. Beams 28, 114602 (2025), eqs. (31-32)
 
 ri_2 = xi**2 + yi**2
 gauss_exp = np.exp(-ri_2 / (2.0 * sigmax**2))

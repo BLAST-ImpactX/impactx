@@ -431,7 +431,7 @@ namespace impactx::elements
 
             lambdax = m_gyro * theta * (gamma - 1_prt) * uy * ux;
             lambday = m_gyro * theta * ( -gamma + (gamma - 1_prt) * uy * uy );
-            lambdax = m_gyro * theta * (gamma - 1_prt) * uy * uz;
+            lambdaz = m_gyro * theta * (gamma - 1_prt) * uy * uz;
 
             // push the spin vector using the generator just determined (first factor)
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);

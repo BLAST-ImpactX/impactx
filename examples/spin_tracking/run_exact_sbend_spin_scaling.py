@@ -114,17 +114,15 @@ monitor = elements.BeamMonitor("monitor", backend="h5", period_sample_intervals=
 ds_value = 1.0
 rc_value = 10.0
 phi_value = 180.0 / np.pi * (ds_value / rc_value)
-ns = 10
+ns = 1
 
 bend1 = elements.ExactSbend(name="bend1", ds=ds_value, phi=phi_value, nslice=ns)
-bend2 = elements.Sbend(name="bend2", ds=ds_value, rc=rc_value, nslice=ns)
-bend3 = elements.Sbend(name="bend3", ds=-ds_value, rc=rc_value, nslice=ns)
+bend2 = elements.Sbend(name="bend2", ds=-ds_value, rc=rc_value, nslice=ns)
 
 # set the lattice
 sim.lattice.append(monitor)
 sim.lattice.append(bend1)
-# sim.lattice.append(bend2)
-sim.lattice.append(bend3)
+sim.lattice.append(bend2)  
 sim.lattice.append(monitor)
 
 # run simulation

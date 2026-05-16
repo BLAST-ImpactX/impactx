@@ -2049,3 +2049,13 @@ add_impactx_test(fodo-softedge.py
     examples/quadrupole_softedge/analysis_fodo_softedge.py
     OFF  # no plot script yet
 )
+
+# Scaling Test of Spin in an Exact Bend ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-sbend-spin-scaling.py)
+add_impactx_test(exact-sbend-spin-scaling.py
+    examples/spin_tracking/run_exact_sbend_spin_scaling.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_exact_sbend_spin_scaling.py
+    OFF  # no plot script yet   
+)

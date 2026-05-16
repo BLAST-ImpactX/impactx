@@ -2057,5 +2057,5 @@ add_impactx_test(exact-sbend-spin-scaling.py
     examples/spin_tracking/run_exact_sbend_spin_scaling.py
     ON    # ImpactX MPI-parallel
     examples/spin_tracking/analysis_exact_sbend_spin_scaling.py
-    OFF  # no plot script yet   
+    OFF  # no plot script yet
 )

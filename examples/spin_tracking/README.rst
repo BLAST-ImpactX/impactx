@@ -502,4 +502,3 @@ The analysis can be run using the following script:
    .. literalinclude:: analysis_exact_sbend_spin_scaling.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_exact_sbend_spin_scaling.py``.
-

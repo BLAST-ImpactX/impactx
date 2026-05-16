@@ -436,9 +436,9 @@ namespace impactx::elements
             // push the spin vector using the generator just determined (first factor)
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
-            lambdax = 0.0;
+            lambdax = 0_prt;
             lambday = m_slice_ds/m_rc - theta;
-            lambdaz = 0.0;
+            lambdaz = 0_prt;
 
             // push the spin vector using the generator just determined (second factor)
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);

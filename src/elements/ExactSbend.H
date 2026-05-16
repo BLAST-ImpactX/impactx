@@ -423,19 +423,22 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
+            // particle transit time through the slice
             T_Real dt = t - ti + m_slice_ds*m_ibeta;
-            T_Real omega = 1_prt / m_rc * m_beta_gamma / gamma;
-            amrex::ParticleReal omega_ref = 1_prt / m_rc * m_beta;
 
-            lambdax = m_gyro * (gamma - 1_prt) * uy * ux * omega;
-            lambday = -m_gyro * gamma * omega + m_gyro * (gamma - 1_prt) * uy * uy * omega;
-            lambdax = m_gyro * (gamma - 1_prt) * uy * uz * omega;
+            // advance in cyclotron phase
+            T_Real theta = dt / m_rc * m_beta_gamma / gamma;
+
+            lambdax = m_gyro * theta * (gamma - 1_prt) * uy * ux;
+            lambday = m_gyro * theta * ( -gamma + (gamma - 1_prt) * uy * uy );
+            lambdax = m_gyro * theta * (gamma - 1_prt) * uy * uz;
 
             // push the spin vector using the generator just determined (first factor)
-            // TODO:  Update labmdax, lambday, lambdaz to specify first map factor here.
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
-            lambday = -dt * (omega - omega_ref);
+            lambdax = 0.0;
+            lambday = m_slice_ds/m_rc - theta;
+            lambdaz = 0.0;
 
             // push the spin vector using the generator just determined (second factor)
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);

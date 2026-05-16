@@ -122,7 +122,7 @@ bend2 = elements.Sbend(name="bend2", ds=-ds_value, rc=rc_value, nslice=ns)
 # set the lattice
 sim.lattice.append(monitor)
 sim.lattice.append(bend1)
-sim.lattice.append(bend2)  
+sim.lattice.append(bend2)
 sim.lattice.append(monitor)
 
 # run simulation

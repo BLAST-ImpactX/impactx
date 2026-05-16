@@ -7,7 +7,6 @@
 
 import numpy as np
 import openpmd_api as io
-import pandas as pd
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -37,7 +36,9 @@ diff_ptf = final["momentum_t"] - pti
 diff_sxf = final["spin_x"] - sxi
 diff_syf = final["spin_y"] - syi
 diff_szf = final["spin_z"] - szi
-norm_phase_space_diff = np.sqrt(diff_xf**2 + diff_pxf**2 + diff_yf**2 + diff_pyf**2 + diff_tf**2 + diff_ptf**2)
+norm_phase_space_diff = np.sqrt(
+    diff_xf**2 + diff_pxf**2 + diff_yf**2 + diff_pyf**2 + diff_tf**2 + diff_ptf**2
+)
 norm_spin_diff = np.sqrt(diff_sxf**2 + diff_syf**2 + diff_szf**2)
 
 print("")

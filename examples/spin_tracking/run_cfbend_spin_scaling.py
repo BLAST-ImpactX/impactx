@@ -110,7 +110,7 @@ if amr.ParallelDescriptor.IOProcessor():
 monitor = elements.BeamMonitor("monitor", backend="h5", period_sample_intervals=10)
 
 # parameters
-L=1.0
+L = 1.0
 rc = 10.0
 k_quad = 1.0
 
@@ -123,17 +123,17 @@ nmap = 10  # number of steps for symplectic integration
 cfbend1 = elements.ExactCFbend(
     name="cfbend1",
     ds=L,
-    k_normal=[1.0/rc, k_quad],
+    k_normal=[1.0 / rc, k_quad],
     k_skew=[0.0, 0.0],
     unit=0,
     int_order=order,
     mapsteps=nmap,
-    nslice=ns,  
+    nslice=ns,
 )
 
 cfbend2 = elements.CFbend(
     name="cfbend2",
-    ds= -L,
+    ds=-L,
     rc=rc,
     k=k_quad,
     nslice=ns,

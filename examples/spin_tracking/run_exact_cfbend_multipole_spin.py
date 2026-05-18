@@ -72,10 +72,10 @@ cfbend2 = elements.ExactCFbend(
     ds=-1.0,
     k_normal=[1.0e-7, 1.0, -2.0],
     k_skew=[0.0, -0.5, 1.4],
-    unit=0,   
+    unit=0,
     int_order=2,
     mapsteps=20,
-    nslice=ns,   
+    nslice=ns,
 )
 
 multipole1 = elements.ExactMultipole(
@@ -98,14 +98,14 @@ multipole2 = elements.ExactMultipole(
     int_order=2,
     mapsteps=20,
     nslice=ns,
-) 
+)
 
 # set the lattice
 sim.lattice.append(monitor)
 sim.lattice.append(cfbend1)
-#sim.lattice.append(cfbend2)
+# sim.lattice.append(cfbend2)
 sim.lattice.append(multipole1)
-#sim.lattice.append(multipole2)
+# sim.lattice.append(multipole2)
 sim.lattice.append(monitor)
 
 # run simulation

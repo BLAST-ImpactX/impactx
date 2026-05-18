@@ -387,8 +387,6 @@ namespace impactx::elements
 
                int n = m+1;  // multipole order
 
-               //amrex::Print() << "n, kn, ks before scaling: " << n << ", " << kn << ", " << ks << "\n";
-
                // define dimensionless multipole coefficients (scaled by radius of curvature)
                kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
                ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
@@ -412,7 +410,6 @@ namespace impactx::elements
                             -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks;
                      dpy += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
                             -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
-                     //amrex::Print() << "x, y, dpx, dpy = " << x << ", " << y << ", " << dpx << ", " << dpy << "\n";
                      break;
                   case 5:  // decapole-like contribution
                      dpx += -1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
@@ -511,46 +508,46 @@ namespace impactx::elements
                kn = std::pow(m_rc, m) * kn;
                ks = std::pow(m_rc, m) * ks;
 
-               // The expressions below are taken from Table XII of T. Zolkin, PRAB 20, 043501 (2017).
+               // Below, we use the consistency relationships Bx = dpy/rho and By = -dpx/rho.  See T. Zolkin, PRAB 20, 043501 (2017).
 
                switch (n) {
 
                   case 1:   // dipole-like contribution (not used - contributing to map 1)
-                     Bx += (1_prt/rho) * ks;
-                     By += kn;
+                     Bx += ks;
+                     By += rho * kn;
                      break;
                   case 2:   // quadrupole-like contribution
-                     Bx += -y_scl/rho*kn + (rho*rho - 1_prt)/(2_prt*rho)*ks;
-                     By += ln_rho * kn + y_scl * ks;
+                     Bx += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;
+                     By += -(-rho*ln_rho*kn + y_scl*rho*ks);
                      break;
                   case 3:  // sextupole-like contribution
-                     Bx += y_scl*(rho*rho - 1_prt)/(2_prt*rho)*kn + 1_prt/(2_prt*rho)*(-(rho*rho-1_prt)/2_prt - y_scl*y_scl + rho*rho*ln_rho)*ks;
-                     By += 1_prt/2_prt*((rho*rho-1_prt)/2_prt - y_scl*y_scl - ln_rho)*kn + y_scl*ln_rho*ks;
+                     Bx += 0.5_prt*y_scl*(rho*rho - 1_prt)*kn + 0.25_prt*(1_prt - 2_prt*y_scl*y_scl - rho*rho + 2_prt*rho*rho*ln_rho)*ks;
+                     By += -(0.25_prt*rho*(1_prt + 2_prt*y_scl*y_scl - rho*rho + 2_prt*ln_rho)*kn + y_scl*rho*ln_rho*ks);
                      break;
                   case 4:  // octupole-like contribution
-                     Bx += -y_scl/(6_prt*rho)*(-3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl + 3*rho*rho*ln_rho)*kn
-                           +1_prt/(6_prt*rho)*(3_prt*(rho*rho+1_prt)/4_prt*(rho*rho-1_prt)/2_prt - 3_prt*(rho*rho-1_prt)/2_prt*y_scl*y_scl - 1.5_prt*rho*rho*ln_rho)*ks;
-                     By += 1_prt/6_prt*(-3_prt*(rho*rho-1_prt)/2_prt + 3_prt*((rho*rho+1_prt)/2_prt - y_scl*y_scl)*ln_rho)*kn
-                           +y_scl/6_prt*(3_prt*(rho*rho-1_prt)/2_prt - y_scl*y_scl - 3_prt*ln_rho)*ks;
+                     Bx += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
+                            -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
+                     By += -(-0.25_prt*(rho - powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + powi<3>(rho))*ln_rho)*kn
+                            -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks);
                      break;
                   case 5:  // decapole-like contribution
-                     Bx += -y_scl/(24_prt*rho)*(3_prt*(rho*rho+1_prt)*(rho*rho-1_prt)/2_prt - 2_prt*(rho*rho-1_prt)*y_scl*y_scl - 6_prt*rho*rho*ln_rho)*kn
-                           +1_prt/(24_prt*rho)*(-3_prt*(5_prt*powi<4>(rho)-4_prt*rho*rho-1_prt)/8_prt + 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)
-                           +3_prt/2_prt*(2_prt+rho*rho-4_prt*y_scl*y_scl)*rho*rho*ln_rho)*ks;
-                     By += 1_prt/24_prt*(3_prt*(powi<4>(rho)+4_prt*rho*rho-5_prt)/8_prt - 3_prt*(rho*rho-1_prt)*y_scl*y_scl + powi<4>(y_scl)
-                           -3_prt*(0.5_prt+rho*rho-2_prt*y_scl*y_scl)*ln_rho)*kn + y_scl/24_prt*(-6_prt*(rho*rho-1_prt)+4_prt*(3_prt*(rho*rho+1_prt)/2_prt
-                           -y_scl*y_scl)*ln_rho)*ks;
+                     Bx += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
+                            + 1_prt/192_prt*(3_prt + 8_prt*powi<4>(y_scl) + 12_prt*rho*rho
+                            - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
+                            +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
+                     By += -(-1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
+                            + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
+                            +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
+                            +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks);
                      break;
-                // default:
-                //   TODO: print a warning here that order > 5 is not currently supported
                }
 
             }
 
             // Scaling magnetic field to units used in the T-BMT representation (e.g. q*B/mc).
 
-            Bx = Bx * m_beta * m_gamma_ref / m_rc;
-            By = By * m_beta * m_gamma_ref / m_rc;
+            Bx = Bx * m_beta * m_gamma_ref / rho;
+            By = By * m_beta * m_gamma_ref / rho;
 
             // Electric field normalized by q/mc^2:
             T_Real const Ex = 0.0_prt;

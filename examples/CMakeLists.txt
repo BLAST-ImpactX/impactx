@@ -137,6 +137,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${analysis_script}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.analysis)
         set_property(TEST ${name}.analysis APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -152,6 +153,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${plot_script} --save-png
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.plot)
         set_property(TEST ${name}.plot APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -1636,6 +1638,17 @@ add_impactx_test(htu-beamline.py
     OFF  # no plot script yet
 )
 
+# Fermilab Booster (Simple Lattice) ###########################################
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster/booster_impactx_lattice.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster.py)
+add_impactx_test(simple-booster.py
+    examples/simple_booster/run_simple_booster.py
+    OFF  # ImpactX MPI-parallel
+    examples/simple_booster/analysis_simple_booster.py
+    examples/simple_booster/plot_simple_booster.py
+)
+
 # HTU Beamline Model with Off-Energy Transport ################################
 #
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
@@ -2013,6 +2026,20 @@ add_impactx_test(exact-quad-on-reference.py
     OFF  # no additional analysis script needed
 )
 
+# Multipole tracking with spin ###################
+add_impactx_test(multipole-spin
+    examples/spin_tracking/input_multipole_spin.in
+    OFF   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_multipole_spin.py
+    OFF  # no plot script yet
+)
+add_impactx_test(multipole-spin.py
+    examples/spin_tracking/run_multipole_spin.py
+    ON   # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_multipole_spin.py
+    OFF  # no additional analysis script needed
+)
+
 # Test of Periodic Phase-Wrapper ###################
 # without space charge
 add_impactx_test(phase-wrap
@@ -2025,5 +2052,13 @@ add_impactx_test(phase-wrap.py
     examples/phase_wrapper/run_phase_wrap.py
     ON    # ImpactX MPI-parallel
     examples/phase_wrapper/analysis_phase_wrap.py
+    OFF  # no plot script yet
+)
+
+# FODO Cell Using Soft-Edge Quadrupoles ###################
+add_impactx_test(fodo-softedge.py
+    examples/quadrupole_softedge/run_fodo_softedge_tanh.py
+    ON    # ImpactX MPI-parallel
+    examples/quadrupole_softedge/analysis_fodo_softedge.py
     OFF  # no plot script yet
 )

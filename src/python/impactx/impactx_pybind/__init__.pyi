@@ -243,6 +243,28 @@ class RefPart:
     @sedge.setter
     def sedge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix
+        """
+    @spin_coupling.setter
+    def spin_coupling(
+        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
+    ) -> None: ...
+    @property
+    def spin_rotation_vector(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
+        """
+        reference spin rotation vector
+        """
+    @spin_rotation_vector.setter
+    def spin_rotation_vector(
+        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
+    ) -> None: ...
+    @property
     def t(self) -> float:
         """
         clock time * c [m]

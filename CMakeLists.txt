@@ -32,9 +32,9 @@ endif()
 
 # C++ Standard in Superbuilds #################################################
 #
-# This is the easiest way to push up a C++17 requirement for AMReX and
+# This is the easiest way to push up a C++20 requirement for AMReX and
 # openPMD-api until they increase their requirement.
-set_cxx17_superbuild()
+set_cxx20_superbuild()
 
 
 # CCache Support ##############################################################
@@ -277,15 +277,9 @@ unset(_BUILDINFO_SRC)
 # add sources
 add_subdirectory(src)
 
-# C++ properties: at least a C++17 capable compiler is needed
+# C++ properties: at least a C++20 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    if(ImpactX_SIMD)
-        # vir::cvt
-        # https://github.com/mattkretz/vir-simd/issues/45
-        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
-    else()
-        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
-    endif()
+    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF
@@ -331,7 +325,7 @@ if(ImpactX_COMPUTE STREQUAL CUDA)
     endforeach()
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
         foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_17)
+            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_20)
         endforeach()
         set_target_properties(${_ALL_TARGETS} PROPERTIES
             CUDA_EXTENSIONS OFF

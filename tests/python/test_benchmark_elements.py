@@ -150,6 +150,7 @@ def test_ChrDrift(benchmark, sim):
     benchmark.pedantic(chrdrift.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrPlasmaLens(benchmark, sim):
     el = elements.ChrPlasmaLens(
         name="q1", ds=0.331817852986604588, k=2.98636067687944129, unit=0, nslice=nslice
@@ -170,6 +171,7 @@ def test_ChrAcc(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+# Spin is not affected by this element, no need to test variant
 def test_ConstF(benchmark, sim):
     el = elements.ConstF(name="constf1", ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -480,6 +482,7 @@ def test_Sol(benchmark, sim):
 #     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_TaperedPL(benchmark, sim):
     focal_length = 0.5  # focal length in m
     dtaper = 11.488289081903567  # 1/(horizontal dispersion in m)

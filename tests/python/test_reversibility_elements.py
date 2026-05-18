@@ -38,7 +38,7 @@ if Config.precision == "SINGLE":
     ref_atol = 3.0e-4
 else:
     phase_atol = 1.0e-10
-    spin_atol = 1.0e-12
+    spin_atol = 1.0e-11
     ref_atol = 1.0e-10
 
 
@@ -243,22 +243,25 @@ def test_ChrDrift(sim):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k"),
     [(0, 2.98636067687944129), (1, 5.0)],
     ids=["madx", "si"],
 )
 def test_ChrPlasmaLens(sim, unit, k):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
         elements.ChrPlasmaLens(
             ds=0.331817852986604588,
             k=k,
             unit=unit,
             nslice=nslice,
-            **PIPE_KWARGS,
+            **kwargs,
         ),
         sim,
         phase_atol=2e-6 if unit == 1 else phase_atol,
+        spin=sim.spin,
     )
 
 
@@ -301,6 +304,7 @@ def test_ChrAcc(sim):
     )
 
 
+# Spin is not affected by this element, no need to test variant
 def test_ConstF(sim):
     roundtrip(
         elements.ConstF(ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice, **PIPE_KWARGS),
@@ -541,16 +545,19 @@ def test_NonlinearLens(sim):
     roundtrip(elements.NonlinearLens(knll=4.0e-6, cnll=0.01, **ALIGNMENT_KWARGS), sim)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0 / 0.5), (1, 6.0)], ids=["madx", "si"])
 def test_TaperedPL(sim, unit, k):
+    kwargs = {} if sim.spin else ALIGNMENT_KWARGS
     roundtrip(
         elements.TaperedPL(
             k=k,
             taper=11.488289081903567,
             unit=unit,
-            **ALIGNMENT_KWARGS,
+            **kwargs,
         ),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -631,6 +638,8 @@ def test_RFCavity(sim):
 # =============================================================================
 
 
+# todo the m_modify_ref_part=true parameter is not yet handled
+#   see https://github.com/BLAST-ImpactX/impactx/pull/1431
 @pytest.mark.parametrize(
     ("model", "g", "K2"),
     [

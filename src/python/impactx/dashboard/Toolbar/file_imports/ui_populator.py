@@ -9,6 +9,7 @@ License: BSD-3-Clause-LBNL
 from ... import ctrl, state
 from ...Input.lattice.ui import add_lattice_element
 from ...Input.lattice.variable_handler import LatticeVariableHandler
+from ...Input.visualization.lattice import update_lattice_statistics
 from .python.parser import DashboardParser
 
 
@@ -125,6 +126,8 @@ def _populate_lattice_config_to_ui(parsed_data):
                     parameter_type,
                 )
 
+    update_lattice_statistics()
+
 
 @staticmethod
 def _populate_lattice_config_variables_to_ui(parsed_data):
@@ -136,4 +139,6 @@ def _populate_lattice_config_variables_to_ui(parsed_data):
         if not any(var["name"] == name for var in state.variables):
             state.variables.append({"name": name, "value": value, "error_message": ""})
     state.dirty("variables")
+    LatticeVariableHandler.update_lattice_parameter_bindings()
     LatticeVariableHandler.update_delete_availability()
+    update_lattice_statistics()

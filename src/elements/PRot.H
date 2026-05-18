@@ -11,6 +11,7 @@
 #define IMPACTX_PROT_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
@@ -41,8 +42,6 @@ namespace impactx::elements
         static constexpr auto type = "PRot";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
-
         /** An exact pole face rotation in the x-z plane, from a frame
          *  in which the reference orbit has angle phi_in with the z-axis,
          *  to a frame in which the reference orbit has angle phi_out
@@ -58,8 +57,8 @@ namespace impactx::elements
             std::optional<std::string> name = std::nullopt
         )
         : Named(std::move(name)),
-          m_phi_in(phi_in * degree2rad),
-          m_phi_out(phi_out * degree2rad)
+          m_phi_in(phi_in * mixin::Alignment::degree2rad),
+          m_phi_out(phi_out * mixin::Alignment::degree2rad)
         {
         }
 

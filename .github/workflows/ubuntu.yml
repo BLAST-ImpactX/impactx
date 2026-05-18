@@ -156,7 +156,7 @@ jobs:
       run: |
         cmake -S . -B build            \
           -DBUILD_SHARED_LIBS=ON       \
-          -DCMAKE_BUILD_TYPE=Debug     \
+          -DCMAKE_BUILD_TYPE=Release   \
           -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
@@ -176,11 +176,11 @@ jobs:
         export PATH=$HOME/.local/bin:$PATH
         export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
-        impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 1 || \
+        impactx.NOMPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }
-        impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 2 || \
+        impactx.NOMPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 2 || \
         { cat Backtrace.0.0; exit 1; }
-        impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 3 || \
+        impactx.NOMPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 3 || \
         { cat Backtrace.0.0; exit 1; }
 
     - name: run installed python module

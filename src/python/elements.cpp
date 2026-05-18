@@ -880,7 +880,8 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location)),
+                     std::make_pair("modify_ref_part", dip_edge.m_modify_ref_part)
                  );
              }
         )
@@ -900,7 +901,8 @@ void init_elements(py::module& m)
                      std::make_pair("K5", dip_edge.m_K5),
                      std::make_pair("K6", dip_edge.m_K6),
                      std::make_pair("model", amrex::getEnumNameString(dip_edge.m_model)),
-                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location))
+                     std::make_pair("location", amrex::getEnumNameString(dip_edge.m_location)),
+                     std::make_pair("modify_ref_part", dip_edge.m_modify_ref_part)
                  );
              }
         )
@@ -918,6 +920,7 @@ void init_elements(py::module& m)
             amrex::ParticleReal K6,
             std::string const & model,
             std::string const & location,
+            bool modify_ref_part,
             amrex::ParticleReal dx,
             amrex::ParticleReal dy,
             amrex::ParticleReal rotation_degree,
@@ -929,7 +932,7 @@ void init_elements(py::module& m)
 
                 dipedge::Model const fm = amrex::getEnum<dipedge::Model>(model);
                 dipedge::Location const fl = amrex::getEnum<dipedge::Location>(location);
-                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, dx, dy, rotation_degree, name);
+                return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, modify_ref_part, dx, dy, rotation_degree, name);
             }),
             py::arg("psi"),
             py::arg("rc"),
@@ -944,6 +947,7 @@ void init_elements(py::module& m)
             py::arg("K6") = 0,
             py::arg("model") = "linear",
             py::arg("location") = "entry",
+            py::arg("modify_ref_part") = false,
             py::arg("dx") = 0,
             py::arg("dy") = 0,
             py::arg("rotation") = 0,
@@ -1022,6 +1026,11 @@ void init_elements(py::module& m)
                 dip_edge.m_location = amrex::getEnum<dipedge::Location>(location);
             },
             "Fringe field location (entry or exit)"
+        )
+        .def_property("modify_ref_part",
+            [](DipEdge & dip_edge) { return dip_edge.m_modify_ref_part; },
+            [](DipEdge & dip_edge, bool modify_ref_part) { dip_edge.m_modify_ref_part = modify_ref_part; },
+            "Apply DipEdge to reference particle (boolean)."
         )
 
     ;
@@ -1579,7 +1588,7 @@ void init_elements(py::module& m)
         )
         .def_property("multipole",
             [](Multipole & multipole) { return multipole.m_multipole; },
-            [](Multipole & multipole, amrex::ParticleReal multipole_index) {
+            [](Multipole & multipole, int multipole_index) {
                 multipole.m_multipole = multipole_index;
                 multipole.compute_factorial();
             },
@@ -2020,7 +2029,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "An RF cavity."
@@ -2313,7 +2322,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A soft-edge solenoid."
@@ -2355,7 +2364,7 @@ void init_elements(py::module& m)
         */
         .def_property("unit",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_unit; },
-            [](SoftSolenoid & soft_sol, amrex::ParticleReal unit) { soft_sol.m_unit = unit; },
+            [](SoftSolenoid & soft_sol, int unit) { soft_sol.m_unit = unit; },
             "specification of units for scaling of the on-axis longitudinal magnetic field"
         )
         .def_property("mapsteps",
@@ -2475,8 +2484,8 @@ void init_elements(py::module& m)
              [](PRot const & prot) {
                  return element_name(
                      prot,
-                     std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
-                     std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                     std::make_pair("phi_in", prot.m_phi_in / elements::mixin::Alignment::degree2rad),
+                     std::make_pair("phi_out", prot.m_phi_out / elements::mixin::Alignment::degree2rad)
                  );
              }
         )
@@ -2485,9 +2494,9 @@ void init_elements(py::module& m)
                 if (in_degrees) {
                     return element_dict(
                         prot,
-                        std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                        std::make_pair("phi_in", prot.m_phi_in / elements::mixin::Alignment::degree2rad),
                                                                      // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                        std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                        std::make_pair("phi_out", prot.m_phi_out / elements::mixin::Alignment::degree2rad)
                     );
                 } else {
                     // legacy: buggy radians instead of degrees
@@ -2529,13 +2538,13 @@ void init_elements(py::module& m)
         )
         /* BUG: this should be in degree
         .def_property("phi_in",
-            [](PRot & prot) { return prot.m_phi_in / PRot::degree2rad; },
-            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * PRot::degree2rad; },
+            [](PRot & prot) { return prot.m_phi_in / elements::mixin::Alignment::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * elements::mixin::Alignment::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees"
         )
         .def_property("phi_out",
-            [](PRot & prot) { return prot.m_phi_out / PRot::degree2rad; },
-            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * PRot::degree2rad; },
+            [](PRot & prot) { return prot.m_phi_out / elements::mixin::Alignment::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * elements::mixin::Alignment::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees"
         )
         */
@@ -2587,7 +2596,7 @@ void init_elements(py::module& m)
              py::arg("rotation") = 0,
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
-             py::arg("mapsteps") = 1,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              "A soft-edge quadrupole."

@@ -475,7 +475,7 @@ Particles
       :param keep_mass: do not reset the reference particle mass
       :param keep_charge: do not reset the reference particle charge
 
-   .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None)
+   .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None, sx=None, sy=None, sz=None)
 
       Add new particles to the container for fixed s.
 
@@ -495,6 +495,9 @@ Particles
       :param qm: charge over mass in 1/eV
       :param bunch_charge: total charge within a bunch in C
       :param w: weight of each particle: the macroparticle charge in units of the elementary charge `e` (i.e., how many real particles to represent)
+      :param sx: spin component in x (optional; if provided, sy and sz must also be provided)
+      :param sy: spin component in y (optional; if provided, sx and sz must also be provided)
+      :param sz: spin component in z (optional; if provided, sx and sy must also be provided)
 
    .. py:method:: ref_particle()
 
@@ -1201,7 +1204,7 @@ This module provides elements and methods for the accelerator lattice.
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -1227,6 +1230,16 @@ This module provides elements and methods for the accelerator lattice.
    By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
    the corresponding default value of ``K2`` is set to 1).
 
+   Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference
+   trajectory.  For a beam, this will result in a centroid offset that will produce centroid oscillations in the downstream beamline. In practice, this can be avoided by aligning the downstream elements with
+   the true horizontal position (after including the effect of the fringe field).  To model this correction, we allow two options in the dipedge model:
+
+   * the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+   this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+   * the option ``modify_ref_part = True``, in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+   this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]
    :param g: Gap parameter [m]
@@ -1240,6 +1253,7 @@ This module provides elements and methods for the accelerator lattice.
    :param K6: Fringe field integral [unitless]
    :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
    :param location: the fringe field edge location: ``entry`` (default) or ``exit``
+   :param modify_ref_part: apply fringe field to the reference particle ``True`` or ``False`` (default)
    :param dx: horizontal translation error [m]
    :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]
@@ -1694,14 +1708,20 @@ This module provides elements and methods for the accelerator lattice.
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
-   A radiofrequency cavity.
+   A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
    **or** raw on-axis field data (``z``, ``field_on_axis``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
+
+   The units used for the on-axis longitudinal electric field are described in the documentation of ``escale`` below.  For example, if the values used to
+   describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+   ``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.
+
+   In this case, ``escale`` has units of inverse meters.
 
    :param ds: Segment length in m.
    :param escale: scaling factor for on-axis RF electric field in 1/m
@@ -1779,14 +1799,18 @@ This module provides elements and methods for the accelerator lattice.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
-   A soft-edge solenoid.
+   A soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
    **or** raw on-axis field data (``z``, ``field_on_axis``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
+
+   The units used for the on-axis longitudinal magnetic field data are determined by the parameter ``unit``.  For example, if the values used to
+   describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``field_on_axis``) attain a peak on-axis value of 1, then the parameter
+   ``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic rigidity.
 
    :param ds: Segment length in m.
    :param bscale: Scaling factor for on-axis magnetic field Bz in inverse meters (if unit = 0)
@@ -1897,17 +1921,23 @@ This module provides elements and methods for the accelerator lattice.
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=1, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
-   A soft-edge quadrupole.
+   A soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
    **or** raw on-axis field/gradient data (``z``, ``gradient_on_axis``, ``ncoef``), not both.
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
 
+   The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+   describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+   ``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.
+
+   In this case, ``gscale`` has units of inverse meters squared.
+
    :param ds: Segment length in m.
-   :param gscale: Scaling factor for on-axis field gradient in inverse meters
+   :param gscale: Scaling factor for on-axis field gradient in inverse meters squared.
    :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis field gradient dBy/dx
             (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
    :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient dBy/dx

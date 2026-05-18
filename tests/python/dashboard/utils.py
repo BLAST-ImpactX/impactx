@@ -106,9 +106,12 @@ class DashboardTester:
         :param element_name: Name of the lattice element to add.
         """
         try:
+            current_lattice = self.get_state("selected_lattice_list") or []
+            expected_count = len(current_lattice) + 1
             self.set_state("selected_lattice", element_name)
             self.assert_state("is_selected_element_invalid", False)
             self.sb.click("#add_lattice_element")
+            self.assert_state_list_length("selected_lattice_list", expected_count)
         except Exception as error:
             raise Exception(
                 f"Unable to set input for lattice element '{element_name}': {str(error)}"
@@ -247,6 +250,34 @@ class DashboardTester:
             f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds "
             f"(last value: '{value}').\n"
             f"curr_view_details_log: {self.get_state('curr_view_details_log')}"
+        )
+
+    def assert_state_list_length(
+        self, state_name: str, expected_length: int, timeout=TIMEOUT
+    ):
+        """
+        Checks if trame.state[state_name] is a list with the expected length.
+        """
+        value = None
+        for i in range(timeout):
+            try:
+                value = self.get_state(state_name)
+            except TimeoutException:
+                value = None
+
+            if isinstance(value, list) and len(value) == expected_length:
+                return
+
+            current_length = len(value) if isinstance(value, list) else None
+            print(
+                f"Waiting for len(state['{state_name}']) to become '{expected_length}' "
+                f"- (current length: '{current_length}') - ({i + 1}s elapsed)"
+            )
+            time.sleep(1)
+
+        raise TimeoutError(
+            f"len(state['{state_name}']) never became '{expected_length}' "
+            f"after {timeout} seconds (last value: '{value}')."
         )
 
     def get_state(self, state_name):

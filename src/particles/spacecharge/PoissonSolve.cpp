@@ -75,7 +75,7 @@ namespace impactx::particles::spacecharge
         }
 
         // MLMG options
-        amrex::Real mlmg_relative_tolerance = 1.e-7; // relative TODO: make smaller for SP
+        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative TODO: make smaller for SP
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
         pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
         pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);

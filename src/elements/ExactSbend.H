@@ -41,7 +41,6 @@ namespace impactx::elements
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ExactSbend";
-        static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
         using PType = ImpactXParticleContainer::ParticleType;
 
         /** The body of an ideal sector bend, using the exact nonlinear transfer map.

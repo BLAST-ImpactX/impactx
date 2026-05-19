@@ -2051,7 +2051,7 @@ add_impactx_test(fodo-softedge.py
 )
 
 # Scaling Test of Spin in an Exact Bend ###################
-file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords.csv
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-sbend-spin-scaling.py)
 add_impactx_test(exact-sbend-spin-scaling.py
     examples/spin_tracking/run_exact_sbend_spin_scaling.py

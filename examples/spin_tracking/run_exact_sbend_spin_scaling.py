@@ -36,7 +36,7 @@ qm_eev = 1.0 / 0.510998950 / 1e6  # electron charge/mass in e / eV
 beam = sim.beam
 
 if amr.ParallelDescriptor.IOProcessor():
-    df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
+    df_initial = pd.read_csv("./initial_coords_sbend.csv", sep=" ")
     dx = df_initial["x"].to_numpy()
     dpx = df_initial["px"].to_numpy()
     dy = df_initial["y"].to_numpy()
@@ -116,13 +116,25 @@ rc_value = 10.0
 phi_value = 180.0 / np.pi * (ds_value / rc_value)
 ns = 1
 
+# to use the magnetic field instead
+Brho = ref.rigidity_Tm
+B_value = Brho / rc_value
+
 bend1 = elements.ExactSbend(name="bend1", ds=ds_value, phi=phi_value, nslice=ns)
 bend2 = elements.Sbend(name="bend2", ds=-ds_value, rc=rc_value, nslice=ns)
+bend3 = elements.ExactSbend(name="bend3", ds=ds_value, phi=phi_value, B=B_value, nslice=ns)
 
 # set the lattice
 sim.lattice.append(monitor)
+
+# test of forward + reverse using rc = ds/phi
 sim.lattice.append(bend1)
 sim.lattice.append(bend2)
+
+# test of forward + reverse using rc = Brho/B
+sim.lattice.append(bend3)
+sim.lattice.append(bend2)
+
 sim.lattice.append(monitor)
 
 # run simulation

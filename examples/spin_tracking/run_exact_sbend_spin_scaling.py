@@ -122,7 +122,9 @@ B_value = Brho / rc_value
 
 bend1 = elements.ExactSbend(name="bend1", ds=ds_value, phi=phi_value, nslice=ns)
 bend2 = elements.Sbend(name="bend2", ds=-ds_value, rc=rc_value, nslice=ns)
-bend3 = elements.ExactSbend(name="bend3", ds=ds_value, phi=phi_value, B=B_value, nslice=ns)
+bend3 = elements.ExactSbend(
+    name="bend3", ds=ds_value, phi=phi_value, B=B_value, nslice=ns
+)
 
 # set the lattice
 sim.lattice.append(monitor)

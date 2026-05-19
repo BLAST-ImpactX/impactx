@@ -8,6 +8,7 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 import amrex.space3d as amr
 from impactx import Config, ImpactX, distribution, elements
@@ -34,11 +35,12 @@ sim.slice_step_diagnostics = True
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# load a 2 GeV electron beam with an initial
-# unnormalized rms emittance of 2 nm
+# basic beam properties
+R0 = 1.0e-3 # initial beam radius (m)
+Ib = 0.15 # beam current (A)   
 kin_energy_MeV = 250  # reference energy
-beam_current_A = 0.15  # beam current
-npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
+beam_current_A = Ib  # beam current
+npart = 100000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   reference particle
 ref = sim.beam.ref
@@ -47,8 +49,8 @@ qm_eev = 1.0 / 938.27208816 / 1e6  # electron charge/mass in e / eV
 
 #   particle bunch
 distr = distribution.KVdist(
-    lambdaX=5.0e-4,
-    lambdaY=5.0e-4,
+    lambdaX=R0/2.0,
+    lambdaY=R0/2.0,
     lambdaT=1.0e-3,
     lambdaPx=0.0,
     lambdaPy=0.0,
@@ -100,10 +102,18 @@ pc.add_n_particles(dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_e
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-doubling_distance = 10.612823669911099
+betgam = ref.beta_gamma # relativistic factor
+IA = 3.1297388031196285e7 # alfven current for protons
+Kpv = 2.0 * Ib / (IA * betgam**3) # generalized beam perveance
+double_constant = 1.516770632602484 # constant independent of beam parameters
+doubling_distance = R0 * double_constant / np.sqrt(Kpv)
+print("Doubling distance: ")
+print(doubling_distance)
+
+ns = 200
 
 sim.lattice.extend(
-    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor]
+    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=ns), monitor]
 )
 
 sarr = []

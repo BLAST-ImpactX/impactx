@@ -2062,3 +2062,10 @@ add_impactx_test(fodo-softedge.py
     examples/quadrupole_softedge/analysis_fodo_softedge.py
     OFF  # no plot script yet
 )
+
+# Expanding Beam in Free Space with 2D Space Charge, with Test Particles ###################
+add_impactx_test(expanding-fft-2d-test-particles.py
+    examples/expanding_beam/run_expanding_fft_2d_test_particles.py
+    OFF    # ImpactX MPI-parallel
+)
+

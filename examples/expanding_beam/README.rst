@@ -129,7 +129,7 @@ We run the following script to analyze correctness:
 
 
 .. _examples-expanding-fft-2d-test-particles:
-          
+
 Expanding Beam in Free Space with 2D Space Charge, with Test Particles
 ========================================================================
 
@@ -138,20 +138,20 @@ A long, coasting unbunched beam expanding freely in free space under its own 2D 
 The problem parameters are identical to examples-expanding-fft-2d, except that a set of test particles is loaded and tracked, together with the main particle bunch.
 
 The test particle data is collected once per space charge slice, using the callback hook feature, and the test particle orbits are plotted vs. distance s.
-   
+
 Run
 ---
-          
+
 This example can be run as:
-          
+
 * **Python** script: ``python3 run_expanding_fft_2D.py`` or
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
 .. tab-set::
-   
+
    .. tab-item:: Python: Script (FFT)
-      
+
       .. literalinclude:: run_expanding_fft_2D_test_particles.py
          :language: python3
          :caption: You can copy this file from ``examples/expanding/run_expanding_fft_2D_test_particles.py``.

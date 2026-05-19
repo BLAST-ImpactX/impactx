@@ -2068,4 +2068,3 @@ add_impactx_test(expanding-fft-2d-test-particles.py
     examples/expanding_beam/run_expanding_fft_2d_test_particles.py
     OFF    # ImpactX MPI-parallel
 )
-

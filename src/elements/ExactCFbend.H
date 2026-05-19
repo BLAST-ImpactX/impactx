@@ -505,8 +505,8 @@ namespace impactx::elements
                int n = m+1;  // multipole order
 
                // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, m) * kn;
-               ks = std::pow(m_rc, m) * ks;
+               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
+               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
 
                // Below, we use the consistency relationships Bx = dpy/rho and By = -dpx/rho.  See T. Zolkin, PRAB 20, 043501 (2017).
 

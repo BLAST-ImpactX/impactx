@@ -404,6 +404,12 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
 
+            // special case of zero field: exact drift, spin is unaffected
+            if (m_phi == 0_prt && m_B == 0_prt) {
+                (*this)(x, y, t, px, py, pt, idcpu, refpart);
+                return;
+            }
+
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
             T_Real lambday = 0_prt;
@@ -425,7 +431,7 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
             // particle transit time through the slice
-            T_Real dt = t - ti + m_slice_ds*m_ibeta;
+            T_Real dt = t - ti + m_slice_phi * m_rc * m_ibeta;
 
             // advance in cyclotron phase
             T_Real theta = dt / m_rc * m_beta_gamma / gamma;
@@ -438,7 +444,7 @@ namespace impactx::elements
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
             lambdax = 0_prt;
-            lambday = m_slice_ds/m_rc - theta;
+            lambday = m_slice_phi - theta;
             lambdaz = 0_prt;
 
             // push the spin vector using the generator just determined (second factor)

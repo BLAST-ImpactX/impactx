@@ -466,7 +466,7 @@ Scaling Test of Spin in an Exact Sector Bend
 
 This example tests the propagation of spin through the :py:class:`~impactx.elements.ExactSbend` element.
 
-The :py:class:`~impactx.elements.ExactSbend` element incorportates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
+The :py:class:`~impactx.elements.ExactSbend` element incorporates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
 
 A small number of initial conditions are tracked, with increasing distance from the phase space design point.
 

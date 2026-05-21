@@ -18,8 +18,8 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.max_level = 0
 sim.n_cell = [32, 32, 1]
-sim.blocking_factor_x = [32]
-sim.blocking_factor_y = [32]
+sim.blocking_factor_x = [8]
+sim.blocking_factor_y = [8]
 sim.blocking_factor_z = [1]
 
 sim.particle_shape = 2  # B-spline order

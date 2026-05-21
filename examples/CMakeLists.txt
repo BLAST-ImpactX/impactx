@@ -2064,6 +2064,8 @@ add_impactx_test(fodo-softedge.py
 )
 
 # Expanding Beam in Free Space with 2D Space Charge, with Test Particles ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/expanding_beam/init_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/expanding-fft-2d-test-particles.py)
 add_impactx_test(expanding-fft-2d-test-particles.py
     examples/expanding_beam/run_expanding_fft_2d_test_particles.py
     ON  # ImpactX MPI-parallel

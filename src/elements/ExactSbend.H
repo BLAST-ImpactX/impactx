@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -37,6 +38,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -132,6 +134,11 @@ namespace impactx::elements
             // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
             m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
+
+            // gyromagnetic constant (used during spin push)
+            m_gyro = refpart.gyromagnetic_anomaly;
+            m_beta_gamma = refpart.beta_gamma();
+            m_beta = refpart.beta();
 
         }
 
@@ -362,6 +369,89 @@ namespace impactx::elements
             return R;
         }
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
+
+            // special case of zero field: exact drift, spin is unaffected
+            if (m_phi == 0_prt && m_B == 0_prt) {
+                (*this)(x, y, t, px, py, pt, idcpu, refpart);
+                return;
+            }
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // store initial variables needed for spin push
+            T_Real ti = t;
+            T_Real Pnorm = sqrt(1_prt + pt*pt - 2_prt*pt*m_ibeta);
+            T_Real gamma = (1_prt - pt*m_beta)*refpart.gamma();
+            T_Real ux = px/Pnorm;
+            T_Real uy = py/Pnorm;
+            T_Real uz = sqrt(1_prt - ux*ux - uy*uy);
+
+            // For this element, note that the time-of-flight from entry to
+            // exit is needed for evaluation of the spin map, so the phase
+            // space push is applied first, in order to obtain the change in t.
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+            // particle transit time through the slice
+            T_Real dt = t - ti + m_slice_phi * m_rc * m_ibeta;
+
+            // advance in cyclotron phase
+            T_Real theta = dt / m_rc * m_beta_gamma / gamma;
+
+            lambdax = m_gyro * theta * (gamma - 1_prt) * uy * ux;
+            lambday = m_gyro * theta * ( -gamma + (gamma - 1_prt) * uy * uy );
+            lambdaz = m_gyro * theta * (gamma - 1_prt) * uy * uz;
+
+            // push the spin vector using the generator just determined (first factor)
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            lambdax = 0_prt;
+            lambday = m_slice_phi - theta;
+            lambdaz = 0_prt;
+
+            // push the spin vector using the generator just determined (second factor)
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+        }
+
+
         amrex::ParticleReal m_phi; //! bend angle in radians
         amrex::ParticleReal m_B;  //! magnetic field in T
 
@@ -369,6 +459,8 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_ibetagam2, m_rc, m_sin_phi, m_cos_phi;
+        amrex::ParticleReal m_gyro, m_beta, m_beta_gamma;
+
     };
 
 } // namespace impactx

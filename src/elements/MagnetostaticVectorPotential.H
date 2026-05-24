@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -13,17 +13,18 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
-#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
-#include "mixin/thick.H"
-#include "mixin/named.H"
+#include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
-
-#include <ablastr/warn_manager/WarnManager.H>
+#include "mixin/named.H"
+#include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
+#include "mixin/thick.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Parser.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SmallMatrix.H>
 #include <AMReX_Vector.H>
 
 #include <cmath>
@@ -34,37 +35,27 @@
 
 namespace impactx::elements
 {
-/** Dynamic data for the vector potential elements
- *
- * The function parser exists out of two parts: a host-only amrex::Parser and
- * a device-executuable amrex::ParserExecutor<N>. We keep a lookup table here
- * for all the host data, which we clean up in the end.
- */
-namespace MagnetostaticVectorPotentialData
-{
-    //! last used id for a created vector potential element
-    inline int next_id = 0;
-
-    // user-provided functions & derivatives with 3 independent variables x,y,z
-
-    //! host: vector potential in x
-    inline std::map<int, amrex::Parser> m_parser_ax;
-    //! host: vector potential in y
-    inline std::map<int, amrex::Parser> m_parser_ay;
-    //! host: vector potential derivative dA_x/dx
-    inline std::map<int, amrex::Parser> m_parser_daxdx;
-    //! host: vector potential derivative dA_x/dy
-    inline std::map<int, amrex::Parser> m_parser_daxdy;
-    //! host: vector potential derivative dA_y/dx
-    inline std::map<int, amrex::Parser> m_parser_daydx;
-    //! host: vector potential derivative dA_y/dy
-    inline std::map<int, amrex::Parser> m_parser_daydy;
-    //! host: vector potential derivative dA_z/dx
-    inline std::map<int, amrex::Parser> m_parser_dazdx;
-    //! host: vector potential derivative dA_z/dy
-    inline std::map<int, amrex::Parser> m_parser_dazdy;
-
-} // namespace MagnetostaticVectorPotentialData
+    /** Host-side parsers and device-callable executors for the user-defined
+     *  vector-potential components and their transverse derivatives.
+     *
+     * The amrex::Parser is host-only; the corresponding amrex::ParserExecutor
+     * is device-callable. We keep both: host-side parsers live in this struct
+     * and the executors are obtained on demand in compute_constants().
+     *
+     * Host data persists across simulations; the executors are released when
+     * AMReX shuts down.
+     */
+    struct MagnetostaticVectorPotentialParsers
+    {
+        amrex::Parser ax;
+        amrex::Parser ay;
+        amrex::Parser daxdx;
+        amrex::Parser daxdy;
+        amrex::Parser daydx;
+        amrex::Parser daydy;
+        amrex::Parser dazdx;
+        amrex::Parser dazdy;
+    };
 
     struct MagnetostaticVectorPotential
     : public mixin::Named,
@@ -72,10 +63,13 @@ namespace MagnetostaticVectorPotentialData
       public mixin::LinearTransport<MagnetostaticVectorPotential>,
       public mixin::Thick,
       public mixin::Alignment,
+      public mixin::NoFinalize,
       public mixin::PipeAperture
     {
         static constexpr auto type = "MagnetostaticVectorPotential";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        using DynamicData = mixin::GPUDataRegistry<MagnetostaticVectorPotentialParsers>;
 
         /** Symplectic integration in a user-defined magnetostatic vector
          *  potential, using the exact Hamiltonian, which includes all
@@ -90,7 +84,7 @@ namespace MagnetostaticVectorPotentialData
          *  https://doi.org/10.1090/mcom/3778
          *
          * @param ds Segment length in m.
-         * @param unit  Unit specification for vector potential
+         * @param unit  Unit specification for the vector potential
          *           unit = 0 dimensionless (default)
          *           unit = 1 SI units of T-m
          * @param str_ax function string for A_x(x,y,z)
@@ -115,21 +109,21 @@ namespace MagnetostaticVectorPotentialData
         MagnetostaticVectorPotential (
             amrex::ParticleReal ds,
             int unit,
-            std::string str_ax = "0",
-            std::string str_ay = "0",
-            std::string str_daxdx = "0",
-            std::string str_daxdy = "0",
-            std::string str_daydx = "0",
-            std::string str_daydy = "0",
-            std::string str_dazdx = "0",
-            std::string str_dazdy = "0",
+            std::string const & str_ax = "0",
+            std::string const & str_ay = "0",
+            std::string const & str_daxdx = "0",
+            std::string const & str_daxdy = "0",
+            std::string const & str_daydx = "0",
+            std::string const & str_daydy = "0",
+            std::string const & str_dazdx = "0",
+            std::string const & str_dazdy = "0",
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
             amrex::ParticleReal aperture_x = 0,
             amrex::ParticleReal aperture_y = 0,
             int int_order = 2,
-            int mapsteps = 5,
+            int mapsteps = 10,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )
@@ -137,26 +131,32 @@ namespace MagnetostaticVectorPotentialData
           Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps),
-          m_id(MagnetostaticVectorPotentialData::next_id)
+          m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps),
+          m_id(DynamicData::allocate_id())
         {
-            // next created vector potential element has another id for its functions
-            MagnetostaticVectorPotentialData::next_id++;
-
-            // variables of the function
+            // variables of the user-defined functions
             amrex::Vector<std::string> const varnames = {"x", "y", "z"};
 
-            // host data
+            // build host parsers
             amrex::ParmParse const pp;
-            MagnetostaticVectorPotentialData::m_parser_ax[m_id] = pp.makeParser(str_ax, varnames);
-            MagnetostaticVectorPotentialData::m_parser_ay[m_id] = pp.makeParser(str_ay, varnames);
-            MagnetostaticVectorPotentialData::m_parser_daxdx[m_id] = pp.makeParser(str_daxdx, varnames);
-            MagnetostaticVectorPotentialData::m_parser_daxdy[m_id] = pp.makeParser(str_daxdy, varnames);
-            MagnetostaticVectorPotentialData::m_parser_daydx[m_id] = pp.makeParser(str_daydx, varnames);
-            MagnetostaticVectorPotentialData::m_parser_daydy[m_id] = pp.makeParser(str_daydy, varnames);
-            MagnetostaticVectorPotentialData::m_parser_dazdx[m_id] = pp.makeParser(str_dazdx, varnames);
-            MagnetostaticVectorPotentialData::m_parser_dazdy[m_id] = pp.makeParser(str_dazdy, varnames);
+            auto & parsers = DynamicData::emplace(m_id);
+            parsers.ax    = pp.makeParser(str_ax,    varnames);
+            parsers.ay    = pp.makeParser(str_ay,    varnames);
+            parsers.daxdx = pp.makeParser(str_daxdx, varnames);
+            parsers.daxdy = pp.makeParser(str_daxdy, varnames);
+            parsers.daydx = pp.makeParser(str_daydx, varnames);
+            parsers.daydy = pp.makeParser(str_daydy, varnames);
+            parsers.dazdx = pp.makeParser(str_dazdx, varnames);
+            parsers.dazdy = pp.makeParser(str_dazdy, varnames);
         }
+
+        /** Reverse the element (negate ds)
+         *
+         * The user-supplied potential A(x,y,z) is defined in the element's
+         * local frame. Reversing only negates the path-length integration
+         * direction; the user is responsible for the field's z-symmetry.
+         */
+        void reverse () { Thick::reverse(); }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -177,29 +177,25 @@ namespace MagnetostaticVectorPotentialData
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
-            // find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            m_betgam2 = std::pow(pt_ref, 2) - 1.0_prt;
-            m_ibetgam2 = 1_prt / m_betgam2;
-            m_beta = refpart.beta();
-            m_ibeta = 1_prt / m_beta;
+            m_ibeta = 1_prt / refpart.beta();
 
-            // normalize vector potential if SI units are specified
-            m_scale =  m_unit == 1 ? 1_prt / refpart.rigidity_Tm() : 1_prt;
+            // normalize the vector potential if SI units are specified
+            m_scale = m_unit == 1 ? 1_prt / refpart.rigidity_Tm() : 1_prt;
 
-            // device functions (cached after first compile, unless user changed it interactively)
+            // compile device-callable executors (cached across calls)
             constexpr int num_vars = 3;
-            m_dfunc_ax = MagnetostaticVectorPotentialData::m_parser_ax[m_id].compile<num_vars>();
-            m_dfunc_ay = MagnetostaticVectorPotentialData::m_parser_ay[m_id].compile<num_vars>();
-            m_dfunc_daxdx = MagnetostaticVectorPotentialData::m_parser_daxdx[m_id].compile<num_vars>();
-            m_dfunc_daxdy = MagnetostaticVectorPotentialData::m_parser_daxdy[m_id].compile<num_vars>();
-            m_dfunc_daydx = MagnetostaticVectorPotentialData::m_parser_daydx[m_id].compile<num_vars>();
-            m_dfunc_daydy = MagnetostaticVectorPotentialData::m_parser_daydy[m_id].compile<num_vars>();
-            m_dfunc_dazdx = MagnetostaticVectorPotentialData::m_parser_dazdx[m_id].compile<num_vars>();
-            m_dfunc_dazdy = MagnetostaticVectorPotentialData::m_parser_dazdy[m_id].compile<num_vars>();
+            auto const & parsers = *DynamicData::get(m_id);
+            m_dfunc_ax    = parsers.ax.compile<num_vars>();
+            m_dfunc_ay    = parsers.ay.compile<num_vars>();
+            m_dfunc_daxdx = parsers.daxdx.compile<num_vars>();
+            m_dfunc_daxdy = parsers.daxdy.compile<num_vars>();
+            m_dfunc_daydx = parsers.daydx.compile<num_vars>();
+            m_dfunc_daydy = parsers.daydy.compile<num_vars>();
+            m_dfunc_dazdx = parsers.dazdx.compile<num_vars>();
+            m_dfunc_dazdy = parsers.dazdy.compile<num_vars>();
         }
 
-        /** This is a quad functor, so that a variable of this type can be used like a quad function.
+        /** Push a single particle through this element.
          *
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
@@ -210,7 +206,7 @@ namespace MagnetostaticVectorPotentialData
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -221,7 +217,7 @@ namespace MagnetostaticVectorPotentialData
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -244,14 +240,14 @@ namespace MagnetostaticVectorPotentialData
             };
 
             // call integrator to advance through slice (int_order = 2, 4 or 6, otherwise default 2)
-            integrators::symp_integrate_semiexplicit(particle,zin,zout,m_int_order,nsteps,*this);
+            integrators::symp_integrate_semiexplicit(particle, zin, zout, m_int_order, nsteps, *this);
 
             // assign updated values
-            x = particle(1);
+            x  = particle(1);
             px = particle(2);
-            y = particle(3);
+            y  = particle(3);
             py = particle(4);
-            t = particle(5);
+            t  = particle(5);
             pt = particle(6);
 
             // apply transverse aperture
@@ -273,29 +269,28 @@ namespace MagnetostaticVectorPotentialData
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map (amrex::ParticleReal const tau,
-                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
-                   amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
-                   amrex::ParticleReal & zeval1,
-                   amrex::ParticleReal & zeval2) const
+                  amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle1,
+                  amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle2,
+                  amrex::ParticleReal & zeval1,
+                  amrex::ParticleReal & zeval2) const
         {
-            using namespace amrex::literals; // for _rt and _prt
-
-            amrex::ParticleReal const x1 = particle1(1);
+            amrex::ParticleReal const x1  = particle1(1);
             amrex::ParticleReal const px1 = particle1(2);
-            amrex::ParticleReal const y1 = particle1(3);
+            amrex::ParticleReal const y1  = particle1(3);
             amrex::ParticleReal const py1 = particle1(4);
-            amrex::ParticleReal const t1 = particle1(5);
+            amrex::ParticleReal const t1  = particle1(5);
             amrex::ParticleReal const pt1 = particle1(6);
 
-            amrex::ParticleReal const x2 = particle2(1);
+            amrex::ParticleReal const x2  = particle2(1);
             amrex::ParticleReal const px2 = particle2(2);
-            amrex::ParticleReal const y2 = particle2(3);
+            amrex::ParticleReal const y2  = particle2(3);
             amrex::ParticleReal const py2 = particle2(4);
-            amrex::ParticleReal const t2 = particle2(5);
+            amrex::ParticleReal const t2  = particle2(5);
             amrex::ParticleReal const pt2 = particle2(6);
 
             // Evaluate the derivatives of the Hamiltonian.
-            auto [dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt] = Hamiltonian_Gradient(x1,px2,y1,py2,t1,pt2,zeval1);
+            auto [dHdx, dHdpx, dHdy, dHdpy, dHdt, dHdpt] =
+                Hamiltonian_Gradient(x1, px2, y1, py2, t1, pt2, zeval1);
 
             // Update particle coordinates and momenta.
             particle1(1) = x1;
@@ -315,8 +310,7 @@ namespace MagnetostaticVectorPotentialData
             zeval2 += tau;
         }
 
-
-        /** This evaluates the derivatives of the Hamiltonian at a point.
+        /** Evaluate the gradient of the Hamiltonian.
          *
          * @param x horizontal coordinate in m
          * @param px horizontal momentum
@@ -328,26 +322,20 @@ namespace MagnetostaticVectorPotentialData
          * @returns tuple containing derivatives of the Hamiltonian
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        std::tuple <amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-               amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>
+        std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                   amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>
         Hamiltonian_Gradient (amrex::ParticleReal x, amrex::ParticleReal px,
-                   amrex::ParticleReal y, amrex::ParticleReal py,
-                   [[maybe_unused]] amrex::ParticleReal t, amrex::ParticleReal pt,
-                   [[maybe_unused]] amrex::ParticleReal zeval) const
+                              amrex::ParticleReal y, amrex::ParticleReal py,
+                              [[maybe_unused]] amrex::ParticleReal t, amrex::ParticleReal pt,
+                              amrex::ParticleReal zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            amrex::ParticleReal dHdx = 0_prt;
-            amrex::ParticleReal dHdpx = 0_prt;
-            amrex::ParticleReal dHdy = 0_prt;
-            amrex::ParticleReal dHdpy = 0_prt;
-            amrex::ParticleReal dHdt = 0_prt;
-            amrex::ParticleReal dHdpt = 0_prt;
-            amrex::ParticleReal z = zeval;
+            amrex::ParticleReal const z = zeval;
 
-            // Evaluate the vector potential and its derivatives
-            auto const ax = m_dfunc_ax(x, y, z) * m_scale;
-            auto const ay = m_dfunc_ay(x, y, z) * m_scale;
+            // Evaluate the vector potential and its derivatives in the local frame
+            auto const ax    = m_dfunc_ax(x, y, z)    * m_scale;
+            auto const ay    = m_dfunc_ay(x, y, z)    * m_scale;
             auto const daxdx = m_dfunc_daxdx(x, y, z) * m_scale;
             auto const daxdy = m_dfunc_daxdy(x, y, z) * m_scale;
             auto const daydx = m_dfunc_daydx(x, y, z) * m_scale;
@@ -355,50 +343,50 @@ namespace MagnetostaticVectorPotentialData
             auto const dazdx = m_dfunc_dazdx(x, y, z) * m_scale;
             auto const dazdy = m_dfunc_dazdy(x, y, z) * m_scale;
 
-            // Implementation of derivatives for rectilinear magnetostatic element (static units):
-            // Radical appearing in the Hamiltonian (equal to the value of pz):
+            // Rectilinear magnetostatic element: pz is the radical appearing
+            // in the Hamiltonian.
             amrex::ParticleReal const pxmech = px - ax;
             amrex::ParticleReal const pymech = py - ay;
-            amrex::ParticleReal const radical = std::sqrt(1_prt + pt*pt - px*px - py*py - 2_prt*pt*m_ibeta);
+            amrex::ParticleReal const radical = std::sqrt(
+                1_prt + pt*pt - px*px - py*py - 2_prt*pt*m_ibeta
+            );
 
-            dHdx = - (pxmech * daxdx + pymech * daydx) / radical - dazdx;
-            dHdy = - (pxmech * daxdy + pymech * daydy) / radical - dazdy;
-            dHdt = 0_prt;
+            amrex::ParticleReal const dHdx = -(pxmech * daxdx + pymech * daydx) / radical - dazdx;
+            amrex::ParticleReal const dHdy = -(pxmech * daxdy + pymech * daydy) / radical - dazdy;
+            amrex::ParticleReal const dHdt = 0_prt;
 
-            dHdpx = pxmech / radical;
-            dHdpy = pymech / radical;
-            dHdpt = - m_ibeta + (m_ibeta - pt) / radical;
+            amrex::ParticleReal const dHdpx = pxmech / radical;
+            amrex::ParticleReal const dHdpy = pymech / radical;
+            amrex::ParticleReal const dHdpt = -m_ibeta + (m_ibeta - pt) / radical;
 
-            return std::make_tuple(dHdx,dHdpx,dHdy,dHdpy,dHdt,dHdpt);
-
-         }
-
+            return std::make_tuple(dHdx, dHdpx, dHdy, dHdpy, dHdt, dHdpt);
+        }
 
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {
-
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
             using namespace amrex::literals; // for _rt and _prt
 
             // assign input reference particle values
-            amrex::ParticleReal const x = refpart.x;
+            amrex::ParticleReal const x  = refpart.x;
             amrex::ParticleReal const px = refpart.px;
-            amrex::ParticleReal const y = refpart.y;
+            amrex::ParticleReal const y  = refpart.y;
             amrex::ParticleReal const py = refpart.py;
-            amrex::ParticleReal const z = refpart.z;
+            amrex::ParticleReal const z  = refpart.z;
             amrex::ParticleReal const pz = refpart.pz;
-            amrex::ParticleReal const t = refpart.t;
+            amrex::ParticleReal const t  = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
+            amrex::ParticleReal const s  = refpart.s;
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt,2)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(std::pow(pt, 2) - 1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -409,6 +397,9 @@ namespace MagnetostaticVectorPotentialData
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
 
         /** This function returns the linear transport map.
          *
@@ -422,42 +413,14 @@ namespace MagnetostaticVectorPotentialData
             return Map6x6::Identity();
         }
 
-        /** This pushes the covariance matrix. */
-        using LinearTransport::operator();
-
-        /** Close and deallocate all functions and handles.
-         */
-        void
-        finalize ()
-        {
-            // remove from unique function map
-            if (MagnetostaticVectorPotentialData::m_parser_ax.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_ax.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_ay.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_ay.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_daxdx.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_daxdx.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_daxdy.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_daxdy.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_daydx.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_daydx.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_daydy.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_daydy.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_dazdx.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_dazdx.erase(m_id);
-            if (MagnetostaticVectorPotentialData::m_parser_dazdy.count(m_id) != 0u)
-                MagnetostaticVectorPotentialData::m_parser_dazdy.erase(m_id);
-        }
-
-        amrex::ParticleReal m_k; //! quadrupole strength in 1/m^2 (or T/m)
-        int m_unit; //! unit specification for quad strength
-        int m_int_order; //! order used for the symplectic integration (2 or 4)
+        int m_unit; //! unit specification for the vector potential
+        int m_int_order; //! order used for the symplectic integration (2, 4 or 6)
         int m_mapsteps; //! number of integration steps per slice
+        int m_id; //! unique element id used for the parser data lookup
 
-        // user-provided functions & derivatives with 3 independent variables x,y,z
-        int m_id; //! unique vector potential element id used for function lookup map
-        amrex::ParserExecutor<3> m_dfunc_ax;  //! A_x(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_ay;  //! A_y(x,y,z)
+        // device-callable executors (cached after first compile_constants() call)
+        amrex::ParserExecutor<3> m_dfunc_ax;     //! A_x(x,y,z)
+        amrex::ParserExecutor<3> m_dfunc_ay;     //! A_y(x,y,z)
         amrex::ParserExecutor<3> m_dfunc_daxdx;  //! dA_x/dx(x,y,z)
         amrex::ParserExecutor<3> m_dfunc_daxdy;  //! dA_x/dy(x,y,z)
         amrex::ParserExecutor<3> m_dfunc_daydx;  //! dA_y/dx(x,y,z)
@@ -465,17 +428,17 @@ namespace MagnetostaticVectorPotentialData
         amrex::ParserExecutor<3> m_dfunc_dazdx;  //! dA_z/dx(x,y,z)
         amrex::ParserExecutor<3> m_dfunc_dazdy;  //! dA_z/dy(x,y,z)
 
-    private:
+      private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
-        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
-        amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
-        amrex::ParticleReal m_beta;           //! beta
-        amrex::ParticleReal m_ibeta;          //! 1 / m_beta
-        amrex::ParticleReal m_scale;          //! scale factor defining vector potential units
+        amrex::ParticleReal m_slice_ds; //! m_ds / nslice()
+        amrex::ParticleReal m_ibeta;    //! 1 / beta
+        amrex::ParticleReal m_scale;    //! scale factor defining vector-potential units
     };
 
-} // namespace impactx
+} // namespace impactx::elements
+
+IMPACTX_GPUDATA_EXTERN(impactx::elements::MagnetostaticVectorPotential)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::MagnetostaticVectorPotential)
 
 #endif // IMPACTX_MAGNETOSTATIC_VECTOR_POTENTIAL_H

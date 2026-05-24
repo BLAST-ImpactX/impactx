@@ -2928,7 +2928,7 @@ void init_elements(py::module& m)
              py::arg("aperture_x") = 0,
              py::arg("aperture_y") = 0,
              py::arg("int_order") = 2,
-             py::arg("mapsteps") = 5,
+             py::arg("mapsteps") = 10,
              py::arg("nslice") = 1,
              py::arg("name") = py::none(),
              R"doc(Symplectic integration in a user-defined vector potential using the exact Hamiltonian, which includes all nonlinear kinematic effects.
@@ -2944,15 +2944,20 @@ void init_elements(py::module& m)
              https://doi.org/10.1090/mcom/3778
              )doc"
         )
-        .def_property("k",
-            [](MagnetostaticVectorPotential & vp) { return vp.m_k; },
-            [](MagnetostaticVectorPotential & vp, amrex::ParticleReal k) { vp.m_k = k; },
-            "Quadrupole strength in m^(-2) (MADX convention)"
-        )
         .def_property("unit",
             [](MagnetostaticVectorPotential & vp) { return vp.m_unit; },
             [](MagnetostaticVectorPotential & vp, int unit) { vp.m_unit = unit; },
-            "Unit specification: 0 (MAD-X), 1 (MaryLie)"
+            "Unit specification: 0 (dimensionless), 1 (SI units, T-m)"
+        )
+        .def_property("int_order",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_int_order; },
+            [](MagnetostaticVectorPotential & vp, int io) { vp.m_int_order = io; },
+            "Order used for symplectic integration (2, 4 or 6)"
+        )
+        .def_property("mapsteps",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_mapsteps; },
+            [](MagnetostaticVectorPotential & vp, int ms) { vp.m_mapsteps = ms; },
+            "Number of integration steps per slice"
         )
     ;
     register_push(py_MagnetostaticVectorPotential);

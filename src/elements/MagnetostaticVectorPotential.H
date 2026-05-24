@@ -17,7 +17,6 @@
 #include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
-#include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
 
@@ -63,7 +62,6 @@ namespace impactx::elements
       public mixin::LinearTransport<MagnetostaticVectorPotential>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::NoFinalize,
       public mixin::PipeAperture
     {
         static constexpr auto type = "MagnetostaticVectorPotential";
@@ -400,6 +398,17 @@ namespace impactx::elements
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
+
+        /** Close and deallocate all parser handles.
+         *
+         * The amrex::Parser instances we own depend on AMReX runtime state, so
+         * we must drop them before AMReX::Finalize() tears that state down.
+         */
+        void
+        finalize ()
+        {
+            DynamicData::registry().erase(m_id);
+        }
 
         /** This function returns the linear transport map.
          *

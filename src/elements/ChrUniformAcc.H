@@ -33,7 +33,7 @@ namespace impactx::elements
     struct ChrAcc
     : public mixin::Named,
       public mixin::BeamOptic<ChrAcc>,
-      public mixin::LinearTransport<ChrAcc>,
+      public mixin::LinearTransport<ChrAcc, false>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
@@ -80,6 +80,9 @@ namespace impactx::elements
           m_ez(ez), m_bz(bz)
         {
         }
+
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -309,5 +312,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrAcc)
 
 #endif // IMPACTX_CHRACC_H

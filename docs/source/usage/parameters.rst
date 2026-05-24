@@ -7,6 +7,10 @@ This documents how to use ImpactX with an input file (``impactx input_file.in``)
 
 .. tip::
 
+   If you enjoy AI/LLM/agentic workflows, see our :ref:`AI (LLM)-Assisted Input File Design <ai_input_design>` section, too.
+
+.. tip::
+
    Input files use the AMReX `ParmParse <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parmparse>`__ syntax.
    A `parser <https://amrex-codes.github.io/amrex/docs_html/Basics.html#parser>`__) is used for the right-hand-side of all input parameters that consist of one or more integers or floats, so expressions like ``beam.kin_energy = "2.+1."``, ``beam.lambdaY = beam.lambdaX`` and/or using :ref:`user-defined constants <running-cpp-parameters-parser>` are accepted.
 
@@ -21,9 +25,14 @@ Tracking Modes
   Mode that specifies how the beam is tracked:
 
   * ``particles`` (default): symplectic particle tracking
-  * ``envelope``: beam envelop (covariance matrix) tracking, through linearized transport maps
+  * ``envelope``: beam envelope (covariance matrix) tracking, through linearized transport maps
   * ``reference_orbit``: only tracking of the reference particle orbit
 
+  .. note::
+
+     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
+     Support for misalignments and feed-down effects in envelope tracking is in development.
+     Until then, misalignment options set on elements are silently ignored.
 
 .. _running-cpp-parameters-particle:
 
@@ -46,7 +55,19 @@ Initial Beam Distributions
   beam current, used only if ``algo.space_charge = "2D"``
 
 * ``beam.particle`` (``string``)
-  particle type: currently either ``electron``, ``positron`` or ``proton``
+  particle type: ``electron``, ``positron``, ``proton``, or ``Hminus``.
+  For other species, please use the :ref:`Python API <usage-python>` or `open an issue <https://github.com/BLAST-ImpactX/impactx/issues>`__.
+
+  .. dropdown:: Species Constants
+     :color: light
+     :icon: info
+     :animate: fade-in-slide-down
+
+     .. literalinclude:: ../../../src/particles/ReferenceParticle.H
+        :language: cpp
+        :dedent: 12
+        :start-after: // [known_species]
+        :end-before: // [/known_species]
 
 * ``beam.distribution`` (``string``)
   Indicates the initial distribution type.
@@ -105,6 +126,16 @@ Initial Beam Distributions
 
   * ``gaussian`` or ``gaussian_from_twiss`` for initial 6D Gaussian (normal) distribution.
 
+    Optionally, the user may specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt).
+    The cut is performed in normalized Courant-Snyder variables corresponding to the user-supplied second moments or Twiss functions.
+    As a result, this is equivalent to a cut corresponding to the (linearized) action in each plane.
+
+    Optional parameters:
+
+    * ``beam.cutX`` (``float``, dimensionless, default=0) number of sigma at which to cut the distribution in (x,px); 0 means no cut
+    * ``beam.cutY`` (``float``, dimensionless, default=0) number of sigma at which to cut the distribution in (y,py); 0 means no cut
+    * ``beam.cutT`` (``float``, dimensionless, default=0) number of sigma at which to cut the distribution in (t,pt); 0 means no cut
+
   * ``kvdist`` or ``kvdist_from_twiss`` for initial K-V distribution in the transverse plane.
 
     The distribution is uniform in t and Gaussian in pt.
@@ -138,6 +169,19 @@ Initial Beam Distributions
     * ``beam.normalize_halo`` (``float``, dimensionless) normalizing constant for halo population
     * ``beam.halo`` (``float``, dimensionless) fraction of charge in halo
 
+* ``beam.bucket_length`` (``float``, in meters)
+  length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions
+
+Initial Spin Distributions
+--------------------------
+
+  The specification of an initial particle spin distribution is optional, and is required only if spin tracking is used.
+  The default distribution type is the von Mises-Fisher distribution, uniquely determined by the input polarization vector.
+  The polarization vector provided by the user must lie within the unit ball.
+
+* ``beam.polarization_x`` (``float``, dimensionless) mean value of the spin vector x-component
+* ``beam.polarization_y`` (``float``, dimensionless) mean value of the spin vector y-component
+* ``beam.polarization_z`` (``float``, dimensionless) mean value of the spin vector z-component
 
 .. _running-cpp-parameters-lattice:
 
@@ -322,12 +366,52 @@ This element requires these additional parameters:
 ``dipedge``
 ^^^^^^^^^^^
 
-``dipedge`` for dipole edge focusing. This requires these additional parameters:
+``dipedge`` for dipole edge focusing. The model here is based on:
+
+K. Hwang and S. Y. Lee, "Dipole fringe field map for compact synchrotrons," Phys. Rev. Accel. Beams 18, 122401 (2015)
+
+as represented in the explicit, symplectic form provided in:
+
+C. Mitchell and K. Hwang, "Explicit symplectic representations of nonlinear dipole fringe field maps," in Proc. NAPAC2025, TUP040, Sacramento, CA, 2025
+
+Here, ``g`` denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values ``K0`` - ``K6`` denote dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of the first reference above.  In particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
+
+If ``model = "linear"``, then the linearized map is used.  This model is identical to:
+
+* K. L. Brown, SLAC Report No. 75 (1982)
+
+when expanded to first order in ``g/rc`` (gap / radius of curvature).
+
+By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while the corresponding default value of ``K2`` is set to 1).
+
+Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference trajectory.
+
+For a beam, this will result in a centroid offset that will produce centroid oscillations in the  downstream beamline.
+In practice, this can be avoided by aligning the downstream elements with the true horizontal position (after including the effect of the fringe field).
+To model this correction, we allow two options in the dipedge model:
+
+* the option ``modify_ref_part = False`` (default), in which the shift due to the fringe field is applied to each beam particle phase space vector but not to the reference particle phase space vector --
+this model makes sense if the shift due to the fringe field is not considered in the baseline design, so that downstream elements are aligned with the "idealized" reference trajectory
+
+* the option ``modify_ref_part = True`` in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
+this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
+
+This element requires these additional parameters:
 
 * ``<element_name>.psi`` (``float``, in radians) the pole face rotation angle
 * ``<element_name>.rc`` (``float``, in meters) the bend radius
-* ``<element_name>.g`` (``float``, in meters) the gap size
-* ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field
+* ``<element_name>.g`` (``float``, in meters) the full magnetic gap size
+* ``<element_name>.R`` (``float``, in meters) scale length for the field integrals (default: ``1 m``)
+* ``<element_name>.K0`` (``float``, dimensionless) normalized field integral for fringe field (default: ``pi**2/6``)
+* ``<element_name>.K1`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K2`` (``float``, dimensionless) normalized field integral for fringe field (FINT, default: ``1``)
+* ``<element_name>.K3`` (``float``, dimensionless) normalized field integral for fringe field (default: ``1/6``)
+* ``<element_name>.K4`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K5`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.K6`` (``float``, dimensionless) normalized field integral for fringe field (default: ``0``)
+* ``<element_name>.model`` (``string``) the fringe field model: ``linear`` (default) or ``nonlinear``
+* ``<element_name>.location`` (``string``) the fringe field edge location: ``entry`` (default) or ``exit``
+* ``<element_name>.modify_ref_part`` (``boolean``) apply fringe field to the reference particle ``true`` or ``false`` (default)
 * ``<element_name>.dx`` (``float``, in meters) horizontal translation error
 * ``<element_name>.dy`` (``float``, in meters) vertical translation error
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
@@ -560,6 +644,25 @@ This requires these additional parameters:
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
+``polygon_aperture``
+^^^^^^^^^^^^^^^^^^^^
+
+``polygon_aperture`` for a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
+and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
+The first and last vertices must be identical. These parameters define the element:
+
+* ``<element_name>.vertices_x`` (``float``, in meters) array of horizontal locations of aperture vertices
+* ``<element_name>.vertices_y`` (``float``, in meters) array of vertical locations of aperture vertices
+* ``<element_name>.min_radius2`` (``float``, in meters-squared) optional minimum radius-squared of a circle fully inscribed within the polygon. Particles with
+  radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped. (default ``0``)
+* ``<element_name>.repeat_x`` (``float``, in meters) horizontal period for repeated aperture masking (inactive by default)
+* ``<element_name>.repeat_y`` (``float``, in meters) vertical period for repeated aperture masking (inactive by default)
+* ``<element_name>.shift_odd_x`` (``bool``) for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+* ``<element_name>.action`` (``string``) action of the aperture domain: ``transmit`` (default) or ``absorb``
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
+
 ``prot``
 ^^^^^^^^
 
@@ -650,10 +753,17 @@ This requires these additional parameters:
 ``quadrupole_softedge``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``quadrupole_softedge`` for a soft-edge quadrupole. This requires these additional parameters:
+``quadrupole_softedge`` for a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
+``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
+has units of inverse meters squared.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
-* ``<element_name>.gscale`` (``float``, in inverse meters) Scaling factor for on-axis magnetic field gradient
+* ``<element_name>.gscale`` (``float``, in inverse meters squared) Scaling factor for on-axis magnetic field gradient
 * ``<element_name>.cos_coefficients`` (array of ``float``) cos coefficients in Fourier expansion of the on-axis field gradient
   (optional); default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
 * ``<element_name>.sin_coefficients`` (array of ``float``) sin coefficients in Fourier expansion of the on-axis field gradient
@@ -663,7 +773,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 ``quadedge``
@@ -691,7 +801,13 @@ This requires these additional parameters:
 ``rfcavity``
 ^^^^^^^^^^^^
 
-``rfcavity`` a radiofrequency cavity.
+``rfcavity`` a radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal electric field are described in the documentation of ``escale`` below.  For example, if the values used to
+describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case,
+``escale`` has units of inverse meters.
+
 This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
@@ -706,7 +822,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -784,7 +900,14 @@ This requires these additional parameters:
 ``solenoid_softedge``
 ^^^^^^^^^^^^^^^^^^^^^
 
-``solenoid_softedge`` for a soft-edge solenoid. This requires these additional parameters:
+``solenoid_softedge`` for a soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal magnetic field data are determined by the parameter ``unit``.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``field_on_axis``) attain a peak on-axis value of 1, then the parameter
+``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic
+rigidity.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.bscale`` (``float``, in inverse meters) Scaling factor for on-axis longitudinal magnetic field
@@ -802,7 +925,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -818,6 +941,41 @@ Currently, this only supports openPMD files from our ``beam_monitor``.
   Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
 * ``<element_name>.openpmd_path`` (``string``)
   path to the openPMD series
+* ``<element_name>.active_once`` (``boolean``, default: ``true``)
+  Inject particles only for the first lattice period.
+
+
+``spin_map``
+^^^^^^^^^^^^
+
+``spin_map`` for a custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.
+
+Spin maps are specified in the Lie-algebraic form:
+
+.. math::
+
+   \vec{s}_f = M(\zeta)\vec{s}_i,\quad\quad M(\zeta)=e^{v\cdot L}e^{A\Delta\zeta\cdot L}.
+
+Here :math:`v` is a 3-vector that defines the axis and angle of rotation at the phase space design point, and :math:`A` is a 3x6 matrix that defines the spin-orbit coupling for particles not on the design orbit.
+Also, :math:`\Delta\zeta=(x,p_x,y,p_y,t,p_t)` denotes the 6-vector of phase space variables as deviations from the design orbit. The quantities :math:`L_x`, :math:`L_y`, and :math:`L_z` are standard 3x3 matrices that define a basis for the Lie algebra :math:`so(3)`.
+
+The vector components :math:`v(i)` and the matrix elements :math:`A(i,j)` are indexed beginning with 1, so that :math:`i=1,2,3` and :math:`j=1,2,3,4,5,6`.
+The vector :math:`v` and the matrix :math:`A` are defaulted to zero, so only entries that differ from zero need to be specified.
+
+The matrix :math:`A` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`, where coordinates :math:`(x,y,t)` have units of m
+and momenta :math:`(p_x,p_y,p_t)` are dimensionless.  The three components output are dimensionless.  So, for example, :math:`A(1,1)` has units of 1/m, and :math:`A(1,2)` is dimensionless.
+All three components of :math:`v` are dimensionless.
+
+This element requires these additional parameters:
+
+* ``<element_name>.v(i)`` (``float``, ...) vector entries
+  a 1-indexed, 3x1, axis-angle vector that defines the spin rotation at the phase space design point
+* ``<element_name>.A(i,j)`` (``float``, ...) matrix entries
+  a 1-indexed, 3x6, spin-orbit coupling matrix to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)` that defines the spin rotation for off-design particles
+* ``<element_name>.ds`` (``float``, in meters) length associated with a user-defined spin map element (defaults to 0)
+* ``<element_name>.dx`` (``float``, in meters) horizontal translation error (not used, defaults to 0)
+* ``<element_name>.dy`` (``float``, in meters) vertical translation error (not used, defaults to 0)
+* ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane (not used, defaults to 0)
 
 
 ``tapered_pl``
@@ -906,17 +1064,46 @@ See there ``nslice`` option on lattice elements for slicing.
 
   * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
 
-    Currently, this model is supported only in envelope mode (when ``algo.track = "envelope"``).
+  * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
+    longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
+
+    This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
+
+    This model supports the following sub-options:
+
+    * ``algo.space_charge.num_longitudinal_bins`` (``int``, default: ``100``)
+
+      The number of bins for longitudinal line density deposition.
+
+    * ``algo.space_charge.apply_longitudinal_kick`` (``bool``, default: ``true``)
+
+      Enable or disable the longitudinal space charge kick.
 
   * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
     When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
-  * ``"Gauss3D"`: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
+  * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
-    This model is supported only in particle tracking mode (when ``algo.track = "particles"``).
-    Ref.: J. Qiang et al., "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
+  * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
+
+    These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+    Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
     (This reference describes both 3D and 2.5D models.)
+
+    This model supports the following sub-option:
+
+    * ``algo.space_charge.gauss_nint`` (``int``, default: ``101``)
+
+      Number of steps for computing the integrals (Eqs. 45-47 in the above paper).
+
+    * ``algo.space_charge.gauss_taylor_delta`` (``float``, default: ``0.01``)
+
+      Initial integral region to avoid divergence of integrand at 0.
+
+    * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
+
+      Number of bins for longitudinal line density deposition.
 
 * ``amr.n_cell`` (3 integers) optional (default: 1 `blocking_factor <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__ per MPI process)
 
@@ -973,8 +1160,8 @@ See there ``nslice`` option on lattice elements for slicing.
 * ``algo.poisson_solver`` (``string``, optional, default: ``"fft"``)
 
   The numerical solver to solve the Poisson equation when calculating space charge effects.
-  Currently, this is a 3D solver.
-  An additional `2D/2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
+  Currently, the multigrid solver supports only 3D space charge.  The fft solver supports either 2D or 3D space charge.
+  An additional `2.5D solver <https://github.com/BLAST-ImpactX/impactx/issues/401>`__ will be added in the near future.
 
   Options:
 
@@ -1071,9 +1258,58 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
 
   The number of terms retained in the Taylor series for the functions :math:`g(\chi)` and :math:`h(\chi)` appearing in equations (25) and (41) describing quantum effects.
 
+* ``algo.isr_on_ref_part`` (``boolean`, optional, default: ``false``)
+
+  Flag specifying whether ISR is to be applied to the reference particle.  When ``algo.isr_on_ref_part = false``, the reference particle does not lose energy due to radiation, and the
+  mean energy of the beam particles will decrease.  This option is natural if the lattice optics, magnet settings, etc. are chosen without accounting for radiative energy loss.
+  When ``algo.isr_on_ref_part = true``, the reference particle does lose energy due to radiation, and little centroid evolution is expected in the beam particles.  This option is natural if the lattice optics, magnet settings, etc. are chosen to account for radiative energy loss.
+
 .. note::
 
    ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+
+
+.. _running-cpp-parameters-particle-bc:
+
+Particle Boundary Condition
+---------------------------
+
+The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference particle).
+For systems involving bunches that are long relative to the local size of the RF bucket, it is often necessary to capture the effect of particle slippage between adjacent buckets.
+To handle this effectively without tracking multiple bunches, a periodic particle boundary condition can be applied.
+
+* ``algo.particle_bc`` (``string`, optional, default: ``open``)
+
+  The type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.  Options:
+
+  * ``"open"`` (default): no action is applied at the boundary.
+
+  * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+
+  * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+
+  * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+
+    .. note::
+
+       The implementation works through linear order in the phase space variables.
+       If you have the need for a more precise implementation of reflecting boundaries, please `open an issue <https://github.com/BLAST-ImpactX/impactx/issues/new>`__.
+
+
+.. _running-cpp-parameters-spin:
+
+Spin Tracking
+-------------
+
+Spin tracking is performed by updating the particle spin 3-vector in the presence of each element's electromagnetic fields, using methods based on the Thomas-BMT equation.
+By construction, all spin tracking methods rely on pushing particles using spin maps that lie in SO(3).  The algorithm implemented for each element is consistent with the algorithm
+used for pushing the phase space vector.
+
+Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
+
+* ``algo.spin`` (``boolean``, optional, default: ``false``)
+
+  Whether to track particle spin.
 
 
 .. _running-cpp-parameters-parser:

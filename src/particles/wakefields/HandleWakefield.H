@@ -17,9 +17,7 @@
 #include "WakePush.H"
 
 #include <cmath>
-#ifndef ImpactX_USE_FFT
 #include <stdexcept>
-#endif
 #include <vector>
 
 
@@ -63,6 +61,25 @@ namespace impactx::particles::wakefields
             // Measure beam size, extract the min, max of particle positions
             [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
                 particle_container.MinAndMaxPositions();
+
+            // Ensure we have a beam with a finite extent in t
+            if (t_min == t_max)
+            {
+                auto const npart = particle_container.TotalNumberOfParticles();
+                std::string error_msg = "Coherent Synchrotron Radiation (CSR) "
+                                        "modeling was enabled, but ";
+                if (npart == 1) {
+                    error_msg.append("there is only one particle in the beam. ");
+                } else {
+                    error_msg.append("the beam is flat in t. ");
+                }
+                error_msg.append(
+                    "CSR modeling is a collective effect and requires "
+                    "a particle beam with a finite extent in t. "
+                    "Please set the CSR option to false."
+                );
+                throw std::runtime_error(error_msg);
+            }
 
             // Set parameters for charge deposition
             bool const is_unity_particle_weight = false; // Only true if w = 1

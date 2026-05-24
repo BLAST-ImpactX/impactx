@@ -32,7 +32,8 @@ void init_distribution(py::module& m)
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal
+                amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
@@ -41,6 +42,7 @@ void init_distribution(py::module& m)
              py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
              py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
              py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("cutX")=0.0, py::arg("cutY")=0.0, py::arg("cutT")=0.0,
              "A 6D Gaussian distribution"
         );
 
@@ -186,6 +188,21 @@ void init_distribution(py::module& m)
              py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A 6D Waterbag distribution"
         );
+
+    py::class_<distribution::SpinvMF>(md, "SpinvMF")
+        .def(py::init<
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
+             >(),
+             py::arg("mux"), py::arg("muy"), py::arg("muz"),
+             "A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin."
+        )
+        .def_static("inverse_Langevin",
+            &distribution::SpinvMF::inverse_Langevin,
+            py::arg("pmag"),
+            "This function evaluates the inverse Langevin function, in order to return "
+            "the value of concentration (kappa) required to produce a given polarization magnitude."
+        )
+    ;
 
     py::class_<Envelope>(m, "Envelope")
         .def(py::init<>())

@@ -2,7 +2,9 @@ target_sources(lib
   PRIVATE
     ForceFromSelfFields.cpp
     Gauss3dPush.cpp
+    Gauss2p5dPush.cpp
     GatherAndPush.cpp
+    Deposit1D.cpp
     HandleSpacecharge.cpp
     PoissonSolve.cpp
 )

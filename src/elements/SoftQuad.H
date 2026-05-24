@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -13,11 +13,15 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
-#include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
+#include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
+#include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
+#include "mixin/spintransport.H"
+#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
@@ -29,6 +33,7 @@
 #include <AMReX_SmallMatrix.H>
 
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
@@ -91,28 +96,16 @@ namespace impactx::elements
             };
     };
 
-/** Dynamic data for the SoftQuadrupole elements
- *
- * Since we copy the element to the device, we cannot store this data on the element itself.
- * But we can store pointers to this data with the element and keep a lookup table here,
- * which we clean up in the end.
- */
-namespace SoftQuadrupoleData
-{
-    //! last used id for a created soft quad
-    inline int next_id = 0;
-
-    //! host: cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, std::vector<amrex::ParticleReal>> h_cos_coef = {};
-    //! host: sine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, std::vector<amrex::ParticleReal>> h_sin_coef = {};
-
-    //! device: cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_cos_coef = {};
-    //! device: sine coefficients in Fourier expansion of on-axis magnetic field Bz
-    inline std::map<int, amrex::Gpu::DeviceVector<amrex::ParticleReal>> d_sin_coef = {};
-
-} // namespace SoftQuadrupoleData
+    /** Fourier coefficients for on-axis quadrupole field gradient.
+     *
+     * Host data persists across simulations; device data is uploaded
+     * on-demand "lazily" on first use and released when AMReX shuts down.
+     */
+    struct QuadrupoleFourierCoefficients
+    {
+        mixin::TrackedVector<amrex::ParticleReal> cos;
+        mixin::TrackedVector<amrex::ParticleReal> sin;
+    };
 
     struct SoftQuadrupole
     : public mixin::Named,
@@ -120,11 +113,15 @@ namespace SoftQuadrupoleData
       public mixin::LinearTransport<SoftQuadrupole>,
       public mixin::Thick,
       public mixin::Alignment,
+      public mixin::NoFinalize,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "SoftQuadrupole";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        using DynamicData = mixin::GPUDataRegistry<QuadrupoleFourierCoefficients>;
 
         /** A soft-edge quadrupole
          *
@@ -152,7 +149,7 @@ namespace SoftQuadrupoleData
             amrex::ParticleReal rotation_degree = 0,
             amrex::ParticleReal aperture_x = 0,
             amrex::ParticleReal aperture_y = 0,
-            int mapsteps = 1,
+            int mapsteps = 10,
             int nslice = 1,
             std::optional<std::string> name = std::nullopt
         )
@@ -160,37 +157,28 @@ namespace SoftQuadrupoleData
             Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
             PipeAperture(aperture_x, aperture_y),
-            m_gscale(gscale), m_mapsteps(mapsteps), m_id(SoftQuadrupoleData::next_id)
+            m_gscale(gscale), m_mapsteps(mapsteps),
+            m_id(DynamicData::allocate_id())
         {
-            // next created soft quad has another id for its data
-            SoftQuadrupoleData::next_id++;
-
-            // validate sin and cos coefficients are the same length
             m_ncoef = int(cos_coef.size());
             if (m_ncoef != int(sin_coef.size()))
                 throw std::runtime_error("SoftQuadrupole: cos and sin coefficients must have same length!");
 
-            // host data
-            SoftQuadrupoleData::h_cos_coef[m_id] = cos_coef;
-            SoftQuadrupoleData::h_sin_coef[m_id] = sin_coef;
-            m_cos_h_data = SoftQuadrupoleData::h_cos_coef[m_id].data();
-            m_sin_h_data = SoftQuadrupoleData::h_sin_coef[m_id].data();
+            auto& coef = DynamicData::emplace(
+                m_id,
+                std::move(cos_coef),
+                std::move(sin_coef)
+            );
+            m_cos_h_data = coef.cos.host_const().data();
+            m_sin_h_data = coef.sin.host_const().data();
+        }
 
-            // device data
-            SoftQuadrupoleData::d_cos_coef.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
-            SoftQuadrupoleData::d_sin_coef.emplace(m_id, amrex::Gpu::DeviceVector<amrex::ParticleReal>(m_ncoef));
-            amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  cos_coef.begin(), cos_coef.end(),
-                                  SoftQuadrupoleData::d_cos_coef[m_id].begin());
-            amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  sin_coef.begin(), sin_coef.end(),
-                                  SoftQuadrupoleData::d_sin_coef[m_id].begin());
-            amrex::Gpu::streamSynchronize();
-
-            // low-level objects we can use on device
-            m_cos_d_data = SoftQuadrupoleData::d_cos_coef[m_id].data();
-            m_sin_d_data = SoftQuadrupoleData::d_sin_coef[m_id].data();
-       }
+        /** Reverse the element (negate ds) */
+        void reverse () {
+            // Reversing ds traverses the Fourier profile in the opposite z direction,
+            // so the odd sine terms change sign implicitly via sin(-kz) = -sin(kz).
+            Thick::reverse();
+        }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -207,6 +195,11 @@ namespace SoftQuadrupoleData
             using namespace amrex::literals; // for _rt and _prt
 
             Alignment::compute_constants(refpart);
+
+            // Ensure dynamic coefficient data is on GPU and we have fresh pointers to it
+            auto const & coef = *DynamicData::get(m_id);
+            m_cos_d_data = coef.cos.device_const().data();
+            m_sin_d_data = coef.sin.device_const().data();
         }
 
         /** This is a soft-edge quadrupole functor, so that a variable of this type can be used
@@ -293,6 +286,9 @@ namespace SoftQuadrupoleData
             // initialize linear map (deviation) values
             refpart.map = decltype(refpart.map)::Identity();
 
+            // initialize the spin-orbit coupling matrix
+            refpart.spin_coupling = {};
+
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
@@ -335,6 +331,66 @@ namespace SoftQuadrupoleData
             refpart.s = s + slice_ds;
         }
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // store the phase space variables in vector form
+            amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
+
+            // get the spin-orbit coupling matrix
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+
+            // use phase space variables to obtain the angle-axis generator of spin rotation
+            auto const out = A * v;
+
+            // update the angle-axis generator
+            lambdax = out[1];
+            lambday = out[2];
+            lambdaz = out[3];
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
+
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
@@ -369,16 +425,16 @@ namespace SoftQuadrupoleData
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
 #if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal* cos_data = m_cos_d_data;
-            amrex::ParticleReal* sin_data = m_sin_d_data;
+            amrex::ParticleReal const * cos_data = m_cos_d_data;
+            amrex::ParticleReal const * sin_data = m_sin_d_data;
 #else
-            amrex::ParticleReal* cos_data = m_cos_h_data;
-            amrex::ParticleReal* sin_data = m_sin_h_data;
+            amrex::ParticleReal const * cos_data = m_cos_h_data;
+            amrex::ParticleReal const * sin_data = m_sin_h_data;
 #endif
 
             // specify constants
             using ablastr::constant::math::pi;
-            amrex::ParticleReal const zlen = m_ds;
+            amrex::ParticleReal const zlen = std::abs(m_ds);
             amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis magnetic field (z is relative to quadrupole midpoint)
@@ -450,9 +506,8 @@ namespace SoftQuadrupoleData
             refpart.map(3,3) = R(3,3) + tau*R(4,3);
             refpart.map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
-
+            refpart.map(5,5) = R(5,5) + tau*R(6,5) / powi<2>(betgam);
+            refpart.map(5,6) = R(5,6) + tau*R(6,6) / powi<2>(betgam);
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -497,23 +552,19 @@ namespace SoftQuadrupoleData
             refpart.map(4,3) = R(4,3) + tau*alpha*R(3,3);
             refpart.map(4,4) = R(4,4) + tau*alpha*R(3,4);
 
-        }
+            // BELOW: if spin is needed only:
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
+            amrex::ParticleReal const gamma = refpart.gamma();
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
 
-        /** Close and deallocate all data and handles.
-         */
-        void
-        finalize ()
-        {
-            // remove from unique data map
-            if (SoftQuadrupoleData::h_cos_coef.count(m_id) != 0u)
-                SoftQuadrupoleData::h_cos_coef.erase(m_id);
-            if (SoftQuadrupoleData::h_sin_coef.count(m_id) != 0u)
-                SoftQuadrupoleData::h_sin_coef.erase(m_id);
+            // Update spin-orbit coupling matrix here
+            dA(1,3) = -(1_prt + G*gamma) * tau * alpha;
+            dA(2,1) = -(1_prt + G*gamma) * tau * alpha;
 
-            if (SoftQuadrupoleData::d_cos_coef.count(m_id) != 0u)
-                SoftQuadrupoleData::d_cos_coef.erase(m_id);
-            if (SoftQuadrupoleData::d_sin_coef.count(m_id) != 0u)
-                SoftQuadrupoleData::d_sin_coef.erase(m_id);
+            // update the spin-orbit coupling matrix here
+            refpart.spin_coupling = A + dA*R;
+
         }
 
         amrex::ParticleReal m_gscale; //! scaling factor for quad field gradient
@@ -521,12 +572,15 @@ namespace SoftQuadrupoleData
         int m_id; //! unique soft quad id used for data lookup map
 
         int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal* m_cos_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal* m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal* m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal* m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
+        amrex::ParticleReal const * m_cos_h_data = nullptr; //! non-owning pointer to host cosine coefficients
+        amrex::ParticleReal const * m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
+        amrex::ParticleReal const * m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
+        amrex::ParticleReal const * m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
     };
 
 } // namespace impactx
+
+IMPACTX_GPUDATA_EXTERN(impactx::elements::SoftQuadrupole)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SoftQuadrupole)
 
 #endif // IMPACTX_SOFTQUAD_H

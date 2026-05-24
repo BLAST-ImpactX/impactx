@@ -25,11 +25,13 @@ Single Particle Dynamics
    examples/solenoid/README.rst
    examples/solenoid_softedge/README.rst
    examples/quadrupole_softedge/README.rst
+   examples/fourier_coefficients/README.rst
    examples/cfbend/README.rst
    examples/compression/README.rst
    examples/kicker/README.rst
    examples/thin_dipole/README.rst
    examples/aperture/README.rst
+   examples/polygon_aperture/README.rst
    examples/iota_lens/README.rst
    examples/achromatic_spectrometer/README.rst
    examples/fodo_userdef/README.rst
@@ -43,7 +45,15 @@ Single Particle Dynamics
    examples/symplectic_integration/README.rst
    examples/vector_potential/README.rst
    examples/active_plasma_lens/README.rst
+   examples/edge_effects/README.rst
 
+Spin and Polarization
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/spin_tracking/README.rst
 
 Collective Effects
 ------------------
@@ -114,6 +124,7 @@ Lattice Design & Optimization
 
    examples/fodo_tune/README.rst
    examples/optimize_triplet/README.rst
+   examples/turn_update/README.rst
 
 
 Virtual Test Stands
@@ -124,6 +135,7 @@ Virtual Test Stands
 
    examples/cyclotron/README.rst
    examples/iota_lattice/README.rst
+   examples/simple_booster/README.rst
    examples/positron_channel/README.rst
    examples/pytorch_surrogate_model/README.rst
    examples/apochromatic/README.rst

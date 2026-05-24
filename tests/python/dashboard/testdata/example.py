@@ -13,11 +13,11 @@ kin_energy_MeV = 2000.0
 bunch_charge_C = 1e-09
 npart = 10000
 
-pc = sim.particle_container()
+beam = sim.beam
 
 # Reference particle
-ref = pc.ref_particle()
-ref.set_charge_qe(-1).set_mass_MeV(0.51099895).set_kin_energy_MeV(kin_energy_MeV)
+ref = beam.ref
+ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 distr = distribution.Waterbag(
     lambdaX=3.998488477e-05,
@@ -32,15 +32,20 @@ distr = distribution.Waterbag(
 )
 
 ns = 25
+
+quad1 = elements.Quad(ds=1.0, k=1.0, nslice=ns, name="quad1")
 lattice_configuration = [
-    elements.Drift(ds=0.25, nslice=ns, name="drift1"),
-    elements.Quad(ds=1.0, k=1.0, nslice=ns, name="quad1"),
     elements.Drift(ds=0.5, nslice=ns, name="drift2"),
     elements.Quad(ds=1.0, k=-1.0, nslice=ns, name="quad2"),
     elements.Drift(ds=0.25, nslice=ns, name="drift3"),
 ]
 
+sim.lattice.append(elements.Drift(ds=0.25, nslice=ns, name="drift1"))
+sim.lattice.append(quad1)
 sim.lattice.extend(lattice_configuration)
+lattice_configuration.reverse()
+sim.lattice.extend(lattice_configuration)
+
 sim.periods = 2
 
 # Simulate

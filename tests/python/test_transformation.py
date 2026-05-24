@@ -9,7 +9,13 @@
 import numpy as np
 import pytest
 
-from impactx import CoordSystem, ImpactX, coordinate_transformation, distribution
+from impactx import (
+    Config,
+    CoordSystem,
+    ImpactX,
+    coordinate_transformation,
+    distribution,
+)
 
 
 def test_transformation():
@@ -36,9 +42,9 @@ def test_transformation():
     npart = 10000  # number of macro particles
 
     #   reference particle
-    pc = sim.particle_container()
-    ref = pc.ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    beam = sim.beam
+    ref = beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
     distr = distribution.Gaussian(
@@ -53,30 +59,34 @@ def test_transformation():
         mutpt=0.8,
     )
     sim.add_particles(bunch_charge_C, distr, npart)
-    rbc_s0 = pc.beam_moments()
+    rbc_s0 = beam.beam_moments()
 
     # this must fail: we cannot transform from s to s
     with pytest.raises(Exception):
-        coordinate_transformation(pc, direction=CoordSystem.s)
+        coordinate_transformation(beam, direction=CoordSystem.s)
 
     # transform to t
-    coordinate_transformation(pc, direction=CoordSystem.t)
-    rbc_t = pc.beam_moments()
+    coordinate_transformation(beam, direction=CoordSystem.t)
+    rbc_t = beam.beam_moments()
 
     # this must fail: we cannot transform from t to t
     with pytest.raises(Exception):
-        coordinate_transformation(pc, direction=CoordSystem.t)
+        coordinate_transformation(beam, direction=CoordSystem.t)
 
     # transform back to s
-    coordinate_transformation(pc, direction=CoordSystem.s)
-    rbc_s = pc.beam_moments()
+    coordinate_transformation(beam, direction=CoordSystem.s)
+    rbc_s = beam.beam_moments()
 
     # finalize simulation
     sim.finalize()
 
     # assert that forward-inverse transformation of the beam leaves beam unchanged
-    atol = 1e-14
-    rtol = 1e-10
+    if Config.precision == "SINGLE":
+        atol = 1e-6
+        rtol = 1e-6
+    else:
+        atol = 1e-14
+        rtol = 1e-10
     for key, val in rbc_s0.items():
         if not np.isclose(val, rbc_s[key], rtol=rtol, atol=atol):
             print(f"initial[{key}]={val}, final[{key}]={rbc_s[key]} not equal")

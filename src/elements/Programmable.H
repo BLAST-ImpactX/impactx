@@ -30,7 +30,7 @@ namespace impactx::elements
 {
     struct Programmable
     : public mixin::Named,
-      public mixin::LinearTransport<Programmable>
+      public mixin::LinearTransport<Programmable, false>
       // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Programmable";
@@ -50,6 +50,12 @@ namespace impactx::elements
           : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
         {}
 
+        /** Reverse the element (not supported for Programmable) */
+        void reverse ()
+        {
+            throw std::runtime_error("Programmable: reverse() is not supported.");
+        }
+
         /** Push all particles relative to the reference particle
          *
          * @param[in,out] pc particle container to push
@@ -65,7 +71,8 @@ namespace impactx::elements
         /** Push all particles relative to the reference particle */
         void operator() (
             ImpactXParticleContainer::iterator & pti,
-            RefPart & ref_part
+            RefPart & ref_part,
+            [[maybe_unused]] bool spin
         ) const;
 
         /** This pushes the reference particle.
@@ -132,7 +139,7 @@ namespace impactx::elements
         bool m_threadsafe = false;
 
         std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
-        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles
+        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
         std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
         std::function<void()> m_finalize; //! hook for finalize cleanup
     };

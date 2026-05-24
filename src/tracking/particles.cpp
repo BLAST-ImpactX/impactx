@@ -11,6 +11,7 @@
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/CollectLost.H"
+#include "particles/ParticleBoundary.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
 #include "diagnostics/DiagnosticOutput.H"
@@ -41,8 +42,13 @@ namespace impactx
         pp_impactx.queryAddWithParser("verbose", verbose);
 
         // a global step for diagnostics including space charge slice steps in elements
-        //   before we start the evolve loop, we are in "step 0" (initial state)
-        int step = 0;
+        //   before we start the tracking loop, we are in "step 0" (initial state)
+        int & step = m_tracking_state.m_step;
+        step = 0;
+
+        // period in the lattice (e.g., turns)
+        int & period = m_tracking_state.m_period;
+        period = 0;
 
         // check typos in inputs after step 1
         bool early_params_checked = false;
@@ -80,31 +86,38 @@ namespace impactx
         if (verbose > 0) {
             amrex::Print() << " Space Charge effects: " << to_string(space_charge) << "\n";
         }
-        if (space_charge == SpaceChargeAlgo::True_2D)
-        {
-            throw std::runtime_error("2D space charge effects are not yet implemented for particle tracking.");
-        }
 
         amrex::ParmParse const pp_algo("algo");
         bool csr = false;
         pp_algo.query("csr", csr);
         bool isr = false;
         pp_algo.query("isr", isr);
+        bool spin = false;
+        pp_algo.query("spin", spin);
 
         if (verbose > 0) {
             amrex::Print() << " CSR effects: " << csr << "\n";
             amrex::Print() << " ISR effects: " << isr << "\n";
+            amrex::Print() << " Spin tracking: " << spin << "\n";
         }
 
         // periods through the lattice
         int num_periods = 1;
         amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
 
-        for (int period=0; period < num_periods; ++period) {
+        for (period=0; period < num_periods; ++period) {
+            // optional, user-defined function call
+            m_tracking_state.m_element = &m_lattice.front();
+            call_hook("before_period");
+
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
                 amr_data->track_particles.m_particle_container->SetRefParticleEdge();
+
+                // optional, user-defined function call
+                m_tracking_state.m_element = &element_variant;
+                call_hook("before_element");
 
                 // number of slices used for the application of space charge
                 int nslice = 1;
@@ -119,9 +132,12 @@ namespace impactx
                     BL_PROFILE("ImpactX::evolve::slice_step");
                     step++;
                     if (verbose > 0) {
-                        amrex::Print() << " ++++ Starting step=" << step
-                                       << " slice_step=" << slice_step << "\n";
+                        amrex::Print() << "\n++++ Starting step=" << step
+                                       << " slice_step=" << slice_step;
                     }
+
+                    // optional, user-defined function call
+                    call_hook("before_slice");
 
                     // Wakefield calculation: call wakefield function to apply wake effects
                     particles::wakefields::HandleWakefield(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
@@ -134,6 +150,9 @@ namespace impactx
 
                     // push all particles with external maps
                     push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
+
+                    // Apply optional particle boundary conditions
+                    particles::ParticleBoundary(*amr_data->track_particles.m_particle_container);
 
                     // move "lost" particles to another particle container
                     collect_lost_particles(*amr_data->track_particles.m_particle_container);
@@ -171,8 +190,17 @@ namespace impactx
 
                 } // end in-element space-charge slice-step loop
 
+                // optional, user-defined function call
+                call_hook("after_element");
+
             } // end beamline element loop
+
+            // optional, user-defined function call
+            call_hook("after_period");
         } // end periods though the lattice loop
+
+        // avoid dangling references if users manipulate the lattice
+        m_tracking_state.set_no_element();
 
         if (diag_enable)
         {

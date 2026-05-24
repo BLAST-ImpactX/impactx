@@ -30,7 +30,7 @@ namespace detail
 {
     class ImpactXParticleCounter {
     public:
-        using ParticleContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PinnedArenaAllocator>;
+        using ParticleContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
         using ParticleIter = typename ParticleContainer::ParIterType;
 
         ImpactXParticleCounter (ParticleContainer & pc);
@@ -70,7 +70,7 @@ namespace detail
     {
         static constexpr auto type = "BeamMonitor";
         using PType = typename ImpactXParticleContainer::ParticleType;
-        using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PinnedArenaAllocator>;
+        using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
 
         /** This element writes the particle beam out to openPMD data.
          *
@@ -87,6 +87,9 @@ namespace detail
         BeamMonitor (BeamMonitor && other) = default;
         BeamMonitor& operator= (BeamMonitor const & other) = default;
         BeamMonitor& operator= (BeamMonitor && other) = default;
+
+        /** Reverse the element (no-op for diagnostics) */
+        void reverse () { }
 
         /** Prepare entering the element before starting push logic.
          *
@@ -164,6 +167,18 @@ namespace detail
         AMREX_FORCE_INLINE
         bool has_name () const { return true; }
 
+        /** openPMD backend string passed at construction (e.g. "default", "bp4", "h5") */
+        AMREX_FORCE_INLINE
+        std::string backend () const { return m_OpenPMDFileType; }
+
+        /** openPMD iteration encoding: "v", "f", or "g" */
+        AMREX_FORCE_INLINE
+        std::string encoding () const { return m_encoding; }
+
+        /** For periodic lattices, only output every Nth period (turn or cycle) */
+        AMREX_FORCE_INLINE
+        int period_sample_intervals () const { return m_period_sample_intervals; }
+
         /** track all m_series_name instances
          *
          * Ensure m_series is the same for the same name.
@@ -176,8 +191,12 @@ namespace detail
         finalize ();
 
     private:
+        /** Open the openPMD series (on first access) */
+        void open ();
+
         std::string m_series_name; //! openPMD filename
         std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
+        std::string m_encoding; //! openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
         std::any m_series; //! openPMD::Series that holds potentially multiple outputs
         int m_step = 0; //! global step for output
 

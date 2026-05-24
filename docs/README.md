@@ -6,10 +6,13 @@ This explains how to generate the documentation for ImpactX, and contribute to i
 
 ### Installing the requirements
 
-Install the Python requirements for compiling the documentation:
-```
-pip install sphinx sphinx_rtd_theme
-```
+`cd` into the ImpactX `docs/` directory.
+Install the Python requirements for compiling the documentation with **one** of the following package managers:
+
+- pip: `pip install -U -r requirements.txt`
+- uv: `uv pip install -U -r requirements.txt`
+- conda: `conda create -n readthedocs -f conda.yml && conda activate readthedocs`
+- spack: `spack env activate -d . && spack install`
 
 ### Compiling the documentation
 

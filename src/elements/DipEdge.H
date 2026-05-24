@@ -18,6 +18,7 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
@@ -29,6 +30,18 @@
 
 namespace impactx::elements
 {
+    namespace dipedge
+    {
+        AMREX_ENUM(Model,
+            linear,   //! for the linear fringe field model
+            nonlinear //! for the 6th order fringe field model
+        );
+        AMREX_ENUM(Location,
+            entry, //! for leading (entry) fringe field
+            exit  //! for trailing (exit) fringe field
+        );
+    }
+
     struct DipEdge
     : public mixin::Named,
       public mixin::BeamOptic<DipEdge>,
@@ -38,6 +51,7 @@ namespace impactx::elements
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
+      // verify again after https://github.com/BLAST-ImpactX/impactx/pull/1158
       // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "DipEdge";
@@ -52,10 +66,20 @@ namespace impactx::elements
          *   K. L. Brown, SLAC Report No. 75 (1982).
          *   K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
          *
-         * @param psi Pole face angle in rad.
+         * @param psi Pole face entry/exit angle in rad.
          * @param rc Radius of curvature in m.
          * @param g Gap parameter in m.
+         * @param R Length scale parameter in m.
+         * @param K0 Fringe field integeral (unitless).
+         * @param K1 Fringe field integeral (unitless).
          * @param K2 Fringe field integral (unitless).
+         * @param K3 Fringe field integral (unitless).
+         * @param K4 Fringe field integral (unitless).
+         * @param K5 Fringe field integral (unitless).
+         * @param K6 Fringe field integral (unitless).
+         * @param model Fringe field model (linear or nonlinear).
+         * @param location Fringe field location (entry or exit).
+         * @param modify_ref_part Apply fringe field to the reference particle (boolean).
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -65,7 +89,17 @@ namespace impactx::elements
             amrex::ParticleReal psi,
             amrex::ParticleReal rc,
             amrex::ParticleReal g,
+            amrex::ParticleReal R,
+            amrex::ParticleReal K0,
+            amrex::ParticleReal K1,
             amrex::ParticleReal K2,
+            amrex::ParticleReal K3,
+            amrex::ParticleReal K4,
+            amrex::ParticleReal K5,
+            amrex::ParticleReal K6,
+            dipedge::Model model,
+            dipedge::Location location,
+            bool modify_ref_part = false,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -73,8 +107,22 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_psi(psi), m_rc(rc), m_g(g), m_K2(K2)
+          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location), m_modify_ref_part(modify_ref_part)
         {
+        }
+
+        /** Reverse the element (negate psi and K2, swap entry/exit)
+         *
+         * @todo the m_modify_ref_part=true parameter is not yet handled
+         *       see https://github.com/BLAST-ImpactX/impactx/pull/1431
+         */
+        void reverse ()
+        {
+            m_psi = -m_psi;
+            m_K2 = -m_K2;
+            m_location = (m_location == dipedge::Location::entry)
+                ? dipedge::Location::exit
+                : dipedge::Location::entry;
         }
 
         /** Push all particles */
@@ -94,6 +142,8 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
+            // constants for linear map:
+
             // edge focusing matrix elements (zero gap)
             m_R21 = std::tan(m_psi) / m_rc;
 
@@ -104,6 +154,34 @@ namespace impactx::elements
                 * m_g * m_K2 / powi<2>(m_rc);
 
             m_R43 = vf - m_R21;
+
+            // constants for nonlinear map:
+
+            // access reference particle values to find beta
+            m_beta = refpart.beta();
+
+            // expressions from eq (14) of Mitchell and Hwang, NAPAC2025
+            amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
+            amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
+
+            // the scale constant specifying entry or exit
+            amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
+
+            m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
+            m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
+            m_c3_times_1plusdelta = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+            m_c4_times_1plusdelta = loc * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
+            m_c5 = tan_psi / (2_prt * m_rc);
+            m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_rc * powi<3>(cos_psi)) * m_g/m_rc * m_K1;
+            m_c7_times_1plusdelta = 0.5_prt * powi<3>(sec_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
+            m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_rc));
+            m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
+            m_c10_times_1plusdelta = loc * powi<2>(tan_psi) / (2_prt * m_rc);
+            m_c11_times_1plusdelta = loc * 1_prt / (2_prt * m_rc);
+            m_c12_times_1plusdelta = (m_g > 0_prt) ? 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g) : 0_prt;
+            m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
+            m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_rc*m_R) * m_K5;
+            m_c15 = (m_K6 / (m_rc*m_R)) / (powi<3>(cos_psi));
         }
 
         /** This is a dipedge functor, so that a variable of this type can be used like a
@@ -135,20 +213,130 @@ namespace impactx::elements
         {
 
             using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
+            using amrex::Math::powi;
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
 
-            // apply edge focusing
-            px = px + m_R21 * x;
-            py = py + m_R43 * y;
+            if (m_model == dipedge::Model::linear) {
+               // apply linear model
+               px = px + m_R21 * x;
+               py = py + m_R43 * y;
+            } else {
+               // apply nonlinear model
+               T_Real xout = x;
+               T_Real pxout = px;
+               T_Real yout = y;
+               T_Real pyout = py;
+               T_Real tout = t;
+               T_Real ptout = pt;
+
+               // compute particle momentum deviation delta + 1 (reciprocal)
+               T_Real const inv_delta1 = 1_prt / sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+
+               T_Real const c2 = m_c2_times_1plusdelta * inv_delta1;
+               T_Real const c3 = m_c3_times_1plusdelta * inv_delta1;
+               //T_Real const c4 = m_c4_times_1plusdelta * inv_delta1; //not currently used
+               //T_Real const c6 = m_c6_times_1plusdelta * inv_delta1; //not currently used
+               T_Real const c7 = m_c7_times_1plusdelta * inv_delta1;
+               T_Real const c8 = m_c8_times_1plusdelta * inv_delta1;
+               T_Real const c9 = m_c9_times_1plusdelta * inv_delta1;
+               T_Real const c10 = m_c10_times_1plusdelta * inv_delta1;
+               T_Real const c11 = m_c11_times_1plusdelta * inv_delta1;
+               T_Real const c12 = m_c12_times_1plusdelta * inv_delta1;
+
+               // update transverse coordinates
+               xout = x - c3 - c10*powi<2>(x) + (c10 + c11)*powi<2>(y);
+               yout = y + 2_prt * c10 * x * y;
+
+               // update transverse momenta
+               T_Real const D = 1_prt - 4_prt*c10*c11*powi<2>(y) - 4_prt*powi<2>(c10)*(powi<2>(x)+powi<2>(y));
+               T_Real const dRdx = -m_c13 + c2 + c3*m_c5 + 2_prt*(m_c14 - m_c5)*x + 3_prt*(m_c15/6_prt + c10*m_c5 + c8)*powi<2>(x)
+                                   + (-m_c15/2_prt + c10*m_c5 - c11*m_c5 - c9)*powi<2>(y);
+               T_Real const dRdy = 2_prt*(-m_c14 + m_c5 - c7)*y + 2_prt*(-m_c15/2_prt + c10*m_c5 - c11*m_c5 - c9)*x*y - 4_prt*c12*powi<3>(y);
+               T_Real const dXdx = 1_prt - 2_prt*c10*x;
+               T_Real const dXdy = 2_prt*(c10 + c11)*y;
+               T_Real const dYdx = 2_prt*c10*y;
+               T_Real const dYdy = 1_prt + 2_prt*c10*x;
+
+               pxout = (dYdy * (px - dRdx) - dYdx * (py - dRdy)) / D;
+               pyout = (-dXdy * (px - dRdx) + dXdx * (py - dRdy)) / D;
+
+               // update temporal coordinate
+               T_Real const dDelta_dpt = (pt - 1_prt/m_beta) * inv_delta1;
+               tout = t - dDelta_dpt * inv_delta1 * ((c2 + c3*m_c5)*x + (c10*m_c5 + c8)*powi<3>(x) - c7*powi<2>(y) - c12*powi<4>(y)
+                      + (c10*m_c5 - c11*m_c5 - c9)*x*powi<2>(y) + pxout*(-c3 + (c11 + c10)*powi<2>(y) - c10*powi<2>(x)) + 2_prt*pyout*c10*x*y);
+
+               // optional removal of reference particle shift
+               amrex::ParticleReal const c2_ref = m_c2_times_1plusdelta;
+               amrex::ParticleReal const c3_ref = m_c3_times_1plusdelta;
+               T_Real const dx_ref = (m_modify_ref_part) ? -c3_ref : 0_prt;
+               T_Real const dpx_ref = (m_modify_ref_part) ? m_c13 - c2_ref - c3_ref*m_c5 : 0_prt;
+               T_Real const dt_ref = -c3_ref * dpx_ref / m_beta;
+               xout -= dx_ref;
+               pxout -= dpx_ref;
+               tout -= dt_ref;
+
+               x = xout;
+               px = pxout;
+               y = yout;
+               py = pyout;
+               t = tout;
+               pt = ptout;
+            }
 
             // undo shift due to alignment errors of the element
             shift_out(x, y, px, py);
         }
 
-        /** This pushes the reference particle. */
-        using Thin::operator();
+
+        /** This pushes the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // assign input reference particle values
+            [[maybe_unused]] amrex::ParticleReal const x = refpart.x;
+            [[maybe_unused]] amrex::ParticleReal const z = refpart.z;
+            [[maybe_unused]] amrex::ParticleReal const t = refpart.t;
+            [[maybe_unused]] amrex::ParticleReal const px = refpart.px;
+            [[maybe_unused]] amrex::ParticleReal const pz = refpart.pz;
+            [[maybe_unused]] amrex::ParticleReal const pt = refpart.pt;
+
+            if (m_modify_ref_part && m_model == dipedge::Model::nonlinear) {
+                // calculate expensive terms
+                amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
+                auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
+                amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
+                amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
+                amrex::ParticleReal const c2_ref = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
+                amrex::ParticleReal const c3_ref = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+                amrex::ParticleReal const c5_ref = tan_psi / (2_prt * m_rc);
+                amrex::ParticleReal const c13_ref = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
+
+                amrex::ParticleReal const pnorm = std::sqrt(pt*pt-1_prt);
+                amrex::ParticleReal const dx_ref = -c3_ref;
+                amrex::ParticleReal const dpx_ref = c13_ref - c2_ref - c3_ref*c5_ref;
+                amrex::ParticleReal const dpz_ref = pnorm*(-1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm)));
+                amrex::ParticleReal const dt_ref = -c3_ref * dpx_ref / refpart.beta();
+
+                // advance position and momentum
+                refpart.x = x + (pz/pnorm)*dx_ref;
+                refpart.z = z - (px/pnorm)*dx_ref;
+                refpart.t = t + dt_ref;
+                refpart.px = px + (pz/pnorm)*dpx_ref + (px/pnorm)*dpz_ref;
+                refpart.pz = pz - (px/pnorm)*dpx_ref + (pz/pnorm)*dpz_ref;
+                // refpart.pt = pt;  // Unchanged
+            }
+
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -189,14 +377,30 @@ namespace impactx::elements
         amrex::ParticleReal m_psi; //! pole face angle in rad
         amrex::ParticleReal m_rc; //! bend radius in m
         amrex::ParticleReal m_g; //! gap parameter in m
+        amrex::ParticleReal m_R; //! scale length in m
+        amrex::ParticleReal m_K0; //! fringe field integral
+        amrex::ParticleReal m_K1; //! fringe field integral
         amrex::ParticleReal m_K2; //! fringe field integral
+        amrex::ParticleReal m_K3; //! fringe field integral
+        amrex::ParticleReal m_K4; //! fringe field integral
+        amrex::ParticleReal m_K5; //! fringe field integral
+        amrex::ParticleReal m_K6; //! fringe field integral
+        dipedge::Model m_model; //! fringe field model: linear or nonlinear
+        dipedge::Location m_location; //! fringe field location: entry, or exit
+        bool m_modify_ref_part; //! apply fringe field to reference particle (true/false)
 
       private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_R21, m_R43;
+        amrex::ParticleReal m_R21, m_R43, m_beta;
+        amrex::ParticleReal m_c1, m_c5, m_c13, m_c14, m_c15;
+        amrex::ParticleReal m_c2_times_1plusdelta, m_c3_times_1plusdelta, m_c4_times_1plusdelta, m_c6_times_1plusdelta;
+        amrex::ParticleReal m_c7_times_1plusdelta, m_c8_times_1plusdelta, m_c9_times_1plusdelta, m_c10_times_1plusdelta;
+        amrex::ParticleReal m_c11_times_1plusdelta, m_c12_times_1plusdelta;
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::DipEdge)
 
 #endif // IMPACTX_DIPEDGE_H

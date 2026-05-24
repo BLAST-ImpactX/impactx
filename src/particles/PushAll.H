@@ -42,6 +42,11 @@ namespace impactx
         std::string const profile_name = "impactx::push::" + std::string(T_Element::type);
         BL_PROFILE(profile_name);
 
+        // is spin tracking enabled?
+        bool spin = false;
+        amrex::ParmParse pp_algo("algo");
+        pp_algo.query("spin", spin);
+
         // preparing to access reference particle data: RefPart
         RefPart & ref_part = pc.GetRefParticle();
 
@@ -62,11 +67,25 @@ namespace impactx
 #endif
             for (ParIt pti(pc, lev); pti.isValid(); ++pti) {
                 // push beam particles relative to reference particle
-                element(pti, ref_part);
+                element(pti, ref_part, spin);
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }
 
 } // namespace impactx
+
+/** Suppress implicit instantiation of push_all<T> — use in element headers. */
+#define IMPACTX_PUSH_EXTERN_TEMPLATE(ElementType) \
+    extern template void impactx::push_all<ElementType>( \
+        impactx::ImpactXParticleContainer &, \
+        ElementType &, \
+        int, int, bool);
+
+/** Explicit instantiation of push_all<T> — use in element .cpp files. */
+#define IMPACTX_PUSH_INSTANTIATE(ElementType) \
+    template void impactx::push_all<ElementType>( \
+        impactx::ImpactXParticleContainer &, \
+        ElementType &, \
+        int, int, bool);
 
 #endif // IMPACTX_PUSH_ALL_H

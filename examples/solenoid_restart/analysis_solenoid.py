@@ -34,7 +34,7 @@ def get_moments(beam):
 
 
 # initial/final beam
-series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+series = io.Series("diags/openPMD/m1.h5", io.Access.read_only)
 first_step = list(series.iterations)[0]
 last_step = list(series.iterations)[-1]
 initial = series.iterations[first_step].particles["beam"].to_df()
@@ -79,7 +79,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 2.3 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 1.4 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

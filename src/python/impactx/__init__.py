@@ -27,11 +27,25 @@ __license__ = impactx_pybind.__license__
 __author__ = impactx_pybind.__author__
 
 from .distribution_input_helpers import twiss  # noqa
+from .fourier import fourier_coefficients  # noqa
 from .extensions.KnownElementsList import (
+    FilteredElementsList,
     register_KnownElementsList_extension,
 )
 from .extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
+)
+from .extensions.RFCavity import (
+    register_RFCavity_extension,
+)
+from .extensions.SoftQuadrupole import (
+    register_SoftQuadrupole_extension,
+)
+from .extensions.SoftSolenoid import (
+    register_SoftSolenoid_extension,
+)
+from .extensions.Elements import (
+    register_elements_value_semantics,
 )
 
 # at this place we can enhance Python classes with additional methods written
@@ -40,8 +54,20 @@ from .extensions.ImpactXParticleContainer import (
 # MAD-X file reader for beamline lattice elements
 register_KnownElementsList_extension(impactx_pybind.elements.KnownElementsList)
 
+# Public alias on the elements submodule (same class object as in extensions)
+impactx_pybind.elements.FilteredElementsList = FilteredElementsList
+FilteredElementsList.__module__ = impactx_pybind.elements.__name__
+
 # MAD-X file reader for reference particle
 RefPart.load_file = read_beam  # noqa
 
 # Pure Python extensions to ImpactX types
 register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContainer)
+
+# Alternative constructors from raw field data
+register_RFCavity_extension(impactx_pybind.elements.RFCavity)
+register_SoftQuadrupole_extension(impactx_pybind.elements.SoftQuadrupole)
+register_SoftSolenoid_extension(impactx_pybind.elements.SoftSolenoid)
+
+# Value-based __eq__, __hash__, and isclose() on every element class
+register_elements_value_semantics(impactx_pybind.elements)

@@ -60,7 +60,12 @@ namespace impactx::transformation
             using amrex::Math::powi;
 
             // small tolerance to avoid NaN for pz<0:
-            constexpr amrex::ParticleReal tol = 1.0e-8_prt;
+            constexpr amrex::ParticleReal tol =
+#ifdef AMREX_SINGLE_PRECISION_PARTICLES
+                1.0e-6_prt;
+#else
+                1.0e-12_prt;
+#endif
 
             // compute value of reference pzd = beta*gamma
             amrex::ParticleReal const argd = -1.0_prt + powi<2>(m_ptd);

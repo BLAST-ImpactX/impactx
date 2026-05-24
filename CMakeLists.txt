@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 25.09)
+project(ImpactX VERSION 26.04)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -32,9 +32,9 @@ endif()
 
 # C++ Standard in Superbuilds #################################################
 #
-# This is the easiest way to push up a C++17 requirement for AMReX and
+# This is the easiest way to push up a C++20 requirement for AMReX and
 # openPMD-api until they increase their requirement.
-set_cxx17_superbuild()
+set_cxx20_superbuild()
 
 
 # CCache Support ##############################################################
@@ -175,6 +175,15 @@ set_target_properties(lib PROPERTIES
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
+include(GenerateExportHeader)
+generate_export_header(lib
+    BASE_NAME impactx
+    EXPORT_FILE_NAME src/impactx_export.H
+)
+if(NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(lib PUBLIC IMPACTX_STATIC_DEFINE)
+endif()
+
 # Optional: build only a single TU
 if(ImpactX_UNITY_BUILD)
     set_target_properties(lib PROPERTIES
@@ -267,15 +276,9 @@ unset(_BUILDINFO_SRC)
 # add sources
 add_subdirectory(src)
 
-# C++ properties: at least a C++17 capable compiler is needed
+# C++ properties: at least a C++20 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    if(ImpactX_SIMD)
-        # vir::cvt
-        # https://github.com/mattkretz/vir-simd/issues/45
-        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
-    else()
-        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
-    endif()
+    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF
@@ -296,7 +299,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v3.0.0/tools/pybind11Common.cmake#L420-L426
+            # https://github.com/pybind/pybind11/blob/v3.0.3/tools/pybind11Common.cmake#L436-L442
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()
@@ -321,7 +324,7 @@ if(ImpactX_COMPUTE STREQUAL CUDA)
     endforeach()
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
         foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_17)
+            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_20)
         endforeach()
         set_target_properties(${_ALL_TARGETS} PROPERTIES
             CUDA_EXTENSIONS OFF
@@ -444,6 +447,7 @@ if(ImpactX_PYTHON)
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX
+            pyImpactX_python_sources
     )
 
     # this will also upgrade/downgrade dependencies, e.g., when the version of numpy changes
@@ -492,6 +496,20 @@ if(ImpactX_PYTHON)
             pyImpactX
             ${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
     )
+
+    # populate the build-tree Python package for ctest and direct build-tree imports
+    add_custom_target(pyImpactX_python_sources ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ImpactX_SOURCE_DIR}/src/python/impactx
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ImpactX_SOURCE_DIR}/examples
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx/examples
+        VERBATIM
+    )
+    add_dependencies(pyImpactX_python_sources pyImpactX)
 endif()
 
 
@@ -506,14 +524,6 @@ if(BUILD_TESTING)
     endif()
 
     # unit tests
-    if(ImpactX_PYTHON)
-        # copy Python wrapper library to build directory
-        add_custom_command(TARGET pyImpactX POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${ImpactX_SOURCE_DIR}/src/python/impactx
-                $<TARGET_FILE_DIR:pyImpactX>
-        )
-    endif()
     add_subdirectory(tests)
 endif()
 

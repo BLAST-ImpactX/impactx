@@ -1,8 +1,40 @@
 target_sources(lib
   PRIVATE
     Aperture.cpp
+    Buncher.cpp
+    CFbend.cpp
+    ChrDrift.cpp
+    ChrPlasmaLens.cpp
+    ChrQuad.cpp
+    ChrUniformAcc.cpp
+    ConstF.cpp
+    DipEdge.cpp
+    Drift.cpp
+    ExactCFbend.cpp
+    ExactDrift.cpp
+    ExactMultipole.cpp
+    ExactQuad.cpp
+    ExactSbend.cpp
+    Kicker.cpp
+    LinearMap.cpp
+    Multipole.cpp
+    NonlinearLens.cpp
+    PlaneXYRot.cpp
+    PolygonAperture.cpp
+    PRot.cpp
     Programmable.cpp
+    Quad.cpp
+    QuadEdge.cpp
+    RFCavity.cpp
+    Sbend.cpp
+    ShortRF.cpp
+    SoftQuad.cpp
+    SoftSol.cpp
+    Sol.cpp
     Source.cpp
+    SpinMap.cpp
+    TaperedPL.cpp
+    ThinDipole.cpp
 )
 
 add_subdirectory(diagnostics)

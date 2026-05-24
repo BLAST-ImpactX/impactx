@@ -219,3 +219,99 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_semigaussian.py
       :language: python3
       :caption: You can copy this file from ``examples/distgen/analysis_semigaussian.py``.
+
+
+
+.. _examples-distgen-cutgaussian:
+
+A 6d Truncated Gaussian distribution from Twiss functions
+===========================================================
+
+A Gaussian distribution in all 6 phase space variables, with truncation, initialized using Courant-Snyder (Twiss) functions.
+
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_cutgaussian_twiss.py`` or
+* ImpactX **executable** using an input file: ``impactx input_cutgaussian_twiss.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_cutgaussian_twiss.py
+          :language: python3
+          :caption: You can copy this file from ``examples/distgen/run_cutgaussian_twiss.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_cutgaussian_twiss.in
+          :language: ini
+          :caption: You can copy this file from ``examples/distgen/input_cutgaussian_twiss.in``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_gaussian.py``
+
+   .. literalinclude:: analysis_gaussian.py
+      :language: python3
+      :caption: You can copy this file from ``examples/distgen/analysis_gaussian.py``.
+
+
+
+.. _examples-distgen-spinvmf:
+
+Spin Sampling from a vMF Distribution
+=====================================
+
+This tests the sampling of initial particle spin from a von Mises-Fisher distribution, given an initial input polarization.
+The phase space distribution coincides with the 4D Kurth distribution used in examples-distgen-kurth4d.
+
+In this test, the initial and final values of of the mean spin 3-vector (i.e., the polarization vector) must agree with nominal values.
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_kurth4d_spin.py`` or
+* ImpactX **executable** using an input file: ``impactx input_kurth4d_spin.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_kurth4d_spin.py
+          :language: python3
+          :caption: You can copy this file from ``examples/distgen/run_kurth4d_spin.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_kurth4d_spin.in
+          :language: ini
+          :caption: You can copy this file from ``examples/distgen/input_kurth4d_spin.in``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_kurth4d_spin.py``
+
+   .. literalinclude:: analysis_kurth4d_spin.py
+      :language: python3
+      :caption: You can copy this file from ``examples/distgen/analysis_kurth4d_spin.py``.

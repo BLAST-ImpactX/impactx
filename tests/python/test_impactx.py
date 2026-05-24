@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from conftest import basepath
 
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 # FIXME in AMReX via https://github.com/AMReX-Codes/amrex/pull/3727
 # def test_impactx_module():
@@ -26,13 +26,20 @@ def validate_fodo(beam):
     """see examples/fodo/analysis_fodo.py"""
     num_particles = beam.total_number_of_particles()
     assert num_particles == 10000
-    atol = 0.0  # ignored
-    rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
+    if Config.precision == "SINGLE":
+        atol = 0.0  # ignored
+        rtol = (
+            2.5 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
+    else:
+        atol = 0.0  # ignored
+        rtol = (
+            2.2 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
 
     # in situ calculate the reduced beam characteristics
     rbc = beam.beam_moments()
     ref = beam.ref_particle()
-
     print("charge=", rbc["charge_C"])
     assert np.allclose(
         [
@@ -75,7 +82,7 @@ def test_impactx_fodo_file():
     sim.track_particles()
 
     # validate the results
-    validate_fodo(sim.particle_container())
+    validate_fodo(sim.beam)
 
     # finalize simulation
     sim.finalize()
@@ -102,8 +109,8 @@ def test_impactx_nofile():
     npart = 10000
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
     distr = distribution.Waterbag(
@@ -119,7 +126,7 @@ def test_impactx_nofile():
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    beam = sim.particle_container()
+    beam = sim.beam
     assert beam.total_number_of_particles() == npart
 
     # init accelerator lattice
@@ -160,7 +167,7 @@ def test_impactx_nofile():
 
     # simulate full lattice but keep beam global position
     sim.track_particles()
-    assert np.allclose([ref.s], [7.0])
+    assert ref.s == pytest.approx(7.0)
 
     # finalize simulation
     sim.finalize()
@@ -180,15 +187,18 @@ def test_impactx_noparticles():
     kin_energy_MeV = 2.0e3
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
     #   particle bunch: init intentionally missing
 
     # init accelerator lattice
     sim.lattice.append(elements.Drift(ds=0.5))
 
     with pytest.raises(
-        RuntimeError, match="No particles found. Cannot run evolve without a beam."
+        RuntimeError,
+        match="No particles found. "
+        "Cannot track particles without an initialized beam. "
+        "Did you forget to call sim.add_particles ?",
     ):
         sim.track_particles()
 
@@ -285,4 +295,59 @@ def test_impactx_change_resolution():
     assert rho.is_all_nodal
 
     # finalize simulation
+    sim.finalize()
+
+
+def test_impactx_fodo_hook():
+    """
+    Test hooks (callback functions) into evolve loops
+    """
+    sim = ImpactX()
+
+    sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
+
+    sim.init_grids()
+    sim.init_beam_distribution_from_inputs()
+    sim.init_lattice_elements_from_inputs()
+
+    def hook_before_element(sim):
+        element = sim.tracking_element
+        print(
+            f"  Current element name: {element.name} with ds={element.ds:.2f}",
+            flush=True,
+        )
+
+        if element.name != "monitor":
+            print(f"  Drift ds is: {element.ds:.2f}m", flush=True)
+
+    sim.hook["before_element"] = hook_before_element
+
+    assert sim.tracking_element is None
+    sim.track_particles()
+    assert sim.tracking_element is None
+
+    # validate the results
+    validate_fodo(sim.beam)
+
+    # finalize simulation
+    sim.finalize()
+
+
+def test_deprecated_beam_ref_accessors_warn():
+    """Legacy accessor methods emit deprecation warnings."""
+    sim = ImpactX()
+    sim.particle_shape = 2
+    sim.init_grids()
+
+    with pytest.warns(
+        DeprecationWarning, match="particle_container\\(\\) is deprecated"
+    ):
+        beam = sim.particle_container()
+
+    with pytest.warns(DeprecationWarning, match="ref_particle\\(\\) is deprecated"):
+        ref = beam.ref_particle()
+
+    ref.x = 1.5
+    assert beam.ref.x == pytest.approx(1.5)
+
     sim.finalize()

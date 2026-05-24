@@ -19,6 +19,7 @@ from .. import DashboardDefaults
 from ..defaults import BEAM_MONITOR_DEFAULT_NAME
 from ..defaults_helper import InputDefaultsHelper
 from ..validation import DashboardValidation, errors_tracker
+from ..visualization.lattice import update_lattice_statistics
 from .utils import LatticeConfigurationHelper
 from .variable_handler import LatticeVariableHandler
 
@@ -71,6 +72,7 @@ def add_lattice_element() -> dict:
 
     state.selected_lattice_list.append(lattice_element)
     errors_tracker.update_simulation_validation_status()
+    update_lattice_statistics()
     return lattice_element
 
 
@@ -166,12 +168,14 @@ def on_lattice_element_parameter_change(
 
     errors_tracker.update_simulation_validation_status()
     state.dirty("selected_lattice_list")
+    update_lattice_statistics()
 
 
 @ctrl.add("deleteLatticeElement")
 def on_delete_LatticeElement_click(index):
     state.selected_lattice_list.pop(index)
     state.dirty("selected_lattice_list")
+    update_lattice_statistics()
 
 
 @ctrl.add("move_latticeElementIndex_up")
@@ -182,6 +186,7 @@ def on_move_latticeElementIndex_up_click(index):
             state.selected_lattice_list[index],
         )
         state.dirty("selected_lattice_list")
+        update_lattice_statistics()
 
 
 @ctrl.add("move_latticeElementIndex_down")
@@ -192,6 +197,7 @@ def on_move_latticeElementIndex_down_click(index):
             state.selected_lattice_list[index],
         )
         state.dirty("selected_lattice_list")
+        update_lattice_statistics()
 
 
 @ctrl.add("nsliceDefaultChange")

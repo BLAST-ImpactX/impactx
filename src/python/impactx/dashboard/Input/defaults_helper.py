@@ -97,8 +97,13 @@ class InputDefaultsHelper:
         :return: A list of tuples containing class names.
         """
 
+        # Container / utility classes that are not user-selectable elements.
+        _SKIP_CLASSES = {"KnownElementsList", "FilteredElementsList"}
+
         results = []
         for name in dir(module_name):
+            if name in _SKIP_CLASSES:
+                continue
             attr = getattr(module_name, name)
             if inspect.isclass(attr):
                 results.append((name, attr))
@@ -120,7 +125,8 @@ class InputDefaultsHelper:
             init_method = getattr(cls, "__init__", None)
             if init_method:
                 docstring = cls.__init__.__doc__
-                docstrings[name] = docstring
+                if docstring is not None:
+                    docstrings[name] = docstring
         return docstrings
 
     @staticmethod
@@ -159,15 +165,19 @@ class InputDefaultsHelper:
                 else:
                     parameter_type = type_and_default
 
-            match parameter_type:
-                case optional_type if "Optional" in optional_type:
-                    parameter_type = parameter_type[len("Optional[") : -1]
-                case "typing.SupportsFloat":
-                    parameter_type = "float"
-                case "typing.SupportsInt":
-                    parameter_type = "int"
-                case "str | None":
-                    parameter_type = "str"
+            for optional_prefix in ("typing.Optional[", "Optional["):
+                if parameter_type.startswith(
+                    optional_prefix
+                ) and parameter_type.endswith("]"):
+                    parameter_type = parameter_type[len(optional_prefix) : -1]
+                    break
+
+            if parameter_type.startswith(("typing.SupportsFloat", "SupportsFloat")):
+                parameter_type = "float"
+            elif parameter_type.startswith(("typing.SupportsInt", "SupportsInt")):
+                parameter_type = "int"
+            elif parameter_type == "str | None":
+                parameter_type = "str"
 
             parameters.append((name, default, parameter_type))
 

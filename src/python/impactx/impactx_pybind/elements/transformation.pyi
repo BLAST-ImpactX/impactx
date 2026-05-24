@@ -12,7 +12,7 @@ __all__: list[str] = ["insert_element_every_ds"]
 
 def insert_element_every_ds(
     list: impactx.impactx_pybind.elements.KnownElementsList,
-    ds: typing.SupportsFloat,
+    ds: typing.SupportsFloat | typing.SupportsIndex,
     element: impactx.impactx_pybind.elements.Empty
     | impactx.impactx_pybind.elements.Aperture
     | impactx.impactx_pybind.elements.Buncher
@@ -36,6 +36,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.Multipole
     | impactx.impactx_pybind.elements.NonlinearLens
     | impactx.impactx_pybind.elements.PlaneXYRot
+    | impactx.impactx_pybind.elements.PolygonAperture
     | impactx.impactx_pybind.elements.Programmable
     | impactx.impactx_pybind.elements.PRot
     | impactx.impactx_pybind.elements.Quad
@@ -47,6 +48,7 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.SoftQuadrupole
     | impactx.impactx_pybind.elements.Sol
     | impactx.impactx_pybind.elements.Source
+    | impactx.impactx_pybind.elements.SpinMap
     | impactx.impactx_pybind.elements.TaperedPL
     | impactx.impactx_pybind.elements.ThinDipole,
 ) -> impactx.impactx_pybind.elements.KnownElementsList:

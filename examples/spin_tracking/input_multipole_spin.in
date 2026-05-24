@@ -1,0 +1,71 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 2.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 3.9984884770e-4
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 2.6623538760e-4
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.0e-3
+beam.muxpx = -0.846574929020762
+beam.muypy = -beam.muxpx
+beam.mutpt = 0.0
+beam.polarization_x = 0.4
+beam.polarization_y = 0.9
+beam.polarization_z = 0.1
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor multipole quad thin_quad thin_sext thick_multipole monitor
+lattice.nslice = 5
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+multipole.type = multipole_exact
+multipole.ds = 1.0
+multipole.k_normal = 0 2.0
+multipole.k_skew = 0 0
+multipole.units = 0
+multipole.mapsteps = 100
+
+quad.type = quad_exact
+quad.ds = -1.0
+quad.k = 2.0
+quad.mapsteps = 100
+
+thin_quad.type = multipole
+thin_quad.multipole = 2       # Thin quadrupole
+thin_quad.k_normal = 0.2
+thin_quad.k_skew = -0.1
+
+thin_sext.type = multipole
+thin_sext.multipole = 3       # Thin sextupole
+thin_sext.k_normal = -1.0
+thin_sext.k_skew = 0.5
+
+thick_multipole.type = multipole_exact
+thick_multipole.ds = 1.0e-5
+thick_multipole.k_normal = 0 -0.2e5 1.0e5
+thick_multipole.k_skew = 0 0.1e5 -0.5e5
+thick_multipole.mapsteps = 100
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.spin = true
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

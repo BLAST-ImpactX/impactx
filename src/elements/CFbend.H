@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -37,6 +38,7 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
+      public mixin::SpinTransport,
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
@@ -82,6 +84,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -117,32 +122,58 @@ namespace impactx::elements
             amrex::ParticleReal const omega_y = std::sqrt(std::abs(gy));
 
             // trigonometry
-            auto const [sinx, cosx] = amrex::Math::sincos(omega_x * slice_ds);
-            amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
-            amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
-            auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
-            amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
-            amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
+            amrex::ParticleReal const cx = gx > 0_prt ? std::cos(omega_x * slice_ds) : std::cosh(omega_x * slice_ds);
+            amrex::ParticleReal const sx = gx > 0_prt ? std::sin(omega_x * slice_ds)/omega_x : std::sinh(omega_x * slice_ds)/omega_x;
+            amrex::ParticleReal const cy = gy > 0_prt ? std::cos(omega_y * slice_ds) : std::cosh(omega_y * slice_ds);
+            amrex::ParticleReal const sy = gy > 0_prt ? std::sin(omega_y * slice_ds)/omega_y : std::sinh(omega_y * slice_ds)/omega_y;
 
+            amrex::ParticleReal const ibrc = 1_prt / (bet * m_rc);
             amrex::ParticleReal const igbrc = 1_prt / (gx * bet * m_rc);
-            amrex::ParticleReal const iobrc = 1_prt / (omega_x * bet * m_rc);
-            amrex::ParticleReal const igobr = 1_prt / (gx * omega_x * b2rc2);
+            amrex::ParticleReal const igb2r2 = 1_prt / (gx * b2rc2);
 
-            m_R11 = gx > 0_prt ? cosx : coshx;
-            m_R12 = gx > 0_prt ? sinx / omega_x : sinhx / omega_x;
-            m_R16 = gx > 0_prt ? -(1_prt - cosx) * igbrc : -(1_prt - coshx) * igbrc;
-            m_R21 = gx > 0_prt ? -omega_x * sinx : omega_x * sinhx;
-            m_R22 = gx > 0_prt ? cosx : coshx;
-            m_R26 = gx > 0_prt ? -sinx * iobrc : -sinhx * iobrc;
-            m_R33 = gy > 0_prt ? cosy : coshy;
-            m_R34 = gy > 0_prt ? siny / omega_y : sinhy / omega_y;
-            m_R43 = gy > 0_prt ? -omega_y * siny : omega_y * sinhy;
-            m_R44 = gy > 0_prt ? cosy : coshy;
-            m_R51 = gx > 0_prt ? sinx * iobrc : sinhx * iobrc;
-            m_R52 = gx > 0_prt ? (1_prt - cosx) * igbrc : (1_prt - coshx) * igbrc;
-            m_R56 = gx > 0_prt ?
-                slice_ds * ibetgam2 + (sinx  - omega_x * slice_ds) * igobr :
-                slice_ds * ibetgam2 + (sinhx - omega_x * slice_ds) * igobr;
+            // elements of the linear transport matrix
+            // The matrix elements of R are identical with those found in:
+            // F. C. Iselin, Part. Accel. 17, pp. 143-155 (1985), Section 4,
+            // except the longitudinal variables used here (t,pt) have the opposite sign.
+            m_R11 = cx;
+            m_R12 = sx;
+            m_R16 = -(1_prt - cx) * igbrc;
+            m_R21 = -gx * sx;
+            m_R22 = cx;
+            m_R26 = -sx * ibrc;
+            m_R33 = cy;
+            m_R34 = sy;
+            m_R43 = -gy * sy;
+            m_R44 = cy;
+            m_R51 = -m_R26;
+            m_R52 = -m_R16;
+            m_R56 = slice_ds * ibetgam2 + (sx - slice_ds) * igb2r2;
+
+            // access reference particle values for spin calculation
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const gamma = refpart.gamma();
+            amrex::ParticleReal const beta = refpart.beta();
+            amrex::ParticleReal const gyro_const1 = 1_prt + G * gamma;
+            amrex::ParticleReal const gyro_const2 = 1_prt + G * gamma * gamma;
+
+            // trigonometry for spin calculation
+            amrex::ParticleReal const h = (m_rc == 0_prt) ? 0_prt : 1_prt/m_rc;
+            auto const [sinG, cosG] = amrex::Math::sincos(G * h * gamma * slice_ds);
+
+            // intermediate constants for spin calculation
+            amrex::ParticleReal const factor = 1_prt / (-gy + powi<2>(G * h * gamma));
+
+            // nonvanishing components of spin rotation at the design point
+            m_lambday = -G * h * gamma * slice_ds;
+
+            // elements of the spin-orbit coupling matrix
+            m_A13 = (G*h*gyro_const2*gy*cy*sinG + gy*(powi<2>(G*h)*(gamma - 1_prt)*gamma - gy*gyro_const1 )*sy*cosG) * factor;
+            m_A14 = (G*h*gyro_const2*gy*sy*sinG + (powi<2>(G*h)*(gamma - 1_prt)*gamma - gy*gyro_const1)*(1_prt - cosG*cy))*factor;
+            m_A21 = -gyro_const1 * gx * sx;
+            m_A22 = -gyro_const1 * (1_prt - cx);
+            m_A26 = G*h*beta*gamma*slice_ds - h*gyro_const1*sx/(beta);
+            m_A33 = -((-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt))*gy*sy*sinG -gy*G*h*gyro_const2*(1_prt - cosG*cy))*factor;
+            m_A34 = ((-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt)) * cy*sinG + G*h*gyro_const2*gy*cosG*sy)*factor;
         }
 
         /** This is a cfbend functor, so that a variable of this type can be used like a cfbend function.
@@ -256,6 +287,67 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            // set the angle-axis generator based on the phase space variables
+            lambdax = m_A13 * y + m_A14 * py;
+            lambday = m_A21 * x + m_A22 * px + m_A26 * pt;
+            lambdaz = m_A33 * y + m_A34 * py;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // axis-angle vector components generating the reference spin map
+            lambdax = 0.0_prt;
+            lambday = m_lambday;
+            lambdaz = 0.0_prt;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+        }
+
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
@@ -329,8 +421,11 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_R11, m_R12, m_R16, m_R21, m_R22, m_R26, m_R33, m_R34, m_R43, m_R44, m_R51, m_R52, m_R56;
+        amrex::ParticleReal m_lambday, m_A13, m_A14, m_A21, m_A22, m_A26, m_A33, m_A34;
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::CFbend)
 
 #endif // IMPACTX_CFBEND_H

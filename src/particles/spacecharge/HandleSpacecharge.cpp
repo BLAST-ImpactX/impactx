@@ -15,6 +15,7 @@
 #include "particles/spacecharge/ForceFromSelfFields.H"
 #include "particles/spacecharge/GatherAndPush.H"
 #include "particles/spacecharge/Gauss3dPush.H"
+#include "particles/spacecharge/Gauss2p5dPush.H"
 #include "particles/spacecharge/PoissonSolve.H"
 #include "particles/transformation/CoordinateTransformation.H"
 
@@ -42,17 +43,24 @@ namespace impactx::particles::spacecharge
         // turn off if less than 2 particles
         if (amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false) < 2) { return; }
 
-        // transform from x',y',t to x,y,z
-        transformation::CoordinateTransformation(
-            *amr_data->track_particles.m_particle_container,
-            CoordSystem::t
-        );
+        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
+        {
+            // transform from x',y',t to x,y,z
+            transformation::CoordinateTransformation(
+                *amr_data->track_particles.m_particle_container,
+                CoordSystem::t
+            );
+        }
 
         if (space_charge == SpaceChargeAlgo::Gauss3D)
         {
             Gauss3dPush(*amr_data->track_particles.m_particle_container, slice_ds);
         }
-        else if (space_charge == SpaceChargeAlgo::True_3D)
+        else if (space_charge == SpaceChargeAlgo::Gauss2p5D)
+        {
+            Gauss2p5dPush(*amr_data->track_particles.m_particle_container, slice_ds);
+        }
+        else if (space_charge == SpaceChargeAlgo::True_3D || space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D)
         {
             // Note: The following operations assume that
             // the particles are in x, y, z coordinates.
@@ -60,7 +68,9 @@ namespace impactx::particles::spacecharge
             // Resize the mesh, based on `amr_data->track_particles.m_particle_container` extent
             ResizeMesh();
 
-            // Redistribute particles in the new mesh in x, y, z
+            // Redistribute particles in the new mesh in:
+            // 3D: x, y, z
+            // 2D: x, y, t
             amr_data->track_particles.m_particle_container->Redistribute();
 
             // charge deposition
@@ -90,23 +100,20 @@ namespace impactx::particles::spacecharge
             spacecharge::GatherAndPush(
                 *amr_data->track_particles.m_particle_container,
                 amr_data->track_particles.m_space_charge_field,
+                amr_data->track_particles.m_phi,
                 amr_data->Geom(),
                 slice_ds
             );
         }
-        else if (space_charge == SpaceChargeAlgo::True_2D)
+
+        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
         {
-            throw std::runtime_error(
-                "2D space charge is not implemented yet for particle tracking. "
-                "Please follow https://github.com/BLAST-ImpactX/impactx/pull/909 for updates."
+            // transform from x,y,z to x',y',t
+            transformation::CoordinateTransformation(
+                *amr_data->track_particles.m_particle_container,
+                CoordSystem::s
             );
         }
-
-        // transform from x,y,z to x',y',t
-        transformation::CoordinateTransformation(
-            *amr_data->track_particles.m_particle_container,
-            CoordSystem::s
-        );
 
         // for later: original Impact implementation as an option for 3D space charge to:
         // Redistribute particles in x',y',t

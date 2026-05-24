@@ -33,6 +33,7 @@
 #include "Multipole.H"
 #include "NonlinearLens.H"
 #include "PlaneXYRot.H"
+#include "PolygonAperture.H"
 #include "Programmable.H"
 #include "PRot.H"
 #include "Quad.H"
@@ -43,6 +44,7 @@
 #include "SoftSol.H"
 #include "SoftQuad.H"
 #include "Sol.H"
+#include "SpinMap.H"
 #include "Source.H"
 #include "TaperedPL.H"
 #include "ThinDipole.H"
@@ -78,6 +80,7 @@ namespace impactx::elements
         Multipole,
         NonlinearLens,
         PlaneXYRot,
+        PolygonAperture,
         Programmable,
         PRot,
         Quad,
@@ -89,6 +92,7 @@ namespace impactx::elements
         SoftQuadrupole,
         Sol,
         Source,
+        SpinMap,
         TaperedPL,
         ThinDipole
     >;

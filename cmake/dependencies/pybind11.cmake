@@ -52,7 +52,7 @@ option(ImpactX_pybind11_internal "Download & build pybind11" ON)
 set(ImpactX_pybind11_repo "https://github.com/pybind/pybind11.git"
     CACHE STRING
     "Repository URI to pull and build pybind11 from if(ImpactX_pybind11_internal)")
-set(ImpactX_pybind11_branch "v3.0.0"
+set(ImpactX_pybind11_branch "v3.0.4"
     CACHE STRING
     "Repository branch for ImpactX_pybind11_repo if(ImpactX_pybind11_internal)")
 

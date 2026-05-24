@@ -43,13 +43,13 @@ namespace impactx
                 auto & first_element = m_lattice.front();
                 std::visit([](auto&& element){
                     if (std::string_view(element.type) != std::string_view("Source")) {
-                        throw std::runtime_error("No particles found. Cannot run evolve without a beam.");
+                        throw std::runtime_error(
+                            "No particles found. "
+                            "Cannot track particles without an initialized beam. "
+                            "Did you forget to call sim.add_particles ?"
+                        );
                     }
                 }, first_element);
-            }
-            else if (nParticles == 1)
-            {
-                throw std::runtime_error("Only one particle found. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
             }
         }
 

@@ -134,6 +134,7 @@ namespace detail
                        int nslice_default,
                        [[maybe_unused]] int mapsteps_default)
     {
+        using namespace amrex::literals; // for _prt
         using namespace elements;
 ;
         // Check the element type
@@ -184,13 +185,44 @@ namespace detail
         {
             auto a = detail::query_alignment(pp_element);
 
-            amrex::ParticleReal psi, rc, g, K2;
+            amrex::ParticleReal psi, rc, g;
+            amrex::ParticleReal R = 1;
+            std::string model_str = "linear";    // default
+            std::string location_str = "entry";  // default
+            bool modify_ref_part = false;        // default
+
+            // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
+            amrex::ParticleReal pi = ablastr::constant::math::pi;
+            amrex::ParticleReal K0 = pi*pi / 6.0_prt;
+            amrex::ParticleReal K1 = 0;
+            amrex::ParticleReal K2 = 1;
+            amrex::ParticleReal K3 = 1.0_prt/6.0_prt;
+            amrex::ParticleReal K4 = 0;
+            amrex::ParticleReal K5 = 0;
+            amrex::ParticleReal K6 = 0;
             pp_element.getWithParser("psi", psi);
             pp_element.getWithParser("rc", rc);
             pp_element.getWithParser("g", g);
-            pp_element.getWithParser("K2", K2);
+            pp_element.queryAddWithParser("R", R);
+            pp_element.queryAddWithParser("K0", K0);
+            pp_element.queryAddWithParser("K1", K1);
+            pp_element.queryAddWithParser("K2", K2);
+            pp_element.queryAddWithParser("K3", K3);
+            pp_element.queryAddWithParser("K4", K4);
+            pp_element.queryAddWithParser("K5", K5);
+            pp_element.queryAddWithParser("K6", K6);
 
-            m_lattice.emplace_back( DipEdge(psi, rc, g, K2, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            pp_element.queryAdd("model", model_str);
+            dipedge::Model const model = amrex::getEnum<dipedge::Model>(model_str);
+            pp_element.queryAdd("location", location_str);
+            dipedge::Location const location = amrex::getEnum<dipedge::Location>(location_str);
+            pp_element.queryAdd("modify_ref_part", modify_ref_part);
+
+            if (R <= 0) {
+                throw std::runtime_error(element_name + ".R must be >0 but is: " + std::to_string(R));
+            }
+
+            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, modify_ref_part, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")
         {
             auto a = detail::query_alignment(pp_element);
@@ -620,9 +652,9 @@ element_name) );
                 pp_element.queryAddWithParser("alpha", alpha);
                 amrex::ParticleReal beta = 1.0;
                 pp_element.queryAddWithParser("beta", beta);
-                amrex::ParticleReal tn = 0.4;
+                amrex::ParticleReal tn = 0.4_prt;
                 pp_element.queryAddWithParser("tn", tn);
-                amrex::ParticleReal cn = 0.01;
+                amrex::ParticleReal cn = 0.01_prt;
                 pp_element.queryAddWithParser("cn", cn);
             }
 
@@ -638,7 +670,10 @@ element_name) );
                 pp_element.get("openpmd_path", openpmd_path);
             }
 
-            m_lattice.emplace_back( Source(distribution, openpmd_path, element_name) );
+            bool active_once = true;
+            pp_element.queryAdd("active_once", active_once);
+
+            m_lattice.emplace_back( Source(distribution, openpmd_path, active_once, element_name) );
         } else if (element_type == "line")
         {
             // Parse the lattice elements for the sub-lattice in the line
@@ -678,6 +713,64 @@ element_name) );
             }
 
             m_lattice.emplace_back(LinearMap(transport_map, ds, a["dx"], a["dy"], a["rotation_degree"]) );
+        } else if (element_type == "polygon_aperture")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal repeat_x = 0.0;
+            amrex::ParticleReal repeat_y = 0.0;
+            bool shift_odd_x = false;
+            std::string action_str = "transmit";
+
+            std::vector<amrex::ParticleReal> vertices_x = {0.0};
+            std::vector<amrex::ParticleReal> vertices_y = {0.0};
+            amrex::ParticleReal min_radius2 = 0.0;
+
+            detail::queryAddResize(pp_element, "vertices_x", vertices_x);
+            detail::queryAddResize(pp_element, "vertices_y", vertices_y);
+            pp_element.queryAddWithParser("min_radius2", min_radius2);
+
+            pp_element.queryAddWithParser("repeat_x", repeat_x);
+            pp_element.queryAddWithParser("repeat_y", repeat_y);
+            pp_element.queryAdd("shift_odd_x", shift_odd_x);  // https://github.com/AMReX-Codes/amrex/issues/4535
+            pp_element.queryAdd("action", action_str);
+
+            //AMREX_ALWAYS_ASSERT_WITH_MESSAGE(action_str == "transmit" || action_str == "absorb",
+            //                                 element_name + ".action must be \"transmit\" or \"absorb\"");
+
+            PolygonAperture::Action action = action_str == "transmit" ?
+                                        PolygonAperture::Action::transmit :
+                                        PolygonAperture::Action::absorb;
+
+            m_lattice.emplace_back(PolygonAperture(vertices_x, vertices_y, min_radius2, repeat_x, repeat_y,
+                shift_odd_x, action, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+
+        } else if (element_type == "spin_map")
+        {
+            auto a = detail::query_alignment(pp_element);
+
+            amrex::ParticleReal ds = 0.0;
+            pp_element.queryAdd("ds", ds);
+
+            Vector3 spin_rotation_vector = {};
+            Map3x6 spin_orbit_coupling = {};
+
+            // ParmParse inputs for spin rotation vector
+            for (int i=1; i<=3; ++i) {
+                 std::string name = "v" + std::to_string(i);
+                 pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), spin_rotation_vector(i, 1));
+            }
+
+            // ParmParse inputs for spin-orbit coupling matrix
+            for (int i=1; i<=3; ++i) {
+                for (int j=1; j<=6; ++j) {
+                    std::string name = "A" + std::to_string(i) + std::to_string(j);
+                    pp_element.queryAddWithParser<amrex::ParticleReal>(name.c_str(), spin_orbit_coupling(i, j));
+                }
+            }
+
+            m_lattice.emplace_back(SpinMap(spin_rotation_vector, spin_orbit_coupling, ds, a["dx"], a["dy"], a["rotation_degree"]) );
+
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);
         }

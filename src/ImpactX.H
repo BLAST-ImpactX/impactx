@@ -10,15 +10,18 @@
 #ifndef IMPACT_X_H
 #define IMPACT_X_H
 
-#include "particles/distribution/All.H"
 #include "elements/All.H"
-
 #include "initialization/AmrCoreData.H"
+#include "particles/distribution/All.H"
+#include "tracking/TrackingState.H"
 
 #include <AMReX_REAL.H>
 
+#include <functional>
 #include <list>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 
 namespace impactx
@@ -82,12 +85,14 @@ namespace impactx
          * @param bunch_charge bunch charge (C)
          * @param distr distribution function to draw from (object)
          * @param npart number of particles to draw
+         * @param spin_distr optional spin distribution
          */
         void
         add_particles (
             amrex::ParticleReal bunch_charge,
             distribution::KnownDistributions distr,
-            amrex::Long npart
+            amrex::Long npart,
+            std::optional<distribution::SpinvMF> spin_distr = std::nullopt
         );
 
         /** Validate the simulation is ready to run the particle tracking loop via @see track_particles
@@ -150,6 +155,25 @@ namespace impactx
         {
             return m_grids_initialized;
         }
+
+        /** Call user-defined functions while the simulation is running.
+         *
+         * Check if an optional, user-defined function is registered by
+         * name and if yes, call it.
+         *
+         * @see m_hook for function signature:
+         *   void user_defined_hook (ImpactX *);
+         */
+        void call_hook (std::string const & name);
+
+        std::unordered_map<
+            std::string,
+            std::function<void(ImpactX *)>
+        > m_hook;  //! hooks that users can call
+
+        /** A few states during tracking loops, useful to know in hooks (Python callback functions).
+         */
+        TrackingState m_tracking_state;
 
       private:
         /** Keeps track if init_grids was called.

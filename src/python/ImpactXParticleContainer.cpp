@@ -31,7 +31,7 @@ void init_impactxparticlecontainer(py::module& m)
 
     py::class_<
         ParIterSoA,
-        amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     > py_pariter_soa(m, "ImpactXParIter");
     py_pariter_soa
         .def(py::init<ParIterSoA::ContainerType&, int>(),
@@ -42,7 +42,7 @@ void init_impactxparticlecontainer(py::module& m)
 
     py::class_<
         ParConstIterSoA,
-        amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     > py_parconstiter_soa(m, "ImpactXParConstIter");
     py_parconstiter_soa
         .def(py::init<ParConstIterSoA::ContainerType&, int>(),
@@ -53,7 +53,7 @@ void init_impactxparticlecontainer(py::module& m)
 
     py::class_<
         ImpactXParticleContainer,
-        amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>
+        amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     >(m, "ImpactXParticleContainer")
         //.def(py::init<>())
 
@@ -65,12 +65,12 @@ void init_impactxparticlecontainer(py::module& m)
         // simpler particle iterator loops: return types of this particle box
         // note: overwritten to return ImpactX instead of (py)AMReX iterators
         .def_property_readonly_static(
-            "iterator",
+            "Iterator",
             [](py::object /* pc */){ return py::type::of<impactx::ParIterSoA>(); },
             "ImpactX iterator for particle boxes"
         )
         .def_property_readonly_static(
-            "const_iterator",
+            "ConstIterator",
             [](py::object /* pc */){ return py::type::of<impactx::ParConstIterSoA>(); },
             "ImpactX constant iterator for particle boxes (read-only)"
         )
@@ -84,6 +84,7 @@ void init_impactxparticlecontainer(py::module& m)
              py::arg("x"), py::arg("y"), py::arg("t"),
              py::arg("px"), py::arg("py"), py::arg("pt"),
              py::arg("qm"), py::arg("bunch_charge")=py::none(), py::arg("w")=py::none(),
+             py::arg("sx")=py::none(), py::arg("sy")=py::none(), py::arg("sz")=py::none(),
              "Add new particles to the container for fixed s.\n\n"
              "Either the total charge (bunch_charge) or the weight of each\n"
              "particle (w) must be provided.\n\n"
@@ -99,16 +100,42 @@ void init_impactxparticlecontainer(py::module& m)
              ":param qm: charge over mass in 1/eV\n"
              ":param bunch_charge: total charge within a bunch in C"
              ":param w: weight of each particle: how many real particles to represent"
+             ":param sx: spin component in x\n"
+             ":param sy: spin component in y\n"
+             ":param sz: spin component in z\n"
+        )
+        // Getter-only property is intentional: it returns the live mutable
+        // RefPart by reference.
+        // A writable property (with assignment) would be ambiguous:
+        // alias (Pythonic) or copy-in (safe) for the simulation-owned RefPart.
+        .def_property_readonly("ref",
+            [](ImpactXParticleContainer & pc) -> RefPart & {
+                return pc.GetRefParticle();
+            },
+            "Access the reference particle."
         )
         .def("ref_particle",
-            py::overload_cast<>(&ImpactXParticleContainer::GetRefParticle),
+            [](ImpactXParticleContainer & pc) -> RefPart & {
+                py::warnings::warn(
+                    "ref_particle() is deprecated. Use beam.ref instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
+                return pc.GetRefParticle();
+            },
             py::return_value_policy::reference_internal,
-            "Access the reference particle."
+            "Access the reference particle.\n\n"
+            "Deprecated: use ``beam.ref``."
         )
         .def("set_ref_particle",
              &ImpactXParticleContainer::SetRefParticle,
              py::arg("refpart"),
              "Set reference particle attributes."
+        )
+        .def("set_bucket_length",
+             &ImpactXParticleContainer::SetBucketLength,
+             py::arg("bucket_length"),
+             "Set bucket length for particle boundary condition."
         )
         .def("min_and_max_positions",
              &ImpactXParticleContainer::MinAndMaxPositions,
@@ -122,11 +149,11 @@ void init_impactxparticlecontainer(py::module& m)
         )
         .def("reduced_beam_characteristics",
              [](ImpactXParticleContainer & pc) {
-                 ablastr::warn_manager::WMRecordWarning(
-                    "reduced_beam_characteristics",
+                 py::warnings::warn(
                     "WARNING: reduced_beam_characteristics() is deprecated. "
                     "Use beam_moments() instead.",
-                    ablastr::warn_manager::WarnPriority::medium
+                    PyExc_DeprecationWarning,
+                    2
                  );
                  return diagnostics::reduced_beam_characteristics(pc);
              },

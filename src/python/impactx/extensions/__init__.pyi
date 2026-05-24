@@ -1,5 +1,19 @@
 from __future__ import annotations
 
-from . import ImpactXParticleContainer, KnownElementsList
+from . import (
+    Elements,
+    ImpactXParticleContainer,
+    KnownElementsList,
+    RFCavity,
+    SoftQuadrupole,
+    SoftSolenoid,
+)
 
-__all__: list[str] = ["ImpactXParticleContainer", "KnownElementsList"]
+__all__: list[str] = [
+    "Elements",
+    "ImpactXParticleContainer",
+    "KnownElementsList",
+    "RFCavity",
+    "SoftQuadrupole",
+    "SoftSolenoid",
+]

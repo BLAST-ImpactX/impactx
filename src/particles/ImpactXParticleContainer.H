@@ -51,6 +51,9 @@ namespace impactx
             px,  ///< momentum in x, scaled by the magnitude of the reference momentum [unitless] (at fixed s or t)
             py,  ///< momentum in y, scaled by the magnitude of the reference momentum [unitless] (at fixed s or t)
             pt,  ///< energy deviation, scaled by speed of light * the magnitude of the reference momentum [unitless] (at fixed s)
+            sx,  ///< spin vector x-component [unitless] (at fixed s or t)
+            sy,  ///< spin vector y-component [unitless] (at fixed s or t)
+            sz,  ///< spin vector z-component [unitless] (at fixed s or t)
             qm,  ///< charge to mass ratio, in q_e/m_e [q_e/eV]
             w,   ///< particle weight, number of real particles represented by this macroparticle [unitless]
             nattribs ///< the number of attributes above (always last)
@@ -63,9 +66,9 @@ namespace impactx
         };
 
         //! named labels for fixed s
-        static constexpr auto names_s = { "position_x", "position_y", "position_t", "momentum_x", "momentum_y", "momentum_t", "qm", "weighting" };
+        static constexpr auto names_s = { "position_x", "position_y", "position_t", "momentum_x", "momentum_y", "momentum_t", "spin_x", "spin_y", "spin_z", "qm", "weighting" };
         //! named labels for fixed t
-        static constexpr auto names_t = { "position_x", "position_y", "position_z", "momentum_x", "momentum_y", "momentum_z", "qm", "weighting" };
+        static constexpr auto names_t = { "position_x", "position_y", "position_z", "momentum_x", "momentum_y", "momentum_z", "spin_x", "spin_y", "spin_z", "qm", "weighting" };
         static_assert(names_s.size() == nattribs);
         static_assert(names_t.size() == nattribs);
     };
@@ -94,10 +97,10 @@ namespace impactx
      * `static` in AMReX, to `dynamic` in ImpactX.
      */
     class ParIterSoA
-        : public amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        : public amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     {
     public:
-        using amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs>::ParIterSoA;
+        using amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>::ParIterSoA;
 
         ParIterSoA (ContainerType& pc, int level);
 
@@ -112,10 +115,10 @@ namespace impactx
      * `static` in AMReX, to `dynamic` in ImpactX.
      */
     class ParConstIterSoA
-        : public amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>
+        : public amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     {
     public:
-        using amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs>::ParConstIterSoA;
+        using amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>::ParConstIterSoA;
 
         ParConstIterSoA (ContainerType& pc, int level);
 
@@ -129,7 +132,7 @@ namespace impactx
      * This class stores particles, distributed over MPI ranks.
      */
     class ImpactXParticleContainer
-        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs>
+        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
     {
     public:
         //! amrex iterator for particle boxes
@@ -179,6 +182,9 @@ namespace impactx
          * @param qm charge over mass in 1/eV
          * @param bunch_charge total charge within a bunch in C
          * @param w weight of each particle: how many real particles to represent
+         * @param sx spin component in x
+         * @param sy spin component in y
+         * @param sz spin component in z
          */
         void
         AddNParticles (
@@ -190,7 +196,10 @@ namespace impactx
             amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
             amrex::ParticleReal qm,
             std::optional<amrex::ParticleReal> bunch_charge = std::nullopt,
-            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sx = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sy = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sz = std::nullopt
         );
 
         /** Register storage for lost particles
@@ -278,8 +287,8 @@ namespace impactx
          * charge. In MPI-parallel contexts, this also performs a communication
          * of boundary regions to sum neighboring contributions.
          *
-         * @param rho charge grid per level to deposit on
-         * @param ref_ratio mesh refinement ratios between levels
+         * @param[out] rho charge grid per level to deposit on
+         * @param[in] ref_ratio mesh refinement ratios between levels
          */
         void
         DepositCharge (std::unordered_map<int, amrex::MultiFab> & rho,
@@ -295,6 +304,22 @@ namespace impactx
          */
         void
         SetCoordSystem (CoordSystem coord_system);
+
+        /** Set the bucket length used for particle boundaries in this container
+         *
+         * Note that the bucket length is only read and applied if ParmParse
+         * "algo.particle_bc" is not set to "open" (default).
+         *
+         * @param bucket_length the length of the RF bucket in m
+         */
+        void SetBucketLength (amrex::ParticleReal bucket_length);
+
+        /** Get the bucket length used for periodic particle BCs in this container
+         *
+         * @returns bucket length in m
+         */
+        amrex::ParticleReal
+        GetBucketLength ();
 
         /** In situ calculate and store the beam moments for every simulation step */
         bool store_beam_moments = false;
@@ -331,6 +356,10 @@ namespace impactx
 
         //! history of the beam moments over s
         std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
+
+        //! the RF bucket length for particles in the particle container
+        //!   only active if algo.particle_bc is not set to "open" (default)
+        amrex::ParticleReal m_bucket_length = 0.0;
 
     }; // ImpactXParticleContainer
 

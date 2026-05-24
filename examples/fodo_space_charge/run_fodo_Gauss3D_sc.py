@@ -13,6 +13,7 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "Gauss3D"
+sim.space_charge_gauss_nint = 101
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh
@@ -25,8 +26,8 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(kin_energy_MeV)
+ref = sim.beam.ref
+ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Gaussian(

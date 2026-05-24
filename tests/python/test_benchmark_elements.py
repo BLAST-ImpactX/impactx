@@ -12,6 +12,7 @@
 #
 # -*- coding: utf-8 -*-
 
+import os
 from functools import partial
 
 import pytest
@@ -19,8 +20,13 @@ import pytest
 from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 # benchmark config
-rounds = 5
-npart = 1_000_000  # increase this to >10M or even 100M to avoid L1/L2/L3 cache effects on some hardware.
+if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == "1":
+    # https://codspeed.io/docs/instruments/cpu/index
+    rounds = 1
+    npart = 10_000
+else:
+    rounds = 5
+    npart = 1_000_000  # increase this to >10M or even 100M to avoid L1/L2/L3 cache effects on some hardware.
 
 # element config
 nslice = 1
@@ -28,7 +34,7 @@ mapsteps = 4
 
 
 @pytest.fixture(scope="function")
-def sim():
+def sim(request):
     class SimContextManager:
         def __enter__(self):
             self.sim = ImpactX()
@@ -39,9 +45,14 @@ def sim():
             self.sim.diagnostics = False  # benchmarking
             self.sim.slice_step_diagnostics = False
 
+            spin = getattr(
+                request, "param", False
+            )  # default to False if not parametrized
+            self.sim.spin = spin
+
             self.sim.init_grids()
 
-            beam = self.sim.particle_container()
+            beam = self.sim.beam
             beam.clear_particles()
 
             # load a 1 GeV electron beam with an initial
@@ -50,10 +61,8 @@ def sim():
             bunch_charge_C = 1.0e-9  # used with space charge
 
             #   reference particle
-            ref = self.sim.particle_container().ref_particle()
-            ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_kin_energy_MeV(
-                kin_energy_MeV
-            )
+            ref = self.sim.beam.ref
+            ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
             #   particle bunch
             distr = distribution.Waterbag(
@@ -69,20 +78,30 @@ def sim():
                     alpha_t=0.0,
                 )
             )
-            self.sim.add_particles(bunch_charge_C, distr, npart)
-            assert self.sim.particle_container().total_number_of_particles() == npart
+            if spin:
+                spin_vectors = distribution.SpinvMF(
+                    0.4,
+                    0.9,
+                    0.1,
+                )
+                self.sim.add_particles(bunch_charge_C, distr, npart, spin_vectors)
+            else:
+                self.sim.add_particles(bunch_charge_C, distr, npart)
+            assert self.sim.beam.total_number_of_particles() == npart
 
-            self.sim.backup_beam = self.sim.particle_container().make_alike()
+            self.sim.backup_beam = self.sim.beam.make_alike()
+            self.sim.backup_beam.arena = self.sim.beam.arena
             assert self.sim.backup_beam.total_number_of_particles() == 0
 
-            self.sim.backup_beam.add_particles(
-                self.sim.particle_container(), local=True
-            )
+            self.sim.backup_beam.add_particles(self.sim.beam, local=True)
             assert self.sim.backup_beam.total_number_of_particles() == npart
 
             return self.sim
 
         def __exit__(self, exc_type, exc_value, traceback):
+            # Work-around for https://github.com/AMReX-Codes/amrex/pull/5270
+            self.sim.backup_beam.clear_particles()
+
             self.sim.finalize()
             del self.sim
 
@@ -91,19 +110,20 @@ def sim():
 
 
 def pc_setup(sim):
-    """Fresh PC for each call of benchmark"""
+    """Fresh beam for each call of benchmark."""
 
     assert sim.backup_beam.total_number_of_particles() == npart
 
     # instead of drawing from the distribution again, create a 2nd
     # particle container and copy the same initial particles again.
-    pc = sim.particle_container()
-    pc.clear_particles()
-    pc.add_particles(sim.backup_beam, local=True)
+    beam = sim.beam
+    # beam.arena = ... ??
+    beam.clear_particles()
+    beam.add_particles(sim.backup_beam, local=True)
 
-    assert pc.total_number_of_particles() == npart
+    assert beam.total_number_of_particles() == npart
 
-    return (pc,), {}
+    return (beam,), {}
 
 
 def test_Aperture(benchmark, sim):
@@ -118,16 +138,19 @@ def test_Buncher(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_CFbend(benchmark, sim):
     el = elements.CFbend(ds=0.5, rc=7.613657587094493, k=-7.057403, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrDrift(benchmark, sim):
     chrdrift = elements.ChrDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(chrdrift.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrPlasmaLens(benchmark, sim):
     el = elements.ChrPlasmaLens(
         name="q1", ds=0.331817852986604588, k=2.98636067687944129, unit=0, nslice=nslice
@@ -135,6 +158,7 @@ def test_ChrPlasmaLens(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad(benchmark, sim):
     el = elements.ChrQuad(name="quad1", ds=1.0, k=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -147,6 +171,7 @@ def test_ChrAcc(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+# Spin is not affected by this element, no need to test variant
 def test_ConstF(benchmark, sim):
     el = elements.ConstF(name="constf1", ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -159,6 +184,7 @@ def test_DipEdge(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Drift(benchmark, sim):
     el = elements.Drift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -169,6 +195,7 @@ def test_Drift(benchmark, sim):
 #    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactDrift(benchmark, sim):
     el = elements.ExactDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -252,6 +279,7 @@ def test_PRot(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(benchmark, sim):
     el = elements.Quad(name="quad1", ds=1.0, k=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -332,6 +360,7 @@ def test_RFCavity(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(benchmark, sim):
     el = elements.Sbend(name="sbend1", ds=0.5, rc=-10.346, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -440,6 +469,7 @@ def test_SoftSolenoid(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(benchmark, sim):
     el = elements.Sol(name="sol1", ds=3.820395, ks=0.8223219329893234)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -452,6 +482,7 @@ def test_Sol(benchmark, sim):
 #     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_TaperedPL(benchmark, sim):
     focal_length = 0.5  # focal length in m
     dtaper = 11.488289081903567  # 1/(horizontal dispersion in m)

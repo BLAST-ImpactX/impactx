@@ -10,6 +10,7 @@ from impactx import distribution
 
 from ... import ctrl, state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
+from ...Toolbar.file_imports.ui_populator import _apply_distribution_inputs
 from .. import DashboardDefaults
 from ..defaults_helper import InputDefaultsHelper
 from ..utils import GeneralFunctions
@@ -62,6 +63,7 @@ def populate_distribution_parameters():
 
     state.selected_distribution_parameters = params
     errors_tracker.update_simulation_validation_status()
+    _apply_distribution_inputs()
     return params
 
 

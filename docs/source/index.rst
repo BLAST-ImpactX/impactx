@@ -100,6 +100,8 @@ Theory
 
    theory/concepts
    theory/coordinates_units
+   theory/bending_elements
+   theory/softedge_elements
    theory/beam_distribution
    theory/assumptions
 
@@ -118,6 +120,7 @@ Development
    developers/doxygen
    developers/python
    developers/debugging
+   developers/how_to_develop_with_llms
 
 Maintenance
 -----------

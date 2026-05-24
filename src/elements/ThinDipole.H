@@ -32,7 +32,7 @@ namespace impactx::elements
     struct ThinDipole
     : public mixin::Named,
       public mixin::BeamOptic<ThinDipole>,
-      public mixin::LinearTransport<ThinDipole>,
+      public mixin::LinearTransport<ThinDipole, false>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize,
@@ -40,8 +40,6 @@ namespace impactx::elements
     {
         static constexpr auto type = "ThinDipole";
         using PType = ImpactXParticleContainer::ParticleType;
-
-        static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
 
         /** A general thin-kick dipole element with chromatic effects
          *
@@ -71,6 +69,9 @@ namespace impactx::elements
           m_rc(rc)
         {
         }
+
+        /** Reverse the element (negate bending angle) */
+        void reverse () { m_theta = -m_theta; }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -213,5 +214,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ThinDipole)
 
 #endif // IMPACTX_THINDIPOLE_H

@@ -27,7 +27,7 @@ namespace impactx::particles::wakefields
      * Used in eq. (21) of:
      * K. L.F. Bane, "Short-Range Dipole Wakefields in Accelerating Structures for the NLC," SLAC-PUB-9663, 2003
      */
-    constexpr amrex::Real alpha_1 = 0.4648;
+    constexpr amrex::Real alpha_1 = static_cast<amrex::Real>(0.4648);
 
     /** Step Function (Heavy-Side)
      *
@@ -112,7 +112,7 @@ namespace impactx::particles::wakefields
         using namespace amrex::literals;
         using amrex::Math::powi;
 
-        amrex::Real const rc = powi<2>(ablastr::constant::SI::q_e) / (4_rt * amrex::Real(M_PI) * ablastr::constant::SI::ep0 * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c));
+        amrex::Real const rc = powi<2>(ablastr::constant::SI::q_e) / (4_rt * ablastr::constant::math::pi * ablastr::constant::SI::epsilon_0 * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c));
         amrex::Real const kappa = (2_rt * rc * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c)) / std::pow(3_rt, 1_rt/3_rt) / std::pow(R, 2_rt/3_rt);
 
         return -3_rt/2_rt * kappa / bin_size * (unit_step(s + bin_size / 2_rt) * std::pow(std::abs(s + bin_size / 2_rt), 2_rt/3_rt) - unit_step(s - bin_size / 2_rt) * std::pow(std::abs(s - bin_size / 2_rt), 2_rt/3_rt));

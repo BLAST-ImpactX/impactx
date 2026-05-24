@@ -72,6 +72,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate strength) */
+        void reverse () { m_knll = -m_knll; }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -193,15 +196,46 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * The Danilov-Nagaitsev kick implemented by @see operator() is
+         *   dpx - i*dpy = -(knll / cnll) * F'(zeta),
+         * with zeta = (x + i*y) / cnll and
+         *   F'(zeta) = zeta / (1 - zeta^2) + arcsin(zeta) / (1 - zeta^2)^(3/2).
+         * The Taylor series around zeta = 0 starts at
+         *   F'(zeta) = 2*zeta + (8/3)*zeta^3 + O(zeta^5),
+         * so the linearized map at the reference trajectory is a thin
+         * quadrupole with equal and opposite focusing strengths in the
+         * two transverse planes:
+         *   R(2,1) = -2 * knll / cnll^2,
+         *   R(4,3) = +2 * knll / cnll^2.
+         *
+         * Ideal behavior only: alignment and rotation errors, as well as
+         * feed-down from an off-axis reference orbit, are ignored; the
+         * map is evaluated at (x, y) = (0, 0).
+         *
+         * This element appears in MAD-X as type NLLENS. The linear limit
+         * above is the MAD-X linear quadrupole equivalent of the NLLENS
+         * thin kick (cf. MAD-X Physical Methods Manual, nonlinear lens).
+         *
+         * Reference: V. Danilov and S. Nagaitsev, Phys. Rev. ST Accel.
+         * Beams 13, 084002 (2010), Sect. V.A
+         *
+         * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            Map6x6 R = Map6x6::Identity();
+            // Leading 2*zeta term of F'(zeta); higher orders vanish at zero.
+            amrex::ParticleReal const k_lin = 2.0_prt * m_knll / powi<2>(m_cnll);
+            R(2,1) = -k_lin;
+            R(4,3) = +k_lin;
+
+            return R;
         }
 
         amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)
@@ -215,5 +249,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::NonlinearLens)
 
 #endif // IMPACTX_NONLINEARLENS_H

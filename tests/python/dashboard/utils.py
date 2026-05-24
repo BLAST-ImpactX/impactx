@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 from selenium.common.exceptions import TimeoutException
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
 TIMEOUT = 120
 APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
 
@@ -23,7 +24,7 @@ def start_dashboard() -> subprocess.Popen[str]:
     """
     Starts the impactx-dashboard in a subprocess.
     """
-    repo_root = get_impactx_root_dir()
+    repo_root = REPO_ROOT
     working_directory = os.path.normpath(
         os.path.join(repo_root, "src", "python", "impactx")
     )
@@ -36,21 +37,6 @@ def start_dashboard() -> subprocess.Popen[str]:
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     )
-
-
-def get_impactx_root_dir():
-    """
-    Locates the ImpactX source directory.
-
-    Looks for the first parent directory named 'impactx' that contains a '.git' folder.
-    """
-
-    current_directory = Path(__file__).resolve()
-
-    for parent_dir in current_directory.parents:
-        if parent_dir.name == "impactx" and (parent_dir / ".git").is_dir():
-            return parent_dir
-    return None
 
 
 def wait_for_interaction_ready(sb, timeout=TIMEOUT):
@@ -97,7 +83,7 @@ class DashboardTester:
         self.sb = sb
 
         # Set up the examples directory path once
-        impactx_directory = Path(get_impactx_root_dir())
+        impactx_directory = REPO_ROOT
         self.examples_directory = impactx_directory / "examples"
         self.testing_directory = impactx_directory / "tests" / "python" / "dashboard"
 
@@ -120,9 +106,12 @@ class DashboardTester:
         :param element_name: Name of the lattice element to add.
         """
         try:
+            current_lattice = self.get_state("selected_lattice_list") or []
+            expected_count = len(current_lattice) + 1
             self.set_state("selected_lattice", element_name)
             self.assert_state("is_selected_element_invalid", False)
             self.sb.click("#add_lattice_element")
+            self.assert_state_list_length("selected_lattice_list", expected_count)
         except Exception as error:
             raise Exception(
                 f"Unable to set input for lattice element '{element_name}': {str(error)}"
@@ -261,6 +250,34 @@ class DashboardTester:
             f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds "
             f"(last value: '{value}').\n"
             f"curr_view_details_log: {self.get_state('curr_view_details_log')}"
+        )
+
+    def assert_state_list_length(
+        self, state_name: str, expected_length: int, timeout=TIMEOUT
+    ):
+        """
+        Checks if trame.state[state_name] is a list with the expected length.
+        """
+        value = None
+        for i in range(timeout):
+            try:
+                value = self.get_state(state_name)
+            except TimeoutException:
+                value = None
+
+            if isinstance(value, list) and len(value) == expected_length:
+                return
+
+            current_length = len(value) if isinstance(value, list) else None
+            print(
+                f"Waiting for len(state['{state_name}']) to become '{expected_length}' "
+                f"- (current length: '{current_length}') - ({i + 1}s elapsed)"
+            )
+            time.sleep(1)
+
+        raise TimeoutError(
+            f"len(state['{state_name}']) never became '{expected_length}' "
+            f"after {timeout} seconds (last value: '{value}')."
         )
 
     def get_state(self, state_name):

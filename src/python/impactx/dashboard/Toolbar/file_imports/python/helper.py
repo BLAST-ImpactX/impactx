@@ -53,6 +53,10 @@ class DashboardParserHelper:
                 pattern_match = re.search(pattern.format(parameter_name), content)
                 if pattern_match:
                     value = ast.literal_eval(pattern_match.group(1))
+
+                    if parameter_name == "space_charge" and isinstance(value, bool):
+                        value = str(value).lower()
+
                     reference_dictionary[parameter_name] = value
                     break
 
@@ -61,8 +65,14 @@ class DashboardParserHelper:
             r"\bkin_energy_MeV\s*=\s*([^#\n]+)", content
         )
         if kin_energy_pattern_match:
-            kin_energy_value = kin_energy_pattern_match.group(1)
-            reference_dictionary["kin_energy_on_ui"] = kin_energy_value
+            kin_energy_value = kin_energy_pattern_match.group(1).strip()
+
+            try:
+                parsed_value = ast.literal_eval(kin_energy_value)
+            except (ValueError, SyntaxError):
+                parsed_value = reference_dictionary.get("kin_energy_MeV")
+
+            reference_dictionary["kin_energy_on_ui"] = parsed_value
 
         return reference_dictionary
 
@@ -71,11 +81,24 @@ class DashboardParserHelper:
         """
         Parses list-based simulation parameters from the simulation file content.
 
+        Some of the dashboard inputs are lists, such as n_cell = [16, 16, 16].
+        We have to look inside of the brackets to retrieve the individual values.
+
         :param content: The content of the ImpactX simulation file.
         """
         dictionary = {}
-        list_inputs = ["n_cell", "prob_relative"]
-        list_parsing = "{} = (\\[.*?\\])"
+        list_inputs = [
+            "n_cell",
+            "prob_relative",
+            "blocking_factor_x",
+            "blocking_factor_y",
+            "blocking_factor_z",
+        ]
+
+        # The below regex will capture everything inside of the brackets
+        # it assumes that the list will be placed in a single line (not multiple).
+        # Example: n_cell = [16, 16, 16] -->  [16, 16, 16]
+        list_parsing = r"{}\s*=\s*(\[[^\]]*\])"
 
         for input_name in list_inputs:
             match = re.search(list_parsing.format(input_name), content)
@@ -86,8 +109,12 @@ class DashboardParserHelper:
                     for i, dim in enumerate(["x", "y", "z"]):
                         dictionary[f"n_cell_{dim}"] = values[i]
 
-                if input_name == "prob_relative":
+                elif input_name == "prob_relative":
                     dictionary["prob_relative"] = values
+
+                elif input_name.startswith("blocking_factor_"):
+                    # Convert [16] -> 16
+                    dictionary[input_name] = values[0]
 
         return dictionary
 
@@ -132,33 +159,6 @@ class DashboardParserHelper:
 
         dictionary["distribution"]["parameters"] = parameters
 
-        return dictionary
-
-    @staticmethod
-    def parse_lattice_elements(content: str) -> dict:
-        """
-        Parses lattice elements from the simulation file content.
-
-        :param content: The content of the ImpactX simulation file.
-        """
-
-        dictionary = {"lattice_elements": []}
-        used_variables = set()
-
-        lattice_elements = re.findall(r"elements\.(\w+)\((.*?)\)", content)
-
-        for element_name, element_parameter in lattice_elements:
-            element = {"element": element_name, "parameters": {}}
-
-            parameter_pairs = re.findall(r"(\w+)=([^,\)]+)", element_parameter)
-            for parameter_name, parameter_value in parameter_pairs:
-                parameter_value_cleaned = parameter_value.strip("'\"")
-                element["parameters"][parameter_name] = parameter_value_cleaned
-                used_variables.add(parameter_value_cleaned)
-
-            dictionary["lattice_elements"].append(element)
-
-        dictionary["used_lattice_variables"] = used_variables
         return dictionary
 
     @staticmethod

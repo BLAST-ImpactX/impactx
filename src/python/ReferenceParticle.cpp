@@ -30,9 +30,12 @@ void init_refparticle(py::module& m)
         .def_readwrite("pt", &RefPart::pt, "energy deviation, normalized by rest energy")
         .def_readwrite("mass", &RefPart::charge, "reference rest mass [kg]")
         .def_readwrite("charge", &RefPart::mass, "reference charge [C]")
+        .def_readwrite("gyromagnetic_anomaly", &RefPart::gyromagnetic_anomaly, "reference particle gyromagnetic anomaly [unitless]")
 
         .def_readwrite("sedge", &RefPart::sedge, "value of s at entrance of the current beamline element")
         .def_readwrite("map", &RefPart::map, "linearized map")
+        .def_readwrite("spin_coupling", &RefPart::spin_coupling, "linearized spin-orbit coupling matrix")
+        .def_readwrite("spin_rotation_vector", &RefPart::spin_rotation_vector, "reference spin rotation vector")
 
         .def_property_readonly("charge_qe", &RefPart::charge_qe, "Get reference particle charge (positive elementary charge)")
         .def_property_readonly("gamma", &RefPart::gamma, "Get reference particle relativistic gamma")
@@ -58,5 +61,14 @@ void init_refparticle(py::module& m)
         .def("set_kin_energy_MeV", &RefPart::set_kin_energy_MeV,
              py::return_value_policy::reference_internal,
              "Set reference particle kinetic energy [MeV]", py::arg("kin_energy_MeV"))
+        .def("set_gyromagnetic_anomaly", &RefPart::set_gyromagnetic_anomaly,
+             py::return_value_policy::reference_internal,
+             "Set reference particle gyromagnetic anomaly value (for spin tracking)", py::arg("gyromagnetic_anomaly"))
+        .def("set_species", &RefPart::set_species,
+             py::return_value_policy::reference_internal,
+             "Set reference particle species by name.\n\n"
+             "Sets charge, mass, and gyromagnetic anomaly for a known particle species.\n"
+             "Returns self for chaining, e.g.: ref.set_species(\"electron\").set_kin_energy_MeV(2.0e3)",
+             py::arg("species_name"))
     ;
 }

@@ -14,6 +14,7 @@
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -24,6 +25,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <type_traits>
 
 
 namespace impactx::elements
@@ -33,6 +35,7 @@ namespace impactx::elements
       public mixin::BeamOptic<LinearMap>,
       public mixin::LinearTransport<LinearMap>,
       public mixin::Alignment,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -64,6 +67,59 @@ namespace impactx::elements
         {
             m_transport_map = R;
             m_ds = ds;
+        }
+
+        /** Check if the transport map is symplectic
+         *
+         * A matrix R is symplectic if R^T Omega R = Omega, where Omega is the
+         * standard 6x6 symplectic form.
+         *
+         * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+         * @return true if the map satisfies the symplectic condition
+         */
+        bool symplectic () const
+        {
+            using namespace amrex::literals;
+
+            Map6x6 const J = impactx::symplectic_form();
+            Map6x6 const RT = m_transport_map.transpose();
+            Map6x6 const check = RT * J * m_transport_map;
+            amrex::ParticleReal max_err = 0_prt;
+            for (int i = 1; i <= 6; ++i) {
+                for (int j = 1; j <= 6; ++j) {
+                    amrex::ParticleReal const err = std::abs(check(i,j) - J(i,j));
+                    max_err = std::max(max_err, err);
+                }
+            }
+
+            amrex::ParticleReal constexpr tol = std::is_same_v<amrex::ParticleReal, float>
+                ? 1.0e-4_prt : 1.0e-10_prt;
+            return max_err <= tol;
+        }
+
+        /** Reverse the element (compute symplectic inverse of transport map)
+         *
+         * For a symplectic matrix R, the inverse is
+         *   R^{-1} = J^T R^T J = -J R^T J
+         * where J is the standard 6x6 symplectic form.
+         *
+         * @see https://en.wikipedia.org/wiki/Symplectic_matrix
+         * Throws if the transport map is not symplectic.
+         */
+        void reverse ()
+        {
+            if (!symplectic()) {
+                throw std::runtime_error(
+                    "LinearMap::reverse: transport map is not symplectic.");
+            }
+
+            Map6x6 const Omega = impactx::symplectic_form();
+
+            // R_inv = Omega^T * R^T * Omega = -Omega * R^T * Omega
+            Map6x6 const RT = m_transport_map.transpose();
+            Map6x6 const R_inv = (-Omega) * RT * Omega;
+            m_transport_map = R_inv;
+            m_ds = -m_ds;
         }
 
         /** Push all particles */
@@ -126,7 +182,7 @@ namespace impactx::elements
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
-            if (m_ds > 0)  // Drift
+            if (m_ds != 0)  // Drift forward or backward
             {
                 using namespace amrex::literals; // for _rt and _prt
                 using amrex::Math::powi;
@@ -180,6 +236,45 @@ namespace impactx::elements
             return m_ds;
         }
 
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+             // spin is unaffected
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+        }
+
+
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
@@ -203,5 +298,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::LinearMap)
 
 #endif // IMPACTX_ELEMENT_LINEAR_MAP_H

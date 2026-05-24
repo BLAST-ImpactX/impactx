@@ -291,7 +291,7 @@ Post-Processing
 LUMI provides a `Jupyter Lab service <https://docs.lumi-supercomputer.eu/runjobs/webui/jupyter/>`__ that can be used for interactive post-processing.
 
 You can reuse your CPU ImpactX virtual environment for post-processing in Jupyter Lab:
-* Python: ``Cray-python (3.10.10)``
+* Python: ``Cray-python (3.11.7)``
 * Virtual environment path: ``${HOME}/sw/lumi/cpu/venvs/impactx-cpu-lumi/`` (replace ``${HOME}`` with the output of ``echo ${HOME}``)
 
 

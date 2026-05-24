@@ -8,6 +8,7 @@
 #include <ImpactX.H>
 #include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
+#include <particles/ParticleBoundary.H>
 
 #include <AMReX.H>
 #include <AMReX_ParmParse.H>
@@ -68,6 +69,10 @@ namespace detail
 void init_ImpactX (py::module& m)
 {
     py::class_<ImpactX> impactx(m, "ImpactX", py::dynamic_attr());
+
+    using ImpactXHooks = std::unordered_map<std::string, std::function<void(ImpactX *)> >;
+    py::bind_map<ImpactXHooks>(m, "UnorderedMap");
+
     impactx
         .def(py::init<>())
 
@@ -162,14 +167,18 @@ void init_ImpactX (py::module& m)
 
                 pp_geometry.add("dynamic_size", false);
 
-                ix.ResizeMesh();
+                if (ix.initialized())
+                    ix.ResizeMesh();
             },
             "The physical extent of the full simulation domain, relative to the reference particle position, in meters."
         )
 
         .def_property("prob_relative",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<amrex::Real>("geometry", "prob_relative");
+                  amrex::ParmParse const pp_geometry("geometry");
+                  std::vector<amrex::Real> frac;
+                  pp_geometry.getarr("prob_relative", frac);
+                  return frac;
               },
               [](ImpactX & /* ix */, std::vector<amrex::Real> frac) {
                   amrex::ParmParse pp_geometry("geometry");
@@ -242,6 +251,26 @@ void init_ImpactX (py::module& m)
             },
             "Number of terms in the Taylor series retained for quantum effects (default: 1)."
         )
+        .def_property("isr_on_ref_part",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "isr_on_ref_part");
+            },
+            [](ImpactX & /* ix */, bool isr_on_ref_part) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("isr_on_ref_part", isr_on_ref_part);
+            },
+            "Flag to determine whether ISR radiation loss is applied to the reference particle (default: False)."
+        )
+        .def_property("spin",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "spin");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("spin", enable);
+            },
+            "Enable or disable particle spin tracking (default: disabled)."
+        )
         .def_property("eigenemittances",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("diag", "eigenemittances");
@@ -261,7 +290,11 @@ void init_ImpactX (py::module& m)
                     amrex::ParmParse pp_algo("algo");
                     if (std::get<bool>(space_charge_v)) {
                         // TODO: boolean True is deprecated since 25.03, remove some time after
-                        py::print("sim.space_charge = True is deprecated, please use space_charge = \"3D\"");
+                        py::warnings::warn(
+                            "sim.space_charge = True is deprecated, please use space_charge = \"3D\"",
+                            PyExc_DeprecationWarning,
+                            2
+                        );
                         pp_algo.add("space_charge", std::string("3D"));
                     } else {
                         // map boolean False to "false" / off
@@ -271,15 +304,82 @@ void init_ImpactX (py::module& m)
                 else
                 {
                     std::string const space_charge = std::get<std::string>(space_charge_v);
-                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D") {
-                        throw std::runtime_error("Space charge model must be 2D, 3D or Gauss3D but is: " + space_charge);
+                    if (space_charge != "false" && space_charge != "off" && space_charge != "2D" && space_charge != "3D" && space_charge != "Gauss3D" && space_charge != "Gauss2p5D"  && space_charge != "2p5D") {
+                        throw std::runtime_error("Space charge model must be 2D, 3D, Gauss3D, Gauss2p5D, or 2p5D but is: " + space_charge);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("space_charge", space_charge);
                 }
             },
-            "The model to be used when calculating space charge effects. Either off, 2D, or 3D."
+            "The model to be used when calculating space charge effects. Either off, 2D, 3D, Gauss3D, Gauss2p5D, or 2p5D."
         )
+        .def_property("space_charge_gauss_nint",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_nint");
+            },
+            [](ImpactX & /* ix */, int const gauss_nint) {
+                if (gauss_nint < 1) {
+                    throw std::runtime_error("space_charge_gauss_nint must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_nint", gauss_nint);
+            },
+            "Number of steps for computing the integrals (default: ``101``)."
+        )
+        .def_property("space_charge_gauss_charge_z_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_charge_z_bins");
+            },
+            [](ImpactX & /* ix */, int const gauss_charge_z_bins) {
+                if (gauss_charge_z_bins < 1) {
+                    throw std::runtime_error("space_charge_gauss_charge_z_bins must be strictly positive");
+                }
+
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_charge_z_bins", gauss_charge_z_bins);
+            },
+            "Number of longitudinal bins for computing the linear charge density (default: ``129``)."
+        )
+        .def_property("space_charge_gauss_taylor_delta",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_taylor_delta");
+            },
+            [](ImpactX & /* ix */, amrex::Real const gauss_taylor_delta) {
+                if (gauss_taylor_delta < 0) {
+                    throw std::runtime_error("space_charge_gauss_taylor_delta must be strictly positive");
+                }
+                if (gauss_taylor_delta > 0.05) {
+                    throw std::runtime_error("space_charge_gauss_taylor_delta must be less than 0.05");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_taylor_delta", gauss_taylor_delta);
+            },
+            "Initial region for computing the integrals (default: ``0.01``)."
+        )
+        .def_property("space_charge_num_longitudinal_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "num_longitudinal_bins");
+            },
+            [](ImpactX & /* ix */, int const num_longitudinal_bins) {
+                if (num_longitudinal_bins < 1) {
+                    throw std::runtime_error("space_charge_num_longitudinal_bins must be strictly positive");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("num_longitudinal_bins", num_longitudinal_bins);
+            },
+            "Number of longitudinal bins for 2.5D space charge calculation (default: ``100``)."
+        )
+        .def_property("space_charge_apply_longitudinal_kick",
+             [](ImpactX & /* ix */) {
+                 return detail::get_or_throw<bool>("algo.space_charge", "apply_longitudinal_kick");
+             },
+             [](ImpactX & /* ix */, bool const apply_longitudinal_kick) {
+                 amrex::ParmParse pp_algo("algo.space_charge");
+                 pp_algo.add("apply_longitudinal_kick", apply_longitudinal_kick);
+             },
+             "Enable or disable longitudinal space charge kick in 2.5D space charge solver (default: enabled).\n"
+         )
         .def_property("poisson_solver",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<std::string>("algo", "poisson_solver");
@@ -344,6 +444,26 @@ void init_ImpactX (py::module& m)
               "The verbosity used for MLMG solver for space-charge fields calculation. "
               "Currently MLMG solver looks for verbosity levels from 0-5. "
               "A higher number results in more verbose output."
+        )
+        .def_property("particle_bc",
+            [](ImpactX & /* ix */) -> std::string {
+                return amrex::getEnumNameString(particles::get_particle_boundary_condition());
+            },
+            [](ImpactX & /* ix */, std::string const particle_bc) {
+                auto const valid_names = amrex::getEnumNameStrings<particles::ParticleBC>();
+                if (std::find(valid_names.begin(), valid_names.end(), particle_bc) == valid_names.end()) {
+                    std::string msg = "Particle boundary condition must be one of: ";
+                    for (auto const& name : valid_names) {
+                        msg += name + ", ";
+                    }
+                    msg.erase(msg.size() - 2);
+                    msg += " but is: " + particle_bc;
+                    throw std::runtime_error(msg);
+                }
+
+                amrex::ParmParse("algo").add("particle_bc", particle_bc);
+            },
+            "Optional methods to apply a longitudinal particle boundary condition."
         )
         .def_property("diagnostics",
              [](ImpactX & /* ix */) {
@@ -492,6 +612,10 @@ void init_ImpactX (py::module& m)
             "If it's not empty, it specifies the file name for the output. "
             "Note that /dev/null is a special name that mean a null file."
         )
+        .def_readwrite("hook",
+            &ImpactX::m_hook,
+            "User-defined function hooks that are called, e.g, during tracking."
+        )
 
         .def("deposit_charge",
             [](ImpactX & ix) {
@@ -545,6 +669,7 @@ void init_ImpactX (py::module& m)
         .def("add_particles", &ImpactX::add_particles,
              py::arg("bunch_charge"),
              py::arg("distr"), py::arg("npart"),
+             py::arg("spin_distr") = py::none(),
              "Particle tracking mode:"
              "Generate and add n particles to the particle container.\n\n"
              "Will also resize the geometry based on the updated particle\n"
@@ -554,7 +679,12 @@ void init_ImpactX (py::module& m)
 
         .def("evolve",  /** TODO: deprecated API. Only for internal use. Remove after a few releases. */
              [](ImpactX & ix) {
-                py::print("Warning: evolve() is deprecated and will soon be removed. Use track_particles() instead.");
+                py::warnings::warn(
+                    "Warning: evolve() is deprecated and will soon be removed. "
+                    "Use track_particles() instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
                 ix.evolve();
              },
              "Run the main simulation loop."
@@ -569,16 +699,48 @@ void init_ImpactX (py::module& m)
              "Run the reference orbit tracking simulation loop."
         )
 
+
+        .def_property_readonly("tracking_period",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_period; },
+            "For tracking hooks/callbacks, the period in the lattice (e.g., turn or channel period)"
+        )
+        .def_property_readonly("tracking_step",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_step; },
+            "For tracking hooks/callbacks, a global step of the simulation.\n\n"
+            "A state of internal simulation steps, increments also for space charge slice steps in elements.\n"
+            "We start in 'step 0' (initial state)."
+        )
+        .def_property_readonly("tracking_element",
+            [](ImpactX & ix) { return ix.m_tracking_state.m_element; },
+            "For tracking hooks/callbacks, the current lattice element."
+        )
+
         .def("resize_mesh", &ImpactX::ResizeMesh,
              "Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters."
         )
 
         .def("particle_container",
              [](ImpactX & ix) -> ImpactXParticleContainer & {
+                py::warnings::warn(
+                    "particle_container() is deprecated. Use sim.beam instead.",
+                    PyExc_DeprecationWarning,
+                    2
+                );
                 return *ix.amr_data->track_particles.m_particle_container;
              },
              py::return_value_policy::reference_internal,
-             "Access the beam particle container."
+             "Access the beam particle container.\n\n"
+             "Deprecated: use ``sim.beam``."
+        )
+        // Getter-only property is intentional: it returns the live mutable
+        // ImpactXParticleContainer by reference.
+        // A writable property (with assignment) would be ambiguous:
+        // alias (Pythonic) or copy-in (safe) for the simulation-owned particle container.
+        .def_property_readonly("beam",
+            [](ImpactX & ix) -> ImpactXParticleContainer & {
+                return *ix.amr_data->track_particles.m_particle_container;
+            },
+            "Access the beam particle container."
         )
         .def(
             "rho",

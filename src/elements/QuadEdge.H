@@ -86,6 +86,14 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (swap entry/exit) */
+        void reverse ()
+        {
+            m_flag = (m_flag == Location::entry)
+                ? Location::exit
+                : Location::entry;
+        }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -224,5 +232,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::QuadEdge)
 
 #endif // IMPACTX_QUADEDGE_H

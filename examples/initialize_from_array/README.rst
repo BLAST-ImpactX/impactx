@@ -19,7 +19,7 @@ In this example, a custom beam is specified at fixed t, transformed to fixed s, 
 then loaded in ImpactX.
 The custom beam is a ring in x-y,
 with radius r=2 mm,
-radial width :math:`\sigma_r = 5\ \mu`m;
+radial width :math:`\sigma_r = 5\ \mathrm{\mu m}`;
 Gaussian in :math:`p_x` and :math:`p_y` with momentum width :math:`\sigma_p=10`;
 and chirped in z-pz with bunch length :math:`\sigma_z=1` mm,
 mean energy about 10 GeV, 1% uncorrelated energy spread, and z-pz covariance of -0.18.
@@ -47,6 +47,15 @@ This example can **only** be run with **Python**:
 * **Python** script: ``python3 run_from_array.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. attention::
+
+   In MPI-parallel simulations, ``beam.add_n_particles(...)`` is local to the MPI rank, spatial locality does not matter.
+   Thus, you can add particles at any MPI rank, e.g., equally chuncked up for perfect load balancing.
+
+   You do NOT want to add the same unique particle at multiple MPI ranks.
+
+   When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
 .. literalinclude:: run_from_array.py
     :language: python3

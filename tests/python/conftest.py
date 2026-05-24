@@ -18,8 +18,20 @@ else:
 basepath = os.getcwd()
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "manages_amrex: test manages its own AMReX init/finalize lifecycle"
+    )
+
+
 @pytest.fixture(autouse=True, scope="function")
-def amrex_init(tmpdir):
+def amrex_init(request, tmpdir):
+    # Allow tests to manage their own AMReX lifecycle
+    if request.node.get_closest_marker("manages_amrex"):
+        with tmpdir.as_cwd():
+            yield
+        return
+
     with tmpdir.as_cwd():
         # warning: with an external AMReX initialize, our ImpactX overwrite_amrex_parser_defaults is never called!
         amr.initialize(

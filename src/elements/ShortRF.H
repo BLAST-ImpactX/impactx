@@ -68,6 +68,9 @@ namespace impactx::elements
         {
         }
 
+        /** Reverse the element (negate V) */
+        void reverse () { m_V = -m_V; }
+
         /** Push all particles */
         using BeamOptic::operator();
 
@@ -274,5 +277,7 @@ namespace impactx::elements
     };
 
 } // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ShortRF)
 
 #endif // IMPACTX_SHORTRF_H

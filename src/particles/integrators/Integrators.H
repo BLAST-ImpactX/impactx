@@ -568,10 +568,10 @@ namespace impactx::integrators
         } else {
 
            // initialize numerical integration parameters (int_order = 6)
-           amrex::ParticleReal const w0 = 1.31518632068391121888424973;
-           amrex::ParticleReal const w1 = -1.17767998417887100694641568;
-           amrex::ParticleReal const w2 = 0.23557321335935813368479318;
-           amrex::ParticleReal const w3 = 0.78451361047755726381949763;
+           amrex::ParticleReal const w0 = 1.31518632068391121888424973_prt;
+           amrex::ParticleReal const w1 = -1.17767998417887100694641568_prt;
+           amrex::ParticleReal const w2 = 0.23557321335935813368479318_prt;
+           amrex::ParticleReal const w3 = 0.78451361047755726381949763_prt;
 
            amrex::ParticleReal const tau1 = w3 * tau / 2_prt;
            amrex::ParticleReal const tau2 = w3 * tau;
@@ -632,7 +632,7 @@ namespace impactx::integrators
         using namespace amrex::literals; // for _rt and _prt
 
         // Parameters defining the implicit iteration loop
-        amrex::ParticleReal const tolerance = 1.0e-12;
+        amrex::ParticleReal const tolerance = 1.0e-12_prt;
         int max_iterations = 100;
         int count = 0;
 

@@ -34,7 +34,7 @@ quad1.type = magnetostatic_vector_potential
 quad1.ds = 1.0
 quad1.dA_z/dx(x,y,z) = -x
 quad1.dA_z/dy(x,y,z) = y
-quad1.units = 0
+quad1.unit = 0
 quad1.int_order = 4
 quad1.mapsteps = 4
 
@@ -45,7 +45,7 @@ quad2.type = magnetostatic_vector_potential
 quad2.ds = 1.0
 quad2.dA_z/dx(x,y,z) = x
 quad2.dA_z/dy(x,y,z) = -y
-quad2.units = 0
+quad2.unit = 0
 quad2.int_order = 4
 quad2.mapsteps = 4
 

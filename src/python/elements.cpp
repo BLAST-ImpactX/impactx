@@ -2961,6 +2961,7 @@ void init_elements(py::module& m)
         )
     ;
     register_push(py_MagnetostaticVectorPotential);
+    register_reverse(py_MagnetostaticVectorPotential);
 
     // freestanding push function
     m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),

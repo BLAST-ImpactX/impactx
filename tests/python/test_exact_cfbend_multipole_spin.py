@@ -8,7 +8,9 @@
 
 
 import numpy as np
+
 from impactx import ImpactX, distribution, elements
+
 
 def test_exact_cfbend_multipole_spin():
     sim = ImpactX()
@@ -97,9 +99,9 @@ def test_exact_cfbend_multipole_spin():
         nslice=ns,
     )
 
-    phi_val = 180.0*h*L/np.pi
+    phi_val = 180.0 * h * L / np.pi
     sbend1 = elements.ExactSbend(
-        name="sbend1", 
+        name="sbend1",
         ds=-L,
         phi=phi_val,
         nslice=ns,
@@ -110,8 +112,8 @@ def test_exact_cfbend_multipole_spin():
     sim.lattice.append(cfbend1)
     sim.lattice.append(multipole1)
     # TODO:  the last pair of elements breaks this test
-    #sim.lattice.append(cfbend2)
-    #sim.lattice.append(sbend1)
+    # sim.lattice.append(cfbend2)
+    # sim.lattice.append(sbend1)
 
     # run simulation
     sim.track_particles()
@@ -140,7 +142,7 @@ def test_exact_cfbend_multipole_spin():
             final_beam_df[c].to_numpy(),
             initial_beam_df[c].to_numpy(),
             atol=phase_atol,
-            rtol=0,   
+            rtol=0,
             err_msg=f"Roundtrip mismatch in {c}",
         )
     spin_atol = 1.5e-7
@@ -151,5 +153,4 @@ def test_exact_cfbend_multipole_spin():
             atol=spin_atol,
             rtol=0,
             err_msg=f"Roundtrip mismatch in {c}",
-        )       
-
+        )

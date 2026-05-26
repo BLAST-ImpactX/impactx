@@ -89,14 +89,14 @@ def test_exact_cfbend_multipole_spin():
     h = 0.1
     L = 1.0
     cfbend2 = elements.ExactCFbend(
-       name="cfbend2",
-       ds=L,
-       k_normal=[h],
-       k_skew=[0.0],
-       unit=0,
-       int_order=2,
-       mapsteps=20,
-       nslice=ns,
+        name="cfbend2",
+        ds=L,
+        k_normal=[h],
+        k_skew=[0.0],
+        unit=0,
+        int_order=2,
+        mapsteps=20,
+        nslice=ns,
     )
 
     phi_val = 180.0 * h * L / np.pi

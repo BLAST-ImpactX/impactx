@@ -86,9 +86,9 @@ def test_exact_cfbend_multipole_spin():
         nslice=ns,
     )
 
-    #h = 0.1
-    #L = 1.0
-    #cfbend2 = elements.ExactCFbend(
+    # h = 0.1
+    # L = 1.0
+    # cfbend2 = elements.ExactCFbend(
     #    name="cfbend2",
     #    ds=L,
     #    k_normal=[h],
@@ -97,15 +97,15 @@ def test_exact_cfbend_multipole_spin():
     #    int_order=2,
     #    mapsteps=20,
     #    nslice=ns,
-    #)
+    # )
 
-    #phi_val = 180.0 * h * L / np.pi
-    #sbend1 = elements.ExactSbend(
+    # phi_val = 180.0 * h * L / np.pi
+    # sbend1 = elements.ExactSbend(
     #    name="sbend1",
     #    ds=-L,
     #    phi=phi_val,
     #    nslice=ns,
-    #)
+    # )
 
     # set the lattice
     sim.lattice.append(monitor)

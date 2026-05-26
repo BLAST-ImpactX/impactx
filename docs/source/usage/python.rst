@@ -794,8 +794,8 @@ Initial Beam Spin Distribution
    :param muz: z component of the unit vector specifying the mean direction
 
 
-Lattice Elements
-----------------
+Lattice
+-------
 
 This module provides elements and methods for the accelerator lattice.
 
@@ -1059,6 +1059,28 @@ This module provides elements and methods for the accelerator lattice.
          # from my_lattice import get_lattice
          # lattice = get_lattice()
 
+   .. py:method:: __eq__(other)
+
+      Element-wise equality.
+      Number of elements and every pair of elements must compare equal under ``==``.
+
+   .. py:method:: isclose(other, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+      Tolerant element-wise comparison. Number of elements must match.
+      For each pair of elements at the same index, calls the element's own ``isclose``.
+
+      :param other: Any iterable of elements
+         (:py:class:`~impactx.elements.KnownElementsList`,
+         :py:class:`~impactx.elements.FilteredElementsList`, or plain ``list``).
+      :param rtol: Relative tolerance (default ``1e-12``).
+      :param atol: Absolute tolerance (default ``0.0``).
+      :param ignore_attributes: ``to_dict()`` keys to skip when comparing each
+         pair of elements. Accepts a single string or any iterable of strings.
+         Forwarded to each element's ``isclose``; see
+         :ref:`element-comparison-methods` for the full semantics, including
+         the special ``"type"`` key for cross-variant comparisons.
+      :rtype: bool
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.
@@ -1157,6 +1179,100 @@ This module provides elements and methods for the accelerator lattice.
 
          # Clear alignment errors and apertures
          sim.lattice.select(kind=r".*Quad").replace_with_drifts(keep_alignment=False)
+
+   .. py:method:: __eq__(other)
+
+      Element-wise equality, with the same semantics as
+      :py:meth:`impactx.elements.KnownElementsList.__eq__`. A filtered view
+      compares equal to any iterable of elements (plain Python ``list``,
+      :py:class:`~impactx.elements.KnownElementsList`, or another
+      :py:class:`~impactx.elements.FilteredElementsList`) as long as the
+      lengths and pairwise element comparisons match.
+
+   .. py:method:: isclose(other, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+      Tolerant element-wise comparison, with the same semantics as
+      :py:meth:`impactx.elements.KnownElementsList.isclose`.
+      ``ignore_attributes`` is forwarded to each element's ``isclose``.
+
+.. _element-comparison-methods:
+
+Common comparison methods on lattice elements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Every lattice element class in :py:mod:`impactx.elements` supports the following value-based
+comparison methods. They derive directly from each element's ``to_dict()`` output.
+
+.. py:method:: impactx.elements.Element.__eq__(other)
+
+   Value-based equality. Two elements are equal if they are instances of the
+   same class and their ``to_dict()`` outputs match key-for-key. Float-valued
+   fields are compared via ``==`` (so ``NaN != NaN``); list/matrix values are
+   compared element-wise.
+
+.. py:method:: impactx.elements.Element.isclose(other, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+   Tolerant equality.
+   Float-valued fields are compared via
+   ``math.isclose(rel_tol=rtol, abs_tol=atol)``; lists/matrices of floats are compared
+   element-wise. All other value types (ints, strings, ``None``) fall back to strict ``==``.
+   Mismatched element types and foreign operands return ``False`` (unless ``"type"`` is
+   listed in ``ignore_attributes``).
+
+   :param other: Element to compare against.
+   :param rtol: Relative tolerance forwarded to ``math.isclose`` / ``numpy.allclose``.
+   :param atol: Absolute tolerance. Default ``0.0``.
+   :param ignore_attributes: ``to_dict()`` keys to skip during the comparison.
+      Accepts a single string or any iterable of strings. Useful when comparing
+      loaded files where bookkeeping fields such as ``"name"`` should not
+      affect the verdict. Including the special key ``"type"`` disables the
+      same-class check, so e.g. :py:class:`~impactx.elements.Drift` and
+      :py:class:`~impactx.elements.ExactDrift` can be compared on their common
+      parameters; remaining keys must still match.
+   :rtype: bool
+
+   **Examples:**
+
+   .. code-block:: python
+
+      from impactx import elements
+
+      a = elements.Drift(ds=1.0, name="d1")
+      b = elements.Drift(ds=1.0 + 1e-15, name="d2")
+
+      a == b      # False — name differs and ds differs by float noise
+      a.isclose(b)                              # False — name still differs
+      a.isclose(b, ignore_attributes="name")    # True
+
+      # Compare a Drift to its exact-physics counterpart on common fields.
+      lin = elements.Drift(ds=1.0)
+      ex = elements.ExactDrift(ds=1.0)
+      lin.isclose(ex, ignore_attributes=["type"])  # True
+
+      # Lattice-wide comparison forwards ignore_attributes to each element.
+      lattice_a.isclose(lattice_b, ignore_attributes=["name"])
+
+.. py:function:: impactx.elements.isclose(a, b, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+   Free-function form of :py:meth:`isclose`, equivalent to ``a.isclose(b, ...)``.
+   Accepts either two elements or two iterables of elements
+   (``KnownElementsList``, ``FilteredElementsList``, plain ``list``).
+
+   .. code-block:: python
+
+      from impactx import elements
+
+      # two elements
+      d1 = elements.Drift(ds=1.0, name="d1")
+      d2 = elements.Drift(ds=1.0 + 1e-15, name="d2")
+      elements.isclose(d1, d2, ignore_attributes="name")
+
+      # two lattices (KnownElementsList, FilteredElementsList, or plain list)
+      elements.isclose(lattice_a, lattice_b, ignore_attributes=["name"])
+
+
+Lattice Elements
+----------------
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 

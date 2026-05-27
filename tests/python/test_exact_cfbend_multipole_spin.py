@@ -67,7 +67,7 @@ def test_exact_cfbend_multipole_spin():
     cfbend1 = elements.ExactCFbend(
         name="cfbend1",
         ds=1.0,
-        k_normal=[1.0e-7, 1.0, -2.0],
+        k_normal=[5.0e-8, 1.0, -2.0],
         k_skew=[0.0, -0.5, 1.4],
         unit=0,
         int_order=2,
@@ -144,7 +144,7 @@ def test_exact_cfbend_multipole_spin():
             rtol=0,
             err_msg=f"Roundtrip mismatch in {c}",
         )
-    spin_atol = 1.5e-7
+    spin_atol = 2.5e-7
     for c in SPIN_COLS:
         np.testing.assert_allclose(
             final_beam_df[c].to_numpy(),

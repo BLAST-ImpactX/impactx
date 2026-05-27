@@ -496,7 +496,8 @@ namespace impactx::elements
             T_Real Bz = 0_prt;
 
             // loop over array of multipole coefficients
-            for (int m = 1; m < m_ncoef; m++) {
+            // NOTE:  Here we start at m = 0 in order to include the dipole contribution to the spin
+            for (int m = 0; m < m_ncoef; m++) {
 
                // normalize units to MAD-X convention if needed
                amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
@@ -564,7 +565,7 @@ namespace impactx::elements
             T_Real const uz = Ps * iPnorm;
 
             // Zero curvature in a straight-axis multipole
-            amrex::ParticleReal const h = 0.0_prt;
+            amrex::ParticleReal const h = 1.0/m_rc;
 
             // Evaluation of the full Thomas-BMT precession vector.
             tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);

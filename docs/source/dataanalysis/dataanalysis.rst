@@ -79,6 +79,8 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
     Iteration within the simulation
 * ``s``
     Reference particle coordinate ``s`` (unit: meter)
+* ``beta_gamma``
+    Reference particle relativistic momentum :math:`\beta\gamma` (unit: dimensionless)
 * ``mean/min/max_x``, ``mean/min/max_y``, ``mean/min/max_t``
     Average / minimum / maximum particle displacement with respect to the reference particle in the dimensions of ``x``, ``y`` (transverse coordinates, unit: meter), and ``t`` (normalized time difference :math:`ct`, unit: meter)
 * ``sigma_x``, ``sigma_y``, ``sigma_t``

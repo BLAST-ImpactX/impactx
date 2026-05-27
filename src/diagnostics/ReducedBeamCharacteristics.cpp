@@ -469,6 +469,7 @@ namespace impactx::diagnostics
         data["emittance_xn"] = emittance_xn;
         data["emittance_yn"] = emittance_yn;
         data["emittance_tn"] = emittance_tn;
+        data["beta_gamma"] = bg;
         if (compute_eigenemittances) {
            data["emittance_1"] = emittance_1;
            data["emittance_2"] = emittance_2;
@@ -681,6 +682,7 @@ namespace impactx::diagnostics
         data["emittance_xn"] = emittance_xn;
         data["emittance_yn"] = emittance_yn;
         data["emittance_tn"] = emittance_tn;
+        data["beta_gamma"] = bg;
         if (compute_eigenemittances) {
            data["emittance_1"] = emittance_1;
            data["emittance_2"] = emittance_2;

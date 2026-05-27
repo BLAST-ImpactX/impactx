@@ -55,6 +55,7 @@ namespace
             pp_algo.queryAdd("spin", compute_spin_moments);
 
             file_handler << "step" << " " << "s" << " "
+                         << "beta_gamma" << " "
                          << "mean_x" << " " << "min_x" << " " << "max_x" << " "
                          << "mean_y" << " " << "min_y" << " " << "max_y" << " "
                          << "mean_t" << " " << "min_t" << " " << "max_t" << " "
@@ -148,6 +149,7 @@ namespace
         pp_algo.queryAdd("spin", compute_spin_moments);
 
         file_handler << step << " " << s << " "
+            << rbc.at("beta_gamma") << " "
                 << rbc.at("mean_x") << " " << rbc.at("min_x") << " " << rbc.at("max_x") << " "
                 << rbc.at("mean_y") << " " << rbc.at("min_y") << " " << rbc.at("max_y") << " "
                 << rbc.at("mean_t") << " " << rbc.at("min_t") << " " << rbc.at("max_t") << " "

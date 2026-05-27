@@ -505,12 +505,12 @@ The analysis can be run using the following script:
 
 
 .. _examples-exact-cfbend-spin-scaling:
-          
+
 Scaling Test of Spin in an Exact Combined Function Bend
 =======================================================
 
 This example tests the propagation of spin through the :py:class:`~impactx.elements.ExactCFbend` element.
-          
+
 The :py:class:`~impactx.elements.ExactCFbend` element incorporates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
 
 A small number of initial conditions are tracked, with increasing distance from the phase space design point.
@@ -524,7 +524,7 @@ Run
 ---
 
 This example can be run as:
-      
+
 * **Python** script: ``python3 run_cfbend_spin_scaling.py``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
@@ -543,7 +543,7 @@ Analyze
 The analysis can be run using the following script:
 
 .. dropdown:: Script ``analysis_cfbend_spin_scaling.py``
-   
+
    .. literalinclude:: analysis_cfbend_spin_scaling.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_cfbend_spin_scaling.py``.

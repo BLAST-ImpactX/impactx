@@ -246,6 +246,18 @@ Collective Effects & Overall Simulation Parameters
       By default, diagnostics is performed at the beginning and end of the simulation.
       Enabling this flag will write diagnostics every step and slice step.
 
+   .. py:property:: diag_file_prefix
+
+      Root directory for diagnostic output (default: folder named ``"diags"``).
+
+      Set to ``""`` or ``"."`` to write diagnostics in the current working directory.
+
+      If a directory at ``diag_file_prefix`` already exists when a simulation starts,
+      ImpactX renames it to ``<diag_file_prefix>.old.<suffix>`` to preserve prior results.
+      This is skipped when ``diag_file_prefix`` resolves to the current working directory,
+      the root directory, or an ancestor of the current working directory; in those cases
+      new output is written alongside existing files.
+
    .. py:property:: diag_file_min_digits
 
       The minimum number of digits (default: ``6``) used for the step

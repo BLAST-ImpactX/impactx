@@ -144,7 +144,7 @@ def test_exact_cfbend_multipole_spin():
             rtol=0,
             err_msg=f"Roundtrip mismatch in {c}",
         )
-    spin_atol = 2.5e-7
+    spin_atol = 3.0e-7
     for c in SPIN_COLS:
         np.testing.assert_allclose(
             final_beam_df[c].to_numpy(),

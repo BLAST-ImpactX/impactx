@@ -25,7 +25,8 @@ namespace impactx::elements::mixin
      */
     struct Alignment
     {
-        static constexpr amrex::ParticleReal degree2rad = ablastr::constant::math::pi / 180.0;
+        static constexpr amrex::ParticleReal degree2rad =
+            ablastr::constant::math::pi_v<amrex::ParticleReal> / amrex::ParticleReal{180};
 
         /** A finite-length element
          *

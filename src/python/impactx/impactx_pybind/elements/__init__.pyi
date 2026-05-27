@@ -9,6 +9,7 @@ import typing
 
 import amrex.space3d.amrex_3d_pybind
 import impactx.impactx_pybind
+from impactx.extensions.Elements import isclose
 
 from . import mixin, transformation
 
@@ -53,11 +54,36 @@ __all__: list[str] = [
     "SpinMap",
     "TaperedPL",
     "ThinDipole",
+    "isclose",
     "mixin",
     "transformation",
 ]
 
 class BeamMonitor(mixin.Thin):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         name: str,
@@ -70,6 +96,39 @@ class BeamMonitor(mixin.Thin):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -172,6 +231,30 @@ class BeamMonitor(mixin.Thin):
     def tn(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         aperture_x: typing.SupportsFloat | typing.SupportsIndex,
@@ -191,6 +274,39 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -283,6 +399,30 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def shift_odd_x(self, arg1: bool) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -299,6 +439,39 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -342,6 +515,30 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ]: ...
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -360,6 +557,39 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -417,6 +647,30 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -435,6 +689,39 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -492,6 +779,30 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -510,6 +821,39 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -567,6 +911,30 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
     def ez(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -586,6 +954,39 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -650,6 +1051,30 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def ky(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         psi: typing.SupportsFloat | typing.SupportsIndex,
@@ -676,6 +1101,39 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -817,6 +1275,30 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         k: typing.SupportsFloat | typing.SupportsIndex,
@@ -832,6 +1314,39 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -889,6 +1404,30 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -905,6 +1444,39 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -948,6 +1520,30 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ]: ...
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -964,6 +1560,39 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1007,6 +1636,30 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ]: ...
 
 class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -1028,6 +1681,39 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1092,6 +1778,30 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -1113,6 +1823,39 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1177,6 +1920,30 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -1197,6 +1964,39 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1268,6 +2068,30 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -1286,6 +2110,39 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1347,6 +2204,30 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def phi(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         xkick: typing.SupportsFloat | typing.SupportsIndex,
@@ -1362,6 +2243,39 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1419,6 +2333,30 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     def ykick(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         multipole: typing.SupportsInt | typing.SupportsIndex,
@@ -1434,6 +2372,39 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1495,15 +2466,72 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
         """
     @multipole.setter
-    def multipole(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    def multipole(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class Empty(mixin.Named, mixin.Thin):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(self) -> None:
         """
         This element does nothing.
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1547,12 +2575,69 @@ class Empty(mixin.Named, mixin.Thin):
     ]: ...
 
 class Marker(mixin.Named, mixin.Thin):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(self, name: str) -> None:
         """
         This named element does nothing.
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1596,6 +2681,30 @@ class Marker(mixin.Named, mixin.Thin):
     ]: ...
 
 class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         knll: typing.SupportsFloat | typing.SupportsIndex,
@@ -1610,6 +2719,39 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1667,6 +2809,30 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
     def knll(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         angle: typing.SupportsFloat | typing.SupportsIndex,
@@ -1680,6 +2846,39 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1730,6 +2929,30 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     def angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         vertices_x: collections.abc.Sequence[
@@ -1753,6 +2976,39 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1833,6 +3089,30 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
     def shift_odd_x(self, arg1: bool) -> None: ...
 
 class Programmable(mixin.Named):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -1843,6 +3123,39 @@ class Programmable(mixin.Named):
         A programmable beam optics element.
         """
     def __repr__(self) -> str: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1931,6 +3244,30 @@ class Programmable(mixin.Named):
     def threadsafe(self, arg1: bool) -> None: ...
 
 class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -1948,6 +3285,39 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -1998,6 +3368,30 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         *,
@@ -2026,6 +3420,39 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2097,6 +3524,30 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -2114,6 +3565,39 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2161,6 +3645,30 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     ]: ...
 
 class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -2179,6 +3687,39 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2236,6 +3777,30 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         V: typing.SupportsFloat | typing.SupportsIndex,
@@ -2250,6 +3815,39 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2307,6 +3905,30 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
     def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         V: typing.SupportsFloat | typing.SupportsIndex,
@@ -2322,6 +3944,39 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2386,6 +4041,30 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
     def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         *,
@@ -2413,6 +4092,39 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2474,9 +4186,33 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         specification of units for scaling of the on-axis longitudinal magnetic field
         """
     @unit.setter
-    def unit(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class Source(mixin.Named, mixin.Thin):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         distribution: str,
@@ -2489,6 +4225,39 @@ class Source(mixin.Named, mixin.Thin):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2553,6 +4322,30 @@ class Source(mixin.Named, mixin.Thin):
     def series_name(self, arg1: str) -> None: ...
 
 class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
@@ -2570,6 +4363,39 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2620,6 +4446,30 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def ks(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class PRot(mixin.Named, mixin.Thin):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         phi_in: typing.SupportsFloat | typing.SupportsIndex,
@@ -2631,6 +4481,39 @@ class PRot(mixin.Named, mixin.Thin):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2688,6 +4571,30 @@ class PRot(mixin.Named, mixin.Thin):
     def phi_out(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         *,
@@ -2714,6 +4621,39 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2771,6 +4711,30 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         theta: typing.SupportsFloat | typing.SupportsIndex,
@@ -2785,6 +4749,39 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2835,6 +4832,30 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def theta(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
 class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         k: typing.SupportsFloat | typing.SupportsIndex,
@@ -2856,6 +4877,39 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -2920,6 +4974,30 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class LinearMap(mixin.Named, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
@@ -2934,6 +5012,39 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -3006,6 +5117,30 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
 
 class SpinMap(mixin.Named, mixin.Alignment):
+    def __eq__(self, other):
+        """
+        Value-based equality.
+
+        Two elements are equal iff they are instances of the same class and
+        their ``to_dict()`` outputs match key-for-key. Float values use
+        ``==`` (so ``NaN != NaN``); list values are compared element-wise;
+        AMReX SmallMatrix values use ``numpy.array_equal``.
+
+        Returns ``NotImplemented`` when ``other`` is not the same element
+        type, so Python's reflected-equality fallback applies (e.g., a
+        foreign type's ``__eq__`` gets a chance, ultimately falling back to
+        identity which yields ``False``).
+        """
+    def __hash__(self):
+        """
+        Value-based hash, consistent with ``__eq__``.
+
+        Two elements that compare equal under ``==`` produce the same hash.
+        The hash reflects the element's *current* parameter values; mutating
+        an element after using it as a ``set`` member or ``dict`` key
+        invalidates the container, the same contract a hashable mutable
+        object would have.
+        """
     def __init__(
         self,
         v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
@@ -3021,6 +5156,39 @@ class SpinMap(mixin.Named, mixin.Alignment):
         """
     def __repr__(self) -> str: ...
     def finalize(self) -> None: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant equality for lattice elements.
+
+        Mirrors ``math.isclose`` / ``numpy.isclose`` naming. Float-valued
+        fields are compared via ``math.isclose(rel_tol=rtol, abs_tol=atol)``;
+        lists of floats are compared element-wise; AMReX SmallMatrix values
+        use ``numpy.allclose``. All other value types (ints, strings,
+        ``None``) fall back to strict ``==``. Mismatched element types and
+        foreign operands return ``False`` (unless ``"type"`` is listed in
+        ``ignore_attributes`` — see below).
+
+        Parameters
+        ----------
+        other
+            Element to compare against.
+        rtol : float, optional
+            Relative tolerance forwarded to ``math.isclose`` /
+            ``numpy.allclose``. Default is ``1e-12`` — matches the
+            ``dicts_equal`` helper used in the serialization tests, stricter
+            than the ``math.isclose`` and ``numpy.isclose`` defaults.
+        atol : float, optional
+            Absolute tolerance. Default is ``0.0``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing. Useful when comparing
+            loaded files where some bookkeeping fields (``"name"``) or even
+            the element variant (``"type"``) should not affect the verdict.
+
+            Including ``"type"`` disables the strict same-class check, so
+            e.g. ``Drift`` and ``ExactDrift`` can be compared on their
+            common parameters. Any remaining keys must still match between
+            the two ``to_dict()`` outputs.
+        """
     @typing.overload
     def push(
         self,
@@ -3094,6 +5262,19 @@ class SpinMap(mixin.Named, mixin.Alignment):
     ) -> None: ...
 
 class KnownElementsList:
+    def __eq__(self, other):
+        """
+        Element-wise equality with any iterable of elements.
+
+        Duck-typed across container types: a ``KnownElementsList`` compares
+        equal to a plain Python ``list`` of elements or to a
+        ``FilteredElementsList`` as long as their lengths match and every
+        pair of elements compares equal under ``==``. Returns
+        ``NotImplemented`` for non-iterable operands so Python's
+        reflected-equality fallback applies. Mutable containers are
+        deliberately unhashable (``__hash__ = None``), matching the Python
+        ``list`` convention.
+        """
     def __getitem__(
         self, arg0: typing.SupportsInt | typing.SupportsIndex
     ) -> (
@@ -3355,6 +5536,28 @@ class KnownElementsList:
             bool: True if at least one element of the specified kind exists.
         """
     def is_empty(self) -> bool: ...
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant element-wise comparison with any iterable of elements.
+
+        For each pair of elements at the same index, calls the element's own
+        ``isclose(rtol=..., atol=..., ignore_attributes=...)``. Lengths must
+        match; foreign or non-iterable operands return ``False``. Defaults
+        match the per-element ``isclose`` (``rtol=1e-12``, ``atol=0.0``).
+
+        Parameters
+        ----------
+        other : iterable of elements
+            Any container (``KnownElementsList``, ``FilteredElementsList``,
+            or plain ``list``) whose elements expose ``isclose``.
+        rtol, atol : float
+            Forwarded to each element's ``isclose``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing each pair of elements.
+            Includes the special key ``"type"`` to compare across element
+            variants (e.g., ``Drift`` vs ``ExactDrift``). Forwarded to each
+            element's ``isclose``.
+        """
     def load_file(self, filename, nslice=1):
         """
         Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
@@ -3628,6 +5831,19 @@ class FilteredElementsList:
     ``replace_with_drifts``, obtain a new selection from the lattice; earlier filter objects must
     not be used.
     """
+    def __eq__(self, other):
+        """
+        Element-wise equality with any iterable of elements.
+
+        Duck-typed across container types: a ``KnownElementsList`` compares
+        equal to a plain Python ``list`` of elements or to a
+        ``FilteredElementsList`` as long as their lengths match and every
+        pair of elements compares equal under ``==``. Returns
+        ``NotImplemented`` for non-iterable operands so Python's
+        reflected-equality fallback applies. Mutable containers are
+        deliberately unhashable (``__hash__ = None``), matching the Python
+        ``list`` convention.
+        """
     def __getitem__(self, key): ...
     def __init__(self, original_list, indices): ...
     def __iter__(self): ...
@@ -3675,6 +5891,28 @@ class FilteredElementsList:
 
         Returns:
             bool: True if at least one element of the specified kind exists.
+        """
+    def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+        """
+        Tolerant element-wise comparison with any iterable of elements.
+
+        For each pair of elements at the same index, calls the element's own
+        ``isclose(rtol=..., atol=..., ignore_attributes=...)``. Lengths must
+        match; foreign or non-iterable operands return ``False``. Defaults
+        match the per-element ``isclose`` (``rtol=1e-12``, ``atol=0.0``).
+
+        Parameters
+        ----------
+        other : iterable of elements
+            Any container (``KnownElementsList``, ``FilteredElementsList``,
+            or plain ``list``) whose elements expose ``isclose``.
+        rtol, atol : float
+            Forwarded to each element's ``isclose``.
+        ignore_attributes : str or iterable of str, optional
+            ``to_dict()`` keys to skip when comparing each pair of elements.
+            Includes the special key ``"type"`` to compare across element
+            variants (e.g., ``Drift`` vs ``ExactDrift``). Forwarded to each
+            element's ``isclose``.
         """
     def replace_each(self, element, *, keep_name=True, keep_ds=False):
         """

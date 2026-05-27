@@ -206,6 +206,7 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
             using amrex::Math::powi;
 
             // initialize the three components of the axis-angle vector
@@ -215,8 +216,8 @@ namespace impactx::elements
 
             // compute multipole magnetic field normalized by q/mc:
             amrex::ParticleReal gamma_ref = refpart.gamma();
-            T_Real const Bx = m_g * ( y + m_taper * x * y ) * gamma_ref * m_beta;
-            T_Real const By = -m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * gamma_ref * m_beta;
+            T_Real const Bx = -m_g * ( y + m_taper * x * y ) * gamma_ref * m_beta;
+            T_Real const By = m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * gamma_ref * m_beta;
             T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:

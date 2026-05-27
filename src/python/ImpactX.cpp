@@ -1,11 +1,12 @@
 /* Copyright 2021-2023 The ImpactX Community
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #include "pyImpactX.H"
 
 #include <ImpactX.H>
+#include <diagnostics/FilePrefix.H>
 #include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
 #include <particles/ParticleBoundary.H>
@@ -487,6 +488,16 @@ void init_ImpactX (py::module& m)
              "Enable or disable diagnostics every slice step in elements (default: disabled).\n\n"
              "By default, diagnostics is performed at the beginning and end of the simulation.\n"
              "Enabling this flag will write diagnostics every step and slice step."
+        )
+        .def_property("diag_file_prefix",
+             [](ImpactX & /* ix */) {
+                 return diagnostics::FilePrefix();
+             },
+             [](ImpactX & /* ix */, std::string const & file_prefix) {
+                 amrex::ParmParse pp_diag("diag");
+                 pp_diag.add("file_prefix", file_prefix);
+             },
+             "Root directory for diagnostic output (default: ``diags``)."
         )
         .def_property("diag_file_min_digits",
              [](ImpactX & /* ix */) {

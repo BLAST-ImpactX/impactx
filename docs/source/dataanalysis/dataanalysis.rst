@@ -60,6 +60,29 @@ Example to print the integrated orbit path length ``s`` at each beam monitor pos
        print(f"step {k_i:>3}: s_ref={s_ref}")
 
 
+.. _dataanalysis-python-inmemory:
+
+In-Memory Python Access
+-----------------------
+
+In addition to the file-based openPMD output above, ImpactX can be steered from a Python script
+and the beam particles, the reference particle, and the space-charge fields can be inspected or
+modified **live** during a run. This is the right approach for custom in-situ diagnostics,
+turn-by-turn feedback, AI/ML coupling, or any analysis that you don't want to round-trip through (slow) filesystem disks.
+
+* :ref:`usage-howto-python-extend`: the overall pattern, plus the callback surfaces
+  (``sim.hook[...]`` and the :py:class:`~impactx.elements.Programmable` element).
+  For analysis, prefer ``sim.hook[...]`` with ``sim.beam``: the ``Programmable``
+  element hands you particles in per-tile chunks and is intended for custom
+  particle pushes, not observation.
+* :ref:`usage-howto-python-particle-data`: accessing ``sim.beam`` as a pandas DataFrame
+  (via :py:meth:`~impactx.ParticleContainer.to_df`) or iterating over particle tiles for
+  high-performance access.
+* :ref:`usage-howto-python-field-data`: accessing the space-charge fields
+  (:py:meth:`~impactx.ImpactX.rho`, :py:meth:`~impactx.ImpactX.phi`,
+  :py:meth:`~impactx.ImpactX.space_charge_field`) and their lifetime caveats.
+
+
 .. _dataanalysis-beam-characteristics:
 
 Reduced Beam Characteristics

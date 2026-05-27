@@ -44,6 +44,9 @@ from .extensions.SoftQuadrupole import (
 from .extensions.SoftSolenoid import (
     register_SoftSolenoid_extension,
 )
+from .extensions.Elements import (
+    register_elements_value_semantics,
+)
 
 # at this place we can enhance Python classes with additional methods written
 # in pure Python or add some other Python logic
@@ -65,3 +68,6 @@ register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContai
 register_RFCavity_extension(impactx_pybind.elements.RFCavity)
 register_SoftQuadrupole_extension(impactx_pybind.elements.SoftQuadrupole)
 register_SoftSolenoid_extension(impactx_pybind.elements.SoftSolenoid)
+
+# Value-based __eq__, __hash__, and isclose() on every element class
+register_elements_value_semantics(impactx_pybind.elements)

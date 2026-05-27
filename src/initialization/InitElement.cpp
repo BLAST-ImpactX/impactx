@@ -134,6 +134,7 @@ namespace detail
                        int nslice_default,
                        [[maybe_unused]] int mapsteps_default)
     {
+        using namespace amrex::literals; // for _prt
         using namespace elements;
 ;
         // Check the element type
@@ -192,10 +193,10 @@ namespace detail
 
             // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
             amrex::ParticleReal pi = ablastr::constant::math::pi;
-            amrex::ParticleReal K0 = pi*pi / 6.0;
+            amrex::ParticleReal K0 = pi*pi / 6.0_prt;
             amrex::ParticleReal K1 = 0;
             amrex::ParticleReal K2 = 1;
-            amrex::ParticleReal K3 = 1.0/6.0;
+            amrex::ParticleReal K3 = 1.0_prt/6.0_prt;
             amrex::ParticleReal K4 = 0;
             amrex::ParticleReal K5 = 0;
             amrex::ParticleReal K6 = 0;
@@ -599,9 +600,9 @@ element_name) );
                 pp_element.queryAddWithParser("alpha", alpha);
                 amrex::ParticleReal beta = 1.0;
                 pp_element.queryAddWithParser("beta", beta);
-                amrex::ParticleReal tn = 0.4;
+                amrex::ParticleReal tn = 0.4_prt;
                 pp_element.queryAddWithParser("tn", tn);
-                amrex::ParticleReal cn = 0.01;
+                amrex::ParticleReal cn = 0.01_prt;
                 pp_element.queryAddWithParser("cn", cn);
             }
 

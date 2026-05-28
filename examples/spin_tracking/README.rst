@@ -517,7 +517,8 @@ A small number of initial conditions are tracked, with increasing distance from 
 
 The final spin variables are compared against those obtained by tracking using the Sbend element, which treats both orbit and spin variables to first order in the phase space variables.
 
-In this test, a scaling exponent is extracted when comparing the vector-norm of difference in final spin with the vector-norm of the initial phase space vector.  This exponent should be 2 (in the limit of $
+In this test, a scaling exponent is extracted when comparing the vector-norm of difference in final spin with the vector-norm of the initial phase space vector.  This exponent should be 2 (in the limit of small deviation).
+
 
 
 Run

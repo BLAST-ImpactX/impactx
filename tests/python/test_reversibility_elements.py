@@ -221,16 +221,19 @@ def roundtrip(
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_CFbend(sim):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
         elements.CFbend(
             ds=0.5,
             rc=7.613657587094493,
             k=-7.057403,
             nslice=nslice,
-            **PIPE_KWARGS,
+            **kwargs,
         ),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -357,6 +360,7 @@ def test_ExactMultipole(sim, unit, k_normal, k_skew):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k_normal", "k_skew"),
     [
@@ -366,6 +370,7 @@ def test_ExactMultipole(sim, unit, k_normal, k_skew):
     ids=["madx", "si"],
 )
 def test_ExactCFbend(sim, unit, k_normal, k_skew):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
         elements.ExactCFbend(
             ds=1.0,
@@ -375,10 +380,11 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
             int_order=4,
             mapsteps=mapsteps,
             nslice=nslice,
-            **PIPE_KWARGS,
+            **kwargs,
         ),
         sim,
         phase_atol=1e-8,
+        spin=sim.spin,
     )
 
 

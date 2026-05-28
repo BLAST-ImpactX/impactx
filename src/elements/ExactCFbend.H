@@ -564,7 +564,7 @@ namespace impactx::elements
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
 
-            // Zero curvature in a straight-axis multipole
+            // Design-orbit curvature
             amrex::ParticleReal const h = 1_prt/m_rc;
 
             // Evaluation of the full Thomas-BMT precession vector.

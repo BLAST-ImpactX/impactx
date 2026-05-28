@@ -361,7 +361,7 @@ void init_ImpactX (py::module& m)
         .def_property("space_charge_gauss_pipe_radius",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<int>("algo.space_charge", "gauss_pipe_radius");
-            },   
+            },
             [](ImpactX & /* ix */, amrex::Real const gauss_pipe_radius) {
                 if (gauss_pipe_radius < 0) {
                     throw std::runtime_error("space_charge_pipe_radius must be strictly positive");

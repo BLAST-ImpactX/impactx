@@ -43,13 +43,13 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal ef;
         amrex::ParticleReal epslon;
         amrex::ParticleReal lamda;
-        amrex::ParticleReal const lolim = std::is_same_v<amrex::ParticleReal, float> ? 1.0E-30 : 6.0E-51;
+        amrex::ParticleReal const lolim = std::is_same_v<amrex::ParticleReal, float> ? 1.0E-30_prt : 6.0E-51_prt;
         amrex::ParticleReal mu;
         amrex::ParticleReal power4;
         amrex::ParticleReal sigma;
         amrex::ParticleReal s1;
         amrex::ParticleReal s2;
-        amrex::ParticleReal const uplim = std::is_same_v<amrex::ParticleReal, float> ? 1.0E+30 : 1.0E+48;
+        amrex::ParticleReal const uplim = std::is_same_v<amrex::ParticleReal, float> ? 1.0E+30_prt : 1.0E+48_prt;
         amrex::ParticleReal value;
         amrex::ParticleReal xn;
         amrex::ParticleReal xndev;

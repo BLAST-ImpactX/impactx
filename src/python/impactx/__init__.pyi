@@ -20,6 +20,7 @@ from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x1_F_SI1_double as Vector
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x6_F_SI1_double as Map3x6
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 from impactx.distribution_input_helpers import twiss
+from impactx.extensions.Elements import register_elements_value_semantics
 from impactx.extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
@@ -102,6 +103,7 @@ __all__: list[str] = [
     "register_RFCavity_extension",
     "register_SoftQuadrupole_extension",
     "register_SoftSolenoid_extension",
+    "register_elements_value_semantics",
     "reverse",
     "s",
     "t",

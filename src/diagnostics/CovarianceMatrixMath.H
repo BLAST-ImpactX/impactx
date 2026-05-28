@@ -61,7 +61,7 @@ namespace impactx::diagnostics
         amrex::ParticleReal discriminant = powi<3>(Q) + powi<2>(R);
 
         // Discriminant should be < 0.  Otherwise, keep theta at default and throw an error.
-        amrex::ParticleReal tol = 1.0e-12;  //allow for roundoff error
+        amrex::ParticleReal tol = 1.0e-12_prt;  //allow for roundoff error
         if (discriminant > tol) {
 
             ablastr::warn_manager::WMRecordWarning(

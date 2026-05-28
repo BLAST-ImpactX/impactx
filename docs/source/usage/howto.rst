@@ -10,3 +10,4 @@ This section collects typical user workflows and best practices for ImpactX.
 
    howto/add_element
    howto/ai_input_design
+   howto/python_extend

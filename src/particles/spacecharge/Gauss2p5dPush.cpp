@@ -162,17 +162,17 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const sigy = rbc.at("sig_y");
 
         // physical constants and reference quantities
-        amrex::ParticleReal const c0_SI = 2.99792458e8;  // TODO move out
+        amrex::ParticleReal const c0_SI = 2.99792458e8_prt;  // TODO move out
         amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
         amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
         amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
         amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
-        amrex::ParticleReal const rfpiepslon = c0_SI * c0_SI * 1.0e-7;
+        amrex::ParticleReal const rfpiepslon = c0_SI * c0_SI * 1.0e-7_prt;
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
 
         int nint = 101;
-        amrex::Real delta = 0.01;
+        amrex::Real delta = 0.01_rt;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("gauss_nint", nint);
         pp_algo.queryAddWithParser("gauss_taylor_delta", delta);

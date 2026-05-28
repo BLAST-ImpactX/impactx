@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "DiagnosticOutput.H"
+#include "FilePrefix.H"
 #include "NonlinearLensInvariants.H"
 #include "particles/CovarianceMatrix.H"
 #include "ReducedBeamCharacteristics.H"
@@ -19,7 +20,6 @@
 
 #include <limits>
 #include <stdexcept>
-#include <utility>
 
 
 namespace
@@ -183,7 +183,7 @@ namespace impactx::diagnostics
 {
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
-        std::string file_name,
+        std::string const & file_name,
         int step,
         bool append
     )
@@ -195,7 +195,7 @@ namespace impactx::diagnostics
         OutputType const otype = OutputType::PrintReducedBeamCharacteristics;
 
         // keep file open as we add more and more lines
-        amrex::AllPrintToFile file_handler(std::move(file_name));
+        amrex::AllPrintToFile file_handler(FilePrefixPath(file_name));
         prepare_header(file_handler, otype, append);
 
         amrex::ParticleReal const s = pc.GetRefParticle().s;
@@ -208,7 +208,7 @@ namespace impactx::diagnostics
     void DiagnosticOutput (
         Map6x6 const & cm,
         RefPart const & ref_part,
-        std::string file_name,
+        std::string const & file_name,
         int step,
         bool append
     )
@@ -216,7 +216,7 @@ namespace impactx::diagnostics
         BL_PROFILE("impactx::diagnostics::DiagnosticOutput(cm)");
 
         // keep file open as we add more and more lines
-        amrex::AllPrintToFile file_handler(std::move(file_name));
+        amrex::AllPrintToFile file_handler(FilePrefixPath(file_name));
         prepare_header(file_handler, OutputType::PrintReducedBeamCharacteristics, append);
 
         amrex::ParticleReal const s = ref_part.s;
@@ -228,7 +228,7 @@ namespace impactx::diagnostics
 
     void DiagnosticOutput (
         RefPart const & ref_part,
-        std::string file_name,
+        std::string const & file_name,
         int step,
         bool append
     )
@@ -238,7 +238,7 @@ namespace impactx::diagnostics
         OutputType const otype = OutputType::PrintRefParticle;
 
         // keep file open as we add more and more lines
-        amrex::AllPrintToFile file_handler(std::move(file_name));
+        amrex::AllPrintToFile file_handler(FilePrefixPath(file_name));
         prepare_header(file_handler, otype, append);
         write_ref(file_handler, ref_part, step);
     }

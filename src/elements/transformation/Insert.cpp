@@ -66,7 +66,7 @@ namespace impactx::elements::transformation
                         throw std::runtime_error("insert_element_ever_s: Thin element cannot be split.");
                     }
                     else {
-                        cur_element.m_ds = s_rel_insert;
+                        cur_element.m_ds = static_cast<amrex::ParticleReal>(s_rel_insert);
                     }
                 }, cur_element_variant);
                 std::visit([&s_rel_insert](auto &&cur_element_left)
@@ -76,7 +76,7 @@ namespace impactx::elements::transformation
                         throw std::runtime_error("insert_element_ever_s: Thin element cannot be split.");
                     }
                     else {
-                        cur_element_left.m_ds -= s_rel_insert;
+                        cur_element_left.m_ds -= static_cast<amrex::ParticleReal>(s_rel_insert);
                         cur_element_left.set_name(cur_element_left.name() + "_leftover");
                     }
                 }, cur_element_leftover);

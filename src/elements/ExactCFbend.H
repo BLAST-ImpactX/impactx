@@ -384,8 +384,8 @@ namespace impactx::elements
                //amrex::Print() << "n, kn, ks before scaling: " << n << ", " << kn << ", " << ks << "\n";
 
                // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, m) * kn;
-               ks = std::pow(m_rc, m) * ks;
+               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
+               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
 
                switch (n) {
 

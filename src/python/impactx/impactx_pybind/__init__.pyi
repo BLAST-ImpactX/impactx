@@ -690,6 +690,13 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def diag_file_prefix(self) -> str:
+        """
+        Root directory for diagnostic output (default: ``diags``).
+        """
+    @diag_file_prefix.setter
+    def diag_file_prefix(self, arg1: str) -> None: ...
+    @property
     def diagnostics(self) -> bool:
         """
         Enable or disable diagnostics generally (default: enabled).

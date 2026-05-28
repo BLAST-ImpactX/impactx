@@ -2074,7 +2074,7 @@ add_impactx_test(exact-sbend-spin-scaling.py
 )
 
 # Scaling Test of Spin in an Exact Combined Function Bend ###################
-file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords.csv
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-cfbend-spin-scaling.py)
 add_impactx_test(exact-cfbend-spin-scaling.py
     examples/spin_tracking/run_cfbend_spin_scaling.py

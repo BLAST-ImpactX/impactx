@@ -32,7 +32,6 @@ namespace impactx::particles::spacecharge
     void potInt (
         amrex::ParticleReal delta,
         int nint,
-        amrex::ParticleReal pipe_radius,
         amrex::ParticleReal xin,
         amrex::ParticleReal yin,
         amrex::ParticleReal sigx,
@@ -258,7 +257,8 @@ namespace impactx::particles::spacecharge
 
                     // field integrals from a 2D Gaussian bunch
                     amrex::ParticleReal eintx, einty, eintz;
-                    potInt(delta,nint,pipe_radius,x,y,sigx,sigy,eintx,einty,eintz);
+                    //potInt(delta,nint,pipe_radius,x,y,sigx,sigy,eintx,einty,eintz);
+                    potInt(delta,nint,x,y,sigx,sigy,eintx,einty,eintz);
 
                     // Update momentae with the 2.5D SC force
                     int const idx = static_cast<int>((z - bin_min) / bin_size);  // Find index position along z

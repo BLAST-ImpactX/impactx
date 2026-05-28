@@ -565,7 +565,7 @@ namespace impactx::elements
             T_Real const uz = Ps * iPnorm;
 
             // Zero curvature in a straight-axis multipole
-            amrex::ParticleReal const h = 1.0/m_rc;
+            amrex::ParticleReal const h = 1_prt/m_rc;
 
             // Evaluation of the full Thomas-BMT precession vector.
             tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);

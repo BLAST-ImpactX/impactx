@@ -101,6 +101,10 @@ Collective Effects & Overall Simulation Parameters
 
       Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
 
+   .. py:property:: space_charge_gauss_pipe_radius
+      
+      Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0`` m).
+
    .. py:property:: space_charge_num_longitudinal_bins
 
       Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.

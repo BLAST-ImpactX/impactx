@@ -443,7 +443,7 @@ namespace impactx::elements
         }
 
 
-        /** This pushes particle spin in an ExactMultipole element over a
+        /** This pushes particle spin in an ExactCFbend element over a
          *  single step of size tau, based on the Thomas-BMT equation.
          *
          * @param tau Map step size in m

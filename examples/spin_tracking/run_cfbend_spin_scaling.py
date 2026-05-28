@@ -139,14 +139,6 @@ cfbend2 = elements.CFbend(
     nslice=ns,
 )
 
-cfbend3 = elements.CFbend(
-    name="cfbend3",
-    ds=L,
-    rc=rc,
-    k=k_quad,
-    nslice=ns,
-)
-
 lattice = [
     monitor,
     cfbend1,

@@ -172,7 +172,7 @@ namespace impactx::elements
             m_A21 = -gyro_const1 * gx * sx;
             m_A22 = -gyro_const1 * (1_prt - cx);
             m_A26 = G*h*beta*gamma*slice_ds - h*gyro_const1*sx/(beta);
-            m_A33 = -((-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt))*gy*sy*sinG -gy*G*h*gyro_const2*(1_prt - cosG*cy))*factor;
+            m_A33 = (-(-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt))*gy*sy*sinG -gy*G*h*gyro_const2*(1_prt - cosG*cy))*factor;
             m_A34 = ((-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt)) * cy*sinG + G*h*gyro_const2*gy*cosG*sy)*factor;
         }
 

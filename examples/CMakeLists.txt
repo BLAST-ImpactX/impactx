@@ -2072,6 +2072,7 @@ add_impactx_test(expanding-fft-2d-test-particles.py
     OFF
     OFF
 )
+label_impactx_test(expanding-fft-2d-test-particles.py slow)
 
 # Scaling Test of Spin in an Exact Bend ###################
 file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv

@@ -35,7 +35,7 @@ qm_eev = 1.0 / 0.510998950 / 1e6  # electron charge/mass in e / eV
 beam = sim.beam
 
 if amr.ParallelDescriptor.IOProcessor():
-    df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
+    df_initial = pd.read_csv("./initial_coords_sbend.csv", sep=" ")
     dx = df_initial["x"].to_numpy()
     dpx = df_initial["px"].to_numpy()
     dy = df_initial["y"].to_numpy()
@@ -116,8 +116,8 @@ k_quad = 1.0
 
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element
-order = 4  # order of symplectic integration
-nmap = 10  # number of steps for symplectic integration
+order = 2  # order of symplectic integration
+nmap = 20  # number of steps for symplectic integration
 
 # lattice elements
 cfbend1 = elements.ExactCFbend(
@@ -137,6 +137,14 @@ cfbend2 = elements.CFbend(
     rc=rc,
     k=k_quad,
     nslice=ns,
+)
+
+cfbend3 = elements.CFbend(
+    name="cfbend3",
+    ds=L,
+    rc=rc,   
+    k=k_quad,
+    nslice=ns,   
 )
 
 lattice = [

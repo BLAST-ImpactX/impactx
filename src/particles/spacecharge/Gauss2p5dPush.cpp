@@ -32,6 +32,7 @@ namespace impactx::particles::spacecharge
     void potInt (
         amrex::ParticleReal delta,
         int nint,
+        amrex::ParticleReal pipe_radius,
         amrex::ParticleReal xin,
         amrex::ParticleReal yin,
         amrex::ParticleReal sigx,
@@ -173,11 +174,11 @@ namespace impactx::particles::spacecharge
 
         int nint = 101;
         amrex::Real delta = 0.01_rt;
-        amrex::Real pradius = 1.0_rt;
+        amrex::Real pipe_radius = 1.0_rt;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("gauss_nint", nint);
         pp_algo.queryAddWithParser("gauss_taylor_delta", delta);
-        pp_algo.queryAddWithParser("gauss_pipe_radius", pradius);
+        pp_algo.queryAddWithParser("gauss_pipe_radius", pipe_radius);
 
         int tp5d_bins = 129;
         pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
@@ -221,7 +222,7 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const pz_push_const =
             log2n
             + 0.577216_prt
-            - 2.0_prt * std::log((sigx + sigy)/pradius/2.0_prt);
+            - 2.0_prt * std::log((sigx + sigy)/pipe_radius/2.0_prt);
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -257,7 +258,7 @@ namespace impactx::particles::spacecharge
 
                     // field integrals from a 2D Gaussian bunch
                     amrex::ParticleReal eintx, einty, eintz;
-                    potInt(delta,nint,x,y,sigx,sigy,eintx,einty,eintz);
+                    potInt(delta,nint,pipe_radius,x,y,sigx,sigy,eintx,einty,eintz);
 
                     // Update momentae with the 2.5D SC force
                     int const idx = static_cast<int>((z - bin_min) / bin_size);  // Find index position along z

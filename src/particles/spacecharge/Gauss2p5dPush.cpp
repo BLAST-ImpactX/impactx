@@ -257,7 +257,6 @@ namespace impactx::particles::spacecharge
 
                     // field integrals from a 2D Gaussian bunch
                     amrex::ParticleReal eintx, einty, eintz;
-                    //potInt(delta,nint,pipe_radius,x,y,sigx,sigy,eintx,einty,eintz);
                     potInt(delta,nint,x,y,sigx,sigy,eintx,einty,eintz);
 
                     // Update momentae with the 2.5D SC force

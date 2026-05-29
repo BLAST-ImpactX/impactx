@@ -125,7 +125,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -134,12 +134,6 @@ namespace impactx::elements
 
             // shift due to alignment errors of the element
             shift_in(x, y, px, py);
-
-            // normalize focusing strength units to MAD-X convention if needed
-            amrex::ParticleReal g = m_k;
-            if (m_unit == 1) {
-                g = m_k / refpart.rigidity_Tm();
-            }
 
             // initialize output values
             T_Real xout = x;
@@ -151,10 +145,10 @@ namespace impactx::elements
 
             // advance position and momentum
             xout = x;
-            pxout = px - g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
+            pxout = px - m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
 
             yout = y;
-            pyout = py - g * ( y + m_taper * x * y );
+            pyout = py - m_g * ( y + m_taper * x * y );
 
             tout = t;
             ptout = pt;
@@ -209,12 +203,6 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
 
-            // normalize focusing strength units to MAD-X convention if needed
-            amrex::ParticleReal g = m_k;
-            if (m_unit == 1) {
-                g = m_k / refpart.rigidity_Tm();
-            }
-
             // Symmetric (Strang) split: half momentum kick, then the spin
             // rotation evaluated at the half-kicked momentum, then the second
             // half momentum kick. The transverse kicks depend only on (x, y),
@@ -226,8 +214,8 @@ namespace impactx::elements
             // O(Omega * dp) spin residual that breaks reversibility.
 
             // transverse momentum kick amounts (x, y unchanged by a thin lens)
-            T_Real const dpx = g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
-            T_Real const dpy = g * ( y + m_taper * x * y );
+            T_Real const dpx = m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
+            T_Real const dpy = m_g * ( y + m_taper * x * y );
 
             // first half kick
             px = px - 0.5_prt * dpx;

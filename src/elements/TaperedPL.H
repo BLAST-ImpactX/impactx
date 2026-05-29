@@ -209,6 +209,30 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
 
+            // normalize focusing strength units to MAD-X convention if needed
+            amrex::ParticleReal g = m_k;
+            if (m_unit == 1) {
+                g = m_k / refpart.rigidity_Tm();
+            }
+
+            // Symmetric (Strang) split: half momentum kick, then the spin
+            // rotation evaluated at the half-kicked momentum, then the second
+            // half momentum kick. The transverse kicks depend only on (x, y),
+            // which are invariant for this thin lens, so the kick is time-reversal
+            // symmetric and the BMT generator is evaluated at the same physical
+            // momentum in both directions. Reversing the element (negating the
+            // strength) therefore yields the exact inverse of this map; an
+            // asymmetric "rotate then full kick" ordering would leave an
+            // O(Omega * dp) spin residual that breaks reversibility.
+
+            // transverse momentum kick amounts (x, y unchanged by a thin lens)
+            T_Real const dpx = g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
+            T_Real const dpy = g * ( y + m_taper * x * y );
+
+            // first half kick
+            px = px - 0.5_prt * dpx;
+            py = py - 0.5_prt * dpy;
+
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
             T_Real lambday = 0_prt;
@@ -225,7 +249,8 @@ namespace impactx::elements
             T_Real const Ey = 0.0_prt;
             T_Real const Ez = 0.0_prt;
 
-            // Quantities required to evaluate the full Thomas-BMT precession vector.
+            // Quantities required to evaluate the full Thomas-BMT precession
+            // vector, at the half-kicked transverse momentum.
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
@@ -244,8 +269,9 @@ namespace impactx::elements
             // push the spin vector using the generator just determined
             rotate_spin(lambdax, lambday, lambdaz, sx, sy, sz);
 
-            // phase space push
-            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+            // second half kick
+            px = px - 0.5_prt * dpx;
+            py = py - 0.5_prt * dpy;
 
         }
 

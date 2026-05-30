@@ -930,6 +930,15 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def space_charge_gauss_pipe_radius(self) -> int:
+        """
+        Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0 m``).
+        """
+    @space_charge_gauss_pipe_radius.setter
+    def space_charge_gauss_pipe_radius(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
+    @property
     def space_charge_gauss_taylor_delta(self) -> int:
         """
         Initial region for computing the integrals (default: ``0.01``).

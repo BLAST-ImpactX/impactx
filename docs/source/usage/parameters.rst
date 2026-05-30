@@ -1068,6 +1068,10 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Initial integral region to avoid divergence of integrand at 0.
 
+    * ``algo.space_charge.gauss_pipe_radius`` (``float``, default: ``1.0`` m)
+
+      Pipe radius parameter for the Gauss2p5D space charge model.
+
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 
       Number of bins for longitudinal line density deposition.

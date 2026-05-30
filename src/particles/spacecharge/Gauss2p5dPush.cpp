@@ -173,9 +173,11 @@ namespace impactx::particles::spacecharge
 
         int nint = 101;
         amrex::Real delta = 0.01_rt;
+        amrex::Real pipe_radius = 1.0_rt;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("gauss_nint", nint);
         pp_algo.queryAddWithParser("gauss_taylor_delta", delta);
+        pp_algo.queryAddWithParser("gauss_pipe_radius", pipe_radius);
 
         int tp5d_bins = 129;
         pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
@@ -219,7 +221,7 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const pz_push_const =
             log2n
             + 0.577216_prt
-            - 2.0_prt * std::log((sigx + sigy) / 2.0_prt);
+            - 2.0_prt * std::log((sigx + sigy)/pipe_radius/2.0_prt);
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();

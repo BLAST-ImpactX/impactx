@@ -42,7 +42,7 @@ We run the following script to analyze correctness:
 
    .. literalinclude:: analysis_fodo_vector_potential.py
       :language: python3
-      :caption: You can copy this file from ``examples/vector_potential/analysis_vector_potential.py``.
+      :caption: You can copy this file from ``examples/vector_potential/analysis_fodo_vector_potential.py``.
 
 
 .. _examples-exact-quad-vector-potential:

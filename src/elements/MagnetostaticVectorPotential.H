@@ -346,7 +346,7 @@ namespace impactx::elements
             amrex::ParticleReal const pxmech = px - ax;
             amrex::ParticleReal const pymech = py - ay;
             amrex::ParticleReal const radical = std::sqrt(
-                1_prt + pt*pt - px*px - py*py - 2_prt*pt*m_ibeta
+                1_prt + pt*pt - pxmech*pxmech - pymech*pymech - 2_prt*pt*m_ibeta
             );
 
             amrex::ParticleReal const dHdx = -(pxmech * daxdx + pymech * daydx) / radical - dazdx;

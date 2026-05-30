@@ -1771,7 +1771,7 @@ Lattice Elements
 
 
 .. py:class:: impactx.elements.MagnetostaticVectorPotential(ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0,
-aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    Symplectic integration in a user-defined magnetostatic vector potential, using the exact Hamiltonian, which includes all
    nonlinear kinematic effects.  Integration is performed with respect to a Cartesian coordinate system local to the body of
@@ -1804,9 +1804,6 @@ aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-   .. py:property:: k
-
-      quadrupole strength in 1/m^2 (or T/m)
 
    .. py:property:: unit
 

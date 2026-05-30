@@ -115,9 +115,14 @@ jobs:
     if: github.event.pull_request.draft == false
     env:
       CMAKE_GENERATOR: Ninja
-      CXXFLAGS: "-Werror"
+      CXXFLAGS: "-Werror -march=x86-64-v3 -mtune=generic"
       OMP_NUM_THREADS: 2
     steps:
+    - name: system info
+      run: |
+        cat /proc/cpuinfo
+        lscpu
+
     - name: Free More Disk Space
       uses: ax3l/free-disk-space@main
       with:

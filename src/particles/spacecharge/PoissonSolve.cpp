@@ -75,7 +75,13 @@ namespace impactx::particles::spacecharge
         }
 
         // MLMG options
-        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative TODO: make smaller for SP
+        //   Single precision: achievable relative residual is limited by float32
+        //   round-off (machine epsilon ~1.2e-7).
+#ifdef AMREX_USE_FLOAT
+        amrex::Real mlmg_relative_tolerance = 1.e-4_rt; // relative (single precision)
+#else
+        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative (double precision)
+#endif
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
         pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
         pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);

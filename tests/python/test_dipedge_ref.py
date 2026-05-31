@@ -116,7 +116,7 @@ def test_dipedge_modify_ref_part_false():
         (ref.px) ** 2 + (ref.py) ** 2 + (ref.pz) ** 2 - (ref.pt) ** 2 + 1.0
     )
 
-    atol = 1.0e-12
+    atol = 1.0e-12 if Config.precision != "SINGLE" else 1.0e-6
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
     np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)
@@ -161,7 +161,7 @@ def test_dipedge_modify_ref_part_true():
     vec_ref_on_shell = (
         (ref.px) ** 2 + (ref.py) ** 2 + (ref.pz) ** 2 - (ref.pt) ** 2 + 1.0
     )
-    atol = 1.0e-12
+    atol = 1.0e-12 if Config.precision != "SINGLE" else 1.0e-6
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
     np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)

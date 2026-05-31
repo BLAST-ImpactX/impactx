@@ -37,7 +37,15 @@ def read_time_series(file_pattern):
 
 
 # read reduced diagnostics
+def data_is_double(file_pattern):
+    """Detect float precision (single vs double) from a text diagnostic's digits."""
+    text = "".join(open(f).read() for f in glob.glob(file_pattern))
+    mantissas = re.findall(r"\d*\.\d+", text)
+    return any(len(m.replace(".", "").strip("0")) >= 12 for m in mantissas)
+
+
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
+is_double = data_is_double("diags/reduced_beam_characteristics.*")
 
 s = rbc["s"]
 sigma_x = rbc["sigma_x"]
@@ -72,7 +80,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-2  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.0e-2 if is_double else 2.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -98,7 +107,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-2  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.0e-2 if is_double else 2.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

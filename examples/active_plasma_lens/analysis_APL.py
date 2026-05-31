@@ -6,9 +6,12 @@
 #
 # -*- coding: utf-8 -*-
 
+import glob
 import os
+import re
 
 import openpmd_api as io
+import pandas as pd
 from scipy.stats import moment
 
 
@@ -80,11 +83,6 @@ def read_time_series(file_pattern):
     pandas.DataFrame
     """
 
-    import glob
-    import re
-
-    import pandas as pd
-
     def read_file(file_pattern):
         for filename in glob.glob(file_pattern):
             df = pd.read_csv(filename, delimiter=r"\s+")
@@ -98,3 +96,10 @@ def read_time_series(file_pattern):
         axis=0,
         ignore_index=True,
     )  # .set_index('id')
+
+
+def data_is_double(file_pattern):
+    """Detect float precision (single vs double) from a text diagnostic's digits."""
+    text = "".join(open(f).read() for f in glob.glob(file_pattern))
+    mantissas = re.findall(r"\d*\.\d+", text)
+    return any(len(m.replace(".", "").strip("0")) >= 12 for m in mantissas)

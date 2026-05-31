@@ -37,6 +37,7 @@ def get_moments(beam):
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
@@ -52,7 +53,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.3 * num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.3 * num_particles**-0.5 if is_double else 3.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -79,7 +81,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.3 * num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.3 * num_particles**-0.5 if is_double else 3.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

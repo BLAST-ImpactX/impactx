@@ -199,6 +199,9 @@ jobs:
       env:
         OMP_NUM_THREADS: 1
         IS_CODESPEED_CPU_SIMULATION: 1
+        # Force uniform glibc CPU dispatch so malloc/memcpy behave identically across Intel/AMD runner CPUs
+        # Ref: https://codspeed.io/blog/why-glibc-faster-github-actions
+        GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX2,-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
       with:
         mode: simulation
         run: pytest tests/python/test_benchmark_elements.py --codspeed

@@ -77,7 +77,7 @@ print("")
 print("Final Beam:")
 print(f"  s_ref={sf:e} gamma_ref={gammaf:e}")
 
-atol = 1.0e-4 if is_double else 2.0e-2  # ignored
+atol = 1.0e-4 if is_double else 2.0e-2
 print(f"  atol={atol}")
 
 assert np.allclose(

@@ -7,6 +7,7 @@
 
 import glob
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -39,7 +40,7 @@ def read_time_series(file_pattern):
 
 def data_is_double(file_pattern):
     """Detect float precision (single vs double) from a text diagnostic's digits."""
-    text = "".join(open(f).read() for f in glob.glob(file_pattern))
+    text = "".join(Path(f).read_text() for f in glob.glob(file_pattern))
     mantissas = re.findall(r"\d*\.\d+", text)
     return any(len(m.replace(".", "").strip("0")) >= 12 for m in mantissas)
 

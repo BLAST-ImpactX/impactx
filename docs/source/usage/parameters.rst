@@ -1152,7 +1152,7 @@ See there ``nslice`` option on lattice elements for slicing.
 
 Multigrid-specific numerical options:
 
-* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7``)
+* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7`` (DP) / ``1.e-4`` (SP))
 
   The relative precision with which the electrostatic space-charge fields should be calculated.
   More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.

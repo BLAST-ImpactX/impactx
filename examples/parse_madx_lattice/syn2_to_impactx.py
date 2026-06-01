@@ -544,6 +544,10 @@ def cnv_octupole(elem, order):
 
     return ocelem
 
+def cnv_monitor(elem):
+    fname = elem.get_string_attribute("file", "monitor")
+    ix_elem = impactx.elements.BeamMonitor(name=fname, backend="h5")
+    return ix_elem
 
 def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.exact):
     # lattice must have a reference particle
@@ -616,6 +620,9 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
                 impactx_lattice.extend(mpelem)
             else:
                 impactx_lattice.append(mpelem)
+        elif etype == ET.monitor:
+            ix_elem = cnv_monitor(elem)
+            impactx_lattice.append(ix_elem)
         else:
             print("warning: unsupported element: ", etype)
 

@@ -181,27 +181,9 @@ def load_file(self, filename, nslice=1):
         return
 
     elif extension_inner == ".pals":
-        from pals.BeamLine import BeamLine
+        from pals import load as load_pals_file
 
-        # examples: fodo.pals.yaml, fodo.pals.json
-        with open(filename, "r") as file:
-            if extension == ".json":
-                import json
-
-                pals_data = json.loads(file.read())
-            elif extension == ".yaml":
-                import yaml
-
-                pals_data = yaml.safe_load(file)
-            # TODO: toml, xml
-            else:
-                raise RuntimeError(
-                    f"load_file: No support for PALS file {filename} with extension {extension} yet."
-                )
-
-        # Parse the data dictionary back into a PALS `BeamLine` object.
-        # The automatically PALS data validation happens here.
-        self.from_pals(BeamLine(**pals_data), nslice)
+        self.from_pals(load_pals_file(filename), nslice)
         return
 
     raise RuntimeError(
@@ -210,39 +192,13 @@ def load_file(self, filename, nslice=1):
 
 
 def from_pals(self, pals_beamline, nslice=1):
-    """Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+    """Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
 
     https://github.com/campa-consortium/pals-python
     """
-    from pals.Drift import Drift
-    from pals.Quadrupole import Quadrupole
+    from ..pals_to_impactx import read_lattice
 
-    # Loop over the pals_beamline and create a new ImpactX KnownElementsList from it.
-    #       Use self.extend(...) on the latter.
-    ix_beamline = []
-    for pals_element in pals_beamline.line:
-        if isinstance(pals_element, Drift):
-            ix_beamline.append(
-                elements.Drift(
-                    name=pals_element.name, ds=pals_element.length, nslice=nslice
-                )
-            )
-        elif isinstance(pals_element, Quadrupole):
-            ix_beamline.append(
-                elements.ChrQuad(
-                    name=pals_element.name,
-                    ds=pals_element.length,
-                    k=pals_element.MagneticMultipoleP.Bn1,
-                    unit=0,
-                    nslice=nslice,
-                )
-            )
-        else:
-            raise RuntimeError(
-                f"from_pals: No support for elements of kind {type(pals_element)} yet."
-            )
-
-    self.extend(ix_beamline)
+    self.extend(read_lattice(pals_beamline, nslice))
 
 
 class FilteredElementsList:

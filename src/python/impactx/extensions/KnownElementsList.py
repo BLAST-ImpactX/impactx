@@ -10,7 +10,7 @@ import os
 import re
 import weakref
 
-from impactx import elements
+from impactx import Config, elements
 
 # All live FilteredElementsList views for a lattice (WeakKeyDictionary: key is KnownElementsList).
 _filtered_views_by_lattice: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
@@ -960,6 +960,9 @@ def to_py(self) -> str:
         ]
     )
 
+    # match the SmallMatrix element type to the build's precision
+    real_t = "float" if Config.precision == "SINGLE" else "double"
+
     for d in self.to_dicts():
         element_type = d["type"]
         kwargs = _filter_kwargs(d)
@@ -969,7 +972,7 @@ def to_py(self) -> str:
             formatted_v, matrix_dims = _format_value(v)
             if matrix_dims:
                 rows, cols = matrix_dims
-                matrix_cls = f"amr.SmallMatrix_{rows}x{cols}_F_SI1_double"
+                matrix_cls = f"amr.SmallMatrix_{rows}x{cols}_F_SI1_{real_t}"
                 formatted_parts.append(f"{k}={matrix_cls}({repr(formatted_v)})")
             else:
                 formatted_parts.append(f"{k}={repr(formatted_v)}")

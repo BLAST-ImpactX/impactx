@@ -14,10 +14,11 @@ import re as re
 import weakref as weakref
 
 import impactx.impactx_pybind.elements
-from impactx.impactx_pybind import elements
+from impactx.impactx_pybind import Config, elements
 from impactx.impactx_pybind.elements import FilteredElementsList
 
 __all__: list[str] = [
+    "Config",
     "FILTERED_ELEMENTS_LIST_INVALID_MSG",
     "FilteredElementsList",
     "count_by_kind",

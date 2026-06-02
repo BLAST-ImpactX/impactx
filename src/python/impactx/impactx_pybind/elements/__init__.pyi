@@ -5511,7 +5511,7 @@ class KnownElementsList:
         """
     def from_pals(self, pals_beamline, nslice=1):
         """
-        Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+        Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
 
         https://github.com/campa-consortium/pals-python
         """

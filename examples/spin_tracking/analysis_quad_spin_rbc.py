@@ -124,7 +124,7 @@ condition = sigma_sx**2 + sigma_sy**2 + sigma_sz**2 + polarization**2
 print("")
 print(f"Spin moment consistency condition = {condition:e}")
 
-atol = 1.0e-12 if is_double else 1.0e-3  # machine precision
+atol = 1.0e-12 if is_double else 1.0e-3
 print(f"  atol={atol}")
 
 assert np.allclose(

@@ -81,7 +81,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-11 if is_double else 1.0e-4  # exact to within roundoff tolerance
+rtol = 1.0e-11 if is_double else 1.0e-4
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

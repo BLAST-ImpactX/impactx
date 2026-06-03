@@ -115,10 +115,7 @@ jobs:
     if: github.event.pull_request.draft == false
     env:
       CMAKE_GENERATOR: Ninja
-      # -falign-functions/-falign-loops pin hot loops to fixed cache-line
-      # boundaries so unrelated edits do not shift their alignment and perturb
-      # the cachegrind cache model (CodSpeed simulation noise).
-      CXXFLAGS: "-Werror -march=x86-64-v3 -mtune=generic -falign-functions=64 -falign-loops=32"
+      CXXFLAGS: "-Werror -march=x86-64-v3 -mtune=generic"
       OMP_NUM_THREADS: 2
     steps:
     - name: system info

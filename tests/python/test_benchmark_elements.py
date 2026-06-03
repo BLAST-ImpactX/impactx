@@ -23,7 +23,7 @@ from impactx import ImpactX, Map6x6, distribution, elements, twiss
 if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == "1":
     # https://codspeed.io/docs/instruments/cpu/index
     rounds = 1
-    npart = 20_000
+    npart = 10_000
 else:
     rounds = 5
     npart = 1_000_000  # increase this to >10M or even 100M to avoid L1/L2/L3 cache effects on some hardware.

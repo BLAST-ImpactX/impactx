@@ -358,6 +358,19 @@ void init_ImpactX (py::module& m)
             },
             "Initial region for computing the integrals (default: ``0.01``)."
         )
+        .def_property("space_charge_gauss_pipe_radius",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "gauss_pipe_radius");
+            },
+            [](ImpactX & /* ix */, amrex::Real const gauss_pipe_radius) {
+                if (gauss_pipe_radius < 0) {
+                    throw std::runtime_error("space_charge_pipe_radius must be strictly positive");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_pipe_radius", gauss_pipe_radius);
+            },
+            "Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0 m``)."
+        )
         .def_property("space_charge_num_longitudinal_bins",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<int>("algo.space_charge", "num_longitudinal_bins");

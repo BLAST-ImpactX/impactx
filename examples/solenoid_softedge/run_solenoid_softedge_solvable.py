@@ -9,7 +9,7 @@
 import numpy as np
 
 import amrex.space3d as amr
-from impactx import Config, ImpactX, elements
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 
@@ -42,38 +42,8 @@ dpy = [0, 0, 0, 1, 0, 0]
 dt = [0, 0, 0, 0, 1, 0]
 dpt = [0, 0, 0, 0, 0, 1]
 
-if not Config.have_gpu:  # initialize using cpu-based PODVectors
-    dx_podv = amr.PODVector_real_std()
-    dy_podv = amr.PODVector_real_std()
-    dt_podv = amr.PODVector_real_std()
-    dpx_podv = amr.PODVector_real_std()
-    dpy_podv = amr.PODVector_real_std()
-    dpt_podv = amr.PODVector_real_std()
-else:  # initialize on device using arena/gpu-based PODVectors
-    dx_podv = amr.PODVector_real_arena()
-    dy_podv = amr.PODVector_real_arena()
-    dt_podv = amr.PODVector_real_arena()
-    dpx_podv = amr.PODVector_real_arena()
-    dpy_podv = amr.PODVector_real_arena()
-    dpt_podv = amr.PODVector_real_arena()
-
-for p_dx in dx:
-    dx_podv.push_back(p_dx)
-for p_dy in dy:
-    dy_podv.push_back(p_dy)
-for p_dt in dt:
-    dt_podv.push_back(p_dt)
-for p_dpx in dpx:
-    dpx_podv.push_back(p_dpx)
-for p_dpy in dpy:
-    dpy_podv.push_back(p_dpy)
-for p_dpt in dpt:
-    dpt_podv.push_back(p_dpt)
-
 if amr.ParallelDescriptor.IOProcessor():
-    beam.add_n_particles(
-        dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C
-    )
+    beam.add_n_particles(dx, dy, dt, dpx, dpy, dpt, qm_eev, bunch_charge_C)
 
 # specify the on-axis field profile
 zmin = -1.0  # lower value of on-axis longitudinal coordinate (in meters)

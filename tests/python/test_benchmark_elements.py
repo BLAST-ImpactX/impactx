@@ -196,6 +196,21 @@ def test_Drift(benchmark, sim):
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_ExactCFbend(benchmark, sim):
+    el = elements.ExactCFbend(
+        name="cfbend1",
+        ds=1.0,
+        k_normal=[0.1, 1.0, -2.0],
+        k_skew=[0.0, -0.5, 1.4],
+        unit=0,
+        int_order=2,
+        mapsteps=mapsteps,
+        nslice=nslice,
+    )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactDrift(benchmark, sim):
     el = elements.ExactDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)

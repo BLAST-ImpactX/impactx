@@ -14,7 +14,9 @@ import openpmd_api as io
 import pandas as pd
 from booster_impactx_lattice import get_lattice
 
-from impactx import elements
+from impactx import Config, elements
+
+is_double = Config.precision != "SINGLE"
 
 
 def read_file(file_pattern):
@@ -118,14 +120,14 @@ emity_0 = 1.70969e-06
 emitt_0 = 0.00108493
 
 assert math.isclose(sigma_x.iloc[0], stdx_0, rel_tol=2.0e-2)
-assert math.isclose(sigma_x.iloc[-1], stdx_0, rel_tol=2.0e-2), (
-    "sigma_x change over one turn too large"
-)
+assert math.isclose(
+    sigma_x.iloc[-1], stdx_0, rel_tol=2.0e-2 if is_double else 8.0e-2
+), "sigma_x change over one turn too large"
 
 assert math.isclose(sigma_px.iloc[0], stdpx_0, rel_tol=2.0e-2)
-assert math.isclose(sigma_px.iloc[-1], stdpx_0, rel_tol=2.0e-2), (
-    "sigma_px change over one turn too large"
-)
+assert math.isclose(
+    sigma_px.iloc[-1], stdpx_0, rel_tol=2.0e-2 if is_double else 8.0e-2
+), "sigma_px change over one turn too large"
 
 assert math.isclose(emittance_x.iloc[0], emitx_0, rel_tol=2.0e-2)
 assert math.isclose(emittance_x.iloc[1], emitx_0, rel_tol=2.0e-2), (

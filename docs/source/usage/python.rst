@@ -101,6 +101,10 @@ Collective Effects & Overall Simulation Parameters
 
       Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
 
+   .. py:property:: space_charge_gauss_pipe_radius
+
+      Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0`` m).
+
    .. py:property:: space_charge_num_longitudinal_bins
 
       Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.
@@ -127,7 +131,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: mlmg_relative_tolerance
 
-      Default: ``1.e-7``
+      Default: ``1.e-7`` (DP) / ``1.e-4`` (SP)
 
       The relative precision with which the electrostatic space-charge fields should be calculated.
       More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.

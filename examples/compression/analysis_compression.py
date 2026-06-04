@@ -43,6 +43,7 @@ final_it = series.iterations[final_step]
 
 # initial beam & reference particle gamma
 initial = first_it.particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 initial_gamma_ref = first_it.particles["beam"].get_attribute("gamma_ref")
 
 # final beam & reference particle gamma
@@ -93,7 +94,8 @@ print(f"  gamma={final_gamma_ref:e}")
 
 
 atol = 0.0  # ignored
-rtol = 1.9 * num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.9 * num_particles**-0.5 if is_double else 5.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

@@ -14,10 +14,11 @@ import re as re
 import weakref as weakref
 
 import impactx.impactx_pybind.elements
-from impactx.impactx_pybind import elements
+from impactx.impactx_pybind import Config, elements
 from impactx.impactx_pybind.elements import FilteredElementsList
 
 __all__: list[str] = [
+    "Config",
     "FILTERED_ELEMENTS_LIST_INVALID_MSG",
     "FilteredElementsList",
     "count_by_kind",
@@ -267,7 +268,7 @@ def from_dicts(self, dicts: list[dict]):
 
 def from_pals(self, pals_beamline, nslice=1):
     """
-    Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+    Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
 
     https://github.com/campa-consortium/pals-python
     """

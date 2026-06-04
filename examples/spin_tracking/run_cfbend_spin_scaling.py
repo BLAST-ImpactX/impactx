@@ -6,7 +6,6 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import pandas as pd
 
 import amrex.space3d as amr
@@ -54,34 +53,44 @@ if amr.ParallelDescriptor.IOProcessor():
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5", period_sample_intervals=10)
 
-# design the accelerator lattice
-ds_value = 1.0
-rc_value = 10.0
-phi_value = 180.0 / np.pi * (ds_value / rc_value)
-ns = 1
+# parameters
+L = 1.0
+rc = 10.0
+k_quad = 1.0
 
-# to use the magnetic field instead
-Brho = ref.rigidity_Tm
-B_value = Brho / rc_value
+# design the accelerator lattice)
+ns = 1  # number of slices per ds in the element
+order = 2  # order of symplectic integration
+nmap = 20  # number of steps for symplectic integration
 
-bend1 = elements.ExactSbend(name="bend1", ds=ds_value, phi=phi_value, nslice=ns)
-bend2 = elements.Sbend(name="bend2", ds=-ds_value, rc=rc_value, nslice=ns)
-bend3 = elements.ExactSbend(
-    name="bend3", ds=ds_value, phi=phi_value, B=B_value, nslice=ns
+# lattice elements
+cfbend1 = elements.ExactCFbend(
+    name="cfbend1",
+    ds=L,
+    k_normal=[1.0 / rc, k_quad],
+    k_skew=[0.0, 0.0],
+    unit=0,
+    int_order=order,
+    mapsteps=nmap,
+    nslice=ns,
 )
 
-# set the lattice
-sim.lattice.append(monitor)
+cfbend2 = elements.CFbend(
+    name="cfbend2",
+    ds=-L,
+    rc=rc,
+    k=k_quad,
+    nslice=ns,
+)
 
-# test of forward + reverse using rc = ds/phi
-sim.lattice.append(bend1)
-sim.lattice.append(bend2)
-
-# test of forward + reverse using rc = Brho/B
-sim.lattice.append(bend3)
-sim.lattice.append(bend2)
-
-sim.lattice.append(monitor)
+lattice = [
+    monitor,
+    cfbend1,
+    cfbend2,
+    monitor,
+]
+# assign a fodo segment
+sim.lattice.extend(lattice)
 
 # run simulation
 sim.track_particles()

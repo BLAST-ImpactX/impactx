@@ -18,6 +18,7 @@
 #include <AMReX_REAL.H>       // for ParticleReal
 #include <AMReX_Print.H>      // for PrintToFile
 
+#include <iomanip>
 #include <limits>
 #include <stdexcept>
 
@@ -92,7 +93,9 @@ namespace
         bool append
     )
     {
-        file_handler.SetPrecision(std::numeric_limits<amrex::ParticleReal>::max_digits10);
+        // In scientific mode, precision is the number of digits after the decimal point.
+        file_handler << std::scientific;
+        file_handler.SetPrecision(std::numeric_limits<amrex::ParticleReal>::max_digits10 - 1);
 
         // write file header per MPI RANK
         if (!append)

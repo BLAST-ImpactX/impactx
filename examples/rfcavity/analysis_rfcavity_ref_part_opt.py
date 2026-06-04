@@ -41,8 +41,10 @@ def read_time_series(file_pattern):
 def data_is_double(file_pattern):
     """Detect float precision (single vs double) from a text diagnostic's digits."""
     text = "".join(Path(f).read_text() for f in glob.glob(file_pattern))
-    mantissas = re.findall(r"\d*\.\d+", text)
-    return any(len(m.replace(".", "").strip("0")) >= 12 for m in mantissas)
+    return any(
+        len(m.replace(".", "") if e else m.replace(".", "").strip("0")) >= 12
+        for m, e in re.findall(r"(\d*\.\d+)([eE][+-]?\d+)?", text)
+    )
 
 
 rbc = read_time_series("diags/ref_particle.*")

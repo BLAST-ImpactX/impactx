@@ -10,7 +10,7 @@ import math
 
 import numpy as np
 
-from impactx import ImpactX, elements
+from impactx import Config, ImpactX, elements
 
 
 def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):

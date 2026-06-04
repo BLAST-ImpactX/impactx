@@ -365,7 +365,7 @@ class ImpactXParticleContainer(
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter
-    def add_n_particles(
+    def _add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         y: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -400,6 +400,47 @@ class ImpactXParticleContainer(
         :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
         :param sy: spin component in y
         :param sz: spin component in z
+        """
+    def add_n_particles(
+        self,
+        x,
+        y,
+        t,
+        px,
+        py,
+        pt,
+        qm,
+        bunch_charge=None,
+        w=None,
+        sx=None,
+        sy=None,
+        sz=None,
+    ):
+        """
+        Add new particles to the container for fixed s.
+
+        The coordinate and weight arguments accept NumPy or CuPy arrays (or
+        array-likes), as well as pyAMReX ``PODVector`` objects. Inputs are copied
+        into device-compatible PODVectors as needed.
+
+        Either the total charge (``bunch_charge``) or the weight of each particle
+        (``w``) must be provided.
+
+        Note: This can only be used *after* the grids have been created, i.e. after
+        ``ImpactX.init_grids`` has been called.
+
+        Parameters
+        ----------
+        x, y, t, px, py, pt : array_like
+            Particle positions (x, y, time-of-flight c*t) and momenta.
+        qm : float
+            Charge over mass in 1/eV.
+        bunch_charge : float, optional
+            Total charge within a bunch in C.
+        w : array_like, optional
+            Weight of each particle: how many real particles to represent.
+        sx, sy, sz : array_like, optional
+            Spin components in x, y, z.
         """
     def beam_moments(self) -> dict[str, float]:
         """

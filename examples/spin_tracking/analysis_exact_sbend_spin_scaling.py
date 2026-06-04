@@ -12,6 +12,7 @@ import openpmd_api as io
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # initial coordinates
@@ -55,7 +56,7 @@ m, b = np.polyfit(np.log(norm_phase_space_vector), np.log(norm_phase_space_diff)
 print(f"  slope={m}")
 
 # Test for  quadratic scaling with initial phase space vector:
-rtol = 2.0e-2
+rtol = 2.0e-2 if is_double else 8.0e-2
 print(f"  rtol={rtol}")
 assert np.allclose(
     [m],

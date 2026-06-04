@@ -383,7 +383,8 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
             **kwargs,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=1e-4 if Config.precision == "SINGLE" else 1e-8,
+        spin_atol=5e-6 if Config.precision == "SINGLE" else spin_atol,
         spin=sim.spin,
     )
 

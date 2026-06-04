@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from impactx import ImpactX, Map3x6, Vector3, elements
+from impactx import Config, ImpactX, Map3x6, Vector3, elements
 
 
 def test_solenoid_softedge_solvable_spin():
@@ -134,7 +134,7 @@ def test_solenoid_softedge_solvable_spin():
             print(i, j, Apred[i, j])
 
     # analysis
-    atol = 2.0e-6
+    atol = 2.0e-6 if Config.precision != "SINGLE" else 1.0e-4
     rtol = 0.0
     dv = (vmat - vpred).to_numpy()
     v = vpred.to_numpy()

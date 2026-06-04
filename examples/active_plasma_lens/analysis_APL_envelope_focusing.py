@@ -7,9 +7,10 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from analysis_APL import read_time_series
+from analysis_APL import data_is_double, read_time_series
 
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
+is_double = data_is_double("diags/reduced_beam_characteristics.*")
 
 print("Initial Beam:")
 
@@ -76,7 +77,7 @@ alphay = rbc["alpha_y"].iloc[-1]
 print(f"  betax={betax}[m],betay={betay}[m],alphax={alphax},alphay={alphay}")
 
 atol = 0.0  # ignored
-rtol = 1e-5
+rtol = 1e-5 if is_double else 5e-5
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 # Compare final beam to analytical values

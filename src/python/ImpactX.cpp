@@ -369,9 +369,10 @@ void init_ImpactX (py::module& m)
                 amrex::ParmParse pp_algo("algo.space_charge");
                 pp_algo.add("gauss_long_scale", gauss_long_scale);
             },
-            "Longitudinal space charge scale for the Gauss2p5D space charge model (default: ``1.0 m``). "
-            "Approximation affecting only the longitudinal momentum (``pt``) kick; a typical value when "
-            "comparing to a 3D model is ``6 * gamma * sigma_z``."
+            "Longitudinal space charge scale for the Gauss2p5D space charge model. "
+            "Approximation affecting only the longitudinal momentum (``pt``) kick. "
+            "If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current "
+            "reduced beam characteristics, which is a typical value when comparing to a 3D model."
         )
         .def_property("space_charge_num_longitudinal_bins",
             [](ImpactX & /* ix */) {

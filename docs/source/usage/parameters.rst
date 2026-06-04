@@ -1068,11 +1068,13 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Initial integral region to avoid divergence of integrand at 0.
 
-    * ``algo.space_charge.gauss_long_scale`` (``float``, default: ``1.0`` m)
+    * ``algo.space_charge.gauss_long_scale`` (``float``, default: in-situ :math:`6 \cdot \gamma \cdot \sigma_z`)
 
       Longitudinal space charge scale for the Gauss2p5D space charge model.
       This is an approximation that only influences the longitudinal momentum (``pt``) kick.
-      A typical value when comparing to a 3D model is :math:`6 \times \gamma \times \sigma_z`.
+      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
+      typical value when comparing to a 3D model.
 
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 

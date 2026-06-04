@@ -1068,9 +1068,11 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Initial integral region to avoid divergence of integrand at 0.
 
-    * ``algo.space_charge.gauss_pipe_radius`` (``float``, default: ``1.0`` m)
+    * ``algo.space_charge.gauss_long_scale`` (``float``, default: ``1.0`` m)
 
-      Pipe radius parameter for the Gauss2p5D space charge model.
+      Longitudinal space charge scale for the Gauss2p5D space charge model.
+      This is an approximation that only influences the longitudinal momentum (``pt``) kick.
+      A typical value when comparing to a 3D model is :math:`6 \times \gamma \times \sigma_z`.
 
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 

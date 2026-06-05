@@ -126,6 +126,7 @@ def pc_setup(sim):
     return (beam,), {}
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Aperture(benchmark, sim):
     el = elements.Aperture(
         name="collimator", aperture_x=4.0e-5, aperture_y=4.0e-5, shape="rectangular"
@@ -281,6 +282,29 @@ def test_NonlinearLens(benchmark, sim):
 
 def test_PlaneXYRot(benchmark, sim):
     el = elements.PlaneXYRot(name="rotation1", angle=90.0)
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_PolygonAperture(benchmark, sim):
+    # cross-shaped polygon, scaled from examples/polygon_aperture to the
+    # ~3.2e-5 m rms beam size of the sim fixture; min_radius2=0 so that
+    # every particle exercises the full polygon winding computation
+    vertices_x = [
+        float(u)
+        for u in "2e-5 2e-5 -2e-5 -2e-5 -6e-5 -6e-5 -2e-5 -2e-5 2e-5 2e-5 6e-5 6e-5 2e-5".split()
+    ]
+    vertices_y = [
+        float(u)
+        for u in "2e-5 6e-5 6e-5 2e-5 2e-5 -2e-5 -2e-5 -6e-5 -6e-5 -2e-5 -2e-5 2e-5 2e-5".split()
+    ]
+    el = elements.PolygonAperture(
+        name="collimator2",
+        vertices_x=vertices_x,
+        vertices_y=vertices_y,
+        min_radius2=0.0,
+        action="transmit",
+    )
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 

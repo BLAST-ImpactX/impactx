@@ -962,6 +962,15 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def space_charge_gauss_long_scale(self) -> float:
+        """
+        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
+        """
+    @space_charge_gauss_long_scale.setter
+    def space_charge_gauss_long_scale(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
+    @property
     def space_charge_gauss_nint(self) -> int:
         """
         Number of steps for computing the integrals (default: ``101``).
@@ -969,15 +978,6 @@ class ImpactX:
     @space_charge_gauss_nint.setter
     def space_charge_gauss_nint(
         self, arg1: typing.SupportsInt | typing.SupportsIndex
-    ) -> None: ...
-    @property
-    def space_charge_gauss_pipe_radius(self) -> int:
-        """
-        Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0 m``).
-        """
-    @space_charge_gauss_pipe_radius.setter
-    def space_charge_gauss_pipe_radius(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
     def space_charge_gauss_taylor_delta(self) -> int:

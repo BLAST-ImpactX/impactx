@@ -96,6 +96,26 @@ namespace impactx::elements::mixin
             py = -pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
 
+        /** Rotate a transverse vector into the alignment error frame
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param[inout] sx horizontal spin/vector component
+         * @param[inout] sy vertical spin/vector component
+         */
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void rotate_in (
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy
+        ) const
+        {
+            T_Real const sxc = sx;
+            T_Real const syc = sy;
+            sx =  sxc * m_cos_rotation + syc * m_sin_rotation;
+            sy = -sxc * m_sin_rotation + syc * m_cos_rotation;
+        }
+
         /** Shift the particle out of the alignment error frame
          *
          * The @see compute_constants method must be called before pushing particles through this operator.
@@ -127,6 +147,26 @@ namespace impactx::elements::mixin
             T_Real const pyc = py;
             px = pxc * m_cos_rotation - pyc * m_sin_rotation;
             py = pxc * m_sin_rotation + pyc * m_cos_rotation;
+        }
+
+        /** Rotate a transverse vector out of the alignment error frame
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param[inout] sx horizontal spin/vector component
+         * @param[inout] sy vertical spin/vector component
+         */
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void rotate_out (
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy
+        ) const
+        {
+            T_Real const sxc = sx;
+            T_Real const syc = sy;
+            sx = sxc * m_cos_rotation - syc * m_sin_rotation;
+            sy = sxc * m_sin_rotation + syc * m_cos_rotation;
         }
 
         /** Horizontal translation error

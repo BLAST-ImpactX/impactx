@@ -144,7 +144,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -152,9 +152,6 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
@@ -190,9 +187,6 @@ namespace impactx::elements
             t = tout;
             px = pxout;
             py = pyout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */

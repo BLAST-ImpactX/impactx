@@ -192,14 +192,11 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] uint64_t const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -227,12 +224,6 @@ namespace impactx::elements
             py = particle(4);
             t = particle(5);
             pt = particle(6);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes a particle in an ExactMultipole element through
@@ -739,7 +730,7 @@ namespace impactx::elements
          * @param[in,out] sx particle spin x-component
          * @param[in,out] sy particle spin y-component
          * @param[in,out] sz particle spin z-component
-         * @param[in,out] idcpu particle global index
+         * @param[in,out] idcpu particle global index (unused)
          * @param[in] refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
@@ -754,14 +745,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -791,12 +779,6 @@ namespace impactx::elements
             sx = particle_spin(1);
             sy = particle_spin(2);
             sz = particle_spin(3);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
 

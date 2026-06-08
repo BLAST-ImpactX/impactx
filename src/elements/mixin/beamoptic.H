@@ -10,6 +10,8 @@
 #ifndef IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
 #define IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
 
+#include "alignment.H"
+#include "pipeaperture.H"
 #include "spintransport.H"
 
 #include "particles/ImpactXParticleContainer.H"
@@ -109,8 +111,15 @@ namespace detail
      * themselves, but we better help a little for robustness. Background:
      * https://github.com/AMReX-Codes/amrex/pull/4520#issuecomment-3064064215
      *
+     * The `ForceWriteback` flag forces the writeback regardless of the push
+     * method's argument constness. Use it for slots that may be modified by
+     * something other than the named push method itself (e.g., a pre/post
+     * step in the caller), where the push method's signature is not the
+     * authoritative source of truth for whether the value changed.
+     *
      * @tparam P_Method pointer to the push method (for is_nth_arg_non_const)
      * @tparam N the argument index (for is_nth_arg_non_const)
+     * @tparam ForceWriteback if true, write back regardless of P_Method's argument constness
      * @tparam T data type
      * @tparam IndexType int or SIMD index
      * @tparam ValType the type of the value to store
@@ -118,7 +127,8 @@ namespace detail
      * @param ptr pointer to the SoA data
      * @param i index or SIMD index
      */
-    template <auto P_Method, int N, typename T, typename IndexType, typename ValType>
+    template <auto P_Method, int N, bool ForceWriteback = false,
+              typename T, typename IndexType, typename ValType>
     AMREX_GPU_DEVICE AMREX_FORCE_INLINE
     void store_pdata (
         ValType const & AMREX_RESTRICT val,
@@ -128,7 +138,7 @@ namespace detail
     {
 #ifdef AMREX_USE_SIMD
         if constexpr (!std::is_integral_v<IndexType>) {
-            if constexpr (amrex::simd::is_nth_arg_non_const(P_Method, N)) {
+            if constexpr (ForceWriteback || amrex::simd::is_nth_arg_non_const(P_Method, N)) {
                 // write back to memory
                 // TODO stdx::vector_aligned needs alignment guarantees
                 //      https://github.com/AMReX-Codes/amrex/issues/4592
@@ -227,8 +237,29 @@ namespace detail
             decltype(auto) sz = load_pdata(m_part_sz, i);
             decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
 
+            // pre/post-push functionality declared by mixin classes
+            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
+            constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
+
+            // shift into the alignment-error frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_in(x, y, px, py);
+                m_element.rotate_in(sx, sy);
+            }
+
             // push spin & phase space through element
             m_element.spin_and_phasespace_push(x, y, t, px, py, pt, sx, sy, sz, idcpu, m_ref_part);
+
+            // apply transverse aperture in the element-local frame (compile-time gated)
+            if constexpr (has_aperture) {
+                m_element.apply_aperture(x, y, idcpu);
+            }
+
+            // shift back to the lab frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_out(x, y, px, py);
+                m_element.rotate_out(sx, sy);
+            }
 
             // SIMD: write back to memory
 #ifdef AMREX_USE_SIMD
@@ -238,16 +269,23 @@ namespace detail
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
                 constexpr auto P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
 
-                store_pdata<P_Method, 0>(x, m_part_x, i);
-                store_pdata<P_Method, 1>(y, m_part_y, i);
-                store_pdata<P_Method, 2>(t, m_part_t, i);
-                store_pdata<P_Method, 3>(px, m_part_px, i);
-                store_pdata<P_Method, 4>(py, m_part_py, i);
-                store_pdata<P_Method, 5>(pt, m_part_pt, i);
-                store_pdata<P_Method, 6>(sx, m_part_sx, i);
-                store_pdata<P_Method, 7>(sy, m_part_sy, i);
-                store_pdata<P_Method, 8>(sz, m_part_sz, i);
-                store_pdata<P_Method, 9>(idcpu, m_part_idcpu, i);
+                // shift_in/shift_out write x, y, px, py; rotate_in/rotate_out
+                // write sx, sy; apply_aperture writes idcpu.
+                // These wrapper-modified slots must be stored regardless of the push
+                // method's argument constness.
+                constexpr bool wb_align    = has_alignment;
+                constexpr bool wb_aperture = has_aperture;
+
+                store_pdata<P_Method, 0, wb_align>   (x,     m_part_x,     i);
+                store_pdata<P_Method, 1, wb_align>   (y,     m_part_y,     i);
+                store_pdata<P_Method, 2>             (t,     m_part_t,     i);
+                store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
+                store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
+                store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
+                store_pdata<P_Method, 6, wb_align>   (sx,    m_part_sx,    i);
+                store_pdata<P_Method, 7, wb_align>   (sy,    m_part_sy,    i);
+                store_pdata<P_Method, 8>             (sz,    m_part_sz,    i);
+                store_pdata<P_Method, 9, wb_aperture>(idcpu, m_part_idcpu, i);
             }
 #endif
         }
@@ -344,8 +382,27 @@ namespace detail
             decltype(auto) pt = load_pdata(m_part_pt, i);
             decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
 
+            // pre/post-push functionality declared by mixin classes
+            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
+            constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
+
+            // shift into the alignment-error frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_in(x, y, px, py);
+            }
+
             // push through element
             m_element(x, y, t, px, py, pt, idcpu, m_ref_part);
+
+            // apply transverse aperture in the element-local frame (compile-time gated)
+            if constexpr (has_aperture) {
+                m_element.apply_aperture(x, y, idcpu);
+            }
+
+            // shift back to the lab frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_out(x, y, px, py);
+            }
 
             // write back to memory
 #ifdef AMREX_USE_SIMD
@@ -355,13 +412,19 @@ namespace detail
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
                 constexpr auto P_Method = &T_Element::template operator()<RealType, IdCpuType>;
 
-                store_pdata<P_Method, 0>(x, m_part_x, i);
-                store_pdata<P_Method, 1>(y, m_part_y, i);
-                store_pdata<P_Method, 2>(t, m_part_t, i);
-                store_pdata<P_Method, 3>(px, m_part_px, i);
-                store_pdata<P_Method, 4>(py, m_part_py, i);
-                store_pdata<P_Method, 5>(pt, m_part_pt, i);
-                store_pdata<P_Method, 6>(idcpu, m_part_idcpu, i);
+                // shift_in/shift_out write x, y, px, py; apply_aperture writes idcpu.
+                // These wrapper-modified slots must be stored regardless of the push
+                // method's argument constness.
+                constexpr bool wb_align    = has_alignment;
+                constexpr bool wb_aperture = has_aperture;
+
+                store_pdata<P_Method, 0, wb_align>   (x,     m_part_x,     i);
+                store_pdata<P_Method, 1, wb_align>   (y,     m_part_y,     i);
+                store_pdata<P_Method, 2>             (t,     m_part_t,     i);
+                store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
+                store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
+                store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
+                store_pdata<P_Method, 6, wb_aperture>(idcpu, m_part_idcpu, i);
             }
 #endif
         }
